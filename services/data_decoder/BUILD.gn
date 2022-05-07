@@ -31,11 +31,11 @@ source_set("lib") {
   deps = [
     "//base",
     "//build:chromeos_buildflags",
-    "//components/cbor",
     "//components/web_package",
     "//mojo/public/cpp/bindings",
     "//net",
     "//skia",
+    "//third_party/libxml:libxml_utils",
     "//third_party/libxml:xml_reader",
     "//third_party/zlib/google:compression_utils",
     "//ui/gfx",

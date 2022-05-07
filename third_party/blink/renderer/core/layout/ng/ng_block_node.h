@@ -185,6 +185,9 @@ class CORE_EXPORT NGBlockNode : public NGLayoutInputNode {
   void StoreMargins(const NGConstraintSpace&, const NGBoxStrut& margins);
   void StoreMargins(const NGPhysicalBoxStrut& margins);
 
+  // Write the inline-size of columns in a multicol container to legacy.
+  void StoreColumnInlineSize(LayoutUnit);
+
   static bool CanUseNewLayout(const LayoutBox&);
   bool CanUseNewLayout() const;
 
@@ -288,5 +291,7 @@ class DevtoolsReadonlyLayoutScope {
 };
 
 }  // namespace blink
+
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::NGBlockNode)
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_BLOCK_NODE_H_

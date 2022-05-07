@@ -57,7 +57,7 @@ export class PrivacyGuideCookiesFragmentElement extends
       MetricsBrowserProxyImpl.getInstance();
   private startStateBlock3PIncognito_: boolean;
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener('view-enter-start', this.onViewEnterStart_);
     this.addEventListener('view-exit-finish', this.onViewExitFinish_);
@@ -95,6 +95,18 @@ export class PrivacyGuideCookiesFragmentElement extends
   private onCookies3PClick_() {
     this.metricsBrowserProxy_.recordAction(
         'Settings.PrivacyGuide.ChangeCookiesBlock3P');
+  }
+
+  private onRadioGroupKeyDown_(event: KeyboardEvent) {
+    switch (event.key) {
+      case 'ArrowLeft':
+      case 'ArrowRight':
+        // This event got consumed by the radio group to change the radio button
+        // selection. Do not propagate further, to not cause a privacy guide
+        // navigation.
+        event.stopPropagation();
+        break;
+    }
   }
 }
 

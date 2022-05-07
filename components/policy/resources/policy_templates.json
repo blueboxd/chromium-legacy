@@ -1333,7 +1333,7 @@
     },
     {
       'name': 'FirstPartySets',
-      'owners': ['kaklilu@chromium.com', 'chrome-first-party-sets@chromium.org'],
+      'owners': ['kaklilu@chromium.org', 'chrome-first-party-sets@chromium.org'],
       'type': 'group',
       'caption': '''First-Party Sets Settings''',
       'desc': '''Controls policies for the First-Party Sets feature.''',
@@ -1554,7 +1554,7 @@
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': [
-        'chrome.win:84-',
+        'chrome.win:84-100',
       ],
       'features': {
         'can_be_recommended': False,
@@ -3534,7 +3534,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome_os:81-'],
+      'supported_on': ['chrome_os:81-100'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True
@@ -5180,7 +5180,7 @@
       'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:9-','android:46-','webview_android:49-','chrome_os:62-'],
+      'supported_on': ['chrome.*:9-100','android:46-100','webview_android:49-100','chrome_os:62-100'],
       'deprecated': True,
       'features': {
         'dynamic_refresh': False,
@@ -5223,7 +5223,7 @@
       'owners': ['file://components/policy/resources/OWNERS', 'rsorokin@chromium.org'],
       'type': 'string',
       'schema': { 'type': 'string' },
-      'supported_on': ['chrome.*:9-','android:46-','chrome_os:62-'],
+      'supported_on': ['chrome.*:9-100','android:46-100','chrome_os:62-100'],
       'deprecated': True,
       'features': {
         'dynamic_refresh': False,
@@ -5423,7 +5423,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:8-', 'chrome_os:11-'],
+      'supported_on': ['chrome.*:8-100', 'chrome_os:11-100'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -5497,7 +5497,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:8-', 'chrome_os:11-'],
+      'supported_on': ['chrome.*:8-100', 'chrome_os:11-100'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -8284,7 +8284,7 @@
       'owners': ['tluk@chromium.org', 'chrome-cros@google.com'],
       'type': 'main',
       'schema' : {'type': 'boolean'},
-      'supported_on': ['chrome_os:96-'],
+      'supported_on': ['chrome_os:96-', 'chrome.*:101-'],
       'example_value': False,
       'features':{
         'dynamic_refresh': False,
@@ -8293,20 +8293,20 @@
       'items': [
         {
           'value': True,
-          'caption': 'Enable showing <ph name="GOOGLE_SEARCH_PRODUCT_NAME">Google Search</ph> results in a Browser side panel.',
+          'caption': 'Enable showing default search engine results pages in a Browser side panel.',
         },
         {
           'value': False,
-          'caption': 'Disable showing <ph name="GOOGLE_SEARCH_PRODUCT_NAME">Google Search</ph> results in a Browser side panel.',
+          'caption': 'Disable showing default search engine results pages in a Browser side panel.',
         },
       ],
       'id': 906,
       'default': True,
-      'caption': '''Allow showing the most recent <ph name="GOOGLE_SEARCH_PRODUCT_NAME">Google Search</ph> results in a Browser side panel''',
+      'caption': '''Allow showing the most recent default search engine results page in a Browser side panel''',
       'tags': [],
-      'desc': '''Setting the policy to Enabled or leaving the policy unset means that users can bring up their most recent <ph name="GOOGLE_SEARCH_PRODUCT_NAME">Google Search</ph> results in a side panel via toggling an icon in the toolbar.
+      'desc': '''Setting the policy to Enabled or leaving the policy unset means that users can bring up their most recent default search engine results page in a side panel via toggling an icon in the toolbar.
 
-      Setting the policy to Disabled removes the icon from the toolbar that opens the side panel with the <ph name="GOOGLE_SEARCH_PRODUCT_NAME">Google Search</ph> results.''',
+      Setting the policy to Disabled removes the icon from the toolbar that opens the side panel with the default search engine results page.''',
     },
     {
       'name': 'InsecurePrivateNetworkRequestsAllowed',
@@ -8639,7 +8639,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:34-'],
+      'supported_on': ['chrome.*:34-100'],
       'deprecated': True,
       'features': {
         'dynamic_refresh': True,
@@ -8692,7 +8692,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:34-'],
+      'supported_on': ['chrome.*:34-100'],
       'deprecated': True,
       'features': {
         'dynamic_refresh': True,
@@ -9537,6 +9537,39 @@
       For more information about the deprecation of the U2F Security Key API, please refer to https://groups.google.com/a/chromium.org/g/blink-dev/c/xHC3AtU_65A.''',
     },
     {
+      'name': 'WebAuthenticationRemoteProxiedRequestsAllowed',
+      'owners': ['martinkr@google.com', 'agl@chromium.org'],
+      'tags': ['full-admin-access'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Allow CRD to execute WebAuthn API requests proxied from a remote host.',
+        },
+        {
+          'value': False,
+          'caption': 'Do not allow CRD to execute WebAuthn API requests proxied from a remote host.',
+        },
+      ],
+      'future_on': ['chrome.*', 'chrome_os'],
+      'features': {
+        'dynamic_refresh': True,
+        'internal_only': True,  # Not available outside of Google.
+        'per_profile': True,
+        'platform_only': True,  # No cloud-policy support.
+      },
+      'example_value': True,
+      'default': False,
+      'id': 965,
+      'caption': '''Allow <ph name="CHROME_REMOTE_DESKTOP_PRODUCT_NAME">Chrome Remote Desktop</ph> to execute WebAuthn API requests proxied from a remote host.''',
+      'desc': '''If set to Enabled, <ph name="CHROME_REMOTE_DESKTOP_PRODUCT_NAME">Chrome Remote Desktop</ph> may execute WebAuthn API requests that originate from a browsing session on a remote host.
+
+      If the policy is set to Disabled or left unset, the default behavior will apply.
+
+      Note that this feature is only supported inside Google's internal network environment.''',
+    },
+    {
       'name': 'GCFUserDataDir',
       'owners': ['grt@chromium.org'],
       'type': 'string',
@@ -9747,10 +9780,10 @@
         'items': { 'type': 'string' },
       },
       'supported_on': [
-        'chrome.*:15-',
-        'chrome_os:15-',
-        'android:30-',
-        'webview_android:47-',
+        'chrome.*:15-100',
+        'chrome_os:15-100',
+        'android:30-100',
+        'webview_android:47-100',
       ],
       'deprecated': True,
       'features': {
@@ -9779,10 +9812,10 @@
         'items': { 'type': 'string' },
       },
       'supported_on': [
-        'chrome.*:15-',
-        'chrome_os:15-',
-        'android:30-',
-        'webview_android:47-',
+        'chrome.*:15-100',
+        'chrome_os:15-100',
+        'android:30-100',
+        'webview_android:47-100',
       ],
       'deprecated': True,
       'features': {
@@ -10567,7 +10600,7 @@
       When this setting is disabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will perform verification of server certificates using the legacy certificate verifier provided by the platform.
       When this setting is not set, the built-in or the legacy certificate verifier may be used.
 
-      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for <ph name="MAC_OS_NAME">macOS</ph> version 104, when support for the legacy certificate verifier on <ph name="MAC_OS_NAME">macOS</ph> is planned to be removed.
+      This policy is planned to be removed in <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> for <ph name="MAC_OS_NAME">macOS</ph> version 107, when support for the legacy certificate verifier on <ph name="MAC_OS_NAME">macOS</ph> is planned to be removed.
       ''',
     },
     {
@@ -15765,7 +15798,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome_os:28-'],
+      'supported_on': ['chrome_os:28-100'],
       'deprecated': True,
       'features': {
         'dynamic_refresh': True,
@@ -17923,7 +17956,7 @@
           }
         }
       },
-      'supported_on': [ 'chrome_os:57-' ],
+      'supported_on': [ 'chrome_os:57-100' ],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -18055,7 +18088,7 @@
           'hash': { 'type': 'string' }
         },
       },
-      'supported_on': ['chrome_os:65-'],
+      'supported_on': ['chrome_os:65-100'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -18110,7 +18143,7 @@
       'name': 'NativePrintersBulkAccessMode',
       'owners': ['file://chromeos/printing/OWNERS', 'zentaro@chromium.org', 'skau@chromium.org'],
       'id': 383,
-      'supported_on': ['chrome_os:65-'],
+      'supported_on': ['chrome_os:65-100'],
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
@@ -18202,7 +18235,7 @@
     {
       'name': 'NativePrintersBulkBlacklist',
       'owners': ['file://chromeos/printing/OWNERS', 'thestig@chromium.org', 'skau@chromium.org'],
-      'supported_on': ['chrome_os:65-'],
+      'supported_on': ['chrome_os:65-100'],
       'id': 384,
       'type': 'list',
       'schema': {
@@ -18243,7 +18276,7 @@
     {
       'name': 'NativePrintersBulkWhitelist',
       'owners': ['file://chromeos/printing/OWNERS', 'thestig@chromium.org', 'skau@chromium.org'],
-      'supported_on': ['chrome_os:65-'],
+      'supported_on': ['chrome_os:65-100'],
       'id': 385,
       'type': 'list',
       'schema': {
@@ -18737,7 +18770,7 @@
       'supported_on': ['chrome_os:87-'],
       'features': {
         'dynamic_refresh': True,
-        'per_profile': True,
+        'per_profile': False,
       },
       'example_value': ['PIN'],
       'default_for_enterprise_users': [],
@@ -18772,7 +18805,7 @@
         },
         'id': 'QuickUnlockModeWhitelist',
       },
-      'supported_on': ['chrome_os:56-'],
+      'supported_on': ['chrome_os:56-100'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -18839,6 +18872,60 @@
       'desc': '''Setting the policy controls how often the lock screen requests the password for quick unlock. Each time the lock screen appears, if the last password entry occurred before the time window specified by the value chosen, quick unlock won't be available. If users stay on the lock screen past this amount of time, a password is requested next time they enter the wrong code or re-enter the lock screen, whichever comes first.
 
       Leaving the policy unset means users using quick unlock enter their password on the lock screen daily.''',
+    },
+    {
+      'name': 'WebAuthnFactors',
+      'owners': ['hcyang@google.com', 'cros-hwsec@google.com', 'cros-lurs@google.com'],
+      'type': 'string-enum-list',
+      'schema': {
+        'type': 'array',
+        'items': {
+          'type': 'string',
+          'enum': [
+            'all',
+            'PIN',
+            'FINGERPRINT',
+          ],
+        },
+        'id': 'WebAuthnFactors',
+      },
+      'items': [
+        {
+          'name': 'all',
+          'value': 'all',
+          'caption': '''All''',
+        },
+        {
+          'name': 'PIN',
+          'value': 'PIN',
+          'caption': '''PIN''',
+        },
+        {
+          'name': 'FINGERPRINT',
+          'value': 'FINGERPRINT',
+          'caption': '''Fingerprint''',
+        },
+      ],
+      'supported_on': ['chrome_os:101-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': ['PIN'],
+      'id': 964,
+      'caption': '''Configure allowed WebAuthn factors''',
+      'tags': [],
+      'desc': '''Setting the policy controls which WebAuthn factors can be used.
+
+      To allow:
+
+      * Every WebAuthn factor, use ["all"] (includes factors added in the future).
+
+      * Only PIN, use ["PIN"].
+
+      * PIN and fingerprint, use ["PIN", "FINGERPRINT"].
+
+      If the policy is unset or set to an empty list, no WebAuthn factors are available for managed devices.''',
     },
     {
       'name': 'PinUnlockMinimumLength',
@@ -19505,7 +19592,7 @@
         'items': { 'type': 'string' },
       },
       'supported_on': [
-        'chrome_os:61-',
+        'chrome_os:61-100',
       ],
       'features': {
         'dynamic_refresh': True,
@@ -19729,7 +19816,7 @@
       'tags': [],
       'desc': '''Setting the policy to Enabled allows policies associated with a <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME">Google Workspace</ph> account to take precedence if they conflict with <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph> policies.
 
-      Only policies originating from secure users can be merged. A secure user is affiliated with the organization that manages their browser using <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. All other user-level policies will have default precedence.
+      Only policies originating from secure users can take precedence. A secure user is affiliated with the organization that manages their browser using <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME">Chrome Browser Cloud Management</ph>. All other user-level policies will have default precedence.
 
       The policy can be combined with <ph name="POLICY_CLOUDPOLICYOVERRIDESPLATFORMPOLICY">CloudPolicyOverridesPlatformPolicy</ph>. If both policies are enabled, user cloud policies will also take precedence over conflicting platform policies.
 
@@ -20037,7 +20124,7 @@
 
       This defaults to True: security feature enabled.
 
-      This can be used by administrators who need more time to update their internal website affected by this new restriction. This Enterprise policy is temporary; it's intended to be removed after <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 104.
+      This can be used by administrators who need more time to update their internal website affected by this new restriction. This Enterprise policy is temporary; it's intended to be removed after <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> version 117.
       ''',
     },
     {
@@ -20315,7 +20402,7 @@
         'items': { 'type': 'string' }
       },
       # Spell checking is provided by macOS, so can't be controlled on Mac.
-      'supported_on': ['chrome.win:75-', 'chrome.linux:75-', 'chrome_os:75-'],
+      'supported_on': ['chrome.win:75-100', 'chrome.linux:75-100', 'chrome_os:75-100'],
       'deprecated': True,
       'features': {
         'can_be_recommended': False,
@@ -20911,7 +20998,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:68-', 'chrome_os:68-'],
+      'supported_on': ['chrome.*:68-100', 'chrome_os:68-100'],
       'deprecated': True,
       'features': {
         'dynamic_refresh': True,
@@ -21110,7 +21197,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
-      'supported_on': ['chrome.*:66-', 'chrome_os:66-'],
+      'supported_on': ['chrome.*:66-100', 'chrome_os:66-100'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -21173,7 +21260,7 @@
       'owners': ['valleau@chromium.org', 'skau@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome_os:67-'],
+      'supported_on': ['chrome_os:67-100'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -21887,7 +21974,7 @@
     },
     {
       'name': 'UrlKeyedAnonymizedDataCollectionEnabled',
-      'owners': ['file://base/metrics/OWNERS', 'bcwhite@chromium.org'],
+      'owners': ['file://base/metrics/OWNERS'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'supported_on': ['chrome.*:69-', 'chrome_os:69-', 'android:70-', 'ios:90-'],
@@ -25437,7 +25524,7 @@
     {
       'name': 'ExternalPrintServersWhitelist',
       'owners': ['file://chromeos/printing/OWNERS', 'luum@chromium.org'],
-      'supported_on': ['chrome_os:79-'],
+      'supported_on': ['chrome_os:79-100'],
       'id': 631,
       'features': {
         'dynamic_refresh': True,
@@ -26313,7 +26400,7 @@
       },
       'caption': '''Per-App Time Limits Whitelist''',
       'tags': [],
-      'supported_on': ['chrome_os: 80-'],
+      'supported_on': ['chrome_os: 80-100'],
       'desc': '''This policy specifies which applications and URLs should be whitelisted for per-app usage restrictions.
         The configured whitelist are applied to the apps installed on <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> for the given user with per-app time limits.
         The configured whitelist can only be applied to child user accounts and take effect when <ph name="PER_APP_TIME_LIMITS_POLICY_NAME">PerAppTimeLimits</ph> policy is set.
@@ -26703,7 +26790,7 @@ If this policy is left unset, privacy screen is disabled initially but can be co
       'owners': ['file://chrome/browser/notifications/OWNERS', 'knollr@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
-      'supported_on': ['chrome.linux:83-'],
+      'supported_on': ['chrome.linux:83-100'],
       'features': {
         'dynamic_refresh': True,
         'per_profile': True,
@@ -29269,6 +29356,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
         },
       ],
       'default': False,
+      'deprecated': True,
       'example_value': True,
       'id': 902,
       'caption': '''Force WebSQL in third-party contexts to be re-enabled.''',
@@ -30044,7 +30132,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
     },
     {
       'name': 'FirstPartySetsEnabled',
-      'owners': ['kaklilu@chromium.com', 'chrome-first-party-sets@chromium.org'],
+      'owners': ['kaklilu@chromium.org', 'chrome-first-party-sets@chromium.org'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
       'features' : {
@@ -30107,7 +30195,7 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       'arc_support': 'This policy has no effect on the logging done by Android.',
     },
     {
-      'name': 'EnableDirectSockets',
+      'name': 'IsolatedAppsDeveloperModeAllowed',
       'owners': ['file://content/browser/direct_sockets/OWNERS', 'greengrape@google.com'],
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -30118,23 +30206,23 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       'items': [
         {
           'value': True,
-          'caption': 'Enable Direct Sockets API.',
+          'caption': 'Enable Isolated Apps Developer Mode',
         },
         {
           'value': False,
-          'caption': 'Disable Direct Sockets API.',
+          'caption': 'Disable Isolated Apps Developer Mode',
         }
       ],
-      'future_on': ['chrome_os'],
+      'future_on': ['chrome_os', 'chrome.*'],
       'default': True,
       'example_value': False,
       'default_for_enterprise_users': False,
       'tags': [],
       'id': 958,
-      'caption': '''Enable Direct Sockets API.''',
-      'desc': '''Setting the policy to Enabled lets users use the Direct Sockets API (provided that all other necessary conditions are fulfilled).
-      Setting the policy to Disabled means users will not be able to access the API.
-      If this policy is left not set, the default is not allowed for enterprise-managed users and allowed for non-managed users.'''
+      'caption': '''Allow Developer Mode for Isolated Apps.''',
+      'desc': '''Setting the policy to Enabled lets users access Developer Mode for Isolated Apps.
+      Setting the policy to Disabled means users will not be able to access these capabilities.
+      If this policy is left not set, the default is not allowed for enterprise-managed users on Chrome OS and allowed for all other users and OSes.'''
     },
     {
       'name': 'FloatingWorkspaceEnabled',
@@ -30163,7 +30251,64 @@ When this policy is set, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex><
       'tags': [],
       'desc': '''Setting the policy to Enabled will launch browser windows from current user's last used device automatically upon login.
       Setting the policy to Disabled or leaving it unset will let full restore settings determine what to be launched upon login.''',
-    }
+    },
+    {
+      'name': 'OptimizationGuideFetchingEnabled',
+      'owners': ['file://components/optimization_guide/OWNERS', 'sophiechang@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['android:101-', 'chrome.*:101-', 'chrome_os:101-', 'ios:101-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': '''Enable fetching of page load metadata and machine learning models to enhance the browsing experience''',
+        },
+        {
+          'value': False,
+          'caption': '''Disable fetching of page load metadata and machine learning models that enhance the browsing experience''',
+        },
+      ],
+      'default': True,
+      'example_value': True,
+      'id': 963,
+      'caption': '''Enable Optimization Guide Fetching''',
+      'tags': [],
+      'desc': '''Setting the policy to Enabled or leaving it unset will enable the fetching of page load metadata and machine learning models that enhance the browsing experience.
+      Setting the policy to Disabled may cause some features to not work appropriately.''',
+    },
+    {
+      'name': 'WebSQLAccess',
+      'owners': ['arichiv@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['android:101-', 'chrome.*:101-', 'chrome_os:101-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': False,
+      },
+      'items': [
+        {
+          'value': True,
+          'caption': 'Force WebSQL to be enabled.',
+        },
+        {
+          'value': False,
+          'caption': 'Allow WebSQL to be disabled by Chrome flag.',
+        },
+      ],
+      'default': False,
+      'example_value': True,
+      'id': 966,
+      'caption': '''Force WebSQL to be enabled.''',
+      'tags': [],
+      'desc': '''WebSQL is on by default as of M101, but can be disabled via Chrome flag.
+          If this policy is set to false or unset, WebSQL can be disabled.
+          If this policy is set to true, WebSQL cannot be disabled.''',
+    },
   ],
   'messages': {
     # Messages that are not associated to any policies.
@@ -31160,6 +31305,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   'placeholders': [],
   'deleted_policy_ids': [114, 115, 204, 205, 206, 341, 412, 476, 544, 546, 562, 569, 578, 583, 585, 586, 587, 588, 589, 590, 591, 600, 668, 669, 872],
   'deleted_atomic_policy_group_ids': [19],
-  'highest_id_currently_used': 962,
+  'highest_id_currently_used': 966,
   'highest_atomic_group_id_currently_used': 42
 }

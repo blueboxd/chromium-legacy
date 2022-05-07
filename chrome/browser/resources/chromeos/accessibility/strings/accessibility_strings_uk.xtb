@@ -618,7 +618,6 @@
 <translation id="5170206230005240598">Брайлівські субтитри ввімкнено</translation>
 <translation id="5183440668879371625">Попередній рядок шрифтом Брайля</translation>
 <translation id="5189244881767082992">Рядок</translation>
-<translation id="5234747236692380506">ввести "<ph name="TEXT" />"</translation>
 <translation id="5263034204789987535">Незріла кукурудза</translation>
 <translation id="5263344797180442561">заголовок 2</translation>
 <translation id="528468243742722775">Завершити</translation>
@@ -794,6 +793,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{двокрапка}one{# двокрапка}few{# двокрапки}many{# двокрапок}other{# colons}}</translation>
 <translation id="6444046323172968959">Діалогове вікно сповіщень</translation>
 <translation id="6452403590345320472">Зміст</translation>
+<translation id="6457542714329819968">ввести</translation>
 <translation id="6468049171101508116">Наступна кнопка</translation>
 <translation id="646954774886932461">Покажчик</translation>
 <translation id="6475604559827479857">Колір виділеного слова:</translation>

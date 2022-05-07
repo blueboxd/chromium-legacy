@@ -11,12 +11,14 @@
 #include <utility>
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/values.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/browser/manifest_icon_downloader.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -46,7 +48,7 @@ const char kTestAccountsEndpoint[] = "https://idp.test/accounts_endpoint";
 const char kTestTokenEndpoint[] = "https://idp.test/token_endpoint";
 const char kTestClientMetadataEndpoint[] =
     "https://idp.test/client_metadata_endpoint";
-const char kTestRevokeEndpoint[] = "https://idp.test/revoke_endpoint";
+const char kTestRevocationEndpoint[] = "https://idp.test/revocation_endpoint";
 
 class IdpNetworkRequestManagerTest : public ::testing::Test {
  public:
@@ -54,7 +56,8 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
     manager_ = std::make_unique<IdpNetworkRequestManager>(
         GURL(kTestIdpUrl), url::Origin::Create(GURL(kTestRpUrl)),
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
-            &test_url_loader_factory_));
+            &test_url_loader_factory_),
+        network::mojom::ClientSecurityState::New());
   }
 
   void TearDown() override { manager_.reset(); }
@@ -151,10 +154,10 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
 
   RevokeResponse SendRevokeRequestAndWaitForResponse(
       const char* client_id,
-      const char* account_id,
+      const char* hint,
       net::HttpStatusCode http_status = net::HTTP_NO_CONTENT) {
-    GURL revoke_endpoint(kTestRevokeEndpoint);
-    test_url_loader_factory().AddResponse(revoke_endpoint.spec(), "",
+    GURL revocation_endpoint(kTestRevocationEndpoint);
+    test_url_loader_factory().AddResponse(revocation_endpoint.spec(), "",
                                           http_status);
 
     RevokeResponse status;
@@ -164,7 +167,7 @@ class IdpNetworkRequestManagerTest : public ::testing::Test {
           status = revoke_status;
           run_loop.Quit();
         });
-    manager().SendRevokeRequest(revoke_endpoint, client_id, account_id,
+    manager().SendRevokeRequest(revocation_endpoint, client_id, hint,
                                 std::move(callback));
     run_loop.Run();
     return status;
@@ -681,7 +684,7 @@ TEST_F(IdpNetworkRequestManagerTest, Revoke) {
         ASSERT_EQ(network::DataElement::Tag::kBytes, elem.type());
         const network::DataElementBytes& byte_elem =
             elem.As<network::DataElementBytes>();
-        EXPECT_EQ("client_id=xxx&account_id=yyy", byte_elem.AsStringPiece());
+        EXPECT_EQ("client_id=xxx&hint=yyy", byte_elem.AsStringPiece());
       });
   test_url_loader_factory().SetInterceptor(interceptor);
   RevokeResponse status = SendRevokeRequestAndWaitForResponse("xxx", "yyy");
@@ -694,6 +697,69 @@ TEST_F(IdpNetworkRequestManagerTest, RevokeError) {
       SendRevokeRequestAndWaitForResponse("xxx", "yyy", net::HTTP_FORBIDDEN);
   ASSERT_EQ(RevokeResponse::kError, status);
 }
+
+// Tests that we correctly records metrics regarding approved_clients.
+TEST_F(IdpNetworkRequestManagerTest, RecordApprovedClientsMetrics) {
+  base::HistogramTester histogram_tester;
+  bool called = false;
+  auto interceptor =
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        called = true;
+        EXPECT_EQ(GURL(kTestAccountsEndpoint), request.url);
+        EXPECT_EQ(request.request_body, nullptr);
+        EXPECT_FALSE(request.referrer.is_valid());
+      });
+  test_url_loader_factory().SetInterceptor(interceptor);
+
+  const char test_accounts_json[] = R"({
+  "accounts" : [
+    {
+      "id" : "1",
+      "email": "ken@idp.test",
+      "name": "Ken R. Example",
+      "approved_clients": []
+    },
+    {
+      "id" : "2",
+      "email": "jim@idp.test",
+      "name": "Jim R. Example",
+      "approved_clients": ["xxx"]
+    },
+    {
+      "id" : "3",
+      "email": "rashida@idp.test",
+      "name": "Rashida R. Example",
+      "approved_clients": ["xxx", "yyy"]
+    },
+    {
+      "id" : "4",
+      "email": "wei@idp.test",
+      "name": "Wei R. Example"
+    }
+   ]
+  })";
+
+  FetchStatus accounts_response;
+  AccountList accounts;
+  std::tie(accounts_response, accounts) =
+      SendAccountsRequestAndWaitForResponse(test_accounts_json, "xxx");
+
+  EXPECT_TRUE(called);
+  EXPECT_EQ(FetchStatus::kSuccess, accounts_response);
+  ASSERT_EQ(4ul, accounts.size());
+
+  histogram_tester.ExpectTotalCount("Blink.FedCm.ApprovedClientsExistence", 4);
+  histogram_tester.ExpectBucketCount("Blink.FedCm.ApprovedClientsExistence", 1,
+                                     3);
+  histogram_tester.ExpectBucketCount("Blink.FedCm.ApprovedClientsExistence", 0,
+                                     1);
+
+  histogram_tester.ExpectTotalCount("Blink.FedCm.ApprovedClientsSize", 3);
+  histogram_tester.ExpectBucketCount("Blink.FedCm.ApprovedClientsSize", 0, 1);
+  histogram_tester.ExpectBucketCount("Blink.FedCm.ApprovedClientsSize", 1, 1);
+  histogram_tester.ExpectBucketCount("Blink.FedCm.ApprovedClientsSize", 2, 1);
+}
+
 }  // namespace
 
 }  // namespace content

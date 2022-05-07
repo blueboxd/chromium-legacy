@@ -44,6 +44,7 @@
 <translation id="3344973607274501920">Chromiumএ আপোনাৰ পাছৱর্ডসমূহ পৰীক্ষা কৰিব নোৱাৰিলে। আপোনাৰ ইণ্টাৰনেট সংযোগ পৰীক্ষা কৰি চাওক।</translation>
 <translation id="3472200483164753384">Chromium Canaryত সমৰ্থিত নহয়</translation>
 <translation id="3639997914391704523">আপুনি নিজৰ Google একাউণ্টটোৰ জৰিয়তে ছাইন ইন কৰিলে Chromiumএ আপোনাৰ পাছৱর্ডসমূহ পৰীক্ষা কৰিব পাৰে।</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" />এ Chromium ব্যৱহাৰ কৰি আছিল আৰু এই ডিভাইচটোত বুকমাৰ্ক, পাছৱৰ্ড আৰু অন্য ছেটিং এৰি গৈছে।</translation>
 <translation id="3805899903892079518">আপোনাৰ ফট’ আৰু ভিডিঅ’সমূহত Chromiumৰ এক্সেছ নাই। iOS ছেটিং &gt; গোপনীয়তা &gt; ফট’-ত এক্সেছ সক্ষম কৰক।</translation>
 <translation id="4043291146360695975">পাছৱৰ্ডসমূহ কেৱল এই ডিভাইচটোত থকা পাছৱৰ্ড পৰিচালকত ছেভ কৰা হয়।</translation>
 <translation id="4099085513035183040">Chromium বিটাত সমৰ্থিত নহয়</translation>
@@ -55,6 +56,13 @@
 <translation id="4828317641996116749">Chromiumএ সকলো পাছৱৰ্ড পৰীক্ষা কৰিব নোৱাৰিলে। পাছত পুনৰ চেষ্টা কৰক।</translation>
 <translation id="4985291216379576555">অফলাইন হৈ থাকিলে Chromiumএ আপডে’টৰ বাবে পৰীক্ষা কৰিব নোৱাৰে</translation>
 <translation id="4999538639245140991">আপুনি যিহেতু <ph name="SIGNOUT_MANAGED_DOMAIN" />এ পৰিচালনা কৰা এটা একাউণ্টৰ পৰা ছাইন আউট কৰি আছে আপোনাৰ Chromium ডেটা এই ডিভাইচটোৰ পৰা মচা যাব। আপোনাৰ ডেটা নিজৰ Google একাউণ্টত থাকিব যাব।</translation>
+<translation id="5039881550736388123">অন হৈ থাকিলে:
+<ph name="BEGIN_INDENT" />  • আপোনাৰ দৰে একেধৰণে Chromium ব্যৱহাৰ কৰা লোকসকলৰ বাবে ইয়াক উন্নত কৰাত সহায় কৰক।<ph name="END_INDENT" />
+
+বিবেচনা কৰিবলগীয়া কথা:
+<ph name="BEGIN_INDENT" />  • আপোনাৰ Chromiumৰ ব্যৱহাৰৰ তথ্য Googleলৈ পঠিওৱা হয়, কিন্তু সেয়া আপোনাৰ সৈতে জড়িত কৰা নহয়।
+  • যদি Chromium ক্ৰেশ্ব হয়, ক্ৰেশ্বটোৰ সবিশেষত কিছুমান ব্যক্তিগত তথ্য অন্তৰ্ভুক্ত হ’ব পাৰে।
+  • যদি আপুনি ছিংক অন কৰে, মেট্ৰিক্সত আপুনি চোৱা URLৰ তথ্য অন্তৰ্ভুক্ত হ’ব পাৰে।<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Chromiumত ছাইন ইন কৰক</translation>
 <translation id="5224391634244552924">ছেভ কৰা কোনো পাছৱৰ্ড নাই। আপুনি নিজৰ পাছৱর্ডসমূহ ছেভ কৰিলে Chromiumএ সেইবোৰ পৰীক্ষা কৰিব পাৰে।</translation>
 <translation id="5308226104666789935">Chromiumএ আপডে’টৰ বাবে পৰীক্ষা কৰিব নোৱাৰে</translation>
@@ -65,6 +73,7 @@
 <translation id="5777187867430702742">Chromium পৃষ্ঠা</translation>
 <translation id="5862307444128926510">Chromium লৈ স্বাগতম</translation>
 <translation id="5945387852661427312">আপুনি <ph name="DOMAIN" />এ পৰিচালনা কৰা এটা একাউণ্টৰ জৰিয়তে ছাইন ইন কৰিছে আৰু সেইটোৰ প্ৰশাসকক আপোনাৰ Chromium ডেটা নিয়ন্ত্ৰণ কৰিবলৈ সুবিধা দিছে। আপোনাৰ ডেটা এই একাউণ্টটোৰ সৈতে স্থায়ীভাৱে সংযুক্ত হৈ থাকিব। Chromiumৰ পৰা ছাইন আউট কৰিলে আপোনাৰ ডেটা মচা যাব কিন্ত সেইবোৰ আপোনাৰ Google একাউণ্টত জমা হৈয়ে থাকিব।</translation>
+<translation id="5983312940147103417">Chromiumক উন্নত কৰক</translation>
 <translation id="602807004951640891">আপুনি Chromium ব্যৱহাৰ কৰি <ph name="BEGIN_LINK_TOS" />সেৱাৰ চৰ্তাৱলী<ph name="END_LINK_TOS" />ত সন্মত হৈছে।</translation>
 <translation id="6119647025869519954">Chromiumক আপোনাৰ ডিফ’ল্ট ব্ৰাউজাৰ কৰিবলৈ:
 ১) ছেটিং খোলক

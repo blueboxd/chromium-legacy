@@ -5,6 +5,7 @@
 /**
  * @fileoverview Handles automation from ChromeVox's current range.
  */
+import {DesktopAutomationHandler} from './desktop_automation_handler.js';
 
 const AutomationEvent = chrome.automation.AutomationEvent;
 const AutomationNode = chrome.automation.AutomationNode;
@@ -34,8 +35,9 @@ export class RangeAutomationHandler extends BaseAutomationHandler {
 
   /**
    * @param {cursors.Range} newRange
+   * @param {boolean=} opt_fromEditing
    */
-  onCurrentRangeChanged(newRange) {
+  onCurrentRangeChanged(newRange, opt_fromEditing) {
     if (this.node_) {
       this.removeAllListeners();
       this.node_ = undefined;

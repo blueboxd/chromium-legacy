@@ -4,9 +4,9 @@
 
 import {assert} from 'chrome://resources/js/assert.m.js';
 import {ConfirmDialog} from 'chrome://resources/js/cr/ui/dialogs.m.js';
-import {getFile} from '../../common/js/api.js';
 
-import {strf, util} from '../../common/js/util.js';
+import {getFile} from '../../common/js/api.js';
+import {strf, UserCanceledError, util} from '../../common/js/util.js';
 import {VolumeInfo} from '../../externs/volume_info.js';
 
 import {FileFilter} from './directory_contents.js';
@@ -124,7 +124,7 @@ export class NamingController {
       }
 
       // Unexpected error.
-      console.error('File save failed: ' + error.code);
+      console.warn('File save failed: ' + error.code);
       throw error;
     }
 
@@ -133,7 +133,7 @@ export class NamingController {
     return new Promise((fulfill, reject) => {
       this.confirmDialog_.show(
           strf('CONFIRM_OVERWRITE_FILE', filename), fulfill.bind(null, fileUrl),
-          reject.bind(null, 'Cancelled'));
+          () => reject(new UserCanceledError('Canceled')));
     });
   }
 
@@ -285,7 +285,8 @@ export class NamingController {
     try {
       input.validation_ = true;
       await validateEntryName(
-          entry, newName, false, volumeInfo, isRemovableRoot);
+          entry, newName, this.fileFilter_.isHiddenFilesVisible(), volumeInfo,
+          isRemovableRoot);
     } catch (error) {
       await this.alertDialog_.showAsync(/** @type {string} */ (error.message));
 

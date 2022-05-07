@@ -19,6 +19,9 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
+#include "content/public/test/fenced_frame_test_util.h"
+#include "content/public/test/prerender_test_util.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
@@ -95,6 +98,9 @@ const char kHintedStylesheetBody[] = "/*empty*/";
 const char kEmptyPagePath[] = "/empty.html";
 const char kEmptyPageBody[] = "<html></html>";
 
+const char kRedirectedPagePath[] = "/redirected.html";
+const char kRedirectedPageBody[] = "<script src=\"/hinted.js\"></script>";
+
 // Listens to sockets on an EmbeddedTestServer for preconnect tests. Created
 // on the UI thread. EmbeddedTestServerConnectionListener methods are called
 // from a different thread than the UI thread.
@@ -141,7 +147,12 @@ class PreconnectListener
 // Early Hints are only plumbed over HTTP/2 or HTTP/3 (QUIC).
 class NavigationEarlyHintsTest : public ContentBrowserTest {
  public:
-  NavigationEarlyHintsTest() = default;
+  NavigationEarlyHintsTest() {
+    feature_list_.InitWithFeatures(
+        {features::kEarlyHintsPreloadForNavigation,
+         net::features::kSplitCacheByNetworkIsolationKey},
+        {});
+  }
   ~NavigationEarlyHintsTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -160,10 +171,6 @@ class NavigationEarlyHintsTest : public ContentBrowserTest {
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kOriginToForceQuicOn, "*");
     mock_cert_verifier_.SetUpCommandLine(command_line);
-    feature_list_.InitWithFeatures(
-        {features::kEarlyHintsPreloadForNavigation,
-         net::features::kSplitCacheByNetworkIsolationKey},
-        {});
 
     ASSERT_TRUE(net::QuicSimpleTestServer::Start());
 
@@ -245,6 +252,12 @@ class NavigationEarlyHintsTest : public ContentBrowserTest {
     RegisterResponse(hinted_script_entry);
   }
 
+  void RegisterRedirectedPage() {
+    ResponseEntry entry(kRedirectedPagePath, net::HTTP_OK);
+    entry.body = kRedirectedPageBody;
+    RegisterResponse(entry);
+  }
+
   ResponseEntry CreatePageEntryWithHintedScript(
       net::HttpStatusCode status_code) {
     RegisterHintedScriptResource();
@@ -293,26 +306,35 @@ class NavigationEarlyHintsTest : public ContentBrowserTest {
   }
 
   bool NavigateToURLAndWaitTitle(const GURL& url, const std::string& title) {
+    return NavigateToURLAndWaitTitleWithCommitURL(url, url, title);
+  }
+
+  bool NavigateToURLAndWaitTitleWithCommitURL(const GURL& url,
+                                              const GURL& expected_commit_url,
+                                              const std::string& title) {
     std::u16string title16 = base::ASCIIToUTF16(title);
     TitleWatcher title_watcher(shell()->web_contents(), title16);
-    if (!NavigateToURL(shell(), url))
+    if (!NavigateToURL(shell(), url, expected_commit_url))
       return false;
     return title16 == title_watcher.WaitAndGetTitle();
   }
 
-  NavigationEarlyHintsManager* GetEarlyHintsManager() {
-    RenderFrameHostImpl* rfh = static_cast<RenderFrameHostImpl*>(
-        shell()->web_contents()->GetMainFrame());
+  NavigationEarlyHintsManager* GetEarlyHintsManager(RenderFrameHostImpl* rfh) {
     return rfh->early_hints_manager();
   }
 
   PreloadedResources WaitForPreloadedResources() {
+    return WaitForPreloadedResources(static_cast<RenderFrameHostImpl*>(
+        shell()->web_contents()->GetMainFrame()));
+  }
+
+  PreloadedResources WaitForPreloadedResources(RenderFrameHostImpl* rfh) {
     base::RunLoop loop;
     PreloadedResources result;
-    if (!GetEarlyHintsManager())
+    if (!GetEarlyHintsManager(rfh))
       return result;
 
-    GetEarlyHintsManager()->WaitForPreloadsFinishedForTesting(
+    GetEarlyHintsManager(rfh)->WaitForPreloadsFinishedForTesting(
         base::BindLambdaForTesting([&](PreloadedResources preloaded_resources) {
           result = preloaded_resources;
           loop.Quit();
@@ -345,7 +367,7 @@ class NavigationEarlyHintsTest : public ContentBrowserTest {
       const net::test_server::HttpRequest& request) {
     GURL relative_url = request.base_url.Resolve(request.relative_url);
 
-    if (relative_url.path() == "/empty.html") {
+    if (relative_url.path() == kEmptyPagePath) {
       auto response = std::make_unique<net::test_server::BasicHttpResponse>();
       response->set_code(net::HTTP_OK);
       response->set_content_type("text/html");
@@ -353,13 +375,21 @@ class NavigationEarlyHintsTest : public ContentBrowserTest {
       return std::move(response);
     }
 
-    if (relative_url.path() != "/hinted.js")
+    if (relative_url.path() == kRedirectedPagePath) {
+      auto response = std::make_unique<net::test_server::BasicHttpResponse>();
+      response->set_code(net::HTTP_OK);
+      response->set_content_type("text/html");
+      response->set_content(kRedirectedPageBody);
+      return std::move(response);
+    }
+
+    if (relative_url.path() != kHintedScriptPath)
       return nullptr;
 
     auto response = std::make_unique<net::test_server::BasicHttpResponse>();
     response->set_code(net::HTTP_OK);
     response->set_content_type("application/javascript");
-    response->set_content("/*empty*/");
+    response->set_content(kHintedScriptBody);
 
     std::string query = relative_url.query();
     if (query == "corp-cross-origin") {
@@ -474,15 +504,41 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, NavigationServerError) {
   EXPECT_TRUE(preloads.empty());
 }
 
-IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, Redirect) {
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, RedirectSameOrigin) {
+  RegisterRedirectedPage();
+
   ResponseEntry entry = CreatePageEntryWithHintedScript(net::HTTP_FOUND);
-  entry.headers["location"] = "/";
+  entry.headers["location"] = kRedirectedPagePath;
   entry.body = "";
   RegisterResponse(entry);
 
-  EXPECT_TRUE(NavigateToURL(
-      shell(), net::QuicSimpleTestServer::GetFileURL(kPageWithHintedScriptPath),
-      net::QuicSimpleTestServer::GetFileURL("/")));
+  EXPECT_TRUE(NavigateToURLAndWaitTitleWithCommitURL(
+      net::QuicSimpleTestServer::GetFileURL(kPageWithHintedScriptPath),
+      net::QuicSimpleTestServer::GetFileURL(kRedirectedPagePath), "Done"));
+
+  PreloadedResources preloads = WaitForPreloadedResources();
+  EXPECT_EQ(preloads.size(), 1UL);
+
+  GURL preloaded_url = net::QuicSimpleTestServer::GetFileURL(kHintedScriptPath);
+  auto it = preloads.find(preloaded_url);
+  ASSERT_TRUE(it != preloads.end());
+  ASSERT_FALSE(it->second.was_canceled);
+  ASSERT_TRUE(it->second.error_code.has_value());
+  EXPECT_EQ(it->second.error_code.value(), net::OK);
+}
+
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, RedirectCrossOrigin) {
+  const GURL kRedirectedUrl = cross_origin_server().GetURL(kRedirectedPagePath);
+
+  ResponseEntry entry = CreatePageEntryWithHintedScript(net::HTTP_FOUND);
+  entry.headers["location"] = kRedirectedUrl.spec();
+  entry.body = "";
+  RegisterResponse(entry);
+
+  EXPECT_TRUE(NavigateToURLAndWaitTitleWithCommitURL(
+      net::QuicSimpleTestServer::GetFileURL(kPageWithHintedScriptPath),
+      kRedirectedUrl, "Done"));
+
   PreloadedResources preloads = WaitForPreloadedResources();
   EXPECT_TRUE(preloads.empty());
 }
@@ -698,7 +754,9 @@ IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsTest, SimplePreconnect) {
   ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
 
   EXPECT_EQ(preconnect_listener().num_accepted_sockets(), 1UL);
-  EXPECT_TRUE(GetEarlyHintsManager()->WasResourceHintsReceived());
+  EXPECT_TRUE(GetEarlyHintsManager(static_cast<RenderFrameHostImpl*>(
+                                       shell()->web_contents()->GetMainFrame()))
+                  ->WasResourceHintsReceived());
 }
 
 class NavigationEarlyHintsAddressSpaceTest : public NavigationEarlyHintsTest {
@@ -1014,6 +1072,137 @@ IN_PROC_BROWSER_TEST_P(NavigationEarlyHintsOriginTrialTest,
       EXPECT_TRUE(triggered);
       break;
   }
+}
+
+class NavigationEarlyHintsPrerenderTest : public NavigationEarlyHintsTest {
+ public:
+  NavigationEarlyHintsPrerenderTest()
+      : prerender_helper_(base::BindRepeating(
+            &NavigationEarlyHintsPrerenderTest::web_contents,
+            base::Unretained(this))) {}
+  ~NavigationEarlyHintsPrerenderTest() override = default;
+
+  test::PrerenderTestHelper* prerender_helper() { return &prerender_helper_; }
+
+  WebContents* web_contents() { return shell()->web_contents(); }
+
+ private:
+  test::PrerenderTestHelper prerender_helper_;
+};
+
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsPrerenderTest,
+                       AllowPreloadInPrerendering) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), net::QuicSimpleTestServer::GetFileURL("/title1.html")));
+  ResponseEntry entry = CreatePageEntryWithHintedScript(net::HTTP_OK);
+  RegisterResponse(entry);
+
+  // Loads a page in the prerender.
+  int host_id = prerender_helper()->AddPrerender(
+      net::QuicSimpleTestServer::GetFileURL(kPageWithHintedScriptPath));
+  RenderFrameHostImpl* prerender_rfh = static_cast<RenderFrameHostImpl*>(
+      prerender_helper()->GetPrerenderedMainFrameHost(host_id));
+  EXPECT_NE(prerender_rfh, nullptr);
+  EXPECT_NE(prerender_rfh->early_hints_manager(), nullptr);
+
+  PreloadedResources preloads = WaitForPreloadedResources(prerender_rfh);
+  EXPECT_EQ(preloads.size(), 1UL);
+
+  GURL script_url = net::QuicSimpleTestServer::GetFileURL(kHintedScriptPath);
+  EXPECT_TRUE(preloads.contains(script_url));
+}
+
+class NavigationEarlyHintsFencedFrameTest : public NavigationEarlyHintsTest {
+ public:
+  NavigationEarlyHintsFencedFrameTest() = default;
+
+  test::FencedFrameTestHelper& fenced_frame_test_helper() {
+    return fenced_frame_test_helper_;
+  }
+
+  ResponseEntry CreatePageEntryWithHintedScriptInFencedFrame(
+      net::HttpStatusCode status_code) {
+    RegisterHintedScriptResource();
+
+    ResponseEntry entry(kPageWithHintedScriptPath, status_code);
+    entry.headers["supports-loading-mode"] = "fenced-frame";
+    entry.body = kPageWithHintedScriptBody;
+    HeaderField link_header = CreatePreloadLinkForScript();
+    HeaderField fenced_frame_header =
+        HeaderField("supports-loading-mode", "fenced-frame");
+    entry.AddEarlyHints(
+        {std::move(link_header), std::move(fenced_frame_header)});
+    return entry;
+  }
+
+ private:
+  test::FencedFrameTestHelper fenced_frame_test_helper_;
+};
+
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsFencedFrameTest,
+                       DisallowPreloadInFencedFrame) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), net::QuicSimpleTestServer::GetFileURL("/title1.html")));
+
+  ResponseEntry entry =
+      CreatePageEntryWithHintedScriptInFencedFrame(net::HTTP_OK);
+  RegisterResponse(entry);
+
+  // Create a fenced frame.
+  RenderFrameHostImpl* fenced_frame_host = static_cast<RenderFrameHostImpl*>(
+      fenced_frame_test_helper().CreateFencedFrame(
+          shell()->web_contents()->GetMainFrame(),
+          net::QuicSimpleTestServer::GetFileURL(kPageWithHintedScriptPath)));
+  EXPECT_NE(fenced_frame_host, nullptr);
+  EXPECT_EQ(fenced_frame_host->early_hints_manager(), nullptr);
+}
+
+class NavigationEarlyHintsPortalTest : public NavigationEarlyHintsTest {
+ public:
+  NavigationEarlyHintsPortalTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kPortals,
+                              blink::features::kPortalsCrossOrigin},
+        /*disabled_features=*/{});
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(NavigationEarlyHintsPortalTest,
+                       DisallowPreloadInPortal) {
+  EXPECT_TRUE(NavigateToURL(
+      shell(), net::QuicSimpleTestServer::GetFileURL("/title1.html")));
+
+  ResponseEntry entry = CreatePageEntryWithHintedScript(net::HTTP_OK);
+  RegisterResponse(entry);
+
+  GURL portal_url(
+      net::QuicSimpleTestServer::GetFileURL(kPageWithHintedScriptPath));
+  WebContentsAddedObserver contents_observer;
+  TestNavigationObserver portal_nav_observer(portal_url);
+  portal_nav_observer.StartWatchingNewWebContents();
+
+  // Create a portal.
+  EXPECT_TRUE(
+      ExecJs(shell()->web_contents()->GetMainFrame(),
+             JsReplace("{"
+                       "  let portal = document.createElement('portal');"
+                       "  portal.src = $1;"
+                       "  document.body.appendChild(portal);"
+                       "}",
+                       portal_url),
+             EXECUTE_SCRIPT_NO_USER_GESTURE));
+
+  WebContents* portal_web_contents = contents_observer.GetWebContents();
+  EXPECT_NE(portal_web_contents, nullptr);
+  portal_nav_observer.WaitForNavigationFinished();
+
+  EXPECT_EQ(
+      static_cast<RenderFrameHostImpl*>(portal_web_contents->GetMainFrame())
+          ->early_hints_manager(),
+      nullptr);
 }
 
 }  // namespace content

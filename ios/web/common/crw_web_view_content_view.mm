@@ -34,9 +34,11 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 @synthesize viewportEdgesAffectedBySafeArea = _viewportEdgesAffectedBySafeArea;
 @synthesize viewportInsets = _viewportInsets;
 @synthesize webView = _webView;
+@synthesize fullscreenState = _fullscreenState;
 
 - (instancetype)initWithWebView:(UIView*)webView
-                     scrollView:(UIScrollView*)scrollView {
+                     scrollView:(UIScrollView*)scrollView
+                fullscreenState:(CrFullscreenState)fullscreenState {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     DCHECK(webView);
@@ -44,6 +46,7 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
     DCHECK([scrollView isDescendantOfView:webView]);
     _webView = webView;
     _scrollView = scrollView;
+    _fullscreenState = fullscreenState;
   }
   return self;
 }
@@ -77,6 +80,10 @@ const CGFloat kBackgroundRGBComponents[] = {0.75f, 0.74f, 0.76f};
 
 - (BOOL)becomeFirstResponder {
   return [_webView becomeFirstResponder];
+}
+
+- (void)updateFullscreenState:(CrFullscreenState)fullscreenState {
+  _fullscreenState = fullscreenState;
 }
 
 #pragma mark Layout

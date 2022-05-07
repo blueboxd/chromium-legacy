@@ -15,6 +15,9 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/apps/apk_web_app_service_factory.h"
+#include "chrome/browser/ash/crosapi/crosapi_ash.h"
+#include "chrome/browser/ash/crosapi/crosapi_manager.h"
+#include "chrome/browser/ash/crosapi/web_app_service_ash.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -26,6 +29,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
 #include "url/gurl.h"
@@ -226,9 +230,23 @@ void ApkWebAppService::UninstallWebApp(const web_app::AppId& web_app_id) {
     return;
   }
 
-  DCHECK(provider_);
-  provider_->install_finalizer().UninstallExternalWebApp(
-      web_app_id, webapps::WebappUninstallSource::kArc, base::DoNothing());
+  if (web_app::IsWebAppsCrosapiEnabled()) {
+    crosapi::mojom::WebAppProviderBridge* web_app_provider_bridge =
+        crosapi::CrosapiManager::Get()
+            ->crosapi_ash()
+            ->web_app_service_ash()
+            ->GetWebAppProviderBridge();
+    if (!web_app_provider_bridge) {
+      // TODO(crbug.com/1225830): handle crosapi disconnections
+      return;
+    }
+    web_app_provider_bridge->WebAppUninstalledInArc(web_app_id,
+                                                    base::DoNothing());
+  } else {
+    DCHECK(provider_);
+    provider_->install_finalizer().UninstallExternalWebApp(
+        web_app_id, webapps::WebappUninstallSource::kArc, base::DoNothing());
+  }
 }
 
 void ApkWebAppService::UpdateShelfPin(
@@ -462,8 +480,8 @@ void ApkWebAppService::OnWebAppInstallManagerDestroyed() {
 }
 
 void ApkWebAppService::OnAppUpdate(const apps::AppUpdate& update) {
-  if (update.AppType() == apps::mojom::AppType::kWeb &&
-      update.Readiness() == apps::mojom::Readiness::kUninstalledByUser) {
+  if (update.AppType() == apps::AppType::kWeb &&
+      update.Readiness() == apps::Readiness::kUninstalledByUser) {
     MaybeRemoveArcPackageForWebApp(update.AppId());
   }
 }

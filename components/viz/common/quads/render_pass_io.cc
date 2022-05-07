@@ -949,29 +949,6 @@ int GetSharedQuadStateIndex(const SharedQuadStateList& shared_quad_state_list,
   return -1;
 }
 
-#define MAP_MATERIAL_TO_STRING(NAME) \
-  case DrawQuad::Material::NAME:     \
-    return #NAME;
-const char* DrawQuadMaterialToString(DrawQuad::Material material) {
-  switch (material) {
-    MAP_MATERIAL_TO_STRING(kInvalid)
-    MAP_MATERIAL_TO_STRING(kDebugBorder)
-    MAP_MATERIAL_TO_STRING(kPictureContent)
-    MAP_MATERIAL_TO_STRING(kCompositorRenderPass)
-    MAP_MATERIAL_TO_STRING(kSolidColor)
-    MAP_MATERIAL_TO_STRING(kStreamVideoContent)
-    MAP_MATERIAL_TO_STRING(kSurfaceContent)
-    MAP_MATERIAL_TO_STRING(kTextureContent)
-    MAP_MATERIAL_TO_STRING(kTiledContent)
-    MAP_MATERIAL_TO_STRING(kYuvVideoContent)
-    MAP_MATERIAL_TO_STRING(kVideoHole)
-    default:
-      NOTREACHED();
-      return "";
-  }
-}
-#undef MAP_MATERIAL_TO_STRING
-
 #define MAP_STRING_TO_MATERIAL(NAME) \
   if (str == #NAME)                  \
     return static_cast<int>(DrawQuad::Material::NAME);
@@ -980,6 +957,7 @@ int StringToDrawQuadMaterial(const std::string& str) {
   MAP_STRING_TO_MATERIAL(kDebugBorder)
   MAP_STRING_TO_MATERIAL(kPictureContent)
   MAP_STRING_TO_MATERIAL(kCompositorRenderPass)
+  MAP_STRING_TO_MATERIAL(kSharedElement)
   MAP_STRING_TO_MATERIAL(kSolidColor)
   MAP_STRING_TO_MATERIAL(kStreamVideoContent)
   MAP_STRING_TO_MATERIAL(kSurfaceContent)
@@ -1668,47 +1646,6 @@ bool QuadListFromList(const base::Value& list,
 #undef GET_QUAD_FROM_DICT
 #undef UNEXPECTED_DRAW_QUAD_TYPE
 
-#define MAP_BLEND_MODE_TO_STRING(NAME) \
-  case SkBlendMode::NAME:              \
-    return #NAME;
-const char* BlendModeToString(SkBlendMode blend_mode) {
-  switch (blend_mode) {
-    MAP_BLEND_MODE_TO_STRING(kClear)
-    MAP_BLEND_MODE_TO_STRING(kSrc)
-    MAP_BLEND_MODE_TO_STRING(kDst)
-    MAP_BLEND_MODE_TO_STRING(kSrcOver)
-    MAP_BLEND_MODE_TO_STRING(kDstOver)
-    MAP_BLEND_MODE_TO_STRING(kSrcIn)
-    MAP_BLEND_MODE_TO_STRING(kDstIn)
-    MAP_BLEND_MODE_TO_STRING(kSrcOut)
-    MAP_BLEND_MODE_TO_STRING(kDstOut)
-    MAP_BLEND_MODE_TO_STRING(kSrcATop)
-    MAP_BLEND_MODE_TO_STRING(kDstATop)
-    MAP_BLEND_MODE_TO_STRING(kXor)
-    MAP_BLEND_MODE_TO_STRING(kPlus)
-    MAP_BLEND_MODE_TO_STRING(kModulate)
-    MAP_BLEND_MODE_TO_STRING(kScreen)
-    MAP_BLEND_MODE_TO_STRING(kOverlay)
-    MAP_BLEND_MODE_TO_STRING(kDarken)
-    MAP_BLEND_MODE_TO_STRING(kLighten)
-    MAP_BLEND_MODE_TO_STRING(kColorDodge)
-    MAP_BLEND_MODE_TO_STRING(kColorBurn)
-    MAP_BLEND_MODE_TO_STRING(kHardLight)
-    MAP_BLEND_MODE_TO_STRING(kSoftLight)
-    MAP_BLEND_MODE_TO_STRING(kDifference)
-    MAP_BLEND_MODE_TO_STRING(kExclusion)
-    MAP_BLEND_MODE_TO_STRING(kMultiply)
-    MAP_BLEND_MODE_TO_STRING(kHue)
-    MAP_BLEND_MODE_TO_STRING(kSaturation)
-    MAP_BLEND_MODE_TO_STRING(kColor)
-    MAP_BLEND_MODE_TO_STRING(kLuminosity)
-    default:
-      NOTREACHED();
-      return "";
-  }
-}
-#undef MAP_BLEND_MODE_TO_STRING
-
 base::Value SharedQuadStateToDict(const SharedQuadState& sqs) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetKey("quad_to_target_transform",
@@ -1881,6 +1818,71 @@ base::Value GetRenderPassListMetadata(
 }
 
 }  // namespace
+
+#define MAP_BLEND_MODE_TO_STRING(NAME) \
+  case SkBlendMode::NAME:              \
+    return #NAME;
+const char* BlendModeToString(SkBlendMode blend_mode) {
+  switch (blend_mode) {
+    MAP_BLEND_MODE_TO_STRING(kClear)
+    MAP_BLEND_MODE_TO_STRING(kSrc)
+    MAP_BLEND_MODE_TO_STRING(kDst)
+    MAP_BLEND_MODE_TO_STRING(kSrcOver)
+    MAP_BLEND_MODE_TO_STRING(kDstOver)
+    MAP_BLEND_MODE_TO_STRING(kSrcIn)
+    MAP_BLEND_MODE_TO_STRING(kDstIn)
+    MAP_BLEND_MODE_TO_STRING(kSrcOut)
+    MAP_BLEND_MODE_TO_STRING(kDstOut)
+    MAP_BLEND_MODE_TO_STRING(kSrcATop)
+    MAP_BLEND_MODE_TO_STRING(kDstATop)
+    MAP_BLEND_MODE_TO_STRING(kXor)
+    MAP_BLEND_MODE_TO_STRING(kPlus)
+    MAP_BLEND_MODE_TO_STRING(kModulate)
+    MAP_BLEND_MODE_TO_STRING(kScreen)
+    MAP_BLEND_MODE_TO_STRING(kOverlay)
+    MAP_BLEND_MODE_TO_STRING(kDarken)
+    MAP_BLEND_MODE_TO_STRING(kLighten)
+    MAP_BLEND_MODE_TO_STRING(kColorDodge)
+    MAP_BLEND_MODE_TO_STRING(kColorBurn)
+    MAP_BLEND_MODE_TO_STRING(kHardLight)
+    MAP_BLEND_MODE_TO_STRING(kSoftLight)
+    MAP_BLEND_MODE_TO_STRING(kDifference)
+    MAP_BLEND_MODE_TO_STRING(kExclusion)
+    MAP_BLEND_MODE_TO_STRING(kMultiply)
+    MAP_BLEND_MODE_TO_STRING(kHue)
+    MAP_BLEND_MODE_TO_STRING(kSaturation)
+    MAP_BLEND_MODE_TO_STRING(kColor)
+    MAP_BLEND_MODE_TO_STRING(kLuminosity)
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+#undef MAP_BLEND_MODE_TO_STRING
+
+#define MAP_MATERIAL_TO_STRING(NAME) \
+  case DrawQuad::Material::NAME:     \
+    return #NAME;
+const char* DrawQuadMaterialToString(DrawQuad::Material material) {
+  switch (material) {
+    MAP_MATERIAL_TO_STRING(kInvalid)
+    MAP_MATERIAL_TO_STRING(kDebugBorder)
+    MAP_MATERIAL_TO_STRING(kPictureContent)
+    MAP_MATERIAL_TO_STRING(kCompositorRenderPass)
+    MAP_MATERIAL_TO_STRING(kSharedElement)
+    MAP_MATERIAL_TO_STRING(kSolidColor)
+    MAP_MATERIAL_TO_STRING(kStreamVideoContent)
+    MAP_MATERIAL_TO_STRING(kSurfaceContent)
+    MAP_MATERIAL_TO_STRING(kTextureContent)
+    MAP_MATERIAL_TO_STRING(kTiledContent)
+    MAP_MATERIAL_TO_STRING(kYuvVideoContent)
+    MAP_MATERIAL_TO_STRING(kVideoHole)
+    default:
+      NOTREACHED();
+      return "";
+  }
+}
+#undef MAP_MATERIAL_TO_STRING
 
 base::Value CompositorRenderPassToDict(
     const CompositorRenderPass& render_pass) {

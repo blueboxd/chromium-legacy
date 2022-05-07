@@ -31,6 +31,7 @@
 #include "components/sync_bookmarks/bookmark_model_merger.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 #include "components/sync_bookmarks/switches.h"
+#include "components/sync_bookmarks/synced_bookmark_tracker_entity.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -1133,7 +1134,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   // Track a sync entity (similar to what happens after a local creation). The
   // |originator_client_item_id| is used a temp sync id and mark the entity that
   // it needs to be committed..
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->Add(node, /*sync_id=*/kOriginatorClientItemId,
                      /*server_version=*/0, kModificationTime, specifics);
   tracker()->IncrementSequenceNumber(entity);
@@ -1178,14 +1179,16 @@ TEST_F(
   const int64_t kServerVersion = 1000;
   const base::Time kModificationTime(base::Time::Now() - base::Seconds(1));
 
+  bookmarks::BookmarkNode parent(/*id=*/1, base::GUID::GenerateRandomV4(),
+                                 GURL());
+
   sync_pb::ModelTypeState model_type_state;
   model_type_state.set_initial_sync_done(true);
 
   sync_pb::EntitySpecifics specifics;
   sync_pb::BookmarkSpecifics* bookmark_specifics = specifics.mutable_bookmark();
   bookmark_specifics->set_guid(kBookmarkGuid.AsLowercaseString());
-  bookmark_specifics->set_parent_guid(
-      bookmarks::BookmarkNode::kBookmarkBarNodeGuid);
+  bookmark_specifics->set_parent_guid(parent.guid().AsLowercaseString());
   bookmark_specifics->set_legacy_canonicalized_title("Title");
   bookmark_specifics->set_type(sync_pb::BookmarkSpecifics::FOLDER);
   *bookmark_specifics->mutable_unique_position() =
@@ -1193,14 +1196,12 @@ TEST_F(
 
   ASSERT_TRUE(IsValidBookmarkSpecifics(*bookmark_specifics));
 
-  bookmarks::BookmarkNode parent(/*id=*/1, base::GUID::GenerateRandomV4(),
-                                 GURL());
   bookmarks::BookmarkNode* node =
       parent.Add(std::make_unique<bookmarks::BookmarkNode>(
                      /*id=*/2, kBookmarkGuid, GURL()),
                  /*index=*/0);
   // Track a sync entity (similar to what happens after a local creation).
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->Add(node, /*sync_id=*/kSyncId, /*server_version=*/0,
                      kModificationTime, specifics);
   tracker()->IncrementSequenceNumber(entity);
@@ -1220,6 +1221,7 @@ TEST_F(
   bookmark_specifics->set_type(sync_pb::BookmarkSpecifics::FOLDER);
   *bookmark_specifics->mutable_unique_position() =
       RandomUniquePosition().ToProto();
+  ASSERT_TRUE(IsValidBookmarkSpecifics(data.specifics.bookmark()));
 
   syncer::UpdateResponseData response_data;
   response_data.entity = std::move(data);
@@ -1282,7 +1284,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   updates_handler()->Process(updates,
                              /*got_new_encryption_requirements=*/false);
 
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->GetEntityForGUID(kGuid);
   ASSERT_THAT(entity, NotNull());
   ASSERT_THAT(entity->bookmark_node(), NotNull());
@@ -1361,7 +1363,7 @@ TEST_F(
   const bookmarks::BookmarkNode* bookmark_bar_node =
       bookmark_model()->bookmark_bar_node();
   ASSERT_THAT(bookmark_bar_node->children().size(), Eq(1u));
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->GetEntityForGUID(kGuid);
   ASSERT_THAT(entity, NotNull());
 
@@ -1436,7 +1438,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   updates_handler()->Process(updates,
                              /*got_new_encryption_requirements=*/false);
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->GetEntityForGUID(kGuid);
   ASSERT_THAT(entity, NotNull());
   ASSERT_THAT(entity->IsUnsynced(), Eq(false));
@@ -1485,7 +1487,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   updates_handler()->Process(updates,
                              /*got_new_encryption_requirements=*/false);
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->GetEntityForGUID(kGuid);
   ASSERT_THAT(entity, NotNull());
   ASSERT_THAT(entity->IsUnsynced(), Eq(false));
@@ -1528,7 +1530,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   updates_handler()->Process(updates,
                              /*got_new_encryption_requirements=*/false);
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->GetEntityForGUID(kGuid);
   ASSERT_THAT(entity, NotNull());
   ASSERT_THAT(entity->bookmark_node(), NotNull());
@@ -1589,7 +1591,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   updates_handler()->Process(updates,
                              /*got_new_encryption_requirements=*/false);
 
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->GetEntityForGUID(kGuid);
   ASSERT_THAT(entity, NotNull());
   ASSERT_THAT(entity->IsUnsynced(), Eq(false));
@@ -1635,7 +1637,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
                                                favicon_service(), tracker());
   updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
 
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->GetEntityForGUID(kGuid);
   ASSERT_THAT(entity, NotNull());
   ASSERT_THAT(entity->IsUnsynced(), Eq(false));
@@ -1686,7 +1688,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
       .Process(updates,
                /*got_new_encryption_requirements=*/false);
 
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->GetEntityForGUID(kGuid);
   ASSERT_THAT(entity, NotNull());
   ASSERT_FALSE(entity->IsUnsynced());
@@ -1729,7 +1731,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
     updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
   }
 
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->GetEntityForGUID(kGuid);
   ASSERT_THAT(entity, NotNull());
   ASSERT_TRUE(entity->IsUnsynced());
@@ -1791,7 +1793,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
     updates_handler.Process(updates, /*got_new_encryption_requirements=*/false);
   }
 
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->GetEntityForGUID(kGuid);
   ASSERT_THAT(entity, NotNull());
   ASSERT_FALSE(entity->IsUnsynced());
@@ -1854,9 +1856,9 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   updates_handler()->Process(std::move(updates),
                              /*got_new_encryption_requirements=*/false);
 
-  const SyncedBookmarkTracker::Entity* entity1 =
+  const SyncedBookmarkTrackerEntity* entity1 =
       tracker()->GetEntityForGUID(kFolder1Guid);
-  const SyncedBookmarkTracker::Entity* entity2 =
+  const SyncedBookmarkTrackerEntity* entity2 =
       tracker()->GetEntityForGUID(kFolder2Guid);
   ASSERT_THAT(entity1, NotNull());
   ASSERT_THAT(entity2, NotNull());
@@ -1892,7 +1894,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
   ASSERT_THAT(tracker, NotNull());
   ASSERT_EQ(4u, tracker->GetAllEntities().size());
 
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker->GetEntityForGUID(kFolderGuid);
   ASSERT_THAT(entity, NotNull());
   ASSERT_FALSE(entity->IsUnsynced());
@@ -1960,7 +1962,7 @@ TEST_F(BookmarkRemoteUpdatesHandlerWithInitialMergeTest,
 
   EXPECT_THAT(tracker()->TrackedEntitiesCountForTest(), Eq(4U));
   EXPECT_THAT(tracker()->GetEntityForSyncId(kServerId1), IsNull());
-  const SyncedBookmarkTracker::Entity* entity =
+  const SyncedBookmarkTrackerEntity* entity =
       tracker()->GetEntityForSyncId(kServerId2);
   EXPECT_THAT(entity, NotNull());
   EXPECT_THAT(entity->bookmark_node(), NotNull());

@@ -354,7 +354,6 @@ html element a
     property port
     property protocol
     property referrerPolicy
-    property registerAttributionSource
     property rel
     property relList
     property rev
@@ -688,9 +687,9 @@ html element img
     property currentSrc
     property decode
     property decoding
+    property fetchpriority
     property height
     property hspace
-    property importance
     property isMap
     property loading
     property longDesc
@@ -782,14 +781,15 @@ html element li
     property value
 html element link
     property as
+    property blocking
     property charset
     property crossOrigin
     property disabled
+    property fetchpriority
     property href
     property hreflang
     property imageSizes
     property imageSrcset
-    property importance
     property integrity
     property media
     property referrerPolicy
@@ -936,12 +936,13 @@ html element s
 html element samp
 html element script
     property async
+    property blocking
     property charset
     property crossOrigin
     property defer
     property event
+    property fetchpriority
     property htmlFor
-    property importance
     property integrity
     property noModule
     property referrerPolicy
@@ -1007,6 +1008,7 @@ html element span
 html element strike
 html element strong
 html element style
+    property blocking
     property disabled
     property media
     property sheet

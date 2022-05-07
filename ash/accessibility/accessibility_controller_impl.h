@@ -252,8 +252,13 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
 
   PointScanController* GetPointScanController();
 
+  // Update the autoclick menu bounds and sticky keys overlay bounds if
+  // necessary. This may need to happen when the display work area changes, or
+  // if system UI regions change (like the virtual keyboard position).
+  void UpdateFloatingPanelBoundsIfNeeded();
+
   // Update the autoclick menu bounds if necessary. This may need to happen when
-  // the display work area changes, or if system ui regions change (like the
+  // the display work area changes, or if system UI regions change (like the
   // virtual keyboard position).
   void UpdateAutoclickMenuBoundsIfNeeded();
 
@@ -486,9 +491,7 @@ class ASH_EXPORT AccessibilityControllerImpl : public AccessibilityController,
     return dictation_soda_download_progress_;
   }
 
-  DictationBubbleController* GetDictationBubbleControllerForTest() {
-    return dictation_bubble_controller_.get();
-  }
+  DictationBubbleController* GetDictationBubbleControllerForTest();
 
  private:
   // Populate |features_| with the feature of the correct type.

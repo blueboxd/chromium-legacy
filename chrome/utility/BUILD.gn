@@ -134,6 +134,10 @@ static_library("utility") {
     ]
   }
 
+  if (is_linux || is_chromeos) {
+    deps += [ "//components/services/screen_ai" ]
+  }
+
   if (enable_extensions) {
     deps += [
       "//chrome/common/extensions/api",
@@ -156,10 +160,6 @@ static_library("utility") {
       ldflags += [ "/DELAYLOAD:esent.dll" ]
 
       deps += [ "//chrome/services/util_win:lib" ]
-    }
-
-    if (is_win || is_mac || is_fuchsia) {
-      deps += [ "//components/wifi" ]
     }
   }
 
@@ -206,7 +206,8 @@ static_library("utility") {
       "//components/services/print_compositor/public/mojom",
     ]
 
-    if (is_win || is_mac || is_linux || is_chromeos) {
+    # TODO(crbug.com/1302871): Simplify this. Is `!is_android` sufficient?
+    if (is_win || is_mac || is_linux || is_chromeos || is_fuchsia) {
       deps += [ "//chrome/services/printing:lib" ]
     }
 

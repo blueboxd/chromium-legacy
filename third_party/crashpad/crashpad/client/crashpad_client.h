@@ -563,6 +563,13 @@ class CrashpadClient {
   //!     multiple Crashpad clients can be started and stopped. Not expected to
   //!     be used in a shipping application.
   static void ResetForTesting();
+
+  //! \brief Inject a callback into Mach handling. Intended to be used by
+  //!     tests to trigger a reentrant exception.
+  static void SetMachExceptionCallbackForTesting(void (*callback)());
+
+  //! \brief Returns the thread id of the Mach exception thread, used by tests.
+  static uint64_t GetThreadIdForTesting();
 #endif
 
 #if BUILDFLAG(IS_APPLE) || DOXYGEN
@@ -702,17 +709,6 @@ class CrashpadClient {
   static bool DumpAndCrashTargetProcess(HANDLE process,
                                         HANDLE blame_thread,
                                         DWORD exception_code);
-
-  enum : uint32_t {
-    //! \brief The exception code (roughly "Client called") used when
-    //!     DumpAndCrashTargetProcess() triggers an exception in a target
-    //!     process.
-    //!
-    //! \note This value does not have any bits of the top nibble set, to avoid
-    //!     confusion with real exception codes which tend to have those bits
-    //!     set.
-    kTriggeredExceptionCode = 0xcca11ed,
-  };
 #endif
 
 #if BUILDFLAG(IS_APPLE) || DOXYGEN

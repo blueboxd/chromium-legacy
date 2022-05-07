@@ -12,6 +12,7 @@
 #include "base/containers/contains.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
@@ -519,7 +520,7 @@ void Display::DisableSwapUntilResize(
     std::move(no_pending_swaps_callback).Run();
 }
 
-void Display::SetColorMatrix(const skia::Matrix44& matrix) {
+void Display::SetColorMatrix(const SkM44& matrix) {
   if (output_surface_)
     output_surface_->set_color_matrix(matrix);
 

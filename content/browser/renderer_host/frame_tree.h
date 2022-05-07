@@ -49,6 +49,7 @@ class RenderViewHostImpl;
 class RenderFrameHostManager;
 class RenderWidgetHostDelegate;
 class SiteInstance;
+class SiteInstanceGroup;
 
 // Represents the frame tree for a page. With the exception of the main frame,
 // all FrameTreeNodes will be created/deleted in response to frame attach and
@@ -345,9 +346,14 @@ class CONTENT_EXPORT FrameTree {
   // the source will have a RenderFrameHost.  |source| may be null if there is
   // no node navigating in this frame tree (such as when this is called
   // for an opener's frame tree), in which case no nodes are skipped for
-  // RenderFrameProxyHost creation.
+  // RenderFrameProxyHost creation. |source_new_browsing_context_state| is the
+  // BrowsingContextState used by the speculative frame host, which may differ
+  // from the BrowsingContextState in |source| during cross-origin cross-
+  // browsing-instance navigations.
   void CreateProxiesForSiteInstance(FrameTreeNode* source,
-                                    SiteInstance* site_instance);
+                                    SiteInstance* site_instance,
+                                    const scoped_refptr<BrowsingContextState>&
+                                        source_new_browsing_context_state);
 
   // Convenience accessor for the main frame's RenderFrameHostImpl.
   RenderFrameHostImpl* GetMainFrame() const;
@@ -355,12 +361,13 @@ class CONTENT_EXPORT FrameTree {
   // Returns the focused frame.
   FrameTreeNode* GetFocusedFrame();
 
-  // Sets the focused frame to |node|.  |source| identifies the SiteInstance
-  // that initiated this focus change.  If this FrameTree has SiteInstances
-  // other than |source|, those SiteInstances will be notified about the new
-  // focused frame.   Note that |source| may differ from |node|'s current
-  // SiteInstance (e.g., this happens for cross-process window.focus() calls).
-  void SetFocusedFrame(FrameTreeNode* node, SiteInstance* source);
+  // Sets the focused frame to |node|.  |source| identifies the
+  // SiteInstanceGroup that initiated this focus change.  If this FrameTree has
+  // SiteInstanceGroups other than |source|, those SiteInstanceGroups will be
+  // notified about the new focused frame.   Note that |source| may differ from
+  // |node|'s current SiteInstanceGroup (e.g., this happens for cross-process
+  // window.focus() calls).
+  void SetFocusedFrame(FrameTreeNode* node, SiteInstanceGroup* source);
 
   // Creates a RenderViewHostImpl for a given |site_instance| in the tree.
   //
@@ -370,13 +377,13 @@ class CONTENT_EXPORT FrameTree {
       SiteInstance* site_instance,
       int32_t main_frame_routing_id,
       bool swapped_out,
-      bool renderer_initiated_creation);
+      bool renderer_initiated_creation,
+      scoped_refptr<BrowsingContextState> main_browsing_context_state);
 
   // Returns the existing RenderViewHost for a new RenderFrameHost.
   // There should always be such a RenderViewHost, because the main frame
   // RenderFrameHost for each SiteInstance should be created before subframes.
-  scoped_refptr<RenderViewHostImpl> GetRenderViewHost(
-      SiteInstance* site_instance);
+  scoped_refptr<RenderViewHostImpl> GetRenderViewHost(SiteInstanceGroup* group);
 
   // Returns the ID used for the RenderViewHost associated with
   // |site_instance_group|.
@@ -421,7 +428,11 @@ class CONTENT_EXPORT FrameTree {
   // is navigating returns `blink::kInitialLoadProgress`.
   double GetLoadProgress();
 
-  // Returns true if at least one of the nodes in this FrameTree is loading.
+  // Returns true if at least one of the nodes in this frame tree or nodes in
+  // any inner frame tree of the same WebContents is loading.
+  //
+  // TODO(crbug.com/1293846): Rename to IsLoadingIncludingInnerFrameTrees() to
+  // adapt to new logic.
   bool IsLoading() const;
 
   // Set page-level focus in all SiteInstances involved in rendering
@@ -431,8 +442,8 @@ class CONTENT_EXPORT FrameTree {
   void ReplicatePageFocus(bool is_focused);
 
   // Updates page-level focus for this FrameTree in the subframe renderer
-  // identified by |instance|.
-  void SetPageFocus(SiteInstance* instance, bool is_focused);
+  // identified by |group|.
+  void SetPageFocus(SiteInstanceGroup* group, bool is_focused);
 
   // Walks the current frame tree and registers any origins matching |origin|,
   // either the last committed origin of a RenderFrameHost or the origin

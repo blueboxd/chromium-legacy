@@ -7155,6 +7155,8 @@ bool AXPlatformNodeWin::IsUIAControl() const {
     switch (GetRole()) {
       case ax::mojom::Role::kArticle:
       case ax::mojom::Role::kBlockquote:
+      case ax::mojom::Role::kCell:
+      case ax::mojom::Role::kColumn:
       case ax::mojom::Role::kDetails:
       case ax::mojom::Role::kFigure:
       case ax::mojom::Role::kFooter:
@@ -7166,6 +7168,7 @@ bool AXPlatformNodeWin::IsUIAControl() const {
       case ax::mojom::Role::kListItem:
       case ax::mojom::Role::kMeter:
       case ax::mojom::Role::kProgressIndicator:
+      case ax::mojom::Role::kRow:
       case ax::mojom::Role::kSection:
       case ax::mojom::Role::kSplitter:
       case ax::mojom::Role::kTime:
@@ -7969,27 +7972,6 @@ AXPlatformNodeWin::GetPatternProviderFactoryMethod(PATTERNID pattern_id) {
       break;
   }
   return nullptr;
-}
-
-void AXPlatformNodeWin::FireLiveRegionChangeRecursive() {
-  const auto live_status_attr = ax::mojom::StringAttribute::kLiveStatus;
-  if (HasStringAttribute(live_status_attr) &&
-      GetStringAttribute(live_status_attr) != "off") {
-    DCHECK(GetDelegate()->IsWebContent());
-    ::UiaRaiseAutomationEvent(this, UIA_LiveRegionChangedEventId);
-    return;
-  }
-
-  for (int index = 0; index < GetChildCount(); ++index) {
-    auto* child = static_cast<AXPlatformNodeWin*>(
-        FromNativeViewAccessible(ChildAtIndex(index)));
-
-    // We assume that only web-content will have live regions; also because
-    // this will be called on each fragment-root, there is no need to walk
-    // through non-content nodes.
-    if (child->GetDelegate()->IsWebContent())
-      child->FireLiveRegionChangeRecursive();
-  }
 }
 
 AXPlatformNodeWin* AXPlatformNodeWin::GetLowestAccessibleElementForUIA() {

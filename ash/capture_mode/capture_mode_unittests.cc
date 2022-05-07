@@ -382,11 +382,6 @@ class CaptureModeTest : public AshTestBase {
     return absl::nullopt;
   }
 
-  void StartVideoRecordingImmediately() {
-    CaptureModeController::Get()->StartVideoRecordingImmediatelyForTesting();
-    WaitForRecordingToStart();
-  }
-
   // Start Capture Mode with source region and type image.
   CaptureModeController* StartImageRegionCapture() {
     return StartCaptureSession(CaptureModeSource::kRegion,
@@ -456,29 +451,6 @@ class CaptureModeTest : public AshTestBase {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, loop.QuitClosure(), base::Seconds(seconds));
     loop.Run();
-  }
-
-  base::FilePath WaitForCaptureFileToBeSaved() {
-    base::FilePath result;
-    base::RunLoop run_loop;
-    ash::CaptureModeTestApi().SetOnCaptureFileSavedCallback(
-        base::BindLambdaForTesting([&](const base::FilePath& path) {
-          result = path;
-          run_loop.Quit();
-        }));
-    run_loop.Run();
-    return result;
-  }
-
-  base::FilePath CreateCustomFolder(const std::string& custom_folder_name) {
-    base::FilePath custom_folder = CaptureModeController::Get()
-                                       ->delegate_for_testing()
-                                       ->GetUserDefaultDownloadsFolder()
-                                       .Append(custom_folder_name);
-    base::ScopedAllowBlockingForTesting allow_blocking;
-    const bool result = base::CreateDirectory(custom_folder);
-    DCHECK(result);
-    return custom_folder;
   }
 
   base::FilePath CreateFolderOnDriveFS(const std::string& custom_folder_name) {
@@ -2377,7 +2349,8 @@ TEST_P(CaptureModeSaveFileTest, SaveCapturedFileWithCustomFolder) {
   EXPECT_EQ(file_saved_path.DirName(), default_folder);
 
   // Now create an available custom folder and set it for custom capture folder.
-  const base::FilePath available_custom_folder = CreateCustomFolder("test");
+  const base::FilePath available_custom_folder =
+      CreateCustomFolderInUserDownloadsPath("test");
   controller->SetCustomCaptureFolder(available_custom_folder);
 
   capture_folder = controller->GetCurrentCaptureFolder();
@@ -2400,7 +2373,8 @@ TEST_P(CaptureModeSaveFileTest, CaptureModeSaveToLocationMetric) {
   // includes default downloads folder, local customized folder, root drive and
   // a specific folder on drive.
   const auto downloads_folder = test_delegate->GetUserDefaultDownloadsFolder();
-  const base::FilePath custom_folder = CreateCustomFolder("test");
+  const base::FilePath custom_folder =
+      CreateCustomFolderInUserDownloadsPath("test");
   base::FilePath mount_point_path;
   test_delegate->GetDriveFsMountPointPath(&mount_point_path);
   const auto root_drive_folder = mount_point_path.Append("root");
@@ -4657,12 +4631,14 @@ class ProjectorCaptureModeIntegrationTests
     EXPECT_CALL(projector_client_, MinimizeProjectorApp());
     projector_controller->StartProjectorSession("projector_data");
     EXPECT_TRUE(projector_session->is_active());
+    auto* controller = CaptureModeController::Get();
+    EXPECT_EQ(controller->source(), CaptureModeSource::kFullscreen);
   }
 
   void StartRecordingForProjectorFromSource(CaptureModeSource source) {
+    StartProjectorModeSession();
     auto* controller = CaptureModeController::Get();
     controller->SetSource(source);
-    StartProjectorModeSession();
 
     switch (source) {
       case CaptureModeSource::kFullscreen:
@@ -4890,11 +4866,22 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
        ProjectorSessionNeverStartsWhenVideoRecordingIsOnGoing) {
   auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
                                          CaptureModeType::kVideo);
+  EXPECT_CALL(
+      projector_client_,
+      OnNewScreencastPreconditionChanged(NewScreencastPrecondition(
+          NewScreencastPreconditionState::kDisabled,
+          {NewScreencastPreconditionReason::kScreenRecordingInProgress})));
   controller->StartVideoRecordingImmediatelyForTesting();
+
   EXPECT_TRUE(controller->is_recording_in_progress());
   EXPECT_FALSE(ProjectorSession::Get()->is_active());
   EXPECT_NE(ProjectorController::Get()->GetNewScreencastPrecondition().state,
             NewScreencastPreconditionState::kEnabled);
+  // There is another OnNewScreencastPreconditionChanged() call during tear
+  // down.
+  EXPECT_CALL(projector_client_,
+              OnNewScreencastPreconditionChanged(NewScreencastPrecondition(
+                  NewScreencastPreconditionState::kEnabled, {})));
 }
 
 namespace {
@@ -5249,6 +5236,8 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
     }
 
     StartProjectorModeSession();
+    auto* controller = CaptureModeController::Get();
+    controller->SetSource(CaptureModeSource::kRegion);
     test_api.SetUserSelectedRegion(target_region);
 
     // Resize the region twice by dragging the top right of the region out and
@@ -5262,7 +5251,7 @@ TEST_F(ProjectorCaptureModeIntegrationTests,
     test_api.PerformCapture();
     WaitForSeconds(1);
     test_api.StopVideoRecording();
-    EXPECT_FALSE(CaptureModeController::Get()->is_recording_in_progress());
+    EXPECT_FALSE(controller->is_recording_in_progress());
 
     histogram_tester_.ExpectBucketCount(
         GetCaptureModeHistogramName(
@@ -5551,7 +5540,8 @@ TEST_F(CaptureModeSettingsTest, SelectFolderFromDialog) {
 
   // Accepting the dialog with a folder selection should dismiss it and add a
   // new option for the custom selected folder in the settings menu.
-  const base::FilePath custom_folder(CreateCustomFolder("test"));
+  const base::FilePath custom_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
   dialog_factory->AcceptPath(custom_folder);
   WaitForSettingsMenuToBeRefreshed();
   EXPECT_FALSE(IsFolderSelectionDialogShown());
@@ -5610,7 +5600,8 @@ TEST_F(CaptureModeSettingsTest, DismissDialogWithoutSelection) {
 TEST_F(CaptureModeSettingsTest, AcceptUpdatedCustomFolderFromDialog) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
-  const base::FilePath custom_folder(CreateCustomFolder("test"));
+  const base::FilePath custom_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
   controller->SetCustomCaptureFolder(custom_folder);
   StartImageRegionCapture();
 
@@ -5633,7 +5624,8 @@ TEST_F(CaptureModeSettingsTest, AcceptUpdatedCustomFolderFromDialog) {
   EXPECT_TRUE(IsFolderSelectionDialogShown());
 
   auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
-  const base::FilePath new_folder(CreateCustomFolder("test1"));
+  const base::FilePath new_folder(
+      CreateCustomFolderInUserDownloadsPath("test1"));
   dialog_factory->AcceptPath(new_folder);
   WaitForSettingsMenuToBeRefreshed();
   EXPECT_FALSE(IsFolderSelectionDialogShown());
@@ -5684,7 +5676,8 @@ TEST_F(CaptureModeSettingsTest,
   EXPECT_TRUE(IsFolderSelectionDialogShown());
 
   auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
-  const base::FilePath new_folder(CreateCustomFolder("test"));
+  const base::FilePath new_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
   dialog_factory->AcceptPath(new_folder);
   WaitForSettingsMenuToBeRefreshed();
   EXPECT_EQ(custom_folder_view, test_api.GetCustomFolderOptionIfAny());
@@ -5698,7 +5691,8 @@ TEST_F(CaptureModeSettingsTest,
 TEST_F(CaptureModeSettingsTest, DeleteCustomFolderFromDialog) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
-  const base::FilePath custom_folder(CreateCustomFolder("test"));
+  const base::FilePath custom_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
   controller->SetCustomCaptureFolder(custom_folder);
   StartImageRegionCapture();
 
@@ -5765,7 +5759,8 @@ TEST_F(CaptureModeSettingsTest, AcceptDefaultDownloadsFolderFromDialog) {
 TEST_F(CaptureModeSettingsTest, SwitchWhichFolderToUserFromOptions) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
-  const base::FilePath custom_path((CreateCustomFolder("test")));
+  const base::FilePath custom_path(
+      (CreateCustomFolderInUserDownloadsPath("test")));
   controller->SetCustomCaptureFolder(custom_path);
   StartImageRegionCapture();
   auto* event_generator = GetEventGenerator();
@@ -6006,7 +6001,8 @@ TEST_F(CaptureModeSettingsTest,
        KeyboardNavigationForRemovingCustomFolderOption) {
   // Begin a new session with a pre-configured custom folder.
   auto* controller = CaptureModeController::Get();
-  const base::FilePath custom_folder(CreateCustomFolder("test"));
+  const base::FilePath custom_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
   controller->SetCustomCaptureFolder(custom_folder);
   StartImageRegionCapture();
 
@@ -6087,7 +6083,8 @@ TEST_F(CaptureModeSettingsTest, KeyboardNavigationForAddingCustomFolderOption) {
 
   // Select the custom folder. Wait for the settings menu to be refreshed. The
   // custom folder option should be added to the settings menu and checked.
-  const base::FilePath custom_folder(CreateCustomFolder("test"));
+  const base::FilePath custom_folder(
+      CreateCustomFolderInUserDownloadsPath("test"));
   controller->SetCustomCaptureFolder(custom_folder);
   auto* dialog_factory = FakeFolderSelectionDialogFactory::Get();
   dialog_factory->AcceptPath(custom_folder);
@@ -6182,7 +6179,8 @@ TEST_P(CaptureModeHistogramTest, CaptureModeSwitchToDefaultReasonMetric) {
       controller->delegate_for_testing()->GetUserDefaultDownloadsFolder();
   const base::FilePath non_available_custom_folder(
       FILE_PATH_LITERAL("/home/test"));
-  const base::FilePath available_custom_folder = CreateCustomFolder("test");
+  const base::FilePath available_custom_folder =
+      CreateCustomFolderInUserDownloadsPath("test");
 
   histogram_tester.ExpectBucketCount(
       GetCaptureModeHistogramName(kHistogramNameBase),

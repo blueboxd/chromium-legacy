@@ -11,7 +11,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
@@ -54,7 +53,7 @@ class MockFrameSource : public VideoCaptureOverlay::FrameSource {
  public:
   MOCK_METHOD0(GetSourceSize, gfx::Size());
   MOCK_METHOD1(InvalidateRect, void(const gfx::Rect& rect));
-  MOCK_METHOD0(RequestRefreshFrame, void());
+  MOCK_METHOD0(RefreshNow, void());
   MOCK_METHOD1(OnOverlayConnectionLost, void(VideoCaptureOverlay* overlay));
 };
 
@@ -103,8 +102,8 @@ class VideoCaptureOverlayTest : public testing::Test {
     CHECK(result.tryAllocPixels(info, info.minRowBytes()));
     SkCanvas canvas(result, SkSurfaceProps{});
     canvas.drawColor(kTestImageBackground);
-    for (size_t i = 0; i < base::size(kTestImageColors); ++i) {
-      const size_t idx = (i + cycle) % base::size(kTestImageColors);
+    for (size_t i = 0; i < std::size(kTestImageColors); ++i) {
+      const size_t idx = (i + cycle) % std::size(kTestImageColors);
       SkPaint paint;
       paint.setBlendMode(SkBlendMode::kSrc);
       paint.setColor(SkColor4f::FromColor(kTestImageColors[idx]),
@@ -502,7 +501,7 @@ TEST_P(VideoCaptureOverlayRenderTest, FullCover_NoScaling) {
   EXPECT_CALL(frame_source, InvalidateRect(gfx::Rect())).RetiresOnSaturation();
   EXPECT_CALL(frame_source, InvalidateRect(gfx::Rect(kSourceSize)))
       .RetiresOnSaturation();
-  EXPECT_CALL(frame_source, RequestRefreshFrame());
+  EXPECT_CALL(frame_source, RefreshNow());
 
   const SkBitmap test_bitmap = MakeTestBitmap(0);
   overlay.SetImageAndBounds(test_bitmap, gfx::RectF(0, 0, 1, 1));
@@ -532,7 +531,7 @@ TEST_P(VideoCaptureOverlayRenderTest, FullCover_WithScaling) {
   EXPECT_CALL(frame_source, InvalidateRect(gfx::Rect())).RetiresOnSaturation();
   EXPECT_CALL(frame_source, InvalidateRect(gfx::Rect(kSourceSize)))
       .RetiresOnSaturation();
-  EXPECT_CALL(frame_source, RequestRefreshFrame());
+  EXPECT_CALL(frame_source, RefreshNow());
 
   const SkBitmap test_bitmap = MakeTestBitmap(0);
   overlay.SetImageAndBounds(test_bitmap, gfx::RectF(0, 0, 1, 1));

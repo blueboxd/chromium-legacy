@@ -41,6 +41,32 @@ void LogAutofillCreditCardMessageMetrics(
     base::UmaHistogramEnumeration(
         base::StrCat({kPrefix, destination, ".FromNonFocusableForm"}), metric);
   }
+
+  if (options.has_multiple_legal_lines) {
+    base::UmaHistogramEnumeration(
+        base::StrCat({kPrefix, destination, ".WithMultipleLegalLines"}),
+        metric);
+  }
+}
+
+void LogAutofillCreditCardMessageDialogPromptMetrics(
+    MessageDialogPromptMetrics metric,
+    AutofillClient::SaveCreditCardOptions options,
+    bool is_link_clicked) {
+  std::string histogram = base::StrCat({kPrefix, ".DialogPrompt"});
+  if (options.should_request_expiration_date_from_user) {
+    histogram = base::StrCat({histogram, ".RequestingExpirationDate"});
+  } else if (options.should_request_name_from_user) {
+    histogram = base::StrCat({histogram, ".RequestingCardholderName"});
+  } else {
+    histogram = base::StrCat({histogram, ".ConfirmInfo"});
+  }
+
+  base::UmaHistogramEnumeration(histogram, metric);
+  if (is_link_clicked) {
+    base::UmaHistogramEnumeration(base::StrCat({histogram, ".DidClickLinks"}),
+                                  metric);
+  }
 }
 
 void LogAutofillCreditCardMessageDialogPromptMetrics(

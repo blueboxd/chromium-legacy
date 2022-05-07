@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">Tidak dapat mengubah nama "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">Inggris (AS) dengan keyboard Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - Host</translation>
+<translation id="1521655867290435174">Google Spreadsheet</translation>
 <translation id="1538729222189715449">Membuka file Linux...</translation>
 <translation id="1547964879613821194">Inggris Kanada</translation>
 <translation id="1556189134700913550">Terapkan untuk semua</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">Sertifikat autentikasi ditolak oleh jaringan</translation>
 <translation id="2547921442987553570">Tambahkan ke <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Internasional AS</translation>
-<translation id="2562685439590298522">Dokumen</translation>
 <translation id="2563185590376525700">Katak</translation>
 <translation id="2578394532502990878">Fonetik Tamil</translation>
 <translation id="2579959351793446050">Odia</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">Extended AS</translation>
 <translation id="290843123675549676">Marathi</translation>
 <translation id="2923240520113693977">Estonia</translation>
-<translation id="2925966894897775835">Spreadsheet</translation>
 <translation id="2938685643439809023">Mongolia</translation>
-<translation id="2943400156390503548">Slide</translation>
 <translation id="2943503720238418293">Gunakan nama yang lebih pendek</translation>
 <translation id="2949781154072577687">Memformat <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">Ubur-ubur</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Dikelola oleh Administrator Anda, Detail</translation>
 <translation id="4387004326333427325">Sertifikat atutentikasi ditolak dari jarak jauh</translation>
 <translation id="4394214039309501350">Link eksternal</translation>
+<translation id="4401287888955153199">Ekstrak semua</translation>
 <translation id="4418686080762064601">Buat pintasan untuk file Anda</translation>
 <translation id="4425149324548788773">Drive Saya</translation>
 <translation id="4439427728133035643">Jaringan <ph name="NETWORK_INDEX" /> dari <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, Kekuatan Sinyal <ph name="SIGNAL_STRENGTH" />%, Sambungkan</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">Buat file tersedia offline</translation>
 <translation id="4658782175094886150">Orang di salju</translation>
 <translation id="4669606053856530811">Anggota '<ph name="SOURCE_NAME" />' akan kehilangan akses kecuali jika item berikut dibagikan dengan mereka.</translation>
+<translation id="467809019005607715">Google Slide</translation>
 <translation id="4690246192099372265">Swensk</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694604912444486114">Kera</translation>
@@ -658,6 +658,7 @@
 <translation id="6732801395666424405">Sertifikat tidak dimuat</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">1 folder dipilih</translation>
+<translation id="6755827872271341378">Perangkat ChromeOS Flex</translation>
 <translation id="6790428901817661496">Putar</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6806699711453372963">Kelola fitur berbagi Linux</translation>
@@ -735,6 +736,7 @@
 <translation id="7343393116438664539">Telex Vietnam</translation>
 <translation id="7359359531237882347">Menyalin <ph name="NUMBER_OF_ITEMS" /> item...</translation>
 <translation id="7375951387215729722">Daftar file diurutkan berdasarkan <ph name="COLUMN_NAME" /> dari bawah ke atas.</translation>
+<translation id="7402503521691663770">Perangkat ChromeOS Flex</translation>
 <translation id="7408870451288633753">Ceko</translation>
 <translation id="7417453074306512035">Keyboard Ethiopia</translation>
 <translation id="7417705661718309329">Peta Google</translation>
@@ -824,6 +826,7 @@
 <translation id="8042602468072383151">Audio <ph name="AUDIO_TYPE" /></translation>
 <translation id="8045462269890919536">Rumania</translation>
 <translation id="8049184478152619004">Masukkan Kunci Pembuka Blokir Pribadi (PUK)</translation>
+<translation id="807187749540895545">Mengekstrak <ph name="FILE_NAME" /> ...</translation>
 <translation id="8079530767338315840">Ulangi</translation>
 <translation id="8087576439476816834">Download, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Dibagikan kepada saya</translation>
@@ -875,6 +878,7 @@
 <translation id="8484284835977497781">Pilih dari foto terbaru Anda.</translation>
 <translation id="8487700953926739672">Tersedia secara offline</translation>
 <translation id="8492972329130824181">Jaringan rumah tidak tersedia. Roaming data seluler harus diaktifkan agar dapat terhubung.</translation>
+<translation id="8499098729323186194">Mengekstrak <ph name="NUMBER_OF_ITEMS" /> item ...</translation>
 <translation id="8521441079177373948">Inggris</translation>
 <translation id="8525306231823319788">Layar penuh</translation>
 <translation id="853494022971700746">Prancis (Prancis)</translation>
@@ -950,6 +954,7 @@
 <translation id="9172592259078059678">Transliterasi Gujarati</translation>
 <translation id="9173120999827300720">Inggris (AS) dengan keyboard International</translation>
 <translation id="9174050671906956834">Item dalam sampah akan dihapus selamanya setelah 30 hari.</translation>
+<translation id="9183302530794969518">Google Dokumen</translation>
 <translation id="9189836632794948435">Kazak</translation>
 <translation id="9213073329713032541">Penginstalan berhasil dimulai.</translation>
 <translation id="9219103736887031265">Gambar</translation>

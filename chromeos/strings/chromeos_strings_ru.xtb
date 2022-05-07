@@ -20,6 +20,7 @@
 <translation id="1181037720776840403">Удалить</translation>
 <translation id="1195447618553298278">Неизвестная ошибка.</translation>
 <translation id="1196959502276349371">Версия <ph name="VERSION" /></translation>
+<translation id="1199355487114804640">Воспроизведение/пауза</translation>
 <translation id="1201402288615127009">Далее</translation>
 <translation id="1204296502688602597">Задержка DNS</translation>
 <translation id="123124571410524056">Возможно, обнаружен сетевой портал.</translation>
@@ -43,6 +44,7 @@
 <translation id="1413240736185167732">Сбой: ошибка в работе фильтра</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">У меня есть пара ключей</translation>
+<translation id="1423591390236870726">Клавиша <ph name="KEY_NAME" /> не нажата</translation>
 <translation id="1435763214710588005">Каждый месяц объем переданных данных автоматически обнуляется в указанный день</translation>
 <translation id="1442433966118452622">Источник изображения</translation>
 <translation id="1451536289672181509">Это клавиатура.</translation>
@@ -54,6 +56,7 @@
 <translation id="1499900233129743732">Этим аккаунтом управляет <ph name="MANAGER" />. Администратор может отслеживать действия пользователя, а также удаленно изменять настройки.</translation>
 <translation id="150962533380566081">Неверный PUK-код.</translation>
 <translation id="1510238584712386396">Панель запуска</translation>
+<translation id="152892567002884378">Увеличить громкость</translation>
 <translation id="155865706765934889">Сенсорная панель</translation>
 <translation id="1565038567006703504"><ph name="DEVICE_NAME" />: не удается обновить устройство</translation>
 <translation id="1567064801249837505">Альбомы</translation>
@@ -76,17 +79,21 @@
 <translation id="175763766237925754">Хороший (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1768959921651994223">Тип аутентификации</translation>
 <translation id="1782199038061388045">перевести</translation>
 <translation id="1792647875738159689">Отмена сканирования</translation>
 <translation id="1807246157184219062">Светлая</translation>
 <translation id="1827738518074806965">Галерея</translation>
 <translation id="1851218745569890714">Видеоконференции</translation>
+<translation id="1852934301711881861">Установить Chrome OS Flex</translation>
+<translation id="1856388568474281774">Стрелка вниз</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="1887850431809612466">Версия оборудования</translation>
 <translation id="1905710495812624430">Превышено максимально допустимое число попыток.</translation>
 <translation id="1908234395526491708">Невыполненные запросы UDP.</translation>
 <translation id="1930797645656624981">Выбор способа ввода в Chrome OS</translation>
 <translation id="1947737735496445907">Напечатано</translation>
+<translation id="1951012854035635156">Ассистент</translation>
 <translation id="1979103255016296513">Истек срок изменения пароля</translation>
 <translation id="1999615961760456652">Страница входа</translation>
 <translation id="2006864819935886708">Подключение</translation>
@@ -94,21 +101,26 @@
 <translation id="2016697457005847575">Инструкции по устранению неполадок</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Дополнительные настройки</translation>
+<translation id="2085089206770112532">Уменьшение яркости дисплея</translation>
 <translation id="2104796393919810494">Неполадки устранены</translation>
 <translation id="2105810540595158374">Это игровой контроллер.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, версия <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">Доступно <ph name="AVAILABLE_MEMORY" /> из <ph name="TOTAL_MEMORY" /> ГБ.</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" /> %</translation>
+<translation id="2152882202543497059"><ph name="NUMBER" /> фото</translation>
 <translation id="2157959690810728433">В ОЧЕРЕДИ</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />. Повторить</translation>
 <translation id="2161394479394250669">Отменить задание печати</translation>
 <translation id="2180197493692062006">Произошла ошибка. Попробуйте открыть приложение заново.</translation>
+<translation id="2201770616342964496">Локальное удостоверение</translation>
 <translation id="2209788852729124853">Сбросить счетчики трафика</translation>
 <translation id="2212733584906323460">Разрешение имен</translation>
 <translation id="2217935453350629363">Текущая частота</translation>
 <translation id="2224337661447660594">Нет подключения к Интернету</translation>
+<translation id="222447520299472966">Выберите хотя бы одну художественную галерею.</translation>
 <translation id="2230005943220647148">По шкале Цельсия</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2240366984605217732">Переключение раскладки клавиатуры</translation>
 <translation id="225692081236532131">Статус активации</translation>
 <translation id="2287186687001756809">Изображений нет. Добавить фотографии можно на сайте <ph name="LINK" />.</translation>
 <translation id="2307344026739914387">Использовать текущую пару ключей</translation>
@@ -126,6 +138,7 @@
 <translation id="2446553403094072641">Точность чисел с плавающей запятой</translation>
 <translation id="2448312741937722512">Тип</translation>
 <translation id="2461822463642141190">Расход энергии</translation>
+<translation id="2493126929778606526">Ваши лучшие фото, отобранные автоматически</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">Обновить обои</translation>
 <translation id="2517472476991765520">Сканировать</translation>
@@ -136,6 +149,7 @@
 <translation id="2585245331261708204">Что нового в Chrome OS</translation>
 <translation id="2619761439309613843">Обновлять ежедневно</translation>
 <translation id="2620436844016719705">Система</translation>
+<translation id="2640549051766135490">Выбран альбом "<ph name="TITLE" />" с описанием "<ph name="DESC" />"</translation>
 <translation id="2695514675076754339">Введите 8-значный код разблокировки</translation>
 <translation id="2712812801627182647">Ключ аутентификации TLS</translation>
 <translation id="2740531572673183784">ОК</translation>
@@ -147,6 +161,7 @@
 <translation id="2859243502336719778">Важное обновление</translation>
 <translation id="2860473693272905224">Положите другую страницу в сканер.</translation>
 <translation id="2872961005593481000">Завершить работу</translation>
+<translation id="2874939134665556319">Предыдущий трек</translation>
 <translation id="2878387241690264070">Батарея разрядилась на <ph name="RATE" /> за <ph name="NUM_SECONDS" /> сек.</translation>
 <translation id="291142119251986300">Некачественные комплектующие</translation>
 <translation id="2926057806159140518">Введите имя пользователя и пароль или отсканируйте QR-код.</translation>
@@ -180,11 +195,13 @@
 <translation id="3340011300870565703">Правый наушник заряжен на <ph name="BATTERY_PERCENTAGE" /> %.</translation>
 <translation id="3368922792935385530">Подключено</translation>
 <translation id="3369013195428705271">Очистить историю печати? Текущие задания печати не будут удалены.</translation>
+<translation id="3413935475507503304">Чтобы выполнить обновление, нажмите "Далее".</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Безопасность</translation>
 <translation id="3456078764689556234">Напечатано страниц: <ph name="PRINTED_PAGES" /> из <ph name="TOTAL_PAGES" />.</translation>
 <translation id="345898999683440380">Сканирование страницы <ph name="PAGE_NUM" />. Выполнено <ph name="PERCENTAGE_VALUE" /> %.</translation>
 <translation id="3459509316159669723">Печать</translation>
+<translation id="346539236881580388">Переснять</translation>
 <translation id="3484914941826596830">Пока выполняется обновление встроенного ПО, не отключайте внешнее устройство и не выключайте компьютер. Это окно можно свернуть. Обновление займет несколько минут, в течение которых внешнее устройство может не работать.</translation>
 <translation id="3486220673238053218">узнать определение</translation>
 <translation id="3488065109653206955">Частично активировано</translation>
@@ -195,9 +212,11 @@
 <translation id="357889014807611375">Wi-Fi с тарификацией</translation>
 <translation id="3583278742022654445">Слабый сигнал Wi-Fi. Попробуйте разместить устройство ближе к источнику сигнала.</translation>
 <translation id="3595596368722241419">Аккумулятор заряжен</translation>
+<translation id="3600339377155080675">Дублирование экрана</translation>
 <translation id="3603829704940252505">Аватар</translation>
 <translation id="360565022852130722">Безопасность сети Wi-Fi обеспечивается недостаточно надежным протоколом WEP 802.1x.</translation>
 <translation id="3606583719724308068">Длительная задержка у HTTPS-сайтов.</translation>
+<translation id="3632579075709132555">Включение экрана конфиденциальности</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" />: тестирование</translation>
 <translation id="370665806235115550">Загрузка...</translation>
 <translation id="3708186454126126312">Ранее подключенные устройства</translation>
@@ -226,8 +245,10 @@
 <translation id="4003384961948020559">Сбой: выходной лоток заполнен</translation>
 <translation id="4034824040120875894">Принтер</translation>
 <translation id="4044093238444069296">Не удается связаться со шлюзом.</translation>
+<translation id="4046123991198612571">Следующий трек</translation>
 <translation id="404928562651467259">Внимание!</translation>
 <translation id="409427325554347132">Сохранить данные</translation>
+<translation id="4110686435123617899">Выбрать альбом "<ph name="TITLE" />" с описанием "<ph name="DESC" />"</translation>
 <translation id="4111761024568264522">Сенсорная панель USB</translation>
 <translation id="4131410914670010031">Черно-белая печать</translation>
 <translation id="4140251671072434548">Разблокируйте сервер RMA</translation>
@@ -242,16 +263,18 @@
 <translation id="4238516577297848345">Задания печати не выполняются</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4244962993387259361">Для запуска проверки памяти вам нужно не менее 500 МБ незанятого пространства. Чтобы освободить место, выберите "Настройки &gt; Управление хранилищем".</translation>
+<translation id="4250229828105606438">Скриншот</translation>
 <translation id="4258281355379922695">Время ожидания HTTP</translation>
 <translation id="4271957103967917607">Перейти в полноэкранный режим</translation>
 <translation id="4275799948641988986">Кто будет пользоваться устройством после ремонта?</translation>
+<translation id="4289540628985791613">Обзор</translation>
 <translation id="4297501883039923494">Печать прервана: неизвестная ошибка</translation>
 <translation id="4300073214558989">Изображений: <ph name="IMAGE_COUNT" /></translation>
+<translation id="4333390807948134856">Клавиша <ph name="KEY_NAME" /> нажата</translation>
 <translation id="4378373042927530923">Не проверено</translation>
 <translation id="4378551569595875038">Подключение…</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="439429847087949098"><ph name="DEVICE_NAME" />: перезапуск…</translation>
-<translation id="4418498623216225764">Обновление встроенного ПО для периферийных устройств</translation>
 <translation id="4425149324548788773">Мой диск</translation>
 <translation id="4428374560396076622">Сеть "<ph name="NETWORK_NAME" />" отключена.</translation>
 <translation id="4429881212383817840">Срок действия билета Kerberos истекает</translation>
@@ -263,9 +286,11 @@
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Не удалось выполнить проверку ping сетевого шлюза, не заданного по умолчанию.</translation>
 <translation id="4485626319513081846">Выберите этот вариант, если устройство будет возвращено на склад или восстановлено и передано новому клиенту.</translation>
+<translation id="4503223151711056411">Стрелка влево</translation>
 <translation id="4511264077854731334">Портал</translation>
 <translation id="4521826082652183069">Совпадение с альтернативным именем субъекта</translation>
 <translation id="4536864596629708641">Конфигурация IP</translation>
+<translation id="4546131424594385779">Записать зацикленное видео</translation>
 <translation id="4548483925627140043">Отсутствует сигнал Wi-Fi.</translation>
 <translation id="4556753742174065117">Встроенное ПО не нуждается в обновлении</translation>
 <translation id="455835558791489930">Батарея <ph name="CHARGE_VALUE" /> мА·ч</translation>
@@ -273,22 +298,25 @@
 <translation id="4562494484721939086">Сеть не найдена</translation>
 <translation id="458794348635939462">Не удалось преобразовать имена всех хостов.</translation>
 <translation id="4593212453765072419">Требуется аутентификация на прокси-сервере</translation>
+<translation id="4609350030397390689">Уменьшение яркости клавиатуры</translation>
 <translation id="4627232916386272576">Файл "<ph name="DOCUMENT_TITLE" />", принтер "<ph name="PRINTER_NAME" />", дата – <ph name="CREATION_TIME" />, напечатано страниц: <ph name="PRINTED_PAGE_NUMBER" /> из <ph name="TOTAL_PAGE_NUMBER" />. Чтобы отменить задание печати, нажмите клавишу "Ввод".</translation>
+<translation id="4627645661474370390">Удаленное удостоверение</translation>
 <translation id="463791356324567266">Отмена сканирования…</translation>
 <translation id="4646949265910132906">Защищенное подключение к Wi-Fi</translation>
+<translation id="4650608062294027130">Правая клавиша Shift</translation>
 <translation id="4654549501020883054">Менять ежедневно</translation>
 <translation id="4665014895760275686">Производитель</translation>
 <translation id="467510802200863975">Пароли не совпадают.</translation>
 <translation id="467715984478005772">потенциальный брандмауэр</translation>
 <translation id="4691278870498629773">Печать прервана: нет лотка для бумаги</translation>
 <translation id="469379815867856270">Уровень сигнала</translation>
-<translation id="4707579418881001319">L2TP/IPsec + сертификат пользователя</translation>
 <translation id="4731797938093519117">Родительский доступ</translation>
 <translation id="473775607612524610">Обновить</translation>
 <translation id="4744944742468440486">Информация на основе выделенного текста</translation>
 <translation id="475869545581454722">Пароль Chrome OS изменен</translation>
 <translation id="4773299976671772492">Остановлено</translation>
 <translation id="4782311465517282004">Получайте определения слов, перевод или значение в других единицах измерения: достаточно нажать на текст правой кнопкой мыши или коснуться его и удерживать.</translation>
+<translation id="4791000909649665275"><ph name="NUMBER" /> фото</translation>
 <translation id="4793756956024303490">Алгоритм сжатия</translation>
 <translation id="4794140124556169553">Выполнение тестирования процессора может повлиять на производительность системы.</translation>
 <translation id="4808449224298348341">Отменено задание печати файла "<ph name="DOCUMENT_TITLE" />"</translation>
@@ -327,12 +355,14 @@
 <translation id="5051044138948155788">Так как это последняя страница, далее вы перейдете на экран запуска сканирования.</translation>
 <translation id="5088172560898466307">Имя хоста сервера</translation>
 <translation id="5089810972385038852">Штат</translation>
+<translation id="5090362543162270857">IPsec (IKEv2)</translation>
 <translation id="5142961317498132443">Аутентификация</translation>
 <translation id="5154917547274118687">Память</translation>
 <translation id="5160857336552977725">Войдите в аккаунт на устройстве <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166918508782100047">Настройка функции "Быстрые ответы"</translation>
 <translation id="5168185087976003268">Уровень заряда</translation>
 <translation id="5170568018924773124">Показать в папке</translation>
+<translation id="5190187232518914472">Вспоминайте яркие моменты своей жизни. Чтобы добавить или изменить альбом, перейдите в <ph name="LINK_BEGIN" />Google Фото<ph name="LINK_END" />.</translation>
 <translation id="5212543919916444558">Я не нашла на экране ничего подходящего.
 Попробуйте озвучить запрос, нажав на значок микрофона.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
@@ -371,8 +401,11 @@
 <translation id="554517032089923082">GTC</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Сканировать повторно</translation>
+<translation id="5583640892426849032">Клавиша возврата (Backspace)</translation>
+<translation id="5600027863942488546">Клавиша <ph name="KEY_NAME" /> протестирована</translation>
 <translation id="5620281292257375798">Конфиденциально</translation>
 <translation id="5649768706273821470">Прослушать</translation>
+<translation id="5655283760733841251">Увеличение яркости клавиатуры</translation>
 <translation id="5669267381087807207">Активация</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Семейство</translation>
@@ -380,6 +413,8 @@
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> из <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Обновить программное обеспечение устройства "<ph name="DEVICE_NAME" />"</translation>
 <translation id="5760715441271661976">Состояние страницы входа</translation>
+<translation id="576835345334454681">Увеличение яркости экрана</translation>
+<translation id="57838592816432529">Отключить звук</translation>
 <translation id="5784136236926853061">большое время ожидания HTTP</translation>
 <translation id="5832805196449965646">Добавить пользователя</translation>
 <translation id="583281660410589416">Неизвестно</translation>
@@ -387,6 +422,7 @@
 <translation id="5849570051105887917">Код провайдера</translation>
 <translation id="5860033963881614850">ВЫКЛ</translation>
 <translation id="5866840822086176774">Очень сильный</translation>
+<translation id="588258955323874662">Полноэкранный режим</translation>
 <translation id="5895138241574237353">Перезапустить</translation>
 <translation id="5916084858004523819">Запрещено</translation>
 <translation id="5916664084637901428">ВКЛ</translation>
@@ -408,6 +444,7 @@
 <translation id="6104112872696127344">Сканирование отменено.</translation>
 <translation id="6106186594183574873">Для завершения введите старый пароль.</translation>
 <translation id="6108689792487843350">Шлюз недоступен.</translation>
+<translation id="6113701710518389813">Стрелка вверх</translation>
 <translation id="6122191549521593678">Онлайн</translation>
 <translation id="6137767437444130246">Сертификат пользователя</translation>
 <translation id="6146993107019042706">Чтобы завершить процедуру, введите новый пароль.</translation>
@@ -421,12 +458,14 @@
 <translation id="6232017090690406397">Батарея</translation>
 <translation id="6235460611964961764">Выполнять сброс показателя вручную</translation>
 <translation id="6243280677745499710">Установлено как обои</translation>
+<translation id="6275224645089671689">Стрелка вправо</translation>
 <translation id="6278428485366576908">Тема</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6302401976930124515"><ph name="TEST_NAME" />: тестирование отменено.</translation>
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" />: обновление встроенного ПО</translation>
 <translation id="6325525973963619867">Ошибка</translation>
 <translation id="6340526405444716530">Персонализация</translation>
+<translation id="6348738456043757611">Имя пользователя и пароль</translation>
 <translation id="636850387210749493">Регистрация в корпоративном домене</translation>
 <translation id="6379086450106841622">Сенсорный экран</translation>
 <translation id="6388847657025262518">Автоподатчик документов заклинило. Устраните проблему и повторите попытку.</translation>
@@ -449,18 +488,23 @@
 <translation id="6566314079205407217">Сканировать несколько страниц</translation>
 <translation id="6574762126505704998">Заполнить</translation>
 <translation id="6575134580692778371">Не настроено</translation>
+<translation id="6579509898032828423">Использовать это фото</translation>
 <translation id="6596816719288285829">IP-адрес</translation>
 <translation id="6618744767048954150">Выполняется</translation>
 <translation id="6620487321149975369">Задания печати показываются в истории до тех пор, пока вы их не удалите</translation>
 <translation id="6643016212128521049">Удалить</translation>
 <translation id="6647510110698214773">Алгоритм шифрования</translation>
+<translation id="6650062777702288430">Переключение между кана и буквенно-цифровыми символами</translation>
 <translation id="6657585470893396449">Пароль</translation>
+<translation id="6659594942844771486">Вкладка</translation>
 <translation id="6692996468359469499">Получайте информацию об объектах на экране</translation>
 <translation id="6704062477274546131">Разрешение DNS</translation>
+<translation id="6723839937902243910">Питание</translation>
 <translation id="6747215703636344499">Печать прервана: выходной лоток заполнен</translation>
 <translation id="6749473226660745022">Фото</translation>
 <translation id="6753452347192452143">Это компьютер.</translation>
 <translation id="6756731097889387912">Не удалось отменить сканирование.</translation>
+<translation id="6760706756348334449">Уменьшить громкость</translation>
 <translation id="6766275201586212568">невыполненные преобразования DNS</translation>
 <translation id="6768237774506518020">большое число невыполненных преобразований DNS</translation>
 <translation id="680983167891198932">Ключ</translation>
@@ -495,6 +539,7 @@
 <translation id="7175037578838465313">Настроить сеть "<ph name="NAME" />"</translation>
 <translation id="7177485034254901881">Этим устройством <ph name="DEVICE_TYPE" /> управляет <ph name="MANAGER" />. Администраторы могут настраивать устройство удаленно.</translation>
 <translation id="7180611975245234373">Обновить</translation>
+<translation id="7212734716605298123">Обновление встроенного ПО на внешних устройствах</translation>
 <translation id="7216409898977639127">Оператор сотовой связи</translation>
 <translation id="7271040990581020067">Сканер уже используется. Повторите попытку позже.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
@@ -513,6 +558,7 @@
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Сканирование завершено. Отсканирована 1 страница.}one{Сканирование завершено. Отсканирована {NUMBER_OF_PAGES} страница.}few{Сканирование завершено. Отсканировано {NUMBER_OF_PAGES} страницы.}many{Сканирование завершено. Отсканировано {NUMBER_OF_PAGES} страниц.}other{Сканирование завершено. Отсканировано {NUMBER_OF_PAGES} страницы.}}</translation>
 <translation id="7469648432129124067">Обнаружен сетевой портал.</translation>
+<translation id="7481312909269577407">Вперед</translation>
 <translation id="7487067081878637334">Технологии</translation>
 <translation id="7490813197707563893">MAC-адрес</translation>
 <translation id="7497215489070763236">Серверный сертификат ЦС</translation>
@@ -541,7 +587,6 @@
 <translation id="780301667611848630">Спасибо, не надо</translation>
 <translation id="7805768142964895445">Состояние</translation>
 <translation id="7819857487979277519">PSK (WPA или RSN)</translation>
-<translation id="7835501727204647447">Установить CloudReady</translation>
 <translation id="7846634333498149051">Клавиатура</translation>
 <translation id="7856267634822906833">Сенсорный экран Bluetooth</translation>
 <translation id="7881066108824108340">DNS</translation>
@@ -567,6 +612,7 @@
 <translation id="8132480444149501833">Запросить счетчики трафика</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Выбрать вариант "<ph name="TOPIC_SOURCE" />" (<ph name="TOPIC_SOURCE_DESC" />)</translation>
+<translation id="8179976553408161302">ВВОД</translation>
 <translation id="8206859287963243715">Сотовый</translation>
 <translation id="8208861521865154048">Преимущества</translation>
 <translation id="8217675307824400706">Подключение</translation>
@@ -607,7 +653,9 @@
 <translation id="8660881923941176839">фунта</translation>
 <translation id="8662671328352114214">Присоединиться к сети <ph name="TYPE" /></translation>
 <translation id="8675354002693747642">Общий ключ</translation>
+<translation id="8677859815076891398">Альбомов нет. Создайте альбом в <ph name="LINK_BEGIN" />Google Фото<ph name="LINK_END" />.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Этой функцией можно управлять нажатием стрелки влево или вправо.</translation>
+<translation id="8712637175834984815">Готово</translation>
 <translation id="871560550817059752">Сбой: закончились чернила</translation>
 <translation id="8723108084122415655">В сети, не используемой по умолчанию, превышено пороговое значение задержки.</translation>
 <translation id="8726019395068607495">Печать прервана: открыта крышка</translation>
@@ -648,6 +696,7 @@
 <translation id="9062831201344759865">DNS-преобразование происходит с высокой задержкой.</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9082718469794970195">Использовать это видео</translation>
 <translation id="9087578468327036362">Сообщить о запросе</translation>
 <translation id="9088306295921699330">Используется</translation>
 <translation id="9095415590198785865">Устройство будет возвращено прежнему владельцу</translation>
@@ -658,10 +707,10 @@
 <translation id="9122602430962285795">Чтобы снова подключиться к сети, перейдите в настройки.</translation>
 <translation id="9126720536733509015">Сохранить несколько страниц в один PDF-файл</translation>
 <translation id="9137526406337347448">Сервисы Google</translation>
+<translation id="9138630967333032450">Левая клавиша Shift</translation>
 <translation id="9149391708638971077">Запустить проверку памяти</translation>
 <translation id="9173638680043580060">Осталось меньше минуты…</translation>
 <translation id="917720651393141712">Проверить</translation>
-<translation id="9190063653747922532">L2TP/IPsec + общий ключ</translation>
 <translation id="9204237731135241582">Не удается связаться со шлюзом в приложениях для Android.</translation>
 <translation id="9211490828691860325">Все рабочие столы</translation>
 <translation id="939519157834106403">SSID</translation>

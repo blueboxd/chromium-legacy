@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_INPUT_ELEMENT_H_
 
 #include "build/build_config.h"
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/web/web_form_control_element.h"
 
 namespace blink {
@@ -98,8 +99,11 @@ class BLINK_EXPORT WebInputElement final : public WebFormControlElement {
   bool ShouldRevealPassword() const;
 
 #if BUILDFLAG(IS_ANDROID)
-  // If the element is the last input in the form, trigger a form submission.
-  void DispatchSimulatedEnterIfLastInputInForm();
+  // Returns whether this is the last element within its form.
+  bool IsLastInputElementInForm();
+
+  // Triggers a form submission.
+  void DispatchSimulatedEnter();
 #endif
 
 #if INSIDE_BLINK

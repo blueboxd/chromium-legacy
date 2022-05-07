@@ -102,11 +102,14 @@
 #include "third_party/blink/renderer/core/editing/suggestion/text_suggestion_controller.h"
 #include "third_party/blink/renderer/core/editing/surrounding_text.h"
 #include "third_party/blink/renderer/core/editing/visible_position.h"
+#include "third_party/blink/renderer/core/event_type_names.h"
+#include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/execution_context/window_agent.h"
 #include "third_party/blink/renderer/core/exported/web_plugin_container_impl.h"
 #include "third_party/blink/renderer/core/fileapi/public_url_manager.h"
 #include "third_party/blink/renderer/core/fragment_directive/text_fragment_handler.h"
 #include "third_party/blink/renderer/core/frame/ad_tracker.h"
+#include "third_party/blink/renderer/core/frame/anchor_element_interaction_tracker.h"
 #include "third_party/blink/renderer/core/frame/attribution_src_loader.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/event_handler_registry.h"
@@ -395,6 +398,7 @@ void LocalFrame::Trace(Visitor* visitor) const {
   visitor->Trace(console_);
   visitor->Trace(smooth_scroll_sequencer_);
   visitor->Trace(content_capture_manager_);
+  visitor->Trace(anchor_element_interaction_tracker_);
   visitor->Trace(system_clipboard_);
   visitor->Trace(virtual_keyboard_overlay_changed_observers_);
   visitor->Trace(pause_handle_receivers_);
@@ -704,6 +708,10 @@ void LocalFrame::DidAttachDocument() {
   // appendChild()), the drag source will detach and stop firing drag events
   // even after the frame reattaches.
   GetEventHandler().Clear();
+  if (AnchorElementInteractionTracker::IsFeatureEnabled() && !IsProvisional()) {
+    anchor_element_interaction_tracker_ =
+        MakeGarbageCollected<AnchorElementInteractionTracker>(*document);
+  }
   Selection().DidAttachDocument(document);
   notified_color_scheme_ = false;
 }
@@ -916,13 +924,19 @@ void LocalFrame::SetIsInert(bool inert) {
   if (is_inert_ == inert)
     return;
   is_inert_ = inert;
-  if (Document* document = GetDocument()) {
-    if (Element* root = document->documentElement()) {
-      root->SetNeedsStyleRecalc(
-          kLocalStyleChange,
-          StyleChangeReasonForTracing::Create(style_change_reason::kFrame));
-    }
+
+  // Propagate inert to child frames
+  for (Frame* child = Tree().FirstChild(); child;
+       child = child->Tree().NextSibling()) {
+    child->UpdateInertIfPossible();
   }
+
+  // Nodes all over the accessibility tree can change inertness which means they
+  // must be added or removed from the tree. The most foolproof way is to clear
+  // the entire tree and rebuild it, though a more clever way is probably
+  // possible.
+  if (Document* document = GetDocument())
+    document->ClearAXObjectCache();
 }
 
 void LocalFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
@@ -1588,7 +1602,8 @@ static bool CanNavigateHelper(LocalFrame& initiating_frame,
   // its `source_frame` is to recursively check if ancestors can navigate the
   // top frame.
   DCHECK(&initiating_frame == &source_frame ||
-         target_frame == initiating_frame.Tree().Top());
+         target_frame ==
+             initiating_frame.Tree().Top(FrameTreeBoundary::kIgnoreFence));
 
   // Only report navigation blocking on the initial call to CanNavigateHelper,
   // not the recursive calls.
@@ -1621,13 +1636,24 @@ static bool CanNavigateHelper(LocalFrame& initiating_frame,
 
   if (source_frame.GetSecurityContext()->IsSandboxed(
           network::mojom::blink::WebSandboxFlags::kNavigation)) {
+    // 'allow-top-navigation' and 'allow-top-navigation-by-user-activation'
+    // allow the outermost frame navigations. They don't allow root fenced frame
+    // navigations from the descendant frames.
+    const bool target_is_outermost_frame =
+        target_frame.IsMainFrame() &&
+        !target_frame.GetPage()->IsMainFrameFencedFrameRoot();
+
     if (!target_frame.Tree().IsDescendantOf(&source_frame) &&
-        !target_frame.IsMainFrame()) {
+        !target_is_outermost_frame) {
       if (should_report) {
         initiating_frame.PrintNavigationErrorMessage(
             target_frame,
-            "The frame attempting navigation is sandboxed, and is therefore "
-            "disallowed from navigating its ancestors.");
+            source_frame.IsInFencedFrameTree()
+                ? "The frame attempting navigation is in a fenced frame tree, "
+                  "and is therefore disallowed from navigating its ancestors."
+                : "The frame attempting navigation is sandboxed, and is "
+                  "therefore "
+                  "disallowed from navigating its ancestors.");
       }
       return false;
     }
@@ -1635,8 +1661,9 @@ static bool CanNavigateHelper(LocalFrame& initiating_frame,
     // Sandboxed frames can also navigate popups, if the
     // 'allow-sandbox-escape-via-popup' flag is specified, or if
     // 'allow-popups' flag is specified and the popup's opener is the frame.
-    if (target_frame.IsMainFrame() &&
-        target_frame != source_frame.Tree().Top() &&
+    if (target_is_outermost_frame &&
+        target_frame !=
+            source_frame.Tree().Top(FrameTreeBoundary::kIgnoreFence) &&
         source_frame.GetSecurityContext()->IsSandboxed(
             network::mojom::blink::WebSandboxFlags::
                 kPropagatesToAuxiliaryBrowsingContexts) &&
@@ -1655,7 +1682,11 @@ static bool CanNavigateHelper(LocalFrame& initiating_frame,
 
     // Top navigation is forbidden in sandboxed frames unless opted-in, and only
     // then if the ancestor chain allowed to navigate the top frame.
-    if (target_frame == source_frame.Tree().Top()) {
+    // Note: We don't check root fenced frames for kTop* flags since the kTop*
+    // flags imply the actual top-level page.
+    if ((target_frame ==
+         source_frame.Tree().Top(FrameTreeBoundary::kIgnoreFence)) &&
+        !target_frame.GetPage()->IsMainFrameFencedFrameRoot()) {
       if (source_frame.GetSecurityContext()->IsSandboxed(
               network::mojom::blink::WebSandboxFlags::kTopNavigation) &&
           source_frame.GetSecurityContext()->IsSandboxed(
@@ -2943,7 +2974,7 @@ void LocalFrame::DownloadURL(
   GetLocalFrameHostRemote().DownloadURL(std::move(params));
 }
 
-void LocalFrame::AdvanceFocusInForm(mojom::blink::FocusType focus_type) {
+void LocalFrame::AdvanceFocusForIME(mojom::blink::FocusType focus_type) {
   auto* focused_frame = GetPage()->GetFocusController().FocusedFrame();
   if (focused_frame != this)
     return;
@@ -2954,7 +2985,7 @@ void LocalFrame::AdvanceFocusInForm(mojom::blink::FocusType focus_type) {
     return;
 
   Element* next_element =
-      GetPage()->GetFocusController().NextFocusableElementInForm(element,
+      GetPage()->GetFocusController().NextFocusableElementForIME(element,
                                                                  focus_type);
   if (!next_element)
     return;
@@ -3134,6 +3165,14 @@ InputMethodController& LocalFrame::GetInputMethodController() const {
 TextSuggestionController& LocalFrame::GetTextSuggestionController() const {
   DCHECK(DomWindow());
   return DomWindow()->GetTextSuggestionController();
+}
+
+void LocalFrame::WriteIntoTrace(perfetto::TracedValue ctx) const {
+  perfetto::TracedDictionary dict = std::move(ctx).WriteDictionary();
+  dict.Add("document", GetDocument());
+  dict.Add("is_main_frame", IsMainFrame());
+  dict.Add("is_cross_origin_to_parent", IsCrossOriginToParentFrame());
+  dict.Add("is_cross_origin_to_main_frame", IsCrossOriginToMainFrame());
 }
 
 }  // namespace blink

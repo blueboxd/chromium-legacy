@@ -44,6 +44,7 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/geometry/vector2d_conversions.h"
 #include "ui/gfx/native_widget_types.h"
@@ -59,7 +60,6 @@ using ui::OSExchangeData;
 namespace gfx {
 class Canvas;
 class Insets;
-class Transform;
 }  // namespace gfx
 
 namespace ui {
@@ -1179,11 +1179,24 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Returns whether this view currently has the focus.
   virtual bool HasFocus() const;
 
-  // Returns the view that should be selected next when pressing Tab.
+  // Returns the view that is a candidate to be focused next when pressing Tab.
+  //
+  // The returned view might not be `IsFocusable`, but it's children can be
+  // traversed to evaluate if one of them `IsFocusable`.
+  //
+  // If this returns `nullptr` then it is the last focusable candidate view in
+  // the list including its siblings.
   View* GetNextFocusableView();
   const View* GetNextFocusableView() const;
 
-  // Returns the view that should be selected next when pressing Shift-Tab.
+  // Returns the view that is a candidate to be focused next when pressing
+  // Shift-Tab.
+  //
+  // The returned view might not be `IsFocusable`, but it's children can be
+  // traversed to evaluate if one of them `IsFocusable`.
+  //
+  // If this returns `nullptr` then it is the first focusable candidate view in
+  // the list including its siblings.
   View* GetPreviousFocusableView();
 
   // Removes |this| from its focus list, updating the previous and next
@@ -1193,6 +1206,11 @@ class VIEWS_EXPORT View : public ui::LayerDelegate,
   // Insert |this| before or after |view| in the focus list.
   void InsertBeforeInFocusList(View* view);
   void InsertAfterInFocusList(View* view);
+
+  // Returns the list of children in the order of their focus. Each child might
+  // not be `IsFocusable`. Children that are not `IsFocusable` might still have
+  // children of its own that are `IsFocusable`.
+  Views GetChildrenFocusList();
 
   // Gets/sets |FocusBehavior|. SetFocusBehavior() advances focus if necessary.
   virtual FocusBehavior GetFocusBehavior() const;

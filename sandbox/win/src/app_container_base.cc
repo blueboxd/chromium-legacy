@@ -11,6 +11,7 @@
 #include <sddl.h>
 #include <userenv.h>
 
+#include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/stringprintf.h"
 #include "base/win/scoped_co_mem.h"
@@ -76,6 +77,31 @@ class ScopedImpersonation {
   }
 };
 
+class ScopedMutex {
+ public:
+  ScopedMutex(const wchar_t* name)
+      : handle_(::CreateMutex(nullptr, FALSE, name)) {}
+
+  ~ScopedMutex() {
+    if (handle_.IsValid())
+      DCHECK(::ReleaseMutex(handle_.Get()));
+  }
+
+  bool IsValid() { return handle_.IsValid(); }
+
+  bool Lock(DWORD timeout_ms) {
+    switch (::WaitForSingleObject(handle_.Get(), timeout_ms)) {
+      case WAIT_OBJECT_0:
+      case WAIT_ABANDONED:
+        return true;
+    }
+    return false;
+  }
+
+ private:
+  base::win::ScopedHandle handle_;
+};
+
 }  // namespace
 
 // static
@@ -85,8 +111,21 @@ AppContainerBase* AppContainerBase::CreateProfile(const wchar_t* package_name,
   static auto create_app_container_profile =
       reinterpret_cast<CreateAppContainerProfileFunc*>(GetProcAddress(
           GetModuleHandle(L"userenv"), "CreateAppContainerProfile"));
-  if (!create_app_container_profile)
+  if (!create_app_container_profile) {
+    PLOG(ERROR) << "Couldn't find CreateAppContainerProfile function";
     return nullptr;
+  }
+
+  ScopedMutex mutex(package_name);
+  if (!mutex.IsValid()) {
+    PLOG(ERROR) << "Error creating mutex";
+    return nullptr;
+  }
+
+  if (!mutex.Lock(INFINITE)) {
+    PLOG(ERROR) << "Error locking mutex";
+    return nullptr;
+  }
 
   PSID package_sid_ptr = nullptr;
   HRESULT hr = create_app_container_profile(
@@ -94,12 +133,16 @@ AppContainerBase* AppContainerBase::CreateProfile(const wchar_t* package_name,
   if (hr == HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS))
     return Open(package_name);
 
-  if (FAILED(hr))
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Error creating AppContainer profile " << hr;
     return nullptr;
+  }
   std::unique_ptr<void, FreeSidDeleter> sid_deleter(package_sid_ptr);
   auto package_sid = base::win::Sid::FromPSID(package_sid_ptr);
-  if (!package_sid)
+  if (!package_sid) {
+    PLOG(ERROR) << "Error parsing package SID";
     return nullptr;
+  }
   return new AppContainerBase(*package_sid, AppContainerType::kProfile);
 }
 
@@ -109,18 +152,24 @@ AppContainerBase* AppContainerBase::Open(const wchar_t* package_name) {
       reinterpret_cast<DeriveAppContainerSidFromAppContainerNameFunc*>(
           GetProcAddress(GetModuleHandle(L"userenv"),
                          "DeriveAppContainerSidFromAppContainerName"));
-  if (!derive_app_container_sid)
+  if (!derive_app_container_sid) {
+    PLOG(ERROR) << "Couldn't find DeriveAppContainerSid function";
     return nullptr;
+  }
 
   PSID package_sid_ptr = nullptr;
   HRESULT hr = derive_app_container_sid(package_name, &package_sid_ptr);
-  if (FAILED(hr))
+  if (FAILED(hr)) {
+    LOG(ERROR) << "Error deriving AppContainer SID" << hr;
     return nullptr;
+  }
 
   std::unique_ptr<void, FreeSidDeleter> sid_deleter(package_sid_ptr);
   auto package_sid = base::win::Sid::FromPSID(package_sid_ptr);
-  if (!package_sid)
+  if (!package_sid) {
+    PLOG(ERROR) << "Error parsing package SID";
     return nullptr;
+  }
   return new AppContainerBase(*package_sid, AppContainerType::kDerived);
 }
 
@@ -356,20 +405,9 @@ ResultCode AppContainerBase::BuildLowBoxToken(
     base::win::ScopedHandle* token,
     base::win::ScopedHandle* lockdown) {
   if (type_ == AppContainerType::kLowbox) {
-    if (!lowbox_directory_.IsValid()) {
-      DWORD result =
-          CreateLowBoxObjectDirectory(package_sid_, true, &lowbox_directory_);
-      DCHECK(result == ERROR_SUCCESS);
-    }
-
-    // The order of handles isn't important in the CreateLowBoxToken call.
-    // The kernel will maintain a reference to the object directory handle.
-    HANDLE saved_handles[1] = {lowbox_directory_.Get()};
-    DWORD saved_handles_count = lowbox_directory_.IsValid() ? 1 : 0;
-
     if (CreateLowBoxToken(lockdown->Get(), PRIMARY,
-                          GetSecurityCapabilities().get(), saved_handles,
-                          saved_handles_count, token) != ERROR_SUCCESS) {
+                          GetSecurityCapabilities().get(),
+                          token) != ERROR_SUCCESS) {
       return SBOX_ERROR_CANNOT_CREATE_LOWBOX_TOKEN;
     }
 
@@ -378,7 +416,7 @@ ResultCode AppContainerBase::BuildLowBoxToken(
       return SBOX_ERROR_CANNOT_MODIFY_LOWBOX_TOKEN_DACL;
     }
   } else if (CreateLowBoxToken(nullptr, IMPERSONATION,
-                               GetSecurityCapabilities().get(), nullptr, 0,
+                               GetSecurityCapabilities().get(),
                                token) != ERROR_SUCCESS) {
     return SBOX_ERROR_CANNOT_CREATE_LOWBOX_IMPERSONATION_TOKEN;
   }

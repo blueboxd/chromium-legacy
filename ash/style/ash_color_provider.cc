@@ -15,8 +15,8 @@
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "base/bind.h"
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -89,10 +89,7 @@ ColorName TypeToColorName(AshColorProvider::ContentLayerType type) {
 // cros_colors.json5. Colors there will also be used by ChromeOS WebUI.
 SkColor ResolveColor(AshColorProvider::ContentLayerType type,
                      bool use_dark_color) {
-  return cros_styles::ResolveColor(
-      TypeToColorName(type), use_dark_color,
-      base::FeatureList::IsEnabled(
-          ash::features::kSemanticColorsDebugOverride));
+  return cros_styles::ResolveColor(TypeToColorName(type), use_dark_color);
 }
 
 // Notify all the other components besides the System UI to update on the color
@@ -120,6 +117,9 @@ AshColorProvider::AshColorProvider() {
   // May be null in unit tests.
   if (Shell::HasInstance())
     Shell::Get()->session_controller()->AddObserver(this);
+
+  cros_styles::SetDebugColorsEnabled(base::FeatureList::IsEnabled(
+      ash::features::kSemanticColorsDebugOverride));
 }
 
 AshColorProvider::~AshColorProvider() {
@@ -129,6 +129,9 @@ AshColorProvider::~AshColorProvider() {
   // May be null in unit tests.
   if (Shell::HasInstance())
     Shell::Get()->session_controller()->RemoveObserver(this);
+
+  cros_styles::SetDebugColorsEnabled(false);
+  cros_styles::SetDarkModeEnabled(false);
 }
 
 // static
@@ -204,10 +207,8 @@ SkColor AshColorProvider::GetContentLayerColor(ContentLayerType type) const {
 }
 
 SkColor AshColorProvider::GetActiveDialogTitleBarColor() const {
-  return cros_styles::ResolveColor(
-      cros_styles::ColorName::kDialogTitleBarColor, IsDarkModeEnabled(),
-      base::FeatureList::IsEnabled(
-          ash::features::kSemanticColorsDebugOverride));
+  return cros_styles::ResolveColor(cros_styles::ColorName::kDialogTitleBarColor,
+                                   IsDarkModeEnabled());
 }
 
 SkColor AshColorProvider::GetInactiveDialogTitleBarColor() const {
@@ -255,10 +256,8 @@ SkColor AshColorProvider::GetInvertedBackgroundColor() const {
 }
 
 SkColor AshColorProvider::GetBackgroundColorInMode(bool use_dark_color) const {
-  return cros_styles::ResolveColor(
-      cros_styles::ColorName::kBgColor, use_dark_color,
-      base::FeatureList::IsEnabled(
-          ash::features::kSemanticColorsDebugOverride));
+  return cros_styles::ResolveColor(cros_styles::ColorName::kBgColor,
+                                   use_dark_color);
 }
 
 void AshColorProvider::AddObserver(ColorModeObserver* observer) {
@@ -305,10 +304,12 @@ bool AshColorProvider::IsThemed() const {
 
 void AshColorProvider::ToggleColorMode() {
   DCHECK(active_user_pref_service_);
-  active_user_pref_service_->SetBoolean(prefs::kDarkModeEnabled,
-                                        !IsDarkModeEnabled());
+  const bool value = !IsDarkModeEnabled();
+  active_user_pref_service_->SetBoolean(prefs::kDarkModeEnabled, value);
   active_user_pref_service_->CommitPendingWrite();
   NotifyDarkModeEnabledPrefChange();
+  base::UmaHistogramBoolean("Ash.DarkTheme.SystemTray.IsDarkModeEnabled",
+                            value);
 }
 
 void AshColorProvider::UpdateColorModeThemed(bool is_themed) {
@@ -325,7 +326,7 @@ SkColor AshColorProvider::GetShieldLayerColorImpl(ShieldLayerType type,
                                                   bool inverted) const {
   constexpr int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60,
                              kAlpha80, kAlpha90, kAlpha95};
-  DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
+  DCHECK_LT(static_cast<size_t>(type), std::size(kAlphas));
   return SkColorSetA(
       inverted ? GetInvertedBackgroundColor() : GetBackgroundColor(),
       kAlphas[static_cast<int>(type)]);
@@ -335,7 +336,7 @@ SkColor AshColorProvider::GetBaseLayerColorImpl(BaseLayerType type,
                                                 bool inverted) const {
   constexpr int kAlphas[] = {kAlpha20, kAlpha40, kAlpha60, kAlpha80,
                              kAlpha90, kAlpha95, 0xFF};
-  DCHECK_LT(static_cast<size_t>(type), base::size(kAlphas));
+  DCHECK_LT(static_cast<size_t>(type), std::size(kAlphas));
   return SkColorSetA(
       inverted ? GetInvertedBackgroundColor() : GetBackgroundColor(),
       kAlphas[static_cast<int>(type)]);
@@ -483,6 +484,7 @@ SkColor AshColorProvider::GetBackgroundThemedColorImpl(
 
 void AshColorProvider::NotifyDarkModeEnabledPrefChange() {
   const bool is_enabled = IsDarkModeEnabled();
+  cros_styles::SetDarkModeEnabled(is_enabled);
   for (auto& observer : observers_)
     observer.OnColorModeChanged(is_enabled);
 

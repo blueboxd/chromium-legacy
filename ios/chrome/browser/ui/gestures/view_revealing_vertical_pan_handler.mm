@@ -45,6 +45,13 @@ enum class LayoutTransitionState {
   Finishing,
 };
 
+// Defines which scrolling view is being tracked.
+enum class ScrollViewTracking {
+  None,
+  Gesture,
+  WebView,
+  NTP,
+};
 }  // namespace
 
 @interface ViewRevealingPanGestureRecognizer ()
@@ -80,12 +87,8 @@ enum class LayoutTransitionState {
 @property(nonatomic, assign) ViewRevealState nextState;
 // The property animator for revealing the view.
 @property(nonatomic, strong) UIViewPropertyAnimator* animator;
-// Total distance between the Peeked state and Revealed state. Equal to
-// |revealedHeight| - |peekedHeight|.
+// Total distance between the Peeked state and Revealed state.
 @property(nonatomic, assign, readonly) CGFloat remainingHeight;
-// Height of the cover view (the view in front of the view that will be
-// revealed) that will still be visible after the remaining reveal transition.
-@property(nonatomic, assign, readonly) CGFloat revealedCoverHeight;
 // The progress of the animator.
 @property(nonatomic, assign) CGFloat progressWhenInterrupted;
 // Set of UI elements which are animated during view reveal transitions.
@@ -115,23 +118,24 @@ enum class LayoutTransitionState {
 // gestures received while one is active will be ignored.
 @property(nonatomic, weak) UIGestureRecognizer* currentRecognizer;
 
+// Defines which scrolling view is being tracked to avoid crossing signals.
+@property(nonatomic, assign) ScrollViewTracking scrollViewTracking;
+
 @end
 
 @implementation ViewRevealingVerticalPanHandler
 
 - (instancetype)initWithPeekedHeight:(CGFloat)peekedHeight
-                 revealedCoverHeight:(CGFloat)revealedCoverHeight
                       baseViewHeight:(CGFloat)baseViewHeight
                         initialState:(ViewRevealState)initialState {
   if (self = [super init]) {
     _peekedHeight = peekedHeight;
-    _revealedCoverHeight = revealedCoverHeight;
     _baseViewHeight = baseViewHeight;
-    _revealedHeight = baseViewHeight - revealedCoverHeight;
-    _remainingHeight = _revealedHeight - peekedHeight;
+    _remainingHeight = baseViewHeight - peekedHeight;
     _currentState = initialState;
     _animatees = [NSHashTable weakObjectsHashTable];
     _layoutTransitionState = LayoutTransitionState::Inactive;
+    _scrollViewTracking = ScrollViewTracking::None;
   }
   return self;
 }
@@ -145,6 +149,7 @@ enum class LayoutTransitionState {
   if (!self.gesturesEnabled)
     return;
   self.currentRecognizer = gesture;
+  self.scrollViewTracking = ScrollViewTracking::Gesture;
   CGFloat translationY = [gesture translationInView:gesture.view.superview].y;
 
   if ([gesture isKindOfClass:ViewRevealingPanGestureRecognizer.class]) {
@@ -191,8 +196,7 @@ enum class LayoutTransitionState {
 
 - (void)setBaseViewHeight:(CGFloat)baseViewHeight {
   _baseViewHeight = baseViewHeight;
-  _revealedHeight = baseViewHeight - _revealedCoverHeight;
-  _remainingHeight = _revealedHeight - _peekedHeight;
+  _remainingHeight = baseViewHeight - _peekedHeight;
 }
 
 - (void)setNextState:(ViewRevealState)state
@@ -340,21 +344,18 @@ enum class LayoutTransitionState {
 
   switch (self.currentState) {
     case ViewRevealState::Hidden: {
-      nextLayoutState = (self.nextState == ViewRevealState::Revealed ||
-                         self.nextState == ViewRevealState::Fullscreen)
+      nextLayoutState = (self.nextState == ViewRevealState::Revealed)
                             ? LayoutSwitcherState::Grid
                             : LayoutSwitcherState::Horizontal;
       break;
     }
     case ViewRevealState::Peeked:
-      if (self.nextState == ViewRevealState::Revealed ||
-          self.nextState == ViewRevealState::Fullscreen) {
+      if (self.nextState == ViewRevealState::Revealed) {
         nextLayoutState = LayoutSwitcherState::Grid;
         animated = YES;
       }
       break;
     case ViewRevealState::Revealed:
-    case ViewRevealState::Fullscreen:
       if (self.nextState == ViewRevealState::Peeked) {
         nextLayoutState = LayoutSwitcherState::Horizontal;
         animated = YES;
@@ -493,9 +494,6 @@ enum class LayoutTransitionState {
         return ViewRevealState::Revealed;
       }
       return self.currentState;
-    case ViewRevealState::Fullscreen:
-      NOTREACHED();
-      return ViewRevealState::Fullscreen;
   }
 }
 
@@ -516,9 +514,6 @@ enum class LayoutTransitionState {
       break;
     case ViewRevealState::Revealed:
       progress = translation / (-self.remainingHeight);
-      break;
-    case ViewRevealState::Fullscreen:
-      progress = translation / (self.baseViewHeight - self.revealedHeight);
       break;
   }
 
@@ -583,15 +578,21 @@ enum class LayoutTransitionState {
   }
 }
 
-#pragma mark - UIScrollViewDelegate
+#pragma mark - UIScrollViewDelegate (NTP)
 
 - (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
   PanHandlerScrollView* view =
       [[PanHandlerScrollView alloc] initWithScrollView:scrollView];
+  self.scrollViewTracking = ScrollViewTracking::NTP;
+  [self webViewIsDragging:YES viewRevealState:self.currentState];
   [self panHandlerScrollViewWillBeginDragging:view];
 }
 
 - (void)scrollViewDidScroll:(UIScrollView*)scrollView {
+  if (self.scrollViewTracking != ScrollViewTracking::NTP) {
+    return;
+  }
+
   PanHandlerScrollView* view =
       [[PanHandlerScrollView alloc] initWithScrollView:scrollView];
   [self panHandlerScrollViewDidScroll:view];
@@ -600,6 +601,10 @@ enum class LayoutTransitionState {
 - (void)scrollViewWillEndDragging:(UIScrollView*)scrollView
                      withVelocity:(CGPoint)velocity
               targetContentOffset:(inout CGPoint*)targetContentOffset {
+  if (self.scrollViewTracking != ScrollViewTracking::NTP) {
+    return;
+  }
+
   PanHandlerScrollView* view =
       [[PanHandlerScrollView alloc] initWithScrollView:scrollView];
   [self panHandlerScrollViewWillEndDragging:view
@@ -607,9 +612,11 @@ enum class LayoutTransitionState {
                         targetContentOffset:targetContentOffset];
 }
 
-- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
-                  willDecelerate:(BOOL)decelerate {
-  // No-op.
+- (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
+  if (self.scrollViewTracking != ScrollViewTracking::NTP) {
+    return;
+  }
+  [self webViewIsDragging:NO viewRevealState:self.currentState];
 }
 
 #pragma mark - CRWWebViewScrollViewProxyObserver
@@ -618,12 +625,16 @@ enum class LayoutTransitionState {
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
   PanHandlerScrollView* view = [[PanHandlerScrollView alloc]
       initWithWebViewScrollViewProxy:webViewScrollViewProxy];
+  self.scrollViewTracking = ScrollViewTracking::WebView;
   [self webViewIsDragging:YES viewRevealState:self.currentState];
   [self panHandlerScrollViewWillBeginDragging:view];
 }
 
 - (void)webViewScrollViewDidScroll:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  if (self.scrollViewTracking != ScrollViewTracking::WebView) {
+    return;
+  }
   PanHandlerScrollView* view = [[PanHandlerScrollView alloc]
       initWithWebViewScrollViewProxy:webViewScrollViewProxy];
   [self panHandlerScrollViewDidScroll:view];
@@ -633,15 +644,26 @@ enum class LayoutTransitionState {
             (CRWWebViewScrollViewProxy*)webViewScrollViewProxy
                             withVelocity:(CGPoint)velocity
                      targetContentOffset:(inout CGPoint*)targetContentOffset {
+  if (self.scrollViewTracking != ScrollViewTracking::WebView) {
+    return;
+  }
+
   PanHandlerScrollView* view = [[PanHandlerScrollView alloc]
       initWithWebViewScrollViewProxy:webViewScrollViewProxy];
   [self panHandlerScrollViewWillEndDragging:view
                                withVelocity:velocity
                         targetContentOffset:targetContentOffset];
+
+  if (!self.deferredScrollEnabled) {
+    self.scrollViewTracking = ScrollViewTracking::None;
+  }
 }
 
 - (void)webViewScrollViewDidEndDecelerating:
     (CRWWebViewScrollViewProxy*)webViewScrollViewProxy {
+  if (self.scrollViewTracking != ScrollViewTracking::WebView) {
+    return;
+  }
   [self webViewIsDragging:NO viewRevealState:self.currentState];
 }
 
@@ -663,7 +685,6 @@ enum class LayoutTransitionState {
       break;
     }
     case ViewRevealState::Revealed:
-    case ViewRevealState::Fullscreen:
       // The scroll views should be covered in Revealed state, so should not
       // be able to be scrolled.
       NOTREACHED();

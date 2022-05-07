@@ -38,9 +38,7 @@ class BackForwardCachePageLoadMetricsObserverBrowserTest
         {{features::kBackForwardCache,
           {{"TimeToLiveInBackForwardCacheInSeconds", "3600"},
            {"ignore_outstanding_network_request_for_testing", "true"}}},
-         {internal::kBackForwardCacheEmitZeroSamplesForKeyMetrics, {{}}},
-         // Send all user interaction latencies to the browser process.
-         {blink::features::kSendAllUserInteractionLatencies, {{}}}},
+         {internal::kBackForwardCacheEmitZeroSamplesForKeyMetrics, {{}}}},
         // Allow BackForwardCache for all devices regardless of their memory.
         {features::kBackForwardCacheMemoryControls});
 
@@ -380,8 +378,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
     EXPECT_NE(rfh_a->GetLifecycleState(),
               content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
-    base::Value expectations =
-        EvalJs(web_contents(), "cls_run_tests").ExtractList();
     next_score = EvalJs(web_contents(),
                         R"((async() => {
 const shifter = document.querySelector('#shifter');
@@ -558,8 +554,6 @@ IN_PROC_BROWSER_TEST_F(BackForwardCachePageLoadMetricsObserverBrowserTest,
     EXPECT_NE(rfh_a->GetLifecycleState(),
               content::RenderFrameHost::LifecycleState::kInBackForwardCache);
 
-    base::Value expectations =
-        EvalJs(web_contents(), "cls_run_tests").ExtractList();
     next_score = EvalJs(web_contents(),
                         R"((async() => {
 const shifter = document.querySelector('#shifter');

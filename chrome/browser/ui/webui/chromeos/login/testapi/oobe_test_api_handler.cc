@@ -5,8 +5,8 @@
 #include "chrome/browser/ui/webui/chromeos/login/testapi/oobe_test_api_handler.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/constants/ash_switches.h"
 #include "base/bind.h"
+#include "base/check.h"
 #include "base/logging.h"
 #include "build/branding_buildflags.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
@@ -45,11 +45,9 @@ void OobeTestAPIHandler::Initialize() {}
 
 void OobeTestAPIHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
   login::NetworkStateHelper helper_;
-  dict->SetBoolKey(
-      "testapi_shouldSkipNetworkFirstShow",
-      features::IsOobeNetworkScreenSkipEnabled() &&
-          !ash::switches::IsOOBENetworkScreenSkippingDisabledForTesting() &&
-          helper_.IsConnectedToEthernet());
+  dict->SetBoolKey("testapi_shouldSkipNetworkFirstShow",
+                   features::IsOobeNetworkScreenSkipEnabled() &&
+                       helper_.IsConnectedToEthernet());
   dict->SetBoolKey(
       "testapi_shouldSkipEula",
       policy::EnrollmentRequisitionManager::IsRemoraRequisition() ||
@@ -81,6 +79,9 @@ void OobeTestAPIHandler::SkipPostLoginScreens() {
 }
 
 void OobeTestAPIHandler::LoginAsGuest() {
+  ash::WizardController::default_controller()
+      ->SkipToLoginForTesting();  // IN-TEST
+  CHECK(ash::ExistingUserController::current_controller());
   UserContext context(user_manager::USER_TYPE_GUEST, EmptyAccountId());
   ash::ExistingUserController::current_controller()->Login(context,
                                                            SigninSpecifics());

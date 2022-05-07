@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -544,6 +543,7 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
   data.SetShortName(u"foo.com");
   data.SetKeyword(u"foo.com");
   data.SetURL("http://foo.com/{searchTerms}");
+  data.is_active = TemplateURLData::ActiveStatus::kTrue;
   TemplateURL* keyword_turl =
       turl_model->Add(std::make_unique<TemplateURL>(data));
   ASSERT_NE(0, keyword_turl->id());
@@ -553,6 +553,7 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
   data.SetShortName(u"f");
   data.SetKeyword(u"f");
   data.SetURL("http://f.com/{searchTerms}");
+  data.is_active = TemplateURLData::ActiveStatus::kTrue;
   keyword_turl = turl_model->Add(std::make_unique<TemplateURL>(data));
   ASSERT_NE(0, keyword_turl->id());
 
@@ -560,6 +561,7 @@ void AutocompleteProviderTest::ResetControllerWithKeywordProvider() {
   data.SetShortName(u"bar.com");
   data.SetKeyword(u"bar.com");
   data.SetURL("http://bar.com/{searchTerms}");
+  data.is_active = TemplateURLData::ActiveStatus::kTrue;
   keyword_turl = turl_model->Add(std::make_unique<TemplateURL>(data));
   ASSERT_NE(0, keyword_turl->id());
 
@@ -790,7 +792,7 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
         {u"foo.com", std::u16string(), std::u16string()}};
 
     SCOPED_TRACE("Duplicate url");
-    RunKeywordTest(u"fo", duplicate_url, base::size(duplicate_url));
+    RunKeywordTest(u"fo", duplicate_url, std::size(duplicate_url));
   }
 
   {
@@ -799,7 +801,7 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
         {u"foo.com", std::u16string(), std::u16string()}};
 
     SCOPED_TRACE("Duplicate url with keyword match");
-    RunKeywordTest(u"fo", keyword_match, base::size(keyword_match));
+    RunKeywordTest(u"fo", keyword_match, std::size(keyword_match));
   }
 
   {
@@ -811,7 +813,7 @@ TEST_F(AutocompleteProviderTest, RedundantKeywordsIgnoredInResult) {
     };
 
     SCOPED_TRACE("Duplicate url with multiple keywords");
-    RunKeywordTest(u"fo", multiple_keyword, base::size(multiple_keyword));
+    RunKeywordTest(u"fo", multiple_keyword, std::size(multiple_keyword));
   }
 }
 
@@ -825,7 +827,7 @@ TEST_F(AutocompleteProviderTest, ExactMatchKeywords) {
         {u"foo.com", std::u16string(), u"foo.com"}};
 
     SCOPED_TRACE("keyword match as usual");
-    RunKeywordTest(u"fo", keyword_match, base::size(keyword_match));
+    RunKeywordTest(u"fo", keyword_match, std::size(keyword_match));
   }
 
   // The same result set with an input of "f" (versus "fo") should get
@@ -836,7 +838,7 @@ TEST_F(AutocompleteProviderTest, ExactMatchKeywords) {
     KeywordTestData keyword_match[] = {{u"foo.com", std::u16string(), u"f"}};
 
     SCOPED_TRACE("keyword exact match");
-    RunKeywordTest(u"f", keyword_match, base::size(keyword_match));
+    RunKeywordTest(u"f", keyword_match, std::size(keyword_match));
   }
 }
 
@@ -939,7 +941,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
     AssistedQueryStatsTestData test_data[] = {
         {AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, "chrome..69i57"}};
     SCOPED_TRACE("One match");
-    RunAssistedQueryStatsTest(test_data, base::size(test_data));
+    RunAssistedQueryStatsTest(test_data, std::size(test_data));
   }
 
   {
@@ -948,7 +950,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
          "chrome.0.46i131",
          {131}}};
     SCOPED_TRACE("One match with provider populated subtypes");
-    RunAssistedQueryStatsTest(test_data, base::size(test_data));
+    RunAssistedQueryStatsTest(test_data, std::size(test_data));
   }
 
   {
@@ -978,7 +980,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
          {27, 31}},
     };
     SCOPED_TRACE("Complex set of matches with repetitive subtypes");
-    RunAssistedQueryStatsTest(test_data, base::size(test_data));
+    RunAssistedQueryStatsTest(test_data, std::size(test_data));
   }
 
   {
@@ -1001,7 +1003,7 @@ TEST_F(AutocompleteProviderTest, UpdateAssistedQueryStats) {
          "chrome.7.69i57j69i58j5l2j0l3j69i59"},
     };
     SCOPED_TRACE("Multiple matches");
-    RunAssistedQueryStatsTest(test_data, base::size(test_data));
+    RunAssistedQueryStatsTest(test_data, std::size(test_data));
   }
 }
 

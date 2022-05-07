@@ -15,9 +15,7 @@
 #include "base/logging.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 Connection::Connection(multidevice::RemoteDeviceRef remote_device)
     : remote_device_(remote_device),
@@ -156,6 +154,4 @@ std::ostream& operator<<(std::ostream& stream,
   return stream;
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

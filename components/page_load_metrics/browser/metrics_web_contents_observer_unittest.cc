@@ -13,6 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
+#include "components/page_load_metrics/browser/metrics_lifecycle_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_test_content_browser_client.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/page_load_metrics/browser/test_metrics_web_contents_observer_embedder.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/render_frame_host_test_support.h"
 #include "content/public/test/test_renderer_host.h"
@@ -120,7 +122,6 @@ class MetricsWebContentsObserverTest
         std::vector<blink::UseCounterFeature>(),
         std::vector<mojom::ResourceDataUpdatePtr>(),
         mojom::FrameRenderDataUpdatePtr(base::in_place), timing.Clone(),
-        mojom::DeferredResourceCountsPtr(base::in_place),
         mojom::InputTimingPtr(base::in_place), blink::MobileFriendliness());
   }
 
@@ -139,15 +140,14 @@ class MetricsWebContentsObserverTest
       const mojom::PageLoadTiming& timing,
       content::RenderFrameHost* render_frame_host) {
     previous_timing_ = timing.Clone();
-    observer()->OnTimingUpdated(
-        render_frame_host, timing.Clone(),
-        mojom::FrameMetadataPtr(base::in_place),
-        std::vector<blink::UseCounterFeature>(),
-        std::vector<mojom::ResourceDataUpdatePtr>(),
-        mojom::FrameRenderDataUpdatePtr(base::in_place),
-        mojom::CpuTimingPtr(base::in_place),
-        mojom::DeferredResourceCountsPtr(base::in_place),
-        mojom::InputTimingPtr(base::in_place), blink::MobileFriendliness());
+    observer()->OnTimingUpdated(render_frame_host, timing.Clone(),
+                                mojom::FrameMetadataPtr(base::in_place),
+                                std::vector<blink::UseCounterFeature>(),
+                                std::vector<mojom::ResourceDataUpdatePtr>(),
+                                mojom::FrameRenderDataUpdatePtr(base::in_place),
+                                mojom::CpuTimingPtr(base::in_place),
+                                mojom::InputTimingPtr(base::in_place),
+                                blink::MobileFriendliness());
   }
 
   virtual std::unique_ptr<TestMetricsWebContentsObserverEmbedder>
@@ -439,6 +439,11 @@ TEST_F(MetricsWebContentsObserverTest, DontLogIrrelevantNavigation) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, EmptyTimingError) {
+  // Page load timing errors are not being reported when the error occurs for a
+  // page that gets preserved in the back/forward cache.
+  // TODO(https://crbug.com/1294103): Fix this.
+  content::DisableBackForwardCacheForTesting(
+      web_contents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
 
@@ -462,6 +467,11 @@ TEST_F(MetricsWebContentsObserverTest, EmptyTimingError) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, NullNavigationStartError) {
+  // Page load timing errors are not being reported when the error occurs for a
+  // page that gets preserved in the back/forward cache.
+  // TODO(https://crbug.com/1294103): Fix this.
+  content::DisableBackForwardCacheForTesting(
+      web_contents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.parse_timing->parse_start = base::Milliseconds(1);
@@ -486,6 +496,11 @@ TEST_F(MetricsWebContentsObserverTest, NullNavigationStartError) {
 }
 
 TEST_F(MetricsWebContentsObserverTest, TimingOrderError) {
+  // Page load timing errors are not being reported when the error occurs for a
+  // page that gets preserved in the back/forward cache.
+  // TODO(https://crbug.com/1294103): Fix this.
+  content::DisableBackForwardCacheForTesting(
+      web_contents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
   mojom::PageLoadTiming timing;
   page_load_metrics::InitPageLoadTimingForTest(&timing);
   timing.navigation_start = base::Time::FromDoubleT(1);
@@ -1391,11 +1406,10 @@ TEST_F(MetricsWebContentsObserverTest, RecordFeatureUsageNoObserver) {
 class MetricsWebContentsObserverBackForwardCacheTest
     : public MetricsWebContentsObserverTest,
       public content::WebContentsDelegate {
-  class CreatedPageLoadTrackerObserver
-      : public MetricsWebContentsObserver::TestingObserver {
+  class CreatedPageLoadTrackerObserver : public MetricsLifecycleObserver {
    public:
     explicit CreatedPageLoadTrackerObserver(content::WebContents* web_contents)
-        : MetricsWebContentsObserver::TestingObserver(web_contents) {}
+        : MetricsLifecycleObserver(web_contents) {}
 
     int tracker_committed_count() const { return tracker_committed_count_; }
 
@@ -1426,7 +1440,7 @@ class MetricsWebContentsObserverBackForwardCacheTest
     MetricsWebContentsObserverTest::SetUp();
     created_page_load_tracker_observer_ =
         std::make_unique<CreatedPageLoadTrackerObserver>(web_contents());
-    observer()->AddTestingObserver(created_page_load_tracker_observer_.get());
+    observer()->AddLifecycleObserver(created_page_load_tracker_observer_.get());
     web_contents()->SetDelegate(this);
   }
 

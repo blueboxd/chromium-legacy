@@ -7,6 +7,7 @@
 #include <limits>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -129,8 +130,6 @@ void LazyLoadFrameObserver::LoadImmediately() {
     UMA_HISTOGRAM_ENUMERATION(
         "Blink.LazyLoad.CrossOriginFrames.LoadStartedAfterBeingDeferred",
         GetNetworkStateNotifier().EffectiveType());
-    element_->GetDocument().GetFrame()->Client()->DidObserveLazyLoadBehavior(
-        WebLocalFrameClient::LazyLoadBehavior::kLazyLoadedFrame);
   }
 
   std::unique_ptr<LazyLoadRequestInfo> scoped_request_info =
@@ -338,11 +337,8 @@ void LazyLoadFrameObserver::RecordInitialDeferralAction(
       break;
   }
 
-  if (action == FrameInitialDeferralAction::kDeferred) {
-    element_->GetDocument().GetFrame()->Client()->DidObserveLazyLoadBehavior(
-        WebLocalFrameClient::LazyLoadBehavior::kDeferredFrame);
+  if (action == FrameInitialDeferralAction::kDeferred)
     was_recorded_as_deferred_ = true;
-  }
 }
 
 void LazyLoadFrameObserver::Trace(Visitor* visitor) const {

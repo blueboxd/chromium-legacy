@@ -150,7 +150,7 @@ function waitForAnimationEndTimeBased(getValue) {
   })
 }
 
-function waitForEvent(eventTarget, eventName, timeoutMs = 1000) {
+function waitForEvent(eventTarget, eventName, timeoutMs = 2000) {
   return new Promise((resolve, reject) => {
     const eventListener = (evt) => {
       clearTimeout(timeout);
@@ -165,7 +165,7 @@ function waitForEvent(eventTarget, eventName, timeoutMs = 1000) {
   });
 }
 
-function waitForScrollEvent(eventTarget, timeoutMs = 1000) {
+function waitForScrollEvent(eventTarget, timeoutMs = 2000) {
   return waitForEvent(eventTarget, 'scroll', timeoutMs);
 }
 
@@ -644,7 +644,24 @@ function touchDragTo(drag) {
             { name: 'pointerUp', x: drag.end_x, y: drag.end_y }
         ]}], resolve);
     } else {
-      reject();
+      reject('This test requires chrome.gpuBenchmarking');
+    }
+  });
+}
+
+// Trigger fling by doing pointerUp right after pointerMoves.
+function touchFling(drag) {
+  return new Promise(function(resolve, reject) {
+    if (window.chrome && chrome.gpuBenchmarking) {
+      chrome.gpuBenchmarking.pointerActionSequence( [
+        {source: 'touch',
+         actions: [
+            { name: 'pointerDown', x: drag.start_x, y: drag.start_y },
+            { name: 'pointerMove', x: drag.end_x, y: drag.end_y},
+            { name: 'pointerUp', x: drag.end_x, y: drag.end_y }
+        ]}], resolve);
+    } else {
+      reject('This test requires chrome.gpuBenchmarking');
     }
   });
 }

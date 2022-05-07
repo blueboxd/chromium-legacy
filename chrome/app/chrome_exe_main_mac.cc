@@ -9,7 +9,6 @@
 #include <errno.h>
 #include <libgen.h>
 #include <mach-o/dyld.h>
-#include <os/availability.h>
 #include <stdarg.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -34,7 +33,7 @@ extern "C" {
 // system CrashReporter and Crashpad collect in crash reports. Using a Crashpad
 // Annotation would be preferable, but this executable cannot depend on
 // Crashpad directly.
-void abort_report_np(const char* fmt, ...) API_AVAILABLE(macos(10.11));
+void abort_report_np(const char* fmt, ...);
 }
 
 namespace {

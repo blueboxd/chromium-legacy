@@ -27,6 +27,7 @@
 #include "ash/system/message_center/message_view_factory.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
+#include "base/auto_reset.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
@@ -533,8 +534,10 @@ void CaptureModeController::SetUserCaptureRegion(const gfx::Rect& region,
   if (!user_capture_region_.IsEmpty() && by_user)
     last_capture_region_update_time_ = base::TimeTicks::Now();
 
-  if (camera_controller_ && !is_recording_in_progress())
+  if (camera_controller_ && !is_recording_in_progress() &&
+      source_ == CaptureModeSource::kRegion) {
     camera_controller_->MaybeReparentPreviewWidget();
+  }
 }
 
 bool CaptureModeController::CanShowUserNudge() const {
@@ -676,7 +679,7 @@ void CaptureModeController::CheckFolderAvailability(
     base::OnceCallback<void(bool available)> callback) {
   blocking_task_runner_->PostTaskAndReplyWithResult(
       FROM_HERE, base::BindOnce(&base::PathExists, folder),
-      base::BindOnce(std::move(callback)));
+      std::move(callback));
 }
 
 void CaptureModeController::SetWindowProtectionMask(aura::Window* window,
@@ -879,7 +882,6 @@ void CaptureModeController::EndSessionOrRecording(EndRecordingReason reason) {
     // is active or after the three-second countdown had started but not
     // finished yet.
     Stop();
-    return;
   }
 
   if (!is_recording_in_progress())
@@ -1401,6 +1403,9 @@ void CaptureModeController::BeginVideoRecording(
   DCHECK(GetCaptureParams());
   DCHECK(!video_file_path.empty());
   DCHECK(video_file_path.MatchesExtension(".webm"));
+
+  base::AutoReset<bool> initializing_resetter(&is_initializing_recording_,
+                                              true);
 
   // Do not trigger an alert when exiting the session, since we end the session
   // to start recording.

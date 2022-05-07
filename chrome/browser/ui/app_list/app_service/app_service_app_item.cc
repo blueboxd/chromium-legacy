@@ -42,28 +42,29 @@ constexpr int kTimeMetricsBucketCount = 100;
 // Returns true if `app_update` should be considered a new app install.
 bool IsNewInstall(const apps::AppUpdate& app_update) {
   // Ignore internally-installed apps.
-  if (app_update.InstalledInternally() == apps::mojom::OptionalBool::kTrue)
+  if (app_update.InstalledInternally())
     return false;
 
   switch (app_update.AppType()) {
-    case apps::mojom::AppType::kUnknown:
-    case apps::mojom::AppType::kBuiltIn:
-    case apps::mojom::AppType::kStandaloneBrowser:
-    case apps::mojom::AppType::kSystemWeb:
+    case apps::AppType::kUnknown:
+    case apps::AppType::kBuiltIn:
+    case apps::AppType::kStandaloneBrowser:
+    case apps::AppType::kSystemWeb:
       // Chrome, Lacros, Settings, etc. are built-in.
       return false;
-    case apps::mojom::AppType::kMacOs:
+    case apps::AppType::kMacOs:
       NOTREACHED();
       return false;
-    case apps::mojom::AppType::kArc:
-    case apps::mojom::AppType::kCrostini:
-    case apps::mojom::AppType::kChromeApp:
-    case apps::mojom::AppType::kExtension:
-    case apps::mojom::AppType::kWeb:
-    case apps::mojom::AppType::kPluginVm:
-    case apps::mojom::AppType::kRemote:
-    case apps::mojom::AppType::kBorealis:
-    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
+    case apps::AppType::kArc:
+    case apps::AppType::kCrostini:
+    case apps::AppType::kChromeApp:
+    case apps::AppType::kExtension:
+    case apps::AppType::kWeb:
+    case apps::AppType::kPluginVm:
+    case apps::AppType::kRemote:
+    case apps::AppType::kBorealis:
+    case apps::AppType::kStandaloneBrowserChromeApp:
+    case apps::AppType::kStandaloneBrowserExtension:
       // Other app types are user-installed.
       return true;
   }
@@ -80,7 +81,7 @@ AppServiceAppItem::AppServiceAppItem(
     const app_list::AppListSyncableService::SyncItem* sync_item,
     const apps::AppUpdate& app_update)
     : ChromeAppListItem(profile, app_update.AppId()),
-      app_type_(apps::ConvertMojomAppTypToAppType(app_update.AppType())),
+      app_type_(app_update.AppType()),
       creation_time_(base::TimeTicks::Now()) {
   OnAppUpdate(app_update, /*in_constructor=*/true);
   if (sync_item && sync_item->item_ordinal.IsValid()) {
@@ -140,15 +141,14 @@ void AppServiceAppItem::OnAppUpdate(const apps::AppUpdate& app_update,
   }
 
   if (in_constructor || app_update.IsPlatformAppChanged()) {
-    is_platform_app_ =
-        app_update.IsPlatformApp() == apps::mojom::OptionalBool::kTrue;
+    is_platform_app_ = app_update.IsPlatformApp().value_or(false);
   }
 
   if (in_constructor || app_update.ReadinessChanged() ||
       app_update.PausedChanged()) {
-    if (app_update.Readiness() == apps::mojom::Readiness::kDisabledByPolicy) {
+    if (app_update.Readiness() == apps::Readiness::kDisabledByPolicy) {
       SetAppStatus(ash::AppStatus::kBlocked);
-    } else if (app_update.Paused() == apps::mojom::OptionalBool::kTrue) {
+    } else if (app_update.Paused().value_or(false)) {
       SetAppStatus(ash::AppStatus::kPaused);
     } else {
       SetAppStatus(ash::AppStatus::kReady);
@@ -174,11 +174,11 @@ void AppServiceAppItem::Activate(int event_flags) {
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->AppRegistryCache()
       .ForOneApp(id(), [&is_active_app](const apps::AppUpdate& update) {
-        if (update.AppType() == apps::mojom::AppType::kCrostini ||
-            update.AppType() == apps::mojom::AppType::kWeb ||
-            update.AppType() == apps::mojom::AppType::kSystemWeb ||
-            (update.AppType() == apps::mojom::AppType::kChromeApp &&
-             update.IsPlatformApp() == apps::mojom::OptionalBool::kFalse)) {
+        if (update.AppType() == apps::AppType::kCrostini ||
+            update.AppType() == apps::AppType::kWeb ||
+            update.AppType() == apps::AppType::kSystemWeb ||
+            (update.AppType() == apps::AppType::kChromeApp &&
+             update.IsPlatformApp().value_or(true))) {
           is_active_app = true;
         }
       });

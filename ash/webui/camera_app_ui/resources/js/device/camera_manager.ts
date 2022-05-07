@@ -3,7 +3,10 @@
 // found in the LICENSE file.
 
 import {
+  assert,
+  assertExists,
   assertInstanceof,
+  assertString,
 } from '../assert.js';
 import * as error from '../error.js';
 import {Point} from '../geometry.js';
@@ -28,7 +31,7 @@ import {WaitableEvent} from '../waitable_event.js';
 import {windowController} from '../window_controller.js';
 
 import {EventListener, OperationScheduler} from './camera_operation.js';
-import {ConstraintsPreferrer} from './constraints_preferrer.js';
+import {VideoCaptureCandidate} from './capture_candidate.js';
 import {DeviceInfoUpdater} from './device_info_updater.js';
 import {Preview} from './preview.js';
 import {
@@ -40,7 +43,10 @@ import {
 } from './type.js';
 
 class ResumeStateWatchdog {
-  private trialDone: WaitableEvent<boolean>;
+  // This is definitely assigned in this.start() in the first statement of the
+  // while loop.
+  private trialDone!: WaitableEvent<boolean>;
+
   private succeed = false;
 
   constructor(private readonly doReconfigure: () => Promise<boolean>) {
@@ -72,12 +78,8 @@ class ResumeStateWatchdog {
  */
 export class CameraManager implements EventListener {
   private hasExternalScreen = false;
+
   private screenOffAuto = false;
-  /**
-   * The last time of all screen state turning from OFF to ON during the app
-   * execution. Sets to -Infinity for no such time since app is opened.
-   */
-  private lastScreenOnTime = -Infinity;
 
   private cameraAvailable = false;
 
@@ -94,18 +96,16 @@ export class CameraManager implements EventListener {
 
   private readonly infoUpdater = new DeviceInfoUpdater();
 
-  private cameraViewUI: CameraViewUI;
-
   private readonly cameraUIs: CameraUI[] = [];
 
   private readonly preview: Preview;
 
   constructor(
       private readonly perfLogger: PerfLogger,
-      defaultFacing: Facing,
+      defaultFacing: Facing|null,
       modeConstraints: ModeConstraints,
   ) {
-    this.preview = new Preview(() => this.lastScreenOnTime, async () => {
+    this.preview = new Preview(async () => {
       await this.reconfigure();
     });
 
@@ -140,11 +140,11 @@ export class CameraManager implements EventListener {
   }
 
   getCameraInfo(): CameraInfo {
-    return this.scheduler.cameraInfo;
+    return assertExists(this.scheduler.cameraInfo);
   }
 
   private getDeviceId(): string {
-    return this.scheduler.reconfigurer.config.deviceId;
+    return assertString(this.scheduler.reconfigurer.config?.deviceId);
   }
 
   getPreviewVideo(): PreviewVideo {
@@ -170,22 +170,21 @@ export class CameraManager implements EventListener {
     return new Resolution(videoWidth, videoHeight);
   }
 
-  getPrefPhotoResolution(deviceId: string): Resolution|null {
-    return this.scheduler.photoPreferrer.getPrefResolution(deviceId);
-  }
-
-  getPrefVideoResolution(deviceId: string): Resolution|null {
-    return this.scheduler.videoPreferrer.getPrefResolution(deviceId);
+  getCaptureResolution(): Resolution|null {
+    assert(this.scheduler.reconfigurer.config !== null);
+    return this.scheduler.reconfigurer.config.captureCandidate.resolution;
   }
 
   getConstFps(): number|null {
-    const deviceId = this.getDeviceId();
-    const resolution = this.scheduler.modes.getCaptureResolution();
-    return this.scheduler.videoPreferrer.getPreferredConstFps(
-        deviceId, resolution);
+    assert(this.scheduler.reconfigurer.config !== null);
+    const c = this.scheduler.reconfigurer.config.captureCandidate;
+    if (!(c instanceof VideoCaptureCandidate)) {
+      return null;
+    }
+    return c.constFps;
   }
 
-  async getSupportedModes(deviceId: string): Promise<Mode[]> {
+  async getSupportedModes(deviceId: string|null): Promise<Mode[]> {
     const modes: Mode[] = [];
     for (const mode of Object.values(Mode)) {
       if (await this.scheduler.modes.isSupported(mode, deviceId)) {
@@ -234,22 +233,21 @@ export class CameraManager implements EventListener {
   }
 
   async initialize(cameraViewUI: CameraViewUI): Promise<void> {
-    this.cameraViewUI = cameraViewUI;
     const helper = ChromeHelper.getInstance();
 
-    const setTablet = (isTablet) => state.set(state.State.TABLET, isTablet);
+    function setTablet(isTablet: boolean) {
+      state.set(state.State.TABLET, isTablet);
+    }
     const isTablet = await helper.initTabletModeMonitor(setTablet);
     setTablet(isTablet);
 
     const handleScreenStateChange = () => {
       if (this.screenOff) {
         this.reconfigure();
-      } else {
-        this.lastScreenOnTime = performance.now();
       }
     };
 
-    const updateScreenOffAuto = (screenState) => {
+    const updateScreenOffAuto = (screenState: ScreenState) => {
       const isOffAuto = screenState === ScreenState.OFF_AUTO;
       if (this.screenOffAuto !== isOffAuto) {
         this.screenOffAuto = isOffAuto;
@@ -260,7 +258,7 @@ export class CameraManager implements EventListener {
         await helper.initScreenStateMonitor(updateScreenOffAuto);
     updateScreenOffAuto(screenState);
 
-    const updateExternalScreen = (hasExternalScreen) => {
+    const updateExternalScreen = (hasExternalScreen: boolean) => {
       if (this.hasExternalScreen !== hasExternalScreen) {
         this.hasExternalScreen = hasExternalScreen;
         handleScreenStateChange();
@@ -270,7 +268,7 @@ export class CameraManager implements EventListener {
         await helper.initExternalScreenMonitor(updateExternalScreen);
     updateExternalScreen(hasExternalScreen);
 
-    await this.scheduler.initialize(this.cameraViewUI);
+    await this.scheduler.initialize(cameraViewUI);
   }
 
   requestSuspend(): Promise<boolean> {
@@ -302,6 +300,7 @@ export class CameraManager implements EventListener {
       }
       if (devices.length > 0) {
         index = (index + 1) % devices.length;
+        assert(this.scheduler.reconfigurer.config !== null);
         this.scheduler.reconfigurer.config.deviceId = devices[index].deviceId;
       }
     });
@@ -315,50 +314,60 @@ export class CameraManager implements EventListener {
 
   switchMode(mode: Mode): Promise<boolean>|null {
     return this.tryReconfigure(() => {
+      assert(this.scheduler.reconfigurer.config !== null);
       this.scheduler.reconfigurer.config.mode = mode;
     });
   }
 
-  private setPrefResolution(
-      preferer: ConstraintsPreferrer, deviceId: string,
-      resolution: Resolution): Promise<boolean>|null {
+  private async setCapturePref(deviceId: string, setPref: () => void):
+      Promise<boolean> {
     if (!this.cameraAvailable) {
-      return null;
+      return false;
     }
     if (deviceId !== this.getDeviceId()) {
       // Changing the configure of the camera not currently opened, thus no
       // reconfiguration are required.
-      preferer.changePreferredResolution(deviceId, resolution);
-      return this.onUpdateConfig(this.scheduler.reconfigurer.config)
-          .then(() => true);
+      setPref();
+      return true;
     }
-    return this.tryReconfigure(() => {
-      preferer.changePreferredResolution(deviceId, resolution);
-    });
+    return this.tryReconfigure(setPref) ?? false;
+  }
+
+  getPrefPhotoResolution(deviceId: string): Resolution|null {
+    return this.scheduler.reconfigurer.capturePreferrer.getPrefPhotoResolution(
+        deviceId);
   }
 
   setPrefPhotoResolution(deviceId: string, r: Resolution):
       Promise<boolean>|null {
-    return this.setPrefResolution(this.scheduler.photoPreferrer, deviceId, r);
+    return this.setCapturePref(deviceId, () => {
+      this.scheduler.reconfigurer.capturePreferrer.setPrefPhotoResolution(
+          deviceId, r);
+    });
+  }
+
+  getPrefVideoResolution(deviceId: string): Resolution|null {
+    return this.scheduler.reconfigurer.capturePreferrer.getPrefVideoResolution(
+        deviceId);
   }
 
   setPrefVideoResolution(deviceId: string, r: Resolution):
       Promise<boolean>|null {
-    return this.setPrefResolution(this.scheduler.videoPreferrer, deviceId, r);
+    return this.setCapturePref(deviceId, () => {
+      this.scheduler.reconfigurer.capturePreferrer.setPrefVideoResolution(
+          deviceId, r);
+    });
   }
 
   /**
    * Sets fps of constant video recording on currently opened camera and
    * resolution.
-   * @param fps
    */
-  setPrefVideoConstFps(fps: number): Promise<boolean>|null {
-    if (!this.cameraAvailable) {
-      return null;
-    }
-    return this.tryReconfigure(() => {
-      this.scheduler.videoPreferrer.setPreferredConstFps(
-          this.getDeviceId(), this.scheduler.modes.getCaptureResolution(), fps);
+  setPrefVideoConstFps(deviceId: string, r: Resolution, fps: number):
+      Promise<boolean>|null {
+    return this.setCapturePref(deviceId, () => {
+      this.scheduler.reconfigurer.capturePreferrer.setPrefVideoConstFps(
+          deviceId, r, fps);
     });
   }
 
@@ -384,11 +393,11 @@ export class CameraManager implements EventListener {
         this.suspendRequested || this.screenOff || this.isTabletBackground();
   }
 
-  async startCapture(): Promise<() => Promise<void>> {
+  async startCapture(): Promise<[Promise<void>]> {
     this.setCameraAvailable(false);
     const captureDone = await this.scheduler.startCapture();
     this.setCameraAvailable(true);
-    return captureDone;
+    return assertExists(captureDone);
   }
 
   stopCapture(): void {

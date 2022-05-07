@@ -66,10 +66,14 @@ constexpr int kVerticalPaddingBetweenSections = 16;
 
 // The horizontal interior margin for the apps page container - i.e. the margin
 // between the apps page bounds and the page content.
-constexpr int kHorizontalInteriorMargin = 20;
+constexpr int kHorizontalInteriorMargin = 16;
+
+// Insets for the continue section. These insets are required to make the
+// suggestion icons visually align with the icons in the apps grid.
+constexpr gfx::Insets kContinueSectionInsets(0, 4);
 
 // Insets for the separator between the continue section and apps.
-constexpr gfx::Insets kSeparatorInsets(0, 12);
+constexpr gfx::Insets kSeparatorInsets(0, 16);
 
 // A slide animation's tween type.
 constexpr gfx::Tween::Type kSlideAnimationTweenType =
@@ -90,10 +94,6 @@ constexpr base::TimeDelta kShowPageAnimationTransformDuration =
 // Duration of the show page opacity animation.
 constexpr base::TimeDelta kShowPageAnimationOpacityDuration =
     base::Milliseconds(100);
-
-// The time duration of the undo toast fade in animation.
-constexpr base::TimeDelta kToastFadeInAnimationDuration =
-    base::Milliseconds(400);
 
 }  // namespace
 
@@ -132,6 +132,7 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   auto vertical_scroll =
       std::make_unique<RoundedScrollBar>(/*horizontal=*/false);
   vertical_scroll->SetInsets(kVerticalScrollInsets);
+  vertical_scroll->SetSnapBackOnDragOutside(false);
   scroll_view_->SetVerticalScrollBar(std::move(vertical_scroll));
 
   auto scroll_contents = std::make_unique<views::View>();
@@ -145,6 +146,8 @@ AppListBubbleAppsPage::AppListBubbleAppsPage(
   continue_section_ =
       scroll_contents->AddChildView(std::make_unique<ContinueSectionView>(
           view_delegate, kContinueColumnCount, /*tablet_mode=*/false));
+  continue_section_->SetBorder(
+      views::CreateEmptyBorder(kContinueSectionInsets));
   continue_section_->SetNudgeController(app_list_nudge_controller_.get());
 
   // Observe changes in continue section visibility, to keep separator
@@ -612,9 +615,11 @@ void AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEneded(
   // the bubble apps page's layout is ready.
   const bool scroll_performed = MaybeScrollToShowToast();
 
-  scrollable_apps_grid_view_->FadeInVisibleItemsForReorder(base::BindRepeating(
-      &AppListBubbleAppsPage::OnAppsGridViewFadeInAnimationEnded,
-      weak_factory_.GetWeakPtr()));
+  views::AnimationBuilder animation_builder =
+      scrollable_apps_grid_view_->FadeInVisibleItemsForReorder(
+          base::BindRepeating(
+              &AppListBubbleAppsPage::OnAppsGridViewFadeInAnimationEnded,
+              weak_factory_.GetWeakPtr()));
 
   // Fade in the undo toast when:
   // (1) The toast's visibility becomes true from false, or
@@ -625,57 +630,22 @@ void AppListBubbleAppsPage::OnAppsGridViewFadeOutAnimationEneded(
   if (!should_fade_in_toast)
     return;
 
-  // If the undo toast does not have its layer before fade in animation,
-  // create one.
-  bool has_layer_before_animation = toast_container_->layer();
-  if (!has_layer_before_animation) {
-    toast_container_->SetPaintToLayer();
-    toast_container_->layer()->SetFillsBoundsOpaquely(false);
-  }
+  // Because `toast_container_` does not have a layer before the fade in
+  // animation, create one.
+  DCHECK(!toast_container_->layer());
+  toast_container_->SetPaintToLayer();
+  toast_container_->layer()->SetFillsBoundsOpaquely(false);
 
   // Hide the undo toast instantly before starting the toast fade in animation.
   toast_container_->layer()->SetOpacity(0.f);
 
-  views::AnimationBuilder animation_builder;
-  toast_fade_in_abort_handle_ = animation_builder.GetAbortHandle();
-  animation_builder
-      .OnEnded(base::BindOnce(
-          &AppListBubbleAppsPage::OnReorderUndoToastFadeInAnimationEnded,
-          weak_factory_.GetWeakPtr(),
-          /*aborted=*/false, has_layer_before_animation))
-      .OnAborted(base::BindOnce(
-          &AppListBubbleAppsPage::OnReorderUndoToastFadeInAnimationEnded,
-          weak_factory_.GetWeakPtr(),
-          /*aborted=*/true, has_layer_before_animation))
-      .Once()
-      .SetDuration(kToastFadeInAnimationDuration)
-      .SetOpacity(toast_container_->layer(), 1.f);
+  animation_builder.GetCurrentSequence().SetOpacity(
+      toast_container_->layer(), 1.f, gfx::Tween::ACCEL_5_70_DECEL_90);
 }
 
 void AppListBubbleAppsPage::OnAppsGridViewFadeInAnimationEnded(bool aborted) {
-  if (!aborted)
-    return;
-
-  // Abort the toast fade in animation if the apps grid fade in animation is
-  // aborted.
-  toast_fade_in_abort_handle_.reset();
-}
-
-void AppListBubbleAppsPage::OnReorderUndoToastFadeInAnimationEnded(
-    bool aborted,
-    bool clean_layer) {
-  toast_fade_in_abort_handle_.reset();
-
-  if (aborted && !clean_layer) {
-    // Ensure that the toast shows when the animation is aborted.
-    toast_container_->layer()->SetOpacity(1.f);
-    return;
-  }
-
-  if (clean_layer) {
-    toast_container_->DestroyLayer();
-    return;
-  }
+  // Destroy the layer created for the layer animation.
+  toast_container_->DestroyLayer();
 }
 
 void AppListBubbleAppsPage::SlideViewIntoPosition(views::View* view,

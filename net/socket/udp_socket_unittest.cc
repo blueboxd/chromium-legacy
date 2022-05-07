@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
-#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
@@ -55,6 +54,10 @@
 #if BUILDFLAG(IS_IOS)
 #include <TargetConditionals.h>
 #endif
+
+#if BUILDFLAG(IS_MAC)
+#include "base/mac/mac_util.h"
+#endif  // BUILDFLAG(IS_MAC)
 
 using net::test::IsError;
 using net::test::IsOk;
@@ -505,7 +508,7 @@ TEST_F(UDPSocketTest, ClientGetLocalPeerAddresses) {
     {"2001:db8:0::42", "::1", true},
 #endif
   };
-  for (size_t i = 0; i < base::size(tests); i++) {
+  for (size_t i = 0; i < std::size(tests); i++) {
     SCOPED_TRACE(std::string("Connecting from ") + tests[i].local_address +
                  std::string(" to ") + tests[i].remote_address);
 
@@ -584,9 +587,15 @@ TEST_F(UDPSocketTest, ClientSetDoNotFragment) {
     EXPECT_THAT(rv, IsOk());
 
     rv = client.SetDoNotFragment();
-#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
     // TODO(crbug.com/945590): IP_MTU_DISCOVER is not implemented on Fuchsia.
     EXPECT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
+#elif BUILDFLAG(IS_MAC)
+    if (base::mac::IsAtLeastOS11()) {
+      EXPECT_THAT(rv, IsOk());
+    } else {
+      EXPECT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
+    }
 #else
     EXPECT_THAT(rv, IsOk());
 #endif
@@ -606,9 +615,15 @@ TEST_F(UDPSocketTest, ServerSetDoNotFragment) {
     EXPECT_THAT(rv, IsOk());
 
     rv = server.SetDoNotFragment();
-#if BUILDFLAG(IS_APPLE) || BUILDFLAG(IS_FUCHSIA)
+#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_FUCHSIA)
     // TODO(crbug.com/945590): IP_MTU_DISCOVER is not implemented on Fuchsia.
     EXPECT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
+#elif BUILDFLAG(IS_MAC)
+    if (base::mac::IsAtLeastOS11()) {
+      EXPECT_THAT(rv, IsOk());
+    } else {
+      EXPECT_THAT(rv, IsError(ERR_NOT_IMPLEMENTED));
+    }
 #else
     EXPECT_THAT(rv, IsOk());
 #endif

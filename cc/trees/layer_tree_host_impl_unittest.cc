@@ -2740,8 +2740,7 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, SnapAnimationTargetUpdated) {
   EXPECT_FALSE(GetInputHandler().animating_for_snap_for_testing());
   // Finish the smooth scroll animation for wheel.
   const int scroll_animation_duration_ms =
-      base::FeatureList::IsEnabled(features::kImpulseScrollAnimations) ? 300
-                                                                       : 150;
+      features::IsImpulseScrollAnimationEnabled() ? 300 : 150;
   BeginImplFrameAndAnimate(
       begin_frame_args,
       start_time + base::Milliseconds(scroll_animation_duration_ms));
@@ -8173,16 +8172,12 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest,
   // the page scale delta on the root layer is applied hierarchically.
   DrawFrame();
 
-  EXPECT_EQ(1, root->DrawTransform().matrix().getDouble(0, 0));
-  EXPECT_EQ(1, root->DrawTransform().matrix().getDouble(1, 1));
-  EXPECT_EQ(new_page_scale,
-            inner_scroll->DrawTransform().matrix().getDouble(0, 0));
-  EXPECT_EQ(new_page_scale,
-            inner_scroll->DrawTransform().matrix().getDouble(1, 1));
-  EXPECT_EQ(new_page_scale,
-            outer_scroll->DrawTransform().matrix().getDouble(0, 0));
-  EXPECT_EQ(new_page_scale,
-            outer_scroll->DrawTransform().matrix().getDouble(1, 1));
+  EXPECT_EQ(1, root->DrawTransform().matrix().rc(0, 0));
+  EXPECT_EQ(1, root->DrawTransform().matrix().rc(1, 1));
+  EXPECT_EQ(new_page_scale, inner_scroll->DrawTransform().matrix().rc(0, 0));
+  EXPECT_EQ(new_page_scale, inner_scroll->DrawTransform().matrix().rc(1, 1));
+  EXPECT_EQ(new_page_scale, outer_scroll->DrawTransform().matrix().rc(0, 0));
+  EXPECT_EQ(new_page_scale, outer_scroll->DrawTransform().matrix().rc(1, 1));
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest,
@@ -14845,10 +14840,8 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ScrollAnimatedWithDelay) {
   begin_frame_args.frame_id.sequence_number++;
   host_impl_->WillBeginImplFrame(begin_frame_args);
   host_impl_->UpdateAnimationState(true);
-  EXPECT_NEAR(
-      (base::FeatureList::IsEnabled(features::kImpulseScrollAnimations) ? 87
-                                                                        : 50),
-      CurrentScrollOffset(scrolling_layer).y(), 1);
+  EXPECT_NEAR((features::IsImpulseScrollAnimationEnabled() ? 87 : 50),
+              CurrentScrollOffset(scrolling_layer).y(), 1);
   host_impl_->DidFinishImplFrame(begin_frame_args);
 
   // Update target.
@@ -18204,8 +18197,8 @@ TEST_F(LayerTreeHostImplTest, DocumentTransitionRequestCausesDamage) {
 
   // Adding a transition effect should cause us to redraw.
   host_impl_->active_tree()->AddDocumentTransitionRequest(
-      DocumentTransitionRequest::CreateStart(
-          /*document_tag=*/0, /*shared_element_count=*/0, base::OnceClosure()));
+      DocumentTransitionRequest::CreateAnimateRenderer(
+          /*document_tag=*/0));
 
   // Ensure there is damage and we requested a redraw.
   host_impl_->OnDraw(draw_transform, draw_viewport, resourceless_software_draw,

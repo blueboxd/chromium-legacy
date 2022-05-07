@@ -50,10 +50,9 @@ void FederatedAuthRequestService::RequestIdToken(
     const GURL& provider,
     const std::string& client_id,
     const std::string& nonce,
-    blink::mojom::RequestMode mode,
     bool prefer_auto_sign_in,
     RequestIdTokenCallback callback) {
-  impl_->RequestIdToken(provider, client_id, nonce, mode, prefer_auto_sign_in,
+  impl_->RequestIdToken(provider, client_id, nonce, prefer_auto_sign_in,
                         std::move(callback));
 }
 
@@ -66,6 +65,12 @@ void FederatedAuthRequestService::Revoke(const GURL& provider,
                                          const std::string& account_id,
                                          RevokeCallback callback) {
   impl_->Revoke(provider, client_id, account_id, std::move(callback));
+}
+
+void FederatedAuthRequestService::Logout(const GURL& provider,
+                                         const std::string& account_id,
+                                         LogoutCallback callback) {
+  impl_->Logout(provider, account_id, std::move(callback));
 }
 
 void FederatedAuthRequestService::LogoutRps(

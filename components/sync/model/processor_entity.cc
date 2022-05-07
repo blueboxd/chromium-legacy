@@ -12,6 +12,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/client_tag_hash.h"
+#include "components/sync/base/features.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_and_get_updates_types.h"
 #include "components/sync/protocol/entity_data.h"
@@ -32,6 +33,7 @@ std::string HashSpecifics(const sync_pb::EntitySpecifics& specifics) {
 
 }  // namespace
 
+// TODO(crbug.com/1296159): Add caching possibly trimmed specifics.
 std::unique_ptr<ProcessorEntity> ProcessorEntity::CreateNew(
     const std::string& storage_key,
     const ClientTagHash& client_tag_hash,
@@ -90,12 +92,6 @@ void ProcessorEntity::SetCommitData(std::unique_ptr<EntityData> data) {
   data->creation_time = ProtoTimeToTime(metadata_.creation_time());
   data->modification_time = ProtoTimeToTime(metadata_.modification_time());
 
-  commit_data_.reset();
-  CacheCommitData(std::move(data));
-}
-
-void ProcessorEntity::CacheCommitData(std::unique_ptr<EntityData> data) {
-  DCHECK(RequiresCommitData());
   commit_data_ = std::move(data);
   DCHECK(HasCommitData());
 }
@@ -151,7 +147,8 @@ bool ProcessorEntity::UpdateIsReflection(int64_t update_version) const {
   return metadata_.server_version() >= update_version;
 }
 
-void ProcessorEntity::RecordIgnoredUpdate(const UpdateResponseData& update) {
+void ProcessorEntity::RecordIgnoredRemoteUpdate(
+    const UpdateResponseData& update) {
   DCHECK(metadata_.server_id().empty() ||
          metadata_.server_id() == update.entity.id);
   metadata_.set_server_id(update.entity.id);
@@ -167,25 +164,31 @@ void ProcessorEntity::RecordIgnoredUpdate(const UpdateResponseData& update) {
   }
 }
 
-void ProcessorEntity::RecordAcceptedUpdate(const UpdateResponseData& update) {
+void ProcessorEntity::RecordAcceptedRemoteUpdate(
+    const UpdateResponseData& update) {
   DCHECK(!IsUnsynced());
-  RecordIgnoredUpdate(update);
+  RecordIgnoredRemoteUpdate(update);
   metadata_.set_is_deleted(update.entity.is_deleted());
   metadata_.set_modification_time(
       TimeToProtoTime(update.entity.modification_time));
   UpdateSpecificsHash(update.entity.specifics);
+  if (base::FeatureList::IsEnabled(kCacheBaseEntitySpecificsInMetadata)) {
+    *metadata_.mutable_possibly_trimmed_base_specifics() =
+        update.entity.specifics;
+  }
 }
 
-void ProcessorEntity::RecordForcedUpdate(const UpdateResponseData& update) {
+void ProcessorEntity::RecordForcedRemoteUpdate(
+    const UpdateResponseData& update) {
   DCHECK(IsUnsynced());
   // There was a conflict and the server just won it. Explicitly ack all
   // pending commits so they are never enqueued again.
   metadata_.set_acked_sequence_number(metadata_.sequence_number());
   commit_data_.reset();
-  RecordAcceptedUpdate(update);
+  RecordAcceptedRemoteUpdate(update);
 }
 
-void ProcessorEntity::MakeLocalChange(std::unique_ptr<EntityData> data) {
+void ProcessorEntity::RecordLocalUpdate(std::unique_ptr<EntityData> data) {
   DCHECK(!metadata_.client_tag_hash().empty());
 
   // Update metadata fields from updated data.
@@ -197,6 +200,9 @@ void ProcessorEntity::MakeLocalChange(std::unique_ptr<EntityData> data) {
   // it remembers specifics hash before the modifications.
   IncrementSequenceNumber(modification_time);
   UpdateSpecificsHash(data->specifics);
+  if (base::FeatureList::IsEnabled(kCacheBaseEntitySpecificsInMetadata)) {
+    *metadata_.mutable_possibly_trimmed_base_specifics() = data->specifics;
+  }
   if (!data->creation_time.is_null())
     metadata_.set_creation_time(TimeToProtoTime(data->creation_time));
   metadata_.set_modification_time(TimeToProtoTime(modification_time));
@@ -206,11 +212,12 @@ void ProcessorEntity::MakeLocalChange(std::unique_ptr<EntityData> data) {
   SetCommitData(std::move(data));
 }
 
-bool ProcessorEntity::Delete() {
+bool ProcessorEntity::RecordLocalDeletion() {
   IncrementSequenceNumber(base::Time::Now());
   metadata_.set_modification_time(TimeToProtoTime(base::Time::Now()));
   metadata_.set_is_deleted(true);
   metadata_.clear_specifics_hash();
+  metadata_.clear_possibly_trimmed_base_specifics();
   // Clear any cached pending commit data.
   commit_data_.reset();
   // Return true if server might know about this entity.

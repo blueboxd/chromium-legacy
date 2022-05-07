@@ -13,9 +13,7 @@
 #include "base/callback.h"
 #include "base/check.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 FakeSecureChannelConnection::SentMessage::SentMessage(
     const std::string& feature,
@@ -108,6 +106,4 @@ FakeSecureChannelConnection::GetChannelBindingData() {
   return channel_binding_data_;
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

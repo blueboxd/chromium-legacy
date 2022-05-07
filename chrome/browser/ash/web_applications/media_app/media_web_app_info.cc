@@ -141,9 +141,9 @@ std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForMediaWebApp() {
   if (chromeos::features::IsDarkLightModeEnabled()) {
     auto* color_provider = ash::AshColorProvider::Get();
     info->theme_color =
-        color_provider->GetBackgroundColorInMode(/*use_dark_mode=*/false);
+        color_provider->GetBackgroundColorInMode(/*use_dark_color=*/false);
     info->dark_mode_theme_color =
-        color_provider->GetBackgroundColorInMode(/*use_dark_mode=*/true);
+        color_provider->GetBackgroundColorInMode(/*use_dark_color=*/true);
     info->background_color = info->theme_color;
     info->dark_mode_background_color = info->dark_mode_theme_color;
   } else {
@@ -186,7 +186,7 @@ base::FilePath MediaSystemAppDelegate::GetLaunchDirectory(
 #if DCHECK_IS_ON()
   // Check |launch_files| all come from the same directory.
   if (!launch_dir.empty()) {
-    for (auto path : params.launch_files) {
+    for (const auto& path : params.launch_files) {
       DCHECK_EQ(launch_dir, path.DirName());
     }
   }

@@ -10,9 +10,10 @@
 
 #include "base/scoped_observation.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/action.h"
-#include "chrome/browser/ash/arc/input_overlay/display_mode.h"
+#include "chrome/browser/ash/arc/input_overlay/constants.h"
 #include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
 #include "ui/events/event_rewriter.h"
+#include "ui/events/event_source.h"
 #include "ui/gfx/geometry/rect_f.h"
 
 namespace aura {
@@ -22,6 +23,7 @@ class Window;
 namespace arc {
 namespace input_overlay {
 class DisplayOverlayController;
+class Action;
 
 // If the following touch move sent immediately, the touch move event is not
 // processed correctly by apps. This is a delayed time to send touch move
@@ -42,27 +44,34 @@ class TouchInjector : public ui::EventRewriter {
   ~TouchInjector() override;
 
   aura::Window* target_window() { return target_window_; }
-  const std::vector<std::unique_ptr<input_overlay::Action>>& actions() const {
+  const std::vector<std::unique_ptr<Action>>& actions() const {
     return actions_;
   }
   bool is_mouse_locked() const { return is_mouse_locked_; }
+  bool touch_injector_enable() const { return touch_injector_enable_; }
+  bool input_mapping_visible() const { return input_mapping_visible_; }
   void set_display_mode(DisplayMode mode) { display_mode_ = mode; }
   void set_display_overlay_controller(DisplayOverlayController* controller) {
     display_overlay_controller_ = controller;
+  }
+  void store_touch_injector_enable(bool enable) {
+    touch_injector_enable_ = enable;
+  }
+  void store_input_mapping_visible(bool enable) {
+    input_mapping_visible_ = enable;
   }
 
   // Parse Json to actions.
   // Json value format:
   // {
-  //   "tap": {
-  //     "keyboard": [],
-  //     "mouse": []
-  //   },
-  //   "move": {
-  //     "keyboard": [],
-  //     "mouse": []
-  //   },
-  //   ...
+  //   "tap": [
+  //     {},
+  //     ...
+  //   ],
+  //   "move": [
+  //     {},
+  //     ...
+  //   ]
   // }
   void ParseActions(const base::Value& root);
   // Notify the EventRewriter whether the text input is focused or not.
@@ -78,6 +87,16 @@ class TouchInjector : public ui::EventRewriter {
       const Continuation continuation) override;
 
  private:
+  friend class TouchInjectorTest;
+
+  struct TouchPointInfo {
+    // ID managed by input overlay.
+    int rewritten_touch_id;
+
+    // The latest root location of this given touch event.
+    gfx::PointF touch_root_location;
+  };
+
   class KeyCommand;
 
   // If the window is destroying or focusing out, releasing the active touch
@@ -99,6 +118,23 @@ class TouchInjector : public ui::EventRewriter {
   bool MenuAnchorPressed(const ui::Event& event,
                          const gfx::RectF& content_bounds);
 
+  // Takes valid touch events and overrides their ids with an id managed by the
+  // TouchIdManager.
+  std::unique_ptr<ui::TouchEvent> RewriteOriginalTouch(
+      const ui::TouchEvent* touch_event);
+
+  // This method will generate a new touch event with a managed touch id.
+  std::unique_ptr<ui::TouchEvent> CreateTouchEvent(
+      const ui::TouchEvent* touch_event,
+      ui::PointerId original_id,
+      int managed_touch_id,
+      gfx::PointF root_location_f);
+
+  // For test.
+  int GetRewrittenTouchIdForTesting(ui::PointerId original_id);
+  gfx::PointF GetRewrittenRootLocationForTesting(ui::PointerId original_id);
+  int GetRewrittenTouchInfoSizeForTesting();
+
   aura::Window* target_window_;
   base::WeakPtr<ui::EventRewriterContinuation> continuation_;
   std::vector<std::unique_ptr<Action>> actions_;
@@ -108,14 +144,22 @@ class TouchInjector : public ui::EventRewriter {
                           &ui::EventSource::RemoveEventRewriter>
       observation_{this};
   std::unique_ptr<KeyCommand> mouse_lock_;
-  // It is used temporarily for switching view and edit mode.
-  // TODO(cuicuiruan): Remove this after the entry point is ready.
-  std::unique_ptr<KeyCommand> switch_mode_;
   bool text_input_active_ = false;
   // The mouse is unlocked by default.
   bool is_mouse_locked_ = false;
   DisplayMode display_mode_ = DisplayMode::kView;
   DisplayOverlayController* display_overlay_controller_ = nullptr;
+  // Linked to game controller toggle in the menu. Set it enabled by default.
+  // This is to save status if display overlay is destroyed during window
+  // operations.
+  bool touch_injector_enable_ = true;
+  // Linked to input mapping toggle in the menu. Set it enabled by default. This
+  // is to save status if display overlay is destroyed during window operations.
+  bool input_mapping_visible_ = true;
+
+  // Key is the original touch id.
+  // Value is a struct containing required info for this touch event.
+  base::flat_map<ui::PointerId, TouchPointInfo> rewritten_touch_infos_;
 
   base::WeakPtrFactory<TouchInjector> weak_ptr_factory_{this};
 };

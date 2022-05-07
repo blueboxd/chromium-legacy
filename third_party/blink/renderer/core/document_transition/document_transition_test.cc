@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "third_party/blink/renderer/core/document_transition/document_transition.h"
+#include <memory>
 
 #include "base/check_op.h"
 #include "base/memory/scoped_refptr.h"
@@ -12,23 +13,33 @@
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_document_transition_prepare_options.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_document_transition_start_options.h"
-#include "third_party/blink/renderer/bindings/core/v8/v8_root_transition_type.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_document_transition_callback.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_document_transition_set_element_options.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition_utils.h"
 #include "third_party/blink/renderer/core/dom/abort_signal.h"
+#include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
+#include "third_party/blink/renderer/core/testing/mock_function_scope.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
 #include "third_party/blink/renderer/platform/testing/find_cc_layer.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
+#include "third_party/blink/renderer/platform/testing/unit_test_helpers.h"
+#include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
+#include "v8-external.h"
+#include "v8-function-callback.h"
+#include "v8-function.h"
+#include "v8-value.h"
 
 namespace blink {
 
@@ -109,31 +120,32 @@ class DocumentTransitionTest : public testing::Test,
 
   void FinishTransition() {
     auto* transition =
-        DocumentTransitionSupplement::documentTransition(GetDocument());
+        DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
     transition->NotifyStartFinished(transition->last_start_sequence_id_);
   }
 
   bool ShouldCompositeForDocumentTransition(Element* e) {
     auto* layout_object = e->GetLayoutObject();
     auto* transition =
-        DocumentTransitionSupplement::documentTransition(GetDocument());
+        DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
     return layout_object && transition &&
            transition->IsTransitionParticipant(*layout_object);
   }
 
   void ValidatePseudoElementTree(
       const Vector<WTF::AtomicString>& document_transition_tags,
-      bool has_new_content) {
-    auto* transition_pseudo =
-        GetDocument().documentElement()->GetPseudoElement(kPseudoIdTransition);
+      bool has_incoming_image) {
+    auto* transition_pseudo = GetDocument().documentElement()->GetPseudoElement(
+        kPseudoIdPageTransition);
     ASSERT_TRUE(transition_pseudo);
     EXPECT_TRUE(transition_pseudo->GetComputedStyle());
     EXPECT_TRUE(transition_pseudo->GetLayoutObject());
 
     PseudoElement* previous_container = nullptr;
     for (const auto& document_transition_tag : document_transition_tags) {
+      SCOPED_TRACE(document_transition_tag);
       auto* container_pseudo = transition_pseudo->GetPseudoElement(
-          kPseudoIdTransitionContainer, document_transition_tag);
+          kPseudoIdPageTransitionContainer, document_transition_tag);
       ASSERT_TRUE(container_pseudo);
       EXPECT_TRUE(container_pseudo->GetComputedStyle());
       EXPECT_TRUE(container_pseudo->GetLayoutObject());
@@ -144,23 +156,26 @@ class DocumentTransitionTest : public testing::Test,
       }
       previous_container = container_pseudo;
 
-      auto* old_content = container_pseudo->GetPseudoElement(
-          kPseudoIdTransitionOldContent, document_transition_tag);
-      ASSERT_TRUE(old_content);
-      EXPECT_TRUE(old_content->GetComputedStyle());
-      EXPECT_TRUE(old_content->GetLayoutObject());
+      auto* image_wrapper_pseudo = container_pseudo->GetPseudoElement(
+          kPseudoIdPageTransitionImageWrapper, document_transition_tag);
 
-      auto* new_content = container_pseudo->GetPseudoElement(
-          kPseudoIdTransitionNewContent, document_transition_tag);
+      auto* outgoing_image = image_wrapper_pseudo->GetPseudoElement(
+          kPseudoIdPageTransitionOutgoingImage, document_transition_tag);
+      ASSERT_TRUE(outgoing_image);
+      EXPECT_TRUE(outgoing_image->GetComputedStyle());
+      EXPECT_TRUE(outgoing_image->GetLayoutObject());
 
-      if (!has_new_content) {
-        ASSERT_FALSE(new_content);
+      auto* incoming_image = image_wrapper_pseudo->GetPseudoElement(
+          kPseudoIdPageTransitionIncomingImage, document_transition_tag);
+
+      if (!has_incoming_image) {
+        ASSERT_FALSE(incoming_image);
         continue;
       }
 
-      ASSERT_TRUE(new_content);
-      EXPECT_TRUE(new_content->GetComputedStyle());
-      EXPECT_TRUE(new_content->GetLayoutObject());
+      ASSERT_TRUE(incoming_image);
+      EXPECT_TRUE(incoming_image->GetComputedStyle());
+      EXPECT_TRUE(incoming_image->GetLayoutObject());
     }
   }
 
@@ -172,9 +187,9 @@ INSTANTIATE_PAINT_TEST_SUITE_P(DocumentTransitionTest);
 
 TEST_P(DocumentTransitionTest, TransitionObjectPersists) {
   auto* first_transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
   auto* second_transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
 
   EXPECT_TRUE(first_transition);
   EXPECT_EQ(GetState(first_transition), State::kIdle);
@@ -183,9 +198,9 @@ TEST_P(DocumentTransitionTest, TransitionObjectPersists) {
 }
 
 TEST_P(DocumentTransitionTest, TransitionPreparePromiseResolves) {
-  DocumentTransitionPrepareOptions options;
   auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
+  ASSERT_TRUE(transition->StartNewTransition());
   ASSERT_TRUE(transition);
   EXPECT_EQ(GetState(transition), State::kIdle);
 
@@ -193,74 +208,57 @@ TEST_P(DocumentTransitionTest, TransitionPreparePromiseResolves) {
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
 
+  MockFunctionScope funcs(script_state);
+  auto* document_transition_callback =
+      V8DocumentTransitionCallback::Create(funcs.ExpectCall());
+
   ScriptPromiseTester promise_tester(
       script_state,
-      transition->prepare(script_state, &options, exception_state));
+      transition->start(script_state, document_transition_callback,
+                        exception_state));
 
-  EXPECT_EQ(GetState(transition), State::kPreparing);
+  EXPECT_EQ(GetState(transition), State::kCapturing);
   UpdateAllLifecyclePhasesAndFinishDirectives();
-  promise_tester.WaitUntilSettled();
+  EXPECT_EQ(GetState(transition), State::kCaptured);
 
+  test::RunPendingTasks();
+  EXPECT_EQ(GetState(transition), State::kStarted);
+  UpdateAllLifecyclePhasesAndFinishDirectives();
+  FinishTransition();
+  promise_tester.WaitUntilSettled();
   EXPECT_TRUE(promise_tester.IsFulfilled());
-  EXPECT_EQ(GetState(transition), State::kPrepared);
 }
 
-TEST_P(DocumentTransitionTest, AdditionalPrepareRejectsPreviousPromise) {
+TEST_P(DocumentTransitionTest, AdditionalStartAbortsTransition) {
   auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
+  ASSERT_TRUE(transition->StartNewTransition());
 
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
 
-  DocumentTransitionPrepareOptions options;
+  MockFunctionScope funcs(script_state);
+  auto* document_transition_callback =
+      V8DocumentTransitionCallback::Create(funcs.ExpectNoCall());
+
   ScriptPromiseTester first_promise_tester(
       script_state,
-      transition->prepare(script_state, &options, exception_state));
-  EXPECT_EQ(GetState(transition), State::kPreparing);
+      transition->start(script_state, document_transition_callback,
+                        exception_state));
+  EXPECT_EQ(GetState(transition), State::kCapturing);
 
-  ScriptPromiseTester second_promise_tester(
-      script_state,
-      transition->prepare(script_state, &options, exception_state));
-  EXPECT_EQ(GetState(transition), State::kPreparing);
+  EXPECT_FALSE(exception_state.HadException());
+  transition->start(script_state, document_transition_callback,
+                    exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+  EXPECT_EQ(GetState(transition), State::kIdle);
 
   UpdateAllLifecyclePhasesAndFinishDirectives();
   first_promise_tester.WaitUntilSettled();
-  second_promise_tester.WaitUntilSettled();
 
   EXPECT_TRUE(first_promise_tester.IsRejected());
-  EXPECT_TRUE(second_promise_tester.IsFulfilled());
-  EXPECT_EQ(GetState(transition), State::kPrepared);
-}
-
-TEST_P(DocumentTransitionTest, EffectParsing) {
-  // Test default init.
-  auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
-
-  V8TestingScope v8_scope;
-  ScriptState* script_state = v8_scope.GetScriptState();
-  ExceptionState& exception_state = v8_scope.GetExceptionState();
-  DocumentTransitionPrepareOptions default_options;
-  transition->prepare(script_state, &default_options, exception_state);
-
-  auto request = transition->TakePendingRequest();
-  ASSERT_TRUE(request);
-
-  auto directive = request->ConstructDirective({});
-  EXPECT_EQ(directive.effect(), DocumentTransitionRequest::Effect::kNone);
-
-  // Test "explode" effect parsing.
-  DocumentTransitionPrepareOptions explode_options;
-  explode_options.setRootTransition(
-      V8RootTransitionType(V8RootTransitionType::Enum::kExplode));
-  transition->prepare(script_state, &explode_options, exception_state);
-
-  request = transition->TakePendingRequest();
-  ASSERT_TRUE(request);
-
-  directive = request->ConstructDirective({});
-  EXPECT_EQ(directive.effect(), DocumentTransitionRequest::Effect::kExplode);
+  EXPECT_EQ(GetState(transition), State::kIdle);
 }
 
 TEST_P(DocumentTransitionTest, PrepareSharedElementsWantToBeComposited) {
@@ -279,20 +277,25 @@ TEST_P(DocumentTransitionTest, PrepareSharedElementsWantToBeComposited) {
   auto* e3 = GetDocument().getElementById("e3");
 
   auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
+  ASSERT_TRUE(transition->StartNewTransition());
 
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
 
+  MockFunctionScope funcs(script_state);
+  auto* document_transition_callback =
+      V8DocumentTransitionCallback::Create(funcs.ExpectCall());
+
   EXPECT_FALSE(ShouldCompositeForDocumentTransition(e1));
   EXPECT_FALSE(ShouldCompositeForDocumentTransition(e2));
   EXPECT_FALSE(ShouldCompositeForDocumentTransition(e3));
 
-  DocumentTransitionPrepareOptions options;
-  // Set two of the elements to be shared.
-  options.setSharedElements({e1, e3});
-  transition->prepare(script_state, &options, exception_state);
+  transition->setElement(script_state, e1, "e1", nullptr, exception_state);
+  transition->setElement(script_state, e3, "e3", nullptr, exception_state);
+  transition->start(script_state, document_transition_callback,
+                    exception_state);
 
   // Update the lifecycle while keeping the transition active.
   UpdateAllLifecyclePhasesForTest();
@@ -333,19 +336,26 @@ TEST_P(DocumentTransitionTest, UncontainedElementsAreCleared) {
   auto* e3 = GetDocument().getElementById("e3");
 
   auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
+  ASSERT_TRUE(transition->StartNewTransition());
 
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
 
+  MockFunctionScope funcs(script_state);
+  auto* document_transition_callback =
+      V8DocumentTransitionCallback::Create(funcs.ExpectNoCall());
+
   EXPECT_FALSE(ShouldCompositeForDocumentTransition(e1));
   EXPECT_FALSE(ShouldCompositeForDocumentTransition(e2));
   EXPECT_FALSE(ShouldCompositeForDocumentTransition(e3));
 
-  DocumentTransitionPrepareOptions options;
-  options.setSharedElements({e1, e2, e3});
-  transition->prepare(script_state, &options, exception_state);
+  transition->setElement(script_state, e1, "e1", nullptr, exception_state);
+  transition->setElement(script_state, e2, "e2", nullptr, exception_state);
+  transition->setElement(script_state, e3, "e3", nullptr, exception_state);
+  transition->start(script_state, document_transition_callback,
+                    exception_state);
 
   EXPECT_TRUE(ShouldCompositeForDocumentTransition(e1));
   EXPECT_TRUE(ShouldCompositeForDocumentTransition(e2));
@@ -364,44 +374,6 @@ TEST_P(DocumentTransitionTest, UncontainedElementsAreCleared) {
   EXPECT_FALSE(ElementIsComposited("e3"));
 }
 
-TEST_P(DocumentTransitionTest, StartSharedElementCountMismatch) {
-  SetHtmlInnerHTML(R"HTML(
-    <div id=e1></div>
-    <div id=e2></div>
-    <div id=e3></div>
-  )HTML");
-
-  auto* e1 = GetDocument().getElementById("e1");
-  auto* e2 = GetDocument().getElementById("e2");
-  auto* e3 = GetDocument().getElementById("e3");
-
-  auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
-
-  V8TestingScope v8_scope;
-  ScriptState* script_state = v8_scope.GetScriptState();
-  ExceptionState& exception_state = v8_scope.GetExceptionState();
-
-  DocumentTransitionPrepareOptions prepare_options;
-  // Set two of the elements to be shared.
-  prepare_options.setSharedElements({e1, e3});
-  transition->prepare(script_state, &prepare_options, exception_state);
-
-  UpdateAllLifecyclePhasesAndFinishDirectives();
-
-  DocumentTransitionStartOptions start_options;
-  // Set all of the elements as shared. This should cause an exception.
-  start_options.setSharedElements({e1, e2, e3});
-
-  EXPECT_FALSE(exception_state.HadException());
-  transition->start(script_state, &start_options, exception_state);
-  EXPECT_TRUE(exception_state.HadException());
-
-  EXPECT_FALSE(ShouldCompositeForDocumentTransition(e1));
-  EXPECT_FALSE(ShouldCompositeForDocumentTransition(e2));
-  EXPECT_FALSE(ShouldCompositeForDocumentTransition(e3));
-}
-
 TEST_P(DocumentTransitionTest, StartSharedElementsWantToBeComposited) {
   SetHtmlInnerHTML(R"HTML(
     <div id=e1></div>
@@ -414,27 +386,67 @@ TEST_P(DocumentTransitionTest, StartSharedElementsWantToBeComposited) {
   auto* e3 = GetDocument().getElementById("e3");
 
   auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
+  ASSERT_TRUE(transition->StartNewTransition());
 
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
 
-  DocumentTransitionPrepareOptions prepare_options;
   // Set two of the elements to be shared.
-  prepare_options.setSharedElements({e1, e3});
-  transition->prepare(script_state, &prepare_options, exception_state);
+  transition->setElement(script_state, e1, "e1", nullptr, exception_state);
+  transition->setElement(script_state, e3, "e3", nullptr, exception_state);
+
+  struct Data {
+    STACK_ALLOCATED();
+
+   public:
+    Data(DocumentTransition* transition,
+         ScriptState* script_state,
+         ExceptionState& exception_state,
+         Element* e1,
+         Element* e2)
+        : transition(transition),
+          script_state(script_state),
+          exception_state(exception_state),
+          e1(e1),
+          e2(e2) {}
+
+    DocumentTransition* transition;
+    ScriptState* script_state;
+    ExceptionState& exception_state;
+    Element* e1;
+    Element* e2;
+  };
+  Data data(transition, script_state, exception_state, e1, e2);
+
+  // This callback sets the elements for the start phase of the transition.
+  auto start_setup_lambda =
+      [](const v8::FunctionCallbackInfo<v8::Value>& info) {
+        auto* data =
+            static_cast<Data*>(info.Data().As<v8::External>()->Value());
+
+        // Set two different elements as shared.
+        data->transition->setElement(data->script_state, data->e1, "e1",
+                                     nullptr, data->exception_state);
+        data->transition->setElement(data->script_state, data->e2, "e2",
+                                     nullptr, data->exception_state);
+      };
+  auto start_setup_callback =
+      v8::Function::New(v8_scope.GetContext(), start_setup_lambda,
+                        v8::External::New(v8_scope.GetIsolate(), &data))
+          .ToLocalChecked();
+
+  transition->start(script_state,
+                    V8DocumentTransitionCallback::Create(start_setup_callback),
+                    exception_state);
 
   EXPECT_TRUE(ShouldCompositeForDocumentTransition(e1));
   EXPECT_FALSE(ShouldCompositeForDocumentTransition(e2));
   EXPECT_TRUE(ShouldCompositeForDocumentTransition(e3));
 
   UpdateAllLifecyclePhasesAndFinishDirectives();
-
-  DocumentTransitionStartOptions start_options;
-  // Set two different elements as shared.
-  start_options.setSharedElements({e1, e2});
-  transition->start(script_state, &start_options, exception_state);
+  test::RunPendingTasks();
 
   EXPECT_TRUE(ShouldCompositeForDocumentTransition(e1));
   EXPECT_TRUE(ShouldCompositeForDocumentTransition(e2));
@@ -447,142 +459,144 @@ TEST_P(DocumentTransitionTest, StartSharedElementsWantToBeComposited) {
   EXPECT_FALSE(ShouldCompositeForDocumentTransition(e3));
 }
 
-TEST_P(DocumentTransitionTest, AdditionalPrepareAfterPreparedSucceeds) {
+TEST_P(DocumentTransitionTest, AdditionalStartAfterStartAbortsTransition) {
   auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
+  ASSERT_TRUE(transition->StartNewTransition());
 
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
 
-  DocumentTransitionPrepareOptions options;
+  MockFunctionScope funcs(script_state);
+  auto* document_transition_callback =
+      V8DocumentTransitionCallback::Create(funcs.ExpectCall());
+
   ScriptPromiseTester first_promise_tester(
       script_state,
-      transition->prepare(script_state, &options, exception_state));
-  EXPECT_EQ(GetState(transition), State::kPreparing);
+      transition->start(script_state, document_transition_callback,
+                        exception_state));
+  EXPECT_EQ(GetState(transition), State::kCapturing);
 
   UpdateAllLifecyclePhasesAndFinishDirectives();
-  first_promise_tester.WaitUntilSettled();
-  EXPECT_TRUE(first_promise_tester.IsFulfilled());
-  EXPECT_EQ(GetState(transition), State::kPrepared);
+  EXPECT_EQ(GetState(transition), State::kCaptured);
 
-  ScriptPromiseTester second_promise_tester(
-      script_state,
-      transition->prepare(script_state, &options, exception_state));
-  EXPECT_EQ(GetState(transition), State::kPreparing);
-
-  UpdateAllLifecyclePhasesAndFinishDirectives();
-  second_promise_tester.WaitUntilSettled();
-  EXPECT_TRUE(second_promise_tester.IsFulfilled());
-  EXPECT_EQ(GetState(transition), State::kPrepared);
+  EXPECT_FALSE(exception_state.HadException());
+  transition->start(script_state, document_transition_callback,
+                    exception_state);
+  EXPECT_TRUE(exception_state.HadException());
+  EXPECT_EQ(GetState(transition), State::kIdle);
 }
 
 TEST_P(DocumentTransitionTest, TransitionCleanedUpBeforePromiseResolution) {
+  auto* transition =
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
+  ASSERT_TRUE(transition->StartNewTransition());
+  ASSERT_TRUE(transition);
+  EXPECT_EQ(GetState(transition), State::kIdle);
+
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
 
-  DocumentTransitionPrepareOptions options;
-  ScriptPromiseTester tester(
+  MockFunctionScope funcs(script_state);
+  auto* document_transition_callback =
+      V8DocumentTransitionCallback::Create(funcs.ExpectCall());
+
+  ScriptPromiseTester promise_tester(
       script_state,
-      DocumentTransitionSupplement::documentTransition(GetDocument())
-          ->prepare(script_state, &options, exception_state));
+      transition->start(script_state, document_transition_callback,
+                        exception_state));
 
   // ActiveScriptWrappable should keep the transition alive.
   ThreadState::Current()->CollectAllGarbageForTesting();
 
+  EXPECT_EQ(GetState(transition), State::kCapturing);
   UpdateAllLifecyclePhasesAndFinishDirectives();
-  tester.WaitUntilSettled();
-  EXPECT_TRUE(tester.IsFulfilled());
+  EXPECT_EQ(GetState(transition), State::kCaptured);
+
+  test::RunPendingTasks();
+  EXPECT_EQ(GetState(transition), State::kStarted);
+  UpdateAllLifecyclePhasesAndFinishDirectives();
+  FinishTransition();
+  promise_tester.WaitUntilSettled();
+  EXPECT_TRUE(promise_tester.IsFulfilled());
 }
 
-TEST_P(DocumentTransitionTest, StartHasNoEffectUnlessPrepared) {
+TEST_P(DocumentTransitionTest, MultipleStartsBeforeTransitionFinished) {
   auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
-  EXPECT_EQ(GetState(transition), State::kIdle);
-  EXPECT_FALSE(transition->TakePendingRequest());
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
+  ASSERT_TRUE(transition->StartNewTransition());
 
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
 
-  DocumentTransitionStartOptions options;
-  transition->start(script_state, &options, exception_state);
-  EXPECT_EQ(GetState(transition), State::kIdle);
-  EXPECT_FALSE(transition->TakePendingRequest());
-  EXPECT_TRUE(exception_state.HadException());
-}
+  MockFunctionScope funcs(script_state);
+  auto* document_transition_callback =
+      V8DocumentTransitionCallback::Create(funcs.ExpectCall());
 
-TEST_P(DocumentTransitionTest, StartAfterPrepare) {
-  auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
-
-  V8TestingScope v8_scope;
-  ScriptState* script_state = v8_scope.GetScriptState();
-  ExceptionState& exception_state = v8_scope.GetExceptionState();
-
-  DocumentTransitionPrepareOptions prepare_options;
-  ScriptPromiseTester prepare_tester(
-      script_state,
-      transition->prepare(script_state, &prepare_options, exception_state));
-  EXPECT_EQ(GetState(transition), State::kPreparing);
-
-  UpdateAllLifecyclePhasesAndFinishDirectives();
-  prepare_tester.WaitUntilSettled();
-  EXPECT_TRUE(prepare_tester.IsFulfilled());
-  EXPECT_EQ(GetState(transition), State::kPrepared);
-
-  DocumentTransitionStartOptions start_options;
   ScriptPromiseTester start_tester(
       script_state,
-      transition->start(script_state, &start_options, exception_state));
-  // Take the request.
+      transition->start(script_state, document_transition_callback,
+                        exception_state));
+  EXPECT_EQ(GetState(transition), State::kCapturing);
+
+  UpdateAllLifecyclePhasesAndFinishDirectives();
+  EXPECT_EQ(GetState(transition), State::kCaptured);
+
+  // We should have a start request from the async callback passed to start()
+  // resolving.
+  test::RunPendingTasks();
   auto start_request = transition->TakePendingRequest();
   EXPECT_TRUE(start_request);
   EXPECT_EQ(GetState(transition), State::kStarted);
 
-  // Subsequent starts should get an exception.
+  // Subsequent starts should get an exception and cancel an existing
+  // transition.
   EXPECT_FALSE(exception_state.HadException());
-  transition->start(script_state, &start_options, exception_state);
+  transition->start(script_state, document_transition_callback,
+                    exception_state);
   EXPECT_TRUE(exception_state.HadException());
-  EXPECT_FALSE(transition->TakePendingRequest());
+
+  // We will have a release request at this point.
+  EXPECT_TRUE(transition->TakePendingRequest());
 
   start_request->TakeFinishedCallback().Run();
   FinishTransition();
   start_tester.WaitUntilSettled();
-  EXPECT_TRUE(start_tester.IsFulfilled());
+  EXPECT_TRUE(start_tester.IsRejected());
 }
 
 TEST_P(DocumentTransitionTest, StartPromiseIsResolved) {
   auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
+  ASSERT_TRUE(transition->StartNewTransition());
 
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
 
-  DocumentTransitionPrepareOptions prepare_options;
-  ScriptPromiseTester prepare_tester(
-      script_state,
-      transition->prepare(script_state, &prepare_options, exception_state));
-  EXPECT_EQ(GetState(transition), State::kPreparing);
+  MockFunctionScope funcs(script_state);
+  auto* document_transition_callback =
+      V8DocumentTransitionCallback::Create(funcs.ExpectCall());
 
-  // Visual updates are allows during prepare phase.
+  ScriptPromiseTester start_tester(
+      script_state,
+      transition->start(script_state, document_transition_callback,
+                        exception_state));
+  EXPECT_EQ(GetState(transition), State::kCapturing);
+
+  // Visual updates are allows during capture phase.
   EXPECT_FALSE(LayerTreeHost()->IsDeferringCommits());
 
   UpdateAllLifecyclePhasesAndFinishDirectives();
-  prepare_tester.WaitUntilSettled();
-  EXPECT_TRUE(prepare_tester.IsFulfilled());
-  EXPECT_EQ(GetState(transition), State::kPrepared);
+  EXPECT_EQ(GetState(transition), State::kCaptured);
 
-  // Visual updates are stalled between prepared and start.
+  // Visual updates are stalled between captured and start.
   EXPECT_TRUE(LayerTreeHost()->IsDeferringCommits());
 
-  DocumentTransitionStartOptions start_options;
-  ScriptPromiseTester start_tester(
-      script_state,
-      transition->start(script_state, &start_options, exception_state));
-
+  test::RunPendingTasks();
   EXPECT_EQ(GetState(transition), State::kStarted);
   UpdateAllLifecyclePhasesAndFinishDirectives();
   FinishTransition();
@@ -595,26 +609,29 @@ TEST_P(DocumentTransitionTest, StartPromiseIsResolved) {
   EXPECT_EQ(GetState(transition), State::kIdle);
 }
 
-TEST_P(DocumentTransitionTest, AbortSignal) {
+TEST_P(DocumentTransitionTest, Abandon) {
   auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
+  ASSERT_TRUE(transition->StartNewTransition());
 
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
 
-  auto* abort_signal =
-      MakeGarbageCollected<AbortSignal>(v8_scope.GetExecutionContext());
-  DocumentTransitionPrepareOptions prepare_options;
-  prepare_options.setAbortSignal(abort_signal);
-  ScriptPromiseTester prepare_tester(
-      script_state,
-      transition->prepare(script_state, &prepare_options, exception_state));
-  EXPECT_EQ(GetState(transition), State::kPreparing);
+  MockFunctionScope funcs(script_state);
+  auto* document_transition_callback =
+      V8DocumentTransitionCallback::Create(funcs.ExpectNoCall());
 
-  abort_signal->SignalAbort(script_state);
-  prepare_tester.WaitUntilSettled();
-  EXPECT_TRUE(prepare_tester.IsRejected());
+  ScriptPromiseTester start_tester(
+      script_state,
+      transition->start(script_state, document_transition_callback,
+                        exception_state));
+  EXPECT_EQ(GetState(transition), State::kCapturing);
+
+  transition->abandon(script_state, exception_state);
+
+  start_tester.WaitUntilSettled();
+  EXPECT_TRUE(start_tester.IsRejected());
   EXPECT_EQ(GetState(transition), State::kIdle);
 }
 
@@ -636,21 +653,68 @@ TEST_P(DocumentTransitionTest, DocumentTransitionPseudoTree) {
   auto* e3 = GetDocument().getElementById("e3");
 
   auto* transition =
-      DocumentTransitionSupplement::documentTransition(GetDocument());
+      DocumentTransitionSupplement::EnsureDocumentTransition(GetDocument());
+  ASSERT_TRUE(transition->StartNewTransition());
 
   V8TestingScope v8_scope;
   ScriptState* script_state = v8_scope.GetScriptState();
   ExceptionState& exception_state = v8_scope.GetExceptionState();
 
-  DocumentTransitionPrepareOptions options;
-  options.setSharedElements({e1, e2, e3});
-  transition->prepare(script_state, &options, exception_state);
+  transition->setElement(script_state, e1, "e1", nullptr, exception_state);
+  transition->setElement(script_state, e2, "e2", nullptr, exception_state);
+  transition->setElement(script_state, e3, "e3", nullptr, exception_state);
+
+  struct Data {
+    STACK_ALLOCATED();
+
+   public:
+    Data(DocumentTransition* transition,
+         ScriptState* script_state,
+         ExceptionState& exception_state,
+         Document& document)
+        : transition(transition),
+          script_state(script_state),
+          exception_state(exception_state),
+          document(document) {}
+
+    DocumentTransition* transition;
+    ScriptState* script_state;
+    ExceptionState& exception_state;
+    Document& document;
+  };
+  Data data(transition, script_state, exception_state, GetDocument());
+
+  // This callback sets the elements for the start phase of the transition.
+  auto start_setup_lambda =
+      [](const v8::FunctionCallbackInfo<v8::Value>& info) {
+        auto* data =
+            static_cast<Data*>(info.Data().As<v8::External>()->Value());
+
+        auto* e1 = data->document.getElementById("e1");
+        auto* e2 = data->document.getElementById("e2");
+        auto* e3 = data->document.getElementById("e3");
+
+        data->transition->setElement(data->script_state, e1, "e1", nullptr,
+                                     data->exception_state);
+        data->transition->setElement(data->script_state, e2, "e2", nullptr,
+                                     data->exception_state);
+        data->transition->setElement(data->script_state, e3, "e3", nullptr,
+                                     data->exception_state);
+      };
+  auto start_setup_callback =
+      v8::Function::New(v8_scope.GetContext(), start_setup_lambda,
+                        v8::External::New(v8_scope.GetIsolate(), &data))
+          .ToLocalChecked();
+
+  transition->start(script_state,
+                    V8DocumentTransitionCallback::Create(start_setup_callback),
+                    exception_state);
   ASSERT_FALSE(exception_state.HadException());
   UpdateAllLifecyclePhasesForTest();
 
   // The prepare phase should generate the pseudo tree.
-  const Vector<AtomicString> document_transition_tags = {"shared-0", "shared-1",
-                                                         "shared-2"};
+  const Vector<AtomicString> document_transition_tags = {"root", "e1", "e2",
+                                                         "e3"};
   ValidatePseudoElementTree(document_transition_tags, false);
 
   // Finish the prepare phase, mutate the DOM and start the animation.
@@ -664,10 +728,8 @@ TEST_P(DocumentTransitionTest, DocumentTransitionPseudoTree) {
     <div id=e2></div>
     <div id=e3></div>
   )HTML");
-  DocumentTransitionStartOptions start_options;
-  start_options.setSharedElements({e1, e2, e3});
-  transition->start(script_state, &start_options, exception_state);
-  ASSERT_FALSE(exception_state.HadException());
+  test::RunPendingTasks();
+  EXPECT_EQ(GetState(transition), State::kStarted);
 
   // The start phase should generate pseudo elements for rendering new live
   // content.
@@ -677,8 +739,8 @@ TEST_P(DocumentTransitionTest, DocumentTransitionPseudoTree) {
   // Finish the animations which should remove the pseudo element tree.
   FinishTransition();
   UpdateAllLifecyclePhasesAndFinishDirectives();
-  EXPECT_FALSE(
-      GetDocument().documentElement()->GetPseudoElement(kPseudoIdTransition));
+  EXPECT_FALSE(GetDocument().documentElement()->GetPseudoElement(
+      kPseudoIdPageTransition));
 }
 
 }  // namespace blink

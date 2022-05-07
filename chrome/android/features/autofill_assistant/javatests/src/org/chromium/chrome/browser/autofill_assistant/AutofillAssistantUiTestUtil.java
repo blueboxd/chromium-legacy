@@ -46,13 +46,11 @@ import org.hamcrest.Matchers;
 import org.hamcrest.TypeSafeMatcher;
 import org.json.JSONArray;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.Criteria;
 import org.chromium.base.test.util.CriteriaHelper;
 import org.chromium.base.test.util.CriteriaNotSatisfiedException;
-import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipIcon;
 import org.chromium.chrome.browser.autofill_assistant.proto.ChipProto;
@@ -63,6 +61,8 @@ import org.chromium.chrome.browser.autofill_assistant.proto.TriggerScriptUIProto
 import org.chromium.chrome.browser.autofill_assistant.proto.TriggerScriptUIProto.TriggerChip;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.components.autofill_assistant.R;
+import org.chromium.components.autofill_assistant.TriggerContext;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.components.image_fetcher.ImageFetcherConfig;
@@ -230,8 +230,7 @@ class AutofillAssistantUiTestUtil {
                 this.mContext = imageView.getContext();
                 int imageTintColor = imageView.getImageTintList().getColorForState(
                         imageView.getDrawable().getState(), -1);
-                int expectedColor =
-                        ApiCompatibilityUtils.getColor(mContext.getResources(), colorResId);
+                int expectedColor = mContext.getColor(colorResId);
                 return imageTintColor == expectedColor;
             }
 

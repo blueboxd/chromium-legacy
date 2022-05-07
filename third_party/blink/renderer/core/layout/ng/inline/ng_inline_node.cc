@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/layout/ng/svg/ng_svg_text_layout_attributes_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/svg/svg_inline_node_data.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
 #include "third_party/blink/renderer/platform/fonts/font_performance.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/harfbuzz_shaper.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/run_segmenter.h"
@@ -528,13 +529,21 @@ void NGInlineNode::PrepareLayoutIfNeeded() const {
 }
 
 void NGInlineNode::ShapeTextOrDefer(const NGConstraintSpace& space) const {
-  if (Data().shaping_state_ != NGInlineNodeData::kShapingNone)
+  if (Data().shaping_state_ != NGInlineNodeData::kShapingNone) {
+    if (auto* context = GetLayoutBox()->GetDisplayLockContext()) {
+      if (!context->IsLocked() && Data().IsShapingDeferred()) {
+        ShapeTextIncludingFirstLine(NGInlineNodeData::kShapingDone,
+                                    MutableData(), nullptr, nullptr);
+      }
+    }
     return;
+  }
 
   NGInlineNodeData* data = MutableData();
-  const auto& view = *GetLayoutBox()->GetFrameView();
+  auto& view = *GetLayoutBox()->GetFrameView();
   NGInlineNodeData::ShapingState new_state = NGInlineNodeData::kShapingDone;
-  if (view.AllowDeferredShaping() && !GetLayoutBox()->IsInsideFlowThread()) {
+  if (view.AllowDeferredShaping() && !GetLayoutBox()->IsInsideFlowThread() &&
+      Style().IsContentVisibilityVisible()) {
     DCHECK(IsHorizontalWritingMode(Style().GetWritingMode()));
     const LayoutUnit viewport_bottom = view.CurrentViewportBottom();
     DCHECK_NE(viewport_bottom, kIndefiniteSize) << GetLayoutBox();
@@ -547,6 +556,15 @@ void NGInlineNode::ShapeTextOrDefer(const NGConstraintSpace& space) const {
     if (viewport_bottom >= LayoutUnit() && IsDeferrableContent(*data) &&
         top > viewport_bottom) {
       new_state = NGInlineNodeData::kShapingDeferred;
+
+      if (Element* element = DynamicTo<Element>(GetDOMNode())) {
+        // We can't call DisplayLockContext::SetRequestedState() during layout.
+        view.RequestToLockDeferred(*element);
+      } else {
+        // We don't support deferring anonymous IFCs because DisplayLock
+        // supports only elements.
+        new_state = NGInlineNodeData::kShapingDone;
+      }
     }
   }
   ShapeTextIncludingFirstLine(new_state, MutableData(), nullptr, nullptr);
@@ -1900,7 +1918,7 @@ static LayoutUnit ComputeContentSize(
       const MinMaxSizesResult child_result =
           ComputeMinAndMaxContentContribution(style, float_node, float_space);
       LayoutUnit child_inline_margins =
-          ComputeMinMaxMargins(style, float_node).InlineSum();
+          ComputeMarginsFor(float_space, float_node.Style(), space).InlineSum();
 
       if (depends_on_block_constraints_out) {
         *depends_on_block_constraints_out |=

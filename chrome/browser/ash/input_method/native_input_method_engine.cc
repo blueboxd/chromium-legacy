@@ -45,7 +45,7 @@ namespace input_method {
 
 namespace {
 
-namespace mojom = ::chromeos::ime::mojom;
+namespace mojom = ::ash::ime::mojom;
 
 // These are persisted to logs. Entries should not be renumbered. Numeric values
 // should not be reused. Must stay in sync with IMENonAutocorrectDiacriticStatus
@@ -422,7 +422,8 @@ uint32_t Utf16ToCodepoint(const std::u16string& str) {
   base::ReadUnicodeCharacter(str.data(), str.length(), &index, &codepoint);
 
   // Should only contain a single codepoint.
-  DCHECK_EQ(index, str.length() - 1);
+  DCHECK_GE(index, 0);
+  DCHECK_EQ(static_cast<size_t>(index), str.length() - 1);
   return codepoint;
 }
 
@@ -683,8 +684,7 @@ void NativeInputMethodEngine::ImeObserver::ConnectToImeService(
           &NativeInputMethodEngine::ImeObserver::OnConnectionFactoryBound,
           weak_ptr_factory_.GetWeakPtr()));
 
-  mojo::PendingAssociatedRemote<chromeos::ime::mojom::InputMethodHost>
-      input_method_host;
+  mojo::PendingAssociatedRemote<ime::mojom::InputMethodHost> input_method_host;
   associated_host_receiver_.Bind(
       input_method_host.InitWithNewEndpointAndPassReceiver());
 
@@ -1192,7 +1192,7 @@ void NativeInputMethodEngine::ImeObserver::DisplaySuggestions(
 }
 
 void NativeInputMethodEngine::ImeObserver::UpdateCandidatesWindow(
-    chromeos::ime::mojom::CandidatesWindowPtr window) {
+    mojom::CandidatesWindowPtr window) {
   if (!IsTextClientActive())
     return;
 

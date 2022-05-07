@@ -20,6 +20,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.signin.services.UnifiedConsentServiceBridge;
 import org.chromium.chrome.browser.sync.settings.GoogleServicesSettings;
+import org.chromium.components.autofill_assistant.AssistantFeatures;
+import org.chromium.components.autofill_assistant.AutofillAssistantPreferencesUtil;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
@@ -88,7 +90,7 @@ public class AutofillAssistantPreferenceFragment extends PreferenceFragmentCompa
         }
 
         mGoogleServicesSettingsLink = findPreference(PREF_GOOGLE_SERVICES_SETTINGS_LINK);
-        NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(getResources(), view -> {
+        NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(getContext(), view -> {
             SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
             settingsLauncher.launchSettingsActivity(requireContext(), GoogleServicesSettings.class);
         });

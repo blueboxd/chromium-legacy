@@ -17,11 +17,11 @@
 
 namespace partition_alloc::internal {
 
-namespace {
+constexpr inline int kPartitionNumSystemPagesPerSlotSpanBits = 8;
 
-constexpr int kPartitionNumSystemPagesPerSlotSpanBits = 8;
-
-}  // namespace
+// Visible for testing.
+BASE_EXPORT uint8_t
+ComputeSystemPagesPerSlotSpan(size_t slot_size, bool prefer_smaller_slot_spans);
 
 template <bool thread_safe>
 struct PartitionBucket {
@@ -59,9 +59,10 @@ struct PartitionBucket {
 
   // Sets |is_already_zeroed| to true if the allocation was satisfied by
   // requesting (a) new page(s) from the operating system, or false otherwise.
-  // This enables an optimization for when callers use |PartitionAllocZeroFill|:
-  // there is no need to call memset on fresh pages; the OS has already zeroed
-  // them. (See |PartitionRoot::AllocFromBucket|.)
+  // This enables an optimization for when callers use
+  // |AllocFlags::kZeroFill|: there is no need to call memset on fresh
+  // pages; the OS has already zeroed them. (See
+  // |PartitionRoot::AllocFromBucket|.)
   //
   // Note the matching Free() functions are in SlotSpanMetadata.
   BASE_EXPORT NOINLINE uintptr_t SlowPathAlloc(PartitionRoot<thread_safe>* root,
@@ -145,14 +146,6 @@ struct PartitionBucket {
 
  private:
   static NOINLINE void OnFull();
-
-  // Returns the number of system pages in a slot span.
-  //
-  // The calculation attempts to find the best number of system pages to
-  // allocate for the given slot_size to minimize wasted space. It uses a
-  // heuristic that looks at number of bytes wasted after the last slot and
-  // attempts to account for the PTE usage of each system page.
-  static uint8_t ComputeSystemPagesPerSlotSpan(size_t slot_size);
 
   // Allocates a new slot span with size |num_partition_pages| from the
   // current extent. Metadata within this slot span will be initialized.

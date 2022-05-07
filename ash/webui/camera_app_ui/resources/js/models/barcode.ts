@@ -6,7 +6,7 @@ import {assertInstanceof} from '../assert.js';
 import * as Comlink from '../lib/comlink.js';
 
 import {clearAsyncInterval, setAsyncInterval} from './async_interval.js';
-import {BarcodeWorkerInterface} from './barcode_worker.js';
+import {BarcodeWorker} from './barcode_worker.js';
 
 // The delay interval between consecutive barcode detections.
 const SCAN_INTERVAL = 200;
@@ -23,9 +23,11 @@ const ACTIVE_SCAN_RATIO = 1.0;
  * A barcode scanner to detect barcodes from a camera stream.
  */
 export class BarcodeScanner {
-  private readonly worker = Comlink.wrap<BarcodeWorkerInterface>(
+  private readonly worker = Comlink.wrap<BarcodeWorker>(
       new Worker('/js/models/barcode_worker.js', {type: 'module'}));
+
   private intervalId: number|null = null;
+
   /**
    * @param video The video to be scanned for barcode.
    * @param callback The callback for the detected barcodes.
@@ -92,6 +94,7 @@ export class BarcodeScanner {
 
   /**
    * Scans barcodes from the current frame.
+   *
    * @return The detected barcode value, or null if no barcode is detected.
    */
   private async scan(): Promise<string|null> {

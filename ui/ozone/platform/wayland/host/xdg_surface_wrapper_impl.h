@@ -35,14 +35,14 @@ class XDGSurfaceWrapperImpl : public ShellSurfaceWrapper {
   bool IsConfigured() override;
   void SetWindowGeometry(const gfx::Rect& bounds) override;
 
+  struct xdg_surface* xdg_surface() const;
+
+ private:
   // xdg_surface_listener
   static void Configure(void* data,
                         struct xdg_surface* xdg_surface,
                         uint32_t serial);
 
-  struct xdg_surface* xdg_surface() const;
-
- private:
   // Non-owing WaylandWindow that uses this surface wrapper.
   WaylandWindow* const wayland_window_;
   WaylandConnection* const connection_;

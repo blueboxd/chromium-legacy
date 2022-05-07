@@ -91,9 +91,9 @@
 <translation id="1414271762428216854"><ph name="APP_NAME" />、インストール済みアプリ</translation>
 <translation id="1419738280318246476">通知に関する操作を行うには、デバイスのロックを解除してください</translation>
 <translation id="1420408895951708260">夜間モードのオンとオフを切り替えます。<ph name="STATE_TEXT" /></translation>
+<translation id="1420732223884894666"><ph name="DEVICE_TYPE" /> でスマートフォンの最近の写真やメディアを表示します</translation>
 <translation id="1426410128494586442">はい</translation>
 <translation id="1438357537418863713">アプリのストリーミングを設定しました。ご利用を開始すると、最近開いたアプリがここに表示されます。</translation>
-<translation id="144853431011121127">スマートフォンの通知を <ph name="DEVICE_TYPE" /> で確認できます</translation>
 <translation id="1455242230282523554">言語設定を表示</translation>
 <translation id="1460620680449458626">音量はミュートされています。</translation>
 <translation id="1467432559032391204">左</translation>
@@ -197,6 +197,7 @@
 <translation id="2132302418721800944">全画面を録画</translation>
 <translation id="2135456203358955318">ドッキング拡大鏡</translation>
 <translation id="2148716181193084225">今日</translation>
+<translation id="2159930836979502091">このタブに移動</translation>
 <translation id="2170530631236737939">概要モードを終了するには、3 本の指で下にスワイプします</translation>
 <translation id="219905428774326614">ランチャー、すべてのアプリ</translation>
 <translation id="2201071101391734388">最近の <ph name="INDEX" /> / <ph name="TOTAL_COUNT" /> 件の写真。</translation>
@@ -317,6 +318,7 @@
 <translation id="301282384882049174">管理者によって共有</translation>
 <translation id="3017687597151988916">選択領域をウィンドウに設定しました</translation>
 <translation id="3033545621352269033">オン</translation>
+<translation id="3033912566804961911"><ph name="DESK_NAME" /> に移動</translation>
 <translation id="3036649622769666520">ファイルを開く</translation>
 <translation id="3038571455154067151">ログインするには、ファミリー リンクの保護者のアクセスコードを入力してください</translation>
 <translation id="3039939407102840004">タッチペンのバッテリー残量は <ph name="PERCENTAGE" />% です。</translation>
@@ -342,6 +344,7 @@
 <translation id="3153444934357957346">マルチログインに使用できるのは <ph name="MULTI_PROFILE_USER_LIMIT" /> アカウントまでです。</translation>
 <translation id="3154351730702813399">デバイス管理者が閲覧アクティビティを監視している可能性があります。</translation>
 <translation id="316086887565479535">テンプレートでサポートされていないアプリ</translation>
+<translation id="3161500364292033097">デスクとウィンドウを閉じる</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> が <ph name="DEVICE_TYPE" /> をロールバックしています。デバイスはリセットされ、データはすべて削除されます。</translation>
 <translation id="3181441307743005334">再起動には時間がかかる場合があります</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{1 台のデバイスと接続されています}other{# 台のデバイスと接続されています}}</translation>
@@ -353,6 +356,7 @@
 <translation id="3227137524299004712">マイク</translation>
 <translation id="324366796737464147">ノイズ キャンセル</translation>
 <translation id="3249513730522716925">ウィンドウ <ph name="WINDOW_TITLE" /> がデスク <ph name="ACTIVE_DESK" /> からデスク <ph name="TARGET_DESK" /> に移動されました</translation>
+<translation id="3252573918265662711">設定</translation>
 <translation id="3255483164551725916">何ができる？</translation>
 <translation id="3269597722229482060">右クリック</translation>
 <translation id="3289544412142055976">Linux アプリは現在サポートされていません</translation>
@@ -560,6 +564,7 @@
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 件の重要な通知}other{# 件の重要な通知}}</translation>
 <translation id="4450893287417543264">次回から表示しない</translation>
 <translation id="4451374464530248585">キーボード ショートカット「Alt+下矢印」が変更されました。PageDown キーを使用するには、<ph name="LAUNCHER_KEY_NAME" />+下矢印キーを押してください。</translation>
+<translation id="4455051983450390249"><ph name="DEVICE_TYPE" /> でスマートフォンの通知を表示します</translation>
 <translation id="445864333228800152">こんばんは</translation>
 <translation id="4458688154122353284">画面の録画を停止</translation>
 <translation id="4471354919263203780">音声認識ファイルをダウンロードしています... <ph name="PERCENT" />%</translation>
@@ -731,6 +736,7 @@
 <translation id="5597451508971090205"><ph name="DATE" /> (<ph name="SHORT_WEEKDAY" />)</translation>
 <translation id="5600837773213129531">音声フィードバックを無効にするには Ctrl+Alt+Z を押してください。</translation>
 <translation id="5601503069213153581">PIN</translation>
+<translation id="5618148318840095371">より安全なネットワークに切り替えました</translation>
 <translation id="5619862035903135339">管理者が設定したポリシーにより、スクリーン キャプチャは無効になっています</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">マイク差込口</translation>
@@ -766,6 +772,7 @@
 <translation id="583281660410589416">不明</translation>
 <translation id="5837036133683224804"><ph name="RECEIVER_NAME" /> の「<ph name="ROUTE_TITLE" />」を停止します</translation>
 <translation id="584525477304726060">長押しして最大化</translation>
+<translation id="5856638668464565213"><ph name="NETWORK_NAME" /> が無効です。</translation>
 <translation id="5860033963881614850">オフ</translation>
 <translation id="5860491529813859533">オンにする</translation>
 <translation id="5867217927013474703">ネットワーク情報を収集しています</translation>
@@ -797,6 +804,7 @@
 <translation id="602472752137106327">すべてのデスクのウィンドウを表示する、ラジオボタンが選択されています</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" />、<ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />、管理者によって管理</translation>
 <translation id="6027518778343897451"><ph name="CURRENT_MONTH_DAY" /> の予定はありません。ブラウザで Google カレンダーを開くには Enter キーを押します。</translation>
+<translation id="6027952026115023659"><ph name="DEVICE_TYPE" /> でスマートフォンのメッセージ アプリにアクセスします</translation>
 <translation id="6030495522958826102">メニューは画面左下に移動しました。</translation>
 <translation id="6032620807120418574">全画面を録画するには任意の場所をクリックしてください</translation>
 <translation id="6040071906258664830">マイク録音は <ph name="STATE" /> です</translation>
@@ -823,6 +831,7 @@
 <translation id="6165508094623778733">詳細</translation>
 <translation id="6166852626429024716">デバイス、アプリ、設定、ウェブを検索...</translation>
 <translation id="6179832488876878285">重要なファイルをここに固定できます。この機能を使用するには、ファイルアプリを開いてください。</translation>
+<translation id="619279033188484792"><ph name="DEVICE_TYPE" /> でスマートフォンの最近の写真、メディア、通知を表示します</translation>
 <translation id="6220928844947387476">画面と自分を同時に録画できるようになりました</translation>
 <translation id="622484624075952240">下矢印キー</translation>
 <translation id="6231419273573514727">周辺機器のパフォーマンスが制限されている可能性があります</translation>
@@ -879,7 +888,6 @@
 <translation id="6578407462441924264">名前なし</translation>
 <translation id="6585808820553845416">セッション終了まであと <ph name="SESSION_TIME_REMAINING" />です。</translation>
 <translation id="6593850935013518327"><ph name="PRIMARY_TEXT" />、<ph name="SECONDARY_TEXT" /></translation>
-<translation id="6602800870584047641">より安全なネットワークに接続が切り替えられました</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" />、管理者によって管理</translation>
 <translation id="6612802754306526077">画面の録画モードを選択しました</translation>
 <translation id="6614169507485700968">プライバシー スクリーンはオンになっています</translation>
@@ -936,9 +944,11 @@
 <translation id="6921188888306725546">キーボード ショートカットが改善されました</translation>
 <translation id="6931576957638141829">保存先</translation>
 <translation id="6945221475159498467">選択</translation>
+<translation id="6960565108681981554">無効です。ご利用の携帯通信会社にお問い合わせください。</translation>
 <translation id="6961121602502368900">スマートフォンの消音は仕事用プロファイルでは使用できません</translation>
 <translation id="6961840794482373852">キーボード ショートカット「Alt+上矢印」が変更されました。PageUp キーを使用するには、<ph name="LAUNCHER_KEY_NAME" />+上矢印キーを押してください。</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6967933908874208731"><ph name="DEVICE_TYPE" /> でスマートフォンの最近の写真、メディア、通知、メッセージ アプリを表示します</translation>
 <translation id="6972754398087986839">開始する</translation>
 <translation id="6979158407327259162">Google ドライブ</translation>
 <translation id="6981982820502123353">ユーザー補助機能</translation>
@@ -964,6 +974,7 @@
 <translation id="7076293881109082629">ログイン中</translation>
 <translation id="7086931198345821656">このアップデートを適用するには、<ph name="DEVICE_TYPE" /> を Powerwash　する必要があります。データはすべて削除されます。<ph name="SYSTEM_APP_NAME" /> の最新アップデートの詳細をご確認ください。</translation>
 <translation id="7088960765736518739">スイッチ アクセス</translation>
+<translation id="7098053464892629930">Google Play で <ph name="NAME" /> のアプリをダウンロードして、利用可能なすべての機能を確認してください</translation>
 <translation id="7098389117866926363">USB-C デバイス（背面左のポート）</translation>
 <translation id="7106330611027933926">デスクバーを表示する</translation>
 <translation id="7118268675952955085">スクリーンショット</translation>
@@ -1040,7 +1051,6 @@
 <translation id="7595633564847427181">月</translation>
 <translation id="7600875258240007829">通知をすべて表示</translation>
 <translation id="7607002721634913082">一時停止中</translation>
-<translation id="7610198039767537854"><ph name="DEVICE_TYPE" /> でスマートフォンのカメラロールに保存されている最近の写真を表示する</translation>
 <translation id="7624117708979618027">華氏 <ph name="TEMPERATURE_F" /> 度</translation>
 <translation id="7631906263969450674">マーカーペン</translation>
 <translation id="7633755430369750696">ニアバイシェア設定を表示します。</translation>
@@ -1051,6 +1061,7 @@
 <translation id="7649070708921625228">ヘルプ</translation>
 <translation id="7654687942625752712">音声フィードバックを無効にするには、音量大と音量小の両方のボタンを 5 秒間押し続けてください。</translation>
 <translation id="7658239707568436148">キャンセル</translation>
+<translation id="7659861092419699379">デスクとウィンドウを閉じました</translation>
 <translation id="7660160718439869192"><ph name="NAME" /> は、<ph name="EMAIL" /> と関連付けられているデバイスに表示されます</translation>
 <translation id="7662283695561029522">設定するにはタップします</translation>
 <translation id="7670953955701272011">この日を Google カレンダーで開きます</translation>
@@ -1210,6 +1221,7 @@
 <translation id="8660331759611631213">71 の平方根は</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" />、信号強度 <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">ネットワーク リストを表示します。<ph name="STATE_TEXT" /></translation>
+<translation id="8666856788528804727"><ph name="NAME" /> を開いてデバイスを設定してください</translation>
 <translation id="8676770494376880701">低電力の充電器に接続されています</translation>
 <translation id="8683506306463609433">パフォーマンス追跡機能が有効</translation>
 <translation id="8685326675965865247">デバイス、アプリ、設定、ウェブを検索します。アプリに移動するには矢印キーを使用します。</translation>

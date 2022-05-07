@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 GEN_INCLUDE(['select_to_speak_e2e_test_base.js']);
-GEN_INCLUDE(['mock_tts.js']);
+GEN_INCLUDE(['../common/testing/mock_tts.js']);
 
 /** Mock TTS client. */
 class MockTtsClient {
@@ -29,17 +29,12 @@ SelectToSpeakTtsManagerUnitTest = class extends SelectToSpeakE2ETest {
   }
 
   /** @override */
-  setUp() {
-    var runTest = this.deferRunTest(WhenTestDone.EXPECT);
-    (async () => {
-      const module = await import('/select_to_speak/tts_manager.js');
-      window.TtsManager = module.TtsManager;
+  async setUpDeferred() {
+    const module = await import('/select_to_speak/tts_manager.js');
+    window.TtsManager = module.TtsManager;
 
-      this.mockTtsClient = new MockTtsClient();
-      this.ttsManager = new TtsManager();
-
-      runTest();
-    })();
+    this.mockTtsClient = new MockTtsClient();
+    this.ttsManager = new TtsManager();
   }
 };
 

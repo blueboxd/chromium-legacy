@@ -202,43 +202,6 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
 
   GURL requestURL = net::GURLWithNSURL(action.request.URL);
 
-  // Workaround for a WKWebView bug where the web content loaded using
-  // |-loadHTMLString:baseURL| clobbers the next WKBackForwardListItem. It works
-  // by detecting back/forward navigation to a clobbered item and replacing the
-  // clobberred item and its forward history using a partial session restore in
-  // the current web view. There is an unfortunate caveat: if the workaround is
-  // triggered in a back navigation to a clobbered item, the restored forward
-  // session is inserted after the current item before the back navigation, so
-  // it doesn't fully replaces the "bad" history, even though user will be
-  // navigated to the expected URL and may not notice the issue until they
-  // review the back history by long pressing on "Back" button.
-  //
-  // TODO(crbug.com/887497): remove this workaround once iOS ships the fix.
-  if (action.targetFrame.mainFrame) {
-    GURL webViewURL = net::GURLWithNSURL(webView.URL);
-    GURL currentWKItemURL =
-        net::GURLWithNSURL(webView.backForwardList.currentItem.URL);
-    GURL backItemURL = net::GURLWithNSURL(webView.backForwardList.backItem.URL);
-    web::NavigationContextImpl* context =
-        [self contextForPendingMainFrameNavigationWithURL:webViewURL];
-    bool willClobberHistory =
-        action.navigationType == WKNavigationTypeBackForward &&
-        requestURL == backItemURL && webView.backForwardList.currentItem &&
-        requestURL != currentWKItemURL && currentWKItemURL == webViewURL &&
-        context &&
-        (context->GetPageTransition() & ui::PAGE_TRANSITION_FORWARD_BACK);
-
-    UMA_HISTOGRAM_BOOLEAN("IOS.WKWebViewClobberedHistory", willClobberHistory);
-
-    if (willClobberHistory && base::FeatureList::IsEnabled(
-                                  web::features::kHistoryClobberWorkaround)) {
-      decisionHandler(WKNavigationActionPolicyCancel);
-      self.navigationManagerImpl
-          ->ApplyWKWebViewForwardHistoryClobberWorkaround();
-      return;
-    }
-  }
-
   // The page will not be changed until this navigation is committed, so the
   // retrieved state will be pending until |didCommitNavigation| callback.
   [self createPendingNavigationInfoFromNavigationAction:action];
@@ -918,10 +881,24 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
       context->SetUrl(currentWKItemURL);
     }
 
-    if (context->GetError()) {
-      [self loadErrorPageForNavigationItem:item
-                         navigationContext:navigation
-                                   webView:webView];
+    NSError* error = context->GetError();
+    if (error) {
+      if (web::features::IsLoadSimulatedRequestAPIEnabled()) {
+        self.webStateImpl->OnNavigationFinished(context);
+
+        [self.delegate navigationHandler:self
+              didCompleteLoadWithSuccess:NO
+                              forContext:context];
+
+        NSString* failingURLString =
+            error.userInfo[NSURLErrorFailingURLStringErrorKey];
+        GURL failingURL(base::SysNSStringToUTF8(failingURLString));
+        self.webStateImpl->OnPageLoaded(failingURL, NO);
+      } else {
+        [self loadErrorPageForNavigationItem:item
+                           navigationContext:navigation
+                                     webView:webView];
+      }
     }
   }
 
@@ -1740,7 +1717,80 @@ const web::CertVerificationErrorsCacheType::size_type kMaxCertErrorsCount = 100;
   web::NavigationItemImpl* item =
       web::GetItemWithUniqueID(self.navigationManagerImpl, navigationContext);
 
-  if (item) {
+  if (!item) {
+    return;
+  }
+
+  if (web::features::IsLoadSimulatedRequestAPIEnabled()) {
+    NSString* failingURLString =
+        contextError.userInfo[NSURLErrorFailingURLStringErrorKey];
+    GURL failingURL(base::SysNSStringToUTF8(failingURLString));
+
+    net::SSLInfo info;
+    absl::optional<net::SSLInfo> SSLInfo = absl::nullopt;
+
+    if (web::IsWKWebViewSSLCertError(error)) {
+      web::GetSSLInfoFromWKWebViewSSLCertError(contextError, &info);
+      if (info.cert) {
+        // Retrieve verification results from _certVerificationErrors cache to
+        // avoid unnecessary recalculations. Verification results are cached for
+        // the leaf cert, because the cert chain in
+        // |didReceiveAuthenticationChallenge:| is the OS constructed chain,
+        // while |chain| is the chain from the server.
+        NSArray* chain =
+            contextError.userInfo[web::kNSErrorPeerCertificateChainKey];
+        NSURL* requestURL = contextError.userInfo[web::kNSErrorFailingURLKey];
+        NSString* host = requestURL.host;
+        scoped_refptr<net::X509Certificate> leafCert;
+        if (chain.count && host.length) {
+          // The complete cert chain may not be available, so the leaf cert is
+          // used as a key to retrieve _certVerificationErrors, as well as for
+          // storing the cert decision.
+          leafCert = web::CreateCertFromChain(@[ chain.firstObject ]);
+          if (leafCert) {
+            auto error = _certVerificationErrors->Get(
+                {leafCert, base::SysNSStringToUTF8(host)});
+            bool cacheHit = error != _certVerificationErrors->end();
+            if (cacheHit) {
+              info.is_fatal_cert_error = error->second.is_recoverable;
+              info.cert_status = error->second.status;
+            }
+            UMA_HISTOGRAM_BOOLEAN(
+                "WebController.CertVerificationErrorsCacheHit", cacheHit);
+          }
+        }
+        SSLInfo = absl::make_optional<net::SSLInfo>(info);
+      }
+    }
+
+    GURL itemURL = item->GetURL();
+    if (itemURL != failingURL)
+      item->SetVirtualURL(failingURL);
+
+    // Saves original context before, as the original context can be deleted
+    // before the callback is called.
+    __block std::unique_ptr<web::NavigationContextImpl> originalContext =
+        [self.navigationStates removeNavigation:navigation];
+    web::GetWebClient()->PrepareErrorPage(
+        self.webStateImpl, failingURL, contextError,
+        navigationContext->IsPost(),
+        self.webStateImpl->GetBrowserState()->IsOffTheRecord(), SSLInfo,
+        navigationContext->GetNavigationId(),
+        base::BindOnce(^(NSString* errorHTML) {
+          if (errorHTML) {
+            NSURLRequest* URL = [NSURLRequest
+                requestWithURL:[NSURL URLWithString:failingURLString]];
+            if (@available(iOS 15, *)) {
+              WKNavigation* errorNavigation =
+                  [webView loadSimulatedRequest:URL
+                             responseHTMLString:errorHTML];
+              originalContext->SetLoadingErrorPage(true);
+              [self.navigationStates setContext:std::move(originalContext)
+                                  forNavigation:errorNavigation];
+            }
+          }
+        }));
+  } else {
     WKNavigation* errorNavigation =
         [self displayErrorPageWithError:error
                               inWebView:webView

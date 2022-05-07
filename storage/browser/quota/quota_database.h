@@ -134,6 +134,11 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
                                      const std::string& bucket_name,
                                      blink::mojom::StorageType storage_type);
 
+  // Retrieves BucketInfo of the bucket with `bucket_id`.
+  // Returns a QuotaError::kEntryNotFound if the bucket does not exist, or
+  // a QuotaError::kDatabaseError if the operation has failed.
+  QuotaErrorOr<BucketInfo> GetBucketById(BucketId bucket_id);
+
   // Returns all buckets for `type` in the buckets table. Returns a QuotaError
   // if the operation has failed.
   QuotaErrorOr<std::set<BucketLocator>> GetBucketsForType(
@@ -209,6 +214,18 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaDatabase {
   // keys that have stored data by quota managed Storage APIs.
   bool IsBootstrapped();
   QuotaError SetIsBootstrapped(bool bootstrap_flag);
+
+  // Razes and re-opens the database. Should only be called if the database is
+  // actually open.
+  QuotaError RazeAndReopen();
+
+  // Testing support for database corruption handling.
+  //
+  // Runs `corrupter` on the same sequence used to do database I/O,
+  // guaranteeing that no other database operation is performed at the same
+  // time. `corrupter` receives the path to the underlying SQLite database as an
+  // argument. The underlying SQLite database is closed while `corrupter` runs,
+  // and reopened afterwards.
 
   // Returns QuotaError::kNone if the database was successfully reopened after
   // `corrupter` was run, or QuotaError::kDatabaseError otherwise.

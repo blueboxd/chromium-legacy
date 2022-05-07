@@ -153,10 +153,7 @@ std::unique_ptr<net::CanonicalCookie> ToCanonicalCookie(
   }
 
   absl::optional<net::CookiePartitionKey> cookie_partition_key = absl::nullopt;
-  if (options->partitioned() &&
-      (partitioned_cookies_runtime_feature_enabled ||
-       base::FeatureList::IsEnabled(
-           net::features::kPartitionedCookiesBypassOriginTrial))) {
+  if (options->partitioned() && partitioned_cookies_runtime_feature_enabled) {
     // We don't trust the renderer to determine the cookie partition key, so we
     // use this factory to indicate we are using a temporary value here.
     cookie_partition_key = net::CookiePartitionKey::FromScript();

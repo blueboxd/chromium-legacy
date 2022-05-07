@@ -25,7 +25,7 @@ var mparchEnabled;
 function getServerURL(host) {
   if (!testServerPort)
     throw new Error('Called getServerURL outside of runTests.');
-  return `http://${host}:${testServerPort}`;
+  return `https://${host}:${testServerPort}`;
 }
 
 function resetMatchedRules() {
@@ -77,16 +77,15 @@ var tests = [
   function testBlockRule() {
     resetMatchedRules();
 
-    const baseUrl = getServerURL('a.com') +
+    const baseUrl = getServerURL('a.test') +
           '/extensions/api_test/declarative_net_request/fenced_frames/';
     const url = baseUrl + 'blocked.html';
     const fencedFrameUrl = baseUrl + 'blocked_fenced_frame.html';
     navigateTab(url, (tab) => {
       const expectedRuleInfo = {
         request: {
-          initiator: mparchEnabled ? kOpaqueInitiator : getServerURL('a.com'),
+          initiator: mparchEnabled ? kOpaqueInitiator : getServerURL('a.test'),
           method: 'GET',
-          documentId: 2,
           frameId: mparchEnabled ? 5 : 4,
           documentLifecycle: 'active',
           frameType: 'fenced_frame',
@@ -99,7 +98,29 @@ var tests = [
         rule: {ruleId: 1, rulesetId: 'rules'}
       };
       verifyExpectedRuleInfo(expectedRuleInfo);
-      chrome.test.succeed();
+
+      const getFencedFrameWidth =
+        '(async function() {' +
+        '  while(true) { ' +
+        '    await new Promise(requestAnimationFrame);' +
+        '    let width =' +
+        '      document.getElementsByTagName("fencedframe")[0].clientWidth;' +
+        '    if (width == 0) {' +
+        '      chrome.runtime.sendMessage({width: width});' +
+        '      break;' +
+        '    }' +
+        '  }' +
+        '})()';
+
+      chrome.runtime.onMessage.addListener(results => {
+        // Ensure the clientWidth is 0 indicating
+        // the frame has no layout size and was
+        // collapsed correctly.
+        chrome.test.assertEq(0, results.width);
+        chrome.test.succeed();
+      });
+      chrome.tabs.executeScript(tab.id, {frameId: 0,
+                                         code: getFencedFrameWidth});
     });
   },
 
@@ -109,20 +130,19 @@ var tests = [
   function testAllowRule() {
     resetMatchedRules();
 
-    const baseUrl = getServerURL('a.com') +
+    const baseUrl = getServerURL('a.test') +
           '/extensions/api_test/declarative_net_request/fenced_frames/';
     const url = baseUrl + 'allow.html';
     const fencedFrameUrl = baseUrl + 'allowed_fenced_frame.html';
     navigateTab(url, (tab) => {
       const expectedRuleInfo = {
         request: {
-          initiator: mparchEnabled ? kOpaqueInitiator : getServerURL('a.com'),
+          initiator: mparchEnabled ? kOpaqueInitiator : getServerURL('a.test'),
           method: 'GET',
-          documentId: 4,
           frameId: mparchEnabled ? 7 : 5,
           documentLifecycle: 'active',
           frameType: 'fenced_frame',
-          parentDocumentId: 3,
+          parentDocumentId: 2,
           parentFrameId: 0,
           type: 'sub_frame',
           tabId: tab.id,
@@ -139,20 +159,20 @@ var tests = [
   function testAllowResourceRule() {
     resetMatchedRules();
 
-    const baseUrl = getServerURL('a.com') +
+    const baseUrl = getServerURL('a.test') +
       '/extensions/api_test/declarative_net_request/fenced_frames/';
     const url = baseUrl + 'resource1.html';
     const matchedImageUrl = baseUrl + 'icon1.png';
     navigateTab(url, (tab) => {
       const expectedRuleInfo = {
         request: {
-          initiator: getServerURL('a.com'),
+          initiator: getServerURL('a.test'),
           method: 'GET',
-          documentId: 6,
+          documentId: 4,
           frameId: mparchEnabled ? 9 : 6,
           documentLifecycle: 'active',
           frameType: 'fenced_frame',
-          parentDocumentId: 5,
+          parentDocumentId: 3,
           parentFrameId: 0,
           type: 'image',
           tabId: tab.id,
@@ -169,20 +189,20 @@ var tests = [
   function testBlockResourceRule() {
     resetMatchedRules();
 
-    const baseUrl = getServerURL('a.com') +
+    const baseUrl = getServerURL('a.test') +
       '/extensions/api_test/declarative_net_request/fenced_frames/';
     const url = baseUrl + 'resource2.html';
     const matchedImageUrl = baseUrl + 'icon2.png';
     navigateTab(url, (tab) => {
       const expectedRuleInfo = {
         request: {
-          initiator: getServerURL('a.com'),
+          initiator: getServerURL('a.test'),
           method: 'GET',
-          documentId: 8,
+          documentId: 6,
           frameId: mparchEnabled ? 11 : 7,
           documentLifecycle: 'active',
           frameType: 'fenced_frame',
-          parentDocumentId: 7,
+          parentDocumentId: 5,
           parentFrameId: 0,
           type: 'image',
           tabId: tab.id,

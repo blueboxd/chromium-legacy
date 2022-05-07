@@ -24,12 +24,15 @@ if (is_android) {
   import("//build/config/mac/mac_sdk.gni")
 }
 
+# Android:
 # The way the cache uses mmap() is inefficient on some Android devices. If
 # this flag is set, we hackily avoid using mmap() in the disk cache. We are
 # pretty confident that mmap-ing the index would not hurt any existing x86
 # android devices, but we cannot be so sure about the variety of ARM devices.
 # So enable it for x86 only for now.
-posix_avoid_mmap = is_android && current_cpu != "x86"
+# Fuchsia:
+# Writable mmap isn't supported on Fuchsia, so it should be bypassed.
+posix_bypass_mmap = (is_android && current_cpu != "x86") || is_fuchsia
 
 enable_built_in_dns = !is_ios
 
@@ -72,7 +75,7 @@ config("net_test_config") {
 buildflag_header("buildflags") {
   header = "net_buildflags.h"
   flags = [
-    "POSIX_AVOID_MMAP=$posix_avoid_mmap",
+    "POSIX_BYPASS_MMAP=$posix_bypass_mmap",
     "DISABLE_FILE_SUPPORT=$disable_file_support",
     "ENABLE_MDNS=$enable_mdns",
     "ENABLE_REPORTING=$enable_reporting",
@@ -669,6 +672,7 @@ component("net") {
     "log/net_log_capture_mode.h",
     "log/net_log_entry.cc",
     "log/net_log_entry.h",
+    "log/net_log_event_type.cc",
     "log/net_log_event_type.h",
     "log/net_log_event_type_list.h",
     "log/net_log_source.cc",
@@ -780,11 +784,7 @@ component("net") {
     "quic/platform/impl/quic_file_utils_impl.h",
     "quic/platform/impl/quic_hostname_utils_impl.cc",
     "quic/platform/impl/quic_hostname_utils_impl.h",
-    "quic/platform/impl/quic_iovec_impl.h",
-    "quic/platform/impl/quic_mem_slice_impl.cc",
-    "quic/platform/impl/quic_mem_slice_impl.h",
     "quic/platform/impl/quic_prefetch_impl.h",
-    "quic/platform/impl/quic_reference_counted_impl.h",
     "quic/platform/impl/quic_server_stats_impl.h",
     "quic/platform/impl/quic_sleep_impl.h",
     "quic/platform/impl/quic_stack_trace_impl.h",
@@ -843,6 +843,7 @@ component("net") {
     "quiche/common/platform/impl/quiche_flag_utils_impl.h",
     "quiche/common/platform/impl/quiche_flags_impl.cc",
     "quiche/common/platform/impl/quiche_flags_impl.h",
+    "quiche/common/platform/impl/quiche_iovec_impl.h",
     "socket/client_socket_factory.cc",
     "socket/client_socket_factory.h",
     "socket/client_socket_handle.cc",
@@ -1159,8 +1160,6 @@ component("net") {
       "android/http_auth_negotiate_android.h",
       "android/keystore.cc",
       "android/keystore.h",
-      "android/network_activation_request.cc",
-      "android/network_activation_request.h",
       "android/network_change_notifier_android.cc",
       "android/network_change_notifier_android.h",
       "android/network_change_notifier_delegate_android.cc",
@@ -1349,8 +1348,8 @@ component("net") {
     if (!is_ios) {
       sources += [ "disk_cache/blockfile/file_posix.cc" ]
     }
-    if (posix_avoid_mmap) {
-      sources += [ "disk_cache/blockfile/mapped_file_avoid_mmap_posix.cc" ]
+    if (posix_bypass_mmap) {
+      sources += [ "disk_cache/blockfile/mapped_file_bypass_mmap_posix.cc" ]
     } else {
       sources += [ "disk_cache/blockfile/mapped_file_posix.cc" ]
     }
@@ -1846,7 +1845,6 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/bad_validity.pem",
     "data/ssl/certificates/can_sign_http_exchanges_draft_extension.pem",
     "data/ssl/certificates/can_sign_http_exchanges_draft_extension_invalid.pem",
-    "data/ssl/certificates/cert-manager.com-chain.pem",
     "data/ssl/certificates/client-empty-password.p12",
     "data/ssl/certificates/client-nokey.p12",
     "data/ssl/certificates/client-null-password.p12",
@@ -2003,6 +2001,7 @@ bundle_data("test_support_bundle_data") {
     "data/ssl/certificates/subjectAltName_sanity_check.pem",
     "data/ssl/certificates/subjectAltName_www_example_com.pem",
     "data/ssl/certificates/test_names.pem",
+    "data/ssl/certificates/thepaverbros.com.pem",
     "data/ssl/certificates/treadclimber.pem",
     "data/ssl/certificates/treadclimber.sctlist",
     "data/ssl/certificates/unescaped.pem",
@@ -2209,7 +2208,16 @@ static_library("test_support") {
 
   allow_circular_includes_from = [ "//net/dns:test_support" ]
 
-  data = [ "data/" ]
+  # Data dependencies shared with suites other than net_unittests.
+  data = [
+    "data/cert_net_fetcher_impl_unittest/",
+    "data/dns/",
+    "data/ov_name_constraints/",
+    "data/parse_certificate_unittest/",
+    "data/ssl/",
+    "data/url_request_unittest/",
+    "data/websocket/",
+  ]
 
   if (is_mac) {
     frameworks = [ "Security.framework" ]
@@ -2217,8 +2225,6 @@ static_library("test_support") {
 
   if (is_ios) {
     deps += [ ":test_support_bundle_data" ]
-  } else {
-    public_deps += [ "//third_party/protobuf:py_proto_runtime" ]
   }
 
   if (use_nss_certs) {
@@ -2520,7 +2526,6 @@ if (is_android) {
       "android/java/src/org/chromium/net/HttpNegotiateAuthenticator.java",
       "android/java/src/org/chromium/net/HttpUtil.java",
       "android/java/src/org/chromium/net/NetStringUtil.java",
-      "android/java/src/org/chromium/net/NetworkActivationRequest.java",
       "android/java/src/org/chromium/net/NetworkActiveNotifier.java",
       "android/java/src/org/chromium/net/NetworkChangeNotifier.java",
       "android/java/src/org/chromium/net/ProxyChangeListener.java",
@@ -2586,12 +2591,14 @@ source_set("spdy_test_tools") {
 source_set("quiche_test_tools") {
   testonly = true
   sources = [
+    "quiche/common/platform/impl/quiche_test_helpers_impl.cc",
     "quiche/common/platform/impl/quiche_test_helpers_impl.h",
     "quiche/common/platform/impl/quiche_test_impl.cc",
     "quiche/common/platform/impl/quiche_test_impl.h",
   ]
   deps = [
     ":net",
+    ":quic_test_flags_utils",
     ":test_support",
     "//testing/gmock",
     "//testing/gtest",
@@ -2627,8 +2634,6 @@ source_set("quic_test_tools") {
     "quic/platform/impl/quic_epoll_test_tools_impl.h",
     "quic/platform/impl/quic_expect_bug_impl.h",
     "quic/platform/impl/quic_mock_log_impl.h",
-    "quic/platform/impl/quic_test_impl.cc",
-    "quic/platform/impl/quic_test_impl.h",
     "quic/platform/impl/quic_test_loopback_impl.cc",
     "quic/platform/impl/quic_test_loopback_impl.h",
     "quic/platform/impl/quic_test_output_impl.cc",
@@ -3168,7 +3173,9 @@ bundle_data("net_unittests_bundle_data") {
     "data/verify_certificate_chain_unittest/expired-intermediate/not-before.test",
     "data/verify_certificate_chain_unittest/expired-root/chain.pem",
     "data/verify_certificate_chain_unittest/expired-root/not-after-ta-with-constraints.test",
+    "data/verify_certificate_chain_unittest/expired-root/not-after-ta-with-expiration.test",
     "data/verify_certificate_chain_unittest/expired-root/not-after.test",
+    "data/verify_certificate_chain_unittest/expired-root/not-before-ta-with-expiration.test",
     "data/verify_certificate_chain_unittest/expired-root/not-before.test",
     "data/verify_certificate_chain_unittest/expired-target/chain.pem",
     "data/verify_certificate_chain_unittest/expired-target/not-after.test",
@@ -3351,6 +3358,8 @@ bundle_data("net_unittests_bundle_data") {
     "data/verify_certificate_chain_unittest/target-and-intermediate/distrusted-root-expired.test",
     "data/verify_certificate_chain_unittest/target-and-intermediate/distrusted-root.test",
     "data/verify_certificate_chain_unittest/target-and-intermediate/main.test",
+    "data/verify_certificate_chain_unittest/target-and-intermediate/ta-with-constraints.test",
+    "data/verify_certificate_chain_unittest/target-and-intermediate/ta-with-expiration.test",
     "data/verify_certificate_chain_unittest/target-and-intermediate/unspecified-trust-root.test",
     "data/verify_certificate_chain_unittest/target-eku-clientauth/any.test",
     "data/verify_certificate_chain_unittest/target-eku-clientauth/chain.pem",
@@ -4291,8 +4300,6 @@ test("net_unittests") {
     "http/transport_security_state_unittest.cc",
     "http/url_security_manager_unittest.cc",
     "http/webfonts_histogram_unittest.cc",
-    "http2/platform/impl/http2_test_helpers_impl.cc",
-    "http2/platform/impl/http2_test_helpers_impl.h",
     "log/file_net_log_observer_unittest.cc",
     "log/net_log_capture_mode_unittest.cc",
     "log/net_log_unittest.cc",
@@ -4565,7 +4572,30 @@ test("net_unittests") {
     ]
   }
 
-  data = []
+  data = [
+    "data/cache_tests/",
+    "data/certificate_policies_unittest/",
+    "data/cert_issuer_source_aia_unittest/",
+    "data/cert_issuer_source_static_unittest/",
+    "data/crl_unittest/",
+    "data/embedded_test_server/",
+    "data/file_stream_unittest/",
+    "data/filter_unittests/",
+    "data/gencerts/",
+    "data/name_constraints_unittest/",
+    "data/ocsp_unittest/",
+    "data/pac_file_fetcher_unittest/",
+    "data/path_builder_unittest/",
+    "data/quic_http_response_cache_data/",
+    "data/quic_http_response_cache_data_with_push/",
+    "data/spdy_tests/",
+    "data/test.html",
+    "data/trial_comparison_cert_verifier_unittest/",
+    "data/url_fetcher_impl_unittest/",
+    "data/verify_certificate_chain_unittest/",
+    "data/verify_name_match_unittest/",
+    "data/verify_signed_data_unittest/",
+  ]
   data_deps = [
     "third_party/nist-pkits/",
     "//testing/buildbot/filters:net_unittests_filters",
@@ -4892,6 +4922,10 @@ if (use_fuzzing_engine) {
       "//base",
       "//base:i18n",
       "//net",
+    ]
+    data = [
+      "fuzzer_data",
+      "fuzzer_dictionaries",
     ]
     allow_circular_includes_from = [ "//net/dns:fuzzer_test_support" ]
   }

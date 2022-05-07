@@ -8,7 +8,11 @@
 #include <stdint.h>
 
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
+#include "content/browser/attribution_reporting/attribution_filter_data.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/common/content_export.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
 namespace net {
@@ -20,18 +24,10 @@ namespace content {
 // Contains common attributes of `StorableSource` and `StoredSource`.
 class CONTENT_EXPORT CommonSourceInfo {
  public:
-  // Denotes the type of source for this impression. This allows different types
-  // of impressions to be processed differently by storage and attribution
-  // logic.
-  enum class SourceType {
-    // An impression which was associated with a top-level navigation.
-    kNavigation = 0,
-    // An impression which was not associated with a navigation, such as an
-    // impression for an anchor element with the registerattributionsource
-    // attribute set.
-    kEvent = 1,
-    kMaxValue = kEvent,
-  };
+  static base::Time GetExpiryTime(
+      absl::optional<base::TimeDelta> declared_expiry,
+      base::Time impression_time,
+      AttributionSourceType source_type);
 
   CommonSourceInfo(uint64_t source_event_id,
                    url::Origin impression_origin,
@@ -39,9 +35,11 @@ class CONTENT_EXPORT CommonSourceInfo {
                    url::Origin reporting_origin,
                    base::Time impression_time,
                    base::Time expiry_time,
-                   SourceType source_type,
+                   AttributionSourceType source_type,
                    int64_t priority,
-                   absl::optional<uint64_t> debug_key);
+                   AttributionFilterData filter_data,
+                   absl::optional<uint64_t> debug_key,
+                   AttributionAggregatableSource aggregatable_source);
 
   ~CommonSourceInfo();
 
@@ -63,11 +61,17 @@ class CONTENT_EXPORT CommonSourceInfo {
 
   base::Time expiry_time() const { return expiry_time_; }
 
-  SourceType source_type() const { return source_type_; }
+  AttributionSourceType source_type() const { return source_type_; }
 
   int64_t priority() const { return priority_; }
 
+  const AttributionFilterData& filter_data() const { return filter_data_; }
+
   absl::optional<uint64_t> debug_key() const { return debug_key_; }
+
+  const AttributionAggregatableSource& aggregatable_source() const {
+    return aggregatable_source_;
+  }
 
   void ClearDebugKey() { debug_key_ = absl::nullopt; }
 
@@ -90,9 +94,11 @@ class CONTENT_EXPORT CommonSourceInfo {
   url::Origin reporting_origin_;
   base::Time impression_time_;
   base::Time expiry_time_;
-  SourceType source_type_;
+  AttributionSourceType source_type_;
   int64_t priority_;
+  AttributionFilterData filter_data_;
   absl::optional<uint64_t> debug_key_;
+  AttributionAggregatableSource aggregatable_source_;
 
   // When adding new members, the corresponding `operator==()` definition in
   // `attribution_test_utils.h` should also be updated.

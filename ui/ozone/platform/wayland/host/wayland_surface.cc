@@ -18,6 +18,7 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
+#include "ui/gfx/geometry/transform.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 #include "ui/ozone/platform/wayland/host/overlay_prioritizer.h"
@@ -210,7 +211,13 @@ void WaylandSurface::SetSurfaceBufferScale(float scale) {
 
 void WaylandSurface::SetOpaqueRegion(const std::vector<gfx::Rect>* region_px) {
   pending_state_.opaque_region_px.clear();
-  if (!root_window_ || !root_window_->IsOpaqueWindow())
+  if (!root_window_)
+    return;
+  bool is_primary_or_root =
+      root_window_->root_surface() == this ||
+      (root_window()->primary_subsurface() &&
+       root_window()->primary_subsurface()->wayland_surface() == this);
+  if (is_primary_or_root && !root_window_->IsOpaqueWindow())
     return;
   if (region_px)
     pending_state_.opaque_region_px = *region_px;
@@ -229,8 +236,12 @@ void WaylandSurface::SetOpaqueRegion(const std::vector<gfx::Rect>* region_px) {
 
 void WaylandSurface::SetInputRegion(const gfx::Rect* region_px) {
   pending_state_.input_region_px.reset();
-  if (!root_window_ || root_window_->ShouldUseNativeFrame())
+  if (!root_window_)
     return;
+  if (root_window_->root_surface() == this &&
+      root_window_->ShouldUseNativeFrame()) {
+    return;
+  }
   if (region_px)
     pending_state_.input_region_px = *region_px;
 

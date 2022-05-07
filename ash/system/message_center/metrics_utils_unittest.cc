@@ -27,6 +27,12 @@ namespace {
 constexpr char kNotificationViewTypeHistogramName[] =
     "Ash.NotificationView.NotificationAdded.Type";
 
+constexpr char kCountInOneGroupHistogramName[] =
+    "Ash.Notification.CountOfNotificationsInOneGroup";
+
+constexpr char kGroupNotificationAddedHistogramName[] =
+    "Ash.Notification.GroupNotificationAdded";
+
 const gfx::Image CreateTestImage() {
   SkBitmap bitmap;
   bitmap.allocN32Pixels(/*width=*/80, /*height=*/80);
@@ -50,6 +56,8 @@ void CheckNotificationViewTypeRecorded(
 
 namespace ash {
 
+// This serves as an unit test class for all metrics recording in
+// notification/message center.
 class MessageCenterMetricsUtilsTest : public AshTestBase {
  public:
   MessageCenterMetricsUtilsTest() {
@@ -303,6 +311,61 @@ TEST_F(MessageCenterMetricsUtilsTest,
   CheckNotificationViewTypeRecorded(
       std::move(grouped_notification),
       metrics_utils::NotificationViewType::GROUPED_HAS_IMAGE_AND_INLINE_REPLY);
+}
+
+TEST_F(MessageCenterMetricsUtilsTest, RecordCountOfNotificationsInOneGroup) {
+  base::HistogramTester histograms;
+
+  auto notification1 = CreateTestNotification();
+  std::string id1 = notification1->id();
+  auto notification2 = CreateTestNotification();
+  std::string id2 = notification2->id();
+  auto notification3 = CreateTestNotification();
+
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification1));
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification2));
+
+  histograms.ExpectBucketCount(kCountInOneGroupHistogramName, 2, 1);
+
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification3));
+  histograms.ExpectBucketCount(kCountInOneGroupHistogramName, 3, 1);
+
+  message_center::MessageCenter::Get()->RemoveNotification(id1,
+                                                           /*by_user=*/true);
+  histograms.ExpectBucketCount(kCountInOneGroupHistogramName, 2, 2);
+}
+
+TEST_F(MessageCenterMetricsUtilsTest, RecordGroupNotificationAddedType) {
+  base::HistogramTester histograms;
+
+  auto notification1 = CreateTestNotification();
+  auto notification2 = CreateTestNotification();
+  auto notification3 = CreateTestNotification();
+
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification1));
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification2));
+
+  // There should be 1 group parent that contains 2 group child notifications.
+  histograms.ExpectBucketCount(
+      kGroupNotificationAddedHistogramName,
+      metrics_utils::GroupNotificationType::GROUP_PARENT, 1);
+  histograms.ExpectBucketCount(
+      kGroupNotificationAddedHistogramName,
+      metrics_utils::GroupNotificationType::GROUP_CHILD, 2);
+
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification3));
+  histograms.ExpectBucketCount(
+      kGroupNotificationAddedHistogramName,
+      metrics_utils::GroupNotificationType::GROUP_PARENT, 1);
+  histograms.ExpectBucketCount(
+      kGroupNotificationAddedHistogramName,
+      metrics_utils::GroupNotificationType::GROUP_CHILD, 3);
 }
 
 }  // namespace ash

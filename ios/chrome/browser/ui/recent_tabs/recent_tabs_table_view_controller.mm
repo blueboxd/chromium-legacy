@@ -277,8 +277,9 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   DCHECK(self.syncService);
   bool syncDisabledPolicy = self.syncService->GetDisableReasons().Has(
       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
+  PrefService* prefService = self.browserState->GetPrefs();
   bool syncTypesDisabledPolicy =
-      IsManagedSyncDataType(self.browserState, SyncSetupService::kSyncOpenTabs);
+      IsManagedSyncDataType(prefService, SyncSetupService::kSyncOpenTabs);
   return syncDisabledPolicy || syncTypesDisabledPolicy;
 }
 
@@ -1162,7 +1163,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   // If section is collapsed there's no need to add a separation space.
   return [self.tableViewModel
              sectionIsCollapsed:[self.tableViewModel
-                                    sectionIdentifierForSection:section]]
+                                    sectionIdentifierForSectionIndex:section]]
              ? 1.0
              : kSeparationSpaceBetweenSections;
 }
@@ -1237,7 +1238,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   UIView* header = [super tableView:tableView viewForHeaderInSection:section];
   // Set the header tag as the sectionIdentifer in order to recognize which
   // header was tapped.
-  header.tag = [self.tableViewModel sectionIdentifierForSection:section];
+  header.tag = [self.tableViewModel sectionIdentifierForSectionIndex:section];
   // Remove all existing gestureRecognizers since the header might be reused.
   for (UIGestureRecognizer* recognizer in header.gestureRecognizers) {
     [header removeGestureRecognizer:recognizer];
@@ -1342,8 +1343,9 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
 }
 
 - (const SessionID)tabRestoreEntryIdAtIndexPath:(NSIndexPath*)indexPath {
-  DCHECK_EQ([self.tableViewModel sectionIdentifierForSection:indexPath.section],
-            SectionIdentifierRecentlyClosedTabs);
+  DCHECK_EQ(
+      [self.tableViewModel sectionIdentifierForSectionIndex:indexPath.section],
+      SectionIdentifierRecentlyClosedTabs);
   NSInteger index = indexPath.row;
   DCHECK_LE(index, [self numberOfRecentlyClosedTabs]);
   if (!self.tabRestoreService)
@@ -1387,8 +1389,8 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   DCHECK_EQ([self.tableViewModel itemTypeForIndexPath:indexPath],
             ItemTypeSessionTabData);
   // Get the sectionIdentifier for |indexPath|,
-  NSNumber* sectionIdentifierForIndexPath =
-      @([self.tableViewModel sectionIdentifierForSection:indexPath.section]);
+  NSNumber* sectionIdentifierForIndexPath = @(
+      [self.tableViewModel sectionIdentifierForSectionIndex:indexPath.section]);
   // Get the index of this sectionIdentifier.
   size_t indexOfSession = [[self allSessionSectionIdentifiers]
       indexOfObject:sectionIdentifierForIndexPath];
@@ -1608,7 +1610,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   if (sender.state == UIGestureRecognizerStateEnded) {
     NSInteger section = [self.tableViewModel
         sectionForSectionIdentifier:tappedHeaderSectionIdentifier];
-    ListItem* headerItem = [self.tableViewModel headerForSection:section];
+    ListItem* headerItem = [self.tableViewModel headerForSectionIndex:section];
     // Suggested actions header is not interactable.
     if (headerItem.type == ItemTypeSuggestedActionsHeader) {
       return;
@@ -1630,7 +1632,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
               headerItem);
       BOOL collapsed = [self.tableViewModel
           sectionIsCollapsed:[self.tableViewModel
-                                 sectionIdentifierForSection:section]];
+                                 sectionIdentifierForSectionIndex:section]];
       DisclosureDirection direction =
           collapsed ? DisclosureDirectionTrailing : DisclosureDirectionDown;
 
@@ -1688,7 +1690,7 @@ typedef std::pair<SessionID, TableViewURLItem*> RecentlyClosedTableViewItemPair;
   // Highlight the section header being long pressed.
   NSInteger section = [self.tableViewModel
       sectionForSectionIdentifier:tappedHeaderSectionIdentifier];
-  ListItem* headerItem = [self.tableViewModel headerForSection:section];
+  ListItem* headerItem = [self.tableViewModel headerForSectionIndex:section];
   UITableViewHeaderFooterView* headerView =
       [self.tableView headerViewForSection:section];
   if (headerItem.type == ItemTypeRecentlyClosedHeader ||

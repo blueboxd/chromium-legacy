@@ -11,6 +11,7 @@
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/strings/string_piece.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/extensions/api/web_authentication_proxy/web_authentication_proxy_service.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_observer.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -30,6 +32,8 @@
 #include "chrome/browser/ui/webauthn/authenticator_request_dialog.h"
 #include "chrome/browser/webauthn/authenticator_request_dialog_model.h"
 #include "chrome/browser/webauthn/cablev2_devices.h"
+#include "chrome/browser/webauthn/webauthn_pref_names.h"
+#include "chrome/browser/webauthn/webauthn_switches.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/common/pref_names.h"
@@ -48,6 +52,7 @@
 #include "device/fido/features.h"
 #include "device/fido/fido_authenticator.h"
 #include "device/fido/fido_discovery_factory.h"
+#include "extensions/common/constants.h"
 #include "third_party/icu/source/common/unicode/locid.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
@@ -99,6 +104,55 @@ const char kWebAuthnTouchIdMetadataSecretPrefName[] =
     "webauthn.touchid.metadata_secret";
 #endif
 
+// CableLinkingEventHandler handles linking information sent by caBLEv2
+// authenticators. This linking information can come after the WebAuthn
+// operation has resolved and thus after the
+// `ChromeAuthenticatorRequestDelegate` has been destroyed. Thus this object is
+// owned by the callback itself, and can save linking information until the
+// point where the `Profile` itself is destroyed.
+class CableLinkingEventHandler : public ProfileObserver {
+ public:
+  explicit CableLinkingEventHandler(Profile* profile) : profile_(profile) {
+    profile_->AddObserver(this);
+  }
+
+  ~CableLinkingEventHandler() override {
+    if (profile_) {
+      profile_->RemoveObserver(this);
+      profile_ = nullptr;
+    }
+  }
+
+  void OnNewCablePairing(std::unique_ptr<device::cablev2::Pairing> pairing) {
+    if (!profile_) {
+      FIDO_LOG(DEBUG) << "Linking event was discarded because it was received "
+                         "after the profile was destroyed.";
+      return;
+    }
+
+    // Drop linking in Incognito sessions. While an argument could be made that
+    // it's OK to persist them, this seems like the safe option.
+    if (profile_->IsOffTheRecord()) {
+      FIDO_LOG(DEBUG) << "Linking event was discarded because the profile is "
+                         "Off The Record.";
+      return;
+    }
+
+    cablev2::AddPairing(profile_, std::move(pairing));
+  }
+
+  // ProfileObserver:
+
+  void OnProfileWillBeDestroyed(Profile* profile) override {
+    DCHECK_EQ(profile, profile_);
+    profile_->RemoveObserver(this);
+    profile_ = nullptr;
+  }
+
+ private:
+  Profile* profile_;
+};
+
 }  // namespace
 
 // ---------------------------------------------------------------------
@@ -108,6 +162,63 @@ const char kWebAuthnTouchIdMetadataSecretPrefName[] =
 ChromeWebAuthenticationDelegate::~ChromeWebAuthenticationDelegate() = default;
 
 #if !BUILDFLAG(IS_ANDROID)
+
+static bool IsAllowedGoogleCorpRemoteProxyingOrigin(
+    content::BrowserContext* browser_context,
+    const url::Origin& caller_origin) {
+  if (!base::FeatureList::IsEnabled(
+          device::kWebAuthnGoogleCorpRemoteDesktopClientPrivilege)) {
+    return false;
+  }
+
+  const Profile* profile = Profile::FromBrowserContext(browser_context);
+  const PrefService* prefs = profile->GetPrefs();
+  const bool google_corp_remote_proxied_request_allowed =
+      prefs->GetBoolean(webauthn::pref_names::kRemoteProxiedRequestsAllowed);
+  if (!google_corp_remote_proxied_request_allowed) {
+    return false;
+  }
+
+  // The Google-internal CRD origin. The policy explicitly does not cover
+  // external instances of CRD.
+  constexpr char kGoogleCorpCrdOrigin[] =
+      "https://remotedesktop.corp.google.com";
+  if (caller_origin == url::Origin::Create(GURL(kGoogleCorpCrdOrigin))) {
+    return true;
+  }
+
+  const std::string cmdline_allowed_origin(
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          webauthn::switches::kRemoteProxiedRequestsAllowedAdditionalOrigin));
+  if (cmdline_allowed_origin.empty()) {
+    return false;
+  }
+
+  return caller_origin == url::Origin::Create(GURL(cmdline_allowed_origin));
+}
+
+bool ChromeWebAuthenticationDelegate::
+    OverrideCallerOriginAndRelyingPartyIdValidation(
+        content::BrowserContext* browser_context,
+        const url::Origin& caller_origin,
+        const std::string& relying_party_id) {
+  // Allow the Google-internal version of Chrome Remote Desktop to bypass RP ID
+  // validation so that it can execute WebAuthn requests on behalf of a remote
+  // host. This behavior is gated on an internal-only platform-level enterprise
+  // policy with the hard-coded Google-internal CRD origin. An additional origin
+  // fro development and testing can be supplied via a switch, but only if the
+  // enterprise policy has been enabled.
+  if (IsAllowedGoogleCorpRemoteProxyingOrigin(browser_context, caller_origin)) {
+    // Any Relying Party ID is allowed.
+    return true;
+  }
+
+  // Allow chrome-extensions:// origins to make WebAuthn requests.
+  // `MaybeGetRelyingPartyId` will override the RP ID to use when processing
+  // requests from extensions.
+  return caller_origin.scheme() == extensions::kExtensionScheme &&
+         caller_origin.host() == relying_party_id;
+}
 
 absl::optional<std::string>
 ChromeWebAuthenticationDelegate::MaybeGetRelyingPartyIdOverride(
@@ -122,13 +233,11 @@ ChromeWebAuthenticationDelegate::MaybeGetRelyingPartyIdOverride(
 
   // Otherwise, allow extensions to use WebAuthn and map their origins
   // directly to RP IDs.
-  if (caller_origin.scheme() == "chrome-extension") {
-    // The requested RP ID for an extension must simply be the extension
-    // identifier because no flexibility is permitted. If a caller doesn't
-    // specify an RP ID then Blink defaults the value to the origin's host.
-    if (claimed_relying_party_id != caller_origin.host()) {
-      return absl::nullopt;
-    }
+  if (caller_origin.scheme() == extensions::kExtensionScheme) {
+    // `OverrideCallerOriginAndRelyingPartyIdValidation' ensures an extension
+    // must only use the extension identifier as the RP ID, no flexibility is
+    // permitted. When interacting with authenticators, however, we use the
+    // whole origin to avoid collisions with the RP ID space for HTTPS origins.
     return caller_origin.Serialize();
   }
 
@@ -503,9 +612,15 @@ void ChromeAuthenticatorRequestDelegate::ConfigureCable(
     crypto::RandBytes(*qr_generator_key);
     qr_string = device::cablev2::qr::Encode(*qr_generator_key);
 
-    discovery_factory->set_cable_pairing_callback(base::BindRepeating(
-        &ChromeAuthenticatorRequestDelegate::HandleCablePairingEvent,
-        weak_ptr_factory_.GetWeakPtr()));
+    auto linking_handler = std::make_unique<CableLinkingEventHandler>(
+        Profile::FromBrowserContext(GetBrowserContext()));
+    discovery_factory->set_cable_pairing_callback(
+        base::BindRepeating(&CableLinkingEventHandler::OnNewCablePairing,
+                            std::move(linking_handler)));
+    discovery_factory->set_cable_invalidated_pairing_callback(
+        base::BindRepeating(
+            &ChromeAuthenticatorRequestDelegate::OnInvalidatedCablePairing,
+            weak_ptr_factory_.GetWeakPtr()));
     discovery_factory->set_network_context(
         SystemNetworkContextManager::GetInstance()->GetContext());
   }
@@ -727,6 +842,11 @@ void ChromeAuthenticatorRequestDelegate::OnManageDevicesClicked() {
   }
 }
 
+raw_ptr<AuthenticatorRequestDialogModel>
+ChromeAuthenticatorRequestDelegate::GetDialogModelForTesting() {
+  return weak_dialog_model_;
+}
+
 content::RenderFrameHost*
 ChromeAuthenticatorRequestDelegate::GetRenderFrameHost() const {
   content::RenderFrameHost* ret =
@@ -774,34 +894,20 @@ bool ChromeAuthenticatorRequestDelegate::ShouldPermitCableExtension(
 #endif
 }
 
-void ChromeAuthenticatorRequestDelegate::HandleCablePairingEvent(
-    device::cablev2::PairingEvent event) {
+void ChromeAuthenticatorRequestDelegate::OnInvalidatedCablePairing(
+    size_t failed_contact_index) {
   PrefService* const prefs =
       Profile::FromBrowserContext(GetBrowserContext())->GetPrefs();
 
-  if (auto* failed_contact_index = absl::get_if<size_t>(&event)) {
-    // A pairing was reported to be invalid. Delete it unless it came from Sync,
-    // in which case there's nothing to be done.
-    cablev2::DeletePairingByPublicKey(
-        prefs, phone_public_keys_[*failed_contact_index]);
+  // A pairing was reported to be invalid. Delete it unless it came from Sync,
+  // in which case there's nothing to be done.
+  cablev2::DeletePairingByPublicKey(
+      prefs, phone_public_keys_.at(failed_contact_index));
 
-    if (weak_dialog_model_) {
-      // Contact the next phone with the same name, if any, given that no
-      // notification has been sent.
-      weak_dialog_model_->OnPhoneContactFailed(
-          phone_names_[*failed_contact_index]);
-    }
-    return;
+  if (weak_dialog_model_) {
+    // Contact the next phone with the same name, if any, given that no
+    // notification has been sent.
+    weak_dialog_model_->OnPhoneContactFailed(
+        phone_names_.at(failed_contact_index));
   }
-
-  // `existing_names` is built without calling `cablev2::MergeDevices` because
-  // that function will discard linked entries with duplicate public keys, which
-  // can hide some names that we would still like to avoid colliding with.
-  std::unique_ptr<cablev2::KnownDevices> known_devices =
-      cablev2::KnownDevices::FromProfile(
-          Profile::FromBrowserContext(GetBrowserContext()));
-
-  auto& pairing =
-      *absl::get_if<std::unique_ptr<device::cablev2::Pairing>>(&event);
-  cablev2::AddPairing(prefs, std::move(pairing), known_devices->Names());
 }

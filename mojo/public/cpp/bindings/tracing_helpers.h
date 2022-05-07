@@ -7,6 +7,7 @@
 
 #include "base/trace_event/trace_event.h"
 #include "build/buildflag.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/mojo_buildflags.h"
 
 // Helper for determine trace category for high-level coarse mojo events:

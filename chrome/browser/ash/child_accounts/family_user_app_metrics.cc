@@ -57,8 +57,11 @@ constexpr char kBorealisAppsCountHistogramName[] =
     "FamilyUser.BorealisAppsCount2";
 constexpr char kSystemWebAppsCountHistogramName[] =
     "FamilyUser.SystemWebAppsCount2";
-constexpr char kStandaloneBrowserExtensionCountHistogramName[] =
+constexpr char kStandaloneBrowserChromeAppCountHistogramName[] =
     "FamilyUser.LacrosChromeAppsCount2";
+
+// TODO(agawronska): Add metrics for extensions, possibly differentiating Ash
+// from Lacros (AKA StandaloneBrowser).
 
 const char* GetAppsCountHistogramName(apps::AppType app_type) {
   switch (app_type) {
@@ -66,6 +69,7 @@ const char* GetAppsCountHistogramName(apps::AppType app_type) {
     // Extensions are recorded separately, and AppService only has some
     // extensions with file browser handlers.
     case apps::AppType::kExtension:
+    case apps::AppType::kStandaloneBrowserExtension:
       return kUnknownAppsCountHistogramName;
     case apps::AppType::kArc:
       return kArcAppsCountHistogramName;
@@ -90,7 +94,7 @@ const char* GetAppsCountHistogramName(apps::AppType app_type) {
     case apps::AppType::kSystemWeb:
       return kSystemWebAppsCountHistogramName;
     case apps::AppType::kStandaloneBrowserChromeApp:
-      return kStandaloneBrowserExtensionCountHistogramName;
+      return kStandaloneBrowserChromeAppCountHistogramName;
   }
 }
 
@@ -216,11 +220,10 @@ void FamilyUserAppMetrics::RecordEnabledExtensionsCount() {
 void FamilyUserAppMetrics::RecordRecentlyUsedAppsCount(apps::AppType app_type) {
   int app_count = 0;
   base::Time now = base::Time::Now();
-  apps::mojom::AppType mojom_app_type = ConvertAppTypeToMojomAppType(app_type);
   // The below will execute synchronously.
   app_registry_->ForEachApp(
-      [mojom_app_type, now, this, &app_count](const apps::AppUpdate& update) {
-        if (update.AppType() != mojom_app_type)
+      [app_type, now, this, &app_count](const apps::AppUpdate& update) {
+        if (update.AppType() != app_type)
           return;
         // Only count apps that have been used recently.
         if (now - update.LastLaunchTime() <= kOneDay ||

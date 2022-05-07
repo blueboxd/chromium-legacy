@@ -47,6 +47,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/strings/grit/app_locale_settings.h"
 #include "url/gurl.h"
@@ -56,7 +57,7 @@
 #include "ui/base/resource/resource_bundle_android.h"
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
 #include "ui/gfx/platform_font_skia.h"
 #endif
 
@@ -131,7 +132,7 @@ bool HasBrotliHeader(base::StringPiece data) {
   // Check that the data is brotli decoded by checking for kBrotliConst in
   // header. Header added during compression at tools/grit/grit/node/base.py.
   const uint8_t* data_bytes = reinterpret_cast<const uint8_t*>(data.data());
-  static_assert(base::size(ResourceBundle::kBrotliConst) == 2,
+  static_assert(std::size(ResourceBundle::kBrotliConst) == 2,
                 "Magic number should be 2 bytes long");
   return data.size() >= ResourceBundle::kBrotliHeaderSize &&
          *data_bytes == ResourceBundle::kBrotliConst[0] &&
@@ -143,11 +144,11 @@ size_t GetBrotliDecompressSize(base::StringPiece input) {
   CHECK(input.data());
   CHECK(HasBrotliHeader(input));
   const uint8_t* raw_input = reinterpret_cast<const uint8_t*>(input.data());
-  raw_input = raw_input + base::size(ResourceBundle::kBrotliConst);
+  raw_input = raw_input + std::size(ResourceBundle::kBrotliConst);
   // Get size of uncompressed resource from header.
   uint64_t uncompress_size = 0;
   int bytes_size = static_cast<int>(ResourceBundle::kBrotliHeaderSize -
-                                    base::size(ResourceBundle::kBrotliConst));
+                                    std::size(ResourceBundle::kBrotliConst));
   for (int i = 0; i < bytes_size; i++) {
     uncompress_size |= static_cast<uint64_t>(*(raw_input + i)) << (i * 8);
   }
@@ -386,7 +387,7 @@ void ResourceBundle::AddDataPackFromBuffer(base::span<const uint8_t> buffer,
                                            ResourceScaleFactor scale_factor) {
   std::unique_ptr<DataPack> data_pack(new DataPack(scale_factor));
   if (data_pack->LoadFromBuffer(buffer)) {
-    AddDataPack(std::move(data_pack));
+    AddResourceHandle(std::move(data_pack));
   } else {
     LOG(ERROR) << "Failed to load data pack from buffer";
   }
@@ -398,7 +399,7 @@ void ResourceBundle::AddDataPackFromFileRegion(
     ResourceScaleFactor scale_factor) {
   auto data_pack = std::make_unique<DataPack>(scale_factor);
   if (data_pack->LoadFromFileRegion(std::move(file), region)) {
-    AddDataPack(std::move(data_pack));
+    AddResourceHandle(std::move(data_pack));
   } else {
     LOG(ERROR) << "Failed to load data pack from file."
                << "\nSome features may not be available.";
@@ -457,7 +458,7 @@ std::string ResourceBundle::LoadLocaleResources(const std::string& pref_locale,
     base::debug::Alias(&last_error);
     wchar_t path_copy[MAX_PATH];
     base::wcslcpy(path_copy, locale_file_path.value().c_str(),
-                  base::size(path_copy));
+                  std::size(path_copy));
     base::debug::Alias(path_copy);
 #endif  // BUILDFLAG(IS_WIN)
     CHECK(false);
@@ -480,7 +481,7 @@ void ResourceBundle::LoadTestResources(const base::FilePath& path,
         ui::GetSupportedResourceScaleFactors()[0]);
     auto data_pack = std::make_unique<DataPack>(scale_factor);
     CHECK(data_pack->LoadFromPath(path));
-    AddDataPack(std::move(data_pack));
+    AddResourceHandle(std::move(data_pack));
   }
 
   auto data_pack = std::make_unique<DataPack>(ui::kScaleFactorNone);
@@ -675,10 +676,10 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
   }
 
   if (scale_factor != ui::k100Percent) {
-    for (size_t i = 0; i < data_packs_.size(); i++) {
-      if (data_packs_[i]->GetResourceScaleFactor() == scale_factor &&
-          data_packs_[i]->GetStringPiece(static_cast<uint16_t>(resource_id),
-                                         &data)) {
+    for (const auto& resource_handle : resource_handles_) {
+      if (resource_handle->GetResourceScaleFactor() == scale_factor &&
+          resource_handle->GetStringPiece(static_cast<uint16_t>(resource_id),
+                                          &data)) {
         if (loaded_scale_factor)
           *loaded_scale_factor = scale_factor;
         return data;
@@ -686,15 +687,15 @@ base::StringPiece ResourceBundle::GetRawDataResourceForScale(
     }
   }
 
-  for (size_t i = 0; i < data_packs_.size(); i++) {
-    if ((data_packs_[i]->GetResourceScaleFactor() == ui::k100Percent ||
-         data_packs_[i]->GetResourceScaleFactor() == ui::k200Percent ||
-         data_packs_[i]->GetResourceScaleFactor() == ui::k300Percent ||
-         data_packs_[i]->GetResourceScaleFactor() == ui::kScaleFactorNone) &&
-        data_packs_[i]->GetStringPiece(static_cast<uint16_t>(resource_id),
-                                       &data)) {
+  for (const auto& resource_handle : resource_handles_) {
+    if ((resource_handle->GetResourceScaleFactor() == ui::k100Percent ||
+         resource_handle->GetResourceScaleFactor() == ui::k200Percent ||
+         resource_handle->GetResourceScaleFactor() == ui::k300Percent ||
+         resource_handle->GetResourceScaleFactor() == ui::kScaleFactorNone) &&
+        resource_handle->GetStringPiece(static_cast<uint16_t>(resource_id),
+                                        &data)) {
       if (loaded_scale_factor)
-        *loaded_scale_factor = data_packs_[i]->GetResourceScaleFactor();
+        *loaded_scale_factor = resource_handle->GetResourceScaleFactor();
       return data;
     }
   }
@@ -768,6 +769,9 @@ std::u16string ResourceBundle::GetLocalizedString(int resource_id) {
     can_override_locale_string_resources_ = false;
   }
 #endif
+  DCHECK(!IsGzipped(resource_id) && !IsBrotli(resource_id))
+      << "Compressed string encountered, perhaps use "
+         "ResourceBundle::LoadLocalizedResourceString instead";
   return GetLocalizedStringImpl(resource_id);
 }
 
@@ -978,27 +982,29 @@ void ResourceBundle::AddDataPackFromPathInternal(
 
   auto data_pack = std::make_unique<DataPack>(scale_factor);
   if (data_pack->LoadFromPath(pack_path)) {
-    AddDataPack(std::move(data_pack));
+    AddResourceHandle(std::move(data_pack));
   } else if (!optional) {
     LOG(ERROR) << "Failed to load " << pack_path.value()
                << "\nSome features may not be available.";
   }
 }
 
-void ResourceBundle::AddDataPack(std::unique_ptr<DataPack> data_pack) {
+void ResourceBundle::AddResourceHandle(
+    std::unique_ptr<ResourceHandle> resource_handle) {
 #if DCHECK_IS_ON()
-  data_pack->CheckForDuplicateResources(data_packs_);
+  resource_handle->CheckForDuplicateResources(resource_handles_);
 #endif
 
-  if (GetScaleForResourceScaleFactor(data_pack->GetResourceScaleFactor()) >
+  if (GetScaleForResourceScaleFactor(
+          resource_handle->GetResourceScaleFactor()) >
       GetScaleForResourceScaleFactor(max_scale_factor_))
-    max_scale_factor_ = data_pack->GetResourceScaleFactor();
+    max_scale_factor_ = resource_handle->GetResourceScaleFactor();
 
-  data_packs_.push_back(std::move(data_pack));
+  resource_handles_.push_back(std::move(resource_handle));
 }
 
 void ResourceBundle::InitDefaultFontList() {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#if BUILDFLAG(IS_CHROMEOS)
   // InitDefaultFontList() is called earlier than overriding the locale strings.
   // So we call the |GetLocalizedStringImpl()| which doesn't set the flag
   // |can_override_locale_string_resources_| to false. This is okay, because the
@@ -1018,7 +1024,7 @@ void ResourceBundle::InitDefaultFontList() {
 }
 
 gfx::ImageSkia ResourceBundle::CreateImageSkia(int resource_id) {
-  DCHECK(!data_packs_.empty()) << "Missing call to SetResourcesDataDLL?";
+  DCHECK(!resource_handles_.empty()) << "Missing call to SetResourcesDataDLL?";
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   std::string lottie_bytes_string;
   if (LoadLottieBytesString(resource_id, &lottie_bytes_string))
@@ -1074,7 +1080,7 @@ bool ResourceBundle::LoadBitmap(int resource_id,
                                 SkBitmap* bitmap,
                                 bool* fell_back_to_1x) const {
   DCHECK(fell_back_to_1x);
-  for (const auto& pack : data_packs_) {
+  for (const auto& pack : resource_handles_) {
     if (pack->GetResourceScaleFactor() == ui::kScaleFactorNone &&
         LoadBitmap(*pack, resource_id, bitmap, fell_back_to_1x)) {
       DCHECK(!*fell_back_to_1x);
@@ -1091,7 +1097,7 @@ bool ResourceBundle::LoadBitmap(int resource_id,
   // Unit tests may only have 1x data pack. Allow them to fallback to 1x
   // resources.
   if (is_test_resources_ && *scale_factor != ui::k100Percent) {
-    for (const auto& pack : data_packs_) {
+    for (const auto& pack : resource_handles_) {
       if (pack->GetResourceScaleFactor() == ui::k100Percent &&
           LoadBitmap(*pack, resource_id, bitmap, fell_back_to_1x)) {
         *fell_back_to_1x = true;
@@ -1187,12 +1193,12 @@ std::u16string ResourceBundle::GetLocalizedStringImpl(int resource_id) const {
 // static
 bool ResourceBundle::PNGContainsFallbackMarker(const unsigned char* buf,
                                                size_t size) {
-  if (size < base::size(kPngMagic) ||
-      memcmp(buf, kPngMagic, base::size(kPngMagic)) != 0) {
+  if (size < std::size(kPngMagic) ||
+      memcmp(buf, kPngMagic, std::size(kPngMagic)) != 0) {
     // Data invalid or a JPEG.
     return false;
   }
-  size_t pos = base::size(kPngMagic);
+  size_t pos = std::size(kPngMagic);
 
   // Scan for custom chunks until we find one, find the IDAT chunk, or run out
   // of chunks.
@@ -1204,11 +1210,11 @@ bool ResourceBundle::PNGContainsFallbackMarker(const unsigned char* buf,
     if (size - pos - kPngChunkMetadataSize < length)
       break;
     if (length == 0 && memcmp(buf + pos + sizeof(uint32_t), kPngScaleChunkType,
-                              base::size(kPngScaleChunkType)) == 0) {
+                              std::size(kPngScaleChunkType)) == 0) {
       return true;
     }
     if (memcmp(buf + pos + sizeof(uint32_t), kPngDataChunkType,
-               base::size(kPngDataChunkType)) == 0) {
+               std::size(kPngDataChunkType)) == 0) {
       // Stop looking for custom chunks, any custom chunks should be before an
       // IDAT chunk.
       break;
@@ -1231,10 +1237,10 @@ bool ResourceBundle::DecodePNG(const unsigned char* buf,
 bool ResourceBundle::LoadLottieBytesString(int resource_id,
                                            std::string* bytes_string) const {
   const base::StringPiece potential_lottie = GetRawDataResource(resource_id);
-  if (potential_lottie.substr(0u, base::size(kLottiePrefix)) !=
-      base::StringPiece(kLottiePrefix, base::size(kLottiePrefix)))
+  if (potential_lottie.substr(0u, std::size(kLottiePrefix)) !=
+      base::StringPiece(kLottiePrefix, std::size(kLottiePrefix)))
     return false;
-  DecompressIfNeeded(potential_lottie.substr(base::size(kLottiePrefix)),
+  DecompressIfNeeded(potential_lottie.substr(std::size(kLottiePrefix)),
                      bytes_string);
   return true;
 }

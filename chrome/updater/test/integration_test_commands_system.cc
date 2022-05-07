@@ -74,10 +74,12 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
 
   void ExpectUpdateSequence(ScopedServer* test_server,
                             const std::string& app_id,
+                            const std::string& install_data_index,
                             const base::Version& from_version,
                             const base::Version& to_version) const override {
     updater::test::ExpectUpdateSequence(updater_scope_, test_server, app_id,
-                                        from_version, to_version);
+                                        install_data_index, from_version,
+                                        to_version);
   }
 
   void ExpectVersionActive(const std::string& version) const override {
@@ -123,10 +125,12 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
                {Param("value", base::NumberToString(value))});
   }
 
-  void ExpectAppUnregisteredExistenceCheckerPath(
-      const std::string& app_id) const override {
-    RunCommand("expect_app_unregistered_existence_checker_path",
-               {Param("app_id", app_id)});
+  void ExpectRegistered(const std::string& app_id) const override {
+    RunCommand("expect_registered", {Param("app_id", app_id)});
+  }
+
+  void ExpectNotRegistered(const std::string& app_id) const override {
+    RunCommand("expect_not_registered", {Param("app_id", app_id)});
   }
 
   void ExpectAppVersion(const std::string& app_id,
@@ -149,14 +153,16 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
                {Param("exit_code", base::NumberToString(expected_exit_code))});
   }
 
-  void Update(const std::string& app_id) const override {
-    RunCommand("update", {Param("app_id", app_id)});
+  void Update(const std::string& app_id,
+              const std::string& install_data_index) const override {
+    RunCommand("update", {Param("app_id", app_id),
+                          Param("install_data_index", install_data_index)});
   }
 
   void UpdateAll() const override { RunCommand("update_all", {}); }
 
-  void RegisterApp(const std::string& app_id) const override {
-    RunCommand("register_app", {Param("app_id", app_id)});
+  void InstallApp(const std::string& app_id) const override {
+    RunCommand("install_app", {Param("app_id", app_id)});
   }
 
   void WaitForUpdaterExit() const override {
@@ -211,10 +217,12 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   }
 
   void CallServiceUpdate(const std::string& app_id,
+                         const std::string& install_data_index,
                          UpdateService::PolicySameVersionUpdate
                              policy_same_version_update) const override {
     RunCommand("call_service_update",
                {Param("app_id", app_id),
+                Param("install_data_index", install_data_index),
                 Param("same_version_update_allowed",
                       policy_same_version_update ==
                               UpdateService::PolicySameVersionUpdate::kAllowed
@@ -240,6 +248,10 @@ class IntegrationTestCommandsSystem : public IntegrationTestCommands {
   void ExpectLastChecked() const override { RunCommand("expect_last_checked"); }
 
   void ExpectLastStarted() const override { RunCommand("expect_last_started"); }
+
+  void UninstallApp(const std::string& app_id) const override {
+    RunCommand("uninstall_app", {Param("app_id", app_id)});
+  }
 
  private:
   ~IntegrationTestCommandsSystem() override = default;

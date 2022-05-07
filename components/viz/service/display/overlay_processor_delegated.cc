@@ -109,7 +109,7 @@ constexpr size_t kTooManyQuads = 64;
 DBG_FLAG_FBOOL("delegated.disable.delegation", disable_delegation)
 
 bool OverlayProcessorDelegated::AttemptWithStrategies(
-    const skia::Matrix44& output_color_matrix,
+    const SkM44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
@@ -163,6 +163,7 @@ bool OverlayProcessorDelegated::AttemptWithStrategies(
         num_quads_skipped++;
       } else {
         DBG_DRAW_RECT("delegated.overlay.failed", display_rect);
+        DBG_LOG("delegated.overlay.failed", "error code %d", candidate_status);
       }
 
       if (candidate_status ==
@@ -215,7 +216,7 @@ gfx::RectF OverlayProcessorDelegated::GetPrimaryPlaneDisplayRect(
 void OverlayProcessorDelegated::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
     AggregatedRenderPassList* render_passes,
-    const skia::Matrix44& output_color_matrix,
+    const SkM44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,

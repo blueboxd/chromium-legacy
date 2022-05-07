@@ -41,6 +41,7 @@
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
 #include "components/services/storage/storage_service_impl.h"
 #include "components/variations/net/variations_http_headers.h"
+#include "content/browser/aggregation_service/aggregation_service_features.h"
 #include "content/browser/aggregation_service/aggregation_service_impl.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/background_fetch/background_fetch_context.h"
@@ -50,6 +51,7 @@
 #include "content/browser/broadcast_channel/broadcast_channel_service.h"
 #include "content/browser/browsing_data/clear_site_data_handler.h"
 #include "content/browser/browsing_data/storage_partition_code_cache_data_remover.h"
+#include "content/browser/browsing_topics/browsing_topics_site_data_manager_impl.h"
 #include "content/browser/buckets/bucket_context.h"
 #include "content/browser/cache_storage/cache_storage_control_wrapper.h"
 #include "content/browser/code_cache/generated_code_cache.h"
@@ -1315,6 +1317,13 @@ void StoragePartitionImpl::Initialize(
         path, is_in_memory(), GetURLLoaderFactoryForBrowserProcess());
   }
 
+  // The Topics API is not available in Incognito mode.
+  if (!is_in_memory() &&
+      base::FeatureList::IsEnabled(blink::features::kBrowsingTopics)) {
+    browsing_topics_site_data_manager_ =
+        std::make_unique<BrowsingTopicsSiteDataManagerImpl>(path);
+  }
+
   GeneratedCodeCacheSettings settings =
       GetContentClient()->browser()->GetGeneratedCodeCacheSettings(
           browser_context_);
@@ -1343,8 +1352,7 @@ void StoragePartitionImpl::Initialize(
   font_access_manager_ = FontAccessManagerImpl::Create();
   compute_pressure_manager_ = ComputePressureManager::Create();
 
-  if (base::FeatureList::IsEnabled(
-          features::kPrivacySandboxAggregationService)) {
+  if (base::FeatureList::IsEnabled(kPrivacySandboxAggregationService)) {
     aggregation_service_ =
         std::make_unique<AggregationServiceImpl>(is_in_memory(), path, this);
   }
@@ -1643,6 +1651,12 @@ MediaLicenseManager* StoragePartitionImpl::GetMediaLicenseManager() {
 InterestGroupManager* StoragePartitionImpl::GetInterestGroupManager() {
   DCHECK(initialized_);
   return interest_group_manager_.get();
+}
+
+BrowsingTopicsSiteDataManager*
+StoragePartitionImpl::GetBrowsingTopicsSiteDataManager() {
+  DCHECK(initialized_);
+  return browsing_topics_site_data_manager_.get();
 }
 
 ComputePressureManager* StoragePartitionImpl::GetComputePressureManager() {
@@ -2004,10 +2018,9 @@ void StoragePartitionImpl::OnCanSendReportingReports(
 
   std::vector<url::Origin> origins_out;
   for (auto& origin : origins) {
-    GURL origin_url = origin.GetURL();
-    bool allowed = permission_controller->GetPermissionStatus(
-                       PermissionType::BACKGROUND_SYNC, origin_url,
-                       origin_url) == blink::mojom::PermissionStatus::GRANTED;
+    bool allowed = permission_controller->GetPermissionStatusForServiceWorker(
+                       PermissionType::BACKGROUND_SYNC, origin) ==
+                   blink::mojom::PermissionStatus::GRANTED;
     if (allowed)
       origins_out.push_back(origin);
   }
@@ -2022,8 +2035,9 @@ void StoragePartitionImpl::OnCanSendDomainReliabilityUpload(
   PermissionController* permission_controller =
       browser_context_->GetPermissionController();
   std::move(callback).Run(
-      permission_controller->GetPermissionStatus(
-          content::PermissionType::BACKGROUND_SYNC, origin, origin) ==
+      permission_controller->GetPermissionStatusForServiceWorker(
+          content::PermissionType::BACKGROUND_SYNC,
+          url::Origin::Create(origin)) ==
       blink::mojom::PermissionStatus::GRANTED);
 }
 
@@ -2125,8 +2139,9 @@ void StoragePartitionImpl::OnTrustTokenIssuanceDivertedToSystem(
 
 void StoragePartitionImpl::OnCanSendSCTAuditingReport(
     OnCanSendSCTAuditingReportCallback callback) {
-  GetContentClient()->browser()->CanSendSCTAuditingReport(browser_context_,
-                                                          std::move(callback));
+  bool allowed =
+      GetContentClient()->browser()->CanSendSCTAuditingReport(browser_context_);
+  std::move(callback).Run(allowed);
 }
 
 void StoragePartitionImpl::OnNewSCTAuditingReportSent() {

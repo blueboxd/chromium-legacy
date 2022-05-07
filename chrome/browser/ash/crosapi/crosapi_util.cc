@@ -26,6 +26,7 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chromeos/components/cdm_factory_daemon/mojom/browser_cdm_factory.mojom.h"
 #include "chromeos/components/sensors/mojom/cros_sensor_service.mojom.h"
+#include "chromeos/constants/devicetype.h"
 #include "chromeos/crosapi/cpp/crosapi_constants.h"
 #include "chromeos/crosapi/mojom/app_service.mojom.h"
 #include "chromeos/crosapi/mojom/app_window_tracker.mojom.h"
@@ -38,6 +39,7 @@
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "chromeos/crosapi/mojom/content_protection.mojom.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/desk_template.mojom.h"
 #include "chromeos/crosapi/mojom/device_attributes.mojom.h"
 #include "chromeos/crosapi/mojom/device_settings_service.mojom.h"
 #include "chromeos/crosapi/mojom/dlp.mojom.h"
@@ -76,6 +78,7 @@
 #include "chromeos/crosapi/mojom/tts.mojom.h"
 #include "chromeos/crosapi/mojom/url_handler.mojom.h"
 #include "chromeos/crosapi/mojom/video_capture.mojom.h"
+#include "chromeos/crosapi/mojom/web_app_service.mojom.h"
 #include "chromeos/crosapi/mojom/web_page_info.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/tpm/install_attributes.h"
@@ -169,6 +172,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::ClipboardHistory>(),
     MakeInterfaceVersionEntry<crosapi::mojom::ContentProtection>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Crosapi>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::DeskTemplate>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DeviceAttributes>(),
     MakeInterfaceVersionEntry<crosapi::mojom::DeviceSettingsService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::Dlp>(),
@@ -214,6 +218,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
     MakeInterfaceVersionEntry<crosapi::mojom::Tts>(),
     MakeInterfaceVersionEntry<crosapi::mojom::UrlHandler>(),
     MakeInterfaceVersionEntry<crosapi::mojom::VideoCaptureDeviceFactory>(),
+    MakeInterfaceVersionEntry<crosapi::mojom::WebAppService>(),
     MakeInterfaceVersionEntry<crosapi::mojom::WebPageInfoFactory>(),
     MakeInterfaceVersionEntry<device::mojom::HidConnection>(),
     MakeInterfaceVersionEntry<device::mojom::HidManager>(),
@@ -227,7 +232,7 @@ constexpr InterfaceVersionEntry kInterfaceVersionEntries[] = {
 constexpr bool HasDuplicatedUuid() {
   // We assume the number of entries are small enough so that simple
   // O(N^2) check works.
-  const size_t size = base::size(kInterfaceVersionEntries);
+  const size_t size = std::size(kInterfaceVersionEntries);
   for (size_t i = 0; i < size; ++i) {
     for (size_t j = i + 1; j < size; ++j) {
       if (kInterfaceVersionEntries[i].uuid == kInterfaceVersionEntries[j].uuid)
@@ -239,6 +244,24 @@ constexpr bool HasDuplicatedUuid() {
 
 static_assert(!HasDuplicatedUuid(),
               "Each Crosapi Mojom interface should have unique UUID.");
+
+crosapi::mojom::BrowserInitParams::DeviceType ConvertDeviceType(
+    chromeos::DeviceType device_type) {
+  switch (device_type) {
+    case chromeos::DeviceType::kChromebook:
+      return crosapi::mojom::BrowserInitParams::DeviceType::kChromebook;
+    case chromeos::DeviceType::kChromebase:
+      return crosapi::mojom::BrowserInitParams::DeviceType::kChromebase;
+    case chromeos::DeviceType::kChromebit:
+      return crosapi::mojom::BrowserInitParams::DeviceType::kChromebit;
+    case chromeos::DeviceType::kChromebox:
+      return crosapi::mojom::BrowserInitParams::DeviceType::kChromebox;
+    case chromeos::DeviceType::kUnknown:
+      [[fallthrough]];
+    default:
+      return crosapi::mojom::BrowserInitParams::DeviceType::kUnknown;
+  }
+}
 
 }  // namespace
 
@@ -400,6 +423,8 @@ mojom::BrowserInitParamsPtr GetBrowserInitParams(
 
   params->is_device_enterprised_managed =
       chromeos::InstallAttributes::Get()->IsEnterpriseManaged();
+
+  params->device_type = ConvertDeviceType(chromeos::GetDeviceType());
 
   return params;
 }

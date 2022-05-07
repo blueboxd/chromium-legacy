@@ -17,7 +17,6 @@
 #include "ash/webui/shimless_rma/url_constants.h"
 #include "base/command_line.h"
 #include "base/containers/span.h"
-#include "base/memory/ptr_util.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
@@ -303,6 +302,16 @@ void AddShimlessRmaStrings(content::WebUIDataSource* html_source) {
       {"criticalErrorMessageText", IDS_SHIMLESS_RMA_CRITICAL_ERROR_MESSAGE},
       {"criticalErrorExitText", IDS_SHIMLESS_RMA_CRITICAL_EXIT_BUTTON},
       {"criticalErrorRebootText", IDS_SHIMLESS_RMA_CRITICAL_REBOOT_BUTTON},
+      // Wipe device page
+      {"wipeDeviceTitleText", IDS_SHIMLESS_RMA_WIPE_DEVICE_TITLE},
+      {"wipeDeviceRemoveDataLabel",
+       IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION},
+      {"wipeDeviceRemoveDataDescription",
+       IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION_DESCRIPTION},
+      {"wipeDevicePreserveDataLabel",
+       IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION},
+      {"wipeDevicePreserveDataDescription",
+       IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION_DESCRIPTION},
   };
 
   html_source->AddLocalizedStrings(kLocalizedStrings);
@@ -347,8 +356,10 @@ ShimlessRMADialogUI::ShimlessRMADialogUI(
     : ui::MojoWebDialogUI(web_ui),
       shimless_rma_manager_(std::make_unique<shimless_rma::ShimlessRmaService>(
           std::move(shimless_rma_delegate))) {
-  auto html_source = base::WrapUnique(
-      content::WebUIDataSource::Create(kChromeUIShimlessRMAHost));
+  content::WebUIDataSource* html_source =
+      content::WebUIDataSource::CreateAndAdd(
+          web_ui->GetWebContents()->GetBrowserContext(),
+          kChromeUIShimlessRMAHost);
   html_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       "script-src chrome://resources chrome://test 'self';");
@@ -356,20 +367,16 @@ ShimlessRMADialogUI::ShimlessRMADialogUI(
 
   const auto resources =
       base::make_span(kAshShimlessRmaResources, kAshShimlessRmaResourcesSize);
-  SetUpWebUIDataSource(html_source.get(), resources,
-                       IDR_ASH_SHIMLESS_RMA_INDEX_HTML);
+  SetUpWebUIDataSource(html_source, resources, IDR_ASH_SHIMLESS_RMA_INDEX_HTML);
 
-  AddShimlessRmaStrings(html_source.get());
+  AddShimlessRmaStrings(html_source);
 
-  ui::network_element::AddLocalizedStrings(html_source.get());
-  ui::network_element::AddOncLocalizedStrings(html_source.get());
-  ui::network_element::AddDetailsLocalizedStrings(html_source.get());
-  ui::network_element::AddConfigLocalizedStrings(html_source.get());
-  ui::network_element::AddErrorLocalizedStrings(html_source.get());
-  html_source.get()->UseStringsJs();
-
-  content::WebUIDataSource::Add(web_ui->GetWebContents()->GetBrowserContext(),
-                                html_source.release());
+  ui::network_element::AddLocalizedStrings(html_source);
+  ui::network_element::AddOncLocalizedStrings(html_source);
+  ui::network_element::AddDetailsLocalizedStrings(html_source);
+  ui::network_element::AddConfigLocalizedStrings(html_source);
+  ui::network_element::AddErrorLocalizedStrings(html_source);
+  html_source->UseStringsJs();
 }
 
 ShimlessRMADialogUI::~ShimlessRMADialogUI() = default;

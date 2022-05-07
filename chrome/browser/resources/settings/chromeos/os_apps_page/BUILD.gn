@@ -23,8 +23,8 @@ js_library("android_apps_browser_proxy") {
 js_library("android_apps_subpage") {
   deps = [
     ":android_apps_browser_proxy",
-    "..:deep_linking_behavior.m",
-    "..:os_route.m",
+    "..:deep_linking_behavior",
+    "..:os_route",
     "..:prefs_behavior",
     "..:route_observer_behavior",
     "../..:router",
@@ -39,15 +39,14 @@ js_library("os_apps_page") {
   deps = [
     ":android_apps_browser_proxy",
     ":android_apps_subpage",
-    "..:deep_linking_behavior.m",
-    "..:os_route.m",
+    "..:deep_linking_behavior",
+    "..:os_route",
     "..:prefs_behavior",
     "../../:router",
     "./app_management_page:store_client",
     "./app_notifications_page:mojo_interface_provider",
     "//chrome/browser/ui/webui/settings/ash/os_apps_page/mojom:mojom_js_library_for_compile",
-    "//ui/webui/resources/cr_components/chromeos/localized_link:localized_link",
-    "//ui/webui/resources/cr_components/chromeos/localized_link:localized_link",
+    "//ui/webui/resources/cr_components/localized_link:localized_link",
     "//ui/webui/resources/js:cr.m",
     "//ui/webui/resources/js:i18n_behavior.m",
   ]

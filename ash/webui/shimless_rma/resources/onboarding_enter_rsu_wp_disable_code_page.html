@@ -13,6 +13,8 @@
     font-size: var(--shimless-hint-font-size);
     font-weight: var(--shimless-medium-font-weight);
     line-height: var(--shimless-hint-line-height);
+    padding-bottom: 8px;
+    padding-top: 8px;
   }
 
   :host([rsu-code-invalid_]) #inputValidationLabel {
@@ -21,6 +23,11 @@
 
   #inputContainer {
     width: 275px;
+  }
+
+  #rsuCode {
+    padding-bottom: 8px;
+    width: 320px;
   }
 
   #rsuCodeDialogLink {
@@ -55,7 +62,7 @@
 <cr-dialog id="rsuChallengeDialog" on-cancel="closeDialog_" ignore-popstate>
   <div slot="title">[[i18n('rsuChallengeDialogTitleText')]]</div>
   <div slot="body" id="dialogBody">[[rsuChallengeLinkText_]]</div>
-  <div slot="button-container">
+  <div class="dialog-footer" slot="button-container">
     <cr-button class="action-button" on-click="closeDialog_">
       [[i18n('rsuChallengeDialogDoneButtonLabel')]]
     </cr-button>

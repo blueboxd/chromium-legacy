@@ -23,9 +23,7 @@
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // static
 SecureChannelImpl::Factory* SecureChannelImpl::Factory::test_factory_ = nullptr;
@@ -454,6 +452,4 @@ std::ostream& operator<<(std::ostream& stream,
   return stream;
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

@@ -21,6 +21,8 @@
 
 namespace {
 
+using Topic = browsing_topics::Topic;
+
 constexpr char kCallbackId1[] = "test-callback-id";
 constexpr char kCallbackId2[] = "test-callback-id-2";
 
@@ -114,7 +116,8 @@ void ValidateTopicsInfo(
     const auto& actual_topic = actual_topics[i];
     const auto& expected_topic = expected_topics[i];
     ASSERT_TRUE(actual_topic.is_dict());
-    ASSERT_EQ(expected_topic.topic_id(), actual_topic.FindIntKey("topicId"));
+    ASSERT_EQ(expected_topic.topic_id().value(),
+              actual_topic.FindIntKey("topicId"));
     ASSERT_EQ(expected_topic.taxonomy_version(),
               actual_topic.FindIntKey("taxonomyVersion"));
     ASSERT_EQ(expected_topic.GetLocalizedRepresentation(),
@@ -150,7 +153,7 @@ class PrivacySandboxHandlerTest : public testing::Test {
   content::TestWebUI* web_ui() { return web_ui_.get(); }
   PrivacySandboxHandler* handler() { return handler_.get(); }
   TestingProfile* profile() { return &profile_; }
-  PrivacySandboxSettings* privacy_sandbox_settings() {
+  privacy_sandbox::PrivacySandboxSettings* privacy_sandbox_settings() {
     return PrivacySandboxSettingsFactory::GetForProfile(profile());
   }
 
@@ -167,7 +170,7 @@ class PrivacySandboxHandlerTest : public testing::Test {
 TEST_F(PrivacySandboxHandlerTest, GetFlocId) {
   base::Value args(base::Value::Type::LIST);
   args.Append(kCallbackId1);
-  handler()->HandleGetFlocId(args.GetListDeprecated());
+  handler()->HandleGetFlocId(args.GetList());
 
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   EXPECT_EQ(kCallbackId1, data.arg1()->GetString());
@@ -177,16 +180,10 @@ TEST_F(PrivacySandboxHandlerTest, GetFlocId) {
 }
 
 TEST_F(PrivacySandboxHandlerTest, ResetFlocId) {
-  // Observers of the PrivacySandboxSettings service should be informed that
-  // the FLoC ID was reset.
-  privacy_sandbox_test_util::MockPrivacySandboxObserver observer;
-  privacy_sandbox_settings()->AddObserver(&observer);
-  EXPECT_CALL(observer, OnFlocDataAccessibleSinceUpdated(true));
-
   base::Value args(base::Value::Type::LIST);
-  handler()->HandleResetFlocId(args.GetListDeprecated());
+  handler()->HandleResetFlocId(args.GetList());
 
-  // Resetting the FLoC ID should also fire the appropriate WebUI listener.
+  // Resetting the FLoC ID should fire the appropriate WebUI listener.
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   EXPECT_EQ("cr.webUIListenerCallback", data.function_name());
   EXPECT_EQ("floc-id-changed", data.arg1()->GetString());
@@ -220,7 +217,7 @@ TEST_F(PrivacySandboxHandlerTestMockService, SetFledgeJoiningAllowed) {
   base::Value args(base::Value::Type::LIST);
   args.Append(kTestSite);
   args.Append(true);
-  handler()->HandleSetFledgeJoiningAllowed(args.GetListDeprecated());
+  handler()->HandleSetFledgeJoiningAllowed(args.GetList());
 }
 
 TEST_F(PrivacySandboxHandlerTestMockService, GetFledgeState) {
@@ -238,11 +235,11 @@ TEST_F(PrivacySandboxHandlerTestMockService, GetFledgeState) {
 
   base::Value args(base::Value::Type::LIST);
   args.Append(kCallbackId1);
-  handler()->HandleGetFledgeState(args.GetListDeprecated());
+  handler()->HandleGetFledgeState(args.GetList());
 
   args.ClearList();
   args.Append(kCallbackId2);
-  handler()->HandleGetFledgeState(args.GetListDeprecated());
+  handler()->HandleGetFledgeState(args.GetList());
 
   // Provide different sets of information to each request to the FLEDGE
   // backend.
@@ -268,28 +265,28 @@ TEST_F(PrivacySandboxHandlerTestMockService, SetTopicAllowed) {
   // Confirm that the handler correctly constructs the CanonicalTopic and
   // passes it to the PrivacySandboxService.
   const privacy_sandbox::CanonicalTopic kTestTopic(
-      1, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY);
+      Topic(1), privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY);
   EXPECT_CALL(*mock_privacy_sandbox_service(),
               SetTopicAllowed(kTestTopic, false))
       .Times(1);
   base::Value args(base::Value::Type::LIST);
-  args.Append(kTestTopic.topic_id());
+  args.Append(kTestTopic.topic_id().value());
   args.Append(kTestTopic.taxonomy_version());
   args.Append(false);
-  handler()->HandleSetTopicAllowed(args.GetListDeprecated());
+  handler()->HandleSetTopicAllowed(args.GetList());
 }
 
 TEST_F(PrivacySandboxHandlerTestMockService, GetTopicsState) {
   const std::vector<privacy_sandbox::CanonicalTopic> kBlockedTopics = {
       privacy_sandbox::CanonicalTopic(
-          1, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY),
+          Topic(1), privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY),
       privacy_sandbox::CanonicalTopic(
-          2, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY)};
+          Topic(2), privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY)};
   const std::vector<privacy_sandbox::CanonicalTopic> kTopTopics = {
       privacy_sandbox::CanonicalTopic(
-          3, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY),
+          Topic(3), privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY),
       privacy_sandbox::CanonicalTopic(
-          4, privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY)};
+          Topic(4), privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY)};
 
   EXPECT_CALL(*mock_privacy_sandbox_service(), GetCurrentTopTopics())
       .Times(1)
@@ -300,7 +297,7 @@ TEST_F(PrivacySandboxHandlerTestMockService, GetTopicsState) {
 
   base::Value args(base::Value::Type::LIST);
   args.Append(kCallbackId1);
-  handler()->HandleGetTopicsState(args.GetListDeprecated());
+  handler()->HandleGetTopicsState(args.GetList());
 
   const content::TestWebUI::CallData& data = *web_ui()->call_data().back();
   EXPECT_EQ(kCallbackId1, data.arg1()->GetString());

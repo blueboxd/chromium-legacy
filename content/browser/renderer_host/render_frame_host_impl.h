@@ -131,7 +131,6 @@
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom-forward.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom-forward.h"
 #include "third_party/blink/public/mojom/webid/federated_auth_request.mojom-forward.h"
-#include "third_party/blink/public/mojom/webid/federated_auth_response.mojom-forward.h"
 #include "third_party/blink/public/mojom/webtransport/web_transport_connector.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom-forward.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -198,6 +197,7 @@ class DocumentServiceBase;
 }  // namespace internal
 
 class AgentSchedulingGroupHost;
+class AXScreenAIAnnotator;
 class BrowsingContextState;
 class CodeCacheHostImpl;
 class CrossOriginEmbedderPolicyReporter;
@@ -635,7 +635,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       int frame_routing_id,
       mojo::PendingAssociatedRemote<mojom::Frame> frame_remote,
       const blink::LocalFrameToken& frame_token,
-      const blink::FramePolicy& frame_policy);
+      const blink::FramePolicy& frame_policy,
+      std::string frame_name,
+      std::string frame_unique_name);
   void RemoveChild(FrameTreeNode* child);
   void ResetChildren();
 
@@ -1759,9 +1761,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindFederatedAuthRequestReceiver(
       mojo::PendingReceiver<blink::mojom::FederatedAuthRequest> receiver);
 
-  void BindFederatedAuthResponseReceiver(
-      mojo::PendingReceiver<blink::mojom::FederatedAuthResponse> receiver);
-
   void BindRestrictedCookieManager(
       mojo::PendingReceiver<network::mojom::RestrictedCookieManager> receiver);
   void BindRestrictedCookieManagerWithOrigin(
@@ -2393,8 +2392,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //  nullptr.
   RenderFrameHostImpl* GetParentOrOuterDocumentOrEmbedder();
 
-  static const char* LifecycleStateImplToString(LifecycleStateImpl state);
-
   // Computes the nonce to be used for isolation info and storage key.
   absl::optional<base::UnguessableToken> ComputeNonce(bool anonymous);
 
@@ -2412,16 +2409,16 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // should be sandboxed / should have an opaque origin instead).
   void SetOriginDependentStateOfNewFrame(const url::Origin& new_frame_creator);
 
-  // Returns the "top_level_site" that should be used to calculate storage key.
-  // It correspond to the top-level document's origin, unless its is an
-  // extension with host permissions to its direct child. In this case, this
-  // returns the child's origin.
-  url::Origin CalculateTopLevelOriginForStorageKey(
-      const url::Origin& new_rfh_origin);
+  // Calculates the storage key for this RenderFrameHostImpl using the passed
+  // `new_rfh_origin`, and `nonce` and calculating the storage key's
+  // top_level_site` and `ancestor_bit` parameters. This takes into account
+  // possible host permissions of the top_level RenderFrameHostImpl.
+  blink::StorageKey CalculateStorageKey(const url::Origin& new_rfh_origin,
+                                        const base::UnguessableToken* nonce);
 
   // Returns the BrowsingContextState associated with this RenderFrameHostImpl.
   // See class comments in BrowsingContextState for a more detailed description.
-  scoped_refptr<BrowsingContextState>& browsing_context_state() {
+  const scoped_refptr<BrowsingContextState>& browsing_context_state() const {
     return browsing_context_state_;
   }
 
@@ -2432,22 +2429,18 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void DidChangeReferrerPolicy(network::mojom::ReferrerPolicy referrer_policy);
 
-  class CheckOnDeleteRef {
-   public:
-    CheckOnDeleteRef(const CheckOnDeleteRef&) = delete;
-    CheckOnDeleteRef& operator=(const CheckOnDeleteRef&) = delete;
-    ~CheckOnDeleteRef();
-
-   private:
-    friend class RenderFrameHostImpl;
-
-    explicit CheckOnDeleteRef(RenderFrameHostImpl* host);
-
-    RenderFrameHostImpl* host_;
-  };
-
-  // TODO(https://crbug.com/1262098): used to track down crash.
-  std::unique_ptr<CheckOnDeleteRef> EnableCheckIfDeleted();
+  // TODO: While FencedFrame shadow DOM implementation exists and is dependent
+  // on the effective frame policy in BrowsingContextState, fenced frame status
+  // is dependent on FrameTreeNode being initialized and associated with a
+  // RenderFrameHostImpl. However, it may need to be accessed before node
+  // initialization, which is the reason for these methods. For example,
+  // RenderFrameHostImpl needs to have access to the effective frame policy
+  // (which is stored in FrameReplicationState), and we need to call this
+  // inside RenderFrameHostImpl's constructor (where FrameTreeNode doesn't
+  // have current RenderFrameHost yet). Remove these methods when shadow DOM is
+  // also removed.
+  bool IsFencedFrameRootNoStatus();
+  bool IsInFencedFrameTree();
 
  protected:
   friend class RenderFrameHostFactory;
@@ -2791,6 +2784,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
                                         bool is_same_document_navigation,
                                         bool is_pdf,
                                         bool is_sandboxed);
+
+  // Returns whether a subframe navigation request should be allowed to commit
+  // to the current RenderFrameHost.
+  bool CanSubframeCommitOriginAndUrl(NavigationRequest* navigation_request);
 
   // Asserts that the given RenderFrameHostImpl is part of the same browser
   // context (and crashes if not), then returns whether the given frame is
@@ -3171,7 +3168,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void LogCannotCommitUrlCrashKeys(const GURL& url,
                                    bool is_same_document_navigation,
                                    NavigationRequest* navigation_request);
-  void LogCannotCommitOriginCrashKeys(bool is_same_document_navigation,
+  void LogCannotCommitOriginCrashKeys(const GURL& url,
+                                      const url::Origin& origin,
+                                      const ProcessLock& process_lock,
+                                      bool is_same_document_navigation,
                                       NavigationRequest* navigation_request);
 
   // Verifies that browser-calculated and renderer-calculated values for some
@@ -3301,6 +3301,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   perfetto::protos::pbzero::RenderFrameHost::LifecycleState
   LifecycleStateToProto();
+
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  void RunScreenAIAnnotator();
+#endif
 
   // The RenderViewHost that this RenderFrameHost is associated with.
   //
@@ -3727,18 +3731,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   std::unique_ptr<service_manager::InterfaceProvider> java_interfaces_;
 #endif
 
-  // BrowserInterfaceBroker implementation through which this
-  // RenderFrameHostImpl exposes document-scoped Mojo services to the currently
-  // active document in the corresponding RenderFrame.
-  //
-  // The interfaces that can be requested from this broker are defined in the
-  // content/browser/browser_interface_binders.cc file, in the functions which
-  // take a `RenderFrameHostImpl*` parameter.
-  BrowserInterfaceBrokerImpl<RenderFrameHostImpl, RenderFrameHost*> broker_{
-      this};
-  mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
-      &broker_};
-
   // Performs Mojo capability control on this RenderFrameHost when
   // `mojo_binder_policy_applier_` is not null. Mojo binder polices will be
   // applied to interfaces that are registered with BrowserInterfaceBrokerImpl
@@ -4140,7 +4132,25 @@ class CONTENT_EXPORT RenderFrameHostImpl
   BackForwardCacheDisablingFeaturesCallback
       back_forward_cache_disabling_features_callback_for_testing_;
 
-  int check_if_deleted_request_count_ = 0;
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+  // Manages the snapshot processing by Screen AI, if enabled.
+  std::unique_ptr<AXScreenAIAnnotator> ax_screen_ai_annotator_;
+#endif
+
+  // BrowserInterfaceBroker implementation through which this
+  // RenderFrameHostImpl exposes document-scoped Mojo services to the currently
+  // active document in the corresponding RenderFrame.
+  //
+  // The interfaces that can be requested from this broker are defined in the
+  // content/browser/browser_interface_binders.cc file, in the functions which
+  // take a `RenderFrameHostImpl*` parameter.
+  //
+  // `broker_` is located below other members to avoid ordering issue by access
+  // them during initializing BrowserInterfaceBrokerImpl.
+  BrowserInterfaceBrokerImpl<RenderFrameHostImpl, RenderFrameHost*> broker_{
+      this};
+  mojo::Receiver<blink::mojom::BrowserInterfaceBroker> broker_receiver_{
+      &broker_};
 
   // WeakPtrFactories are the last members, to ensure they are destroyed before
   // all other fields of `this`.

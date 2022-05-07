@@ -118,9 +118,9 @@ WebData TestingPlatformSupport::GetDataResource(
              : WebData();
 }
 
-WebData TestingPlatformSupport::UncompressDataResource(int resource_id) {
-  return old_platform_ ? old_platform_->UncompressDataResource(resource_id)
-                       : WebData();
+std::string TestingPlatformSupport::GetDataResourceString(int resource_id) {
+  return old_platform_ ? old_platform_->GetDataResourceString(resource_id)
+                       : std::string();
 }
 
 ThreadSafeBrowserInterfaceBrokerProxy*
@@ -135,7 +135,6 @@ cc::TaskGraphRunner* TestingPlatformSupport::GetTaskGraphRunner() {
 }
 
 void TestingPlatformSupport::RunUntilIdle() {
-  HeapPointersOnStackScope scan_stack(ThreadState::Current());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -195,6 +194,7 @@ ScopedUnittestsEnvironmentSetup::ScopedUnittestsEnvironmentSetup(int argc,
   v8_platform_for_heap_testing_ =
       std::make_unique<HeapTestingPlatformAdapter>(gin::V8Platform::Get());
   ThreadState::AttachMainThreadForTesting(v8_platform_for_heap_testing_.get());
+  conservative_gc_scope_.emplace(ThreadState::Current());
   http_names::Init();
   fetch_initiator_type_names::Init();
 

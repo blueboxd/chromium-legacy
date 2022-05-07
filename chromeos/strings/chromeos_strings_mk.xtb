@@ -20,6 +20,7 @@
 <translation id="1181037720776840403">Отстрани</translation>
 <translation id="1195447618553298278">Непозната грешка.</translation>
 <translation id="1196959502276349371">Верзија <ph name="VERSION" /></translation>
+<translation id="1199355487114804640">Пушти/Паузирај</translation>
 <translation id="1201402288615127009">Следно</translation>
 <translation id="1204296502688602597">DNS-латентност</translation>
 <translation id="123124571410524056">Можеби е откриен портал</translation>
@@ -43,6 +44,7 @@
 <translation id="1413240736185167732">Неуспешно - филтерот не успеа</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">Имам пар клучеви</translation>
+<translation id="1423591390236870726">Копчето <ph name="KEY_NAME" /> не е притиснато</translation>
 <translation id="1435763214710588005">Автоматски го ресетира потрошениот интернет секој месец на избраниот датум</translation>
 <translation id="1442433966118452622">Извор на сликата</translation>
 <translation id="1451536289672181509">Уредот е тастатура.</translation>
@@ -54,6 +56,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> управува со корисников и може оддалеку да управува со поставките и да ја набљудува неговата активност.</translation>
 <translation id="150962533380566081">Погрешен PUK.</translation>
 <translation id="1510238584712386396">Стартер</translation>
+<translation id="152892567002884378">Зголемете ја јачината на звукот</translation>
 <translation id="155865706765934889">Подлога за допир</translation>
 <translation id="1565038567006703504">Не може да се ажурира <ph name="DEVICE_NAME" /></translation>
 <translation id="1567064801249837505">Албуми</translation>
@@ -76,17 +79,21 @@
 <translation id="175763766237925754">Добар (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1768959921651994223">Тип автентикација</translation>
 <translation id="1782199038061388045">превод</translation>
 <translation id="1792647875738159689">Се откажува скенирањето</translation>
 <translation id="1807246157184219062">Светла</translation>
 <translation id="1827738518074806965">Уметничка галерија</translation>
 <translation id="1851218745569890714">Видеоконференција</translation>
+<translation id="1852934301711881861">Инсталирај ChromeOS Flex</translation>
+<translation id="1856388568474281774">Стрелка надолу</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="1887850431809612466">Ревизија на хардвер</translation>
 <translation id="1905710495812624430">Максималниот број дозволени обиди е надминат.</translation>
 <translation id="1908234395526491708">Неуспешни UDP-барања</translation>
 <translation id="1930797645656624981">Услуга за метод за внесување во Chrome OS</translation>
 <translation id="1947737735496445907">Отпечатено</translation>
+<translation id="1951012854035635156">Помошник</translation>
 <translation id="1979103255016296513">Измина рокот за промена на лозинката</translation>
 <translation id="1999615961760456652">Портал за проверка</translation>
 <translation id="2006864819935886708">Поврзување</translation>
@@ -94,21 +101,26 @@
 <translation id="2016697457005847575">Пробајте ги чекорите за решавање проблеми</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Повеќе поставки</translation>
+<translation id="2085089206770112532">Осветленоста на екранот се намали</translation>
 <translation id="2104796393919810494">Поправката е завршена</translation>
 <translation id="2105810540595158374">Уредот е контролер на игра.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, верзија <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">Достапно: <ph name="AVAILABLE_MEMORY" /> GB од <ph name="TOTAL_MEMORY" /> GB</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" /> %</translation>
+<translation id="2152882202543497059"><ph name="NUMBER" /> фотографии</translation>
 <translation id="2157959690810728433">ЧЕКА НА РЕД</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Обиди се пак</translation>
 <translation id="2161394479394250669">Откажи го налогот за печатење</translation>
 <translation id="2180197493692062006">Нешто тргна наопаку. Отворете ја апликацијата повторно.</translation>
+<translation id="2201770616342964496">Локален идентитет</translation>
 <translation id="2209788852729124853">Ресетирај бројачи на сообраќај</translation>
 <translation id="2212733584906323460">Одредување име</translation>
 <translation id="2217935453350629363">Моментална брзина</translation>
 <translation id="2224337661447660594">Нема интернет</translation>
+<translation id="222447520299472966">Треба да се избере минимум еден албум во „Уметничката галерија“</translation>
 <translation id="2230005943220647148">Целзиусови</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2240366984605217732">Прекинувач за распоред</translation>
 <translation id="225692081236532131">Статус на активирање</translation>
 <translation id="2287186687001756809">Нема достапна слика. За да додадете фотографии, одете на <ph name="LINK" /></translation>
 <translation id="2307344026739914387">Користи го тековниот пар клучеви</translation>
@@ -126,6 +138,7 @@
 <translation id="2446553403094072641">Прецизност на подвижна запирка</translation>
 <translation id="2448312741937722512">Тип</translation>
 <translation id="2461822463642141190">Моментално</translation>
+<translation id="2493126929778606526">Вашите најдобри фотографии, избрани автоматски</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">Освежете ја тековната слика за тапет</translation>
 <translation id="2517472476991765520">Скенирај</translation>
@@ -136,6 +149,7 @@
 <translation id="2585245331261708204">Што е ново во Chrome OS</translation>
 <translation id="2619761439309613843">Дневно освежување</translation>
 <translation id="2620436844016719705">Систем</translation>
+<translation id="2640549051766135490">Избран е албумот <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="2695514675076754339">Внесете го 8-цифрениот код за отклучување</translation>
 <translation id="2712812801627182647">Клуч за TLS-проверка</translation>
 <translation id="2740531572673183784">Во ред</translation>
@@ -147,6 +161,7 @@
 <translation id="2859243502336719778">Важно ажурирање</translation>
 <translation id="2860473693272905224">Ставете друга страница на скенерот</translation>
 <translation id="2872961005593481000">Исклучи</translation>
+<translation id="2874939134665556319">Претходна песна</translation>
 <translation id="2878387241690264070">Испразнета <ph name="RATE" /> за <ph name="NUM_SECONDS" /> секунди.</translation>
 <translation id="291142119251986300">Неквалификувани компоненти</translation>
 <translation id="2926057806159140518">Внесете корисничко име и лозинка или скенирајте ваш QR-код</translation>
@@ -180,11 +195,13 @@
 <translation id="3340011300870565703">Нивото на батерија на десната слушалка е <ph name="BATTERY_PERCENTAGE" /> %.</translation>
 <translation id="3368922792935385530">Поврзано</translation>
 <translation id="3369013195428705271">Дали сте сигурни дека сакате да ја исчистите сета историја на печатење? Тековните задачи за печатење нема да бидат избришани.</translation>
+<translation id="3413935475507503304">За да продолжите со ажурирањето, кликнете „Следно“.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Безбедност</translation>
 <translation id="3456078764689556234">Отпечатена страница <ph name="PRINTED_PAGES" /> од <ph name="TOTAL_PAGES" />.</translation>
 <translation id="345898999683440380">Се скенира страницата <ph name="PAGE_NUM" />. <ph name="PERCENTAGE_VALUE" /> % завршено.</translation>
 <translation id="3459509316159669723">Се печати</translation>
+<translation id="346539236881580388">Фотографирај пак</translation>
 <translation id="3484914941826596830">Додека фирмверот се ажурира, не исклучувајте го надворешниов уред од струја или не исклучувајте го компјутерот. Може да го минимизирате прозорецов. Ажурирањево може да потрае неколку минути и надворешниот уред можеби нема да работи во ова време.</translation>
 <translation id="3486220673238053218">дефиниција</translation>
 <translation id="3488065109653206955">Делумно активиран</translation>
@@ -195,9 +212,11 @@
 <translation id="357889014807611375">Wi-Fi со ограничен интернет</translation>
 <translation id="3583278742022654445">Слаба јачина на сигналот. Обидете се да се приближите до изворот на сигналот за Wi-Fi.</translation>
 <translation id="3595596368722241419">Батеријата е полна</translation>
+<translation id="3600339377155080675">Отсликување на екранот</translation>
 <translation id="3603829704940252505">Аватар</translation>
 <translation id="360565022852130722">Wi-Fi мрежата е обезбедена со слаб протокол WEP 802.1x</translation>
 <translation id="3606583719724308068">Висока латенција кон веб-сајтовите со HTTPS</translation>
+<translation id="3632579075709132555">Вклучи/исклучи заштита на приватноста</translation>
 <translation id="3689839747745352263">Тест за <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Се вчитува...</translation>
 <translation id="3708186454126126312">Претходно поврзани</translation>
@@ -226,8 +245,10 @@
 <translation id="4003384961948020559">Неуспешно - излезната фиока е полна</translation>
 <translation id="4034824040120875894">Печатач</translation>
 <translation id="4044093238444069296">Не може да се стапи во контакт со портал</translation>
+<translation id="4046123991198612571">Следна песна</translation>
 <translation id="404928562651467259">ПРЕДУПРЕДУВАЊЕ</translation>
 <translation id="409427325554347132">Зачувај детали од тестот</translation>
+<translation id="4110686435123617899">Изберете го албумот <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Подлога за допир со USB</translation>
 <translation id="4131410914670010031">Црно и бело</translation>
 <translation id="4140251671072434548">Извршете отклучување на серверот за RMA</translation>
@@ -242,16 +263,18 @@
 <translation id="4238516577297848345">Нема задачи за печатење во тек</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4244962993387259361">Потребен ви е слободен капацитет од најмалку 500 MB за да извршите тестирање на меморијата. За да ослободите простор, одете во „Поставки &gt; Управување со капацитетот“.</translation>
+<translation id="4250229828105606438">Слика од екран</translation>
 <translation id="4258281355379922695">Латенција на HTTP</translation>
 <translation id="4271957103967917607">Приказ на цел екран</translation>
 <translation id="4275799948641988986">По поправката, кој ќе го користи уредот?</translation>
+<translation id="4289540628985791613">Преглед</translation>
 <translation id="4297501883039923494">Запрено - непозната грешка</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> слики</translation>
+<translation id="4333390807948134856">Копчето <ph name="KEY_NAME" /> е притиснато</translation>
 <translation id="4378373042927530923">Не е извршена</translation>
 <translation id="4378551569595875038">Се поврзува…</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="439429847087949098">Се рестартира <ph name="DEVICE_NAME" /></translation>
-<translation id="4418498623216225764">Ажурирајте ги периферните уреди</translation>
 <translation id="4425149324548788773">Мојот Drive</translation>
 <translation id="4428374560396076622"><ph name="NETWORK_NAME" /> е исклучена</translation>
 <translation id="4429881212383817840">Билетот на Kerberos истекува наскоро</translation>
@@ -263,9 +286,11 @@
 <translation id="4479639480957787382">Етернет</translation>
 <translation id="4483049906298469269">Не успеа да се пингува нестандардниот мрежен портал</translation>
 <translation id="4485626319513081846">Изберете ја опцијава ако уредот се подготвува или обновува за дистрибуција кај нов клиент.</translation>
+<translation id="4503223151711056411">Стрелка налево</translation>
 <translation id="4511264077854731334">Портал</translation>
 <translation id="4521826082652183069">Совпаѓање на алтернативното име на субјектот</translation>
 <translation id="4536864596629708641">Конфигурација на IP</translation>
+<translation id="4546131424594385779">Создај повторливо видео</translation>
 <translation id="4548483925627140043">Не е најден сигнал</translation>
 <translation id="4556753742174065117">Фирмверот е ажуриран</translation>
 <translation id="455835558791489930">Батерија од <ph name="CHARGE_VALUE" /> mAh</translation>
@@ -273,22 +298,25 @@
 <translation id="4562494484721939086">Нема услуга</translation>
 <translation id="458794348635939462">Неуспешно отворање на сите хостови</translation>
 <translation id="4593212453765072419">Потребна е проверка на прокси</translation>
+<translation id="4609350030397390689">Осветленоста на тастатурата се намали</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> од <ph name="TOTAL_PAGE_NUMBER" />. Притиснете Enter за да го откажете налогот за печатење.</translation>
+<translation id="4627645661474370390">Далечински идентитет</translation>
 <translation id="463791356324567266">Се откажува скенирањето…</translation>
 <translation id="4646949265910132906">Безбедна Wi-Fi врска</translation>
+<translation id="4650608062294027130">Десен Shift</translation>
 <translation id="4654549501020883054">Менувај секојдневно</translation>
 <translation id="4665014895760275686">Производител</translation>
 <translation id="467510802200863975">Лозинките не се совпаѓаат</translation>
 <translation id="467715984478005772">Можеби има заштитен ѕид</translation>
 <translation id="4691278870498629773">Запрено - недостасува фиоката</translation>
 <translation id="469379815867856270">Јачина на сигналот</translation>
-<translation id="4707579418881001319">L2TP/IPsec + сертификат на корисник</translation>
 <translation id="4731797938093519117">Пристап за родители</translation>
 <translation id="473775607612524610">Ажурирај</translation>
 <translation id="4744944742468440486">Информации поврзани со вашиот избор</translation>
 <translation id="475869545581454722">Лозинката за Chrome OS е ажурирана</translation>
 <translation id="4773299976671772492">Сопрено</translation>
 <translation id="4782311465517282004">Добивајте дефиниции, преводи или конверзија на вредности кога ќе кликнете со десно копче или ќе допрете и задржите текст</translation>
+<translation id="4791000909649665275"><ph name="NUMBER" /> фотографија</translation>
 <translation id="4793756956024303490">Алгоритам за компримирање</translation>
 <translation id="4794140124556169553">Извршувањето CPU-тест може да влијае врз изведбата на системот</translation>
 <translation id="4808449224298348341">Откажан налог за печатење: <ph name="DOCUMENT_TITLE" /></translation>
@@ -327,12 +355,14 @@
 <translation id="5051044138948155788">Ова е единствената страница. Ќе бидете пренасочени на екранот за започнување на скенирањето.</translation>
 <translation id="5088172560898466307">Име на хостот на серверот</translation>
 <translation id="5089810972385038852">Држава</translation>
+<translation id="5090362543162270857">IPsec (IKEv2)</translation>
 <translation id="5142961317498132443">Проверка</translation>
 <translation id="5154917547274118687">Меморија</translation>
 <translation id="5160857336552977725">Најавете се на <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166918508782100047">Поставки за „Брзи одговори“</translation>
 <translation id="5168185087976003268">Состојба на батеријата</translation>
 <translation id="5170568018924773124">Прикажи во папка</translation>
+<translation id="5190187232518914472">Повторно доживејте ги омилените спомени. За додавање или изменување албуми, одете во <ph name="LINK_BEGIN" />Фотографии на Google<ph name="LINK_END" />.</translation>
 <translation id="5212543919916444558">Не можам да најдам ништо на екранот со што би можел ви помогнам.
 Допрете го микрофонот за да ме прашате нешто.</translation>
 <translation id="5212593641110061691">Таблоид</translation>
@@ -371,8 +401,11 @@
 <translation id="554517032089923082">GTC</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Скенирај пак</translation>
+<translation id="5583640892426849032">Backspace-копче</translation>
+<translation id="5600027863942488546">Копчето <ph name="KEY_NAME" /> е тестирано</translation>
 <translation id="5620281292257375798">Само интерно</translation>
 <translation id="5649768706273821470">Слушај</translation>
+<translation id="5655283760733841251">Осветленоста на тастатурата се зголеми</translation>
 <translation id="5669267381087807207">Се активира</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Семејни</translation>
@@ -380,6 +413,8 @@
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> од <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Ажурирајте: <ph name="DEVICE_NAME" /></translation>
 <translation id="5760715441271661976">Состојба на порталот</translation>
+<translation id="576835345334454681">Осветленоста на екранот се зголеми</translation>
+<translation id="57838592816432529">Исклучи звук</translation>
 <translation id="5784136236926853061">Висока латенција на HTTP</translation>
 <translation id="5832805196449965646">Додај лице</translation>
 <translation id="583281660410589416">Непознат</translation>
@@ -387,6 +422,7 @@
 <translation id="5849570051105887917">Код на оператор на почетна страница</translation>
 <translation id="5860033963881614850">Исклучено</translation>
 <translation id="5866840822086176774">Многу силен</translation>
+<translation id="588258955323874662">Цел екран</translation>
 <translation id="5895138241574237353">Рестартирај</translation>
 <translation id="5916084858004523819">Забранета</translation>
 <translation id="5916664084637901428">Вклучено</translation>
@@ -408,6 +444,7 @@
 <translation id="6104112872696127344">Скенирањето е откажано</translation>
 <translation id="6106186594183574873">За да завршите, внесете ја старата лозинка</translation>
 <translation id="6108689792487843350">Порталот е недостапен</translation>
+<translation id="6113701710518389813">Стрелка нагоре</translation>
 <translation id="6122191549521593678">Онлајн</translation>
 <translation id="6137767437444130246">Сертификат на корисник</translation>
 <translation id="6146993107019042706">За да завршите, внесете ја новата лозинка</translation>
@@ -421,12 +458,14 @@
 <translation id="6232017090690406397">Батерија</translation>
 <translation id="6235460611964961764">Рачно ресетирајте го потрошениот интернет</translation>
 <translation id="6243280677745499710">Поставен во моментов</translation>
+<translation id="6275224645089671689">Стрелка надесно</translation>
 <translation id="6278428485366576908">Тема</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6302401976930124515">Тестот за <ph name="TEST_NAME" /> е откажан</translation>
 <translation id="6319207335391420837">Ажурирајте го фирмверот на <ph name="DEVICE_NAME" /></translation>
 <translation id="6325525973963619867">Неуспешно</translation>
 <translation id="6340526405444716530">Персонализација</translation>
+<translation id="6348738456043757611">Корисничко име и лозинка</translation>
 <translation id="636850387210749493">Запишување компанија</translation>
 <translation id="6379086450106841622">Екран на допир</translation>
 <translation id="6388847657025262518">Фиоката за документи на скенерот е заглавена. Проверете ја и обидете се повторно.</translation>
@@ -449,18 +488,23 @@
 <translation id="6566314079205407217">Скенирање повеќе страници</translation>
 <translation id="6574762126505704998">Пополни</translation>
 <translation id="6575134580692778371">Не е конфигуриран</translation>
+<translation id="6579509898032828423">Користи ја оваа фотографија</translation>
 <translation id="6596816719288285829">IP-адреса</translation>
 <translation id="6618744767048954150">Се извршува</translation>
 <translation id="6620487321149975369">Задачите за печатење ќе се појавуваат во историјата, освен ако не се отстранат рачно</translation>
 <translation id="6643016212128521049">Исчисти</translation>
 <translation id="6647510110698214773">Алгоритам за шифрирање</translation>
+<translation id="6650062777702288430">Прекинувач за кана/алфанумеричко внесување</translation>
 <translation id="6657585470893396449">Лозинка</translation>
+<translation id="6659594942844771486">Картичка</translation>
 <translation id="6692996468359469499">Добивајте информации поврзани со вашиот избор</translation>
 <translation id="6704062477274546131">Одредување со DNS</translation>
+<translation id="6723839937902243910">Енергија</translation>
 <translation id="6747215703636344499">Запрено - излезната фиока е полна</translation>
 <translation id="6749473226660745022">Фотографии</translation>
 <translation id="6753452347192452143">Уредот е компјутер.</translation>
 <translation id="6756731097889387912">Не можеше да се откаже скенирањето</translation>
+<translation id="6760706756348334449">Намалете ја јачината на звукот</translation>
 <translation id="6766275201586212568">Неуспешни одредувања со DNS</translation>
 <translation id="6768237774506518020">Висока стапка на неуспех на одредување со DNS</translation>
 <translation id="680983167891198932">Клуч</translation>
@@ -495,6 +539,7 @@
 <translation id="7175037578838465313">Конфигурирање на <ph name="NAME" /></translation>
 <translation id="7177485034254901881"><ph name="MANAGER" /> управува со овој <ph name="DEVICE_TYPE" />. Администраторите може да го конфигурираат уредот оддалеку.</translation>
 <translation id="7180611975245234373">Освежи</translation>
+<translation id="7212734716605298123">Ажурирања на фирмверот за екстерни уреди</translation>
 <translation id="7216409898977639127">Мобилен оператор</translation>
 <translation id="7271040990581020067">Скенерот се користи во моментов. Обидете се повторно подоцна.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
@@ -513,6 +558,7 @@
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Скенирањето е завршено. Скенирана е 1 страница}one{Скенирањето е завршено. Скенирана е {NUMBER_OF_PAGES} страница}other{Скенирањето е завршено. Скенирани се {NUMBER_OF_PAGES} страници}}</translation>
 <translation id="7469648432129124067">Откриен е портал</translation>
+<translation id="7481312909269577407">Напред</translation>
 <translation id="7487067081878637334">Технологија</translation>
 <translation id="7490813197707563893">MAC-адреса</translation>
 <translation id="7497215489070763236">Сертификат ЦА на сервер</translation>
@@ -541,7 +587,6 @@
 <translation id="780301667611848630">Не, фала</translation>
 <translation id="7805768142964895445">Статус</translation>
 <translation id="7819857487979277519">PSK (WPA или RSN)</translation>
-<translation id="7835501727204647447">Инсталирајте CloudReady</translation>
 <translation id="7846634333498149051">Тастатура</translation>
 <translation id="7856267634822906833">Допирен екран со Bluetooth</translation>
 <translation id="7881066108824108340">DNS</translation>
@@ -567,6 +612,7 @@
 <translation id="8132480444149501833">Побарајте бројачи на сообраќај</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Изберете <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8206859287963243715">Мобилен</translation>
 <translation id="8208861521865154048">Поволности</translation>
 <translation id="8217675307824400706">Поврзете се</translation>
@@ -607,7 +653,9 @@
 <translation id="8660881923941176839">фунти</translation>
 <translation id="8662671328352114214">Придружување на мрежа <ph name="TYPE" /></translation>
 <translation id="8675354002693747642">Претходно споделен клуч</translation>
+<translation id="8677859815076891398">Нема албуми. Создајте албум во <ph name="LINK_BEGIN" />Фотографии на Google<ph name="LINK_END" />.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Користете го копчето со стрелка налево или со стрелка надесно за да управувате со функцијава.</translation>
+<translation id="8712637175834984815">Сфатив</translation>
 <translation id="871560550817059752">Неуспешно - нема мастило</translation>
 <translation id="8723108084122415655">Нестандардната мрежа е над прагот за латенција</translation>
 <translation id="8726019395068607495">Запрено - вратата е отворена</translation>
@@ -648,6 +696,7 @@
 <translation id="9062831201344759865">Одредување со DNS има висока латенција</translation>
 <translation id="9073281213608662541">ПАП</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9082718469794970195">Користи го ова видео</translation>
 <translation id="9087578468327036362">Пријавете го барањево</translation>
 <translation id="9088306295921699330">Моментално користење</translation>
 <translation id="9095415590198785865">Уредот ќе остане кај истиот сопственик</translation>
@@ -658,10 +707,10 @@
 <translation id="9122602430962285795">За да се поврзете повторно, одете во „Поставки“</translation>
 <translation id="9126720536733509015">Зачувај повеќе страници во еден PDF-документ</translation>
 <translation id="9137526406337347448">Услуги на Google</translation>
+<translation id="9138630967333032450">Лев Shift</translation>
 <translation id="9149391708638971077">Изврши тест за меморија</translation>
 <translation id="9173638680043580060">Преостанува помалку од една минута</translation>
 <translation id="917720651393141712">Тест</translation>
-<translation id="9190063653747922532">L2TP/IPsec + претходно споделен клуч</translation>
 <translation id="9204237731135241582">Не може да се стапи во контакт со портал од апликации на Android</translation>
 <translation id="9211490828691860325">Сите работни површини</translation>
 <translation id="939519157834106403">SSID</translation>

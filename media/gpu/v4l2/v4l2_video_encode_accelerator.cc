@@ -30,6 +30,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/color_plane_layout.h"
+#include "media/base/media_log.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame_layout.h"
@@ -194,8 +195,10 @@ V4L2VideoEncodeAccelerator::~V4L2VideoEncodeAccelerator() {
   VLOGF(2);
 }
 
-bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
-                                            Client* client) {
+bool V4L2VideoEncodeAccelerator::Initialize(
+    const Config& config,
+    Client* client,
+    std::unique_ptr<MediaLog> media_log) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(child_sequence_checker_);
   DCHECK_EQ(encoder_state_, kUninitialized);
 
@@ -205,7 +208,8 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
   // V4L2VEA doesn't support temporal layers but we let it pass here to support
   // simulcast.
   if (config.HasSpatialLayer()) {
-    VLOGF(1) << "Spatial layer encoding is not yet supported";
+    MEDIA_LOG(ERROR, media_log.get())
+        << "Spatial layer encoding is not yet supported";
     return false;
   }
 
@@ -217,15 +221,16 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
   output_format_fourcc_ =
       V4L2Device::VideoCodecProfileToV4L2PixFmt(config.output_profile, false);
   if (!output_format_fourcc_) {
-    VLOGF(1) << "invalid output_profile="
-             << GetProfileName(config.output_profile);
+    MEDIA_LOG(ERROR, media_log.get())
+        << "invalid output_profile=" << GetProfileName(config.output_profile);
     return false;
   }
 
   if (!device_->Open(V4L2Device::Type::kEncoder, output_format_fourcc_)) {
-    VLOGF(1) << "Failed to open device for profile="
-             << GetProfileName(config.output_profile)
-             << ", fourcc=" << FourccToString(output_format_fourcc_);
+    MEDIA_LOG(ERROR, media_log.get())
+        << "Failed to open device for profile="
+        << GetProfileName(config.output_profile)
+        << ", fourcc=" << FourccToString(output_format_fourcc_);
     return false;
   }
 
@@ -237,10 +242,10 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
       config.input_visible_size.height() < min_resolution.height() ||
       config.input_visible_size.width() > max_resolution.width() ||
       config.input_visible_size.height() > max_resolution.height()) {
-    VLOGF(1) << "Unsupported resolution: "
-             << config.input_visible_size.ToString()
-             << ", min=" << min_resolution.ToString()
-             << ", max=" << max_resolution.ToString();
+    MEDIA_LOG(ERROR, media_log.get())
+        << "Unsupported resolution: " << config.input_visible_size.ToString()
+        << ", min=" << min_resolution.ToString()
+        << ", max=" << max_resolution.ToString();
     return false;
   }
 
@@ -257,7 +262,8 @@ bool V4L2VideoEncodeAccelerator::Initialize(const Config& config,
   const __u32 kCapsRequired = V4L2_CAP_VIDEO_M2M_MPLANE | V4L2_CAP_STREAMING;
   IOCTL_OR_ERROR_RETURN_FALSE(VIDIOC_QUERYCAP, &caps);
   if ((caps.capabilities & kCapsRequired) != kCapsRequired) {
-    VLOGF(1) << "caps check failed: 0x" << std::hex << caps.capabilities;
+    MEDIA_LOG(ERROR, media_log.get())
+        << "caps check failed: 0x" << std::hex << caps.capabilities;
     return false;
   }
 
@@ -1475,19 +1481,21 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
   if (bitrate.mode() != Bitrate::Mode::kConstant)
     return;
 
-  if (current_bitrate_ == bitrate.target() && current_framerate_ == framerate)
+  if (current_bitrate_ == bitrate.target_bps() &&
+      current_framerate_ == framerate) {
     return;
-  if (bitrate.target() == 0 || framerate == 0)
+  }
+  if (bitrate.target_bps() == 0 || framerate == 0)
     return;
 
   VLOGF(2) << "bitrate=" << bitrate.ToString() << ", framerate=" << framerate;
   DCHECK_CALLED_ON_VALID_SEQUENCE(encoder_sequence_checker_);
   TRACE_EVENT2("media,gpu", "V4L2VEA::RequestEncodingParametersChangeTask",
                "bitrate", bitrate.ToString(), "framerate", framerate);
-  if (current_bitrate_ != bitrate.target() &&
+  if (current_bitrate_ != bitrate.target_bps() &&
       !device_->SetExtCtrls(
           V4L2_CTRL_CLASS_MPEG,
-          {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_BITRATE, bitrate.target())})) {
+          {V4L2ExtCtrl(V4L2_CID_MPEG_VIDEO_BITRATE, bitrate.target_bps())})) {
     VLOGF(1) << "Failed changing bitrate";
     NOTIFY_ERROR(kPlatformFailureError);
     return;
@@ -1504,7 +1512,7 @@ void V4L2VideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     IOCTL_OR_ERROR_RETURN(VIDIOC_S_PARM, &parms);
   }
 
-  current_bitrate_ = bitrate.target();
+  current_bitrate_ = bitrate.target_bps();
   current_framerate_ = framerate;
 }
 
@@ -1771,15 +1779,15 @@ bool V4L2VideoEncodeAccelerator::InitControlsH264(const Config& config) {
 
   // Check whether the h264 level is valid.
   if (!CheckH264LevelLimits(config.output_profile, h264_level,
-                            config.bitrate.target(), framerate,
+                            config.bitrate.target_bps(), framerate,
                             framesize_in_mbs)) {
     absl::optional<uint8_t> valid_level =
-        FindValidH264Level(config.output_profile, config.bitrate.target(),
+        FindValidH264Level(config.output_profile, config.bitrate.target_bps(),
                            framerate, framesize_in_mbs);
     if (!valid_level) {
       VLOGF(1) << "Could not find a valid h264 level for"
                << " profile=" << config.output_profile
-               << " bitrate=" << config.bitrate.target()
+               << " bitrate=" << config.bitrate.target_bps()
                << " framerate=" << framerate
                << " size=" << config.input_visible_size.ToString();
       NOTIFY_ERROR(kInvalidArgumentError);

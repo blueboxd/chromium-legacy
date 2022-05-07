@@ -10,12 +10,14 @@
 #include "chrome/browser/ash/login/test/kiosk_test_helpers.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/chromeos/login/app_launch_splash_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/fake_app_launch_splash_screen_handler.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/account_id/account_id.h"
+#include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
@@ -27,6 +29,7 @@
 #include "extensions/browser/test_extension_registry_observer.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_builder.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
@@ -42,6 +45,21 @@ const char kInvalidExtensionName[] = "invalid_name";
 // URL of Chrome Web.
 const char kExtensionUpdateUrl[] =
     "https://clients2.google.com/service/update2/crx";
+
+class MockKioskProfileLoadFailedObserver
+    : public KioskLaunchController::KioskProfileLoadFailedObserver {
+ public:
+  MockKioskProfileLoadFailedObserver() = default;
+
+  MockKioskProfileLoadFailedObserver(
+      const MockKioskProfileLoadFailedObserver&) = delete;
+  MockKioskProfileLoadFailedObserver& operator=(
+      const MockKioskProfileLoadFailedObserver&) = delete;
+
+  ~MockKioskProfileLoadFailedObserver() override = default;
+
+  MOCK_METHOD(void, OnKioskProfileLoadFailed, (), (override));
+};
 
 class KioskLaunchControllerTest
     : public InProcessBrowserTest,
@@ -309,6 +327,25 @@ IN_PROC_BROWSER_TEST_P(KioskLaunchControllerTest,
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
 }
 
+IN_PROC_BROWSER_TEST_P(KioskLaunchControllerTest,
+                       KioskProfileLoadFailedObserved) {
+  MockKioskProfileLoadFailedObserver profile_load_failed_observer;
+  controller()->AddKioskProfileLoadFailedObserver(
+      &profile_load_failed_observer);
+
+  controller()->Start(kiosk_app_id(), false);
+  ExpectState(AppState::kCreatingProfile, NetworkUIState::kNotShowing);
+
+  EXPECT_CALL(*launcher(), Initialize()).Times(0);
+  EXPECT_CALL(profile_load_failed_observer, OnKioskProfileLoadFailed())
+      .Times(1);
+  profile_controls()->OnProfileLoadFailed(
+      KioskAppLaunchError::Error::kUnableToMount);
+
+  controller()->RemoveKioskProfileLoadFailedObserver(
+      &profile_load_failed_observer);
+}
+
 INSTANTIATE_TEST_SUITE_P(All,
                          KioskLaunchControllerTest,
                          testing::Values(KioskAppType::kArcApp,
@@ -391,6 +428,16 @@ class KioskLaunchControllerWithExtensionTest
     force_installed_tracker()->OnExtensionReady(profile(), ext.get());
   }
 
+  void SetExtensionFailed(
+      const std::string& extension_id,
+      const std::string& extension_name,
+      extensions::InstallStageTracker::FailureReason reason) {
+    auto ext = extensions::ExtensionBuilder(extension_name)
+                   .SetID(extension_id)
+                   .Build();
+    force_installed_tracker()->OnExtensionInstallationFailed(ext->id(), reason);
+  }
+
   testing::NiceMock<policy::MockConfigurationPolicyProvider> policy_provider_;
 };
 
@@ -427,6 +474,34 @@ IN_PROC_BROWSER_TEST_P(KioskLaunchControllerWithExtensionTest,
   ExpectState(AppState::kLaunched, NetworkUIState::kNotShowing);
   ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::kWaitingAppWindow);
   EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+}
+
+IN_PROC_BROWSER_TEST_P(KioskLaunchControllerWithExtensionTest,
+                       ExtensionFailedAfterAppPrepared) {
+  base::HistogramTester histogram;
+
+  RunUntilAppPrepared();
+  ExpectState(AppState::kInstallingExtensions, NetworkUIState::kNotShowing);
+  ExpectViewState(
+      AppLaunchSplashScreenView::AppLaunchState::kInstallingExtension);
+
+  SetExtensionFailed(
+      kExtensionId, kExtensionName,
+      extensions::InstallStageTracker::FailureReason::INVALID_ID);
+
+  EXPECT_CALL(*launcher(), LaunchApp()).Times(1);
+  FireSplashScreenTimer();
+
+  launch_controls()->OnAppLaunched();
+  ExpectState(AppState::kLaunched, NetworkUIState::kNotShowing);
+  ExpectViewState(AppLaunchSplashScreenView::AppLaunchState::kWaitingAppWindow);
+  EXPECT_TRUE(session_manager::SessionManager::Get()->IsSessionStarted());
+
+  content::FetchHistogramsFromChildProcesses();
+  metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+  histogram.ExpectUniqueSample(
+      "Kiosk.Extensions.InstallError",
+      extensions::InstallStageTracker::FailureReason::INVALID_ID, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(All,

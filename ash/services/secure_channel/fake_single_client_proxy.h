@@ -9,16 +9,14 @@
 #include <utility>
 
 #include "ash/services/secure_channel/file_transfer_update_callback.h"
-#include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
+#include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "ash/services/secure_channel/register_payload_file_request.h"
 #include "ash/services/secure_channel/single_client_proxy.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 #include "base/unguessable_token.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Test SingleClientProxy implementation.
 class FakeSingleClientProxy : public SingleClientProxy {
@@ -128,8 +126,6 @@ class FakeSingleClientProxyDelegate : public SingleClientProxy::Delegate {
   base::UnguessableToken disconnected_proxy_id_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_SINGLE_CLIENT_PROXY_H_

@@ -382,14 +382,20 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 1. Navigate to a cacheable page (A).
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
-  EXPECT_EQ(2u, render_frame_host_manager()->GetProxyCount());
+  EXPECT_EQ(2u, render_frame_host_manager()
+                    ->current_frame_host()
+                    ->browsing_context_state()
+                    ->GetProxyCount());
   RenderFrameHostImpl* rfh_a = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a);
   std::string frame_tree_a = DepictFrameTree(rfh_a->frame_tree_node());
 
   // 2. Navigate from a cacheable page to an uncacheable page (A->B).
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
-  EXPECT_EQ(0u, render_frame_host_manager()->GetProxyCount());
+  EXPECT_EQ(0u, render_frame_host_manager()
+                    ->current_frame_host()
+                    ->browsing_context_state()
+                    ->GetProxyCount());
   RenderFrameHostImpl* rfh_b = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_b(rfh_b);
 
@@ -406,11 +412,17 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   // Note: Since we put the page B into BackForwardCache briefly, we do not
   // create a transition proxy. So there should be only proxies for i.com and
   // j.com.
-  EXPECT_EQ(2u, render_frame_host_manager()->GetProxyCount());
+  EXPECT_EQ(2u, render_frame_host_manager()
+                    ->current_frame_host()
+                    ->browsing_context_state()
+                    ->GetProxyCount());
 
   // Page B should be deleted (not cached).
   delete_observer_rfh_b.WaitUntilDeleted();
-  EXPECT_EQ(2u, render_frame_host_manager()->GetProxyCount());
+  EXPECT_EQ(2u, render_frame_host_manager()
+                    ->current_frame_host()
+                    ->browsing_context_state()
+                    ->GetProxyCount());
 
   // Page A should still have the correct frame tree.
   EXPECT_EQ(frame_tree_a,
@@ -418,7 +430,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 4. Navigate from a cacheable page to a cacheable page (A->C).
   EXPECT_TRUE(NavigateToURL(shell(), url_c));
-  EXPECT_EQ(3u, render_frame_host_manager()->GetProxyCount());
+  EXPECT_EQ(3u, render_frame_host_manager()
+                    ->current_frame_host()
+                    ->browsing_context_state()
+                    ->GetProxyCount());
   RenderFrameHostImpl* rfh_c = current_frame_host();
   RenderFrameDeletedObserver delete_observer_rfh_c(rfh_c);
 
@@ -432,7 +447,10 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
 
   // 5. Navigate from a cacheable page to a cached page (C->A).
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  EXPECT_EQ(2u, render_frame_host_manager()->GetProxyCount());
+  EXPECT_EQ(2u, render_frame_host_manager()
+                    ->current_frame_host()
+                    ->browsing_context_state()
+                    ->GetProxyCount());
 
   // Page A should still have the correct frame tree.
   EXPECT_EQ(frame_tree_a,
@@ -975,9 +993,6 @@ class BackForwardCacheBrowserTestWithSameSiteDisabled
   void SetUpCommandLine(base::CommandLine* command_line) override {
     same_site_back_forward_cache_enabled_ = false;
     DisableFeature(features::kProactivelySwapBrowsingInstance);
-    // Ensure that the bot flags won't override the same-site back/forward cache
-    // disabling.
-    DisableFeature(features::kBackForwardCacheSameSiteForBots);
     BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
   }
 };
@@ -3658,6 +3673,74 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                     {}, {reason}, {}, FROM_HERE);
   EXPECT_TRUE(
       tester.IsDisabledForFrameWithReason(process_id, routing_id, reason));
+}
+
+class CustomTTLBackForwardCacheBrowserTest
+    : public BackForwardCacheBrowserTest {
+ protected:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    EnableFeatureAndSetParams(kBackForwardCacheTimeToLiveControl,
+                              "time_to_live_seconds",
+                              base::NumberToString(kTimeToLiveSeconds));
+    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
+  }
+
+  const int kTimeToLiveSeconds = 4000;
+};
+
+// Test that the BackForwardCacheTimeToLiveControl feature works and takes
+// precedence over the main BackForwardCache's TimeToLiveInBackForwardCache
+// parameter.
+IN_PROC_BROWSER_TEST_F(CustomTTLBackForwardCacheBrowserTest,
+                       TestTimeToLiveParameter) {
+  // Inject mock time task runner to be used in the eviction timer, so we can,
+  // check for the functionality we are interested before and after the time to
+  // live. We don't replace ThreadTaskRunnerHandle::Get to ensure that it
+  // doesn't affect other unrelated callsites.
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner =
+      base::MakeRefCounted<base::TestMockTimeTaskRunner>();
+
+  web_contents()->GetController().GetBackForwardCache().SetTaskRunnerForTesting(
+      task_runner);
+
+  base::TimeDelta time_to_live_in_back_forward_cache =
+      BackForwardCacheImpl::GetTimeToLiveInBackForwardCache();
+  // This should match the value set in EnableFeatureAndSetParams.
+  EXPECT_EQ(time_to_live_in_back_forward_cache, base::Seconds(4000));
+
+  base::TimeDelta delta = base::Milliseconds(1);
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
+
+  // 1) Navigate to A.
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
+  RenderFrameHostImplWrapper rfh_a(current_frame_host());
+  RenderFrameDeletedObserver delete_observer_rfh_a(rfh_a.get());
+
+  // 2) Navigate to B.
+  EXPECT_TRUE(NavigateToURL(shell(), url_b));
+  RenderFrameHostImplWrapper rfh_b(current_frame_host());
+
+  // 3) Fast forward to just before eviction is due.
+  task_runner->FastForwardBy(time_to_live_in_back_forward_cache - delta);
+
+  // 4) Confirm A is still in BackForwardCache.
+  ASSERT_FALSE(delete_observer_rfh_a.deleted());
+  EXPECT_TRUE(rfh_a->IsInBackForwardCache());
+
+  // 5) Fast forward to when eviction is due.
+  task_runner->FastForwardBy(delta);
+
+  // 6) Confirm A is evicted.
+  delete_observer_rfh_a.WaitUntilDeleted();
+  EXPECT_EQ(current_frame_host(), rfh_b.get());
+
+  // 7) Go back to A.
+  ASSERT_TRUE(HistoryGoBack(web_contents()));
+  ExpectNotRestored({BackForwardCacheMetrics::NotRestoredReason::kTimeout}, {},
+                    {}, {}, {}, FROM_HERE);
 }
 
 // Test that when we navigate away from an error page and back with no error

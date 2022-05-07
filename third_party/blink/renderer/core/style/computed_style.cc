@@ -111,7 +111,7 @@ struct SameSizeAsComputedStyleBase {
  private:
   void* data_refs[8];
   void* pointers[1];
-  unsigned bitfields[6];
+  unsigned bitfields[5];
 };
 
 struct SameSizeAsComputedStyle : public SameSizeAsComputedStyleBase,
@@ -221,8 +221,8 @@ static bool PseudoElementStylesEqual(const ComputedStyle& old_style,
 
 static bool DiffAffectsContainerQueries(const ComputedStyle& old_style,
                                         const ComputedStyle& new_style) {
-  if (!old_style.IsContainerForContainerQueries() &&
-      !new_style.IsContainerForContainerQueries()) {
+  if (!old_style.IsContainerForSizeContainerQueries() &&
+      !new_style.IsContainerForSizeContainerQueries()) {
     return false;
   }
   if ((old_style.ContainerName() != new_style.ContainerName()) ||
@@ -2648,12 +2648,18 @@ bool ComputedStyle::ShouldApplyAnyContainment(const Element& element) const {
           Display() == EDisplay::kTableCaption);
 }
 
-bool ComputedStyle::IsContainerForContainerQueries(
-    const Element& element) const {
-  return IsContainerForContainerQueries() &&
+bool ComputedStyle::CanMatchSizeContainerQueries(const Element& element) const {
+  return RuntimeEnabledFeatures::LayoutNGEnabled() &&
+         IsContainerForSizeContainerQueries() &&
+         !InsideFragmentationContextWithNondeterministicEngine() &&
          !element.ShouldForceLegacyLayout() &&
          (!element.IsSVGElement() ||
           To<SVGElement>(element).IsOutermostSVGSVGElement());
+}
+
+bool ComputedStyle::IsInterleavingRoot(const ComputedStyle* style) {
+  const ComputedStyle* unensured = ComputedStyle::NullifyEnsured(style);
+  return unensured && unensured->IsContainerForSizeContainerQueries();
 }
 
 STATIC_ASSERT_ENUM(cc::OverscrollBehavior::Type::kAuto,

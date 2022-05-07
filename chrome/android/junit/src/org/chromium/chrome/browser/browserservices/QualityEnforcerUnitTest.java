@@ -258,11 +258,12 @@ public class QualityEnforcerUnitTest {
         when(mTab.getOriginalUrl()).thenReturn(url);
 
         NavigationHandle navigation = new NavigationHandle(0 /* navigationHandleProxy */, url,
-                null /* referrerUrl */, true /* isInPrimaryMainFrame */, false /* isSameDocument */,
+                GURL.emptyGURL() /* referrerUrl */, GURL.emptyGURL() /* baseUrlForDataUrl */,
+                true /* isInPrimaryMainFrame */, false /* isSameDocument */,
                 false /* isRendererInitiated */, null /* initiatorOrigin */,
                 null /* impressionData */, 0 /* pageTransition */, false /* isPost */,
                 false /* hasUserGesture */, false /* isRedirect */, false /* isExternalProtocol */,
-                0 /* navigationId */);
+                0 /* navigationId */, false /* isPageActivation */);
         navigation.didFinish(url, false /* isErrorPage */, true /* hasCommitted */,
                 false /* isFragmentNavigation */, false /* isDownload */,
                 false /* isValidSearchFormUrl */, 0 /* pageTransition */, errorCode,

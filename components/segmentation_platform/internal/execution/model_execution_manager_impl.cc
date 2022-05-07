@@ -121,48 +121,42 @@ ModelExecutionManagerImpl::ModelExecutionManagerImpl(
 
 ModelExecutionManagerImpl::~ModelExecutionManagerImpl() = default;
 
-void ModelExecutionManagerImpl::ExecuteModel(OptimizationTarget segment_id,
-                                             ModelExecutionCallback callback) {
+void ModelExecutionManagerImpl::ExecuteModel(
+    const proto::SegmentInfo& segment_info,
+    ModelExecutionCallback callback) {
+  OptimizationTarget segment_id = segment_info.segment_id();
   auto model_handler_it = model_handlers_.find(segment_id);
   DCHECK(model_handler_it != model_handlers_.end());
+
+  SegmentationModelHandler& handler = *model_handler_it->second;
 
   // Create an ExecutionState that will stay with this request until it has been
   // fully processed.
   auto state = std::make_unique<ExecutionState>();
   state->segment_id = segment_id;
-  state->model_handler = (*model_handler_it).second.get();
+  state->model_handler = &handler;
   state->callback = std::move(callback);
   state->total_execution_start_time = clock_->Now();
 
   ModelExecutionTraceEvent trace_event(
       "ModelExecutionManagerImpl::ExecuteModel", *state);
 
-  // We first need to look up all relevant metadata for the related segment, as
-  // the metadata informs how we should process the data.
-  segment_database_->GetSegmentInfo(
-      segment_id,
-      base::BindOnce(
-          &ModelExecutionManagerImpl::OnSegmentInfoFetchedForExecution,
-          weak_ptr_factory_.GetWeakPtr(), std::move(state)));
-}
-
-void ModelExecutionManagerImpl::OnSegmentInfoFetchedForExecution(
-    std::unique_ptr<ExecutionState> state,
-    absl::optional<proto::SegmentInfo> segment_info) {
-  ModelExecutionTraceEvent trace_event(
-      "ModelExecutionManagerImpl::OnSegmentInfoFetchedForExecution", *state);
-  // It is required to have a valid and well formed segment info.
-  if (!segment_info ||
-      metadata_utils::ValidateSegmentInfo(*segment_info) !=
-          metadata_utils::ValidationResult::kValidationSuccess) {
+  if (!handler.ModelAvailable()) {
     RunModelExecutionCallback(std::move(state), 0,
-                              ModelExecutionStatus::kInvalidMetadata);
+                              ModelExecutionStatus::kSkippedModelNotReady);
     return;
   }
 
-  OptimizationTarget segment_id = state->segment_id;
+  // It is required to have a valid and well formed segment info.
+  if (metadata_utils::ValidateSegmentInfo(segment_info) !=
+      metadata_utils::ValidationResult::kValidationSuccess) {
+    RunModelExecutionCallback(std::move(state), 0,
+                              ModelExecutionStatus::kSkippedInvalidMetadata);
+    return;
+  }
+
   feature_list_query_processor_->ProcessFeatureList(
-      segment_info->model_metadata(), segment_id, clock_->Now(),
+      segment_info.model_metadata(), segment_id, clock_->Now(),
       base::BindOnce(
           &ModelExecutionManagerImpl::OnProcessingFeatureListComplete,
           weak_ptr_factory_.GetWeakPtr(), std::move(state)));
@@ -175,7 +169,7 @@ void ModelExecutionManagerImpl::OnProcessingFeatureListComplete(
   if (error) {
     // Validation error occurred on model's metadata.
     RunModelExecutionCallback(std::move(state), 0,
-                              ModelExecutionStatus::kInvalidMetadata);
+                              ModelExecutionStatus::kSkippedInvalidMetadata);
     return;
   }
   state->input_tensor.insert(state->input_tensor.end(), input_tensor.begin(),
@@ -192,17 +186,15 @@ void ModelExecutionManagerImpl::ExecuteModel(
   DCHECK(it != model_handlers_.end());
 
   SegmentationModelHandler* handler = (*it).second.get();
-  if (!handler->ModelAvailable()) {
-    RunModelExecutionCallback(std::move(state), 0,
-                              ModelExecutionStatus::kExecutionError);
-    return;
-  }
 
   if (VLOG_IS_ON(1)) {
     std::stringstream log_input;
     for (unsigned i = 0; i < state->input_tensor.size(); ++i)
       log_input << " feature " << i << ": " << state->input_tensor[i];
-    VLOG(1) << "Segmentation model input: " << log_input.str();
+    VLOG(1) << "Segmentation model input: " << log_input.str()
+            << " for segment "
+            << optimization_guide::proto::OptimizationTarget_Name(
+                   state->segment_id);
   }
   const std::vector<float>& const_input_tensor = std::move(state->input_tensor);
   stats::RecordModelExecutionZeroValuePercent(state->segment_id,
@@ -223,7 +215,9 @@ void ModelExecutionManagerImpl::OnModelExecutionComplete(
       state->segment_id, result.has_value(),
       clock_->Now() - state->model_execution_start_time);
   if (result.has_value()) {
-    VLOG(1) << "Segmentation model result: " << *result;
+    VLOG(1) << "Segmentation model result: " << *result << " for segment "
+            << optimization_guide::proto::OptimizationTarget_Name(
+                   state->segment_id);
     stats::RecordModelExecutionResult(state->segment_id, result.value());
     if (state->model_handler->GetModelInfo()) {
       SegmentationUkmHelper::GetInstance()->RecordModelExecutionResult(
@@ -233,7 +227,9 @@ void ModelExecutionManagerImpl::OnModelExecutionComplete(
     RunModelExecutionCallback(std::move(state), *result,
                               ModelExecutionStatus::kSuccess);
   } else {
-    VLOG(1) << "Segmentation model returned no result.";
+    VLOG(1) << "Segmentation model returned no result for segment "
+            << optimization_guide::proto::OptimizationTarget_Name(
+                   state->segment_id);
     RunModelExecutionCallback(std::move(state), 0,
                               ModelExecutionStatus::kExecutionError);
   }
@@ -252,7 +248,8 @@ void ModelExecutionManagerImpl::RunModelExecutionCallback(
 
 void ModelExecutionManagerImpl::OnSegmentationModelUpdated(
     optimization_guide::proto::OptimizationTarget segment_id,
-    proto::SegmentationModelMetadata metadata) {
+    proto::SegmentationModelMetadata metadata,
+    int64_t model_version) {
   TRACE_EVENT("segmentation_platform",
               "ModelExecutionManagerImpl::OnSegmentationModelUpdated");
   stats::RecordModelDeliveryReceived(segment_id);
@@ -275,12 +272,14 @@ void ModelExecutionManagerImpl::OnSegmentationModelUpdated(
       segment_id,
       base::BindOnce(
           &ModelExecutionManagerImpl::OnSegmentInfoFetchedForModelUpdate,
-          weak_ptr_factory_.GetWeakPtr(), segment_id, std::move(metadata)));
+          weak_ptr_factory_.GetWeakPtr(), segment_id, std::move(metadata),
+          model_version));
 }
 
 void ModelExecutionManagerImpl::OnSegmentInfoFetchedForModelUpdate(
     optimization_guide::proto::OptimizationTarget segment_id,
     proto::SegmentationModelMetadata metadata,
+    int64_t model_version,
     absl::optional<proto::SegmentInfo> old_segment_info) {
   TRACE_EVENT("segmentation_platform",
               "ModelExecutionManagerImpl::OnSegmentInfoFetchedForModelUpdate");
@@ -290,6 +289,7 @@ void ModelExecutionManagerImpl::OnSegmentInfoFetchedForModelUpdate(
   // If we find an existing SegmentInfo in the database, we can verify that it
   // is valid, and we can copy over the PredictionResult to the new version
   // we are creating.
+  absl::optional<int64_t> old_model_version;
   if (old_segment_info.has_value()) {
     // The retrieved SegmentInfo's ID should match the one we looked up,
     // otherwise the DB has not upheld its contract.
@@ -306,11 +306,22 @@ void ModelExecutionManagerImpl::OnSegmentInfoFetchedForModelUpdate(
       auto* prediction_result = new_segment_info.mutable_prediction_result();
       prediction_result->CopyFrom(old_segment_info->prediction_result());
     }
+
+    if (old_segment_info->has_model_version()) {
+      old_model_version = old_segment_info->model_version();
+    }
   }
 
   // Inject the newly updated metadata into the new SegmentInfo.
   auto* new_metadata = new_segment_info.mutable_model_metadata();
   new_metadata->CopyFrom(metadata);
+  new_segment_info.set_model_version(model_version);
+
+  if (!old_model_version.has_value() ||
+      old_model_version.value() != model_version) {
+    new_segment_info.set_model_update_time_s(
+        clock_->Now().ToDeltaSinceWindowsEpoch().InSeconds());
+  }
 
   // We have a valid segment id, and the new metadata was valid, therefore the
   // new metadata should be valid. We are not allowed to invoke the callback

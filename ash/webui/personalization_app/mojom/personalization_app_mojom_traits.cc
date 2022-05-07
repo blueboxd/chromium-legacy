@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/cpp/ambient/ambient_animation_theme.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/default_user_image.h"
 #include "ash/public/cpp/personalization_app/user_display_info.h"
@@ -29,7 +30,9 @@ namespace mojo {
 using MojomWallpaperLayout = ash::personalization_app::mojom::WallpaperLayout;
 using MojomWallpaperType = ash::personalization_app::mojom::WallpaperType;
 using MojomOnlineImageType = ash::personalization_app::mojom::OnlineImageType;
+using MojomAnimationTheme = ash::personalization_app::mojom::AnimationTheme;
 using MojomTopicSource = ash::personalization_app::mojom::TopicSource;
+using MojomTemperatureUnit = ash::personalization_app::mojom::TemperatureUnit;
 
 MojomWallpaperLayout
 EnumTraits<MojomWallpaperLayout, ash::WallpaperLayout>::ToMojom(
@@ -298,6 +301,39 @@ bool StructTraits<ash::personalization_app::mojom::DefaultUserImageDataView,
   return data.ReadTitle(&out->title) && data.ReadUrl(&out->url);
 }
 
+MojomAnimationTheme
+EnumTraits<MojomAnimationTheme, ash::AmbientAnimationTheme>::ToMojom(
+    ash::AmbientAnimationTheme input) {
+  switch (input) {
+    case ash::AmbientAnimationTheme::kSlideshow:
+      return MojomAnimationTheme::kSlideshow;
+    case ash::AmbientAnimationTheme::kFeelTheBreeze:
+      return MojomAnimationTheme::kFeelTheBreeze;
+    case ash::AmbientAnimationTheme::kFloatOnBy:
+      return MojomAnimationTheme::kFloatOnBy;
+  }
+}
+
+bool EnumTraits<MojomAnimationTheme, ash::AmbientAnimationTheme>::FromMojom(
+    MojomAnimationTheme input,
+    ash::AmbientAnimationTheme* output) {
+  switch (input) {
+    case MojomAnimationTheme::kSlideshow:
+      *output = ash::AmbientAnimationTheme::kSlideshow;
+      return true;
+    case MojomAnimationTheme::kFeelTheBreeze:
+      *output = ash::AmbientAnimationTheme::kFeelTheBreeze;
+      return true;
+    case MojomAnimationTheme::kFloatOnBy:
+      *output = ash::AmbientAnimationTheme::kFloatOnBy;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// TODO (b/220933864): remove ash::AmbientModeTopicSource and
+// ash::AmbientModeTemperatureUnit enums.
 MojomTopicSource
 EnumTraits<MojomTopicSource, ash::AmbientModeTopicSource>::ToMojom(
     ash::AmbientModeTopicSource input) {
@@ -318,6 +354,32 @@ bool EnumTraits<MojomTopicSource, ash::AmbientModeTopicSource>::FromMojom(
       return true;
     case MojomTopicSource::kArtGallery:
       *output = ash::AmbientModeTopicSource::kArtGallery;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+MojomTemperatureUnit
+EnumTraits<MojomTemperatureUnit, ash::AmbientModeTemperatureUnit>::ToMojom(
+    ash::AmbientModeTemperatureUnit input) {
+  switch (input) {
+    case ash::AmbientModeTemperatureUnit::kFahrenheit:
+      return MojomTemperatureUnit::kFahrenheit;
+    case ash::AmbientModeTemperatureUnit::kCelsius:
+      return MojomTemperatureUnit::kCelsius;
+  }
+}
+
+bool EnumTraits<MojomTemperatureUnit, ash::AmbientModeTemperatureUnit>::
+    FromMojom(MojomTemperatureUnit input,
+              ash::AmbientModeTemperatureUnit* output) {
+  switch (input) {
+    case MojomTemperatureUnit::kFahrenheit:
+      *output = ash::AmbientModeTemperatureUnit::kFahrenheit;
+      return true;
+    case MojomTemperatureUnit::kCelsius:
+      *output = ash::AmbientModeTemperatureUnit::kCelsius;
       return true;
   }
   NOTREACHED();

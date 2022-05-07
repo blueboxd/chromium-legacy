@@ -598,6 +598,10 @@ AXTextAttributes AXNodeData::GetTextAttributes() const {
                     &text_attributes.font_weight);
   GetStringAttribute(ax::mojom::StringAttribute::kFontFamily,
                      &text_attributes.font_family);
+  GetIntListAttribute(ax::mojom::IntListAttribute::kMarkerTypes,
+                      &text_attributes.marker_types);
+  GetIntListAttribute(ax::mojom::IntListAttribute::kHighlightTypes,
+                      &text_attributes.highlight_types);
 
   return text_attributes;
 }
@@ -731,6 +735,7 @@ void AXNodeData::AddAction(ax::mojom::Action action_enum) {
     case ax::mojom::Action::kInternalInvalidateTree:
     case ax::mojom::Action::kLoadInlineTextBoxes:
     case ax::mojom::Action::kReplaceSelectedText:
+    case ax::mojom::Action::kRunScreenAi:
     case ax::mojom::Action::kScrollToMakeVisible:
     case ax::mojom::Action::kScrollToPoint:
     case ax::mojom::Action::kSetAccessibilityFocus:

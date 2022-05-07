@@ -155,7 +155,7 @@ const base::Feature kGpuProcessHighPriorityWin{
 // Use ThreadPriority::DISPLAY for GPU main, viz compositor and IO threads.
 const base::Feature kGpuUseDisplayThreadPriority{
   "GpuUseDisplayThreadPriority",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -166,10 +166,6 @@ const base::Feature kGpuUseDisplayThreadPriority{
 // Enable use of Metal for OOP rasterization.
 const base::Feature kMetal{"Metal", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
-
-// Turns on skia deferred display list for out of process raster.
-const base::Feature kOopRasterizationDDL{"OopRasterizationDDL",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Causes us to use the SharedImageManager, removing support for the old
 // mailbox system. Any consumers of the GPU process using the old mailbox
@@ -328,8 +324,10 @@ bool IsDrDcEnabled() {
     return false;
 
   // DrDc is supported on android MediaPlayer and MCVD path only when
-  // AImageReader is enabled.
-  if (!IsAImageReaderEnabled())
+  // AImageReader is enabled. Also DrDc requires AImageReader max size to be
+  // at least 2 for each gpu thread. Hence DrDc is disabled on devices which has
+  // only 1 image.
+  if (!IsAImageReaderEnabled() || LimitAImageReaderMaxSizeToOne())
     return false;
 
   // Check block list against build info.
@@ -345,8 +343,10 @@ bool IsDrDcEnabled() {
 
 bool IsUsingThreadSafeMediaForWebView() {
 #if BUILDFLAG(IS_ANDROID)
-  // SurfaceTexture can't be thread-safe.
-  if (!IsAImageReaderEnabled())
+  // SurfaceTexture can't be thread-safe. Also thread safe media code currently
+  // requires AImageReader max size to be at least 2 since one image could be
+  // accessed by each gpu thread in webview.
+  if (!IsAImageReaderEnabled() || LimitAImageReaderMaxSizeToOne())
     return false;
 
   // Not yet compatible with Vulkan.

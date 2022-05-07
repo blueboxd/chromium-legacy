@@ -25,6 +25,7 @@
 class Profile;
 
 namespace webapps {
+enum class UninstallResultCode;
 enum class WebappUninstallSource;
 }
 
@@ -39,7 +40,6 @@ class WebAppPolicyManager;
 class WebAppRegistrar;
 class WebAppTranslationManager;
 class WebAppUninstallJob;
-enum class WebAppUninstallJobResult;
 
 // An finalizer for the installation process, represents the last step.
 // Takes WebAppInstallInfo as input, writes data to disk (e.g icons, shortcuts)
@@ -50,9 +50,11 @@ class WebAppInstallFinalizer {
       base::OnceCallback<void(const AppId& app_id,
                               webapps::InstallResultCode code,
                               OsHooksErrors os_hooks_errors)>;
-  using UninstallWebAppCallback = base::OnceCallback<void(bool uninstalled)>;
+  using UninstallWebAppCallback =
+      base::OnceCallback<void(webapps::UninstallResultCode code)>;
   using RepeatingUninstallCallback =
-      base::RepeatingCallback<void(const AppId& app_id, bool uninstalled)>;
+      base::RepeatingCallback<void(const AppId& app_id,
+                                   webapps::UninstallResultCode code)>;
 
   struct FinalizeOptions {
     FinalizeOptions();
@@ -176,7 +178,7 @@ class WebAppInstallFinalizer {
   void OnUninstallComplete(AppId app_id,
                            webapps::WebappUninstallSource uninstall_source,
                            UninstallWebAppCallback callback,
-                           WebAppUninstallJobResult result);
+                           webapps::UninstallResultCode code);
   void UninstallExternalWebAppOrRemoveSource(const AppId& app_id,
                                              Source::Type source,
                                              UninstallWebAppCallback callback);

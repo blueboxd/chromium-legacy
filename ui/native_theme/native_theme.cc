@@ -38,10 +38,19 @@ bool NativeTheme::SystemDarkModeSupported() {
 #endif
 
 ColorProviderManager::Key NativeTheme::GetColorProviderKey(
-    scoped_refptr<ColorProviderManager::InitializerSupplier> custom_theme)
-    const {
-  return GetColorProviderKeyForColorScheme(std::move(custom_theme),
-                                           GetDefaultSystemColorScheme());
+    scoped_refptr<ColorProviderManager::InitializerSupplier> custom_theme,
+    bool use_custom_frame) const {
+  return ColorProviderManager::Key(
+      (GetDefaultSystemColorScheme() == ColorScheme::kDark)
+          ? ColorProviderManager::ColorMode::kDark
+          : ColorProviderManager::ColorMode::kLight,
+      UserHasContrastPreference() ? ColorProviderManager::ContrastMode::kHigh
+                                  : ColorProviderManager::ContrastMode::kNormal,
+      is_custom_system_theme_ ? ColorProviderManager::SystemTheme::kCustom
+                              : ColorProviderManager::SystemTheme::kDefault,
+      use_custom_frame ? ui::ColorProviderManager::FrameType::kChromium
+                       : ui::ColorProviderManager::FrameType::kNative,
+      std::move(custom_theme));
 }
 
 SkColor NativeTheme::GetSystemButtonPressedColor(SkColor base_color) const {
@@ -266,21 +275,6 @@ void NativeTheme::ColorSchemeNativeThemeObserver::OnNativeThemeUpdated(
 
 NativeTheme::ColorScheme NativeTheme::GetDefaultSystemColorScheme() const {
   return ShouldUseDarkColors() ? ColorScheme::kDark : ColorScheme::kLight;
-}
-
-ColorProviderManager::Key NativeTheme::GetColorProviderKeyForColorScheme(
-    scoped_refptr<ColorProviderManager::InitializerSupplier> custom_theme,
-    ColorScheme color_scheme) const {
-  return ColorProviderManager::Key(
-      (color_scheme == ColorScheme::kDark)
-          ? ColorProviderManager::ColorMode::kDark
-          : ColorProviderManager::ColorMode::kLight,
-      (color_scheme == ColorScheme::kPlatformHighContrast)
-          ? ColorProviderManager::ContrastMode::kHigh
-          : ColorProviderManager::ContrastMode::kNormal,
-      is_custom_system_theme_ ? ColorProviderManager::SystemTheme::kCustom
-                              : ColorProviderManager::SystemTheme::kDefault,
-      std::move(custom_theme));
 }
 
 }  // namespace ui

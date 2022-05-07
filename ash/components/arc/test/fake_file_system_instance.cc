@@ -50,11 +50,19 @@ mojom::RootPtr MakeRoot(const FakeFileSystemInstance::Root& in_root) {
   return root;
 }
 
-// Generates unique document ID on each calls.
+// Generates unique document ID on each call.
 std::string GenerateDocumentId() {
   static int count = 0;
   std::ostringstream ss;
   ss << "doc_" << count++;
+  return ss.str();
+}
+
+// Generates unique URL ID on each call.
+std::string GenerateUrlId() {
+  static int count = 0;
+  std::ostringstream ss;
+  ss << "url_" << count++;
   return ss.str();
 }
 
@@ -198,6 +206,13 @@ void FakeFileSystemInstance::AddRoot(const Root& root) {
   RootKey key(root.authority, root.root_id);
   DCHECK_EQ(0u, roots_.count(key));
   roots_.insert(std::make_pair(key, root));
+}
+
+void FakeFileSystemInstance::AddOpenSession(const std::string& url_id,
+                                            const int fd) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK_EQ(0u, open_urls_.count(url_id));
+  open_urls_.insert(std::make_pair(url_id, fd));
 }
 
 void FakeFileSystemInstance::SetGetLastChangeTimeCallback(
@@ -358,8 +373,9 @@ void FakeFileSystemInstance::GetMimeType(const std::string& url,
       FROM_HERE, base::BindOnce(std::move(callback), file.mime_type));
 }
 
-void FakeFileSystemInstance::OpenFileToRead(const std::string& url,
-                                            OpenFileToReadCallback callback) {
+void FakeFileSystemInstance::DEPRECATED_OpenFileToRead(
+    const std::string& url,
+    DEPRECATED_OpenFileToReadCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto iter = files_.find(url);
   if (iter == files_.end()) {
@@ -381,8 +397,9 @@ void FakeFileSystemInstance::OpenFileToRead(const std::string& url,
       base::BindOnce(std::move(callback), std::move(wrapped_handle)));
 }
 
-void FakeFileSystemInstance::OpenFileToWrite(const std::string& url,
-                                             OpenFileToWriteCallback callback) {
+void FakeFileSystemInstance::DEPRECATED_OpenFileToWrite(
+    const std::string& url,
+    DEPRECATED_OpenFileToWriteCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto iter = files_.find(url);
   if (iter == files_.end()) {
@@ -402,6 +419,76 @@ void FakeFileSystemInstance::OpenFileToWrite(const std::string& url,
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(std::move(callback), std::move(wrapped_handle)));
+}
+
+void FakeFileSystemInstance::CloseFileSession(
+    const std::string& url_id,
+    const std::string& error_message) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  auto iter = open_urls_.find(url_id);
+  if (iter != open_urls_.end())
+    return;
+  open_urls_.erase(url_id);
+}
+
+void FakeFileSystemInstance::OpenFileSessionToWrite(
+    const GURL& url,
+    OpenFileSessionToWriteCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  auto iter = files_.find(url.spec());
+  if (iter == files_.end()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), mojom::FileSessionPtr()));
+    return;
+  }
+  const File& file = iter->second;
+  base::ScopedFD fd =
+      file.seekable == File::Seekable::YES
+          ? CreateRegularFileDescriptor(file, base::File::Flags::FLAG_OPEN |
+                                                  base::File::Flags::FLAG_WRITE)
+          : CreateStreamFileDescriptorToWrite(file.url);
+  DCHECK(fd.is_valid());
+  std::string url_id = GenerateUrlId();
+  AddOpenSession(url_id, fd.get());
+  mojo::ScopedHandle wrapped_handle =
+      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
+  DCHECK(wrapped_handle.is_valid());
+  mojom::FileSessionPtr file_session = mojom::FileSession::New();
+  file_session->url_id = std::move(url_id);
+  file_session->fd = std::move(wrapped_handle);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(file_session)));
+}
+
+void FakeFileSystemInstance::OpenFileSessionToRead(
+    const GURL& url,
+    OpenFileSessionToReadCallback callback) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  auto iter = files_.find(url.spec());
+  if (iter == files_.end()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(std::move(callback), mojom::FileSessionPtr()));
+    return;
+  }
+  const File& file = iter->second;
+  base::ScopedFD fd =
+      file.seekable == File::Seekable::YES
+          ? CreateRegularFileDescriptor(file, base::File::Flags::FLAG_OPEN |
+                                                  base::File::Flags::FLAG_READ)
+          : CreateStreamFileDescriptorToRead(file.content);
+  DCHECK(fd.is_valid());
+  std::string url_id = GenerateUrlId();
+  AddOpenSession(url_id, fd.get());
+  mojo::ScopedHandle wrapped_handle =
+      mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(fd)));
+  DCHECK(wrapped_handle.is_valid());
+  mojom::FileSessionPtr file_session = mojom::FileSession::New();
+  file_session->url_id = std::move(url_id);
+  file_session->fd = std::move(wrapped_handle);
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(file_session)));
 }
 
 void FakeFileSystemInstance::OpenThumbnail(const std::string& url,
@@ -714,9 +801,9 @@ void FakeFileSystemInstance::ReindexDirectory(
   RequestMediaScan(paths);
 }
 
-void FakeFileSystemInstance::OpenUrlsWithPermission(
+void FakeFileSystemInstance::DEPRECATED_OpenUrlsWithPermission(
     mojom::OpenUrlsRequestPtr request,
-    OpenUrlsWithPermissionCallback callback) {
+    DEPRECATED_OpenUrlsWithPermissionCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   handled_url_requests_.emplace_back(std::move(request));
 }
@@ -724,7 +811,7 @@ void FakeFileSystemInstance::OpenUrlsWithPermission(
 void FakeFileSystemInstance::OpenUrlsWithPermissionAndWindowInfo(
     mojom::OpenUrlsRequestPtr request,
     mojom::WindowInfoPtr window_info,
-    OpenUrlsWithPermissionCallback callback) {
+    DEPRECATED_OpenUrlsWithPermissionCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   handled_url_requests_.emplace_back(std::move(request));
 }

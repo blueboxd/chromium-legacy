@@ -380,6 +380,14 @@ void PropertyTreeManager::SetCurrentEffectRenderSurfaceReason(
   effect->render_surface_reason = reason;
 }
 
+void PropertyTreeManager::SetOverscrollNodeId(const int id) {
+  transform_tree_.set_overscroll_node_id(id);
+}
+
+void PropertyTreeManager::SetFixedElementsDontOverscroll(const bool value) {
+  transform_tree_.set_fixed_elements_dont_overscroll(value);
+}
+
 int PropertyTreeManager::EnsureCompositorTransformNode(
     const TransformPaintPropertyNode& transform_node) {
   int id = transform_node.CcNodeId(new_sequence_number_);
@@ -407,6 +415,9 @@ int PropertyTreeManager::EnsureCompositorTransformNode(
 
   cc::TransformNode& compositor_node = *transform_tree_.Node(id);
   UpdateCcTransformLocalMatrix(compositor_node, transform_node);
+
+  compositor_node.is_fixed_position =
+      transform_node.RequiresCompositingForFixedPosition();
   compositor_node.transform_changed = transform_node.NodeChangeAffectsRaster();
   compositor_node.flattens_inherited_transform =
       transform_node.FlattensInheritedTransform();
@@ -674,7 +685,7 @@ void PropertyTreeManager::CloseCcEffect() {
   // clip, thus the clip can't be shared with sibling layers, and must be
   // closed now.
   bool clear_synthetic_effects =
-      !IsCurrentCcEffectSynthetic() && current_.effect->HasBackdropEffect();
+      !IsCurrentCcEffectSynthetic() && current_.effect->MayHaveBackdropEffect();
 
   // We are about to close an effect that was synthesized for isolating
   // a clip mask. Now emit the actual clip mask that will be composited on
@@ -887,7 +898,7 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
     const EffectPaintPropertyNode* next_effect) {
   int backdrop_effect_clip_id = cc::kInvalidPropertyNodeId;
   bool should_realize_backdrop_effect = false;
-  if (next_effect && next_effect->HasBackdropEffect()) {
+  if (next_effect && next_effect->MayHaveBackdropEffect()) {
     // Exit all synthetic effect node if the next child has backdrop effect
     // (exotic blending mode or backdrop filter) because it has to access the
     // backdrop of enclosing effect.
@@ -1021,7 +1032,8 @@ int PropertyTreeManager::SynthesizeCcEffectsForClipsIfNeeded(
       DCHECK(next_effect);
       DCHECK_EQ(cc_effect_id_for_backdrop_effect, cc::kInvalidPropertyNodeId);
       transform = &next_effect->LocalTransformSpace().Unalias();
-      PopulateCcEffectNode(synthetic_effect, *next_effect, clip_id);
+      PopulateCcEffectNode(synthetic_effect, *next_effect, clip_id,
+                           /*can_be_shared_element_resource=*/true);
       cc_effect_id_for_backdrop_effect = synthetic_effect.id;
       should_realize_backdrop_effect = false;
     } else {
@@ -1087,7 +1099,19 @@ void PropertyTreeManager::BuildEffectNodesRecursively(
       effect_tree_.Insert(cc::EffectNode(), current_.effect_id));
   if (real_effect_node_id == cc::kInvalidPropertyNodeId) {
     real_effect_node_id = effect_node.id;
-    PopulateCcEffectNode(effect_node, next_effect, output_clip_id);
+
+    // |has_multiple_groups| implies that this paint effect node is split into
+    // multiple CC effect nodes. This happens when we have non-contiguous paint
+    // chunks which share the same paint effect node and as a result the same
+    // shared element resource ID.
+    // Since a shared element resource ID must be associated with a single CC
+    // effect node, the code ensures that only one CC effect node (associated
+    // with the first contigious set of chunks) is tagged with the shared
+    // element resource ID. The content excluded as a result is the root
+    // scrollbar. See crbug.com/1303081 for details.
+    bool can_be_shared_element_resource = !has_multiple_groups;
+    PopulateCcEffectNode(effect_node, next_effect, output_clip_id,
+                         can_be_shared_element_resource);
   } else {
     // We have used the outermost synthetic effect for |next_effect| in
     // SynthesizeCcEffectsForClipsIfNeeded(), so |effect_node| is just a dummy
@@ -1173,14 +1197,15 @@ static cc::RenderSurfaceReason RenderSurfaceReasonForEffect(
 void PropertyTreeManager::PopulateCcEffectNode(
     cc::EffectNode& effect_node,
     const EffectPaintPropertyNode& effect,
-    int output_clip_id) {
+    int output_clip_id,
+    bool can_be_shared_element_resource) {
   effect_node.stable_id = effect.GetCompositorElementId().GetStableId();
   effect_node.clip_id = output_clip_id;
   effect_node.render_surface_reason = RenderSurfaceReasonForEffect(effect);
   effect_node.opacity = effect.Opacity();
   const auto& transform = effect.LocalTransformSpace().Unalias();
   effect_node.transform_id = EnsureCompositorTransformNode(transform);
-  if (effect.HasBackdropEffect()) {
+  if (effect.MayHaveBackdropEffect()) {
     // We never have backdrop effect and filter on the same effect node.
     DCHECK(effect.Filter().IsEmpty());
     if (auto* backdrop_filter = effect.BackdropFilter()) {
@@ -1194,9 +1219,12 @@ void PropertyTreeManager::PopulateCcEffectNode(
   }
   effect_node.double_sided = !transform.IsBackfaceHidden();
   effect_node.effect_changed = effect.NodeChangeAffectsRaster();
-  effect_node.document_transition_shared_element_id =
-      effect.DocumentTransitionSharedElementId();
-  effect_node.shared_element_resource_id = effect.SharedElementResourceId();
+
+  if (can_be_shared_element_resource) {
+    effect_node.document_transition_shared_element_id =
+        effect.DocumentTransitionSharedElementId();
+    effect_node.shared_element_resource_id = effect.SharedElementResourceId();
+  }
 }
 
 void PropertyTreeManager::UpdateConditionalRenderSurfaceReasons(

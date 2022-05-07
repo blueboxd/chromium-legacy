@@ -118,8 +118,7 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, StoreDeviceData) {
       base::MakeRefCounted<EnterpriseReportingPrivateSetDeviceDataFunction>();
   std::unique_ptr<base::ListValue> values = std::make_unique<base::ListValue>();
   values->Append("a");
-  values->Append(
-      std::make_unique<base::Value>(base::Value::BlobStorage({1, 2, 3})));
+  values->Append(base::Value(base::Value::BlobStorage({1, 2, 3})));
   extension_function_test_utils::RunFunction(function.get(), std::move(values),
                                              browser(),
                                              extensions::api_test_utils::NONE);
@@ -152,8 +151,7 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, DeviceBadId) {
   std::unique_ptr<base::ListValue> set_values =
       std::make_unique<base::ListValue>();
   set_values->Append("a/b");
-  set_values->Append(
-      std::make_unique<base::Value>(base::Value::BlobStorage({1, 2, 3})));
+  set_values->Append(base::Value(base::Value::BlobStorage({1, 2, 3})));
   extension_function_test_utils::RunFunction(set_function.get(),
                                              std::move(set_values), browser(),
                                              extensions::api_test_utils::NONE);
@@ -178,8 +176,7 @@ TEST_F(EnterpriseReportingPrivateDeviceDataFunctionsTest, RetrieveDeviceData) {
   std::unique_ptr<base::ListValue> set_values =
       std::make_unique<base::ListValue>();
   set_values->Append("c");
-  set_values->Append(
-      std::make_unique<base::Value>(base::Value::BlobStorage({1, 2, 3})));
+  set_values->Append(base::Value(base::Value::BlobStorage({1, 2, 3})));
   extension_function_test_utils::RunFunction(set_function.get(),
                                              std::move(set_values), browser(),
                                              extensions::api_test_utils::NONE);
@@ -891,7 +888,7 @@ class EnterpriseReportingPrivateGetContextInfoOSFirewallTest
     const NET_FW_PROFILE_TYPE2 kProfileTypes[] = {NET_FW_PROFILE2_PUBLIC,
                                                   NET_FW_PROFILE2_PRIVATE,
                                                   NET_FW_PROFILE2_DOMAIN};
-    for (size_t i = 0; i < base::size(kProfileTypes); ++i) {
+    for (size_t i = 0; i < std::size(kProfileTypes); ++i) {
       if ((profile_types & kProfileTypes[i]) != 0) {
         hr = firewall_policy_->get_FirewallEnabled(kProfileTypes[i], &enabled_);
         EXPECT_FALSE(FAILED(hr));

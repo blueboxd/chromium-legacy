@@ -66,6 +66,7 @@
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/policy/policy_constants.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
@@ -88,6 +89,7 @@ using ::testing::ElementsAre;
 namespace {
 
 constexpr int32_t kSettingsWindowId = 100;
+constexpr int32_t kHelpWindowId = 200;
 
 constexpr char kExampleUrl1[] = "https://examples1.com";
 constexpr char kExampleUrl2[] = "https://examples2.com";
@@ -194,20 +196,29 @@ void DeleteDeskTemplate(const base::GUID uuid) {
   run_loop.Run();
 }
 
-web_app::AppId CreateSettingsSystemWebApp(Profile* profile) {
-  web_app::WebAppProvider::GetForTest(profile)
-      ->system_web_app_manager()
-      .InstallSystemAppsForTesting();
-  web_app::AppId settings_app_id = *web_app::GetAppIdForSystemWebApp(
-      profile, web_app::SystemAppType::SETTINGS);
+web_app::AppId CreateSystemWebApp(Profile* profile,
+                                  web_app::SystemAppType app_type) {
+  DCHECK(app_type == web_app::SystemAppType::SETTINGS ||
+         app_type == web_app::SystemAppType::HELP);
+  web_app::AppId app_id = *web_app::GetAppIdForSystemWebApp(profile, app_type);
   apps::AppLaunchParams params(
-      settings_app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
+      app_id, apps::mojom::LaunchContainer::kLaunchContainerWindow,
       WindowOpenDisposition::NEW_WINDOW, apps::mojom::LaunchSource::kFromTest);
-  params.restore_id = kSettingsWindowId;
+  params.restore_id = app_type == web_app::SystemAppType::SETTINGS
+                          ? kSettingsWindowId
+                          : kHelpWindowId;
   apps::AppServiceProxyFactory::GetForProfile(profile)->LaunchAppWithParams(
       std::move(params));
   web_app::FlushSystemWebAppLaunchesForTesting(profile);
-  return settings_app_id;
+  return app_id;
+}
+
+web_app::AppId CreateSettingsSystemWebApp(Profile* profile) {
+  return CreateSystemWebApp(profile, web_app::SystemAppType::SETTINGS);
+}
+
+web_app::AppId CreateHelpSystemWebApp(Profile* profile) {
+  return CreateSystemWebApp(profile, web_app::SystemAppType::HELP);
 }
 
 void ClickButton(const views::Button* button) {
@@ -291,7 +302,7 @@ class MockDesksTemplatesAppLaunchHandler
 
   MOCK_METHOD(void,
               LaunchSystemWebAppOrChromeApp,
-              (apps::mojom::AppType,
+              (apps::AppType,
                const std::string&,
                const app_restore::RestoreData::LaunchList&),
               (override));
@@ -408,6 +419,9 @@ class DesksTemplatesClientTest : public extensions::PlatformAppBrowserTest {
   // extensions::PlatformAppBrowserTest:
   void SetUpOnMainThread() override {
     ::full_restore::SetActiveProfilePath(profile()->GetPath());
+    web_app::WebAppProvider::GetForTest(profile())
+        ->system_web_app_manager()
+        .InstallSystemAppsForTesting();
     extensions::PlatformAppBrowserTest::SetUpOnMainThread();
   }
 
@@ -766,7 +780,8 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
       /*active_url_index=*/browser_active_index);
 
   // Verify that the active tab is correct.
-  EXPECT_EQ(browser_active_index, browser->tab_strip_model()->active_index());
+  EXPECT_EQ(static_cast<int>(browser_active_index),
+            browser->tab_strip_model()->active_index());
 
   aura::Window* window = browser->window()->GetNativeWindow();
   const int32_t browser_window_id =
@@ -791,7 +806,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   Browser* new_browser = FindBrowser(browser_window_id);
   ASSERT_TRUE(new_browser);
   EXPECT_EQ(urls, GetURLsForBrowserWindow(new_browser));
-  EXPECT_EQ(browser_active_index,
+  EXPECT_EQ(static_cast<int>(browser_active_index),
             new_browser->tab_strip_model()->active_index());
 
   // Verify that the browser window has been launched on the new desk (desk B).
@@ -843,7 +858,8 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   // that browser session restore did not restore any windows/tabs.
   Browser* new_browser = FindBrowser(browser_window_id);
   ASSERT_TRUE(new_browser);
-  EXPECT_EQ(expected_tab_count, GetURLsForBrowserWindow(new_browser).size());
+  EXPECT_EQ(1u * expected_tab_count,
+            GetURLsForBrowserWindow(new_browser).size());
   EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
 }
 
@@ -1123,7 +1139,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, GetDeskTemplateJson) {
 // once the extension is deprecated.
 IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, SystemUIBasic) {
   auto* desk_model = DesksTemplatesClient::Get()->GetDeskModel();
-  ASSERT_EQ(0, desk_model->GetEntryCount());
+  ASSERT_EQ(0u, desk_model->GetEntryCount());
 
   ash::ToggleOverview();
   ash::WaitForOverviewEnterAnimation();
@@ -1144,7 +1160,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, SystemUIBasic) {
 
   ash::WaitForDesksTemplatesUI();
 
-  EXPECT_EQ(1, desk_model->GetEntryCount());
+  EXPECT_EQ(1u, desk_model->GetEntryCount());
 
   // Tests that since we have one template right now, so that the expanded state
   // desk button is shown, and the desk templates grid has one item.
@@ -1167,7 +1183,8 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, SystemUILaunchBrowser) {
       /*active_url_index=*/browser_active_index);
 
   // Verify that the active tab is correct.
-  EXPECT_EQ(browser_active_index, browser->tab_strip_model()->active_index());
+  EXPECT_EQ(static_cast<int>(browser_active_index),
+            browser->tab_strip_model()->active_index());
 
   aura::Window* window = browser->window()->GetNativeWindow();
   const int32_t browser_window_id =
@@ -1198,7 +1215,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest, SystemUILaunchBrowser) {
   Browser* new_browser = FindBrowser(browser_window_id);
   ASSERT_TRUE(new_browser);
   EXPECT_EQ(urls, GetURLsForBrowserWindow(new_browser));
-  EXPECT_EQ(browser_active_index,
+  EXPECT_EQ(static_cast<int>(browser_active_index),
             new_browser->tab_strip_model()->active_index());
 
   // Verify that the browser window has been launched on the new desk (desk B).
@@ -1298,12 +1315,19 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
 // expected.
 IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
                        SystemUILaunchTemplateWithSystemWebApp) {
-  // Create the settings app, which is a system web app.
+  // Create the settings and help apps, which are system web apps.
   CreateSettingsSystemWebApp(browser()->profile());
+  CreateHelpSystemWebApp(browser()->profile());
 
   aura::Window* settings_window = FindBrowserWindow(kSettingsWindowId);
+  aura::Window* help_window = FindBrowserWindow(kHelpWindowId);
   ASSERT_TRUE(settings_window);
+  ASSERT_TRUE(help_window);
   const std::u16string settings_title = settings_window->GetTitle();
+  const std::u16string help_title = help_window->GetTitle();
+
+  // Maximize the help app.
+  ash::WindowState::Get(help_window)->Maximize();
 
   // Enter overview and save the current desk as a template.
   ash::ToggleOverview();
@@ -1316,10 +1340,11 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   ash::ToggleOverview();
   ash::WaitForOverviewExitAnimation();
 
-  views::Widget* settings_widget =
-      views::Widget::GetWidgetForNativeWindow(settings_window);
-  settings_widget->CloseNow();
+  // Close both apps.
+  views::Widget::GetWidgetForNativeWindow(settings_window)->CloseNow();
+  views::Widget::GetWidgetForNativeWindow(help_window)->CloseNow();
   ASSERT_FALSE(FindBrowserWindow(kSettingsWindowId));
+  ASSERT_FALSE(FindBrowserWindow(kHelpWindowId));
 
   // Enter overview, head over to the desks templates grid and launch the
   // template.
@@ -1331,15 +1356,21 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
 
   for (auto* browser : *BrowserList::GetInstance()) {
     aura::Window* window = browser->window()->GetNativeWindow();
-    if (window->GetTitle() == settings_title) {
+    const std::u16string title = window->GetTitle();
+    if (title == settings_title)
       settings_window = window;
-      break;
-    }
+    if (title == help_title)
+      help_window = window;
   }
   ASSERT_TRUE(settings_window);
+  ASSERT_TRUE(help_window);
   EXPECT_EQ(ash::Shell::GetContainer(settings_window->GetRootWindow(),
                                      ash::kShellWindowId_DeskContainerB),
             settings_window->parent());
+  EXPECT_EQ(ash::Shell::GetContainer(help_window->GetRootWindow(),
+                                     ash::kShellWindowId_DeskContainerB),
+            help_window->parent());
+  EXPECT_TRUE(ash::WindowState::Get(help_window)->IsMaximized());
 }
 
 // Tests that launching a template that contains a system web app will move the
@@ -1348,20 +1379,24 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
                        SystemUILaunchTemplateWithSWAExisting) {
   Profile* profile = browser()->profile();
 
-  // Create the settings app, which is a system web app.
+  // Create the settings and help apps, which are system web apps.
   CreateSettingsSystemWebApp(profile);
+  CreateHelpSystemWebApp(profile);
 
   aura::Window* settings_window = FindBrowserWindow(kSettingsWindowId);
+  aura::Window* help_window = FindBrowserWindow(kHelpWindowId);
   ASSERT_TRUE(settings_window);
-  EXPECT_EQ(2u, BrowserList::GetInstance()->size());
+  ASSERT_TRUE(help_window);
+  EXPECT_EQ(3u, BrowserList::GetInstance()->size());
 
-  // Give the settings app a known position.
+  // Give the settings app a known position, and maximize the help app.
   const gfx::Rect settings_bounds(100, 100, 600, 400);
   settings_window->SetBounds(settings_bounds);
+  ash::WindowState::Get(help_window)->Maximize();
   // Focus the browser so that the settings window is stacked at the bottom.
   browser()->window()->GetNativeWindow()->Focus();
   ASSERT_THAT(settings_window->parent()->children(),
-              ElementsAre(settings_window, _));
+              ElementsAre(settings_window, help_window, _));
 
   // Enter overview and save the current desk as a template.
   ash::ToggleOverview();
@@ -1376,6 +1411,9 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   ash::WaitForOverviewExitAnimation();
   settings_window->SetBounds(gfx::Rect(150, 150, 650, 500));
   settings_window->Focus();
+
+  // Restore the help window so we can later verify that it remaximizes.
+  ash::WindowState::Get(help_window)->Restore();
 
   // Enter overview, head over to the desks templates grid and launch the
   // template.
@@ -1395,16 +1433,20 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   ash::DesksController* desks_controller = ash::DesksController::Get();
   ASSERT_EQ(1, desks_controller->GetActiveDeskIndex());
 
-  // We launch a new browser window, but not a new settings app. Verify that the
-  // window has been moved to the right place and stacked at the bottom.
-  EXPECT_EQ(3u, BrowserList::GetInstance()->size());
+  // We launch a new browser window, but not a new settings or help app. Verify
+  // that the settings window has been moved to the right place and stacked at
+  // the bottom. Verify that the help window is maximized.
+  EXPECT_EQ(4u, BrowserList::GetInstance()->size());
   EXPECT_TRUE(desks_controller->BelongsToActiveDesk(settings_window));
+  EXPECT_TRUE(desks_controller->BelongsToActiveDesk(help_window));
   EXPECT_EQ(settings_bounds, settings_window->bounds());
+  EXPECT_TRUE(ash::WindowState::Get(help_window)->IsMaximized());
 
   // TODO(crbug.com/1281393): Verify that the element order is correct.
 
-  // Tests that there is no clipping on the settings window.
+  // Tests that there is no clipping on the either window.
   EXPECT_EQ(gfx::Rect(), settings_window->layer()->clip_rect());
+  EXPECT_EQ(gfx::Rect(), help_window->layer()->clip_rect());
 }
 
 // Tests that browser windows created from a template have the correct bounds
@@ -1743,11 +1785,19 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
 
   ash::ToggleOverview();
   ash::WaitForOverviewEnterAnimation();
+  auto* desks_controller = ash::DesksController::Get();
+  auto active_desk_index = desks_controller->GetActiveDeskIndex();
 
   // Save 3 templates.
   const int saves = 3;
   for (int i = 0; i < saves; i++) {
     ClickSaveDeskAsTemplateButton();
+
+    // Change desk name to avoid duplication on template name. Having duplicate
+    // names invokes a workflow that involves showing and accepting the replace
+    // dialog, which is unnecessary for this test.
+    desks_controller->desks()[active_desk_index]->SetName(
+        base::UTF8ToUTF16(base::NumberToString(i)), true);
 
     // Exit and renenter overview to save the next template. Once we are viewing
     // the grid we can't go back to regular overview unless we exit overview or
@@ -1927,6 +1977,28 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
   histogram_tester.ExpectTotalCount(kLaunchFromTemplateHistogramName, launches);
 }
 
+// Tests that launching a desk template records the appropriate performance
+// metric.
+IN_PROC_BROWSER_TEST_F(DesksTemplatesClientTest,
+                       LaunchTemplateRecordsLoadTimeMetric) {
+  base::HistogramTester histogram_tester;
+
+  // Create the settings app, which is a system web app.
+  CreateSettingsSystemWebApp(browser()->profile());
+
+  CreateBrowser({GURL(kExampleUrl1), GURL(kExampleUrl2)});
+  CreateBrowser({GURL(kExampleUrl1), GURL(kExampleUrl2), GURL(kExampleUrl3)});
+
+  // Save and launch a template.
+  ash::ToggleOverview();
+  ash::WaitForOverviewEnterAnimation();
+  ClickSaveDeskAsTemplateButton();
+  ClickFirstTemplateItem();
+
+  // Verify that the metric was recorded.
+  histogram_tester.ExpectTotalCount("Ash.DeskTemplate.TimeToLoadTemplate", 1ul);
+}
+
 class DesksTemplatesClientArcTest : public InProcessBrowserTest {
  public:
   DesksTemplatesClientArcTest() {
@@ -1966,7 +2038,7 @@ class DesksTemplatesClientArcTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(DesksTemplatesClientArcTest,
                        SystemUILaunchTemplateWithArcApp) {
   auto* desk_model = DesksTemplatesClient::Get()->GetDeskModel();
-  ASSERT_EQ(0, desk_model->GetEntryCount());
+  ASSERT_EQ(0u, desk_model->GetEntryCount());
 
   constexpr char kTestAppPackage[] = "test.arc.app.package";
   arc_helper()->InstallTestApps(kTestAppPackage, /*multi_app=*/false);
@@ -1993,7 +2065,7 @@ IN_PROC_BROWSER_TEST_F(DesksTemplatesClientArcTest,
   ash::WaitForOverviewEnterAnimation();
 
   ClickSaveDeskAsTemplateButton();
-  ASSERT_EQ(1, desk_model->GetEntryCount());
+  ASSERT_EQ(1u, desk_model->GetEntryCount());
 
   // Exit overview and close the Arc window. We'll need to verify if it
   // reopens later.

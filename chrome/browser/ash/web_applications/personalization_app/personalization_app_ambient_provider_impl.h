@@ -5,11 +5,13 @@
 #ifndef CHROME_BROWSER_ASH_WEB_APPLICATIONS_PERSONALIZATION_APP_PERSONALIZATION_APP_AMBIENT_PROVIDER_IMPL_H_
 #define CHROME_BROWSER_ASH_WEB_APPLICATIONS_PERSONALIZATION_APP_PERSONALIZATION_APP_AMBIENT_PROVIDER_IMPL_H_
 
+#include "ash/public/cpp/ambient/ambient_animation_theme.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/personalization_app_ambient_provider.h"
 #include "base/memory/weak_ptr.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "content/public/browser/web_ui.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -46,23 +48,28 @@ class PersonalizationAppAmbientProviderImpl
       mojo::PendingRemote<ash::personalization_app::mojom::AmbientObserver>
           observer) override;
   void SetAmbientModeEnabled(bool enabled) override;
+  void SetAnimationTheme(ash::AmbientAnimationTheme animation_theme) override;
   void SetTopicSource(ash::AmbientModeTopicSource topic_source) override;
-
-  // TODO(b/216307771): Will need to add observer for this.
-  void OnAmbientModeEnabledChanged(bool ambient_mode_enabled);
+  void SetTemperatureUnit(
+      ash::AmbientModeTemperatureUnit temperature_unit) override;
+  void SetAlbumSelected(const std::string& id,
+                        ash::AmbientModeTopicSource topic_source,
+                        bool selected) override;
 
   // Notify WebUI the latest values.
+  void OnAmbientModeEnabledChanged();
+  void OnAnimationThemeChanged();
   void OnTemperatureUnitChanged();
   void OnTopicSourceChanged();
   void OnAlbumsChanged();
-  void OnAlbumPreviewChanged(const std::string& album_id,
-                             std::string&& png_data_url);
   void OnRecentHighlightsPreviewsChanged();
 
  private:
   friend class PersonalizationAppAmbientProviderImplTest;
 
   bool IsAmbientModeEnabled();
+
+  ash::AmbientAnimationTheme GetCurrentAnimationTheme();
 
   // Update the local `settings_` to server.
   void UpdateSettings();
@@ -113,6 +120,8 @@ class PersonalizationAppAmbientProviderImpl
       ambient_observer_remote_;
 
   raw_ptr<Profile> const profile_ = nullptr;
+
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Backoff retries for `FetchSettingsAndAlbums()`.
   net::BackoffEntry fetch_settings_retry_backoff_;

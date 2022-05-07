@@ -6,6 +6,8 @@
 
 namespace apps {
 
+APP_ENUM_TO_STRING(RunOnOsLoginMode, kUnknown, kNotRun, kWindowed)
+
 RunOnOsLogin::RunOnOsLogin() = default;
 
 RunOnOsLogin::RunOnOsLogin(RunOnOsLoginMode login_mode, bool is_managed)
@@ -15,6 +17,10 @@ RunOnOsLogin::~RunOnOsLogin() = default;
 
 bool RunOnOsLogin::operator==(const RunOnOsLogin& other) const {
   return login_mode == other.login_mode && is_managed == other.is_managed;
+}
+
+bool RunOnOsLogin::operator!=(const RunOnOsLogin& other) const {
+  return !(*this == other);
 }
 
 apps::mojom::RunOnOsLoginPtr ConvertRunOnOsLoginToMojomRunOnOsLogin(
@@ -27,7 +33,7 @@ apps::mojom::RunOnOsLoginPtr ConvertRunOnOsLoginToMojomRunOnOsLogin(
   return run_on_os_login_mojom;
 }
 
-std::unique_ptr<RunOnOsLogin> ConvertMojomRunOnOsLoginToRunOnOsLogin(
+RunOnOsLoginPtr ConvertMojomRunOnOsLoginToRunOnOsLogin(
     const apps::mojom::RunOnOsLoginPtr& run_on_os_login) {
   DCHECK(run_on_os_login);
   return std::make_unique<RunOnOsLogin>(

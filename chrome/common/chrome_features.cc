@@ -67,6 +67,11 @@ const base::Feature kAppManagementAppDetails{"AppManagementAppDetails",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+const base::Feature kAppProvisioningStatic{"AppProvisioningStatic",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
 #if !BUILDFLAG(IS_ANDROID)
 // App Service related flags. See components/services/app_service/README.md.
 const base::Feature kAppServiceLoadIconWithoutMojom{
@@ -141,14 +146,6 @@ const base::Feature kBorealis{"Borealis", base::FEATURE_DISABLED_BY_DEFAULT};
 // Enables change picture video mode.
 const base::Feature kChangePictureVideoMode{"ChangePictureVideoMode",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-// Controls whether Chrome Apps are supported. See https://crbug.com/1221251.
-// If the feature is disabled, Chrome Apps continue to work. If enabled, Chrome
-// Apps will not launch and will be marked in the UI as deprecated.
-const base::Feature kChromeAppsDeprecation{"ChromeAppsDeprecation",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
 
 const base::Feature kClientStorageAccessContextAuditing{
     "ClientStorageAccessContextAuditing", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -324,6 +321,11 @@ const base::Feature kDesktopPWAsWebBundles{"DesktopPWAsWebBundles",
 // Serves web app settings at chrome://app-settings/<app-id>.
 const base::Feature kDesktopPWAsWebAppSettingsPage{
     "DesktopPWAsWebAppSettingsPage", base::FEATURE_ENABLED_BY_DEFAULT};
+// Controls whether Chrome Apps are supported. See https://crbug.com/1221251.
+// If the feature is disabled, Chrome Apps continue to work. If enabled, Chrome
+// Apps will not launch and will be marked in the UI as deprecated.
+const base::Feature kChromeAppsDeprecation{"ChromeAppsDeprecation",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
 // Enable DNS over HTTPS (DoH).
@@ -336,12 +338,6 @@ const base::Feature kDnsOverHttps {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-// Provides a mechanism to remove providers from the dropdown list in the
-// settings UI. Separate multiple provider ids with commas. See the
-// mapping in net/dns/dns_util.cc for provider ids.
-const base::FeatureParam<std::string> kDnsOverHttpsDisabledProvidersParam{
-    &kDnsOverHttps, "DisabledProviders", ""};
 
 // Set whether fallback to insecure DNS is allowed by default. This setting may
 // be overridden for individual transactions.
@@ -623,20 +619,6 @@ const base::Feature kIncognitoBrandConsistencyForAndroid{
 const base::Feature kIncognitoNtpRevamp{"IncognitoNtpRevamp",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_FUCHSIA)
-// When enabled, removes any theme or background customization done by the user
-// on the Incognito UI.
-const base::Feature kIncognitoBrandConsistencyForDesktop{
-    "IncognitoBrandConsistencyForDesktop", base::FEATURE_ENABLED_BY_DEFAULT};
-
-// When enabled, clear browsing data option would be enabled in Incognito which
-// upon clicking would show a dialog to close all Incognito windows.
-const base::Feature kIncognitoClearBrowsingDataDialogForDesktop{
-    "IncognitoClearBrowsingDataDialogForDesktop",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 // When enabled, removes any entry points to the history UI from Incognito mode.
 const base::Feature kUpdateHistoryEntryPointsInIncognito{
     "UpdateHistoryEntryPointsInIncognito", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -848,6 +830,14 @@ const base::Feature kPrivacyGuide{"PrivacyGuide",
 const base::Feature kPushMessagingBackgroundMode{
     "PushMessagingBackgroundMode", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Shows a confirmation dialog when updates to a PWAs icon has been detected.
+const base::Feature kPwaUpdateDialogForIcon{"PwaUpdateDialogForIcon",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Shows a confirmation dialog when updates to a PWAs name has been detected.
+const base::Feature kPwaUpdateDialogForName{"PwaUpdateDialogForName",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables using quiet prompts for notification permission requests.
 const base::Feature kQuietNotificationPrompts{"QuietNotificationPrompts",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
@@ -924,9 +914,6 @@ const base::FeatureParam<base::TimeDelta> kSCTLogMaxIngestionRandomDelay{
     base::Hours(1),
 };
 
-const base::Feature kSearchHistoryLink{"SearchHistoryLink",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Controls whether the user is prompted when sites request attestation.
 const base::Feature kSecurityKeyAttestationPrompt{
     "SecurityKeyAttestationPrompt", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -934,13 +921,6 @@ const base::Feature kSecurityKeyAttestationPrompt{
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 const base::Feature kSharesheetCopyToClipboard{
     "SharesheetCopyToClipboard", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
-#if BUILDFLAG(IS_ANDROID)
-const base::Feature kShareUsageRanking{"ShareUsageRanking",
-                                       base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kShareUsageRankingFixedMore{
-    "ShareUsageRankingFixedMore", base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 #if BUILDFLAG(IS_MAC)

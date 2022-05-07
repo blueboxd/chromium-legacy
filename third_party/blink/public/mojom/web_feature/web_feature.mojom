@@ -3171,7 +3171,7 @@ enum WebFeature {
   kXRImageTracking = 3862,
   kXRSessionGetTrackedImageScores = 3863,
   kXRFrameGetImageTrackingResults = 3864,
-  kOpenWebDatabaseThirdPartyContext = 3865,
+  kOBSOLETE_OpenWebDatabaseThirdPartyContext = 3865,
   kPointerId = 3866,
   kTransform3dScene = 3867,
   kPrefersColorSchemeMediaFeature = 3868,
@@ -3194,7 +3194,7 @@ enum WebFeature {
   kRTCPeerConnectionOfferAllowExtmapMixedFalse = 3885,
   // The items above roughly this point are available in the M91 branch.
 
-  kNewCanvas2DAPI = 3886,
+  kOBSOLETE_NewCanvas2DAPI = 3886,
   kOBSOLETE_ServiceWorkerSubresourceFilterBypassedRequest = 3887,
   kWebGPU = 3888,
   kCSSFilterColorMatrix = 3889,
@@ -3281,7 +3281,7 @@ enum WebFeature {
   kEarlyHintsPreload = 3967,
   kClientHintsUAReduced = 3968,
   kSpeculationRulesPrerender = 3969,
-  kExecCommandWithTrustedTypes = 3970,
+  kOBSOLETE_ExecCommandWithTrustedTypes = 3970,
   kCSSSelectorPseudoHasInSnapshotProfile = 3971,
   kCSSSelectorPseudoHasInLiveProfile = 3972,
   kNavigatorPdfViewerEnabled = 3973,
@@ -3298,7 +3298,7 @@ enum WebFeature {
   kUserDataFieldFilledPreviously = 3982,
   kTableCollapsedBorderDifferentToVisual = 3983,
   kHighlightAPIRegisterHighlight = 3984,
-  kReadOrWriteWebDatabaseThirdPartyContext = 3985,
+  kOBSOLETE_ReadOrWriteWebDatabaseThirdPartyContext = 3985,
   kOBSOLETE_FontSelectorCSSFontFamilyWebKitPrefixPictograph = 3986,
   kOBSOLETE_FontSelectorCSSFontFamilyWebKitPrefixStandard = 3987,
   kFontSelectorCSSFontFamilyWebKitPrefixBody = 3988,
@@ -3489,11 +3489,17 @@ enum WebFeature {
   kWrongBaselineOfMultiLineButtonWithNonSpace = 4168,
   kBlobStoreAccessAcrossTopLevelSite = 4169,
   kBlobStoreAccessUnknownTopLevelSite = 4170,
+  kCrossOriginAccessBasedOnDocumentDomain = 4171,
   kCookieWithTruncatingChar = 4172,
+  kVideoTrackGenerator = 4173,
   kMediaCapabilitiesDecodingInfoWebrtc = 4174,
   kMediaCapabilitiesEncodingInfoWebrtc = 4175,
   kUsbDeviceForget = 4176,
   kPartitionedCookies = 4177,
+  kSecureContextIncorrectForSharedWorker = 4178,
+  kV8FunctionPrototypeArguments = 4179,
+  kV8FunctionPrototypeCaller = 4180,
+  kBluetoothDeviceForget = 4181,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

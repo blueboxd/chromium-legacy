@@ -618,7 +618,6 @@
 <translation id="5170206230005240598">เปิดใช้คำบรรยายอักษรเบรลล์แล้ว</translation>
 <translation id="5183440668879371625">เบรลล์บรรทัดก่อนหน้า</translation>
 <translation id="5189244881767082992">บรรทัด</translation>
-<translation id="5234747236692380506">พิมพ์ <ph name="TEXT" /></translation>
 <translation id="5263034204789987535">สีเหลืองคอร์นซิลค์</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">สิ้นสุด</translation>
@@ -794,6 +793,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{เครื่องหมายทวิภาค}other{# เครื่องหมายทวิภาค}}</translation>
 <translation id="6444046323172968959">ช่องโต้ตอบการแจ้งเตือน</translation>
 <translation id="6452403590345320472">สารบัญ</translation>
+<translation id="6457542714329819968">พิมพ์</translation>
 <translation id="6468049171101508116">ปุ่มถัดไป</translation>
 <translation id="646954774886932461">ดัชนี</translation>
 <translation id="6475604559827479857">สีสำหรับการไฮไลต์คำ:</translation>

@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">"<ph name="FILE_NAME" />" yeniden adlandırılamıyor. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">Dvorak klavye ile İngilizce (ABD)</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - Ana Makine</translation>
+<translation id="1521655867290435174">Google E-Tablolar</translation>
 <translation id="1538729222189715449">Linux dosyaları açılıyor...</translation>
 <translation id="1547964879613821194">Kanada İngilizcesi</translation>
 <translation id="1556189134700913550">Tümüne uygula</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">Kimlik doğrulama sertifikası ağ tarafından reddedildi</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" /> uzantısına ekle</translation>
 <translation id="255937426064304553">ABD uluslararası</translation>
-<translation id="2562685439590298522">Google Dokümanlar</translation>
 <translation id="2563185590376525700">Kurbağa</translation>
 <translation id="2578394532502990878">Tamilce Fonetik</translation>
 <translation id="2579959351793446050">Oriya</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">ABD genişletilmiş</translation>
 <translation id="290843123675549676">Marathi</translation>
 <translation id="2923240520113693977">Estonya Dili</translation>
-<translation id="2925966894897775835">E-Tablolar</translation>
 <translation id="2938685643439809023">Moğolca</translation>
-<translation id="2943400156390503548">Slaytlar</translation>
 <translation id="2943503720238418293">Daha kısa bir ad kullanın</translation>
 <translation id="2949781154072577687"><ph name="DRIVE_NAME" /> biçimlendiriliyor...</translation>
 <translation id="2951236788251446349">Denizanası</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, Yöneticiniz tarafından Yönetiliyor, Ayrıntılar</translation>
 <translation id="4387004326333427325">Kimlik doğrulama sertifikası uzaktan reddedildi</translation>
 <translation id="4394214039309501350">Harici bağlantı</translation>
+<translation id="4401287888955153199">Tümünü çıkar</translation>
 <translation id="4418686080762064601">Dosyalarınız için kısayol oluşturun</translation>
 <translation id="4425149324548788773">Drive'ım</translation>
 <translation id="4439427728133035643">Ağ <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, %<ph name="SIGNAL_STRENGTH" /> Sinyal Gücü, Bağlan</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">Dosyaları çevrimdışı kullanıma sunma</translation>
 <translation id="4658782175094886150">Karda bir kişi</translation>
 <translation id="4669606053856530811">"<ph name="SOURCE_NAME" />" kaynağının üyeleri, bu öğeler kendileriyle paylaşılmadığı sürece erişimi kaybedecektir.</translation>
+<translation id="467809019005607715">Google Slaytlar</translation>
 <translation id="4690246192099372265">İsveççe</translation>
 <translation id="4693155481716051732">Suşi</translation>
 <translation id="4694604912444486114">Maymun</translation>
@@ -658,6 +658,7 @@
 <translation id="6732801395666424405">Sertifikalar yüklenmedi</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">1 klasör seçildi</translation>
+<translation id="6755827872271341378">ChromeOS Flex cihaz</translation>
 <translation id="6790428901817661496">Oynat</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6806699711453372963">Linux paylaşımını yönet</translation>
@@ -735,6 +736,7 @@
 <translation id="7343393116438664539">Vietnamca Teleks</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> öğe kopyalanıyor.</translation>
 <translation id="7375951387215729722">Dosya <ph name="COLUMN_NAME" /> sütununa göre azalan düzende sıralandı.</translation>
+<translation id="7402503521691663770">ChromeOS Flex cihazlar</translation>
 <translation id="7408870451288633753">Çekçe</translation>
 <translation id="7417453074306512035">Etiyopya dili klavye</translation>
 <translation id="7417705661718309329">Google harita</translation>
@@ -950,6 +952,7 @@
 <translation id="9172592259078059678">Guceratça Harf Çevirisi</translation>
 <translation id="9173120999827300720">Uluslararası klavye ile İngilizce (ABD)</translation>
 <translation id="9174050671906956834">Çöp kutusundaki öğeler 30 gün sonunda tamamıyla silinir.</translation>
+<translation id="9183302530794969518">Google Dokümanlar</translation>
 <translation id="9189836632794948435">Kazakça</translation>
 <translation id="9213073329713032541">Yükleme işlemi başarıyla başlatıldı.</translation>
 <translation id="9219103736887031265">Resimler</translation>

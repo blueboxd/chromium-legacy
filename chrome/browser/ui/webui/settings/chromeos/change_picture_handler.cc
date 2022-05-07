@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
@@ -138,7 +137,7 @@ void ChangePictureHandler::SendDefaultImages() {
   FireWebUIListener("default-images-changed", result);
 }
 
-void ChangePictureHandler::HandleChooseFile(base::Value::ConstListView args) {
+void ChangePictureHandler::HandleChooseFile(const base::Value::List& args) {
   DCHECK(args.empty());
   user_image_file_selector_ =
       std::make_unique<ash::UserImageFileSelector>(web_ui());
@@ -149,13 +148,13 @@ void ChangePictureHandler::HandleChooseFile(base::Value::ConstListView args) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ChangePictureHandler::HandleDiscardPhoto(base::Value::ConstListView args) {
+void ChangePictureHandler::HandleDiscardPhoto(const base::Value::List& args) {
   DCHECK(args.empty());
   AccessibilityManager::Get()->PlayEarcon(
       Sound::kObjectDelete, PlaySoundOption::kOnlyIfSpokenFeedbackEnabled);
 }
 
-void ChangePictureHandler::HandlePhotoTaken(base::Value::ConstListView args) {
+void ChangePictureHandler::HandlePhotoTaken(const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   AccessibilityManager::Get()->PlayEarcon(
       Sound::kCameraSnap, PlaySoundOption::kOnlyIfSpokenFeedbackEnabled);
@@ -168,7 +167,7 @@ void ChangePictureHandler::HandlePhotoTaken(base::Value::ConstListView args) {
   std::string raw_data;
   base::StringPiece url(image_url);
   const char kDataUrlPrefix[] = "data:image/png;base64,";
-  const size_t kDataUrlPrefixLength = base::size(kDataUrlPrefix) - 1;
+  const size_t kDataUrlPrefixLength = std::size(kDataUrlPrefix) - 1;
   if (!base::StartsWith(url, kDataUrlPrefix) ||
       !base::Base64Decode(url.substr(kDataUrlPrefixLength), &raw_data)) {
     LOG(WARNING) << "Invalid image URL";
@@ -185,7 +184,7 @@ void ChangePictureHandler::HandlePhotoTaken(base::Value::ConstListView args) {
 }
 
 void ChangePictureHandler::HandlePageInitialized(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK(args.empty());
 
   AllowJavascript();
@@ -282,7 +281,7 @@ void ChangePictureHandler::SendOldImage(std::string&& image_url) {
   FireWebUIListener("old-image-changed", base::Value(image_url));
 }
 
-void ChangePictureHandler::HandleSelectImage(base::Value::ConstListView args) {
+void ChangePictureHandler::HandleSelectImage(const base::Value::List& args) {
   if (args.size() != 2 || !args[0].is_string() || !args[1].is_string()) {
     NOTREACHED();
     return;
@@ -347,7 +346,7 @@ void ChangePictureHandler::HandleSelectImage(base::Value::ConstListView args) {
 }
 
 void ChangePictureHandler::HandleRequestSelectedImage(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   SendSelectedImage();
 }
 

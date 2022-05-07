@@ -45,7 +45,7 @@ namespace {
 
 const char* const kTypeNames[] = {"null",   "boolean", "integer",    "double",
                                   "string", "binary",  "dictionary", "list"};
-static_assert(base::size(kTypeNames) ==
+static_assert(std::size(kTypeNames) ==
                   static_cast<size_t>(Value::Type::LIST) + 1,
               "kTypeNames Has Wrong Size");
 
@@ -130,6 +130,12 @@ class PathSplitter {
   StringPiece path_;
   size_t pos_ = 0;
 };
+
+std::string DebugStringImpl(ValueView value) {
+  std::string json;
+  JSONWriter::WriteWithOptions(value, JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+  return json;
+}
 
 }  // namespace
 
@@ -295,7 +301,7 @@ Value::~Value() = default;
 // static
 const char* Value::GetTypeName(Value::Type type) {
   DCHECK_GE(static_cast<int>(type), 0);
-  DCHECK_LT(static_cast<size_t>(type), base::size(kTypeNames));
+  DCHECK_LT(static_cast<size_t>(type), std::size(kTypeNames));
   return kTypeNames[static_cast<size_t>(type)];
 }
 
@@ -776,6 +782,10 @@ absl::optional<Value> Value::Dict::ExtractByDottedPath(StringPiece path) {
   return extracted;
 }
 
+std::string Value::Dict::DebugString() const {
+  return DebugStringImpl(*this);
+}
+
 Value::Dict::Dict(
     const flat_map<std::string, std::unique_ptr<Value>>& storage) {
   storage_.reserve(storage.size());
@@ -855,6 +865,30 @@ Value::List::const_iterator Value::List::cend() const {
   return const_iterator(to_address(storage_.cbegin()),
                         to_address(storage_.cend()),
                         to_address(storage_.cend()));
+}
+
+const Value& Value::List::front() const {
+  CHECK(!storage_.empty());
+  return storage_.front();
+}
+
+Value& Value::List::front() {
+  CHECK(!storage_.empty());
+  return storage_.front();
+}
+
+const Value& Value::List::back() const {
+  CHECK(!storage_.empty());
+  return storage_.back();
+}
+
+Value& Value::List::back() {
+  CHECK(!storage_.empty());
+  return storage_.back();
+}
+
+void Value::List::reserve(size_t capacity) {
+  storage_.reserve(capacity);
 }
 
 const Value& Value::List::operator[](size_t index) const {
@@ -944,6 +978,10 @@ Value::List::iterator Value::List::Insert(const_iterator pos, Value&& value) {
 
 size_t Value::List::EraseValue(const Value& value) {
   return Erase(storage_, value);
+}
+
+std::string Value::List::DebugString() const {
+  return DebugStringImpl(*this);
 }
 
 Value::List::List(const std::vector<Value>& storage) {
@@ -1447,9 +1485,7 @@ size_t Value::EstimateMemoryUsage() const {
 }
 
 std::string Value::DebugString() const {
-  std::string json;
-  JSONWriter::WriteWithOptions(*this, JSONWriter::OPTIONS_PRETTY_PRINT, &json);
-  return json;
+  return DebugStringImpl(*this);
 }
 
 #if BUILDFLAG(ENABLE_BASE_TRACING)
@@ -1798,22 +1834,17 @@ std::ostream& operator<<(std::ostream& out, const Value& value) {
   return out << value.DebugString();
 }
 
-// TODO(dcheng): Add DebugString() to Value::Dict and Value::List?
 std::ostream& operator<<(std::ostream& out, const Value::Dict& dict) {
-  std::string json;
-  JSONWriter::WriteWithOptions(dict, JSONWriter::OPTIONS_PRETTY_PRINT, &json);
-  return out << json;
+  return out << dict.DebugString();
 }
 
 std::ostream& operator<<(std::ostream& out, const Value::List& list) {
-  std::string json;
-  JSONWriter::WriteWithOptions(list, JSONWriter::OPTIONS_PRETTY_PRINT, &json);
-  return out << json;
+  return out << list.DebugString();
 }
 
 std::ostream& operator<<(std::ostream& out, const Value::Type& type) {
   if (static_cast<int>(type) < 0 ||
-      static_cast<size_t>(type) >= base::size(kTypeNames))
+      static_cast<size_t>(type) >= std::size(kTypeNames))
     return out << "Invalid Type (index = " << static_cast<int>(type) << ")";
   return out << Value::GetTypeName(type);
 }

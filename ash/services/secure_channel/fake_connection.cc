@@ -15,9 +15,7 @@
 #include "base/callback.h"
 #include "base/containers/cxx20_erase.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 FakeConnection::FakeConnection(multidevice::RemoteDeviceRef remote_device)
     : FakeConnection(remote_device, /* should_auto_connect */ true) {}
@@ -114,6 +112,4 @@ std::unique_ptr<WireMessage> FakeConnection::DeserializeWireMessage(
   return std::make_unique<WireMessage>(pending_payload_, pending_feature_);
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

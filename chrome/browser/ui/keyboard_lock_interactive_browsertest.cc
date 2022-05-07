@@ -405,8 +405,16 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
   ASSERT_EQ(initial_tab_count + 1, GetTabCount());
 }
 
+// TODO(crbug.com/1305388): Flaky on mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_CancelActiveKeyboardLockBeforeFullscreen \
+  DISABLED_CancelActiveKeyboardLockBeforeFullscreen
+#else
+#define MAYBE_CancelActiveKeyboardLockBeforeFullscreen \
+  CancelActiveKeyboardLockBeforeFullscreen
+#endif
 IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
-                       CancelActiveKeyboardLockBeforeFullscreen) {
+                       MAYBE_CancelActiveKeyboardLockBeforeFullscreen) {
   ASSERT_NO_FATAL_FAILURE(StartFullscreenLockPage());
   ASSERT_TRUE(DisablePreventDefaultOnTestPage());
 
@@ -433,8 +441,16 @@ IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
   ASSERT_EQ(initial_tab_count + 1, GetTabCount());
 }
 
+#if BUILDFLAG(IS_MAC)
+// Flaky on mac bots: http://crbug.com/1305013
+#define MAYBE_PressEscapeExitsFullscreenWhenEscNotLocked \
+  DISABLED_PressEscapeExitsFullscreenWhenEscNotLocked
+#else
+#define MAYBE_PressEscapeExitsFullscreenWhenEscNotLocked \
+  PressEscapeExitsFullscreenWhenEscNotLocked
+#endif
 IN_PROC_BROWSER_TEST_F(KeyboardLockInteractiveBrowserTest,
-                       PressEscapeExitsFullscreenWhenEscNotLocked) {
+                       MAYBE_PressEscapeExitsFullscreenWhenEscNotLocked) {
   ASSERT_NO_FATAL_FAILURE(StartFullscreenLockPage());
   // Do not disable prevent default behavior.  This ensures a webpage cannot
   // prevent the user from exiting fullscreen.

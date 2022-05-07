@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "ash/components/proximity_auth/proximity_auth_pref_names.h"
+#include "ash/services/multidevice_setup/public/cpp/prefs.h"
 #include "base/json/json_reader.h"
-#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -63,12 +63,10 @@ class ProximityAuthLocalStatePrefManagerTest : public testing::Test {
     user1_prefs.SetBoolKey(
         proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
         kIsChromeOSLoginEnabled1);
-    user1_prefs.SetBoolKey(
-        chromeos::multidevice_setup::kSmartLockAllowedPrefName,
-        kIsEasyUnlockAllowed1);
-    user1_prefs.SetBoolKey(
-        chromeos::multidevice_setup::kSmartLockEnabledPrefName,
-        kIsEasyUnlockEnabled1);
+    user1_prefs.SetBoolKey(ash::multidevice_setup::kSmartLockAllowedPrefName,
+                           kIsEasyUnlockAllowed1);
+    user1_prefs.SetBoolKey(ash::multidevice_setup::kSmartLockEnabledPrefName,
+                           kIsEasyUnlockEnabled1);
     user1_prefs.SetBoolKey(prefs::kSmartLockEligiblePrefName,
                            kIsSmartLockEligible1);
     DictionaryPrefUpdate update1(&local_state_,
@@ -79,12 +77,10 @@ class ProximityAuthLocalStatePrefManagerTest : public testing::Test {
     user2_prefs.SetBoolKey(
         proximity_auth::prefs::kProximityAuthIsChromeOSLoginEnabled,
         kIsChromeOSLoginEnabled2);
-    user2_prefs.SetBoolKey(
-        chromeos::multidevice_setup::kSmartLockAllowedPrefName,
-        kIsEasyUnlockAllowed2);
-    user2_prefs.SetBoolKey(
-        chromeos::multidevice_setup::kSmartLockEnabledPrefName,
-        kIsEasyUnlockEnabled2);
+    user2_prefs.SetBoolKey(ash::multidevice_setup::kSmartLockAllowedPrefName,
+                           kIsEasyUnlockAllowed2);
+    user2_prefs.SetBoolKey(ash::multidevice_setup::kSmartLockEnabledPrefName,
+                           kIsEasyUnlockEnabled2);
     user2_prefs.SetBoolKey(prefs::kSmartLockEligiblePrefName,
                            kIsSmartLockEligible2);
     DictionaryPrefUpdate update2(&local_state_,

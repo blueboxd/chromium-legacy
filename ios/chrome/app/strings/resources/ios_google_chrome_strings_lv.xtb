@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Uzlabojiet pārlūku Chrome, uzņēmumam Google sūtot lietojuma statistiku un avāriju pārskatus.</translation>
 <translation id="417201473131094001">Netiek atbalstīta pārlūkā Chrome Canary.</translation>
 <translation id="4214277427269650960">Pierakstieties šajā vietnē un pārlūkā Chrome. Sinhronizāciju varat ieslēgt vēlāk.</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> izmantoja pārlūku Chrome un neizdzēsa grāmatzīmes, paroles un citus iestatījumus šajā ierīcē.</translation>
 <translation id="424864128008805179">Vai izrakstīties no pārlūka Chrome?</translation>
 <translation id="4249068189593983585">Chrome padoms. Lai iegūtu vairāk ciļņu iespēju, rīkjoslā, kas atrodas ekrāna apakšdaļā vai augšdaļā, pieskarieties pogai Rādīt cilnes un turiet to.</translation>
 <translation id="4523886039239821078">Daži papildinājumi var izraisīt pārlūka Chrome avarēšanu. Lūdzu, atinstalējiet šos papildinājumus:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Pārlūkprogrammā Chrome nevarēja pārbaudīt visas paroles. Mēģiniet vēlreiz rīt vai <ph name="BEGIN_LINK" />pārbaudiet paroles savā Google kontā<ph name="END_LINK" />.</translation>
 <translation id="484033449593719797">Netiek atbalstīta pārlūkā Chrome Beta.</translation>
 <translation id="5030102366287574140">Chrome var palīdzēt aizsargāt jūs pret datu pārkāpumiem, nedrošām vietnēm un citiem apdraudējumiem.</translation>
+<translation id="5108659628347594808">Uzlabojiet pārlūku Chrome</translation>
 <translation id="5119391094379141756">Atlasiet Chrome</translation>
 <translation id="5162467219239570114">Pārlūka Chrome versija ir novecojusi. Ja veikalā <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> nav pieejami atjauninājumi, iespējams, jūsu ierīcē vairs netiek atbalstītas pārlūka Chrome jaunās versijas.</translation>
 <translation id="5389212809648216794">Google Chrome pašlaik nevar izmantot kameru, jo to izmanto cita lietojumprogramma.</translation>
@@ -81,6 +83,13 @@
 <translation id="6709398533399187136">Jūsu parole tika atklāta datu aizsardzības pārkāpuma dēļ. Google paroļu pārvaldnieks iesaka to tūlīt nomainīt.</translation>
 <translation id="6822673484890854830">Pārlūkprogrammā Chrome nevarēja pārbaudīt visas paroles. Vēlāk mēģiniet vēlreiz.</translation>
 <translation id="6964931465519938134">Tagad varat izmantot Chrome ikreiz, kad pieskaraties saitēm ziņojumos, dokumentos un citās lietotnēs.</translation>
+<translation id="7046845777663074840">Kad iestatījums ir ieslēgts
+<ph name="BEGIN_INDENT" />  • Palīdziet uzlabot pārlūku Chrome visiem lietotājiem, kuri to izmanto līdzīgi jums.<ph name="END_INDENT" />
+
+Svarīga informācija
+<ph name="BEGIN_INDENT" />  • Uzņēmumam Google tiek nosūtīta informācija par Chrome lietojumu, taču tā netiek saistīta ar jums.
+  • Ja pārlūks Chrome avarē, informācija par avāriju var ietvert noteiktu personas informāciju.
+  • Ja ieslēgsiet sinhronizāciju, dati var ietvert arī informāciju par jūsu apmeklētajiem vietrāžiem URL.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Pielāgojiet pārlūku Chrome savām vajadzībām</translation>
 <translation id="7124339256045485976">Jaunākās Chrome iespējas</translation>
 <translation id="7161390184744336561">Pārlūka Google Chrome versija ir novecojusi.</translation>

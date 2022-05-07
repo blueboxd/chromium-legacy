@@ -6,6 +6,7 @@ import {WaitableEvent} from '../waitable_event.js';
 
 /**
  * Sleeps |delay| millisecond.
+ *
  * @return Resolved after |delay| is passed.
  */
 function sleep(delay: number): Promise<void> {
@@ -19,7 +20,9 @@ function sleep(delay: number): Promise<void> {
  */
 class AsyncIntervalRunner {
   private readonly stopped = new WaitableEvent();
+
   private readonly runningPromise: Promise<void>;
+
   constructor(
       private readonly handler: () => Promise<void>,
       private readonly delay: number) {
@@ -63,6 +66,7 @@ const runnerMap = new Map<number, AsyncIntervalRunner>();
 /**
  * Repeatedly calls the async function |handler| and waits until it's resolved,
  * with a fixed delay between the next call and the previous completion time.
+ *
  * @return A numeric, non-zero value which identifies the timer.
  */
 export function setAsyncInterval(
@@ -76,6 +80,7 @@ export function setAsyncInterval(
 /**
  * Cancels a timed, repeating async action by |id|, which was returned by the
  * corresponding call of setAsyncInterval().
+ *
  * @return Resolved when the last action is finished.
  */
 export async function clearAsyncInterval(id: number): Promise<void> {

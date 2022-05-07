@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
 #include "chrome/browser/ui/views/user_education/help_bubble_factory_views.h"
 #include "chrome/browser/ui/views/user_education/help_bubble_view.h"
+#include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/feature_engagement/test/mock_tracker.h"
@@ -43,6 +44,7 @@
 #include "ui/events/base_event_utils.h"
 #include "ui/views/bubble/bubble_border.h"
 #include "ui/views/interaction/element_tracker_views.h"
+#include "ui/views/interaction/interaction_test_util_views.h"
 #include "ui/views/style/platform_style.h"
 #include "ui/views/test/widget_test.h"
 #include "ui/views/view_class_properties.h"
@@ -84,15 +86,14 @@ class BrowserFeaturePromoControllerTest : public TestWithBrowserView {
     // This is just the first two steps of the "create tab group" tutorial.
     TutorialDescription desc;
 
-    TutorialDescription::Step step1(
-        absl::nullopt,
-        u"Right Click on a Tab and select \"Add Tab To new Group\".",
-        ui::InteractionSequence::StepType::kShown, kTabStripElementId,
-        std::string(), HelpBubbleArrow::kTopCenter);
+    TutorialDescription::Step step1(0, IDS_TUTORIAL_TAB_GROUP_ADD_TAB_TO_GROUP,
+                                    ui::InteractionSequence::StepType::kShown,
+                                    kTabStripElementId, std::string(),
+                                    HelpBubbleArrow::kTopCenter);
     desc.steps.emplace_back(step1);
 
     TutorialDescription::Step step2(
-        absl::nullopt, u"Select \"Enter a name for your Tab Group\".",
+        0, IDS_TUTORIAL_TAB_GROUP_ADD_TAB_TO_GROUP,
         ui::InteractionSequence::StepType::kShown, kTabGroupEditorBubbleId,
         std::string(), HelpBubbleArrow::kLeftCenter,
         ui::CustomElementEventType(), false /*must_remain_visible*/);
@@ -649,18 +650,9 @@ TEST_F(BrowserFeaturePromoControllerTest, StartsTutorial) {
   // Simulate clicking the "Show Tutorial" button.
   auto* const bubble = GetPromoBubble();
   ASSERT_TRUE(bubble);
-  auto* const button = bubble->GetButtonForTesting(
-      views::PlatformStyle::kIsOkButtonLeading ? 0 : 1);
-  ASSERT_TRUE(button);
-  ui::MouseEvent mouse_press(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
-                             ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
-                             ui::EF_LEFT_MOUSE_BUTTON);
-  ui::MouseEvent mouse_release(
-      ui::ET_MOUSE_RELEASED, gfx::Point(), gfx::Point(), ui::EventTimeForNow(),
-      ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
-  button->OnMouseEvent(&mouse_press);
-  button->OnMouseEvent(&mouse_release);
   views::test::WidgetDestroyedWaiter waiter(bubble->GetWidget());
+  views::test::InteractionTestUtilSimulatorViews::PressButton(
+      bubble->GetDefaultButtonForTesting());
   waiter.Wait();
 
   // We should be running the tutorial now.

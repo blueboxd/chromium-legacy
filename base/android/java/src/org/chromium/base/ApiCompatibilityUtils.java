@@ -47,13 +47,6 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.core.widget.ImageViewCompat;
 
-import org.chromium.base.annotations.VerifiesOnLollipopMR1;
-import org.chromium.base.annotations.VerifiesOnM;
-import org.chromium.base.annotations.VerifiesOnN;
-import org.chromium.base.annotations.VerifiesOnO;
-import org.chromium.base.annotations.VerifiesOnP;
-import org.chromium.base.annotations.VerifiesOnQ;
-
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -69,7 +62,6 @@ public class ApiCompatibilityUtils {
     private ApiCompatibilityUtils() {
     }
 
-    @VerifiesOnQ
     @RequiresApi(Build.VERSION_CODES.Q)
     private static class ApisQ {
         static boolean isRunningInUserTestHarness() {
@@ -96,7 +88,6 @@ public class ApiCompatibilityUtils {
         }
     }
 
-    @VerifiesOnP
     @RequiresApi(Build.VERSION_CODES.P)
     private static class ApisP {
         static String getProcessName() {
@@ -108,7 +99,6 @@ public class ApiCompatibilityUtils {
         }
     }
 
-    @VerifiesOnO
     @RequiresApi(Build.VERSION_CODES.O)
     private static class ApisO {
         static void initNotificationSettingsIntent(Intent intent, String packageName) {
@@ -127,7 +117,6 @@ public class ApiCompatibilityUtils {
         }
     }
 
-    @VerifiesOnN
     @RequiresApi(Build.VERSION_CODES.N)
     private static class ApisN {
         static String toHtml(Spanned spanned, int option) {
@@ -152,7 +141,6 @@ public class ApiCompatibilityUtils {
         }
     }
 
-    @VerifiesOnM
     @RequiresApi(Build.VERSION_CODES.M)
     private static class ApisM {
         public static void setStatusBarIconColor(View rootView, boolean useDarkIcons) {
@@ -166,7 +154,6 @@ public class ApiCompatibilityUtils {
         }
     }
 
-    @VerifiesOnLollipopMR1
     private static class ApisLmr1 {
         static void setAccessibilityTraversalBefore(View view, int viewFocusedAfter) {
             view.setAccessibilityTraversalBefore(viewFocusedAfter);
@@ -236,21 +223,6 @@ public class ApiCompatibilityUtils {
         return Html.toHtml(spanned);
     }
 
-    // These methods have a new name, and the old name is deprecated.
-
-    /**
-     * @see android.app.Activity#finishAndRemoveTask()
-     */
-    public static void finishAndRemoveTask(Activity activity) {
-        if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-            activity.finishAndRemoveTask();
-        } else {
-            assert Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP;
-            // crbug.com/395772 : Fallback for Activity.finishAndRemoveTask() failing.
-            new FinishAndRemoveTaskWithRetry(activity).run();
-        }
-    }
-
     /**
      *  Gets an intent to start the Android system notification settings activity for an app.
      *
@@ -267,30 +239,6 @@ public class ApiCompatibilityUtils {
                     "app_uid", ContextUtils.getApplicationContext().getApplicationInfo().uid);
         }
         return intent;
-    }
-
-    private static class FinishAndRemoveTaskWithRetry implements Runnable {
-        private static final long RETRY_DELAY_MS = 500;
-        private static final long MAX_TRY_COUNT = 3;
-        private final Activity mActivity;
-        private int mTryCount;
-
-        FinishAndRemoveTaskWithRetry(Activity activity) {
-            mActivity = activity;
-        }
-
-        @Override
-        public void run() {
-            mActivity.finishAndRemoveTask();
-            mTryCount++;
-            if (!mActivity.isFinishing()) {
-                if (mTryCount < MAX_TRY_COUNT) {
-                    ThreadUtils.postOnUiThreadDelayed(this, RETRY_DELAY_MS);
-                } else {
-                    mActivity.finish();
-                }
-            }
-        }
     }
 
     /**

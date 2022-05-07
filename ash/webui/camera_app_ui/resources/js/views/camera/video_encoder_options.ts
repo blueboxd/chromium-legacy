@@ -27,12 +27,18 @@ const preconditions = [
  */
 export class VideoEncoderOptions {
   private readonly videoProfile = dom.get('#video-profile', HTMLSelectElement);
+
   private readonly bitrateSlider = dom.get('#bitrate-slider', HTMLDivElement);
+
   private readonly bitrateMultiplierInput: HTMLInputElement;
+
   private readonly bitrateMultiplerText =
       dom.get('#bitrate-multiplier', HTMLDivElement);
+
   private readonly bitrateText = dom.get('#bitrate-number', HTMLDivElement);
+
   private resolution: Resolution|null = null;
+
   private fps: number|null = null;
 
   /**
@@ -100,7 +106,7 @@ export class VideoEncoderOptions {
     const profile = this.selectedProfile;
     assert(profile !== null);
 
-    const maxLevel = h264.Levels[h264.Levels.length - 1];
+    const maxLevel = h264.LEVELS[h264.LEVELS.length - 1];
     if (!h264.checkLevelLimits(maxLevel, fps, resolution)) {
       reportError(
           ErrorType.NO_AVAILABLE_LEVEL, ErrorLevel.WARNING,

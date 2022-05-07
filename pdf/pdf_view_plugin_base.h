@@ -44,7 +44,6 @@ class Vector2d;
 
 namespace chrome_pdf {
 
-class Image;
 class PDFiumEngine;
 class Thumbnail;
 class UrlLoader;
@@ -56,14 +55,11 @@ struct AccessibilityPageObjects;
 struct AccessibilityTextRunInfo;
 struct AccessibilityViewportInfo;
 
-// Common base to share code between the two plugin implementations,
-// `OutOfProcessInstance` (Pepper) and `PdfViewWebPlugin` (Blink).
+// TODO(crbug.com/1302059): Merge with PdfViewWebPlugin.
 class PdfViewPluginBase : public PDFEngine::Client,
                           public PaintManager::Client,
                           public PreviewModeClient::Client {
  public:
-  using PDFEngine::Client::ScheduleTaskOnMainThread;
-
   // Do not save files with over 100 MB. This cap should be kept in sync with
   // and is also enforced in chrome/browser/resources/pdf/pdf_viewer.js.
   static constexpr size_t kMaximumSavedFileSize = 100 * 1000 * 1000;
@@ -87,7 +83,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
     kFailed,
   };
 
-  // Must match `SaveRequestType` in chrome/browser/resources/pdf/constants.js.
+  // Must match `SaveRequestType` in chrome/browser/resources/pdf/constants.ts.
   enum class SaveRequestType {
     kAnnotation = 0,
     kOriginal = 1,
@@ -230,12 +226,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // frame's origin.
   virtual std::unique_ptr<UrlLoader> CreateUrlLoaderInternal() = 0;
 
-  // Rewrites the request URL just before sending to the URL loader.
-  //
-  // TODO(crbug.com/1238829): This is a workaround for Pepper not supporting
-  // chrome-untrusted://print/ URLs.
-  virtual std::string RewriteRequestUrl(base::StringPiece url) const;
-
   bool HandleInputEvent(const blink::WebInputEvent& event);
 
   // Handles `postMessage()` calls from the embedder.
@@ -272,7 +262,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void OnGeometryChanged(double old_zoom, float old_device_scale);
 
   // Returns the plugin-specific image data buffer.
-  virtual Image GetPluginImageData() const;
+  virtual SkBitmap GetPluginImageData() const;
 
   // Updates the geometry of the plugin and its image data if the plugin rect
   // or the device scale has changed. `new_plugin_rect` must be in device
@@ -375,11 +365,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // document.
   virtual void InvokePrintDialog() = 0;
 
-  // Notifies the embedder about a new link under the cursor.
-  // TODO(crbug.com/702993): This is only needed by `OutOfProcessInstance`.
-  // Remove this method when that class ceases to exist.
-  virtual void NotifyLinkUnderCursor() {}
-
   // Notifies the embedder of the top-left and bottom-right coordinates of the
   // current selection.
   virtual void NotifySelectionChanged(const gfx::PointF& left,
@@ -458,7 +443,6 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void HandleSetReadOnlyMessage(const base::Value& message);
   void HandleSetTwoUpViewMessage(const base::Value& message);
   void HandleStopScrollingMessage(const base::Value& /*message*/);
-  void HandleUpdateScrollMessage(const base::Value& message);
   void HandleViewportMessage(const base::Value& message);
 
   // Sends start/stop loading notifications to the plugin's render frame
@@ -480,7 +464,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
   void PrepareForFirstPaint(std::vector<PaintReadyRect>& ready);
 
   // Callback to clear deferred invalidates after painting finishes.
-  void ClearDeferredInvalidates(int32_t /*unused_but_required*/);
+  void ClearDeferredInvalidates();
 
   // Sends the attachments data.
   void SendAttachments();
@@ -497,7 +481,7 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // Starts loading accessibility information.
   void LoadAccessibility();
 
-  void ResetRecentlySentFindUpdate(int32_t /*unused_but_required*/);
+  void ResetRecentlySentFindUpdate();
 
   // Records metrics about the attachment types.
   void RecordAttachmentTypes();
@@ -616,10 +600,10 @@ class PdfViewPluginBase : public PDFEngine::Client,
   // transformations are applied.
   gfx::Vector2dF scroll_offset_at_last_raster_;
 
-  // If this is true, then don't scroll the plugin in response to the messages
-  // from DidChangeView() or HandleUpdateScrollMessage(). This will be true when
-  // the extension page is in the process of zooming the plugin so that
-  // flickering doesn't occur while zooming.
+  // If this is true, then don't scroll the plugin in response to calls to
+  // `UpdateScroll()`. This will be true when the extension page is in the
+  // process of zooming the plugin so that flickering doesn't occur while
+  // zooming.
   bool stop_scrolling_ = false;
 
   // Whether the plugin has received a viewport changed message. Nothing should

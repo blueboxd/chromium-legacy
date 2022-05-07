@@ -6,8 +6,8 @@
 
 #include "base/time/time.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
-#include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/common/url_utils.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_utils.h"
@@ -21,11 +21,7 @@ namespace content {
 
 namespace {
 
-using testing::_;
 using testing::AllOf;
-using testing::IsNull;
-using testing::Pointee;
-using testing::Return;
 
 const char kPackageName[] = "org.chromium.chrome.test";
 const char kConversionUrl[] = "https://b.com";
@@ -55,7 +51,7 @@ TEST_F(AttributionReporterTest, ValidImpression_Allowed) {
       mock_manager_,
       HandleSource(
           AllOf(ImpressionOriginIs(OriginFromAndroidPackageName(kPackageName)),
-                SourceTypeIs(CommonSourceInfo::SourceType::kEvent),
+                SourceTypeIs(AttributionSourceType::kEvent),
                 ImpressionTimeIs(time))));
 
   attribution_reporter_android::ReportAppImpression(
@@ -68,28 +64,11 @@ TEST_F(AttributionReporterTest, ValidImpression_Allowed_NoOptionals) {
       mock_manager_,
       HandleSource(
           AllOf(ImpressionOriginIs(OriginFromAndroidPackageName(kPackageName)),
-                SourceTypeIs(CommonSourceInfo::SourceType::kEvent))));
+                SourceTypeIs(AttributionSourceType::kEvent))));
 
   attribution_reporter_android::ReportAppImpression(
       mock_manager_, nullptr, kPackageName, kEventId, kConversionUrl, "", 0,
       base::Time::Now());
-}
-
-TEST_F(AttributionReporterTest, ValidImpression_Disallowed) {
-  MockAttributionReportingContentBrowserClient browser_client;
-  EXPECT_CALL(
-      browser_client,
-      IsConversionMeasurementOperationAllowed(
-          _, ContentBrowserClient::ConversionMeasurementOperation::kImpression,
-          Pointee(_), IsNull(), Pointee(_)))
-      .WillOnce(Return(false));
-  ScopedContentBrowserClientSetting setting(&browser_client);
-
-  EXPECT_CALL(mock_manager_, HandleSource).Times(0);
-
-  attribution_reporter_android::ReportAppImpression(
-      mock_manager_, nullptr, kPackageName, kEventId, kConversionUrl,
-      kReportToUrl, 56789, base::Time::Now());
 }
 
 TEST_F(AttributionReporterTest, InvalidImpression) {

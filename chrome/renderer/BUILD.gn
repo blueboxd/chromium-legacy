@@ -186,7 +186,6 @@ static_library("renderer") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//pdf:buildflags",
-    "//pdf:pdf_view_web_plugin",
     "//ppapi/buildflags",
     "//printing/buildflags",
     "//services/metrics/public/cpp:metrics_cpp",
@@ -220,8 +219,6 @@ static_library("renderer") {
     sources += [
       "pepper/chrome_renderer_pepper_host_factory.cc",
       "pepper/chrome_renderer_pepper_host_factory.h",
-      "pepper/pepper_flash_font_file_host.cc",
-      "pepper/pepper_flash_font_file_host.h",
       "pepper/pepper_helper.cc",
       "pepper/pepper_helper.h",
       "pepper/pepper_shared_memory_message_filter.cc",
@@ -327,19 +324,12 @@ static_library("renderer") {
   if (enable_basic_printing) {
     deps += [
       "//components/printing/renderer",
-      "//pdf:features",
       "//printing",
     ]
     sources += [
       "printing/chrome_print_render_frame_helper_delegate.cc",
       "printing/chrome_print_render_frame_helper_delegate.h",
     ]
-    if (enable_print_preview) {
-      sources += [
-        "pepper/chrome_pdf_print_client.cc",
-        "pepper/chrome_pdf_print_client.h",
-      ]
-    }
   }
 
   if (enable_paint_preview) {

@@ -694,6 +694,10 @@ void Widget::Close() {
 }
 
 void Widget::CloseNow() {
+  // Set this so that Widget::Close() early outs. In general this operation is
+  // a one-way and can't be undone.
+  widget_closed_ = true;
+
   for (WidgetObserver& observer : observers_)
     observer.OnWidgetClosing(this);
   internal::AnyWidgetObserverSingleton::GetInstance()->OnAnyWidgetClosing(this);
@@ -800,12 +804,19 @@ bool Widget::IsMinimized() const {
   return native_widget_->IsMinimized();
 }
 
-void Widget::SetFullscreen(bool fullscreen, base::TimeDelta delay) {
-  if (IsFullscreen() == fullscreen)
+void Widget::SetFullscreen(bool fullscreen,
+                           base::TimeDelta delay,
+                           int64_t target_display_id) {
+  // It isn't valid to specify `target_display_id` when exiting fullscreen.
+  if (!fullscreen)
+    DCHECK(target_display_id == display::kInvalidDisplayId);
+  if (IsFullscreen() == fullscreen &&
+      target_display_id == display::kInvalidDisplayId) {
     return;
+  }
 
   auto weak_ptr = GetWeakPtr();
-  native_widget_->SetFullscreen(fullscreen, delay);
+  native_widget_->SetFullscreen(fullscreen, delay, target_display_id);
   if (!weak_ptr)
     return;
 
@@ -1330,7 +1341,19 @@ bool Widget::OnNativeWidgetActivationChanged(bool active) {
 
   // Widgets in a widget tree should share the same ShouldPaintAsActive().
   // Lock the parent as paint-as-active when this widget becomes active.
-  if (!active && !paint_as_active_refcount_)
+  // If we're in the process of closing the widget, delay resetting the
+  // `parent_paint_as_active_lock_` until the owning native widget destroys this
+  // widget (i.e. wait until widget destruction). Do this as closing a widget
+  // may result in synchronously calling into this method, which can cause the
+  // parent to immediately paint as inactive. This is an issue if, after this
+  // widget has been closed, the parent widget is the next widget to receive
+  // activation. If using a desktop native widget, the next widget to receive
+  // activation may be determined by the system's window manager and this may
+  // not happen synchronously with closing the Widget. By waiting for the owning
+  // native widget to destroy this widget we ensure that resetting the paint
+  // lock happens synchronously with the activation the next widget (see
+  // crbug/1303549).
+  if (!active && !paint_as_active_refcount_ && !widget_closed_)
     parent_paint_as_active_lock_.reset();
   else if (parent())
     parent_paint_as_active_lock_ = parent()->LockPaintAsActive();

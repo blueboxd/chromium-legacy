@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
@@ -33,7 +32,6 @@
 #include "extensions/common/api/messaging/message.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/cors_util.h"
-#include "extensions/common/event_filtering_info_type_converters.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_features.h"
@@ -622,7 +620,7 @@ void Dispatcher::WillEvaluateServiceWorkerOnWorkerThread(
       // The logging module.
       logging->NewInstance(),
   };
-  context->SafeCallFunction(main_function, base::size(args), args);
+  context->SafeCallFunction(main_function, std::size(args), args);
 
   const base::TimeDelta elapsed = base::TimeTicks::Now() - start_time;
   UMA_HISTOGRAM_TIMES(
@@ -1023,7 +1021,7 @@ void Dispatcher::ActivateExtension(const std::string& extension_id) {
     std::string& error = extension_load_errors_[extension_id];
     char minidump[256];
     base::debug::Alias(&minidump);
-    base::snprintf(minidump, base::size(minidump), "e::dispatcher:%s:%s",
+    base::snprintf(minidump, std::size(minidump), "e::dispatcher:%s:%s",
                    extension_id.c_str(), error.c_str());
     LOG(FATAL) << extension_id << " was never loaded: " << error;
   }
@@ -1303,6 +1301,11 @@ void Dispatcher::OnDispatchOnDisconnect(int worker_thread_id,
 
 void Dispatcher::DispatchEvent(mojom::DispatchEventParamsPtr params,
                                base::Value event_args) {
+  if (params->worker_thread_id != kMainThreadId) {
+    WorkerThreadDispatcher::Get()->DispatchEvent(std::move(params),
+                                                 std::move(event_args));
+    return;
+  }
   content::RenderFrame* background_frame =
       ExtensionFrameHelper::GetBackgroundPageFrame(params->extension_id);
 
@@ -1327,7 +1330,7 @@ void Dispatcher::DispatchEvent(mojom::DispatchEventParamsPtr params,
 
   DispatchEventHelper(params->extension_id, params->event_name,
                       base::Value::AsListValue(event_args),
-                      mojom::EventFilteringInfo::From(params->filtering_info));
+                      std::move(params->filtering_info));
 
   if (background_frame) {
     // Tell the browser process when an event has been dispatched with a lazy

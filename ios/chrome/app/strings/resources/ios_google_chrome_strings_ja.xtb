@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">使用統計情報と障害レポートを Google に送信して、Chrome の品質向上にご協力ください。</translation>
 <translation id="417201473131094001">Chrome Canary ではサポートされていません</translation>
 <translation id="4214277427269650960">このサイトと Chrome にログインしてください。同期は後でオンにできます。</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> は Chrome を使用しており、ブックマークやパスワードなどの設定がこのデバイスに残っています。</translation>
 <translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4249068189593983585">Chrome の使い方のヒント: タブのオプションをさらに表示するには、画面の下部または上部のツールバーにある [タブを表示] を長押しします。</translation>
 <translation id="4523886039239821078">アドオンが原因でChromeがクラッシュしました。次をアンインストールしてください:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome ですべてのパスワードを確認できませんでした。明日もう一度お試しいただくか、<ph name="BEGIN_LINK" />Google アカウント内のパスワードをご確認ください<ph name="END_LINK" />。</translation>
 <translation id="484033449593719797">Chrome ベータ版ではサポートされていません</translation>
 <translation id="5030102366287574140">Chrome でデータ侵害や安全でないウェブサイトなどの脅威から保護されているか確認します。</translation>
+<translation id="5108659628347594808">Chrome の品質を向上</translation>
 <translation id="5119391094379141756">[Chrome] を選択する</translation>
 <translation id="5162467219239570114">Chrome は古いバージョンです。<ph name="BEGIN_LINK" />アプリストア<ph name="END_LINK" />に利用可能なアップデートがない場合は、デバイスで新しいバージョンの Chrome がサポートされなくなった可能性があります。</translation>
 <translation id="5389212809648216794">カメラは別のアプリが使用中のため、Google Chrome では使用できません</translation>
@@ -81,6 +83,15 @@
 <translation id="6709398533399187136">データ侵害によってパスワードが漏洩しました。Google パスワード マネージャーでは、このパスワードを今すぐ変更することをおすすめします。</translation>
 <translation id="6822673484890854830">Chrome ですべてのパスワードを確認できませんでした。しばらくしてからもう一度お試しください。</translation>
 <translation id="6964931465519938134">メッセージ、ドキュメント、他のアプリでタップしたリンクが常に Chrome で開かれるようになります。</translation>
+<translation id="7046845777663074840">オンにした場合:
+<ph name="BEGIN_INDENT" />  • 同じように Chrome を使用する他のユーザーの利便性向上に役立てられます。<ph name="END_INDENT" />
+
+留意事項:
+<ph name="BEGIN_INDENT" />  • Chrome の使用状況に関する情報が Google に送信されますが、ユーザーとは関連付けられません。
+
+  • Chrome がクラッシュした場合、クラッシュに関する情報として、一部の個人情報が送信される場合があります。
+
+  • 同期をオンにした場合、アクセスした URL に関する情報も送信される場合があります。<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Chrome を独自にカスタマイズ</translation>
 <translation id="7124339256045485976">Chrome を最新の状態に維持します</translation>
 <translation id="7161390184744336561">Google Chrome は古いバージョンです</translation>

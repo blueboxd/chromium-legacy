@@ -13,7 +13,25 @@
 #include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/skottie_color_map.h"
-#include "third_party/skia/include/core/SkCanvas.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkScalar.h"
+#include "third_party/skia/include/core/SkTextBlob.h"
+
+class SkCanvas;
+class SkM44;
+class SkMatrix;
+class SkPath;
+class SkRRect;
+class SkSurfaceProps;
+enum class SkClipOp;
+struct SkImageInfo;
+struct SkIPoint;
+struct SkIRect;
+struct SkRect;
 
 namespace cc {
 class ImageProvider;
@@ -122,7 +140,8 @@ class CC_PAINT_EXPORT SkiaPaintCanvas final : public PaintCanvas {
                    const SkRect& dst,
                    float t,
                    SkottieFrameDataMap images,
-                   const SkottieColorMap& color_map) override;
+                   const SkottieColorMap& color_map,
+                   SkottieTextPropertyValueMap text_map) override;
   void drawTextBlob(sk_sp<SkTextBlob> blob,
                     SkScalar x,
                     SkScalar y,

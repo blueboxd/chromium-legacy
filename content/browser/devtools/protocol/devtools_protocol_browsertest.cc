@@ -652,7 +652,13 @@ class NoGPUCaptureScreenshotTest : public CaptureScreenshotTest {
 
 // Tests that large screenshots are composited fine with software compositor.
 // Regression test for https://crbug.com/1137291.
-IN_PROC_BROWSER_TEST_F(NoGPUCaptureScreenshotTest, LargeScreenshot) {
+// Flaky on Linux.  http://crbug.com/1301176
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_LargeScreenshot DISABLED_LargeScreenshot
+#else
+#define MAYBE_LargeScreenshot LargeScreenshot
+#endif
+IN_PROC_BROWSER_TEST_F(NoGPUCaptureScreenshotTest, MAYBE_LargeScreenshot) {
   // This test fails consistently on low-end Android devices.
   // See crbug.com/653637.
   // TODO(eseckler): Reenable with error limit if necessary.
@@ -901,7 +907,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_SynthesizeTapGesture) {
 }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, PageCrash) {
+// TODO(crbug.com/1303155): Flaky on multiple bots.
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, DISABLED_PageCrash) {
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL test_url = embedded_test_server()->GetURL("/devtools/navigation.html");
   NavigateToURLBlockUntilNavigationsComplete(shell(), test_url, 1);

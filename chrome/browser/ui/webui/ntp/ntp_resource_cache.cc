@@ -51,13 +51,13 @@
 #include "ui/base/theme_provider.h"
 #include "ui/base/webui/jstemplate_builder.h"
 #include "ui/base/webui/web_ui_util.h"
-#include "ui/chromeos/devicetype_utils.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
+#include "ui/chromeos/devicetype_utils.h"
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS)
@@ -474,19 +474,8 @@ void NTPResourceCache::CreateNewTabCSS(
   SkColor color_text_light =
       GetThemeColor(native_theme, *tp, ThemeProperties::COLOR_NTP_TEXT_LIGHT);
 
-  SkColor color_header =
-      GetThemeColor(native_theme, *tp, ThemeProperties::COLOR_NTP_HEADER);
-  // Generate a lighter color for the header gradients.
-  color_utils::HSL header_lighter;
-  color_utils::SkColorToHSL(color_header, &header_lighter);
-  header_lighter.l += (1 - header_lighter.l) * 0.33;
-
-  // Generate section border color from the header color. See
-  // BookmarkBarView::Paint for how we do this for the bookmark bar
-  // borders.
-  SkColor color_section_border =
-      SkColorSetARGB(80, SkColorGetR(color_header), SkColorGetG(color_header),
-                     SkColorGetB(color_header));
+  SkColor color_section_border = GetThemeColor(
+      native_theme, *tp, ThemeProperties::COLOR_NTP_SECTION_BORDER);
 
   // Generate the replacements.
   ui::TemplateReplacements substitutions;

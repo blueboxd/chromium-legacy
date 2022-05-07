@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/strings/string_piece.h"
+#include "chromeos/dbus/dlcservice/dlcservice_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/views/widget/widget.h"
 
@@ -38,10 +39,18 @@ extern const base::StringPiece kURLAllowlist[];
 // parsed with /usr/bin/get_proton_version.py in the Borealis VM does not
 // match the GameID expected based on extraction with kBorealisAppIdRegex.
 extern const char kProtonVersionGameMismatch[];
+// Query parameter key for device information in the borealis feedback
+// form.
+extern const char kDeviceInformationKey[];
+
+// TODO(b/218403711): remove these when insert_coin is deprecated. We only have
+// insert_coin in the short-term until installer UX is finalized.
+extern const char kInsertCoinSuccessMessage[];
+extern const char kInsertCoinRejectMessage[];
 
 struct ProtonVersionInfo {
-  std::string proton = "";
-  std::string slr = "";
+  std::string proton = "Not applicable";
+  std::string slr = "Not applicable";
 };
 
 // Shows the Borealis installer (borealis_installer_view).
@@ -79,6 +88,10 @@ bool GetProtonVersionInfo(const std::string& owner_id, std::string* output);
 // Parses the output returned by GetProtonVersionInfo.
 ProtonVersionInfo ParseProtonVersionInfo(absl::optional<int> game_id,
                                          const std::string& output);
+
+// Used in the splash screen to get the dlc path as dlcservice could not be
+// imported directly.
+void GetDlcPath(base::OnceCallback<void(const std::string& path)> callback);
 
 }  // namespace borealis
 

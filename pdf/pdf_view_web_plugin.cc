@@ -292,6 +292,7 @@ PdfViewWebPlugin::PdfViewWebPlugin(
     : client_(std::move(client)),
       pdf_service_remote_(std::move(pdf_service_remote)),
       initial_params_(params),
+      post_message_sender_(client_.get()),
       pdf_accessibility_data_handler_(
           client_->CreateAccessibilityDataHandler(this)) {
   auto* service = GetPdfService();
@@ -313,7 +314,6 @@ bool PdfViewWebPlugin::InitializeForTesting(
   return InitializeCommon(std::move(container_wrapper), std::move(engine));
 }
 
-// Modeled on `OutOfProcessInstance::Init()`.
 bool PdfViewWebPlugin::InitializeCommon(
     std::unique_ptr<ContainerWrapper> container_wrapper,
     std::unique_ptr<PDFiumEngine> engine) {
@@ -395,9 +395,9 @@ v8::Local<v8::Object> PdfViewWebPlugin::V8ScriptableObject(
     // TODO(crbug.com/1123731): Messages should not be handled on the renderer
     // main thread.
     scriptable_receiver_.Reset(
-        isolate,
-        PostMessageReceiver::Create(isolate, weak_factory_.GetWeakPtr(),
-                                    base::SequencedTaskRunnerHandle::Get()));
+        isolate, PostMessageReceiver::Create(
+                     isolate, client_->GetWeakPtr(), weak_factory_.GetWeakPtr(),
+                     base::SequencedTaskRunnerHandle::Get()));
   }
 
   return scriptable_receiver_.Get(isolate);
@@ -774,14 +774,6 @@ bool PdfViewWebPlugin::BindPaintGraphics(Graphics& graphics) {
   return false;
 }
 
-void PdfViewWebPlugin::ScheduleTaskOnMainThread(const base::Location& from_here,
-                                                ResultCallback callback,
-                                                int32_t result,
-                                                base::TimeDelta delay) {
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      from_here, base::BindOnce(std::move(callback), result), delay);
-}
-
 void PdfViewWebPlugin::SetCaretPosition(const gfx::PointF& position) {
   PdfViewPluginBase::SetCaretPosition(position);
 }
@@ -980,11 +972,9 @@ void PdfViewWebPlugin::PluginDidStopLoading() {
 }
 
 void PdfViewWebPlugin::InvokePrintDialog() {
-  ScheduleTaskOnMainThread(
-      FROM_HERE,
-      base::BindOnce(&PdfViewWebPlugin::OnInvokePrintDialog,
-                     weak_factory_.GetWeakPtr()),
-      /*result=*/0, base::TimeDelta());
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&PdfViewWebPlugin::OnInvokePrintDialog,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void PdfViewWebPlugin::NotifySelectionChanged(const gfx::PointF& left,
@@ -1095,7 +1085,7 @@ void PdfViewWebPlugin::HandleImeCommit(const blink::WebString& text) {
   }
 }
 
-void PdfViewWebPlugin::OnInvokePrintDialog(int32_t /*result*/) {
+void PdfViewWebPlugin::OnInvokePrintDialog() {
   client_->Print(Container()->GetElement());
 }
 

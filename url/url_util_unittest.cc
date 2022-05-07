@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/cxx17_backports.h"
 #include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest-message.h"
@@ -251,7 +250,7 @@ TEST_F(URLUtilTest, DecodeURLEscapeSequences) {
       {"%e4%bd%a0%e5%a5%bd", "\xe4\xbd\xa0\xe5\xa5\xbd"},
   };
 
-  for (size_t i = 0; i < base::size(decode_cases); i++) {
+  for (size_t i = 0; i < std::size(decode_cases); i++) {
     const char* input = decode_cases[i].input;
     RawCanonOutputT<char16_t> output;
     DecodeURLEscapeSequences(input, strlen(input),
@@ -333,7 +332,7 @@ TEST_F(URLUtilTest, TestEncodeURIComponent) {
      "pqrstuvwxyz%7B%7C%7D~%7F"},
   };
 
-  for (size_t i = 0; i < base::size(encode_cases); i++) {
+  for (size_t i = 0; i < std::size(encode_cases); i++) {
     const char* input = encode_cases[i].input;
     RawCanonOutputT<char> buffer;
     EncodeURIComponent(input, strlen(input), &buffer);
@@ -410,7 +409,7 @@ TEST_F(URLUtilTest, TestResolveRelativeWithNonStandardBase) {
       // adding the requested dot doesn't seem wrong either.
       {"aaa://a\\", "aaa:.", true, "aaa://a\\."}};
 
-  for (size_t i = 0; i < base::size(resolve_non_standard_cases); i++) {
+  for (size_t i = 0; i < std::size(resolve_non_standard_cases); i++) {
     const ResolveRelativeCase& test_data = resolve_non_standard_cases[i];
     Parsed base_parsed;
     ParsePathURL(test_data.base, strlen(test_data.base), false, &base_parsed);
@@ -511,6 +510,26 @@ TEST_F(URLUtilTest, PotentiallyDanglingMarkupAfterReplacement) {
   // flag carried over to the new Parsed object.
   Replacements<char> replacements;
   replacements.ClearRef();
+  Parsed replaced_parsed;
+  RawCanonOutput<32> replaced;
+  ReplaceComponents(original.data(), original.length(), original_parsed,
+                    replacements, nullptr, &replaced, &replaced_parsed);
+  EXPECT_TRUE(replaced_parsed.potentially_dangling_markup);
+}
+
+TEST_F(URLUtilTest, PotentiallyDanglingMarkupAfterSchemeOnlyReplacement) {
+  // Parse a URL with potentially dangling markup.
+  Parsed original_parsed;
+  RawCanonOutput<32> original;
+  const char* url = "http://example.com/\n/<path";
+  Canonicalize(url, strlen(url), false, nullptr, &original, &original_parsed);
+  ASSERT_TRUE(original_parsed.potentially_dangling_markup);
+
+  // Perform a replacement, and validate that the potentially_dangling_markup
+  // flag carried over to the new Parsed object.
+  Replacements<char> replacements;
+  const char* new_scheme = "https";
+  replacements.SetScheme(new_scheme, Component(0, strlen(new_scheme)));
   Parsed replaced_parsed;
   RawCanonOutput<32> replaced;
   ReplaceComponents(original.data(), original.length(), original_parsed,

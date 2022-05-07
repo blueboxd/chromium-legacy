@@ -9,6 +9,9 @@
 #include "ash/components/phonehub/screen_lock_manager.h"
 #include "ash/components/phonehub/url_constants.h"
 #include "ash/constants/ash_features.h"
+#include "ash/services/multidevice_setup/public/cpp/prefs.h"
+#include "ash/services/multidevice_setup/public/cpp/url_provider.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "base/feature_list.h"
 #include "base/no_destructor.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,9 +31,6 @@
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
 #include "chromeos/constants/chromeos_features.h"
-#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
-#include "chromeos/services/multidevice_setup/public/cpp/url_provider.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -42,7 +42,9 @@ namespace chromeos {
 namespace settings {
 namespace {
 
-using FeatureState = multidevice_setup::mojom::FeatureState;
+using Feature = ::ash::multidevice_setup::mojom::Feature;
+using FeatureState = ::ash::multidevice_setup::mojom::FeatureState;
+using HostStatus = ::ash::multidevice_setup::mojom::HostStatus;
 
 // TODO(https://crbug.com/1164001): remove after migrating to namespace ash.
 namespace phonehub = ::ash::phonehub;
@@ -299,10 +301,9 @@ void AddEasyUnlockStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedStrings(kLocalizedStrings);
 }
 
-bool IsOptedIn(multidevice_setup::mojom::HostStatus host_status) {
-  return host_status ==
-             multidevice_setup::mojom::HostStatus::kHostSetButNotYetVerified ||
-         host_status == multidevice_setup::mojom::HostStatus::kHostVerified;
+bool IsOptedIn(HostStatus host_status) {
+  return host_status == HostStatus::kHostSetButNotYetVerified ||
+         host_status == HostStatus::kHostVerified;
 }
 
 }  // namespace
@@ -444,18 +445,14 @@ void MultiDeviceSection::AddLoadTimeData(
       {"multidevicePhoneHubCameraRollNotificationsAndAppsItemSummary",
        IDS_SETTINGS_MULTIDEVICE_PHONE_HUB_CAMERA_ROLL_NOTIFICATIONS_AND_APPS_SUMMARY},
       {"multideviceLearnMoreWithoutURL", IDS_SETTINGS_LEARN_MORE},
-      {"multidevicePermissionsSetupNotificationsTitle",
-       IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_NOTIFICATION_ITEM_TITLE},
+      {"multidevicePermissionsSetupCameraRollSummary",
+       IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_CAMERA_ROLL_ITEM_SUMMARY},
       {"multidevicePermissionsSetupNotificationsSummary",
        IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_NOTIFICATION_ITEM_SUMMARY},
-      {"multidevicePermissionsSetupAppsTitle",
-       IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_APPS_ITEM_TITLE},
       {"multidevicePermissionsSetupAppsSummary",
        IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_APPS_ITEM_SUMMARY},
       {"multidevicePermissionsSetupOperationsInstructions",
        IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_OPERATION_INSTRUCTIONS},
-      {"multidevicePermissionsSetupInstructions",
-       IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_INSTRUCTIONS},
       {"multidevicePermissionsSetupCompletedSummary",
        IDS_SETTINGS_MULTIDEVICE_PERMISSIONS_SETUP_DIALOG_COMPLETED_SUMMARY},
       {"multidevicePermissionsSetupAwaitingResponseTitle",
@@ -624,7 +621,7 @@ void MultiDeviceSection::AddHandlers(content::WebUI* web_ui) {
       std::make_unique<chromeos::settings::MultideviceHandler>(
           pref_service_, multidevice_setup_client_,
           phone_hub_manager_
-              ? phone_hub_manager_->GetNotificationAccessManager()
+              ? phone_hub_manager_->GetMultideviceFeatureAccessManager()
               : nullptr,
           android_sms_service_
               ? android_sms_service_->android_sms_pairing_state_tracker()
@@ -746,27 +743,25 @@ void MultiDeviceSection::OnFeatureStatesChanged(
   updater.RemoveSearchTags(GetMultiDeviceOptedInWifiSyncSearchConcepts());
   updater.RemoveSearchTags(GetMultiDeviceOptedInPhoneHubAppsSearchConcepts());
 
-  if (feature_states_map.at(multidevice_setup::mojom::Feature::kSmartLock) ==
-      multidevice_setup::mojom::FeatureState::kEnabledByUser) {
+  if (feature_states_map.at(Feature::kSmartLock) ==
+      FeatureState::kEnabledByUser) {
     updater.AddSearchTags(GetSmartLockOptionsSearchConcepts());
   }
-  if (IsFeatureSupported(multidevice_setup::mojom::Feature::kPhoneHub)) {
+  if (IsFeatureSupported(Feature::kPhoneHub)) {
     updater.AddSearchTags(GetMultiDeviceOptedInPhoneHubSearchConcepts());
     if (features::IsPhoneHubCameraRollEnabled() &&
-        IsFeatureSupported(
-            multidevice_setup::mojom::Feature::kPhoneHubCameraRoll)) {
+        IsFeatureSupported(Feature::kPhoneHubCameraRoll)) {
       updater.AddSearchTags(
           GetMultiDeviceOptedInPhoneHubCameraRollSearchConcepts());
     }
   }
-  if (IsFeatureSupported(multidevice_setup::mojom::Feature::kWifiSync))
+  if (IsFeatureSupported(Feature::kWifiSync))
     updater.AddSearchTags(GetMultiDeviceOptedInWifiSyncSearchConcepts());
-  if (IsFeatureSupported(multidevice_setup::mojom::Feature::kEche))
+  if (IsFeatureSupported(Feature::kEche))
     updater.AddSearchTags(GetMultiDeviceOptedInPhoneHubAppsSearchConcepts());
 }
 
-bool MultiDeviceSection::IsFeatureSupported(
-    multidevice_setup::mojom::Feature feature) {
+bool MultiDeviceSection::IsFeatureSupported(Feature feature) {
   const FeatureState feature_state =
       multidevice_setup_client_->GetFeatureState(feature);
   return feature_state != FeatureState::kNotSupportedByPhone &&

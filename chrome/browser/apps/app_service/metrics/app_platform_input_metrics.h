@@ -33,11 +33,20 @@ enum class InputEventSource {
   kMaxValue = kKeyboard,
 };
 
+extern const char kAppInputEventsKey[];
+
 // This class is used to record the input events for the app windows.
 class AppPlatformInputMetrics : public ui::EventHandler,
                                 public AppRegistryCache::Observer,
                                 public InstanceRegistry::Observer {
  public:
+  // For web apps and Chrome apps, there might be different app type name for
+  // opening in tab or window. So record the app type name for the event count.
+  using CountPerAppType = base::flat_map<AppTypeName, int>;
+
+  // The map to record the event count for each InputEventSource.
+  using EventSourceToCounts = base::flat_map<InputEventSource, CountPerAppType>;
+
   AppPlatformInputMetrics(Profile* profile,
                           AppRegistryCache& app_registry_cache,
                           InstanceRegistry& instance_registry);
@@ -54,18 +63,14 @@ class AppPlatformInputMetrics : public ui::EventHandler,
 
   void OnFiveMinutes();
 
+  // Records the input events AppKM each 2 hours.
+  void OnTwoHours();
+
  private:
   struct AppInfo {
     std::string app_id;
     AppTypeName app_type_name;
   };
-
-  // For web apps and Chrome apps, there might be different app type name for
-  // opening in tab or window. So record the app type name for the event count.
-  using CountPerAppType = base::flat_map<AppTypeName, int>;
-
-  // The map to record the event count for each InputEventSource.
-  using EventSourceToCounts = base::flat_map<InputEventSource, CountPerAppType>;
 
   // InstanceRegistry::Observer:
   void OnInstanceUpdate(const InstanceUpdate& update) override;
@@ -91,9 +96,29 @@ class AppPlatformInputMetrics : public ui::EventHandler,
   void RecordInputEventsUkm(ukm::SourceId source_id,
                             const EventSourceToCounts& event_counts);
 
+  // Saves the input events in `app_id_to_event_count_per_two_hours_` to the
+  // user pref each 2 hours. For example:
+  // web_app_id1: {
+  //   mouse:    { ChromeBrowser: 5, WebApp: 2}
+  //   keyboard: { ChromeBrowser: 2, WebApp: 3}
+  // },
+  // chrome_app_id2: {
+  //   stylus:   { ChromeBrowser: 2, ChromeApp: 12}
+  //   keyboard: { ChromeBrowser: 3, ChromeApp: 30}
+  // },
+  // Arc_app_id3: {
+  //   mouse:   { Arc: 5}
+  // },
+  void SaveInputEvents();
+
+  // Records the input events UKM saved in the user pref.
+  void RecordInputEventsUkmFromPref();
+
   Profile* profile_;
 
   BrowserToTabList browser_to_tab_list_;
+
+  bool should_record_ukm_from_pref_ = true;
 
   // The map from the window to the app info.
   base::flat_map<aura::Window*, AppInfo> window_to_app_info_;
@@ -120,7 +145,7 @@ class AppPlatformInputMetrics : public ui::EventHandler,
   //   mouse:   { Arc: 5}
   // },
   std::map<std::string, EventSourceToCounts>
-      app_id_to_event_count_per_five_minutes_;
+      app_id_to_event_count_per_two_hours_;
 };
 
 }  // namespace apps

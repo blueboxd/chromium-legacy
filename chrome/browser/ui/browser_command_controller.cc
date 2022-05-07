@@ -70,6 +70,10 @@
 #include "ui/base/ui_base_features.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
+#if BUILDFLAG(IS_LINUX)
+#include "ui/accessibility/accessibility_features.h"
+#endif
+
 #if BUILDFLAG(IS_MAC)
 #include "chrome/browser/ui/browser_commands_mac.h"
 #endif
@@ -189,10 +193,12 @@ BrowserCommandController::BrowserCommandController(Browser* browser)
       base::BindRepeating(
           &BrowserCommandController::UpdateCommandsForIncognitoAvailability,
           base::Unretained(this)));
+#if BUILDFLAG(ENABLE_PRINTING)
   profile_pref_registrar_.Add(
       prefs::kPrintingEnabled,
       base::BindRepeating(&BrowserCommandController::UpdatePrintingState,
                           base::Unretained(this)));
+#endif  // BUILDFLAG(ENABLE_PRINTING)
   profile_pref_registrar_.Add(
       prefs::kDownloadRestrictions,
       base::BindRepeating(&BrowserCommandController::UpdateSaveAsState,
@@ -422,7 +428,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       CloseTabSearch(browser_);
       break;
 
-      // Window management commands
+    // Window management commands
     case IDC_NEW_WINDOW:
       NewWindow(browser_);
       break;
@@ -763,9 +769,7 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       ShowPasswordManager(browser_);
       break;
     case IDC_CLEAR_BROWSING_DATA: {
-      if (profile()->IsIncognitoProfile() &&
-          base::FeatureList::IsEnabled(
-              features::kIncognitoClearBrowsingDataDialogForDesktop)) {
+      if (profile()->IsIncognitoProfile()) {
         ShowIncognitoClearBrowsingDataDialog(browser_);
       } else {
         ShowClearBrowsingDataDialog(browser_);
@@ -883,6 +887,12 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
     case IDC_DEBUG_PRINT_VIEW_TREE_DETAILS:
       ExecuteUIDebugCommand(id, browser_);
       break;
+
+#if BUILDFLAG(IS_LINUX)
+    case IDC_RUN_SCREEN_AI:
+      RunScreenAi(browser_);
+      break;
+#endif
 
     default:
       LOG(WARNING) << "Received Unimplemented Command: " << id;
@@ -1088,10 +1098,7 @@ void BrowserCommandController::InitCommandState() {
        !profile()->IsIncognitoProfile()));
 
   if (profile()->IsIncognitoProfile()) {
-    command_updater_.UpdateCommandEnabled(
-        IDC_CLEAR_BROWSING_DATA,
-        base::FeatureList::IsEnabled(
-            features::kIncognitoClearBrowsingDataDialogForDesktop));
+    command_updater_.UpdateCommandEnabled(IDC_CLEAR_BROWSING_DATA, true);
   } else {
     command_updater_.UpdateCommandEnabled(
         IDC_CLEAR_BROWSING_DATA,
@@ -1423,6 +1430,11 @@ void BrowserCommandController::UpdateCommandsForFullscreenMode() {
                                         main_not_fullscreen);
   command_updater_.UpdateCommandEnabled(
       IDC_FOCUS_INACTIVE_POPUP_FOR_ACCESSIBILITY, main_not_fullscreen);
+
+#if BUILDFLAG(IS_LINUX)
+  command_updater_.UpdateCommandEnabled(IDC_RUN_SCREEN_AI,
+                                        features::IsScreenAIEnabled());
+#endif
 
   // Show various bits of UI
   command_updater_.UpdateCommandEnabled(IDC_DEVELOPER_MENU, show_main_ui);

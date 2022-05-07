@@ -21,6 +21,9 @@
 #import "components/password_manager/ios/shared_password_controller.h"
 #include "components/url_formatter/elide_url.h"
 #include "google_apis/google_api_keys.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_container.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_allow_list.h"
+#import "ios/components/security_interstitials/lookalikes/lookalike_url_tab_helper.h"
 #import "ios/web/public/deprecated/crw_js_injection_receiver.h"
 #include "ios/web/public/favicon/favicon_url.h"
 #include "ios/web/public/js_messaging/web_frame.h"
@@ -346,6 +349,26 @@ BOOL gChromeContextMenuEnabled = NO;
   _javaScriptDialogPresenter->SetUIDelegate(_UIDelegate);
 }
 
+- (void)setNavigationDelegate:(id<CWVNavigationDelegate>)navigationDelegate {
+  _navigationDelegate = navigationDelegate;
+
+  if (!_webState) {
+    return;
+  }
+
+  // Lookalike URLs should only be intercepted if handled by the delegate.
+  if ([_navigationDelegate respondsToSelector:@selector
+                           (webView:handleLookalikeURLWithHandler:)]) {
+    LookalikeUrlTabHelper::CreateForWebState(_webState.get());
+    LookalikeUrlTabAllowList::CreateForWebState(_webState.get());
+    LookalikeUrlContainer::CreateForWebState(_webState.get());
+  } else {
+    LookalikeUrlTabHelper::RemoveFromWebState(_webState.get());
+    LookalikeUrlTabAllowList::RemoveFromWebState(_webState.get());
+    LookalikeUrlContainer::RemoveFromWebState(_webState.get());
+  }
+}
+
 #pragma mark - UIResponder
 
 - (BOOL)becomeFirstResponder {
@@ -500,6 +523,18 @@ BOOL gChromeContextMenuEnabled = NO;
   if ([_UIDelegate respondsToSelector:selector]) {
     [_UIDelegate webViewDidClose:self];
   }
+}
+
+- (web::WebState*)webState:(web::WebState*)webState
+         openURLWithParams:(const web::WebState::OpenURLParams&)params {
+  web::NavigationManager::WebLoadParams load_params(params.url);
+  load_params.referrer = params.referrer;
+  load_params.transition_type = params.transition;
+  load_params.is_renderer_initiated = params.is_renderer_initiated;
+  load_params.virtual_url = params.virtual_url;
+  _webState->GetNavigationManager()->LoadURLWithParams(load_params);
+  [self updateCurrentURLs];
+  return _webState.get();
 }
 
 - (web::JavaScriptDialogPresenter*)javaScriptDialogPresenterForWebState:

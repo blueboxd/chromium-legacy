@@ -33,9 +33,9 @@ namespace input_method {
 
 namespace {
 
-using TextSuggestion = ::chromeos::ime::TextSuggestion;
-using TextSuggestionMode = ::chromeos::ime::TextSuggestionMode;
-using TextSuggestionType = ::chromeos::ime::TextSuggestionType;
+using TextSuggestion = ime::TextSuggestion;
+using TextSuggestionMode = ime::TextSuggestionMode;
+using TextSuggestionType = ime::TextSuggestionType;
 
 constexpr char kEmojiSuggesterShowSettingCount[] =
     "emoji_suggester.show_setting_count";
@@ -221,9 +221,7 @@ bool EmojiSuggester::ShouldShowSuggestion(const std::u16string& text) {
   return false;
 }
 
-bool EmojiSuggester::Suggest(const std::u16string& text,
-                             size_t cursor_pos,
-                             size_t anchor_pos) {
+bool EmojiSuggester::Suggest(const std::u16string& text, size_t cursor_pos) {
   if (emoji_map_.empty() || text[text.length() - 1] != kSpaceChar)
     return false;
   std::string last_word =

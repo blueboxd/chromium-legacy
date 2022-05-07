@@ -25,9 +25,9 @@ import '../bluetooth_page/bluetooth_page.js';
 import '../device_page/device_page.js';
 import '../internet_page/internet_page.js';
 import '../kerberos_page/kerberos_page.js';
-import '../multidevice_page/multidevice_page.m.js';
+import '../multidevice_page/multidevice_page.js';
 import '../os_bluetooth_page/os_bluetooth_page.js';
-import '../os_icons.m.js';
+import '../os_icons.js';
 
 import {assert} from '//resources/js/assert.m.js';
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
@@ -36,7 +36,7 @@ import {beforeNextRender, html, Polymer} from '//resources/polymer/v3_0/polymer/
 
 import {Route, Router} from '../../router.js';
 import {AndroidAppsBrowserProxyImpl, AndroidAppsInfo} from '../os_apps_page/android_apps_browser_proxy.js';
-import {OSPageVisibility, osPageVisibility} from '../os_page_visibility.m.js';
+import {OSPageVisibility, osPageVisibility} from '../os_page_visibility.js';
 import {routes} from '../os_route.m.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
 
@@ -87,6 +87,19 @@ Polymer({
     isGuestMode_: {
       type: Boolean,
       value: loadTimeData.getBoolean('isGuest'),
+    },
+
+    /**
+     * Whether Accessibility OS Settings visibility improvements are enabled.
+     * @private{boolean}
+     */
+    isAccessibilityOSSettingsVisibilityEnabled_: {
+      type: Boolean,
+      readOnly: true,
+      value() {
+        return loadTimeData.getBoolean(
+            'isAccessibilityOSSettingsVisibilityEnabled');
+      }
     },
 
     /**

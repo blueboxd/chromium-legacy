@@ -9,33 +9,24 @@ import './elements/viewer-zoom-toolbar.js';
 import './pdf_viewer_shared_style.js';
 
 import {assertNotReached} from 'chrome://resources/js/assert_ts.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {isRTL} from 'chrome://resources/js/util.m.js';
-import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserApi} from './browser_api.js';
-import {FittingType} from './constants.js';
+import {ExtendedKeyEvent, FittingType} from './constants.js';
 import {MessageData, PluginController, PrintPreviewParams} from './controller.js';
 import {ViewerPageIndicatorElement} from './elements/viewer-page-indicator.js';
 import {ViewerZoomToolbarElement} from './elements/viewer-zoom-toolbar.js';
 import {DeserializeKeyEvent, LoadState, SerializeKeyEvent} from './pdf_scripting_api.js';
-import {PDFViewerBaseElement} from './pdf_viewer_base.js';
-import {DestinationMessageData, DocumentDimensionsMessageData, hasCtrlModifier, MessageObject, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
+import {KeyEventData, PDFViewerBaseElement} from './pdf_viewer_base.js';
+import {getTemplate} from './pdf_viewer_pp.html.js';
+import {DestinationMessageData, DocumentDimensionsMessageData, hasCtrlModifier, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
 import {ToolbarManager} from './toolbar_manager.js';
-
-
-type KeyEventData = MessageData&{keyEvent: Object};
-
-type ExtendedKeyEvent = KeyboardEvent&{
-  fromScriptingAPI?: boolean,
-  fromPlugin?: boolean,
-};
 
 export interface PDFViewerPPElement {
   $: {
-    content: HTMLDivElement,
+    content: HTMLElement,
     pageIndicator: ViewerPageIndicatorElement,
-    sizer: HTMLDivElement,
+    sizer: HTMLElement,
     zoomToolbar: ViewerZoomToolbarElement,
   };
 }
@@ -46,7 +37,7 @@ export class PDFViewerPPElement extends PDFViewerBaseElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   private isPrintPreviewLoadingFinished_: boolean = false;
@@ -55,14 +46,7 @@ export class PDFViewerPPElement extends PDFViewerBaseElement {
   private pluginController_: PluginController|undefined = undefined;
   private toolbarManager_: ToolbarManager|null = null;
 
-  ready() {
-    super.ready();
-    window.addEventListener('scroll', () => {
-      this.pluginController_!.updateScroll(window.scrollX, window.scrollY);
-    });
-  }
-
-  isNewUiEnabled() {
+  override isNewUiEnabled() {
     return false;
   }
 
@@ -71,7 +55,7 @@ export class PDFViewerPPElement extends PDFViewerBaseElement {
   }
 
   init(browserApi: BrowserApi) {
-    super.init(
+    this.initInternal(
         browserApi, document.documentElement, this.$.sizer, this.$.content);
 
     this.pluginController_ = PluginController.getInstance();
@@ -170,7 +154,7 @@ export class PDFViewerPPElement extends PDFViewerBaseElement {
     this.pluginController_!.viewportChanged();
   }
 
-  handleScriptingMessage(message: MessageObject) {
+  override handleScriptingMessage(message: MessageEvent) {
     if (super.handleScriptingMessage(message)) {
       return true;
     }
@@ -202,7 +186,7 @@ export class PDFViewerPPElement extends PDFViewerBaseElement {
    * @param message the message to handle.
    * @return true if the message was handled, false otherwise.
    */
-  private handlePrintPreviewScriptingMessage_(message: MessageObject): boolean {
+  private handlePrintPreviewScriptingMessage_(message: MessageEvent): boolean {
     const messageData = message.data;
     switch (messageData.type.toString()) {
       case 'loadPreviewPage':
@@ -257,14 +241,14 @@ export class PDFViewerPPElement extends PDFViewerBaseElement {
     return false;
   }
 
-  setLoadState(loadState: LoadState) {
+  override setLoadState(loadState: LoadState) {
     super.setLoadState(loadState);
     if (loadState === LoadState.FAILED) {
       this.isPrintPreviewLoadingFinished_ = true;
     }
   }
 
-  handlePluginMessage(e: CustomEvent) {
+  override handlePluginMessage(e: CustomEvent) {
     const data = e.detail;
     switch (data.type.toString()) {
       case 'documentDimensions':
@@ -326,7 +310,7 @@ export class PDFViewerPPElement extends PDFViewerBaseElement {
     this.sendDocumentLoadedMessage();
   }
 
-  readyToSendLoadMessage() {
+  override readyToSendLoadMessage() {
     return this.isPrintPreviewLoadingFinished_;
   }
 
@@ -334,7 +318,9 @@ export class PDFViewerPPElement extends PDFViewerBaseElement {
     this.$.zoomToolbar.forceFit(view);
   }
 
-  handleStrings(strings: {[key: string]: string}) {
+  protected afterZoom(_viewportZoom: number) {}
+
+  override handleStrings(strings: {[key: string]: string}) {
     super.handleStrings(strings);
     if (!strings) {
       return;
@@ -342,7 +328,7 @@ export class PDFViewerPPElement extends PDFViewerBaseElement {
     this.setBackgroundColorForPrintPreview_();
   }
 
-  updateProgress(progress: number) {
+  override updateProgress(progress: number) {
     super.updateProgress(progress);
     if (progress === 100) {
       this.toolbarManager_!.hideToolbarAfterTimeout();

@@ -24,8 +24,8 @@
 #include "media/cast/net/cast_transport_config.h"
 #include "media/cast/net/cast_transport_impl.h"
 #include "media/cast/net/pacing/paced_sender.h"
-#include "media/cast/sender/fake_video_encode_accelerator_factory.h"
 #include "media/cast/sender/video_frame_factory.h"
+#include "media/cast/test/fake_video_encode_accelerator_factory.h"
 #include "media/cast/test/utility/default_config.h"
 #include "media/cast/test/utility/video_utility.h"
 #include "media/video/fake_video_encode_accelerator.h"
@@ -363,7 +363,7 @@ TEST_F(VideoSenderTest, ResendTimer) {
   video_sender_->InsertRawVideoFrame(video_frame, reference_time);
 
   base::TimeDelta max_resend_timeout =
-      base::Milliseconds(1 + kDefaultRtpMaxDelayMs);
+      kDefaultTargetPlayoutDelay + base::Milliseconds(1);
 
   // Make sure that we do a re-send.
   RunTasks(max_resend_timeout.InMilliseconds());

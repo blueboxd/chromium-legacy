@@ -18,7 +18,6 @@
 #include "chrome/browser/optimization_guide/browser_test_util.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
-#include "chrome/browser/optimization_guide/prediction/prediction_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_key.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -28,11 +27,15 @@
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/optimization_guide/core/optimization_guide_constants.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
+#include "components/optimization_guide/core/optimization_guide_prefs.h"
 #include "components/optimization_guide/core/optimization_guide_store.h"
 #include "components/optimization_guide/core/optimization_guide_switches.h"
 #include "components/optimization_guide/core/optimization_guide_test_util.h"
+#include "components/optimization_guide/core/prediction_manager.h"
+#include "components/optimization_guide/core/prediction_model_download_manager.h"
 #include "components/optimization_guide/core/store_update_data.h"
 #include "components/optimization_guide/proto/models.pb.h"
+#include "components/prefs/pref_service.h"
 #include "components/variations/hashing.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -306,6 +309,23 @@ class PredictionManagerBrowserTest : public PredictionManagerBrowserTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserTest,
+                       RemoteFetchingPrefDisabled) {
+  ModelFileObserver model_file_observer;
+  SetResponseType(PredictionModelsFetcherRemoteResponseType::kUnsuccessful);
+  browser()->profile()->GetPrefs()->SetBoolean(
+      optimization_guide::prefs::kOptimizationGuideFetchingEnabled, false);
+  base::HistogramTester histogram_tester;
+
+  RegisterWithKeyedService(&model_file_observer);
+
+  base::RunLoop().RunUntilIdle();
+
+  // Should not have made fetch request.
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelFetcher.GetModelsResponse.Status", 0);
+}
+
+IN_PROC_BROWSER_TEST_F(PredictionManagerBrowserTest,
                        ModelsAndFeaturesStoreInitialized) {
   ModelFileObserver model_file_observer;
   SetResponseType(
@@ -371,7 +391,6 @@ class PredictionManagerNoUserPermissionsTest
     PredictionManagerBrowserTest::SetUpCommandLine(cmd);
 
     // Remove switches that enable user permissions.
-    cmd->RemoveSwitch("enable-spdy-proxy-auth");
     cmd->RemoveSwitch(switches::kDisableCheckingUserPermissionsForTesting);
   }
 
@@ -586,6 +605,22 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerModelDownloadingBrowserTest,
       &histogram_tester,
       "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus", 1);
 
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelDownloadManager.State.PainfulPageLoad",
+      2);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.PredictionModelDownloadManager.State.PainfulPageLoad",
+      PredictionModelDownloadManager::PredictionModelDownloadState::kRequested,
+      1);
+  histogram_tester.ExpectBucketCount(
+      "OptimizationGuide.PredictionModelDownloadManager.State.PainfulPageLoad",
+      PredictionModelDownloadManager::PredictionModelDownloadState::kStarted,
+      1);
+  histogram_tester.ExpectTotalCount(
+      "OptimizationGuide.PredictionModelDownloadManager.DownloadStartLatency."
+      "PainfulPageLoad",
+      1);
+
   histogram_tester.ExpectUniqueSample(
       "OptimizationGuide.PredictionModelDownloadManager.DownloadStatus",
       PredictionModelDownloadStatus::kFailedCrxVerification, 1);
@@ -727,8 +762,14 @@ IN_PROC_BROWSER_TEST_F(PredictionManagerModelDownloadingBrowserTest,
       "OptimizationGuide.PredictionModelLoadedVersion.PainfulPageLoad", 0);
 }
 
+// Flaky on multiple ASAN bots. See https://crbug.com/1266318
+#if defined(ADDRESS_SANITIZER)
+#define MAYBE_TestSwitchProfileDoesntCrash DISABLED_TestSwitchProfileDoesntCrash
+#else
+#define MAYBE_TestSwitchProfileDoesntCrash TestSwitchProfileDoesntCrash
+#endif
 IN_PROC_BROWSER_TEST_F(PredictionManagerModelDownloadingBrowserTest,
-                       TestSwitchProfileDoesntCrash) {
+                       MAYBE_TestSwitchProfileDoesntCrash) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::FilePath other_path =
       profile_manager->GenerateNextProfileDirectoryPath();

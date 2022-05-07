@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/check.h"
+#include "base/containers/adapters.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
@@ -204,11 +205,8 @@ NotificationList::PopupNotifications NotificationList::GetPopupNotifications(
   size_t default_priority_popup_count = 0;
 
   // Collect notifications that should be shown as popups. Start from oldest.
-  for (auto iter = notifications_.rbegin(); iter != notifications_.rend();
-       iter++) {
-    NotificationState* state = &iter->second;
-    Notification* notification = iter->first.get();
-    if (state->shown_as_popup)
+  for (auto& [notification, state] : base::Reversed(notifications_)) {
+    if (state.shown_as_popup)
       continue;
 
     // No popups for LOW/MIN priority.
@@ -221,8 +219,8 @@ NotificationList::PopupNotifications NotificationList::GetPopupNotifications(
 
     if (!ShouldShowNotificationAsPopup(*notification, blockers,
                                        /*except=*/nullptr)) {
-      if (state->is_read)
-        state->shown_as_popup = true;
+      if (state.is_read)
+        state.shown_as_popup = true;
       if (blocked)
         blocked->push_back(notification->id());
       continue;
@@ -236,7 +234,7 @@ NotificationList::PopupNotifications NotificationList::GetPopupNotifications(
       continue;
     }
 
-    result.insert(notification);
+    result.insert(notification.get());
   }
   return result;
 }
@@ -314,7 +312,8 @@ void NotificationList::ResetSinglePopup(const std::string& id) {
   DCHECK(iter != notifications_.end());
 
   NotificationState* state = &iter->second;
-  state->shown_as_popup = false;
+  // `shown_as_popup` should be true if quiet mode is enabled.
+  state->shown_as_popup = quiet_mode_;
   state->is_read = false;
 }
 
@@ -329,6 +328,8 @@ NotificationDelegate* NotificationList::GetNotificationDelegate(
 void NotificationList::SetQuietMode(bool quiet_mode) {
   quiet_mode_ = quiet_mode;
   if (quiet_mode_) {
+    // To prevent popups showing in quiet mode, mark all notifications'
+    // `shown_as_popup` to true.
     for (auto& tuple : notifications_)
       tuple.second.shown_as_popup = true;
   }

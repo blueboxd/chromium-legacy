@@ -44,6 +44,7 @@
 <translation id="3344973607274501920">Chromium kan je wachtwoorden niet checken. Check de internetverbinding.</translation>
 <translation id="3472200483164753384">Niet ondersteund in Chromium Canary</translation>
 <translation id="3639997914391704523">Chromium kan je wachtwoorden checken als je inlogt met je Google-account.</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" /> heeft Chromium gebruikt en heeft bookmarks, wachtwoorden en andere instellingen op dit apparaat laten staan.</translation>
 <translation id="3805899903892079518">Chromium heeft geen toegang tot je foto's of video's. Geef in iOS toegang via Instellingen &gt; Privacy &gt; Foto's.</translation>
 <translation id="4043291146360695975">Wachtwoorden worden alleen opgeslagen in Wachtwoordmanager op dit apparaat.</translation>
 <translation id="4099085513035183040">Niet ondersteund in Chromium (bèta)</translation>
@@ -55,6 +56,15 @@
 <translation id="4828317641996116749">Chromium kan niet alle wachtwoorden checken. Probeer het later opnieuw.</translation>
 <translation id="4985291216379576555">Offline. Chromium kan niet checken op updates</translation>
 <translation id="4999538639245140991">Omdat je uitlogt van een account dat wordt beheerd door <ph name="SIGNOUT_MANAGED_DOMAIN" />, worden je Chromium-gegevens van dit apparaat verwijderd. Je gegevens blijven echter wel in je Google-account staan.</translation>
+<translation id="5039881550736388123">Indien aan:
+<ph name="BEGIN_INDENT" />  • Help Chromium te verbeteren voor mensen die de browser gebruiken op dezelfde manier als jij.<ph name="END_INDENT" />
+
+Aandachtspunten:
+<ph name="BEGIN_INDENT" />  • Er wordt informatie over je Chromium-gebruik naar Google gestuurd, maar deze informatie wordt niet aan jou gekoppeld.
+
+  • Als Chromium crasht, kunnen details over de crash bepaalde persoonlijke informatie bevatten.
+
+  • Als je synchronisatie aanzet, kunnen statistieken ook informatie bevatten over de URL's die je bezoekt.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Inloggen bij Chromium</translation>
 <translation id="5224391634244552924">Geen opgeslagen wachtwoorden. Chromium kan je wachtwoorden checken als je deze hebt opgeslagen.</translation>
 <translation id="5308226104666789935">Chromium kan niet checken op updates</translation>
@@ -65,6 +75,7 @@
 <translation id="5777187867430702742">Chromium-pagina</translation>
 <translation id="5862307444128926510">Welkom bij Chromium</translation>
 <translation id="5945387852661427312">Je logt in met een account dat wordt beheerd door <ph name="DOMAIN" />, waarmee je de eigenaar beheer geeft over je Chromium-gegevens. Je gegevens worden permanent gekoppeld aan dit account. Als je uitlogt van Chromium, worden je gegevens van dit apparaat verwijderd. Ze blijven echter opgeslagen in je Google-account.</translation>
+<translation id="5983312940147103417">Chromium verbeteren</translation>
 <translation id="602807004951640891">Door Chromium te gebruiken, ga je akkoord met de <ph name="BEGIN_LINK_TOS" />servicevoorwaarden<ph name="END_LINK_TOS" />.</translation>
 <translation id="6119647025869519954">Zo stel je Chromium in als standaardbrowser:
 1. Open Instellingen.

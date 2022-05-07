@@ -5,9 +5,7 @@
 
 #import <Foundation/Foundation.h>
 
-#include "base/run_loop.h"
 #include "base/test/bind.h"
-#import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/password_manager/core/browser/site_affiliation/mock_affiliation_service.h"
 #include "components/password_manager/core/browser/well_known_change_password_util.h"
@@ -15,11 +13,12 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_affiliation_service_factory.h"
-#include "ios/chrome/browser/web/chrome_web_test.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #import "ios/web/public/test/fakes/fake_web_client.h"
 #import "ios/web/public/test/fakes/fake_web_state_delegate.h"
 #import "ios/web/public/test/navigation_test_util.h"
+#import "ios/web/public/test/scoped_testing_web_client.h"
+#import "ios/web/public/test/task_observer_util.h"
 #include "ios/web/public/test/web_task_environment.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #include "net/cert/x509_certificate.h"
@@ -31,6 +30,7 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/platform_test.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -74,20 +74,27 @@ void LoadUrlWithTransition(web::WebState* web_state,
 
 // This test uses a mockserver to simulate different response. To handle the
 // url_loader requests we also mock the response for the url_loader_factory.
-class WellKnownChangePasswordTabHelperTest : public ChromeWebTest {
+class WellKnownChangePasswordTabHelperTest : public PlatformTest {
  public:
   using UkmBuilder =
       ukm::builders::PasswordManager_WellKnownChangePasswordResult;
   WellKnownChangePasswordTabHelperTest()
-      : ChromeWebTest(std::make_unique<web::FakeWebClient>(),
-                      web::WebTaskEnvironment::Options::IO_MAINLOOP) {
+      : web_client_(std::make_unique<web::FakeWebClient>()),
+        task_environment_(web::WebTaskEnvironment::Options::IO_MAINLOOP) {
     test_server_->RegisterRequestHandler(base::BindRepeating(
         &WellKnownChangePasswordTabHelperTest::HandleRequest,
         base::Unretained(this)));
+
+    browser_state_ = TestChromeBrowserState::Builder().Build();
+
+    web::WebState::CreateParams params(browser_state_.get());
+    web_state_ = web::WebState::Create(params);
+    web_state_->GetView();
+    web_state_->SetKeepRenderProcessAlive(true);
   }
 
   void SetUp() override {
-    ChromeWebTest::SetUp();
+    PlatformTest::SetUp();
     EXPECT_TRUE(test_server_->InitializeAndListen());
     test_server_->StartAcceptingConnections();
 
@@ -105,7 +112,7 @@ class WellKnownChangePasswordTabHelperTest : public ChromeWebTest {
     web_state()->SetDelegate(&delegate_);
     password_manager::WellKnownChangePasswordTabHelper::CreateForWebState(
         web_state());
-    GetBrowserState()->SetSharedURLLoaderFactory(
+    browser_state_->SetSharedURLLoaderFactory(
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &test_url_loader_factory_));
     test_recorder_ = std::make_unique<ukm::TestAutoSetUkmRecorder>();
@@ -142,6 +149,14 @@ class WellKnownChangePasswordTabHelperTest : public ChromeWebTest {
   std::unique_ptr<EmbeddedTestServer> test_server_ =
       std::make_unique<EmbeddedTestServer>();
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_recorder_;
+
+ protected:
+  web::WebState* web_state() const { return web_state_.get(); }
+
+  web::ScopedTestingWebClient web_client_;
+  web::WebTaskEnvironment task_environment_;
+  std::unique_ptr<TestChromeBrowserState> browser_state_;
+  std::unique_ptr<web::WebState> web_state_;
 
  private:
   // Returns a response for the given request. Uses |path_response_map_| to
@@ -194,7 +209,7 @@ TEST_F(WellKnownChangePasswordTabHelperTest, SupportForChangePassword) {
 
   web::test::LoadUrl(web_state(),
                      test_server_->GetURL(kWellKnownChangePasswordPath));
-  ASSERT_TRUE(WaitUntilLoaded());
+  ASSERT_TRUE(web::test::WaitUntilLoaded(web_state()));
   EXPECT_EQ(GetNavigatedUrl().path(), kWellKnownChangePasswordPath);
   ExpectUkmMetric(WellKnownChangePasswordResult::kUsedWellKnownChangePassword);
 }
@@ -210,7 +225,7 @@ TEST_F(WellKnownChangePasswordTabHelperTest,
 
   web::test::LoadUrl(web_state(),
                      test_server_->GetURL(kWellKnownChangePasswordPath));
-  ASSERT_TRUE(WaitUntilLoaded());
+  ASSERT_TRUE(web::test::WaitUntilLoaded(web_state()));
   EXPECT_EQ(GetNavigatedUrl().path(), "/change-password");
   ExpectUkmMetric(WellKnownChangePasswordResult::kUsedWellKnownChangePassword);
 }
@@ -223,7 +238,7 @@ TEST_F(WellKnownChangePasswordTabHelperTest,
 
   web::test::LoadUrl(web_state(),
                      test_server_->GetURL(kWellKnownChangePasswordPath));
-  ASSERT_TRUE(WaitUntilLoaded());
+  ASSERT_TRUE(web::test::WaitUntilLoaded(web_state()));
   EXPECT_EQ(GetNavigatedUrl().path(), "/");
   ExpectUkmMetric(WellKnownChangePasswordResult::kFallbackToOriginUrl);
 }
@@ -235,7 +250,7 @@ TEST_F(WellKnownChangePasswordTabHelperTest, NoSupportForChangePassword_Ok) {
 
   web::test::LoadUrl(web_state(),
                      test_server_->GetURL(kWellKnownChangePasswordPath));
-  ASSERT_TRUE(WaitUntilLoaded());
+  ASSERT_TRUE(web::test::WaitUntilLoaded(web_state()));
   EXPECT_EQ(GetNavigatedUrl().path(), "/");
   ExpectUkmMetric(WellKnownChangePasswordResult::kFallbackToOriginUrl);
 }
@@ -248,7 +263,7 @@ TEST_F(WellKnownChangePasswordTabHelperTest,
   SetUrlLoaderResponse(kWellKnownNotExistingResourcePath, net::HTTP_OK);
   web::test::LoadUrl(web_state(),
                      test_server_->GetURL(kWellKnownChangePasswordPath));
-  ASSERT_TRUE(WaitUntilLoaded());
+  ASSERT_TRUE(web::test::WaitUntilLoaded(web_state()));
   EXPECT_EQ(GetNavigatedUrl().path(), "/");
   ExpectUkmMetric(WellKnownChangePasswordResult::kFallbackToOriginUrl);
 }
@@ -263,7 +278,7 @@ TEST_F(WellKnownChangePasswordTabHelperTest,
   SetUrlLoaderResponse(kWellKnownNotExistingResourcePath, net::HTTP_OK);
   web::test::LoadUrl(web_state(),
                      test_server_->GetURL(kWellKnownChangePasswordPath));
-  ASSERT_TRUE(WaitUntilLoaded());
+  ASSERT_TRUE(web::test::WaitUntilLoaded(web_state()));
   EXPECT_EQ(GetNavigatedUrl().path(), kMockChangePasswordPath);
   ExpectUkmMetric(WellKnownChangePasswordResult::kFallbackToOverrideUrl);
 }
@@ -274,7 +289,7 @@ TEST_F(WellKnownChangePasswordTabHelperTest,
   LoadUrlWithTransition(web_state(),
                         test_server_->GetURL(kWellKnownChangePasswordPath),
                         ui::PAGE_TRANSITION_LINK);
-  ASSERT_TRUE(WaitUntilLoaded());
+  ASSERT_TRUE(web::test::WaitUntilLoaded(web_state()));
   EXPECT_EQ(GetNavigatedUrl().path(), kWellKnownChangePasswordPath);
 
   // In the case of PAGE_TRANSITION_LINK the tab helper should not be active and
@@ -292,7 +307,7 @@ TEST_F(WellKnownChangePasswordTabHelperTest,
 
   web::test::LoadUrl(web_state(),
                      test_server_->GetURL(kWellKnownChangePasswordPath));
-  ASSERT_TRUE(WaitUntilLoaded());
+  ASSERT_TRUE(web::test::WaitUntilLoaded(web_state()));
   EXPECT_EQ(GetNavigatedUrl().path(), kWellKnownChangePasswordPath);
   ExpectUkmMetric(WellKnownChangePasswordResult::kUsedWellKnownChangePassword);
 }

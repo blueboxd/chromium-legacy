@@ -260,13 +260,13 @@ void WebUIImpl::CallJavascriptFunctionUnsafe(
 
 void WebUIImpl::RegisterMessageCallback(base::StringPiece message,
                                         MessageCallback callback) {
-  message_callbacks_.emplace(std::string(message), std::move(callback));
+  message_callbacks_.emplace(message, std::move(callback));
 }
 
 void WebUIImpl::RegisterDeprecatedMessageCallback(
     base::StringPiece message,
     const DeprecatedMessageCallback& callback) {
-  deprecated_message_callbacks_.emplace(std::string(message), callback);
+  deprecated_message_callbacks_.emplace(message, callback);
 }
 
 void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
@@ -275,11 +275,10 @@ void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
   if (controller_->OverrideHandleWebUIMessage(source_url, message, args))
     return;
 
-  // Look up the callback for this message.
   auto callback_pair = message_callbacks_.find(message);
   if (callback_pair != message_callbacks_.end()) {
     // Forward this message and content on.
-    callback_pair->second.Run(args.GetListDeprecated());
+    callback_pair->second.Run(args.GetList());
     return;
   }
 

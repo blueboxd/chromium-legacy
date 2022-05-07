@@ -259,6 +259,7 @@ void WaylandBufferManagerGpu::CreateSolidColorBuffer(SkColor color,
 }
 
 void WaylandBufferManagerGpu::CommitBuffer(gfx::AcceleratedWidget widget,
+                                           uint32_t frame_id,
                                            uint32_t buffer_id,
                                            const gfx::Rect& bounds_rect,
                                            float surface_scale_factor,
@@ -273,42 +274,42 @@ void WaylandBufferManagerGpu::CommitBuffer(gfx::AcceleratedWidget widget,
       1.0f /*opacity*/, gfx::GpuFenceHandle(), gfx::OverlayPriorityHint::kNone,
       gfx::RRectF()));
 
-  CommitOverlays(widget, std::move(overlay_configs));
+  CommitOverlays(widget, frame_id, std::move(overlay_configs));
 }
 
 void WaylandBufferManagerGpu::CommitOverlays(
     gfx::AcceleratedWidget widget,
+    uint32_t frame_id,
     std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays) {
   DCHECK(gpu_thread_runner_);
   if (!gpu_thread_runner_->BelongsToCurrentThread()) {
     // Do the mojo call on the GpuMainThread.
     gpu_thread_runner_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&WaylandBufferManagerGpu::CommitOverlays,
-                       base::Unretained(this), widget, std::move(overlays)));
+        FROM_HERE, base::BindOnce(&WaylandBufferManagerGpu::CommitOverlays,
+                                  base::Unretained(this), widget, frame_id,
+                                  std::move(overlays)));
     return;
   }
 
-  base::OnceClosure task =
-      base::BindOnce(&WaylandBufferManagerGpu::CommitOverlaysTask,
-                     base::Unretained(this), widget, std::move(overlays));
+  base::OnceClosure task = base::BindOnce(
+      &WaylandBufferManagerGpu::CommitOverlaysTask, base::Unretained(this),
+      widget, frame_id, std::move(overlays));
   RunOrQueueTask(std::move(task));
 }
 
-void WaylandBufferManagerGpu::DestroyBuffer(gfx::AcceleratedWidget widget,
-                                            uint32_t buffer_id) {
+void WaylandBufferManagerGpu::DestroyBuffer(uint32_t buffer_id) {
   DCHECK(gpu_thread_runner_);
   if (!gpu_thread_runner_->BelongsToCurrentThread()) {
     // Do the mojo call on the GpuMainThread.
     gpu_thread_runner_->PostTask(
         FROM_HERE, base::BindOnce(&WaylandBufferManagerGpu::DestroyBuffer,
-                                  base::Unretained(this), widget, buffer_id));
+                                  base::Unretained(this), buffer_id));
     return;
   }
 
   base::OnceClosure task =
       base::BindOnce(&WaylandBufferManagerGpu::DestroyBufferTask,
-                     base::Unretained(this), widget, buffer_id);
+                     base::Unretained(this), buffer_id);
   RunOrQueueTask(std::move(task));
 }
 
@@ -398,26 +399,26 @@ void WaylandBufferManagerGpu::ForgetTaskRunnerForWidgetOnIOThread(
 
 void WaylandBufferManagerGpu::SubmitSwapResultOnOriginThread(
     gfx::AcceleratedWidget widget,
-    uint32_t buffer_id,
+    uint32_t frame_id,
     gfx::SwapResult swap_result,
     gfx::GpuFenceHandle release_fence) {
   DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
   auto* surface = GetSurface(widget);
   // The surface might be destroyed by the time the swap result is provided.
   if (surface)
-    surface->OnSubmission(buffer_id, swap_result, std::move(release_fence));
+    surface->OnSubmission(frame_id, swap_result, std::move(release_fence));
 }
 
 void WaylandBufferManagerGpu::SubmitPresentationOnOriginThread(
     gfx::AcceleratedWidget widget,
-    uint32_t buffer_id,
+    uint32_t frame_id,
     const gfx::PresentationFeedback& feedback) {
   DCHECK_NE(widget, gfx::kNullAcceleratedWidget);
   auto* surface = GetSurface(widget);
   // The surface might be destroyed by the time the presentation feedback is
   // provided.
   if (surface)
-    surface->OnPresentation(buffer_id, feedback);
+    surface->OnPresentation(frame_id, feedback);
 }
 
 #if defined(WAYLAND_GBM)
@@ -508,19 +509,19 @@ void WaylandBufferManagerGpu::CreateSolidColorBufferTask(SkColor color,
 
 void WaylandBufferManagerGpu::CommitOverlaysTask(
     gfx::AcceleratedWidget widget,
+    uint32_t frame_id,
     std::vector<ozone::mojom::WaylandOverlayConfigPtr> overlays) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   DCHECK(remote_host_);
 
-  remote_host_->CommitOverlays(widget, std::move(overlays));
+  remote_host_->CommitOverlays(widget, frame_id, std::move(overlays));
 }
 
-void WaylandBufferManagerGpu::DestroyBufferTask(gfx::AcceleratedWidget widget,
-                                                uint32_t buffer_id) {
+void WaylandBufferManagerGpu::DestroyBufferTask(uint32_t buffer_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(gpu_sequence_checker_);
   DCHECK(remote_host_);
 
-  remote_host_->DestroyBuffer(widget, buffer_id);
+  remote_host_->DestroyBuffer(buffer_id);
 }
 
 }  // namespace ui

@@ -611,6 +611,9 @@ class CORE_EXPORT PaintLayerScrollableArea final
     return FreezeScrollbarsScope::ScrollbarsAreFrozen();
   }
 
+  // Force scrollbars off for reconstruction.
+  void RemoveScrollbarsForReconstruction();
+
  private:
   // This also updates main thread scrolling reasons and the LayoutBox's
   // background paint location.
@@ -622,7 +625,8 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void ResetScrollOriginChanged() { scroll_origin_changed_ = false; }
   void UpdateScrollOrigin();
   void UpdateScrollDimensions();
-  void UpdateScrollbarEnabledState();
+  void UpdateScrollbarEnabledState(bool is_horizontal_scrollbar_frozen = false,
+                                   bool is_vertical_scrollbar_frozen = false);
 
   // Update the proportions used for thumb rect dimensions.
   void UpdateScrollbarProportions();
@@ -660,9 +664,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // Returns true iff scrollbar existence changed.
   bool SetHasHorizontalScrollbar(bool has_scrollbar);
   bool SetHasVerticalScrollbar(bool has_scrollbar);
-
-  // Force scrollbars off for reconstruction.
-  void RemoveScrollbarsForReconstruction();
 
   void UpdateScrollCornerStyle();
   LayoutSize MinimumSizeForResizing(float zoom_factor);

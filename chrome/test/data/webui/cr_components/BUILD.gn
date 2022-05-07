@@ -3,30 +3,41 @@
 # found in the LICENSE file.
 
 import("//crypto/features.gni")
-import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/grit/preprocess_if_expr.gni")
 import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 
-js_type_check("closure_compile") {
-  is_polymer3 = true
-  closure_flags = default_closure_args + mojom_js_args + [
-                    "browser_resolver_prefix_replacements=\"chrome://settings/=../../chrome/browser/resources/settings/\"",
-                    "browser_resolver_prefix_replacements=\"chrome://new-tab-page/=../../chrome/browser/resources/new_tab_page//\"",
-                    "js_module_root=./gen/ui/webui/resources/preprocessed/",
-                    "js_module_root=../../chrome/test/data/webui/",
-                    "js_module_root=./gen/chrome/test/data/webui/",
-                  ]
+preprocessed_files = [ "managed_footnote_test.ts" ]
 
-  deps = [ ":managed_dialog_test" ]
+if (use_nss_certs) {
+  # Test files that contain // <if expr> and therefore require preprocessing.
+  preprocessed_files += [ "certificate_manager_test.ts" ]
+  if (is_chromeos_ash) {
+    preprocessed_files += [ "certificate_manager_provisioning_test.ts" ]
+  }
 }
 
-js_library("managed_dialog_test") {
-  deps = [
-    "..:chai_assert",
-    "//ui/webui/resources/cr_components/managed_dialog",
-    "//ui/webui/resources/js:load_time_data.m",
-  ]
-  externs_list = [ "$externs_path/mocha-2.5.js" ]
+# Test files that do not require preprocessing. If adding // <if expr> to any
+# file below, move it to the list above.
+non_preprocessed_files = [
+  "customize_themes_test.ts",
+  "managed_dialog_test.ts",
+  "most_visited_focus_test.ts",
+  "most_visited_test.ts",
+  "most_visited_test_support.ts",
+]
+
+preprocessed_folder = "$target_gen_dir/preprocessed"
+
+preprocess_if_expr("preprocess") {
+  in_folder = "."
+  out_folder = preprocessed_folder
+  in_files = preprocessed_files
+}
+
+copy("copy") {
+  sources = non_preprocessed_files
+  outputs = [ "$preprocessed_folder/{{source_target_relative}}" ]
 }
 
 generate_grd("build_grdp") {
@@ -39,17 +50,26 @@ generate_grd("build_grdp") {
 }
 
 ts_library("build_ts") {
-  root_dir = "./"
+  root_dir = preprocessed_folder
   out_dir = "$target_gen_dir/tsc"
   tsconfig_base = "tsconfig_base.json"
   path_mappings = [ "chrome://webui-test/*|" +
                     rebase_path("$root_gen_dir/chrome/test/data/webui/tsc/*",
                                 target_gen_dir) ]
-  in_files = [
-    "most_visited_focus_test.ts",
-    "most_visited_test.ts",
-    "most_visited_test_support.ts",
+  in_files = non_preprocessed_files + preprocessed_files
+  deps = [
+    "//ui/webui/resources/cr_components/customize_themes:build_ts",
+    "//ui/webui/resources/cr_components/most_visited:build_ts",
   ]
-  deps = [ "//ui/webui/resources/cr_components/most_visited:build_ts" ]
-  extra_deps = [ "..:generate_definitions" ]
+
+  if (use_nss_certs) {
+    deps +=
+        [ "//ui/webui/resources/cr_components/certificate_manager:build_ts" ]
+  }
+
+  extra_deps = [
+    ":copy",
+    ":preprocess",
+    "..:generate_definitions",
+  ]
 }

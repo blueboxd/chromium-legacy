@@ -490,6 +490,13 @@ void AppListBubbleView::UpdateForNewSortingOrder(
     const absl::optional<AppListSortOrder>& new_order,
     bool animate,
     base::OnceClosure update_position_closure) {
+  // If app list sort order change is animated, hide any open folders as part of
+  // animation. If the update is not animated, e.g. when committing sort order,
+  // keep the folder open to prevent folder closure when apps within the folder
+  // are reordered, or whe the folder gets renamed.
+  if (animate && showing_folder_)
+    HideFolderView(/*animate=*/false, /*hide_for_reparent=*/false);
+
   apps_page_->UpdateForNewSortingOrder(new_order, animate,
                                        std::move(update_position_closure));
 }
@@ -525,12 +532,17 @@ void AppListBubbleView::OnThemeChanged() {
       kBubbleCornerRadius));
   SetBorder(std::make_unique<HighlightBorder>(
       kBubbleCornerRadius, HighlightBorder::Type::kHighlightBorder1,
-      /*use_light_colors=*/false));
+      /*use_light_colors=*/false,
+      /*insets_type=*/HighlightBorder::InsetsType::kHalfInsets));
 }
 
 void AppListBubbleView::Layout() {
+  views::View::Layout();
+
   // The folder view has custom layout code that centers the folder over the
   // associated root apps grid folder item.
+  // Folder bounds depend on the associated item view location in the apps
+  // grid, so the folder needs to be laid out after the root apps grid.
   if (showing_folder_) {
     gfx::Rect folder_bounding_box = GetLocalBounds();
     folder_bounding_box.Inset(kFolderViewInset, kFolderViewInset);
@@ -540,13 +552,11 @@ void AppListBubbleView::Layout() {
     // view is "visible" but hidden offscreen. See app_list_folder_view.cc.
     folder_view_->SetBoundsRect(folder_view_->preferred_bounds());
   }
-
-  views::View::Layout();
 }
 
 void AppListBubbleView::QueryChanged(SearchBoxViewBase* sender) {
   DCHECK_EQ(sender, search_box_view_);
-  if (search_box_view_->HasSearch())
+  if (search_box_view_->HasValidQuery())
     ShowPage(AppListBubblePage::kSearch);
   else
     ShowPage(AppListBubblePage::kApps);
@@ -582,7 +592,8 @@ bool AppListBubbleView::CanSelectSearchResults() {
 }
 
 void AppListBubbleView::ShowFolderForItemView(AppListItemView* folder_item_view,
-                                              bool focus_name_input) {
+                                              bool focus_name_input,
+                                              base::OnceClosure hide_callback) {
   DVLOG(1) << __FUNCTION__;
   if (folder_view_->IsAnimationRunning())
     return;
@@ -591,7 +602,8 @@ void AppListBubbleView::ShowFolderForItemView(AppListItemView* folder_item_view,
   // Apps.AppListFolderOpened or introduce a new metric.
 
   DCHECK(folder_item_view->is_folder());
-  folder_view_->ConfigureForFolderItemView(folder_item_view);
+  folder_view_->ConfigureForFolderItemView(folder_item_view,
+                                           std::move(hide_callback));
   showing_folder_ = true;
   Layout();
   folder_background_view_->SetVisible(true);
@@ -618,18 +630,8 @@ void AppListBubbleView::ShowApps(AppListItemView* folder_item_view,
   if (folder_view_->IsAnimationRunning())
     return;
 
-  showing_folder_ = false;
-  Layout();
-  folder_background_view_->SetVisible(false);
-  apps_page_->scrollable_apps_grid_view()->ResetForShowApps();
-  folder_view_->ResetItemsGridForClose();
-  if (folder_item_view) {
-    folder_view_->ScheduleShowHideAnimation(/*show=*/false,
-                                            /*hide_for_reparent=*/false);
-  } else {
-    folder_view_->HideViewImmediately();
-  }
-  DisableFocusForShowingActiveFolder(false);
+  HideFolderView(/*animate=*/folder_item_view, /*hide_for_reparent=*/false);
+
   if (folder_item_view && select_folder)
     folder_item_view->RequestFocus();
   else
@@ -642,12 +644,7 @@ void AppListBubbleView::ReparentFolderItemTransit(
   if (folder_view_->IsAnimationRunning())
     return;
 
-  showing_folder_ = false;
-  Layout();
-  folder_background_view_->SetVisible(false);
-  folder_view_->ScheduleShowHideAnimation(/*show=*/false,
-                                          /*hide_for_reparent=*/true);
-  DisableFocusForShowingActiveFolder(false);
+  HideFolderView(/*animate=*/true, /*hide_for_reparent=*/true);
 }
 
 void AppListBubbleView::ReparentDragEnded() {
@@ -679,8 +676,8 @@ void AppListBubbleView::OnHideAnimationEnded(const gfx::Rect& layer_bounds) {
 
   search_box_view_->ClearSearch();
 
-  // Hide any open folder by showing the apps page.
-  ShowApps(/*folder_item_view=*/nullptr, /*select_folder=*/false);
+  // Hide any open folder.
+  HideFolderView(/*animate=*/false, /*hide_for_reparent=*/false);
 
   // Reset pages to default visibility.
   current_page_ = AppListBubblePage::kNone;
@@ -690,6 +687,22 @@ void AppListBubbleView::OnHideAnimationEnded(const gfx::Rect& layer_bounds) {
 
   if (on_hide_animation_ended_)
     std::move(on_hide_animation_ended_).Run();
+}
+
+void AppListBubbleView::HideFolderView(bool animate, bool hide_for_reparent) {
+  showing_folder_ = false;
+  Layout();
+  folder_background_view_->SetVisible(false);
+  if (!hide_for_reparent) {
+    apps_page_->scrollable_apps_grid_view()->ResetForShowApps();
+    folder_view_->ResetItemsGridForClose();
+  }
+  if (animate) {
+    folder_view_->ScheduleShowHideAnimation(/*show=*/false, hide_for_reparent);
+  } else {
+    folder_view_->HideViewImmediately();
+  }
+  DisableFocusForShowingActiveFolder(false);
 }
 
 }  // namespace ash

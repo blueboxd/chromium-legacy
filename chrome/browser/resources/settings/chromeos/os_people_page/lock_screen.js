@@ -25,7 +25,7 @@ import './pin_autosubmit_dialog.js';
 import '../../prefs/prefs.js';
 import '../../settings_shared_css.js';
 import '../../settings_vars_css.js';
-import '../multidevice_page/multidevice_smartlock_item.m.js';
+import '../multidevice_page/multidevice_smartlock_item.js';
 
 import {LockScreenProgress, recordLockScreenProgress} from '//resources/cr_components/chromeos/quick_unlock/lock_screen_constants.m.js';
 import {assert, assertNotReached} from '//resources/js/assert.m.js';
@@ -37,7 +37,7 @@ import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer
 
 import {loadTimeData} from '../../i18n_setup.js';
 import {Route, Router} from '../../router.js';
-import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
+import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.m.js';
 import {PrefsBehavior} from '../prefs_behavior.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';

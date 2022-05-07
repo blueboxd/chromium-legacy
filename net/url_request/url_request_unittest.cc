@@ -30,7 +30,6 @@
 #include "base/base64url.h"
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -3921,7 +3920,7 @@ class URLRequestTestHTTP : public URLRequestTest {
       req->set_upload(CreateSimpleUploadData(kData));
       HttpRequestHeaders headers;
       headers.SetHeader(HttpRequestHeaders::kContentLength,
-                        base::NumberToString(base::size(kData) - 1));
+                        base::NumberToString(std::size(kData) - 1));
       headers.SetHeader(HttpRequestHeaders::kContentType, "text/plain");
       req->SetExtraRequestHeaders(headers);
     }
@@ -4137,7 +4136,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateBlockAsynchronously) {
       BlockingNetworkDelegate::ON_BEFORE_URL_REQUEST,
       BlockingNetworkDelegate::ON_BEFORE_SEND_HEADERS,
       BlockingNetworkDelegate::ON_HEADERS_RECEIVED};
-  static const size_t blocking_stages_length = base::size(blocking_stages);
+  static const size_t blocking_stages_length = std::size(blocking_stages);
 
   ASSERT_TRUE(http_test_server()->Start());
 
@@ -4420,7 +4419,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateRedirectRequestPost) {
     r->set_upload(CreateSimpleUploadData(kData));
     HttpRequestHeaders headers;
     headers.SetHeader(HttpRequestHeaders::kContentLength,
-                      base::NumberToString(base::size(kData) - 1));
+                      base::NumberToString(std::size(kData) - 1));
     r->SetExtraRequestHeaders(headers);
 
     // Quit after hitting the redirect, so can check the headers.
@@ -5378,7 +5377,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfo) {
       NetLogEventType::NETWORK_DELEGATE_HEADERS_RECEIVED,
   };
   for (NetLogEventType event : kExpectedEvents) {
-    SCOPED_TRACE(NetLog::EventTypeToString(event));
+    SCOPED_TRACE(NetLogEventTypeToString(event));
     log_position = ExpectLogContainsSomewhereAfter(
         entries, log_position + 1, event, NetLogEventPhase::BEGIN);
 
@@ -5431,7 +5430,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoRedirect) {
       NetLogEventType::NETWORK_DELEGATE_HEADERS_RECEIVED,
   };
   for (NetLogEventType event : kExpectedEvents) {
-    SCOPED_TRACE(NetLog::EventTypeToString(event));
+    SCOPED_TRACE(NetLogEventTypeToString(event));
     log_position = ExpectLogContainsSomewhereAfter(
         entries, log_position + 1, event, NetLogEventPhase::BEGIN);
 
@@ -5451,7 +5450,7 @@ TEST_F(URLRequestTestHTTP, NetworkDelegateInfoRedirect) {
 
   // The NetworkDelegate logged information in the same three events as before.
   for (NetLogEventType event : kExpectedEvents) {
-    SCOPED_TRACE(NetLog::EventTypeToString(event));
+    SCOPED_TRACE(NetLogEventTypeToString(event));
     log_position = ExpectLogContainsSomewhereAfter(
         entries, log_position + 1, event, NetLogEventPhase::BEGIN);
 
@@ -5553,7 +5552,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateInfoOnRedirect) {
       NetLogEventType::URL_REQUEST_DELEGATE_RESPONSE_STARTED,
   };
   for (NetLogEventType event : kExpectedEvents) {
-    SCOPED_TRACE(NetLog::EventTypeToString(event));
+    SCOPED_TRACE(NetLogEventTypeToString(event));
     log_position = ExpectLogContainsSomewhereAfter(entries, log_position, event,
                                                    NetLogEventPhase::BEGIN);
 
@@ -5613,7 +5612,7 @@ TEST_F(URLRequestTestHTTP, URLRequestDelegateOnRedirectCancelled) {
         NetLogEventType::URL_REQUEST_DELEGATE_RESPONSE_STARTED,
     };
     for (NetLogEventType event : kExpectedEvents) {
-      SCOPED_TRACE(NetLog::EventTypeToString(event));
+      SCOPED_TRACE(NetLogEventTypeToString(event));
       log_position = ExpectLogContainsSomewhereAfter(
           entries, log_position, event, NetLogEventPhase::BEGIN);
 
@@ -8771,7 +8770,7 @@ TEST_F(URLRequestTestHTTP, InterceptPost302RedirectGet) {
   req->set_upload(CreateSimpleUploadData(kData));
   HttpRequestHeaders headers;
   headers.SetHeader(HttpRequestHeaders::kContentLength,
-                    base::NumberToString(base::size(kData) - 1));
+                    base::NumberToString(std::size(kData) - 1));
   req->SetExtraRequestHeaders(headers);
 
   std::unique_ptr<URLRequestRedirectJob> job =
@@ -8798,7 +8797,7 @@ TEST_F(URLRequestTestHTTP, InterceptPost307RedirectPost) {
   req->set_upload(CreateSimpleUploadData(kData));
   HttpRequestHeaders headers;
   headers.SetHeader(HttpRequestHeaders::kContentLength,
-                    base::NumberToString(base::size(kData) - 1));
+                    base::NumberToString(std::size(kData) - 1));
   req->SetExtraRequestHeaders(headers);
 
   std::unique_ptr<URLRequestRedirectJob> job =
@@ -8996,7 +8995,7 @@ TEST_F(URLRequestTestHTTP, EmptyHttpUserAgentSettings) {
                {"/echoheader?Accept-Charset", "None"},
                {"/echoheader?User-Agent", ""}};
 
-  for (size_t i = 0; i < base::size(tests); i++) {
+  for (size_t i = 0; i < std::size(tests); i++) {
     TestDelegate d;
     std::unique_ptr<URLRequest> req(context->CreateRequest(
         http_test_server()->GetURL(tests[i].request), DEFAULT_PRIORITY, &d,
@@ -9979,9 +9978,8 @@ TEST_F(HTTPSRequestTest, HSTSCrossOriginAddHeaders) {
 
   GURL hsts_http_url(base::StringPrintf("http://example.net:%d/somehstssite",
                                         test_server.host_port_pair().port()));
-  url::Replacements<char> replacements;
-  const char kNewScheme[] = "https";
-  replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr("https");
   GURL hsts_https_url = hsts_http_url.ReplaceComponents(replacements);
 
   TestDelegate d;
@@ -13013,7 +13011,7 @@ TEST_F(URLRequestTestHTTP, AuthChallengeInfo) {
   delegate.RunUntilComplete();
   ASSERT_TRUE(r->auth_challenge_info().has_value());
   EXPECT_FALSE(r->auth_challenge_info()->is_proxy);
-  EXPECT_EQ(url::Origin::Create(url), r->auth_challenge_info()->challenger);
+  EXPECT_EQ(url::SchemeHostPort(url), r->auth_challenge_info()->challenger);
   EXPECT_EQ("basic", r->auth_challenge_info()->scheme);
   EXPECT_EQ("testrealm", r->auth_challenge_info()->realm);
   EXPECT_EQ("Basic realm=\"testrealm\"", r->auth_challenge_info()->challenge);

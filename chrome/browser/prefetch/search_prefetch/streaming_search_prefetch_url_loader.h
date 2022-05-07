@@ -41,7 +41,7 @@ class StreamingSearchPrefetchURLLoader : public network::mojom::URLLoader,
       Profile* profile,
       std::unique_ptr<network::ResourceRequest> resource_request,
       const net::NetworkTrafficAnnotationTag& network_traffic_annotation,
-      base::OnceClosure stop_prefetch_closure);
+      base::OnceCallback<void(bool)> report_error_callback);
 
   ~StreamingSearchPrefetchURLLoader() override;
 
@@ -87,8 +87,13 @@ class StreamingSearchPrefetchURLLoader : public network::mojom::URLLoader,
 
   // When a disconnection occurs in the network URLLoader mojo pipe, this
   // object's lifetime needs to be managed and the connections need to be closed
-  // unless complete has happened.
+  // unless complete has happened. This is the prefetch pathway callback.
   void OnURLLoaderMojoDisconnect();
+
+  // When a disconnection occurs in the network URLLoader mojo pipe, this
+  // object's lifetime needs to be managed and the connections need to be closed
+  // unless complete has happened. This is the fallback pathway callback.
+  void OnURLLoaderMojoDisconnectInFallback();
 
   // When a disconnection occurs in the navigation client mojo pipe, this
   // object's lifetime needs to be managed and the connections need to be
@@ -108,8 +113,11 @@ class StreamingSearchPrefetchURLLoader : public network::mojom::URLLoader,
   // Clears |producer_handle_| and |handle_watcher_|.
   void Finish();
 
-  // Post a task to delete this object by running stop_prefetch_closure_.
-  void PostTaskToStopPrefetchAndDeleteSelf();
+  // Post a task to delete this object at a later point.
+  void PostTaskToDeleteSelf();
+
+  // Creates a default network URL loader for the original request.
+  void Fallback();
 
   // Sets up mojo forwarding to the navigation path. Resumes
   // |network_url_loader_| calls. Serves the start of the response to the
@@ -124,6 +132,9 @@ class StreamingSearchPrefetchURLLoader : public network::mojom::URLLoader,
 
   // Forwards all queued events to |forwarding_client_|.
   void RunEventQueue();
+
+  // Marks the parent prefetch request as servable. Called as delayed task.
+  void MarkPrefetchAsServable();
 
   // The network URLLoader that fetches the prefetch URL and its receiver.
   mojo::Remote<network::mojom::URLLoader> network_url_loader_;
@@ -170,8 +181,32 @@ class StreamingSearchPrefetchURLLoader : public network::mojom::URLLoader,
   mojo::ScopedDataPipeProducerHandle producer_handle_;
   std::unique_ptr<mojo::SimpleWatcher> handle_watcher_;
 
-  // Closure to cancel this prefetch. Running this callback will destroy |this|.
-  base::OnceClosure stop_prefetch_closure_;
+  // Set when this manages it's own lifetime.
+  std::unique_ptr<SearchPrefetchURLLoader> self_pointer_;
+
+  // Set to true when we encounter an error in between when the prefetch request
+  // owns this loader and the loader has started. When the forwarding client is
+  // set up, we will delete soon |this|.
+  bool pending_delete_ = false;
+
+  // Whether fallback has started.
+  bool is_in_fallback_ = false;
+
+  // If the navigation path paused the url loader. Used to pause the network url
+  // loader on fallback.
+  bool paused_ = false;
+
+  // Whenever an error is reported, it needs to be reported to the service via
+  // this callback.
+  base::OnceCallback<void(bool)> report_error_callback_;
+
+  // Track if the request has already been marked as servable, and if so, don't
+  // report it again.
+  bool marked_as_servable_ = false;
+
+  raw_ptr<Profile> profile_;
+
+  net::NetworkTrafficAnnotationTag network_traffic_annotation_;
 
   base::WeakPtrFactory<StreamingSearchPrefetchURLLoader> weak_factory_{this};
 };

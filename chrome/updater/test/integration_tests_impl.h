@@ -88,7 +88,9 @@ void RunWake(UpdaterScope scope, int exit_code);
 void RunWakeActive(UpdaterScope scope, int exit_code);
 
 // Invokes the active instance's UpdateService::Update (via RPC) for an app.
-void Update(UpdaterScope scope, const std::string& app_id);
+void Update(UpdaterScope scope,
+            const std::string& app_id,
+            const std::string& install_data_index);
 
 // Invokes the active instance's UpdateService::UpdateAll (via RPC).
 void UpdateAll(UpdaterScope scope);
@@ -140,8 +142,9 @@ void SetExistenceCheckerPath(UpdaterScope scope,
 
 void SetServerStarts(UpdaterScope scope, int value);
 
-void ExpectAppUnregisteredExistenceCheckerPath(UpdaterScope scope,
-                                               const std::string& app_id);
+void ExpectRegistered(UpdaterScope scope, const std::string& app_id);
+
+void ExpectNotRegistered(UpdaterScope scope, const std::string& app_id);
 
 void ExpectAppVersion(UpdaterScope scope,
                       const std::string& app_id,
@@ -183,6 +186,7 @@ void ExpectSelfUpdateSequence(UpdaterScope scope, ScopedServer* test_server);
 void ExpectUpdateSequence(UpdaterScope scope,
                           ScopedServer* test_server,
                           const std::string& app_id,
+                          const std::string& install_data_index,
                           const base::Version& from_version,
                           const base::Version& to_version);
 
@@ -190,6 +194,7 @@ void StressUpdateService(UpdaterScope scope);
 
 void CallServiceUpdate(UpdaterScope updater_scope,
                        const std::string& app_id,
+                       const std::string& install_data_index,
                        bool same_version_update_allowed);
 
 void SetupFakeLegacyUpdaterData(UpdaterScope scope);
@@ -202,6 +207,10 @@ void RunRecoveryComponent(UpdaterScope scope,
 void ExpectLastChecked(UpdaterScope scope);
 
 void ExpectLastStarted(UpdaterScope scope);
+
+void InstallApp(UpdaterScope scope, const std::string& app_id);
+
+void UninstallApp(UpdaterScope scope, const std::string& app_id);
 
 }  // namespace test
 }  // namespace updater

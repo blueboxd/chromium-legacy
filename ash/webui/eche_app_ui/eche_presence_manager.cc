@@ -4,12 +4,12 @@
 
 #include "ash/webui/eche_app_ui/eche_presence_manager.h"
 
+#include "ash/services/device_sync/public/cpp/device_sync_client.h"
 #include "ash/services/secure_channel/public/cpp/client/presence_monitor_client.h"
 #include "ash/webui/eche_app_ui/eche_connector.h"
 #include "ash/webui/eche_app_ui/proto/exo_messages.pb.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 
 namespace ash {
 namespace eche_app {
@@ -25,7 +25,7 @@ constexpr base::TimeDelta kMaximumLastSeenAge = base::Minutes(5);
 }  // namespace
 
 EchePresenceManager::EchePresenceManager(
-    EcheFeatureStatusProvider* eche_feature_status_provider,
+    FeatureStatusProvider* eche_feature_status_provider,
     device_sync::DeviceSyncClient* device_sync_client,
     multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
     std::unique_ptr<secure_channel::PresenceMonitorClient>

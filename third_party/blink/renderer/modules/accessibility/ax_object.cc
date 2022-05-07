@@ -2592,6 +2592,14 @@ bool AXObject::ComputeIsInertViaStyle(const ComputedStyle* style,
       return true;
     } else if (IsBlockedByAriaModalDialog(ignored_reasons)) {
       return true;
+    } else if (const LocalFrame* frame = GetNode()->GetDocument().GetFrame()) {
+      // Inert frames don't expose the inertness to the style of their contents,
+      // but accessibility should consider them inert anyways.
+      if (frame->IsInert()) {
+        if (ignored_reasons)
+          ignored_reasons->push_back(IgnoredReason(kAXInertSubtree));
+        return true;
+      }
     }
   } else {
     // Either GetNode() is null, or it's locked by content-visibility, or we
@@ -5504,6 +5512,7 @@ bool AXObject::PerformAction(const ui::AXActionData& action_data) {
     case ax::mojom::blink::Action::kLoadInlineTextBoxes:
     case ax::mojom::blink::Action::kNone:
     case ax::mojom::blink::Action::kReplaceSelectedText:
+    case ax::mojom::blink::Action::kRunScreenAi:
     case ax::mojom::blink::Action::kScrollBackward:
     case ax::mojom::blink::Action::kScrollDown:
     case ax::mojom::blink::Action::kScrollForward:
@@ -6006,6 +6015,15 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     // ----- Conditional: contribute to ancestor only, unless focusable -------
     // Some objects can contribute their contents to ancestor names, but
     // only have their own name if they are focusable
+    case ax::mojom::blink::Role::kGenericContainer:
+      // The <body> and <html> element can pass information up to the the root
+      // for a portal name.
+      if (IsA<HTMLBodyElement>(GetNode()) ||
+          GetNode() == GetDocument()->documentElement()) {
+        return recursive && GetDocument()->GetPage() &&
+               GetDocument()->GetPage()->InsidePortal();
+      }
+      [[fallthrough]];
     case ax::mojom::blink::Role::kAbbr:
     case ax::mojom::blink::Role::kCanvas:
     case ax::mojom::blink::Role::kCaption:
@@ -6021,7 +6039,6 @@ bool AXObject::SupportsNameFromContents(bool recursive) const {
     case ax::mojom::blink::Role::kFigcaption:
     case ax::mojom::blink::Role::kFooter:
     case ax::mojom::blink::Role::kFooterAsNonLandmark:
-    case ax::mojom::blink::Role::kGenericContainer:
     case ax::mojom::blink::Role::kHeaderAsNonLandmark:
     case ax::mojom::blink::Role::kInlineTextBox:
     case ax::mojom::blink::Role::kLabelText:

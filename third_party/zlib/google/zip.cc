@@ -4,7 +4,6 @@
 
 #include "third_party/zlib/google/zip.h"
 
-#include <limits>
 #include <string>
 #include <vector>
 
@@ -15,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "build/build_config.h"
+#include "third_party/zlib/google/redact.h"
 #include "third_party/zlib/google/zip_internal.h"
 #include "third_party/zlib/google/zip_reader.h"
 #include "third_party/zlib/google/zip_writer.h"
@@ -56,12 +56,13 @@ class DirectFileAccessor : public FileAccessor {
       const base::FilePath absolute_path = src_dir_.Append(path);
       if (base::DirectoryExists(absolute_path)) {
         files->emplace_back();
-        LOG(ERROR) << "Cannot open '" << path << "': It is a directory";
+        LOG(ERROR) << "Cannot open " << Redact(path) << ": It is a directory";
       } else {
-        files->emplace_back(absolute_path,
-                            base::File::FLAG_OPEN | base::File::FLAG_READ);
-        LOG_IF(ERROR, !files->back().IsValid())
-            << "Cannot open '" << path << "'";
+        const base::File& file = files->emplace_back(
+            absolute_path, base::File::FLAG_OPEN | base::File::FLAG_READ);
+        LOG_IF(ERROR, !file.IsValid())
+            << "Cannot open " << Redact(path) << ": "
+            << base::File::ErrorToString(file.error_details());
       }
     }
 
@@ -94,7 +95,7 @@ class DirectFileAccessor : public FileAccessor {
 
     base::File::Info file_info;
     if (!base::GetFileInfo(src_dir_.Append(path), &file_info)) {
-      LOG(ERROR) << "Cannot get info of '" << path << "'";
+      PLOG(ERROR) << "Cannot get info of " << Redact(path);
       return false;
     }
 
@@ -122,7 +123,7 @@ bool Zip(const ZipParams& params) {
 
   std::unique_ptr<internal::ZipWriter> zip_writer;
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   if (params.dest_fd != base::kInvalidPlatformFile) {
     DCHECK(params.dest_file.empty());
     zip_writer =
@@ -171,7 +172,8 @@ bool Unzip(const base::FilePath& src_file,
            UnzipOptions options) {
   base::File file(src_file, base::File::FLAG_OPEN | base::File::FLAG_READ);
   if (!file.IsValid()) {
-    DLOG(WARNING) << "Cannot open '" << src_file << "'";
+    LOG(ERROR) << "Cannot open " << Redact(src_file) << ": "
+               << base::File::ErrorToString(file.error_details());
     return false;
   }
 
@@ -186,22 +188,22 @@ bool Unzip(const base::PlatformFile& src_file,
            DirectoryCreator directory_creator,
            UnzipOptions options) {
   ZipReader reader;
+  reader.SetEncoding(std::move(options.encoding));
   reader.SetPassword(std::move(options.password));
 
   if (!reader.OpenFromPlatformFile(src_file)) {
-    DLOG(WARNING) << "Cannot open ZIP from file handle " << src_file;
+    LOG(ERROR) << "Cannot open ZIP from file handle " << src_file;
     return false;
   }
 
   while (const ZipReader::Entry* const entry = reader.Next()) {
     if (entry->is_unsafe) {
-      DLOG(WARNING) << "Found unsafe entry in ZIP: " << entry->path;
+      LOG(ERROR) << "Found unsafe entry " << Redact(entry->path) << " in ZIP";
       return false;
     }
 
     if (options.filter && !options.filter.Run(entry->path)) {
-      DLOG_IF(WARNING, options.log_skipped_files)
-          << "Skipped ZIP entry " << entry->path;
+      VLOG(1) << "Skipped ZIP entry " << Redact(entry->path);
       continue;
     }
 
@@ -215,9 +217,9 @@ bool Unzip(const base::PlatformFile& src_file,
 
     // It's a file.
     std::unique_ptr<WriterDelegate> writer = writer_factory.Run(entry->path);
-    if (!writer || !reader.ExtractCurrentEntry(
-                       writer.get(), std::numeric_limits<uint64_t>::max())) {
-      DLOG(WARNING) << "Cannot extract " << entry->path;
+    if (!writer || !reader.ExtractCurrentEntry(writer.get())) {
+      LOG(ERROR) << "Cannot extract file " << Redact(entry->path)
+                 << " from ZIP";
       return false;
     }
   }
@@ -242,7 +244,7 @@ bool Zip(const base::FilePath& src_dir,
               .include_hidden_files = include_hidden_files});
 }
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 bool ZipFiles(const base::FilePath& src_dir,
               Paths src_relative_paths,
               int dest_fd) {
@@ -251,6 +253,6 @@ bool ZipFiles(const base::FilePath& src_dir,
               .dest_fd = dest_fd,
               .src_files = src_relative_paths});
 }
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 }  // namespace zip

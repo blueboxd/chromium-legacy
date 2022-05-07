@@ -27,6 +27,7 @@ enum Codec {
   CODEC_AUDIO_PCM16,
   CODEC_AUDIO_AAC,
   CODEC_AUDIO_REMOTE,
+  // For tests only.  Must set enable_fake_codec_for_tests to true.
   CODEC_VIDEO_FAKE,
   CODEC_VIDEO_VP8,
   CODEC_VIDEO_H264,
@@ -69,8 +70,10 @@ enum class RtpPayloadType {
   LAST = VIDEO_AV1
 };
 
-// TODO(miu): Eliminate these after moving "default config" into the top-level
-// media/cast directory.  http://crbug.com/530839
+// Desired end-to-end latency.
+// TODO(https://crbug.com/1304761): default playout delay should be 400ms.
+constexpr base::TimeDelta kDefaultTargetPlayoutDelay = base::Milliseconds(100);
+
 enum SuggestedDefaults {
   // Audio encoder bitrate.  Zero means "auto," which asks the encoder to select
   // a bitrate that dynamically adjusts to the content.  Otherwise, a constant
@@ -85,14 +88,6 @@ enum SuggestedDefaults {
 
   // Suggested default maximum video frame rate.
   kDefaultMaxFrameRate = 30,
-
-  // End-to-end latency in milliseconds.
-  //
-  // DO NOT USE THIS (400 ms is proven as ideal for general-purpose use).
-  //
-  // TODO(miu): Change to 400, and confirm nothing has broken in later change.
-  // http://crbug.com/530839
-  kDefaultRtpMaxDelayMs = 100,
 
   // Suggested minimum and maximum video bitrates for general-purpose use (up to
   // 1080p, 30 FPS).
@@ -199,11 +194,14 @@ struct FrameSenderConfig {
   std::string aes_key;
   std::string aes_iv_mask;
 
+  // When true, allows use of CODEC_VIDEO_FAKE.  When false, CODEC_VIDEO_FAKE is
+  // not supported.
+  bool enable_fake_codec_for_tests{false};
+
   // These are codec specific parameters for video streams only.
   VideoCodecParams video_codec_params;
 };
 
-// TODO(miu): Naming and minor type changes are badly needed in a later CL.
 struct FrameReceiverConfig {
   FrameReceiverConfig();
   FrameReceiverConfig(const FrameReceiverConfig& other);
@@ -221,7 +219,7 @@ struct FrameReceiverConfig {
   // transmit/retransmit, receive, decode, and render; given its run-time
   // environment (sender/receiver hardware performance, network conditions,
   // etc.).
-  int rtp_max_delay_ms;  // TODO(miu): Change to TimeDelta target_playout_delay.
+  int rtp_max_delay_ms;
 
   // RTP payload type enum: Specifies the type/encoding of frame data.
   RtpPayloadType rtp_payload_type;
@@ -240,8 +238,6 @@ struct FrameReceiverConfig {
   double target_frame_rate;
 
   // Codec used for the compression of signal data.
-  // TODO(miu): Merge the AudioCodec and VideoCodec enums into one so this union
-  // is not necessary.
   Codec codec;
 
   // The AES crypto key and initialization vector.  Each of these strings

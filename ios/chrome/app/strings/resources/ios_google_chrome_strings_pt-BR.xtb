@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Ajude a melhorar o Chrome. Envie estatísticas de uso e relatórios de falhas ao Google.</translation>
 <translation id="417201473131094001">Indisponível no Chrome Canary</translation>
 <translation id="4214277427269650960">Faça login neste site e no Chrome. É possível ativar a sincronização mais tarde.</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> estava usando o Chrome e deixou favoritos, senhas e outras configurações neste dispositivo.</translation>
 <translation id="424864128008805179">Sair do Google Chrome?</translation>
 <translation id="4249068189593983585">Dica do Chrome. Para ver mais opções de guia, toque no botão "Mostrar guias" na barra de ferramentas localizada na parte superior ou inferior da tela e mantenha-o pressionado.</translation>
 <translation id="4523886039239821078">Alguns complementos causam a falha do Google Chrome. Desinstale-os.</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Não foi possível verificar todas as senhas com o Chrome. Tente novamente amanhã ou <ph name="BEGIN_LINK" />verifique-as na sua Conta do Google<ph name="END_LINK" />.</translation>
 <translation id="484033449593719797">Indisponível no Chrome Beta</translation>
 <translation id="5030102366287574140">O Chrome pode ajudar a proteger você de violações de dados, sites perigosos e muito mais.</translation>
+<translation id="5108659628347594808">Melhorar o Chrome</translation>
 <translation id="5119391094379141756">Selecione o Chrome</translation>
 <translation id="5162467219239570114">O Chrome está desatualizado. Se nenhuma atualização está disponível na <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, é possível que seu dispositivo não seja mais compatível com novas versões do Chrome.</translation>
 <translation id="5389212809648216794">O Google Chrome não pode usar a câmera porque ela está sendo usada por outro app</translation>
@@ -81,6 +83,15 @@
 <translation id="6709398533399187136">Sua senha foi exposta em uma violação de dados. O Gerenciador de senhas do Google recomenda que ela seja mudada agora mesmo.</translation>
 <translation id="6822673484890854830">Não foi possível verificar todas as senhas com o Chrome. Tente novamente mais tarde.</translation>
 <translation id="6964931465519938134">Agora você poderá usar o Chrome sempre que tocar em links em mensagens, documentos e outros apps.</translation>
+<translation id="7046845777663074840">Quando ativada, esta configuração faz o seguinte:
+<ph name="BEGIN_INDENT" />  • Ajuda a melhorar o Chrome para as pessoas que o usam da mesma forma que você.<ph name="END_INDENT" />
+
+Considerações:
+<ph name="BEGIN_INDENT" />  • São enviadas ao Google informações sobre seu uso do Chrome, mas elas não são vinculadas a você.
+
+  • Se o Chrome falhar, os detalhes sobre a falha poderão incluir algumas informações pessoais.
+
+  • Se você ativar a sincronização, as métricas também poderão incluir informações sobre os URLs que você acessa.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Personalize o Chrome</translation>
 <translation id="7124339256045485976">Manter o Chrome atualizado</translation>
 <translation id="7161390184744336561">O Google Chrome está desatualizado</translation>

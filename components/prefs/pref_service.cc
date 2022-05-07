@@ -23,33 +23,21 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
-#include "build/build_config.h"
+#include "build/chromeos_buildflags.h"
 #include "components/prefs/default_pref_store.h"
+#include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_notifier_impl.h"
 #include "components/prefs/pref_registry.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "components/prefs/value_map_pref_store.h"
+#endif
 
 #if BUILDFLAG(IS_ANDROID)
 #include "components/prefs/android/pref_service_android.h"
 #endif
 
 namespace {
-
-class ReadErrorHandler : public PersistentPrefStore::ReadErrorDelegate {
- public:
-  using ErrorCallback =
-      base::RepeatingCallback<void(PersistentPrefStore::PrefReadError)>;
-  explicit ReadErrorHandler(ErrorCallback cb) : callback_(cb) {}
-
-  ReadErrorHandler(const ReadErrorHandler&) = delete;
-  ReadErrorHandler& operator=(const ReadErrorHandler&) = delete;
-
-  void OnError(PersistentPrefStore::PrefReadError error) override {
-    callback_.Run(error);
-  }
-
- private:
-  ErrorCallback callback_;
-};
 
 // Returns the WriteablePrefStore::PrefWriteFlags for the pref with the given
 // |path|.
@@ -559,6 +547,14 @@ void PrefService::SetString(const std::string& path, const std::string& value) {
   SetUserPrefValue(path, base::Value(value));
 }
 
+void PrefService::SetDict(const std::string& path, base::Value::Dict dict) {
+  SetUserPrefValue(path, base::Value(std::move(dict)));
+}
+
+void PrefService::SetList(const std::string& path, base::Value::List list) {
+  SetUserPrefValue(path, base::Value(std::move(list)));
+}
+
 void PrefService::SetFilePath(const std::string& path,
                               const base::FilePath& value) {
   SetUserPrefValue(path, base::FilePathToValue(value));
@@ -756,6 +752,16 @@ bool PrefService::Preference::IsExtensionModifiable() const {
   return pref_value_store()->PrefValueExtensionModifiable(name_);
 }
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+bool PrefService::Preference::IsStandaloneBrowserControlled() const {
+  return pref_value_store()->PrefValueFromStandaloneBrowserStore(name_);
+}
+
+bool PrefService::Preference::IsStandaloneBrowserModifiable() const {
+  return pref_value_store()->PrefValueStandaloneBrowserModifiable(name_);
+}
+#endif
+
 const base::Value* PrefService::GetPreferenceValue(
     const std::string& path) const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -789,3 +795,17 @@ const base::Value* PrefService::GetPreferenceValueChecked(
   DCHECK(value) << "Trying to read an unregistered pref: " << path;
   return value;
 }
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+void PrefService::SetStandaloneBrowserPref(const std::string& path,
+                                           const base::Value& value) {
+  standalone_browser_pref_store_->SetValue(
+      path, base::Value::ToUniquePtrValue(value.Clone()),
+      WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+}
+
+void PrefService::RemoveStandaloneBrowserPref(const std::string& path) {
+  standalone_browser_pref_store_->RemoveValue(
+      path, WriteablePrefStore::DEFAULT_PREF_WRITE_FLAGS);
+}
+#endif

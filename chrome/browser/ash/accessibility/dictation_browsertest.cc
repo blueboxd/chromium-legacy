@@ -8,11 +8,14 @@
 
 #include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/public/cpp/system_tray_test_api.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/hash/hash.h"
+#include "base/memory/weak_ptr.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/statistics_recorder.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
@@ -35,6 +38,8 @@
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/soda/soda_installer.h"
+#include "content/public/browser/browser_task_traits.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/accessibility_notification_waiter.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -56,6 +61,8 @@
 
 namespace ash {
 namespace {
+
+constexpr int kPrintErrorMessageDelayMs = 3500;
 
 const char kFirstSpeechResult[] = "help";
 const char16_t kFirstSpeechResult16[] = u"help";
@@ -114,6 +121,19 @@ void EnableChromeVox() {
   GetManager()->EnableSpokenFeedback(true);
 }
 
+std::string ToString(DictationBubbleIconType icon) {
+  switch (icon) {
+    case DictationBubbleIconType::kHidden:
+      return "hidden";
+    case DictationBubbleIconType::kStandby:
+      return "standby";
+    case DictationBubbleIconType::kMacroSuccess:
+      return "macro success";
+    case DictationBubbleIconType::kMacroFail:
+      return "macro fail";
+  }
+}
+
 // Listens for changes to the histogram provided at construction. This class
 // only allows `Wait()` to be called once. If you need to call `Wait()` multiple
 // times, create multiple instances of this class.
@@ -150,8 +170,9 @@ class HistogramWaiter {
 // until it evaluates to true.
 class SuccessWaiter {
  public:
-  explicit SuccessWaiter(const base::RepeatingCallback<bool()>& is_success)
-      : is_success_(is_success) {}
+  SuccessWaiter(const base::RepeatingCallback<bool()>& is_success,
+                const std::string& error_message)
+      : is_success_(is_success), error_message_(error_message) {}
   ~SuccessWaiter() = default;
   SuccessWaiter(const SuccessWaiter&) = delete;
   SuccessWaiter& operator=(const SuccessWaiter&) = delete;
@@ -159,6 +180,11 @@ class SuccessWaiter {
   void Wait() {
     timer_.Start(FROM_HERE, base::Milliseconds(200), this,
                  &SuccessWaiter::OnTimer);
+    content::GetUIThreadTaskRunner({})->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&SuccessWaiter::MaybePrintErrorMessage,
+                       weak_factory_.GetWeakPtr()),
+        base::Milliseconds(kPrintErrorMessageDelayMs));
     run_loop_.Run();
     ASSERT_TRUE(is_success_.Run());
   }
@@ -170,10 +196,20 @@ class SuccessWaiter {
     }
   }
 
+  void MaybePrintErrorMessage() {
+    if (!timer_.IsRunning() || run_loop_.AnyQuitCalled() || is_success_.Run())
+      return;
+
+    LOG(ERROR) << "Still waiting for SuccessWaiter\n"
+               << "SuccessWaiter error message: " << error_message_ << "\n";
+  }
+
  private:
-  base::RepeatingTimer timer_;
   base::RepeatingCallback<bool()> is_success_;
+  std::string error_message_;
+  base::RepeatingTimer timer_;
   base::RunLoop run_loop_;
+  base::WeakPtrFactory<SuccessWaiter> weak_factory_{this};
 };
 
 class CaretBoundsChangedWaiter : public ui::InputMethodObserver {
@@ -244,13 +280,6 @@ class DictationBaseTest
         test_helper_.GetEnabledFeatures();
     std::vector<base::Feature> disabled_features =
         test_helper_.GetDisabledFeatures();
-    if (GetParam() == speech::SpeechRecognitionType::kOnDevice) {
-      enabled_features.push_back(
-          ::features::kExperimentalAccessibilityDictationOffline);
-    } else {
-      disabled_features.push_back(
-          ::features::kExperimentalAccessibilityDictationOffline);
-    }
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
 
     InProcessBrowserTest::SetUpCommandLine(command_line);
@@ -479,7 +508,17 @@ IN_PROC_BROWSER_TEST_P(DictationTest, UserEndsDictation) {
   EXPECT_EQ(kFinalSpeechResult16, input_context_handler_->last_commit_text());
 }
 
-IN_PROC_BROWSER_TEST_P(DictationTest, UserEndsDictationWhenChromeVoxEnabled) {
+// TODO(https://crbug.com/1299805): Re-enable in debug mode once flaky timeouts
+// are fixed.
+#if defined(NDEBUG)
+#define MAYBE_UserEndsDictationWhenChromeVoxEnabled \
+  UserEndsDictationWhenChromeVoxEnabled
+#else
+#define MAYBE_UserEndsDictationWhenChromeVoxEnabled \
+  DISABLED_UserEndsDictationWhenChromeVoxEnabled
+#endif
+IN_PROC_BROWSER_TEST_P(DictationTest,
+                       MAYBE_UserEndsDictationWhenChromeVoxEnabled) {
   AccessibilityManager* manager = GetManager();
 
   EnableChromeVox();
@@ -636,7 +675,7 @@ IN_PROC_BROWSER_TEST_P(DictationTest, Metrics) {
   metrics::SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // Ensure that we recorded the correct locale.
-  const std::string locale = on_device ? "en-US" : "en";
+  const std::string locale = "en-US";
   histogram_tester_.ExpectUniqueSample(/*name=*/kLocaleMetric,
                                        /*sample=*/base::HashMetricName(locale),
                                        /*expected_bucket_count=*/1);
@@ -646,22 +685,22 @@ IN_PROC_BROWSER_TEST_P(DictationTest, Metrics) {
     histogram_tester_.ExpectUniqueSample(/*name=*/kOnDeviceSpeechMetric,
                                          /*sample=*/true,
                                          /*expected_bucket_count=*/1);
-    ASSERT_EQ(1,
+    ASSERT_EQ(1u,
               histogram_tester_.GetAllSamples(kOnDeviceListeningDurationMetric)
                   .size());
     // Ensure there are no metrics for the other type of speech recognition.
-    ASSERT_EQ(0,
+    ASSERT_EQ(0u,
               histogram_tester_.GetAllSamples(kNetworkListeningDurationMetric)
                   .size());
   } else {
     histogram_tester_.ExpectUniqueSample(/*name=*/kOnDeviceSpeechMetric,
                                          /*sample=*/false,
                                          /*expected_bucket_count=*/1);
-    ASSERT_EQ(1,
+    ASSERT_EQ(1u,
               histogram_tester_.GetAllSamples(kNetworkListeningDurationMetric)
                   .size());
     // Ensure there are no metrics for the other type of speech recognition.
-    ASSERT_EQ(0,
+    ASSERT_EQ(0u,
               histogram_tester_.GetAllSamples(kOnDeviceListeningDurationMetric)
                   .size());
   }
@@ -764,9 +803,11 @@ class DictationExtensionTest : public DictationBaseTest {
   }
 
   void WaitForTextAreaValue(const std::string& value) {
-    SuccessWaiter(base::BindLambdaForTesting([&]() {
-      return value == GetTextAreaValue();
-    })).Wait();
+    std::string error_message = "Still waiting for text area value: " + value;
+    SuccessWaiter(base::BindLambdaForTesting(
+                      [&]() { return value == GetTextAreaValue(); }),
+                  error_message)
+        .Wait();
   }
 
   void ToggleDictationWithKeystroke() {
@@ -792,18 +833,27 @@ class DictationExtensionTest : public DictationBaseTest {
   }
 
   void WaitForCompositionText(const std::u16string& value) {
+    std::string error_message =
+        base::UTF16ToUTF8(u"Still waiting for composition text: " + value);
     EXPECT_TRUE(input_context_handler_);
     SuccessWaiter(base::BindLambdaForTesting([&]() {
-      return value == input_context_handler_->last_update_composition_arg()
-                          .composition_text.text;
-    })).Wait();
+                    return value ==
+                           input_context_handler_->last_update_composition_arg()
+                               .composition_text.text;
+                  }),
+                  error_message)
+        .Wait();
   }
 
   void WaitForCommitText(const std::u16string& value) {
+    std::string error_message =
+        base::UTF16ToUTF8(u"Still waiting for commit text: " + value);
     EXPECT_TRUE(input_context_handler_);
     SuccessWaiter(base::BindLambdaForTesting([&]() {
-      return value == input_context_handler_->last_commit_text();
-    })).Wait();
+                    return value == input_context_handler_->last_commit_text();
+                  }),
+                  error_message)
+        .Wait();
   }
 
  private:
@@ -1017,25 +1067,33 @@ IN_PROC_BROWSER_TEST_P(DictationExtensionTest, Metrics) {
     histogram_tester_.ExpectUniqueSample(/*name=*/kOnDeviceSpeechMetric,
                                          /*sample=*/true,
                                          /*expected_bucket_count=*/1);
-    ASSERT_EQ(1,
+    ASSERT_EQ(1u,
               histogram_tester_.GetAllSamples(kOnDeviceListeningDurationMetric)
                   .size());
     // Ensure there are no metrics for the other type of speech recognition.
-    ASSERT_EQ(0,
+    ASSERT_EQ(0u,
               histogram_tester_.GetAllSamples(kNetworkListeningDurationMetric)
                   .size());
   } else {
     histogram_tester_.ExpectUniqueSample(/*name=*/kOnDeviceSpeechMetric,
                                          /*sample=*/false,
                                          /*expected_bucket_count=*/1);
-    ASSERT_EQ(1,
+    ASSERT_EQ(1u,
               histogram_tester_.GetAllSamples(kNetworkListeningDurationMetric)
                   .size());
     // Ensure there are no metrics for the other type of speech recognition.
-    ASSERT_EQ(0,
+    ASSERT_EQ(0u,
               histogram_tester_.GetAllSamples(kOnDeviceListeningDurationMetric)
                   .size());
   }
+}
+
+IN_PROC_BROWSER_TEST_P(DictationExtensionTest,
+                       DictationStopsWhenSystemTrayBecomesVisible) {
+  ToggleDictationWithKeystroke();
+  WaitForRecognitionStarted();
+  SystemTrayTestApi::Create()->ShowBubble();
+  WaitForRecognitionStopped();
 }
 
 class DictationCommandsExtensionTest : public DictationExtensionTest {
@@ -1072,15 +1130,6 @@ class DictationCommandsExtensionTest : public DictationExtensionTest {
     return base::UTF16ToUTF8(text);
   }
 
-  void WaitForHelpUrlVisible() {
-    SuccessWaiter(base::BindLambdaForTesting([&]() {
-      content::WebContents* web_contents =
-          browser()->tab_strip_model()->GetActiveWebContents();
-      return web_contents->GetVisibleURL().spec().rfind(
-                 "https://support.google.com/chromebook", /*pos=*/0) != 0;
-    })).Wait();
-  }
-
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 };
@@ -1110,6 +1159,12 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsExtensionTest, TypesCommands) {
                                            expected_text);
     ++i;
   }
+}
+
+IN_PROC_BROWSER_TEST_P(DictationCommandsExtensionTest, TypesNonCommands) {
+  // The phrase should be entered without the word "type".
+  SendFinalResultAndWaitForTextAreaValue("Type this is a test",
+                                         "this is a test");
 }
 
 IN_PROC_BROWSER_TEST_P(DictationCommandsExtensionTest, DeleteCharacter) {
@@ -1204,17 +1259,20 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsExtensionTest, MacroSucceededMetric) {
                                        /*expected_bucket_count=*/1);
 }
 
-// TODO(1266696): DictationCommandsExtensionTest.Help is flaky.
-// According to the flake occurrences tool, the OnDevice variant is the flaky
-// one; the Network variant passes consistently.
-#if BUILDFLAG(IS_CHROMEOS)
-#define MAYBE_Help DISABLED_Help
-#else
-#define MAYBE_Help Help
-#endif
-IN_PROC_BROWSER_TEST_P(DictationCommandsExtensionTest, MAYBE_Help) {
+IN_PROC_BROWSER_TEST_P(DictationCommandsExtensionTest, Help) {
   SendFinalResultAndWait("help");
-  WaitForHelpUrlVisible();
+
+  // Wait for the help URL to load.
+  SuccessWaiter(
+      base::BindLambdaForTesting([&]() {
+        content::WebContents* web_contents =
+            browser()->tab_strip_model()->GetActiveWebContents();
+        return web_contents->GetVisibleURL() ==
+               "https://support.google.com/chromebook?p=text_dictation_m100";
+      }),
+      "Still waiting for help URL to load")
+      .Wait();
+
   // Opening a new tab with the help center article toggles Dictation off.
   WaitForRecognitionStopped();
 }
@@ -1222,7 +1280,7 @@ IN_PROC_BROWSER_TEST_P(DictationCommandsExtensionTest, MAYBE_Help) {
 // Tests the behavior of the Dictation bubble UI.
 class DictationUITest : public DictationExtensionTest {
  protected:
-  DictationUITest() : dictation_bubble_test_helper_() {}
+  DictationUITest() = default;
   ~DictationUITest() override = default;
   DictationUITest(const DictationUITest&) = delete;
   DictationUITest& operator=(const DictationUITest&) = delete;
@@ -1234,6 +1292,12 @@ class DictationUITest : public DictationExtensionTest {
         ::features::kExperimentalAccessibilityDictationHints};
     std::vector<base::Feature> disabled_features;
     scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
+  }
+
+  void SetUpOnMainThread() override {
+    DictationExtensionTest::SetUpOnMainThread();
+    dictation_bubble_test_helper_ =
+        std::make_unique<DictationBubbleTestHelper>();
   }
 
   void WaitForProperties(
@@ -1251,30 +1315,48 @@ class DictationUITest : public DictationExtensionTest {
 
  private:
   void WaitForVisibility(bool visible) {
+    std::string error_message = "Still waiting for UI visibility: ";
+    error_message += visible ? "true" : "false";
     SuccessWaiter(base::BindLambdaForTesting([&]() {
-      return dictation_bubble_test_helper_.IsVisible() == visible;
-    })).Wait();
+                    return dictation_bubble_test_helper_->IsVisible() ==
+                           visible;
+                  }),
+                  error_message)
+        .Wait();
   }
 
   void WaitForVisibleIcon(DictationBubbleIconType icon) {
+    std::string error_message = "Still waiting for UI icon: " + ToString(icon);
     SuccessWaiter(base::BindLambdaForTesting([&]() {
-      return dictation_bubble_test_helper_.GetVisibleIcon() == icon;
-    })).Wait();
+                    return dictation_bubble_test_helper_->GetVisibleIcon() ==
+                           icon;
+                  }),
+                  error_message)
+        .Wait();
   }
 
   void WaitForVisibleText(const std::u16string& text) {
+    std::string error_message =
+        "Still waiting for UI text: " + base::UTF16ToUTF8(text);
     SuccessWaiter(base::BindLambdaForTesting([&]() {
-      return dictation_bubble_test_helper_.GetText() == text;
-    })).Wait();
+                    return dictation_bubble_test_helper_->GetText() == text;
+                  }),
+                  error_message)
+        .Wait();
   }
 
   void WaitForVisibleHints(const std::vector<std::u16string>& hints) {
-    SuccessWaiter(base::BindLambdaForTesting([&]() {
-      return dictation_bubble_test_helper_.HasVisibleHints(hints);
-    })).Wait();
+    std::string error_message = base::UTF16ToUTF8(
+        u"Still waiting for UI hints: " + base::JoinString(hints, u","));
+    SuccessWaiter(
+        base::BindLambdaForTesting([&]() {
+          return dictation_bubble_test_helper_->HasVisibleHints(hints);
+        }),
+        error_message)
+        .Wait();
   }
 
-  DictationBubbleTestHelper dictation_bubble_test_helper_;
+  std::unique_ptr<DictationBubbleTestHelper> dictation_bubble_test_helper_;
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 

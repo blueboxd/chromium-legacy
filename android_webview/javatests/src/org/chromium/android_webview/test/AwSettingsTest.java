@@ -56,6 +56,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
+import org.chromium.net.test.ServerCertificate;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayUtil;
@@ -161,7 +162,7 @@ public class AwSettingsTest {
         protected void loadUrlSyncAndExpectError(String url) throws Throwable {
             mActivityTestRule.loadUrlSyncAndExpectError(mAwContents,
                     mContentViewClient.getOnPageFinishedHelper(),
-                    mContentViewClient.getOnReceivedErrorHelper(), url);
+                    mContentViewClient.getOnReceivedError2Helper(), url);
         }
 
         protected String executeJavaScriptAndWaitForResult(String script) throws Exception {
@@ -1954,6 +1955,40 @@ public class AwSettingsTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "Preferences"})
+    @CommandLineFlags.Add({"enable-features=UserAgentClientHint"})
+    public void testUserAgentOverrideClientHints() throws Throwable {
+        final TestAwContentsClient contentClient = new TestAwContentsClient();
+        final AwTestContainerView testContainerView =
+                mActivityTestRule.createAwTestContainerViewOnMainSync(contentClient);
+        final String customUserAgentString = "testUserAgentOverrideClientHints";
+        AwContents awContents = testContainerView.getAwContents();
+        AwSettings settings = mActivityTestRule.getAwSettingsOnUiThread(awContents);
+        settings.setUserAgentString(customUserAgentString);
+
+        EmbeddedTestServer testServer = EmbeddedTestServer.createAndStartHTTPSServer(
+                InstrumentationRegistry.getInstrumentation().getContext(),
+                ServerCertificate.CERT_OK);
+
+        AwActivityTestRule.enableJavaScriptOnUiThread(awContents);
+
+        try {
+            String targetUrl = testServer.getURL("/android_webview/test/data/fetch-echo.html")
+                    + "?url="
+                    + URLEncoder.encode("/echoheader?Sec-CH-UA&Sec-CH-UA-Mobile&User-Agent");
+            mActivityTestRule.loadUrlSync(
+                    awContents, contentClient.getOnPageFinishedHelper(), targetUrl);
+            AwActivityTestRule.pollInstrumentationThread(
+                    () -> !"running".equals(mActivityTestRule.getTitleOnUiThread(awContents)));
+            Assert.assertEquals("?0 " + customUserAgentString,
+                    mActivityTestRule.getTitleOnUiThread(awContents));
+        } finally {
+            testServer.stopAndDestroyServer();
+        }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "Preferences"})
     public void testDomStorageEnabledWithTwoViews() throws Throwable {
         ViewPair views = createViews();
         runPerViewSettingsTest(
@@ -2764,7 +2799,7 @@ public class AwSettingsTest {
             final String urlNotInCache = webServer.setResponse(htmlNotInCachePath, "", null);
             mActivityTestRule.loadUrlSyncAndExpectError(awContents,
                     contentClient.getOnPageFinishedHelper(),
-                    contentClient.getOnReceivedErrorHelper(), urlNotInCache);
+                    contentClient.getOnReceivedError2Helper(), urlNotInCache);
             Assert.assertEquals(0, webServer.getRequestCount(htmlNotInCachePath));
         } finally {
             webServer.shutdown();
@@ -2794,25 +2829,25 @@ public class AwSettingsTest {
             final String url = webServer.setResponse(htmlPath, "response", null);
             mActivityTestRule.loadUrlSyncAndExpectError(awContents,
                     contentClient.getOnPageFinishedHelper(),
-                    contentClient.getOnReceivedErrorHelper(), url);
+                    contentClient.getOnReceivedError2Helper(), url);
             Assert.assertEquals(0, webServer.getRequestCount(htmlPath));
 
             awSettings.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
             mActivityTestRule.loadUrlSyncAndExpectError(awContents,
                     contentClient.getOnPageFinishedHelper(),
-                    contentClient.getOnReceivedErrorHelper(), url);
+                    contentClient.getOnReceivedError2Helper(), url);
             Assert.assertEquals(0, webServer.getRequestCount(htmlPath));
 
             awSettings.setCacheMode(WebSettings.LOAD_NO_CACHE);
             mActivityTestRule.loadUrlSyncAndExpectError(awContents,
                     contentClient.getOnPageFinishedHelper(),
-                    contentClient.getOnReceivedErrorHelper(), url);
+                    contentClient.getOnReceivedError2Helper(), url);
             Assert.assertEquals(0, webServer.getRequestCount(htmlPath));
 
             awSettings.setCacheMode(WebSettings.LOAD_CACHE_ONLY);
             mActivityTestRule.loadUrlSyncAndExpectError(awContents,
                     contentClient.getOnPageFinishedHelper(),
-                    contentClient.getOnReceivedErrorHelper(), url);
+                    contentClient.getOnReceivedError2Helper(), url);
             Assert.assertEquals(0, webServer.getRequestCount(htmlPath));
         } finally {
             webServer.shutdown();

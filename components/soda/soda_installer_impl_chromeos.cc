@@ -5,6 +5,7 @@
 #include "components/soda/soda_installer_impl_chromeos.h"
 
 #include "base/bind.h"
+#include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/numerics/safe_conversions.h"
@@ -126,16 +127,17 @@ void SodaInstallerImplChromeOS::OnSodaInstalled(
   if (install_result.error == dlcservice::kErrorNone) {
     soda_binary_installed_ = true;
     SetSodaBinaryPath(base::FilePath(install_result.root_path));
-    if (IsLanguageInstalled(LanguageCode::kEnUs)) {
-      NotifyOnSodaInstalled();
-    }
+    // TODO(crbug.com/1161569): SODA is only available for English right now.
+    // Update this to notify on all installed languages.
+    if (IsLanguageInstalled(LanguageCode::kEnUs))
+      NotifyOnSodaInstalled(LanguageCode::kEnUs);
 
     base::UmaHistogramTimes(kSodaBinaryInstallationSuccessTimeTaken,
                             base::Time::Now() - start_time);
   } else {
     soda_binary_installed_ = false;
     soda_progress_ = 0.0;
-    NotifyOnSodaError();
+    NotifyOnSodaError(LanguageCode::kNone);
     base::UmaHistogramTimes(kSodaBinaryInstallationFailureTimeTaken,
                             base::Time::Now() - start_time);
   }
@@ -153,7 +155,7 @@ void SodaInstallerImplChromeOS::OnLanguageInstalled(
     installed_languages_.insert(language_code);
     SetLanguagePath(base::FilePath(install_result.root_path));
     if (soda_binary_installed_) {
-      NotifyOnSodaInstalled();
+      NotifyOnSodaInstalled(language_code);
     }
     base::UmaHistogramTimes(
         GetInstallationSuccessTimeMetricForLanguagePack(language_code),
@@ -162,7 +164,7 @@ void SodaInstallerImplChromeOS::OnLanguageInstalled(
   } else {
     // TODO: Notify the observer of the specific language pack that failed
     // to install. ChromeOS currently only supports the en-US language pack.
-    NotifyOnSodaLanguagePackError(language_code);
+    NotifyOnSodaError(language_code);
 
     base::UmaHistogramTimes(
         GetInstallationFailureTimeMetricForLanguagePack(language_code),
@@ -181,23 +183,21 @@ void SodaInstallerImplChromeOS::OnSodaProgress(double progress) {
 
 void SodaInstallerImplChromeOS::OnLanguageProgress(double progress) {
   language_pack_progress_[LanguageCode::kEnUs] = progress;
-
-  // TODO: Notify the observer of the specific language pack that is currently
-  // being installed. ChromeOS currently only supports the en-US language pack.
-  NotifyOnSodaLanguagePackProgress(progress, LanguageCode::kEnUs);
+  OnSodaCombinedProgress();
 }
 
 void SodaInstallerImplChromeOS::OnSodaCombinedProgress() {
   // TODO(crbug.com/1055150): Consider updating this implementation.
   // e.g.: (1) starting progress from 0% if we are downloading language
   // only (2) weighting download progress proportionally to DLC binary size.
-  double language_progress = 0;
-  auto it = language_pack_progress_.find(LanguageCode::kEnUs);
-  if (it != language_pack_progress_.end())
-    language_progress = it->second;
+  double language_progress = 0.0;
+  if (base::Contains(language_pack_progress_, LanguageCode::kEnUs))
+    language_progress = language_pack_progress_[LanguageCode::kEnUs];
 
   const double progress = (soda_progress_ + language_progress) / 2;
-  NotifyOnSodaProgress(base::ClampFloor(100 * progress));
+  // TODO: Notify the observer of the specific language pack that is currently
+  // being installed. ChromeOS currently only supports the en-US language pack.
+  NotifyOnSodaProgress(LanguageCode::kEnUs, base::ClampFloor(100 * progress));
 }
 
 void SodaInstallerImplChromeOS::OnDlcUninstalled(const std::string& dlc_id,

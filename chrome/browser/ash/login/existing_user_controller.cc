@@ -394,10 +394,6 @@ ExistingUserController::ExistingUserController()
       kAccountsPrefShowUserNamesOnSignIn,
       base::BindRepeating(&ExistingUserController::DeviceSettingsChanged,
                           base::Unretained(this)));
-  allow_new_user_subscription_ = cros_settings_->AddSettingsObserver(
-      kAccountsPrefAllowNewUser,
-      base::BindRepeating(&ExistingUserController::DeviceSettingsChanged,
-                          base::Unretained(this)));
   allow_guest_subscription_ = cros_settings_->AddSettingsObserver(
       kAccountsPrefAllowGuest,
       base::BindRepeating(&ExistingUserController::DeviceSettingsChanged,
@@ -493,15 +489,8 @@ void ExistingUserController::UpdateLoginDisplay(
   } else {
     sync_token_checkers_.reset();
   }
-  // If no user pods are visible, fallback to single new user pod which will
-  // have guest session link.
   bool show_guest = user_manager->IsGuestSessionAllowed();
-  show_users_on_signin |= !login_users.empty();
-  bool allow_new_user = true;
-  cros_settings_->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
-  GetLoginDisplay()->Init(login_users, show_guest, show_users_on_signin,
-                          allow_new_user);
-  GetLoginDisplayHost()->OnPreferencesChanged();
+  GetLoginDisplay()->Init(login_users, show_guest);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -691,26 +680,10 @@ void ExistingUserController::OnGaiaScreenReady() {
   StartAutoLoginTimer();
 }
 
-void ExistingUserController::OnStartEnterpriseEnrollment() {
-  if (KioskAppManager::Get()->IsConsumerKioskDeviceWithAutoLaunch()) {
-    LOG(WARNING) << "Enterprise enrollment is not available after kiosk auto "
-                    "launch is set.";
-    return;
-  }
-
-  DeviceSettingsService::Get()->GetOwnershipStatusAsync(base::BindOnce(
-      &ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
-      weak_factory_.GetWeakPtr()));
-}
-
 void ExistingUserController::OnStartKioskEnableScreen() {
   KioskAppManager::Get()->GetConsumerKioskAutoLaunchStatus(base::BindOnce(
       &ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted,
       weak_factory_.GetWeakPtr()));
-}
-
-void ExistingUserController::OnStartKioskAutolaunchScreen() {
-  ShowKioskAutolaunchScreen();
 }
 
 void ExistingUserController::SetDisplayEmail(const std::string& email) {
@@ -748,39 +721,8 @@ void ExistingUserController::OnConsumerKioskAutoLaunchCheckCompleted(
     ShowKioskEnableScreen();
 }
 
-void ExistingUserController::OnEnrollmentOwnershipCheckCompleted(
-    DeviceSettingsService::OwnershipStatus status) {
-  VLOG(1) << "OnEnrollmentOwnershipCheckCompleted status=" << status;
-  if (status == DeviceSettingsService::OWNERSHIP_NONE) {
-    ShowEnrollmentScreen();
-  } else if (status == DeviceSettingsService::OWNERSHIP_TAKEN) {
-    // On a device that is already owned we might want to allow users to
-    // re-enroll if the policy information is invalid.
-    CrosSettingsProvider::TrustedStatus trusted_status =
-        CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
-            &ExistingUserController::OnEnrollmentOwnershipCheckCompleted,
-            weak_factory_.GetWeakPtr(), status));
-    if (trusted_status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
-      VLOG(1) << "Showing enrollment because device is PERMANENTLY_UNTRUSTED";
-      ShowEnrollmentScreen();
-    }
-  } else {
-    // OwnershipService::GetStatusAsync is supposed to return either
-    // OWNERSHIP_NONE or OWNERSHIP_TAKEN.
-    NOTREACHED();
-  }
-}
-
-void ExistingUserController::ShowEnrollmentScreen() {
-  GetLoginDisplayHost()->StartWizard(EnrollmentScreenView::kScreenId);
-}
-
 void ExistingUserController::ShowKioskEnableScreen() {
   GetLoginDisplayHost()->StartWizard(KioskEnableScreenView::kScreenId);
-}
-
-void ExistingUserController::ShowKioskAutolaunchScreen() {
-  GetLoginDisplayHost()->StartWizard(KioskAutolaunchScreenView::kScreenId);
 }
 
 void ExistingUserController::ShowEncryptionMigrationScreen(
@@ -845,8 +787,6 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
   } else if (failure.reason() == AuthFailure::TPM_UPDATE_REQUIRED) {
     ShowError(SigninError::kTpmUpdateRequired, error);
   } else if (last_login_attempt_account_id_ == user_manager::GuestAccountId()) {
-    // Show no errors, just re-enable input.
-    GetLoginDisplay()->ClearAndEnablePassword();
     StartAutoLoginTimer();
   } else if (is_known_user &&
              failure.reason() == AuthFailure::MISSING_CRYPTOHOME) {
@@ -876,7 +816,6 @@ void ExistingUserController::OnAuthFailure(const AuthFailure& failure) {
       else
         ShowError(SigninError::kNewUserFailedNetworkConnected, error);
     }
-    GetLoginDisplay()->ClearAndEnablePassword();
     StartAutoLoginTimer();
   }
 
@@ -1003,6 +942,14 @@ void ExistingUserController::ContinueAuthSuccessAfterResumeAttempt(
     user->AddProfileCreatedObserver(
         base::BindOnce(&SetLoginExtensionApiCanLockManagedGuestSessionPref,
                        user_context.GetAccountId(), true));
+  }
+
+  if (BrowserDataMigratorImpl::MaybeForceResumeMoveMigration(
+          g_browser_process->local_state(), user_context.GetAccountId(),
+          user_context.GetUserIDHash())) {
+    // TODO(crbug.com/1261730): Add an UMA.
+    LOG(WARNING) << "Restarting Chrome to resume move migration.";
+    return;
   }
 
   UserSessionManager::StartSessionType start_session_type =
@@ -1168,7 +1115,6 @@ void ExistingUserController::ForceOnlineLoginForAccountId(
   // Save the necessity to sign-in online into UserManager in case the user
   // aborts the online flow.
   user_manager::UserManager::Get()->SaveForceOnlineSignin(account_id, true);
-  GetLoginDisplayHost()->OnPreferencesChanged();
 
   // Start online sign-in UI for the user.
   is_login_in_progress_ = false;
@@ -1183,7 +1129,7 @@ void ExistingUserController::ForceOnlineLoginForAccountId(
 void ExistingUserController::AllowlistCheckFailed(const std::string& email) {
   PerformLoginFinishedActions(true /* start auto login timer */);
 
-  GetLoginDisplay()->ShowAllowlistCheckFailedError();
+  GetLoginDisplayHost()->ShowAllowlistCheckFailedError();
 
   for (auto& auth_status_consumer : auth_status_consumers_) {
     auth_status_consumer.OnAuthFailure(
@@ -1354,8 +1300,9 @@ void ExistingUserController::LoginAsPublicSessionWithPolicyStoreReady(
             ->policy_map()
             .Get(policy::key::kSessionLocales);
     if (entry && entry->level == policy::POLICY_LEVEL_RECOMMENDED &&
-        entry->value() && entry->value()->is_list()) {
-      base::Value::ConstListView list = entry->value()->GetListDeprecated();
+        entry->value(base::Value::Type::LIST)) {
+      base::Value::ConstListView list =
+          entry->value(base::Value::Type::LIST)->GetListDeprecated();
       if (!list.empty() && list[0].is_string()) {
         locale = list[0].GetString();
         new_user_context.SetPublicSessionLocale(locale);
@@ -1672,8 +1619,8 @@ void ExistingUserController::ContinueLoginIfDeviceNotDisabled(
 void ExistingUserController::DoCompleteLogin(
     const UserContext& user_context_wo_device_id) {
   UserContext user_context = user_context_wo_device_id;
-  std::string device_id =
-      user_manager::known_user::GetDeviceId(user_context.GetAccountId());
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  std::string device_id = known_user.GetDeviceId(user_context.GetAccountId());
   if (device_id.empty()) {
     bool is_ephemeral = ChromeUserManager::Get()->AreEphemeralUsersEnabled() &&
                         user_context.GetAccountId() !=
@@ -1682,7 +1629,6 @@ void ExistingUserController::DoCompleteLogin(
   }
   user_context.SetDeviceId(device_id);
 
-  user_manager::KnownUser known_user(g_browser_process->local_state());
   const std::string& gaps_cookie = user_context.GetGAPSCookie();
   if (!gaps_cookie.empty()) {
     known_user.SetGAPSCookie(user_context.GetAccountId(), gaps_cookie);

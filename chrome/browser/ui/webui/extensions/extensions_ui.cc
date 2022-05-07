@@ -111,6 +111,10 @@ content::WebUIDataSource* CreateExtensionsSource(Profile* profile,
     {"viewInStore", IDS_EXTENSIONS_ITEM_CHROME_WEB_STORE},
     {"extensionWebsite", IDS_EXTENSIONS_ITEM_EXTENSION_WEBSITE},
     {"dropToInstall", IDS_EXTENSIONS_INSTALL_DROP_TARGET},
+    {"editSitePermissionsAllowAllExtensions",
+     IDS_EXTENSIONS_EDIT_SITE_PERMISSIONS_ALLOW_ALL_EXTENSIONS},
+    {"editSitePermissionsRestrictExtensions",
+     IDS_EXTENSIONS_EDIT_SITE_PERMISSIONS_RESTRICT_EXTENSIONS},
     {"errorsPageHeading", IDS_EXTENSIONS_ERROR_PAGE_HEADING},
     {"clearActivities", IDS_EXTENSIONS_CLEAR_ACTIVITIES},
     {"clearAll", IDS_EXTENSIONS_ERROR_CLEAR_ALL},
@@ -253,10 +257,17 @@ content::WebUIDataSource* CreateExtensionsSource(Profile* profile,
     {"sitePermissionsPageTitle", IDS_EXTENSIONS_SITE_PERMISSIONS_PAGE_TITLE},
     {"sitePermissionsAddSiteDialogTitle",
      IDS_EXTENSIONS_SITE_PERMISSIONS_ADD_SITE_DIALOG_TITLE},
+    {"sitePermissionsEditSiteDialogTitle",
+     IDS_EXTENSIONS_SITE_PERMISSIONS_EDIT_SITE_DIALOG_TITLE},
     {"sitePermissionsDialogInputError",
      IDS_EXTENSIONS_SITE_PERMISSIONS_DIALOG_INPUT_ERROR},
     {"sitePermissionsDialogInputLabel",
      IDS_EXTENSIONS_SITE_PERMISSIONS_DIALOG_INPUT_LABEL},
+    {"sitePermissionsEditPermissions",
+     IDS_EXTENSIONS_SITE_PERMISSIONS_EDIT_PERMISSIONS},
+    {"sitePermissionsEditPermissionsDialogTitle",
+     IDS_EXTENSIONS_SITE_PERMISSIONS_EDIT_PERMISSIONS_DIALOG_TITLE},
+    {"sitePermissionsEditUrl", IDS_EXTENSIONS_SITE_PERMISSIONS_EDIT_URL},
     {"sitePermissionsViewAllSites",
      IDS_EXTENSIONS_SITE_PERMISSIONS_VIEW_ALL_SITES},
     {"permittedSites", IDS_EXTENSIONS_PERMITTED_SITES},
@@ -346,10 +357,6 @@ content::WebUIDataSource* CreateExtensionsSource(Profile* profile,
   source->AddBoolean(kShowActivityLogKey,
                      base::CommandLine::ForCurrentProcess()->HasSwitch(
                          ::switches::kEnableExtensionActivityLogging));
-
-  // TODO(crbug.com/1286649): Remove after CSS has been updated to no longer
-  // need this attribute.
-  source->AddString("enableBrandingUpdateAttribute", "enable-branding-update");
 
   source->AddString(kLoadTimeClassesKey, GetLoadTimeClasses(in_dev_mode));
 

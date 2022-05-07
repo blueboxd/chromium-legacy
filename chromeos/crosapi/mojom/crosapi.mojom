@@ -17,6 +17,7 @@ import "chromeos/crosapi/mojom/cert_database.mojom";
 import "chromeos/crosapi/mojom/clipboard.mojom";
 import "chromeos/crosapi/mojom/clipboard_history.mojom";
 import "chromeos/crosapi/mojom/content_protection.mojom";
+import "chromeos/crosapi/mojom/desk_template.mojom";
 import "chromeos/crosapi/mojom/device_attributes.mojom";
 import "chromeos/crosapi/mojom/device_settings_service.mojom";
 import "chromeos/crosapi/mojom/dlp.mojom";
@@ -61,6 +62,7 @@ import "chromeos/crosapi/mojom/url_handler.mojom";
 import "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom";
 import "chromeos/crosapi/mojom/video_capture.mojom";
 import "chromeos/crosapi/mojom/kiosk_session_service.mojom";
+import "chromeos/crosapi/mojom/web_app_service.mojom";
 import "chromeos/crosapi/mojom/web_page_info.mojom";
 import "mojo/public/mojom/base/big_string.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
@@ -98,8 +100,8 @@ struct BrowserInfo {
 // please note the milestone when you added it, to help us reason about
 // compatibility between the client applications and older ash-chrome binaries.
 //
-// Next version: 67
-// Next method id: 71
+// Next version: 70
+// Next method id: 73
 [Stable, Uuid="8b79c34f-2bf8-4499-979a-b17cac522c1e",
  RenamedFrom="crosapi.mojom.AshChromeService"]
 interface Crosapi {
@@ -195,6 +197,10 @@ interface Crosapi {
   // content decryption module.
   [MinVersion=26] BindContentProtection@31(
       pending_receiver<ContentProtection> receiver);
+
+  // Binds the desk template factory interface.
+  // Added in M101.
+  [MinVersion=68] BindDeskTemplate@71(pending_receiver<DeskTemplate> receiver);
 
   // Binds the device attributes service which is used by enterprise extension
   // APIs to query information about the device.
@@ -461,10 +467,17 @@ interface Crosapi {
   BindWebPageInfoFactory@39(pending_receiver<WebPageInfoFactory> receiver);
 
   // Binds the web app publisher service to allow web app publishing from
-  // lacros-chrome.
+  // lacros-chrome to the App Service in ash-chrome.
   // Added in M92.
   [MinVersion=22]
   BindWebAppPublisher@27(pending_receiver<AppPublisher> receiver);
+
+  // Binds the service to allow web-app-related queries and actions between
+  // lacros-chrome and ash-chrome. This is a web-app-specific interface,
+  // independent of the App Service.
+  // Added in M101.
+  [MinVersion=69]
+  BindWebAppService@72(pending_receiver<WebAppService> receiver);
 
   // Passes generic browser information such as version, etc into ash in
   // |browser_info| during startup.
@@ -474,11 +487,13 @@ interface Crosapi {
 
 [Stable, Extensible]
 enum SessionType {
-  kUnknown,
+  [Default] kUnknown,
   kRegularSession,
   kGuestSession,
   kPublicSession,
   [MinVersion=40] kWebKioskSession,
+  [MinVersion=41] kChildSession,
+  [MinVersion=67] kAppKioskSession,
 };
 
 // Device mode (e.g. enterprise enrollment state). See policy::DeviceMode.
@@ -513,6 +528,9 @@ enum MetricsReportingManaged {
 // Default directories on the system. We send the full path for each value for
 // future compatibility, to avoid assumptions about where on disk the directory
 // is located.
+//
+// Next version: 33
+// Next id: 8
 [Stable]
 struct DefaultPaths {
   // The default (non-configurable) directory for documents. For example,
@@ -542,6 +560,10 @@ struct DefaultPaths {
   // The (non-configurable) path at which Crostini's home directory is
   // mounted. For example, /media/fuse/crostini_<hash>_termina_penguin.
   [MinVersion=31] mojo_base.mojom.FilePath? linux_files@6;
+
+  // The (non-coniggurable) directory for ash resources. For example,
+  // /opt/google/chrome.
+  [MinVersion=32] mojo_base.mojom.FilePath? ash_resources@7;
 };
 
 // The device specific data needed in Lacros.
@@ -670,8 +692,8 @@ enum OpenUrlFrom {
 // If ash-chrome is newer than the browser, then some fields may not be
 // processed by the browser.
 //
-// Next version: 37
-// Next id: 37
+// Next version: 38
+// Next id: 38
 [Stable, RenamedFrom="crosapi.mojom.LacrosInitParams"]
 struct BrowserInitParams {
   // This is ash-chrome's version of the Crosapi interface. This is used by
@@ -904,6 +926,19 @@ struct BrowserInitParams {
   // Whether the device is either enterprise managed or in demo mode.
   [MinVersion=35]
   bool is_device_enterprised_managed@35;
+
+  [Stable, Extensible]
+  enum DeviceType {
+    [Default] kUnknown,
+    kChromebook,
+    kChromebase,
+    kChromebit,
+    kChromebox,
+  };
+
+  // The form factor of the device.
+  [MinVersion=37]
+  DeviceType device_type@37;
 };
 
 // Parameters to specify OpenUrl behavior.
@@ -1022,7 +1057,7 @@ interface BrowserService {
   // "Lacros extensions: xxx", "Lacros mem_usage: xxx", etc.
   [MinVersion=6]
   GetFeedbackData@3() => (
-      mojo_base.mojom.DictionaryValue feedback_info);
+      mojo_base.mojom.DeprecatedDictionaryValue feedback_info);
 
   // Returns the browser histograms used for generating feedback report.
   // The histograms returned is zip compressed and is typically around 100KB.

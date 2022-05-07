@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.instantapps;
 import android.content.Context;
 import android.graphics.drawable.BitmapDrawable;
 
+import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import org.chromium.base.annotations.CalledByNative;
@@ -15,9 +16,9 @@ import org.chromium.chrome.R;
 import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
-import org.chromium.components.messages.MessageDispatcherProvider;
 import org.chromium.components.messages.MessageIdentifier;
 import org.chromium.components.messages.MessageScopeType;
+import org.chromium.components.messages.PrimaryActionClickBehavior;
 import org.chromium.components.webapps.WebappsIconUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -29,19 +30,20 @@ public class InstantAppsMessageDelegate {
     private final Context mContext;
     private final WebContents mWebContents;
     private final InstantAppsBannerData mData;
-    private MessageDispatcher mMessageDispatcher;
+    private final MessageDispatcher mMessageDispatcher;
     private PropertyModel mMessage;
 
-    public static InstantAppsMessageDelegate create(
-            Context context, WebContents webContents, InstantAppsBannerData data) {
-        return new InstantAppsMessageDelegate(context, webContents, data);
+    public static InstantAppsMessageDelegate create(Context context, WebContents webContents,
+            MessageDispatcher messageDispatcher, InstantAppsBannerData data) {
+        return new InstantAppsMessageDelegate(context, webContents, messageDispatcher, data);
     }
 
-    private InstantAppsMessageDelegate(
-            Context context, WebContents webContents, InstantAppsBannerData data) {
+    private InstantAppsMessageDelegate(Context context, WebContents webContents,
+            MessageDispatcher messageDispatcher, InstantAppsBannerData data) {
         mContext = context;
         mData = data;
         mWebContents = webContents;
+        mMessageDispatcher = messageDispatcher;
         InstantAppsMessageDelegateJni.get().initializeNativeDelegate(
                 this, mWebContents, data.getUrl());
     }
@@ -64,7 +66,8 @@ public class InstantAppsMessageDelegate {
                                                 R.string.accessibility_instant_apps_message_title_content_description),
                                         mData.getAppName()))
                         .with(MessageBannerProperties.DESCRIPTION_ICON,
-                                AppCompatResources.getDrawable(mContext, R.drawable.google_play))
+                                AppCompatResources.getDrawable(
+                                        mContext, R.drawable.google_play_dark))
                         .with(MessageBannerProperties.RESIZE_DESCRIPTION_ICON, true)
                         .with(MessageBannerProperties.ICON, new BitmapDrawable(mData.getIcon()))
                         .with(MessageBannerProperties.ICON_TINT_COLOR,
@@ -78,7 +81,6 @@ public class InstantAppsMessageDelegate {
                         .with(MessageBannerProperties.ON_DISMISSED, this::handleMessageDismissed)
                         .build();
 
-        mMessageDispatcher = MessageDispatcherProvider.from(mWebContents.getTopLevelNativeWindow());
         if (mMessageDispatcher != null) {
             mMessageDispatcher.enqueueMessage(
                     mMessage, mWebContents, MessageScopeType.WEB_CONTENTS, false);
@@ -90,9 +92,10 @@ public class InstantAppsMessageDelegate {
     /**
      * Open the Instant App when the message primary button is clicked.
      */
-    private void handlePrimaryAction() {
+    private @PrimaryActionClickBehavior int handlePrimaryAction() {
         InstantAppsMessageDelegateJni.get().onPrimaryAction(mData.isInstantAppDefault());
         InstantAppsHandler.getInstance().launchFromBanner(mData);
+        return PrimaryActionClickBehavior.DISMISS_IMMEDIATELY;
     }
 
     /**
@@ -102,6 +105,11 @@ public class InstantAppsMessageDelegate {
     private void handleMessageDismissed(@DismissReason int dismissReason) {
         InstantAppsMessageDelegateJni.get().onMessageDismissed(
                 mWebContents, mData.getUrl(), mData.isInstantAppDefault());
+    }
+
+    @VisibleForTesting
+    PropertyModel getMessageForTesting() {
+        return mMessage;
     }
 
     @CalledByNative

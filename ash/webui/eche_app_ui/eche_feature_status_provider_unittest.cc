@@ -9,11 +9,11 @@
 
 #include "ash/components/phonehub/fake_phone_hub_manager.h"
 #include "ash/components/phonehub/phone_hub_manager.h"
+#include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "ash/services/secure_channel/public/cpp/client/fake_connection_manager.h"
 #include "base/test/task_environment.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,9 +21,9 @@ namespace ash {
 namespace eche_app {
 namespace {
 
-using ::chromeos::multidevice_setup::mojom::Feature;
-using ::chromeos::multidevice_setup::mojom::FeatureState;
-using ::chromeos::multidevice_setup::mojom::HostStatus;
+using multidevice_setup::mojom::Feature;
+using multidevice_setup::mojom::FeatureState;
+using multidevice_setup::mojom::HostStatus;
 
 multidevice::RemoteDeviceRef CreateLocalDevice(bool supports_eche_client) {
   multidevice::RemoteDeviceRefBuilder builder;

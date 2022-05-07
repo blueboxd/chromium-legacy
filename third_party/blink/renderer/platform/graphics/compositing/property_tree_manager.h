@@ -114,6 +114,10 @@ class PropertyTreeManager {
 
   int EnsureCompositorPageScaleTransformNode(const TransformPaintPropertyNode&);
 
+  // Used to offset the scroll translation during overscroll.
+  void SetOverscrollNodeId(const int id);
+  void SetFixedElementsDontOverscroll(const bool value);
+
   // This function is expected to be invoked right before emitting each layer.
   // It keeps track of the nesting of clip and effects, output a composited
   // effect node whenever an effect is entered, or a non-trivial clip is
@@ -277,7 +281,8 @@ class PropertyTreeManager {
   void CloseCcEffect();
   void PopulateCcEffectNode(cc::EffectNode&,
                             const EffectPaintPropertyNode& effect,
-                            int output_clip_id);
+                            int output_clip_id,
+                            bool can_be_shared_element_resource);
 
   bool IsCurrentCcEffectSynthetic() const { return current_.effect_type; }
   bool IsCurrentCcEffectSyntheticForNonTrivialClip() const {

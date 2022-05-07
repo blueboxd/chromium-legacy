@@ -204,6 +204,27 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 }
 
 - (void)reloadAllData {
+  if (IsContentSuggestionsUIViewControllerMigrationEnabled()) {
+    if (!self.consumer) {
+      return;
+    }
+    if (_notificationPromo->CanShow()) {
+      ContentSuggestionsWhatsNewItem* item =
+          [[ContentSuggestionsWhatsNewItem alloc] initWithType:0];
+      item.icon = _notificationPromo->GetIcon();
+      item.text = base::SysUTF8ToNSString(_notificationPromo->promo_text());
+      [self.consumer showWhatsNewViewWithConfig:item];
+    }
+    if (self.returnToRecentTabItem) {
+      [self.consumer
+          showReturnToRecentTabTileWithConfig:self.returnToRecentTabItem];
+    }
+    [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
+    if (!ShouldHideShortcutsForStartSurface()) {
+      [self.consumer setShortcutTilesWithConfigs:self.actionButtonItems];
+    }
+    return;
+  }
   NSArray<ContentSuggestionsSectionInformation*>* sections =
       [self sectionsInfo];
   NSMutableDictionary<NSNumber*, NSArray*>* items =
@@ -211,7 +232,7 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   for (ContentSuggestionsSectionInformation* section in sections) {
     items[@(section.sectionID)] = [self itemsForSectionInfo:section];
   }
-  [self.consumer reloadDataWithSections:sections andItems:items];
+  [self.collectionConsumer reloadDataWithSections:sections andItems:items];
 }
 
 - (void)blockMostVisitedURL:(GURL)URL {
@@ -226,6 +247,13 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
 - (NotificationPromoWhatsNew*)notificationPromo {
   return _notificationPromo.get();
+}
+
+- (void)setCollectionConsumer:
+    (id<ContentSuggestionsCollectionConsumer>)collectionConsumer {
+  _collectionConsumer = collectionConsumer;
+  self.faviconMediator.collectionConsumer = collectionConsumer;
+  [self reloadAllData];
 }
 
 - (void)setConsumer:(id<ContentSuggestionsConsumer>)consumer {
@@ -269,30 +297,40 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   self.showMostRecentTabStartSurfaceTile = YES;
   NSArray<CSCollectionViewItem*>* items =
       [self itemsForSectionInfo:self.returnToRecentTabSectionInfo];
-  [self.consumer addSection:self.returnToRecentTabSectionInfo
-                  withItems:items
-                 completion:^{
-                   [self.discoverFeedDelegate returnToRecentTabWasAdded];
-                 }];
+  if (IsContentSuggestionsUIViewControllerMigrationEnabled()) {
+    [self.consumer
+        showReturnToRecentTabTileWithConfig:self.returnToRecentTabItem];
+  } else {
+    [self.collectionConsumer
+        addSection:self.returnToRecentTabSectionInfo
+         withItems:items
+        completion:^{
+          [self.discoverFeedDelegate returnToRecentTabWasAdded];
+        }];
+  }
 }
 
 - (void)hideRecentTabTile {
   DCHECK(IsStartSurfaceEnabled());
   if (self.showMostRecentTabStartSurfaceTile) {
     self.showMostRecentTabStartSurfaceTile = NO;
-    if (IsSingleCellContentSuggestionsEnabled()) {
-      [self reloadAllData];
+    if (IsContentSuggestionsUIViewControllerMigrationEnabled()) {
+      [self.consumer hideReturnToRecentTabTile];
     } else {
-      [self.consumer
-          clearSection:self.returnToRecentTabSectionInfo];
+      [self.collectionConsumer clearSection:self.returnToRecentTabSectionInfo];
     }
   }
 }
 
 - (void)hidePromo {
   self.shouldHidePromoAfterTap = YES;
-  // By reloading data, checking |notificationPromo| will remove the promo view.
-  [self reloadAllData];
+  if (IsContentSuggestionsUIViewControllerMigrationEnabled()) {
+    [self.consumer hideWhatsNewView];
+  } else {
+    // By reloading data, checking |notificationPromo| will remove the promo
+    // view.
+    [self reloadAllData];
+  }
 }
 
 #pragma mark - StartSurfaceRecentTabObserving
@@ -307,9 +345,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     self.returnToRecentTabItem.icon = image;
     if (IsSingleCellContentSuggestionsEnabled()) {
       self.parentItem.returnToRecentItem = self.returnToRecentTabItem;
-      [self.consumer itemHasChanged:self.parentItem];
+      [self.collectionConsumer itemHasChanged:self.parentItem];
     } else {
-      [self.consumer itemHasChanged:self.returnToRecentTabItem];
+      [self.collectionConsumer itemHasChanged:self.returnToRecentTabItem];
     }
   }
 }
@@ -333,11 +371,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
     item.index = index;
     DCHECK(index < kShortcutMinimumIndex);
     index++;
-    if (IsSingleCellContentSuggestionsEnabled()) {
+    if (!IsSingleCellContentSuggestionsEnabled() ||
+        IsContentSuggestionsUIViewControllerMigrationEnabled()) {
+      [self.faviconMediator fetchFaviconForMostVisited:item];
+    } else {
       [self.faviconMediator fetchFaviconForMostVisited:item
                                             parentItem:self.parentItem];
-    } else {
-      [self.faviconMediator fetchFaviconForMostVisited:item];
     }
     [self.freshMostVisitedItems addObject:item];
   }
@@ -365,11 +404,12 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 
   for (ContentSuggestionsMostVisitedItem* item in self.mostVisitedItems) {
     if (item.URL == siteURL) {
-      if (IsSingleCellContentSuggestionsEnabled()) {
+      if (!IsSingleCellContentSuggestionsEnabled() ||
+          IsContentSuggestionsUIViewControllerMigrationEnabled()) {
+        [self.faviconMediator fetchFaviconForMostVisited:item];
+      } else {
         [self.faviconMediator fetchFaviconForMostVisited:item
                                               parentItem:self.parentItem];
-      } else {
-        [self.faviconMediator fetchFaviconForMostVisited:item];
       }
       return;
     }
@@ -389,10 +429,14 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
 // Replaces the Most Visited items currently displayed by the most recent ones.
 - (void)useFreshMostVisited {
   self.mostVisitedItems = self.freshMostVisitedItems;
+  if (IsContentSuggestionsUIViewControllerMigrationEnabled()) {
+    [self.consumer setMostVisitedTilesWithConfigs:self.mostVisitedItems];
+  } else {
     // All data needs to be reloaded in order to force a re-layout, this is
     // cheaper since the Feed is not part of this ViewController when Discover
     // is enabled.
     [self reloadAllData];
+  }
     // TODO(crbug.com/1170995): Potentially remove once ContentSuggestions can
     // be added as part of a header.
     [self.discoverFeedDelegate contentSuggestionsWasUpdated];
@@ -448,7 +492,9 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
       [convertedSuggestions addObjectsFromArray:self.actionButtonItems];
     }
   } else if (sectionInfo == self.singleCellSectionInfo) {
-    self.parentItem = [[ContentSuggestionsParentItem alloc] initWithType:0];
+    if (!self.parentItem) {
+      self.parentItem = [[ContentSuggestionsParentItem alloc] initWithType:0];
+    }
     if (_notificationPromo->CanShow() && !self.shouldHidePromoAfterTap) {
       ContentSuggestionsWhatsNewItem* item =
           [[ContentSuggestionsWhatsNewItem alloc] initWithType:0];
@@ -514,7 +560,11 @@ const NSInteger kMaxNumMostVisitedTiles = 4;
   self.readingListUnreadCount = model->unread_size();
   if (self.readingListItem) {
     self.readingListItem.count = self.readingListUnreadCount;
-    [self.consumer itemHasChanged:self.readingListItem];
+    if (IsContentSuggestionsUIViewControllerMigrationEnabled()) {
+      [self.consumer updateReadingListCount:self.readingListUnreadCount];
+    } else {
+      [self.collectionConsumer itemHasChanged:self.readingListItem];
+    }
   }
 }
 

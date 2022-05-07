@@ -62,9 +62,8 @@ class BuildConfigGenerator extends DefaultTask {
         org_hamcrest_hamcrest_core: '//third_party/hamcrest:hamcrest_core_java',
         org_hamcrest_hamcrest_integration: '//third_party/hamcrest:hamcrest_integration_java',
         org_hamcrest_hamcrest_library: '//third_party/hamcrest:hamcrest_library_java',
-        // Remove androidx_window_window from being depended upon since we don't use it and it bloats binary size due to
-        // overly broad proguard keep rules. Perhaps when http://b/165268619 is fixed then we can allow it to be
-        // depended upon again.
+        // Remove androidx_window_window from being depended upon since it currently addes <uses-library>
+        // to our AndroidManfest.xml, which we don't allow. http://crbug.com/1302987
         androidx_window_window: EXCLUDE_THIS_LIB,
     ]
 
@@ -474,13 +473,13 @@ class BuildConfigGenerator extends DefaultTask {
                 if (existingLib != EXCLUDE_THIS_LIB) {
                     depsStr += "\"${existingLib}\","
                 }
-            } else if (excludeDependency(dep)) {
-                String thirdPartyDir = (dep.id.startsWith('androidx')) ? 'androidx' : 'android_deps'
-                depsStr += "\"//third_party/${thirdPartyDir}:${depTargetName}\","
             } else if (dep.id == 'com_google_android_material_material') {
                 // Material design is pulled in via doubledown, should
                 // use the variable instead of the real target.
                 depsStr += '"$material_design_target",'
+            } else if (excludeDependency(dep)) {
+                String thirdPartyDir = (dep.id.startsWith('androidx')) ? 'androidx' : 'android_deps'
+                depsStr += "\"//third_party/${thirdPartyDir}:${depTargetName}\","
             } else {
                 depsStr += "\":${depTargetName}\","
             }
@@ -563,16 +562,6 @@ class BuildConfigGenerator extends DefaultTask {
         if (repositoryPath == AUTOROLLED_REPO_PATH) {
             String targetName = translateTargetName(dependency.id) + '_java'
             return !isTargetAutorolled(targetName)
-        }
-        // TODO(crbug.com/1184780): Remove this once org_robolectric_shadows_multidex is updated to a newer version
-        // which does not need jetify.
-        if (dependency.directoryName == 'org_robolectric_shadows_multidex') {
-            if (dependency.version != '4.3.1') {
-                throw new RuntimeException('Got a new version for org_robolectric_shadows_multidex. If this new ' +
-                                           "version doesn't need jetify, please move this dependency back to the " +
-                                           'auto-generated section in //DEPS and //third_party/android_deps/BUILD.gn.')
-            }
-            return true
         }
         return false
     }
@@ -910,6 +899,13 @@ class BuildConfigGenerator extends DefaultTask {
                 break
             case 'org_jetbrains_kotlinx_kotlinx_coroutines_android':
                 sb.append('requires_android = true')
+                break
+            case 'org_robolectric_shadows_multidex':
+                sb.append('\n')
+                sb.append('  # Could also be jetified, but jetification was\n')
+                sb.append('  # removed from the build system and 3pp prevents\n')
+                sb.append('  # custom modifications to uploaded packages.\n')
+                sb.append('  deps += [":com_android_support_multidex_java"]\n')
                 break
         }
     }

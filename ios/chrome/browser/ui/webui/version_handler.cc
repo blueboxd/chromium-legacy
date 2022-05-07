@@ -22,8 +22,7 @@ void VersionHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
-void VersionHandler::HandleRequestVariationInfo(
-    base::Value::ConstListView args) {
+void VersionHandler::HandleRequestVariationInfo(const base::Value::List& args) {
   // Respond with the variations info immediately.
   CHECK_EQ(2U, args.size());
   std::string callback_id = args[0].GetString();

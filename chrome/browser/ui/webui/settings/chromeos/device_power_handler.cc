@@ -116,7 +116,7 @@ PowerHandler::TestAPI::~TestAPI() = default;
 
 void PowerHandler::TestAPI::RequestPowerManagementSettings() {
   base::Value args(base::Value::Type::LIST);
-  handler_->HandleRequestPowerManagementSettings(args.GetListDeprecated());
+  handler_->HandleRequestPowerManagementSettings(args.GetList());
 }
 
 void PowerHandler::TestAPI::SetIdleBehavior(IdleBehavior behavior,
@@ -124,14 +124,14 @@ void PowerHandler::TestAPI::SetIdleBehavior(IdleBehavior behavior,
   base::Value args(base::Value::Type::LIST);
   args.Append(static_cast<int>(behavior));
   args.Append(when_on_ac);
-  handler_->HandleSetIdleBehavior(args.GetListDeprecated());
+  handler_->HandleSetIdleBehavior(args.GetList());
 }
 
 void PowerHandler::TestAPI::SetLidClosedBehavior(
     PowerPolicyController::Action behavior) {
   base::Value args(base::Value::Type::LIST);
   args.Append(behavior);
-  handler_->HandleSetLidClosedBehavior(args.GetListDeprecated());
+  handler_->HandleSetLidClosedBehavior(args.GetList());
 }
 
 PowerHandler::PowerHandler(PrefService* prefs) : prefs_(prefs) {}
@@ -208,12 +208,12 @@ void PowerHandler::LidEventReceived(PowerManagerClient::LidState state,
   SendPowerManagementSettings(false /* force */);
 }
 
-void PowerHandler::HandleUpdatePowerStatus(base::Value::ConstListView args) {
+void PowerHandler::HandleUpdatePowerStatus(const base::Value::List& args) {
   AllowJavascript();
   chromeos::PowerManagerClient::Get()->RequestStatusUpdate();
 }
 
-void PowerHandler::HandleSetPowerSource(base::Value::ConstListView args) {
+void PowerHandler::HandleSetPowerSource(const base::Value::List& args) {
   AllowJavascript();
 
   const std::string& id = args[0].GetString();
@@ -221,12 +221,12 @@ void PowerHandler::HandleSetPowerSource(base::Value::ConstListView args) {
 }
 
 void PowerHandler::HandleRequestPowerManagementSettings(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   SendPowerManagementSettings(true /* force */);
 }
 
-void PowerHandler::HandleSetIdleBehavior(base::Value::ConstListView args) {
+void PowerHandler::HandleSetIdleBehavior(const base::Value::List& args) {
   AllowJavascript();
 
   const auto& list = args;
@@ -276,7 +276,7 @@ void PowerHandler::HandleSetIdleBehavior(base::Value::ConstListView args) {
   }
 }
 
-void PowerHandler::HandleSetLidClosedBehavior(base::Value::ConstListView args) {
+void PowerHandler::HandleSetLidClosedBehavior(const base::Value::List& args) {
   AllowJavascript();
 
   const auto& list = args;

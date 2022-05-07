@@ -229,7 +229,7 @@ message SystemProfileProto {
   optional OS os = 5;
 
   // Information on the user's hardware.
-  // Next tag: 22
+  // Next tag: 23
   message Hardware {
     // OS CPU architecture. Taken from uname -m and modified in Chromium logic.
     // Common options are: x86, x86_64, armv7l, armv8l, aarch64.
@@ -288,6 +288,19 @@ message SystemProfileProto {
     // Max DPI for any attached screen. (Windows only)
     optional float max_dpi_x = 9;
     optional float max_dpi_y = 10;
+
+    // The form factor of the device. Added in M101.
+    // Android devices can be phone, tablet, or TV. iOS devices can be phone or
+    // tablet. For Windows, Mac, ChromeOS, Lacros, and Linux, the desktop form
+    // factor is always used.
+    enum FormFactor {
+      FORM_FACTOR_UNKNOWN = 0;
+      FORM_FACTOR_DESKTOP = 1;
+      FORM_FACTOR_PHONE = 2;
+      FORM_FACTOR_TABLET = 3;
+      FORM_FACTOR_TV = 4;
+    }
+    optional FormFactor form_factor = 22;
 
     // Information on the CPU obtained by CPUID.
     message CPU {
@@ -519,25 +532,6 @@ message SystemProfileProto {
   }
   optional GoogleUpdate google_update = 11;
 
-  // Information on all installed plugins.
-  message Plugin {
-    // The plugin's self-reported name and filename (without path).
-    optional string name = 1;
-    optional string filename = 2;
-
-    // The plugin's version.
-    optional string version = 3;
-
-    // True if the plugin is disabled.
-    // If a client has multiple local Chrome user accounts, this is logged based
-    // on the first user account launched during the current session.
-    optional bool is_disabled = 4;
-
-    // True if the plugin is PPAPI.
-    optional bool is_pepper = 5;
-  }
-  repeated Plugin plugin = 7;
-
   // Figures that can be used to generate application stability metrics.
   // All values are counts of events since the last time that these
   // values were reported.
@@ -612,16 +606,6 @@ message SystemProfileProto {
     // Whether the metrics being reported are from a previous run picked up via
     // the left-over memory mapped files.
     optional bool from_previous_run = 29;
-
-    // Stability information for all installed plugins.
-    message PluginStability {
-      // The relevant plugin's information (name, etc.)
-      optional Plugin plugin = 1;
-
-      // The number of times this plugin process crashed.
-      optional int32 crash_count = 4;
-    }
-    repeated PluginStability plugin_stability = 22;
   }
   optional Stability stability = 8;
 

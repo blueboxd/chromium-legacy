@@ -4,6 +4,7 @@
 
 #include "ash/capture_mode/capture_mode_session.h"
 
+#include <string>
 #include <tuple>
 
 #include "ash/accessibility/accessibility_controller_impl.h"
@@ -338,8 +339,45 @@ int GetMessageIdForCaptureSource(CaptureModeSource source,
   }
 }
 
-void UpdateAutoclickMenuBoundsIfNeeded() {
-  Shell::Get()->accessibility_controller()->UpdateAutoclickMenuBoundsIfNeeded();
+void UpdateFloatingPanelBoundsIfNeeded() {
+  Shell::Get()->accessibility_controller()->UpdateFloatingPanelBoundsIfNeeded();
+}
+
+// Returns true if the camera preview will be shown on entering capture mode.
+bool CameraPreviewWillBeShown(CaptureModeController* controller) {
+  auto* camera_controller = controller->camera_controller();
+  if (!camera_controller || controller->type() != CaptureModeType::kVideo ||
+      !camera_controller->selected_camera().is_valid()) {
+    return false;
+  }
+
+  switch (controller->source()) {
+    // The camera preview will always be shown in `kFullscreen` source with
+    // `kVideo` capture type and valid selected camera.
+    case CaptureModeSource::kFullscreen:
+      return true;
+    case CaptureModeSource::kRegion:
+      return !controller->user_capture_region().IsEmpty();
+    // The camera preview will not be shown for `kWindow` while entering the
+    // capture mode. As the selected window has not been set yet at this point.
+    case CaptureModeSource::kWindow:
+      return false;
+  }
+}
+
+bool IsDragAllowedOnCameraPreview(const gfx::Point& screen_location) {
+  auto* controller = CaptureModeController::Get();
+  auto* camera_controller = controller->camera_controller();
+  if (camera_controller && !controller->is_recording_in_progress()) {
+    auto* camera_preview_widget = camera_controller->camera_preview_widget();
+    if ((camera_preview_widget &&
+         camera_preview_widget->GetWindowBoundsInScreen().Contains(
+             screen_location)) ||
+        camera_controller->is_drag_in_progress()) {
+      return true;
+    }
+  }
+  return false;
 }
 
 }  // namespace
@@ -505,14 +543,24 @@ void CaptureModeSession::Initialize() {
   // Trigger this before creating `capture_mode_bar_widget_` as we want to read
   // out this message before reading out the first view of
   // `capture_mode_bar_widget_`.
-  capture_mode_util::TriggerAccessibilityAlert(l10n_util::GetStringFUTF8(
-      IDS_ASH_SCREEN_CAPTURE_ALERT_OPEN,
+  const std::u16string capture_source =
       l10n_util::GetStringUTF16(GetMessageIdForCaptureSource(
-          controller_->source(), /*for_toggle_alert=*/false)),
-      l10n_util::GetStringUTF16(
-          controller_->type() == CaptureModeType::kImage
-              ? IDS_ASH_SCREEN_CAPTURE_TYPE_SCREENSHOT
-              : IDS_ASH_SCREEN_CAPTURE_TYPE_SCREEN_RECORDING)));
+          controller_->source(), /*for_toggle_alert=*/false));
+  const std::u16string capture_type = l10n_util::GetStringUTF16(
+      controller_->type() == CaptureModeType::kImage
+          ? IDS_ASH_SCREEN_CAPTURE_TYPE_SCREENSHOT
+          : IDS_ASH_SCREEN_CAPTURE_TYPE_SCREEN_RECORDING);
+  if (CameraPreviewWillBeShown(controller_)) {
+    const std::string camera_display_name =
+        controller_->camera_controller()->GetDisplayNameOfSelectedCamera();
+    DCHECK(!camera_display_name.empty());
+    capture_mode_util::TriggerAccessibilityAlert(l10n_util::GetStringFUTF8(
+        IDS_ASH_SCREEN_CAPTURE_ALERT_OPEN_WITH_CAMERA, capture_source,
+        capture_type, base::UTF8ToUTF16(camera_display_name)));
+  } else {
+    capture_mode_util::TriggerAccessibilityAlert(l10n_util::GetStringFUTF8(
+        IDS_ASH_SCREEN_CAPTURE_ALERT_OPEN, capture_source, capture_type));
+  }
 
   // A context menu may have input capture when entering a session. Remove
   // capture from it, otherwise subsequent mouse events will cause it to close,
@@ -576,7 +624,7 @@ void CaptureModeSession::Initialize() {
   aura::Env::GetInstance()->AddPreTargetHandler(
       this, ui::EventTarget::Priority::kSystem);
 
-  UpdateAutoclickMenuBoundsIfNeeded();
+  UpdateFloatingPanelBoundsIfNeeded();
 
   MaybeCreateUserNudge();
 }
@@ -607,7 +655,7 @@ void CaptureModeSession::Shutdown() {
     capture_mode_util::TriggerAccessibilityAlert(
         IDS_ASH_SCREEN_CAPTURE_ALERT_CLOSE);
   }
-  UpdateAutoclickMenuBoundsIfNeeded();
+  UpdateFloatingPanelBoundsIfNeeded();
 
   if (!is_stopping_to_start_video_recording_) {
     // Stopping the session for any reason other than starting video recording
@@ -617,8 +665,10 @@ void CaptureModeSession::Shutdown() {
 
     // Kill the camera preview when the capture mode session ends without
     // starting any recording.
-    if (controller_->camera_controller())
+    if (controller_->camera_controller() &&
+        !controller_->is_recording_in_progress()) {
       controller_->camera_controller()->SetShouldShowPreview(false);
+    }
   }
 }
 
@@ -652,7 +702,7 @@ void CaptureModeSession::OnCaptureSourceChanged(CaptureModeSource new_source) {
       GetMessageIdForCaptureSource(new_source, /*for_toggle_alert=*/true));
 
   auto* camera_controller = controller_->camera_controller();
-  if (camera_controller)
+  if (camera_controller && !controller_->is_recording_in_progress())
     camera_controller->MaybeReparentPreviewWidget();
 }
 
@@ -845,7 +895,9 @@ gfx::Rect CaptureModeSession::GetCameraPreviewConfineBounds() const {
     case CaptureModeSource::kFullscreen: {
       auto* parent = GetCameraPreviewParentWindow();
       DCHECK(parent);
-      return parent->GetBoundsInScreen();
+      return display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(parent)
+          .work_area();
     }
     case CaptureModeSource::kWindow: {
       aura::Window* selected_window = GetSelectedWindow();
@@ -999,8 +1051,9 @@ void CaptureModeSession::OnWindowDestroying(aura::Window* window) {
 void CaptureModeSession::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t metrics) {
-  if (!(metrics & (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_ROTATION |
-                   DISPLAY_METRIC_DEVICE_SCALE_FACTOR))) {
+  if (!(metrics &
+        (DISPLAY_METRIC_BOUNDS | DISPLAY_METRIC_ROTATION |
+         DISPLAY_METRIC_DEVICE_SCALE_FACTOR | DISPLAY_METRIC_WORK_AREA))) {
     return;
   }
 
@@ -1023,6 +1076,17 @@ void CaptureModeSession::OnDisplayMetricsChanged(
   // bounds.
   RefreshBarWidgetBounds();
   MaybeUpdateSettingsBounds();
+
+  // Only need to update the camera preview's bounds if the capture source is
+  // `kFullscreen`, since `ClampCaptureRegionToRootWindowSize` will take care of
+  // it if the source is `kRegion`.
+  // `CaptureWindowObserver::OnWindowBoundsChanged` will take care of it if the
+  // source is `kWindow`.
+  if (controller_->camera_controller() &&
+      controller_->source() == CaptureModeSource::kFullscreen &&
+      !controller_->is_recording_in_progress()) {
+    controller_->camera_controller()->MaybeUpdatePreviewWidgetBounds();
+  }
 
   if (capture_label_widget_)
     UpdateCaptureLabelWidget(CaptureLabelAnimation::kNone);
@@ -1080,6 +1144,13 @@ void CaptureModeSession::UpdateCursor(const gfx::Point& location_in_screen,
   }
 
   if (IsInCountDownAnimation()) {
+    cursor_setter_->UpdateCursor(ui::mojom::CursorType::kPointer);
+    return;
+  }
+
+  // If the current mouse is on camera preview or camera preview drag is in
+  // progress, use the pointer cursor.
+  if (IsDragAllowedOnCameraPreview(location_in_screen)) {
     cursor_setter_->UpdateCursor(ui::mojom::CursorType::kPointer);
     return;
   }
@@ -1448,6 +1519,14 @@ void CaptureModeSession::OnLocatedEvent(ui::LocatedEvent* event,
       current_root_ !=
           capture_mode_bar_widget_->GetNativeWindow()->GetRootWindow()) {
     RefreshBarWidgetBounds();
+  }
+
+  if (IsDragAllowedOnCameraPreview(screen_location)) {
+    // Update cursor type when the event is on top of camera preview.
+    UpdateCursor(screen_location, is_touch);
+    // Pass the event to camera preview to handle it if the event is on top of
+    // camera preview and there's no video recording is in progress.
+    return;
   }
 
   const bool is_event_on_settings_menu =
@@ -2184,7 +2263,7 @@ void CaptureModeSession::MaybeChangeRoot(aura::Window* new_root) {
   UpdateRootWindowDimmers();
 
   auto* camera_controller = controller_->camera_controller();
-  if (camera_controller)
+  if (camera_controller && !controller_->is_recording_in_progress())
     camera_controller->MaybeReparentPreviewWidget();
 }
 

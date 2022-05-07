@@ -36,7 +36,7 @@ void WallpaperHandler::RegisterMessages() {
 }
 
 void WallpaperHandler::HandleIsWallpaperSettingVisible(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(args.size(), 1U);
   ResolveCallback(
       args[0],
@@ -44,7 +44,7 @@ void WallpaperHandler::HandleIsWallpaperSettingVisible(
 }
 
 void WallpaperHandler::HandleIsWallpaperPolicyControlled(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(args.size(), 1U);
   bool result = WallpaperControllerClientImpl::Get()
                     ->IsActiveUserWallpaperControlledByPolicy();
@@ -52,7 +52,7 @@ void WallpaperHandler::HandleIsWallpaperPolicyControlled(
 }
 
 void WallpaperHandler::HandleOpenWallpaperManager(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   WallpaperControllerClientImpl::Get()->OpenWallpaperPickerIfAllowed();
 }
 

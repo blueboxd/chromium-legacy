@@ -49,9 +49,11 @@
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_settings_client.h"
 #include "third_party/blink/public/platform/web_url_request.h"
@@ -432,7 +434,7 @@ void FrameLoader::DidFinishNavigation(NavigationFinishState state) {
     // JS-provided promise to resolve, so check it as well.
     if (!document_loader_->SentDidFinishLoad() || HasProvisionalNavigation())
       return;
-    if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow())) {
+    if (auto* app_history = AppHistory::navigation(*frame_->DomWindow())) {
       if (app_history->HasOngoingNavigation())
         return;
     }
@@ -489,28 +491,14 @@ void FrameLoader::DetachDocumentLoader(Member<DocumentLoader>& loader,
   loader = nullptr;
 }
 
-void FrameLoader::DidFinishSameDocumentNavigation(
+void FrameLoader::ProcessScrollForSameDocumentNavigation(
     const KURL& url,
     WebFrameLoadType frame_load_type,
-    HistoryItem* history_item) {
-  // If we have a state object, we cannot also be a new navigation.
-  scoped_refptr<SerializedScriptValue> state_object =
-      history_item ? history_item->StateObject() : nullptr;
-  DCHECK(!state_object || frame_load_type == WebFrameLoadType::kBackForward);
-
-  // onpopstate might change view state, so stash for later restore.
-  absl::optional<HistoryItem::ViewState> view_state;
-  if (history_item) {
-    view_state = history_item->GetViewState();
-  }
-
-  frame_->DomWindow()->StatePopped(state_object
-                                       ? std::move(state_object)
-                                       : SerializedScriptValue::NullValue());
-
+    absl::optional<HistoryItem::ViewState> view_state,
+    mojom::blink::ScrollRestorationType scroll_restoration_type) {
   if (view_state) {
     RestoreScrollPositionAndViewState(frame_load_type, *view_state,
-                                      history_item->ScrollRestorationType());
+                                      scroll_restoration_type);
   }
 
   // We need to scroll to the fragment whether or not a hash change occurred,
@@ -694,7 +682,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
                                       frame_load_type),
         resource_request.HasUserGesture(), origin_window->GetSecurityOrigin(),
         /*is_synchronously_committed=*/true, request.GetTriggeringEventInfo(),
-        false /* is_browser_initiated */, nullptr /* extra_data */);
+        false /* is_browser_initiated */);
     return;
   }
 
@@ -765,7 +753,7 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
     return;
   }
 
-  if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow())) {
+  if (auto* app_history = AppHistory::navigation(*frame_->DomWindow())) {
     if (request.GetNavigationPolicy() == kNavigationPolicyCurrentTab &&
         (!origin_window || origin_window->GetSecurityOrigin()->CanAccess(
                                frame_->DomWindow()->GetSecurityOrigin()))) {
@@ -775,8 +763,8 @@ void FrameLoader::StartNavigation(FrameLoadRequest& request,
               request.GetTriggeringEventInfo() ==
                       mojom::blink::TriggeringEventInfo::kFromTrustedEvent
                   ? UserNavigationInvolvement::kActivation
-                  : UserNavigationInvolvement::kNone) !=
-          AppHistory::DispatchResult::kContinue) {
+                  : UserNavigationInvolvement::kNone,
+              nullptr, nullptr) != AppHistory::DispatchResult::kContinue) {
         return;
       }
     }
@@ -1010,7 +998,7 @@ void FrameLoader::CommitNavigation(
   if (!CancelProvisionalLoaderForNewNavigation())
     return;
 
-  if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow())) {
+  if (auto* app_history = AppHistory::navigation(*frame_->DomWindow())) {
     if (navigation_params->frame_load_type == WebFrameLoadType::kBackForward) {
       auto result = app_history->DispatchNavigateEvent(
           navigation_params->url, nullptr, NavigateEventType::kCrossDocument,
@@ -1171,7 +1159,7 @@ void FrameLoader::StopAllLoaders(bool abort_client) {
   }
 
   frame_->GetDocument()->CancelParsing();
-  if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow()))
+  if (auto* app_history = AppHistory::navigation(*frame_->DomWindow()))
     app_history->InformAboutCanceledNavigation();
   if (document_loader_)
     document_loader_->StopLoading();
@@ -1329,25 +1317,55 @@ void FrameLoader::RestoreScrollPositionAndViewState(
   view->ScheduleAnimation();
 }
 
-String FrameLoader::UserAgent() const {
-  String user_agent = Client()->UserAgent();
+String FrameLoader::ApplyUserAgentOverrideAndLog(
+    const String& user_agent) const {
+  String user_agent_override;
   probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
-                                &user_agent);
-  return user_agent;
+                                &user_agent_override);
+
+  if (Client()->UserAgentOverride().IsEmpty() &&
+      user_agent_override.IsEmpty()) {
+    return user_agent;
+  }
+
+  if (user_agent_override.IsEmpty()) {
+    user_agent_override = user_agent;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          blink::features::kUserAgentOverrideExperiment)) {
+    String ua_original = Platform::Current()->UserAgent();
+
+    auto it = user_agent_override.Find(ua_original);
+    UserAgentOverride::UserAgentOverrideHistogram histogram =
+        UserAgentOverride::UserAgentOverrideHistogram::UserAgentOverriden;
+    if (it == 0) {
+      histogram = UserAgentOverride::UserAgentOverrideHistogram::
+          UserAgentOverrideSuffix;
+    } else if (it != kNotFound) {
+      histogram = UserAgentOverride::UserAgentOverrideHistogram::
+          UserAgentOverrideSubstring;
+    }
+
+    if (document_loader_) {
+      document_loader_->GetUseCounter().CountUserAgentOverride(histogram,
+                                                               frame_.Get());
+    }
+  }
+
+  return user_agent_override;
+}
+
+String FrameLoader::UserAgent() const {
+  return ApplyUserAgentOverrideAndLog(Client()->UserAgent());
 }
 
 String FrameLoader::FullUserAgent() const {
-  String user_agent = Client()->FullUserAgent();
-  probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
-                                &user_agent);
-  return user_agent;
+  return ApplyUserAgentOverrideAndLog(Client()->FullUserAgent());
 }
 
 String FrameLoader::ReducedUserAgent() const {
-  String user_agent = Client()->ReducedUserAgent();
-  probe::ApplyUserAgentOverride(probe::ToCoreProbeSink(frame_->GetDocument()),
-                                &user_agent);
-  return user_agent;
+  return ApplyUserAgentOverrideAndLog(Client()->ReducedUserAgent());
 }
 
 absl::optional<blink::UserAgentMetadata> FrameLoader::UserAgentMetadata()
@@ -1465,7 +1483,7 @@ bool FrameLoader::ShouldClose(bool is_reload) {
         frame_->GetDocument());
     if (!frame_->GetDocument()->DispatchBeforeUnloadEvent(
             &page->GetChromeClient(), is_reload, did_allow_navigation)) {
-      if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow()))
+      if (auto* app_history = AppHistory::navigation(*frame_->DomWindow()))
         app_history->InformAboutCanceledNavigation();
       return false;
     }
@@ -1489,7 +1507,7 @@ bool FrameLoader::ShouldClose(bool is_reload) {
               descendant_frame->GetDocument());
       if (!descendant_frame->GetDocument()->DispatchBeforeUnloadEvent(
               &page->GetChromeClient(), is_reload, did_allow_navigation)) {
-        if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow()))
+        if (auto* app_history = AppHistory::navigation(*frame_->DomWindow()))
           app_history->InformAboutCanceledNavigation();
         return false;
       }
@@ -1562,7 +1580,7 @@ void FrameLoader::ClearClientNavigation() {
 void FrameLoader::CancelClientNavigation() {
   if (!client_navigation_)
     return;
-  if (auto* app_history = AppHistory::appHistory(*frame_->DomWindow()))
+  if (auto* app_history = AppHistory::navigation(*frame_->DomWindow()))
     app_history->InformAboutCanceledNavigation();
   ResourceError error = ResourceError::CancelledError(client_navigation_->url);
   ClearClientNavigation();

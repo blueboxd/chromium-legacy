@@ -46,12 +46,6 @@ export class CategorySettingExceptionsElement extends
       },
 
       /**
-       * The string ID of the category that this element is displaying data for.
-       * See site_settings/constants.js for possible values.
-       */
-      category: String,
-
-      /**
        * Some content types (like Location) do not allow the user to manually
        * edit the exception list from within Settings.
        */
@@ -86,14 +80,6 @@ export class CategorySettingExceptionsElement extends
       },
 
       /**
-       * If true, displays the Block site list. Defaults to true.
-       */
-      showBlockSiteList_: {
-        type: Boolean,
-        value: true,
-      },
-
-      /**
        * Expose ContentSetting enum to HTML bindings.
        */
       contentSettingEnum_: {
@@ -110,16 +96,14 @@ export class CategorySettingExceptionsElement extends
   }
 
   description: string;
-  category: ContentSettingsTypes;
   private readOnlyList: boolean;
   private defaultManaged_: boolean;
   blockHeader: string;
   allowHeader: string;
   searchFilter: string;
   private showAllowSiteList_: boolean;
-  private showBlockSiteList_: boolean;
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.addWebUIListener(

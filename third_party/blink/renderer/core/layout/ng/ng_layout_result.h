@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/ng/exclusions/ng_exclusion_space.h"
+#include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_data.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_bfc_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_margin_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/layout_ng_grid.h"
@@ -70,10 +71,10 @@ class CORE_EXPORT NGLayoutResult final
 
   // Creates a copy of NGLayoutResult with a new (but "identical") fragment.
   NGLayoutResult(const NGLayoutResult& other,
-                 scoped_refptr<const NGPhysicalFragment> physical_fragment);
+                 const NGPhysicalFragment* physical_fragment);
 
   // Delegate constructor that sets up what it can, based on the builder.
-  NGLayoutResult(scoped_refptr<const NGPhysicalFragment> physical_fragment,
+  NGLayoutResult(const NGPhysicalFragment* physical_fragment,
                  NGContainerFragmentBuilder* builder);
 
   // We don't need the copy constructor, move constructor, copy
@@ -309,6 +310,9 @@ class CORE_EXPORT NGLayoutResult final
   const NGGridLayoutData* GridLayoutData() const {
     return HasRareData() ? rare_data_->grid_layout_data_.get() : nullptr;
   }
+  const DevtoolsFlexInfo* FlexLayoutData() const {
+    return HasRareData() ? rare_data_->flex_layout_data_.get() : nullptr;
+  }
 
   LayoutUnit MathItalicCorrection() const {
     return HasRareData() && rare_data_->math_layout_data_
@@ -457,14 +461,14 @@ class CORE_EXPORT NGLayoutResult final
   // This constructor requires a non-null fragment and sets a success status.
   using NGBoxFragmentBuilderPassKey = base::PassKey<NGBoxFragmentBuilder>;
   NGLayoutResult(NGBoxFragmentBuilderPassKey,
-                 scoped_refptr<const NGPhysicalFragment> physical_fragment,
+                 const NGPhysicalFragment* physical_fragment,
                  NGBoxFragmentBuilder*);
 
   using NGLineBoxFragmentBuilderPassKey =
       base::PassKey<NGLineBoxFragmentBuilder>;
   // This constructor requires a non-null fragment and sets a success status.
   NGLayoutResult(NGLineBoxFragmentBuilderPassKey,
-                 scoped_refptr<const NGPhysicalFragment> physical_fragment,
+                 const NGPhysicalFragment* physical_fragment,
                  NGLineBoxFragmentBuilder*);
 
   void Trace(Visitor*) const;
@@ -549,6 +553,7 @@ class CORE_EXPORT NGLayoutResult final
     int lines_until_clamp = 0;
     wtf_size_t table_column_count_ = 0;
     std::unique_ptr<const NGGridLayoutData> grid_layout_data_;
+    std::unique_ptr<const DevtoolsFlexInfo> flex_layout_data_;
     absl::optional<MathData> math_layout_data_;
   };
   bool HasRareData() const { return rare_data_; }
@@ -623,7 +628,7 @@ class CORE_EXPORT NGLayoutResult final
   // as indicated by |has_valid_space_|.
   const NGConstraintSpace space_;
 
-  scoped_refptr<const NGPhysicalFragment> physical_fragment_;
+  Member<const NGPhysicalFragment> physical_fragment_;
 
   // |rare_data_| cannot be stored in the union because it is difficult to have
   // a const bitfield for it and it cannot be traced.

@@ -12,8 +12,7 @@
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
 
-namespace chromeos {
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Responsible for creating and maintaining a connection to the user's
 // multidevice host.
@@ -88,14 +87,6 @@ class ConnectionManager {
 std::ostream& operator<<(std::ostream& stream,
                          ConnectionManager::Status status);
 
-}  // namespace secure_channel
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when it moved to ash.
-namespace ash {
-namespace secure_channel {
-using ::chromeos::secure_channel::ConnectionManager;
-}  // namespace secure_channel
-}  // namespace ash
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_CONNECTION_MANAGER_H_

@@ -100,24 +100,37 @@ class ThemeProperties {
   enum NotOverwritableByUserThemeProperty {
     // The color of the border drawn around the location bar.
     COLOR_LOCATION_BAR_BORDER = 1000,
+    COLOR_LOCATION_BAR_BORDER_OPAQUE,
+
+    COLOR_APP_MENU_HIGHLIGHT_SEVERITY_LOW,
+    COLOR_APP_MENU_HIGHLIGHT_SEVERITY_HIGH,
+    COLOR_APP_MENU_HIGHLIGHT_SEVERITY_MEDIUM,
+    COLOR_AVATAR_BUTTON_HIGHLIGHT_NORMAL,
+    COLOR_AVATAR_BUTTON_HIGHLIGHT_SYNC_ERROR,
+    COLOR_AVATAR_BUTTON_HIGHLIGHT_SYNC_PAUSED,
+    COLOR_READ_LATER_BUTTON_HIGHLIGHT,
+
+    COLOR_TOOLBAR_BUTTON_BACKGROUND,
+    COLOR_TOOLBAR_BUTTON_BORDER,
+    COLOR_TOOLBAR_BUTTON_ICON_HOVERED,
+    COLOR_TOOLBAR_BUTTON_ICON_INACTIVE,
+    COLOR_TOOLBAR_BUTTON_ICON_PRESSED,
+    COLOR_TOOLBAR_BUTTON_TEXT,
 
     // The color of the line separating the bottom of the toolbar from the
     // contents.
     COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR,
 
-    // The color of a toolbar button's icon when it is being hovered or pressed.
-    COLOR_TOOLBAR_BUTTON_ICON_HOVERED,
-    COLOR_TOOLBAR_BUTTON_ICON_PRESSED,
+    COLOR_TOOLBAR_FEATURE_PROMO_HIGHLIGHT,
 
-    // The color of a disabled toolbar button's icon.
-    COLOR_TOOLBAR_BUTTON_ICON_INACTIVE,
+    // Opaque base color for toolbar button ink drops.
+    COLOR_TOOLBAR_INK_DROP,
 
     // The color of the line separating the top of the toolbar from the region
     // above. For a tabbed browser window, this is the line along the bottom
-    // edge of the tabstrip, the stroke around the tabs, and the new tab button
-    // stroke/shadow color.
-    COLOR_TOOLBAR_TOP_SEPARATOR,
-    COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE,
+    // edge of the tabstrip.
+    COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_ACTIVE,
+    COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE,
 
     // /!\ If you make any changes to this enum, you must also increment
     // kThemePackVersion in browser_theme_pack.cc, or else themes will display
@@ -127,20 +140,27 @@ class ThemeProperties {
     // shelf.
     COLOR_TOOLBAR_VERTICAL_SEPARATOR,
 
-    // Opaque base color for toolbar button ink drops.
-    COLOR_TOOLBAR_INK_DROP,
-
     // Colors used for various 'shelves' and 'bars'.
     // Download shelf colors.
     COLOR_DOWNLOAD_SHELF,
     COLOR_DOWNLOAD_SHELF_BUTTON_BACKGROUND,
     COLOR_DOWNLOAD_SHELF_BUTTON_TEXT,
+    COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR,
+    COLOR_DOWNLOAD_SHELF_FOREGROUND,
 
     // Infobar colors.
     COLOR_INFOBAR,
+    COLOR_INFOBAR_CONTENT_AREA_SEPARATOR,
+    COLOR_INFOBAR_TEXT,
+
+    COLOR_SIDE_PANEL_CONTENT_AREA_SEPARATOR,
 
     // Status bubble colors.
-    COLOR_STATUS_BUBBLE,
+    COLOR_STATUS_BUBBLE_ACTIVE,
+    COLOR_STATUS_BUBBLE_INACTIVE,
+    COLOR_STATUS_BUBBLE_SHADOW,
+    COLOR_STATUS_BUBBLE_TEXT_ACTIVE,
+    COLOR_STATUS_BUBBLE_TEXT_INACTIVE,
 
     // /!\ If you make any changes to this enum, you must also increment
     // kThemePackVersion in browser_theme_pack.cc, or else themes will display
@@ -159,6 +179,10 @@ class ThemeProperties {
     COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE,
     COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE_INCOGNITO,
     COLOR_TAB_FOREGROUND_ACTIVE_FRAME_INACTIVE_INCOGNITO,
+
+    // Colors used for the stroke around tabs.
+    COLOR_TAB_STROKE_FRAME_ACTIVE,
+    COLOR_TAB_STROKE_FRAME_INACTIVE,
 
     // The throbber colors for tabs or anything on a toolbar (currently, only
     // the download shelf). Do not use directly; only for use inside
@@ -242,10 +266,11 @@ class ThemeProperties {
     COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_ACTIVE,
     COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INCOGNITO_INACTIVE,
 
-    COLOR_NTP_TEXT_LIGHT,
     COLOR_NTP_LOGO,
+    COLOR_NTP_SECTION_BORDER,
     // Color for the background of the most visited/custom link tile.
     COLOR_NTP_SHORTCUT,
+    COLOR_NTP_TEXT_LIGHT,
 
 #if BUILDFLAG(IS_WIN)
     // The colors of the 1px border around the window on Windows 10.
@@ -256,8 +281,12 @@ class ThemeProperties {
     SHOULD_FILL_BACKGROUND_TAB_COLOR,
 
     // Colors for in-product help promo bubbles.
-    COLOR_FEATURE_PROMO_BUBBLE_TEXT,
     COLOR_FEATURE_PROMO_BUBBLE_BACKGROUND,
+    COLOR_FEATURE_PROMO_BUBBLE_BUTTON_BORDER,
+    COLOR_FEATURE_PROMO_BUBBLE_CLOSE_BUTTON_INK_DROP,
+    COLOR_FEATURE_PROMO_BUBBLE_DEFAULT_BUTTON_BACKGROUND,
+    COLOR_FEATURE_PROMO_BUBBLE_DEFAULT_BUTTON_FOREGROUND,
+    COLOR_FEATURE_PROMO_BUBBLE_FOREGROUND,
 
     // /!\ If you make any changes to this enum, you must also increment
     // kThemePackVersion in browser_theme_pack.cc, or else themes will display
@@ -269,23 +298,27 @@ class ThemeProperties {
     COLOR_OMNIBOX_RESULTS_BG,
     COLOR_OMNIBOX_RESULTS_BG_HOVERED,
     COLOR_OMNIBOX_RESULTS_BG_SELECTED,
-    COLOR_OMNIBOX_RESULTS_TEXT_SELECTED,
+    COLOR_OMNIBOX_RESULTS_BUTTON_BORDER,
+    COLOR_OMNIBOX_RESULTS_BUTTON_INK_DROP,
+    COLOR_OMNIBOX_RESULTS_BUTTON_INK_DROP_SELECTED,
     COLOR_OMNIBOX_RESULTS_TEXT_DIMMED,
     COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED,
+    COLOR_OMNIBOX_RESULTS_TEXT_NEGATIVE,
+    COLOR_OMNIBOX_RESULTS_TEXT_NEGATIVE_SELECTED,
+    COLOR_OMNIBOX_RESULTS_TEXT_POSITIVE,
+    COLOR_OMNIBOX_RESULTS_TEXT_POSITIVE_SELECTED,
+    COLOR_OMNIBOX_RESULTS_TEXT_SECONDARY,
+    COLOR_OMNIBOX_RESULTS_TEXT_SECONDARY_SELECTED,
+    COLOR_OMNIBOX_RESULTS_TEXT_SELECTED,
     COLOR_OMNIBOX_RESULTS_ICON,
     COLOR_OMNIBOX_RESULTS_ICON_SELECTED,
     COLOR_OMNIBOX_RESULTS_URL,
     COLOR_OMNIBOX_RESULTS_URL_SELECTED,
-    COLOR_OMNIBOX_RESULTS_BUTTON_BORDER,
     COLOR_OMNIBOX_BUBBLE_OUTLINE,
     COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE,
     COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT,
     COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
     COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
-
-    // The colors used for thumbnail tab visualizations,
-    COLOR_THUMBNAIL_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE,
-    COLOR_THUMBNAIL_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE,
 
     // Colors used for the Bookmark bar
     COLOR_BOOKMARK_BAR_BACKGROUND,
@@ -295,6 +328,14 @@ class ThemeProperties {
     // favicon color is retained.
     COLOR_BOOKMARK_FAVICON,
     COLOR_BOOKMARK_SEPARATOR,
+
+    // Colors used for the frame caption/foreground
+    COLOR_FRAME_CAPTION_ACTIVE,
+    COLOR_FRAME_CAPTION_INACTIVE,
+
+    // Colors used for the FlyingIndicator
+    COLOR_FLYING_INDICATOR_BACKGROUND,
+    COLOR_FLYING_INDICATOR_FOREGROUND,
 
     // /!\ If you make any changes to this enum, you must also increment
     // kThemePackVersion in browser_theme_pack.cc, or else themes will display

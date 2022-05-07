@@ -85,9 +85,6 @@ const char kDisableAccelerated2dCanvas[]    = "disable-accelerated-2d-canvas";
 // Enable in-progress canvas 2d API methods BeginLayer and EndLayer.
 const char kEnableCanvas2DLayers[] = "canvas-2d-layers";
 
-// Enable in-progress canvas 2d API features.
-const char kEnableNewCanvas2DAPI[] = "new-canvas-2d-api";
-
 // Disables hardware acceleration of video decode, where available.
 const char kDisableAcceleratedVideoDecode[] =
     "disable-accelerated-video-decode";
@@ -664,6 +661,11 @@ const char kPullToRefresh[] = "pull-to-refresh";
 // consecutive quota change events can be fired. Set the value to '0' to disable
 // the debounce mechanimsm.
 const char kQuotaChangeEventInterval[] = "quota-change-event-interval";
+
+// Reduce the minor version number in the User-Agent string.  This flag
+// implements phase 4 of User-Agent reduction:
+// https://blog.chromium.org/2021/09/user-agent-reduction-origin-trial-and-dates.html.
+const char kReduceUserAgentMinorVersion[] = "reduce-user-agent-minor-version";
 
 // Register Pepper plugins (see pepper_plugin_list.cc for its format).
 const char kRegisterPepperPlugins[]         = "register-pepper-plugins";

@@ -7,9 +7,9 @@
 
 #include <string>
 
-namespace browsing_topics {
-using Topic = int;
-}
+#include "base/types/strong_alias.h"
+#include "base/values.h"
+#include "components/browsing_topics/common/common_types.h"
 
 namespace privacy_sandbox {
 // Contains a topic and a name in the current locale.
@@ -33,6 +33,10 @@ class CanonicalTopic {
   // Returns the localized string representation of the Canonical Topic, this
   // is suitable for direct display to the user.
   std::u16string GetLocalizedRepresentation() const;
+
+  // Functions for converting to and from values for storage in preferences.
+  base::Value ToValue() const;
+  static absl::optional<CanonicalTopic> FromValue(const base::Value& value);
 
   bool operator<(const CanonicalTopic& other) const;
   bool operator==(const CanonicalTopic& other) const;

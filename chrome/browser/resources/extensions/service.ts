@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {ChromeEvent} from '/tools/typescript/definitions/chrome_event.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 
 import {ActivityLogDelegate} from './activity_log/activity_log_history.js';
 import {ActivityLogEventDelegate} from './activity_log/activity_log_stream.js';
@@ -13,7 +13,7 @@ import {KeyboardShortcutDelegate} from './keyboard_shortcut_delegate.js';
 import {LoadErrorDelegate} from './load_error.js';
 import {Dialog, navigation, Page} from './navigation_helper.js';
 import {PackDialogDelegate} from './pack_dialog.js';
-import {SitePermissionsDelegate} from './site_permissions.js';
+import {SiteSettingsDelegate} from './site_settings_mixin.js';
 import {ToolbarDelegate} from './toolbar.js';
 
 export interface ServiceInterface extends ActivityLogDelegate,
@@ -21,7 +21,7 @@ export interface ServiceInterface extends ActivityLogDelegate,
                                           ErrorPageDelegate, ItemDelegate,
                                           KeyboardShortcutDelegate,
                                           LoadErrorDelegate, PackDialogDelegate,
-                                          SitePermissionsDelegate,
+                                          SiteSettingsDelegate,
                                           ToolbarDelegate {
   notifyDragInstallInProgress(): void;
   loadUnpackedFromDrag(): Promise<boolean>;
@@ -33,8 +33,6 @@ export interface ServiceInterface extends ActivityLogDelegate,
   getProfileConfiguration(): Promise<chrome.developerPrivate.ProfileInfo>;
   getExtensionsInfo(): Promise<Array<chrome.developerPrivate.ExtensionInfo>>;
   getExtensionSize(id: string): Promise<string>;
-  getUserSiteSettingsChangedTarget():
-      ChromeEvent<(settings: chrome.developerPrivate.UserSiteSettings) => void>;
 }
 
 export class Service implements ServiceInterface {
@@ -480,21 +478,21 @@ export class Service implements ServiceInterface {
     });
   }
 
-  addUserSpecifiedSite(
+  addUserSpecifiedSites(
       siteSet: chrome.developerPrivate.UserSiteSet,
-      host: string): Promise<void> {
+      hosts: string[]): Promise<void> {
     return new Promise(function(resolve) {
-      chrome.developerPrivate.addUserSpecifiedSite(
-          {siteList: siteSet, host}, resolve);
+      chrome.developerPrivate.addUserSpecifiedSites(
+          {siteList: siteSet, hosts}, resolve);
     });
   }
 
-  removeUserSpecifiedSite(
+  removeUserSpecifiedSites(
       siteSet: chrome.developerPrivate.UserSiteSet,
-      host: string): Promise<void> {
+      hosts: string[]): Promise<void> {
     return new Promise(function(resolve) {
-      chrome.developerPrivate.removeUserSpecifiedSite(
-          {siteList: siteSet, host}, resolve);
+      chrome.developerPrivate.removeUserSpecifiedSites(
+          {siteList: siteSet, hosts}, resolve);
     });
   }
 

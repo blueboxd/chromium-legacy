@@ -7,6 +7,48 @@
 namespace mojo {
 
 // static
+bool mojo::StructTraits<remoting::mojom::AudioPacketDataView,
+                        ::std::unique_ptr<::remoting::AudioPacket>>::
+    Read(remoting::mojom::AudioPacketDataView data_view,
+         ::std::unique_ptr<::remoting::AudioPacket>* out_packet) {
+  auto packet = std::make_unique<::remoting::AudioPacket>();
+
+  packet->set_timestamp(data_view.timestamp());
+
+  if (!data_view.ReadData(packet->mutable_data())) {
+    return false;
+  }
+
+  ::remoting::AudioPacket::Encoding encoding;
+  if (!data_view.ReadEncoding(&encoding)) {
+    return false;
+  }
+  packet->set_encoding(encoding);
+
+  ::remoting::AudioPacket::SamplingRate sampling_rate;
+  if (!data_view.ReadSamplingRate(&sampling_rate)) {
+    return false;
+  }
+  packet->set_sampling_rate(sampling_rate);
+
+  ::remoting::AudioPacket::BytesPerSample bytes_per_sample;
+  if (!data_view.ReadBytesPerSample(&bytes_per_sample)) {
+    return false;
+  }
+  packet->set_bytes_per_sample(bytes_per_sample);
+
+  ::remoting::AudioPacket::Channels channels;
+  if (!data_view.ReadChannels(&channels)) {
+    return false;
+  }
+  packet->set_channels(channels);
+
+  *out_packet = std::move(packet);
+
+  return true;
+}
+
+// static
 bool mojo::StructTraits<remoting::mojom::ClipboardEventDataView,
                         ::remoting::protocol::ClipboardEvent>::
     Read(remoting::mojom::ClipboardEventDataView data_view,
@@ -66,6 +108,16 @@ bool mojo::StructTraits<remoting::mojom::DesktopEnvironmentOptionsDataView,
     return false;
   }
 
+  return true;
+}
+
+// static
+bool mojo::StructTraits<
+    remoting::mojom::DesktopRectDataView,
+    ::webrtc::DesktopRect>::Read(remoting::mojom::DesktopRectDataView data_view,
+                                 ::webrtc::DesktopRect* out_rect) {
+  *out_rect = webrtc::DesktopRect::MakeLTRB(
+      data_view.left(), data_view.top(), data_view.right(), data_view.bottom());
   return true;
 }
 

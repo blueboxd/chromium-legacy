@@ -59,10 +59,12 @@
 #include "chrome/browser/ui/views/location_bar/intent_chip_button.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_layout.h"
 #include "chrome/browser/ui/views/location_bar/location_icon_view.h"
+#include "chrome/browser/ui/views/location_bar/permission_chip.h"
 #include "chrome/browser/ui/views/location_bar/permission_quiet_chip.h"
 #include "chrome/browser/ui/views/location_bar/permission_request_chip.h"
 #include "chrome/browser/ui/views/location_bar/selected_keyword_view.h"
 #include "chrome/browser/ui/views/location_bar/star_view.h"
+#include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_params.h"
@@ -135,6 +137,10 @@
 #include "ui/views/style/typography.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
+
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+#include "chrome/browser/ui/side_search/side_search_utils.h"
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 namespace {
 
@@ -310,6 +316,10 @@ void LocationBarView::Init() {
     if (!base::FeatureList::IsEnabled(features::kLinkCapturingUiUpdate))
       params.types_enabled.push_back(PageActionIconType::kIntentPicker);
     params.types_enabled.push_back(PageActionIconType::kPwaInstall);
+#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+    if (side_search::IsDSESupportEnabled(profile_))
+      params.types_enabled.push_back(PageActionIconType::kSideSearch);
+#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
     params.types_enabled.push_back(PageActionIconType::kFind);
     params.types_enabled.push_back(PageActionIconType::kTranslate);
     params.types_enabled.push_back(PageActionIconType::kZoom);
@@ -389,12 +399,6 @@ bool LocationBarView::IsInitialized() const {
 SkColor LocationBarView::GetColor(OmniboxPart part) const {
   DCHECK(GetWidget());
   return GetOmniboxColor(GetThemeProvider(), part);
-}
-
-SkColor LocationBarView::GetOpaqueBorderColor() const {
-  return color_utils::GetResultingPaintColor(
-      GetBorderColor(),
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR));
 }
 
 int LocationBarView::GetBorderRadius() const {
@@ -960,11 +964,6 @@ int LocationBarView::GetMinimumTrailingWidth() const {
   return trailing_width;
 }
 
-SkColor LocationBarView::GetBorderColor() const {
-  return GetThemeProvider()->GetColor(
-      ThemeProperties::COLOR_LOCATION_BAR_BORDER);
-}
-
 gfx::Rect LocationBarView::GetLocalBoundsWithoutEndcaps() const {
   const int border_radius = height() / 2;
   gfx::Rect bounds_without_endcaps(GetLocalBounds());
@@ -984,7 +983,8 @@ void LocationBarView::RefreshBackground() {
         OmniboxPartState::HOVERED);
     const double opacity = hover_animation_.GetCurrentValue();
     background_color = gfx::Tween::ColorValueBetween(opacity, normal, hovered);
-    border_color = GetBorderColor();
+    border_color = GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_LOCATION_BAR_BORDER);
   }
 
   if (is_popup_mode_) {
@@ -1187,7 +1187,8 @@ void LocationBarView::OnPaintBorder(gfx::Canvas* canvas) {
     return;  // The border is painted by our Background.
 
   gfx::Rect bounds(GetContentsBounds());
-  const SkColor border_color = GetOpaqueBorderColor();
+  const SkColor border_color = GetThemeProvider()->GetColor(
+      ThemeProperties::COLOR_LOCATION_BAR_BORDER_OPAQUE);
   canvas->DrawLine(gfx::PointF(bounds.x(), bounds.y()),
                    gfx::PointF(bounds.right(), bounds.y()), border_color);
   canvas->DrawLine(gfx::PointF(bounds.x(), bounds.bottom() - 1),
@@ -1451,18 +1452,12 @@ bool LocationBarView::GetPopupMode() const {
 
 BEGIN_METADATA(LocationBarView, views::View)
 ADD_READONLY_PROPERTY_METADATA(int, BorderRadius)
-ADD_READONLY_PROPERTY_METADATA(SkColor,
-                               OpaqueBorderColor,
-                               ui::metadata::SkColorConverter)
 ADD_READONLY_PROPERTY_METADATA(gfx::Point, OmniboxViewOrigin)
 ADD_PROPERTY_METADATA(std::u16string, ImePrefixAutocompletion)
 ADD_PROPERTY_METADATA(std::u16string, ImeInlineAutocompletion)
 ADD_PROPERTY_METADATA(std::u16string, OmniboxAdditionalText)
 ADD_READONLY_PROPERTY_METADATA(int, MinimumLeadingWidth)
 ADD_READONLY_PROPERTY_METADATA(int, MinimumTrailingWidth)
-ADD_READONLY_PROPERTY_METADATA(SkColor,
-                               BorderColor,
-                               ui::metadata::SkColorConverter)
 ADD_READONLY_PROPERTY_METADATA(gfx::Rect, LocalBoundsWithoutEndcaps)
 ADD_READONLY_PROPERTY_METADATA(bool, PopupMode)
 END_METADATA

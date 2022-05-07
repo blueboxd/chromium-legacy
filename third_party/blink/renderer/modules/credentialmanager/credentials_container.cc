@@ -98,7 +98,6 @@ using MojoPublicKeyCredentialRequestOptions =
     mojom::blink::PublicKeyCredentialRequestOptions;
 using mojom::blink::GetAssertionAuthenticatorResponsePtr;
 using mojom::blink::RequestIdTokenStatus;
-using mojom::blink::RequestMode;
 using payments::mojom::blink::PaymentCredentialStorageStatus;
 
 constexpr char kCryptotokenOrigin[] =
@@ -510,16 +509,6 @@ void AbortOtpRequest(ScriptState* script_state) {
   webotp_service->Abort();
 }
 
-// Abort an ongoing FederatedCredential get() operation.
-void AbortFederatedCredentialRequest(ScriptState* script_state) {
-  if (!script_state->ContextIsValid())
-    return;
-
-  auto* fedcm_get_request =
-      CredentialManagerProxy::From(script_state)->FedCmGetRequest();
-  fedcm_get_request->CancelTokenRequest();
-}
-
 void OnStoreComplete(std::unique_ptr<ScopedPromiseResolver> scoped_resolver) {
   auto* resolver = scoped_resolver->Release();
   AssertSecurityRequirementsBeforeResponse(
@@ -858,52 +847,6 @@ bool IsPaymentExtensionValid(const CredentialCreationOptions* options,
   return true;
 }
 
-RequestMode ToRequestMode(const String& mode) {
-  if (mode == "mediated") {
-    return RequestMode::kMediated;
-  } else {
-    return RequestMode::kPermission;
-  }
-}
-
-void OnRequestIdToken(ScriptPromiseResolver* resolver,
-                      RequestIdTokenStatus status,
-                      const WTF::String& id_token) {
-  // TODO(yigu): we should reject certain promise with unified message and delay
-  // to avoid fingerprinting.
-  switch (status) {
-    case RequestIdTokenStatus::kApprovalDeclined: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kAbortError, "User declined the sign-in attempt."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorTooManyRequests: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kAbortError,
-          "Only one navigator.credentials.get request may be outstanding at "
-          "one time."));
-      return;
-    }
-    case RequestIdTokenStatus::kErrorCanceled: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kAbortError, "The request has been aborted."));
-      return;
-    }
-    case RequestIdTokenStatus::kError: {
-      resolver->Reject(MakeGarbageCollected<DOMException>(
-          DOMExceptionCode::kNetworkError, "Error retrieving an id token."));
-      return;
-    }
-    case RequestIdTokenStatus::kSuccess: {
-      resolver->Resolve(id_token);
-      return;
-    }
-    default: {
-      NOTREACHED();
-    }
-  }
-}
-
 }  // namespace
 
 const char CredentialsContainer::kSupplementName[] = "CredentialsContainer";
@@ -1142,9 +1085,9 @@ ScriptPromise CredentialsContainer::get(
         // TODO(yigu): Ideally the logic should be handled in CredentialManager
         // via Get. However currently it's only for password management and we
         // should refactor the logic to make it generic.
-        if (!RuntimeEnabledFeatures::WebIDEnabled(context)) {
+        if (!RuntimeEnabledFeatures::FedCmEnabled(context)) {
           resolver->Reject(MakeGarbageCollected<DOMException>(
-              DOMExceptionCode::kNotSupportedError, "Invalid provider entry"));
+              DOMExceptionCode::kNotSupportedError, "FedCM is not supported"));
           return promise;
         }
         // Log the UseCounter only when the WebID flag is enabled.
@@ -1156,13 +1099,11 @@ ScriptPromise CredentialsContainer::get(
             provider->GetAsFederatedIdentityProvider();
         KURL provider_url(federated_identity_provider->url());
         String client_id = federated_identity_provider->clientId();
-        String nonce = federated_identity_provider->hasNonce()
-                           ? federated_identity_provider->nonce()
-                           : "";
+
         if (!provider_url.IsValid() || client_id == "") {
           resolver->Reject(MakeGarbageCollected<DOMException>(
               DOMExceptionCode::kInvalidStateError,
-              "Provided provider information is incomplete."));
+              "Provider information is incomplete."));
           return promise;
         }
         // We disallow redirects (in idp_network_request_manager.cc), so it is
@@ -1176,23 +1117,11 @@ ScriptPromise CredentialsContainer::get(
               DOMExceptionCode::kNetworkError, error));
           return promise;
         }
-        DCHECK(options->federated()->hasPreferAutoSignIn());
-        if (options->hasSignal()) {
-          if (options->signal()->aborted()) {
-            resolver->Reject(MakeGarbageCollected<DOMException>(
-                DOMExceptionCode::kAbortError, "Request has been aborted."));
-            return promise;
-          }
-          options->signal()->AddAlgorithm(WTF::Bind(
-              &AbortFederatedCredentialRequest, WrapPersistent(script_state)));
-        }
-        bool prefer_auto_sign_in = options->federated()->preferAutoSignIn();
-        auto* fedcm_get_request =
-            CredentialManagerProxy::From(script_state)->FedCmGetRequest();
-        fedcm_get_request->RequestIdToken(
-            provider_url, client_id, nonce,
-            ToRequestMode(options->federated()->mode()), prefer_auto_sign_in,
-            WTF::Bind(&OnRequestIdToken, WrapPersistent(resolver)));
+
+        FederatedCredential* credential = FederatedCredential::Create(
+            provider_url, client_id, federated_identity_provider->getHintOr(""),
+            options);
+        resolver->Resolve(credential);
         return promise;
       }
     }
@@ -1269,6 +1198,10 @@ ScriptPromise CredentialsContainer::store(ScriptState* script_state,
 
   auto* credential_manager =
       CredentialManagerProxy::From(script_state)->CredentialManager();
+
+  DCHECK_NE(mojom::blink::CredentialType::EMPTY,
+            CredentialInfo::From(credential)->type);
+
   credential_manager->Store(
       CredentialInfo::From(credential),
       WTF::Bind(&OnStoreComplete,

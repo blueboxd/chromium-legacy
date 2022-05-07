@@ -385,16 +385,18 @@ const char* PseudoTypeToString(CSSSelector::PseudoType pseudo_type) {
     DEFINE_STRING_MAPPING(PseudoVideoPersistentAncestor)
     DEFINE_STRING_MAPPING(PseudoXrOverlay)
     DEFINE_STRING_MAPPING(PseudoTargetText)
+    DEFINE_STRING_MAPPING(PseudoSelectorFragmentAnchor)
     DEFINE_STRING_MAPPING(PseudoModal)
     DEFINE_STRING_MAPPING(PseudoHighlight)
     DEFINE_STRING_MAPPING(PseudoSpellingError)
     DEFINE_STRING_MAPPING(PseudoGrammarError)
     DEFINE_STRING_MAPPING(PseudoHas)
     DEFINE_STRING_MAPPING(PseudoRelativeLeftmost)
-    DEFINE_STRING_MAPPING(PseudoTransition)
-    DEFINE_STRING_MAPPING(PseudoTransitionContainer);
-    DEFINE_STRING_MAPPING(PseudoTransitionNewContent);
-    DEFINE_STRING_MAPPING(PseudoTransitionOldContent);
+    DEFINE_STRING_MAPPING(PseudoPageTransition)
+    DEFINE_STRING_MAPPING(PseudoPageTransitionContainer);
+    DEFINE_STRING_MAPPING(PseudoPageTransitionImageWrapper);
+    DEFINE_STRING_MAPPING(PseudoPageTransitionIncomingImage);
+    DEFINE_STRING_MAPPING(PseudoPageTransitionOutgoingImage);
 #undef DEFINE_STRING_MAPPING
   }
 
@@ -756,6 +758,7 @@ const char kSvgChanged[] = "SVG changed";
 const char kScrollbarChanged[] = "Scrollbar changed";
 const char kDisplayLock[] = "Display lock";
 const char kCanvasFormattedTextRunChange[] = "CanvasFormattedText runs changed";
+const char kDevtools[] = "Inspected by devtools";
 }  // namespace layout_invalidation_reason
 
 void inspector_layout_invalidation_tracking_event::Data(

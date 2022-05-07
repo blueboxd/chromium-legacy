@@ -8,9 +8,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // static
 ConnectionAttemptImpl::Factory* ConnectionAttemptImpl::Factory::test_factory_ =
@@ -54,6 +52,4 @@ void ConnectionAttemptImpl::OnConnection(
       std::move(channel), std::move(message_receiver_receiver)));
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

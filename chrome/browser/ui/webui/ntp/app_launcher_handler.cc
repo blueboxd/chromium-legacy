@@ -45,6 +45,7 @@
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/extension_enable_flow.h"
+#include "chrome/browser/ui/tab_dialogs.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/web_applications/web_app_dialog_manager.h"
 #include "chrome/browser/ui/web_applications/web_app_ui_manager_impl.h"
@@ -79,6 +80,7 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
 #include "extensions/browser/app_sorting.h"
@@ -313,7 +315,8 @@ void AppLauncherHandler::CreateExtensionInfo(const Extension* extension,
       base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode));
 
   bool is_deprecated_app = false;
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_FUCHSIA)
   is_deprecated_app = extensions::IsExtensionUnsupportedDeprecatedApp(
       extension_service_->GetBrowserContext(), extension->id());
 #endif
@@ -330,8 +333,10 @@ void AppLauncherHandler::CreateExtensionInfo(const Extension* extension,
 
   std::u16string name = base::UTF8ToUTF16(extension->name());
   base::i18n::UnadjustStringForLocaleDirection(&name);
-  if (is_deprecated_app)
+  if (is_deprecated_app) {
     name = l10n_util::GetStringFUTF16(IDS_APPS_PAGE_DEPRECATED_APP_TITLE, name);
+    deprecated_app_ids_.insert(extension->id());
+  }
   NewTabUI::SetFullNameAndDirection(name, value);
 
   bool enabled = extension_service_->IsExtensionEnabled(extension->id()) &&
@@ -636,7 +641,8 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
     // TODO(crbug.com/1065748): Remove this hack once the youtube app is fixed.
     if (IsYoutubeExtension(web_app_id))
       continue;
-    installed_extensions->Append(GetWebAppInfo(web_app_id));
+    installed_extensions->Append(
+        base::Value::FromUniquePtrValue(GetWebAppInfo(web_app_id)));
     web_app_ids.insert(web_app_id);
   }
 
@@ -648,7 +654,8 @@ void AppLauncherHandler::FillAppDictionary(base::DictionaryValue* dictionary) {
     const Extension* extension = registry->GetInstalledExtension(*it);
     if (extension &&
         extensions::ui_util::ShouldDisplayInNewTabPage(extension, profile)) {
-      installed_extensions->Append(GetExtensionInfo(extension));
+      installed_extensions->Append(
+          base::Value::FromUniquePtrValue(GetExtensionInfo(extension)));
     }
   }
 
@@ -738,8 +745,15 @@ void AppLauncherHandler::HandleGetApps(const base::ListValue* args) {
         extensions::InstallTracker::Get(profile));
     web_apps_observation_.Observe(&web_app_provider_->registrar());
     install_manager_observation_.Observe(&web_app_provider_->install_manager());
-  }
 
+    WebContents* web_contents = web_ui()->GetWebContents();
+    if (web_contents->GetLastCommittedURL() ==
+            GURL(chrome::kChromeUIAppsWithDeprecationDialogURL) &&
+        !deprecated_app_ids_.empty()) {
+      TabDialogs::FromWebContents(web_contents)
+          ->ShowDeprecatedAppsDialog(deprecated_app_ids_, web_contents);
+    }
+  }
   has_loaded_apps_ = true;
 }
 
@@ -756,12 +770,13 @@ void AppLauncherHandler::HandleLaunchApp(const base::ListValue* args) {
 
   Profile* profile = extension_service_->profile();
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-  if (extensions::IsExtensionUnsupportedDeprecatedApp(profile, extension_id)) {
-    // TODO(crbug.com/1225779): Show the deprecated apps dialog.
+  if (extensions::IsExtensionUnsupportedDeprecatedApp(profile, extension_id) &&
+      base::FeatureList::IsEnabled(features::kChromeAppsDeprecation)) {
+    TabDialogs::FromWebContents(web_ui()->GetWebContents())
+        ->ShowDeprecatedAppsDialog(deprecated_app_ids_,
+                                   web_ui()->GetWebContents());
     return;
   }
-#endif
 
   extensions::Manifest::Type type;
   GURL full_launch_url;
@@ -911,24 +926,35 @@ void AppLauncherHandler::HandleUninstallApp(const base::ListValue* args) {
       return;
     }
 
-    auto uninstall_success_callback = base::BindOnce(
-        [](base::WeakPtr<AppLauncherHandler> app_launcher_handler,
-           bool success) {
-          if (app_launcher_handler)
-            app_launcher_handler->CleanupAfterUninstall();
-        },
-        weak_ptr_factory_.GetWeakPtr());
-
     extension_id_prompting_ = extension_id;
     const auto& list = args->GetListDeprecated();
     const bool dont_confirm =
         list.size() >= 2 && list[1].is_bool() && list[1].GetBool();
+
     if (dont_confirm) {
+      auto uninstall_success_callback = base::BindOnce(
+          [](base::WeakPtr<AppLauncherHandler> app_launcher_handler,
+             webapps::UninstallResultCode code) {
+            if (app_launcher_handler) {
+              app_launcher_handler->CleanupAfterUninstall();
+            }
+          },
+          weak_ptr_factory_.GetWeakPtr());
+
       base::AutoReset<bool> auto_reset(&ignore_changes_, true);
       web_app_provider_->install_finalizer().UninstallWebApp(
           extension_id_prompting_, webapps::WebappUninstallSource::kAppsPage,
           std::move(uninstall_success_callback));
     } else {
+      auto uninstall_success_callback = base::BindOnce(
+          [](base::WeakPtr<AppLauncherHandler> app_launcher_handler,
+             bool success) {
+            if (app_launcher_handler) {
+              app_launcher_handler->CleanupAfterUninstall();
+            }
+          },
+          weak_ptr_factory_.GetWeakPtr());
+
       Browser* browser =
           chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
       web_app::WebAppUiManagerImpl::Get(web_app_provider_)
@@ -1308,6 +1334,11 @@ AppLauncherHandler::CreateExtensionUninstallDialog() {
 
 void AppLauncherHandler::ExtensionRemoved(const Extension* extension,
                                           bool is_uninstall) {
+  // If deprecated extension is deleted, remove from set for dialog.
+  if (deprecated_app_ids_.find(extension->id()) != deprecated_app_ids_.end()) {
+    deprecated_app_ids_.erase(extension->id());
+  }
+
   if (!ShouldShow(extension))
     return;
 
@@ -1359,5 +1390,5 @@ void AppLauncherHandler::InstallOsHooks(const web_app::AppId& app_id) {
       app_id,
       base::BindOnce(&AppLauncherHandler::OnOsHooksInstalled,
                      weak_ptr_factory_.GetWeakPtr(), app_id),
-      /*web_application_info=*/nullptr, std::move(options));
+      /*web_app_info=*/nullptr, std::move(options));
 }

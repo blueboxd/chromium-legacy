@@ -15,7 +15,6 @@ import android.view.DragEvent;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
 import android.view.accessibility.AccessibilityManager;
-import android.widget.ImageView;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -49,12 +48,9 @@ public class DragAndDropDelegateImplUnitTest {
     /** Helper shadow class to make sure #startDragAndDrop is accepted by Android. */
     @Implements(ApiHelperForN.class)
     static class ShadowApiHelperForN {
-        static DragShadowBuilder sLastDragShadowBuilder;
-
         @Implementation
         public static boolean startDragAndDrop(View view, ClipData data,
                 DragShadowBuilder shadowBuilder, Object myLocalState, int flags) {
-            sLastDragShadowBuilder = shadowBuilder;
             return true;
         }
     }
@@ -72,7 +68,6 @@ public class DragAndDropDelegateImplUnitTest {
     public void tearDown() {
         DropDataContentProvider.onDragEnd(false);
         ShadowRecordHistogram.reset();
-        ShadowApiHelperForN.sLastDragShadowBuilder = null;
     }
 
     @Test
@@ -167,25 +162,6 @@ public class DragAndDropDelegateImplUnitTest {
     }
 
     @Test
-    @Config(shadows = {ShadowApiHelperForN.class})
-    public void testDragImage_ShadowPlaceholder() {
-        final View containerView = new View(mContext);
-        final Bitmap shadowImage = Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8);
-        final DropDataAndroid imageDropData =
-                DropDataAndroid.create("", null, new byte[] {1, 2, 3, 4}, "png");
-        mDragAndDropDelegateImpl.startDragAndDrop(containerView, shadowImage, imageDropData);
-
-        Assert.assertNotNull(
-                "sLastDragShadowBuilder is null.", ShadowApiHelperForN.sLastDragShadowBuilder);
-        View shadowView = ShadowApiHelperForN.sLastDragShadowBuilder.getView();
-        Assert.assertTrue(
-                "DrawShadowBuilder should host an ImageView.", shadowView instanceof ImageView);
-        Assert.assertTrue(
-                "Drag shadow image should host a globe icon, which should be a vector drawable.",
-                ((ImageView) shadowView).getDrawable() instanceof VectorDrawable);
-    }
-
-    @Test
     public void testDragImage_DragHandled() {
         final View containerView = new View(mContext);
         final Bitmap shadowImage = Bitmap.createBitmap(100, 200, Bitmap.Config.ALPHA_8);
@@ -221,6 +197,19 @@ public class DragAndDropDelegateImplUnitTest {
         assertDropInWebContentHistogramsRecorded();
         Assert.assertNull("Cached Image bytes should be cleaned since drop is not handled.",
                 DropDataContentProvider.getImageBytesForTesting());
+    }
+
+    @Test
+    public void testIgnoreDragStartedElsewhere() {
+        final View containerView = new View(mContext);
+        mDragAndDropDelegateImpl.onDrag(containerView, mockDragEvent(DragEvent.ACTION_DROP));
+        mDragAndDropDelegateImpl.onDrag(containerView, mockDragEvent(DragEvent.ACTION_DRAG_ENDED));
+
+        assertDragTypeNotRecorded("Drag dropped on the same view.");
+        assertHistogramRecorded("Android.DragDrop.FromWebContent.DropInWebContent.Duration", false,
+                "Only tracking drag started by mDragAndDropDelegateImpl#startDragAndDrop.");
+        assertHistogramRecorded("Android.DragDrop.FromWebContent.DropInWebContent.DistanceDip",
+                false, "Only tracking drag started by mDragAndDropDelegateImpl#startDragAndDrop.");
     }
 
     @Test

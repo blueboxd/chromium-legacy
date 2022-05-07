@@ -14,12 +14,14 @@ namespace privacy_sandbox {
 
 namespace {
 
+using Topic = browsing_topics::Topic;
+
 // Constraints around the currently checked in topics and taxonomy. Changes to
 // the taxononmy version or number of topics will fail these tests unless these
 // are also updated.
 constexpr int kAvailableTaxononmyVersion = 1;
-constexpr int kLowestTopicID = 1;
-constexpr int kHighestTopicID = 349;
+constexpr Topic kLowestTopicID = Topic(1);
+constexpr Topic kHighestTopicID = Topic(349);
 
 constexpr char kInvalidTopicLocalizedHistogramName[] =
     "Settings.PrivacySandbox.InvalidTopicIdLocalized";
@@ -50,9 +52,11 @@ TEST_F(CanonicalTopicTest, InvalidTopicIdLocalized) {
   // Confirm that an attempt to localize an invalid Topic ID returns the correct
   // error string and logs to UMA.
   base::HistogramTester histogram_tester;
-  CanonicalTopic too_low_id(kLowestTopicID - 1, kAvailableTaxononmyVersion);
-  CanonicalTopic negative_id(-1, kAvailableTaxononmyVersion);
-  CanonicalTopic too_high_id(kHighestTopicID + 1, kAvailableTaxononmyVersion);
+  CanonicalTopic too_low_id(Topic(kLowestTopicID.value() - 1),
+                            kAvailableTaxononmyVersion);
+  CanonicalTopic negative_id(Topic(-1), kAvailableTaxononmyVersion);
+  CanonicalTopic too_high_id(Topic(kHighestTopicID.value() + 1),
+                             kAvailableTaxononmyVersion);
 
   std::vector<CanonicalTopic> test_bad_topics = {too_low_id, negative_id,
                                                  too_high_id};
@@ -65,11 +69,27 @@ TEST_F(CanonicalTopicTest, InvalidTopicIdLocalized) {
 
   histogram_tester.ExpectTotalCount(kInvalidTopicLocalizedHistogramName, 3);
   histogram_tester.ExpectBucketCount(kInvalidTopicLocalizedHistogramName,
-                                     too_low_id.topic_id(), 1);
+                                     too_low_id.topic_id().value(), 1);
   histogram_tester.ExpectBucketCount(kInvalidTopicLocalizedHistogramName,
-                                     negative_id.topic_id(), 1);
+                                     negative_id.topic_id().value(), 1);
   histogram_tester.ExpectBucketCount(kInvalidTopicLocalizedHistogramName,
-                                     too_high_id.topic_id(), 1);
+                                     too_high_id.topic_id().value(), 1);
+}
+
+TEST_F(CanonicalTopicTest, ValueConversion) {
+  // Confirm that conversion to and from base::Value forms work correctly.
+  CanonicalTopic test_topic(kLowestTopicID, kAvailableTaxononmyVersion);
+
+  auto topic_value = test_topic.ToValue();
+
+  auto converted_topic = CanonicalTopic::FromValue(topic_value);
+  EXPECT_TRUE(converted_topic);
+  EXPECT_EQ(test_topic, *converted_topic);
+
+  base::Value invalid_value(base::Value::Type::DICTIONARY);
+  invalid_value.SetKey("unrelated", base::Value("unrelated"));
+  converted_topic = CanonicalTopic::FromValue(invalid_value);
+  EXPECT_FALSE(converted_topic);
 }
 
 using CanonicalTopicDeathTest = testing::Test;

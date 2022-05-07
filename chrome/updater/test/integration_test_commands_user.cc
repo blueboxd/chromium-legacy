@@ -67,10 +67,12 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
 
   void ExpectUpdateSequence(ScopedServer* test_server,
                             const std::string& app_id,
+                            const std::string& install_data_index,
                             const base::Version& from_version,
                             const base::Version& to_version) const override {
     updater::test::ExpectUpdateSequence(updater_scope_, test_server, app_id,
-                                        from_version, to_version);
+                                        install_data_index, from_version,
+                                        to_version);
   }
 
   void ExpectVersionActive(const std::string& version) const override {
@@ -106,10 +108,12 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::SetServerStarts(updater_scope_, value);
   }
 
-  void ExpectAppUnregisteredExistenceCheckerPath(
-      const std::string& app_id) const override {
-    updater::test::ExpectAppUnregisteredExistenceCheckerPath(updater_scope_,
-                                                             app_id);
+  void ExpectRegistered(const std::string& app_id) const override {
+    updater::test::ExpectRegistered(updater_scope_, app_id);
+  }
+
+  void ExpectNotRegistered(const std::string& app_id) const override {
+    updater::test::ExpectNotRegistered(updater_scope_, app_id);
   }
 
   void ExpectAppVersion(const std::string& app_id,
@@ -137,14 +141,15 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
     updater::test::RunWakeActive(updater_scope_, exit_code);
   }
 
-  void Update(const std::string& app_id) const override {
-    updater::test::Update(updater_scope_, app_id);
+  void Update(const std::string& app_id,
+              const std::string& install_data_index) const override {
+    updater::test::Update(updater_scope_, app_id, install_data_index);
   }
 
   void UpdateAll() const override { updater::test::UpdateAll(updater_scope_); }
 
-  void RegisterApp(const std::string& app_id) const override {
-    updater::test::RegisterApp(updater_scope_, app_id);
+  void InstallApp(const std::string& app_id) const override {
+    updater::test::InstallApp(updater_scope_, app_id);
   }
 
   void WaitForUpdaterExit() const override {
@@ -191,10 +196,11 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
   }
 
   void CallServiceUpdate(const std::string& app_id,
+                         const std::string& install_data_index,
                          UpdateService::PolicySameVersionUpdate
                              policy_same_version_update) const override {
     updater::test::CallServiceUpdate(
-        updater_scope_, app_id,
+        updater_scope_, app_id, install_data_index,
         policy_same_version_update ==
             UpdateService::PolicySameVersionUpdate::kAllowed);
   }
@@ -218,6 +224,10 @@ class IntegrationTestCommandsUser : public IntegrationTestCommands {
 
   void ExpectLastStarted() const override {
     updater::test::ExpectLastStarted(updater_scope_);
+  }
+
+  void UninstallApp(const std::string& app_id) const override {
+    updater::test::UninstallApp(updater_scope_, app_id);
   }
 
  private:

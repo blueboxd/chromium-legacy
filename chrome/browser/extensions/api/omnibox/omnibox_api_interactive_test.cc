@@ -37,10 +37,11 @@
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "ui/base/window_open_disposition.h"
 
+namespace extensions {
+
 namespace {
 
 using base::ASCIIToUTF16;
-using extensions::ResultCatcher;
 using metrics::OmniboxEventProto;
 using ui_test_utils::WaitForAutocompleteDone;
 
@@ -54,13 +55,6 @@ void InputKeys(Browser* browser, const std::vector<ui::KeyboardCode>& keys) {
 
 LocationBar* GetLocationBar(Browser* browser) {
   return browser->window()->GetLocationBar();
-}
-
-AutocompleteController* GetAutocompleteController(Browser* browser) {
-  return GetLocationBar(browser)
-      ->GetOmniboxView()
-      ->model()
-      ->autocomplete_controller();
 }
 
 std::u16string AutocompleteResultAsString(const AutocompleteResult& result) {
@@ -111,28 +105,74 @@ void VerifyMatchComponents(const ExpectedMatchComponents& expected,
   }
 }
 
-using OmniboxApiTest = extensions::ExtensionApiTest;
+class OmniboxApiTest : public ExtensionApiTest {
+ public:
+  explicit OmniboxApiTest(ExtensionBrowserTest::ContextType context_type =
+                              ExtensionBrowserTest::ContextType::kNone)
+      : ExtensionApiTest(context_type) {}
+  ~OmniboxApiTest() override = default;
+
+  void SetUpOnMainThread() override {
+    ExtensionApiTest::SetUpOnMainThread();
+    // The omnibox suggestion results depend on the TemplateURLService being
+    // loaded. Make sure it is loaded so that the autocomplete results are
+    // consistent.
+    search_test_utils::WaitForTemplateURLServiceToLoad(
+        TemplateURLServiceFactory::GetForProfile(profile()));
+  }
+
+  // Helper functions to retrieve the AutocompleteController for the Browser
+  // created with the test (`browser()`) or a specific supplied `browser`.
+  AutocompleteController* GetAutocompleteController() {
+    return GetAutocompleteControllerForBrowser(browser());
+  }
+  AutocompleteController* GetAutocompleteControllerForBrowser(
+      Browser* browser) {
+    return GetLocationBar(browser)
+        ->GetOmniboxView()
+        ->model()
+        ->autocomplete_controller();
+  }
+};
 
 }  // namespace
 
-// http://crbug.com/167158
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_Basic) {
-  ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, SendSuggestions) {
+  constexpr char kManifest[] =
+      R"({
+           "name": "Basic Send Suggestions",
+           "manifest_version": 2,
+           "version": "0.1",
+           "omnibox": { "keyword": "alpha" },
+           "background": { "scripts": [ "background.js" ], "persistent": true }
+         })";
+  constexpr char kBackground[] =
+      R"(chrome.omnibox.onInputChanged.addListener((text, suggest) => {
+           let richDescription =
+               'Description with style: <match>&lt;match&gt;</match>, ' +
+               '<dim>[dim]</dim>, <url>(url)</url>';
+           let simpleDescription = 'simple description';
+           suggest([
+             {content: text + ' first', description: richDescription},
+             {content: text + ' second', description: simpleDescription},
+             {content: text + ' third', description: simpleDescription},
+           ]);
+         });)";
 
-  // The results depend on the TemplateURLService being loaded. Make sure it is
-  // loaded so that the autocomplete results are consistent.
-  Profile* profile = browser()->profile();
-  search_test_utils::WaitForTemplateURLServiceToLoad(
-      TemplateURLServiceFactory::GetForProfile(profile));
+  extensions::TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackground);
+  const extensions::Extension* extension =
+      LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
 
-  AutocompleteController* autocomplete_controller =
-      GetAutocompleteController(browser());
+  AutocompleteController* autocomplete_controller = GetAutocompleteController();
 
   // Test that our extension's keyword is suggested to us when we partially type
   // it.
   {
-    AutocompleteInput input(u"keywor", metrics::OmniboxEventProto::NTP,
-                            ChromeAutocompleteSchemeClassifier(profile));
+    AutocompleteInput input(u"alph", metrics::OmniboxEventProto::NTP,
+                            ChromeAutocompleteSchemeClassifier(profile()));
     autocomplete_controller->Start(input);
     WaitForAutocompleteDone(browser());
     EXPECT_TRUE(autocomplete_controller->done());
@@ -147,119 +187,96 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_Basic) {
     EXPECT_FALSE(match.deletable);
 
     match = result.match_at(1);
-    EXPECT_EQ(u"kw", match.keyword);
+    EXPECT_EQ(u"alpha", match.keyword);
   }
 
   // Test that our extension can send suggestions back to us.
+  AutocompleteInput input(u"alpha input", metrics::OmniboxEventProto::NTP,
+                          ChromeAutocompleteSchemeClassifier(profile()));
+  autocomplete_controller->Start(input);
+  WaitForAutocompleteDone(browser());
+  EXPECT_TRUE(autocomplete_controller->done());
+
+  // Now, peek into the controller to see if it has the results we expect.
+  // First result should be to invoke the keyword with what we typed, 2-4
+  // should be to invoke with suggestions from the extension, and the last
+  // should be to search for what we typed.
+  const AutocompleteResult& result = autocomplete_controller->result();
+  ASSERT_EQ(5U, result.size()) << AutocompleteResultAsString(result);
+
+  // Invoke the keyword with what we typed.
+  EXPECT_EQ(u"alpha", result.match_at(0).keyword);
+  EXPECT_EQ(u"alpha input", result.match_at(0).fill_into_edit);
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+            result.match_at(0).type);
+  EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
+            result.match_at(0).provider->type());
+
+  // First suggestion, complete with rich description.
   {
-    AutocompleteInput input(u"kw suggestio", metrics::OmniboxEventProto::NTP,
-                            ChromeAutocompleteSchemeClassifier(profile));
-    autocomplete_controller->Start(input);
-    WaitForAutocompleteDone(browser());
-    EXPECT_TRUE(autocomplete_controller->done());
-
-    // Now, peek into the controller to see if it has the results we expect.
-    // First result should be to invoke the keyword with what we typed, 2-4
-    // should be to invoke with suggestions from the extension, and the last
-    // should be to search for what we typed.
-    const AutocompleteResult& result = autocomplete_controller->result();
-    ASSERT_EQ(5U, result.size()) << AutocompleteResultAsString(result);
-
-    EXPECT_EQ(u"kw", result.match_at(0).keyword);
-    EXPECT_EQ(u"kw suggestio", result.match_at(0).fill_into_edit);
-    EXPECT_EQ(AutocompleteMatchType::SEARCH_OTHER_ENGINE,
-              result.match_at(0).type);
-    EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
-              result.match_at(0).provider->type());
-    EXPECT_EQ(u"kw", result.match_at(1).keyword);
-    EXPECT_EQ(u"kw suggestion1", result.match_at(1).fill_into_edit);
+    EXPECT_EQ(u"alpha", result.match_at(1).keyword);
+    EXPECT_EQ(u"alpha input first", result.match_at(1).fill_into_edit);
     EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
               result.match_at(1).provider->type());
-    EXPECT_EQ(u"kw", result.match_at(2).keyword);
-    EXPECT_EQ(u"kw suggestion2", result.match_at(2).fill_into_edit);
+
+    std::u16string rich_description =
+        u"Description with style: <match>, [dim], (url)";
+    EXPECT_EQ(rich_description, result.match_at(1).contents);
+    const ExpectedMatchComponents expected_components = {
+        {u"Description with style: ", ACMatchClassification::NONE},
+        {u"<match>", ACMatchClassification::MATCH},
+        {u", ", ACMatchClassification::NONE},
+        {u"[dim]", ACMatchClassification::DIM},
+        {u", ", ACMatchClassification::NONE},
+        {u"(url)", ACMatchClassification::URL},
+    };
+    VerifyMatchComponents(expected_components, result.match_at(1));
+  }
+
+  // Second and third suggestions, with simple descriptions.
+  {
+    std::u16string simple_description = u"simple description";
+    const ExpectedMatchComponents expected_components = {
+        {simple_description, ACMatchClassification::NONE},
+    };
+
+    EXPECT_EQ(u"alpha", result.match_at(2).keyword);
+    EXPECT_EQ(u"alpha input second", result.match_at(2).fill_into_edit);
     EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
               result.match_at(2).provider->type());
-    EXPECT_EQ(u"kw", result.match_at(3).keyword);
-    EXPECT_EQ(u"kw suggestion3", result.match_at(3).fill_into_edit);
+    EXPECT_EQ(simple_description, result.match_at(2).contents);
+    VerifyMatchComponents(expected_components, result.match_at(2));
+
+    EXPECT_EQ(u"alpha", result.match_at(3).keyword);
+    EXPECT_EQ(u"alpha input third", result.match_at(3).fill_into_edit);
     EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
               result.match_at(3).provider->type());
-
-    std::u16string description =
-        u"Description with style: <match>, [dim], (url till end)";
-    EXPECT_EQ(description, result.match_at(1).contents);
-    ASSERT_EQ(6u, result.match_at(1).contents_class.size());
-
-    EXPECT_EQ(0u, result.match_at(1).contents_class[0].offset);
-    EXPECT_EQ(ACMatchClassification::NONE,
-              result.match_at(1).contents_class[0].style);
-
-    EXPECT_EQ(description.find('<'),
-              result.match_at(1).contents_class[1].offset);
-    EXPECT_EQ(ACMatchClassification::MATCH,
-              result.match_at(1).contents_class[1].style);
-
-    EXPECT_EQ(description.find('>') + 1u,
-              result.match_at(1).contents_class[2].offset);
-    EXPECT_EQ(ACMatchClassification::NONE,
-              result.match_at(1).contents_class[2].style);
-
-    EXPECT_EQ(description.find('['),
-              result.match_at(1).contents_class[3].offset);
-    EXPECT_EQ(ACMatchClassification::DIM,
-              result.match_at(1).contents_class[3].style);
-
-    EXPECT_EQ(description.find(']') + 1u,
-              result.match_at(1).contents_class[4].offset);
-    EXPECT_EQ(ACMatchClassification::NONE,
-              result.match_at(1).contents_class[4].style);
-
-    EXPECT_EQ(description.find('('),
-              result.match_at(1).contents_class[5].offset);
-    EXPECT_EQ(ACMatchClassification::URL,
-              result.match_at(1).contents_class[5].style);
-
-    AutocompleteMatch match = result.match_at(4);
-    EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, match.type);
-    EXPECT_EQ(AutocompleteProvider::TYPE_SEARCH,
-              result.match_at(4).provider->type());
-    EXPECT_FALSE(match.deletable);
+    EXPECT_EQ(simple_description, result.match_at(3).contents);
+    VerifyMatchComponents(expected_components, result.match_at(3));
   }
 
-  // Flaky, see http://crbug.com/167158
-  /*
-  {
-    LocationBar* location_bar = GetLocationBar(browser());
-    ResultCatcher catcher;
-    OmniboxView* omnibox_view = location_bar->GetOmniboxView();
-    omnibox_view->OnBeforePossibleChange();
-    omnibox_view->SetUserText(u"kw command");
-    omnibox_view->OnAfterPossibleChange(true);
-    location_bar->AcceptInput();
-    // This checks that the keyword provider (via javascript)
-    // gets told to navigate to the string "command".
-    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
-  }
-  */
+  // Final option, search what you typed.
+  AutocompleteMatch match = result.match_at(4);
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED, match.type);
+  EXPECT_EQ(AutocompleteProvider::TYPE_SEARCH,
+            result.match_at(4).provider->type());
+  EXPECT_FALSE(match.deletable);
 }
 
 IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
-  Profile* profile = browser()->profile();
-  search_test_utils::WaitForTemplateURLServiceToLoad(
-      TemplateURLServiceFactory::GetForProfile(profile));
 
   LocationBar* location_bar = GetLocationBar(browser());
   OmniboxView* omnibox_view = location_bar->GetOmniboxView();
   ResultCatcher catcher;
-  AutocompleteController* autocomplete_controller =
-      GetAutocompleteController(browser());
+  AutocompleteController* autocomplete_controller = GetAutocompleteController();
   omnibox_view->OnBeforePossibleChange();
   omnibox_view->SetUserText(u"kw command");
   omnibox_view->OnAfterPossibleChange(true);
 
   {
     AutocompleteInput input(u"kw command", metrics::OmniboxEventProto::NTP,
-                            ChromeAutocompleteSchemeClassifier(profile));
+                            ChromeAutocompleteSchemeClassifier(profile()));
     autocomplete_controller->Start(input);
   }
   omnibox_view->model()->AcceptInput(WindowOpenDisposition::CURRENT_TAB);
@@ -275,7 +292,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
 
   {
     AutocompleteInput input(u"kw newtab", metrics::OmniboxEventProto::NTP,
-                            ChromeAutocompleteSchemeClassifier(profile));
+                            ChromeAutocompleteSchemeClassifier(profile()));
     autocomplete_controller->Start(input);
   }
   omnibox_view->model()->AcceptInput(WindowOpenDisposition::NEW_FOREGROUND_TAB);
@@ -284,62 +301,113 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, OnInputEntered) {
   EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
-// Tests that we get suggestions from and send input to the incognito context
+// Tests receiving suggestions from and sending input to the incognito context
 // of an incognito split mode extension.
-// http://crbug.com/100927
-// Test is flaky: http://crbug.com/101219
-IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
-  Profile* profile = browser()->profile();
-  ResultCatcher catcher_incognito;
-  catcher_incognito.RestrictToBrowserContext(
-      profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
+// Regression test for https://crbug.com/100927.
+IN_PROC_BROWSER_TEST_F(OmniboxApiTest, IncognitoSplitMode) {
+  static constexpr char kManifest[] =
+      R"({
+           "name": "SetDefaultSuggestion",
+           "manifest_version": 2,
+           "version": "0.1",
+           "omnibox": { "keyword": "alpha" },
+           "incognito": "split",
+           "background": { "scripts": [ "background.js" ], "persistent": true }
+         })";
+  static constexpr char kBackground[] =
+      R"(let suggestionSuffix =
+             chrome.extension.inIncognitoContext ?
+                 ' incognito' :
+                 ' onTheRecord';
+         chrome.omnibox.onInputChanged.addListener((text, suggest) => {
+           suggest([
+             {content: text + suggestionSuffix, description: 'description'}
+           ]);
+         });
 
-  ASSERT_TRUE(RunExtensionTest("omnibox", {}, {.allow_in_incognito = true}))
-      << message_;
+         chrome.omnibox.onInputEntered.addListener((text, disposition) => {
+           chrome.test.sendMessage(text);
+         });
 
-  // Open an incognito window and wait for the incognito extension process to
-  // respond.
+         chrome.test.notifyPass();)";
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackground);
+
+  // Create an incognito browser, and wait for the extension to load. Our
+  // LoadExtension() method ensures the on-the-record background page has spun
+  // up, but we need to explicitly wait for the incognito version.
   Browser* incognito_browser = CreateIncognitoBrowser();
+  Profile* incognito_profile = incognito_browser->profile();
+  ResultCatcher catcher_incognito;
+  catcher_incognito.RestrictToBrowserContext(incognito_profile);
+  const Extension* extension =
+      LoadExtension(test_dir.UnpackedPath(), {.allow_in_incognito = true});
+  ASSERT_TRUE(extension);
   ASSERT_TRUE(catcher_incognito.GetNextResult()) << catcher_incognito.message();
 
-  // The results depend on the TemplateURLService being loaded. Make sure it is
-  // loaded so that the autocomplete results are consistent.
-  search_test_utils::WaitForTemplateURLServiceToLoad(
-      TemplateURLServiceFactory::GetForProfile(browser()->profile()));
-
-  LocationBar* location_bar = GetLocationBar(incognito_browser);
-  AutocompleteController* autocomplete_controller =
-      GetAutocompleteController(incognito_browser);
+  AutocompleteController* incognito_controller =
+      GetAutocompleteControllerForBrowser(incognito_browser);
 
   // Test that we get the incognito-specific suggestions.
-  {
-    AutocompleteInput input(u"kw suggestio", metrics::OmniboxEventProto::NTP,
-                            ChromeAutocompleteSchemeClassifier(profile));
-    autocomplete_controller->Start(input);
-    WaitForAutocompleteDone(browser());
-    EXPECT_TRUE(autocomplete_controller->done());
+  AutocompleteInput input(
+      u"alpha input", metrics::OmniboxEventProto::NTP,
+      ChromeAutocompleteSchemeClassifier(incognito_profile));
+  incognito_controller->Start(input);
+  WaitForAutocompleteDone(incognito_browser);
+  EXPECT_TRUE(incognito_controller->done());
 
-    // First result should be to invoke the keyword with what we typed, 2-4
-    // should be to invoke with suggestions from the extension, and the last
-    // should be to search for what we typed.
-    const AutocompleteResult& result = autocomplete_controller->result();
-    ASSERT_EQ(5U, result.size()) << AutocompleteResultAsString(result);
-    ASSERT_FALSE(result.match_at(0).keyword.empty());
-    EXPECT_EQ(u"kw suggestion3 incognito", result.match_at(3).fill_into_edit);
-  }
+  // First result should be to invoke the keyword with what we typed, the
+  // second should be the provided suggestion from the extension, and the
+  // final should be to search for what we typed.
+  const AutocompleteResult& result = incognito_controller->result();
+  ASSERT_EQ(3u, result.size());
 
-  // Test that our input is sent to the incognito context. The test will do a
-  // text comparison and succeed only if "command incognito" is sent to the
-  // incognito context.
+  // First result.
+  EXPECT_EQ(u"alpha", result.match_at(0).keyword);
+  EXPECT_EQ(u"alpha input", result.match_at(0).fill_into_edit);
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_OTHER_ENGINE,
+            result.match_at(0).type);
+
+  // Second result: incognito-specific.
+  EXPECT_EQ(u"alpha", result.match_at(1).keyword);
+  EXPECT_EQ(u"alpha input incognito", result.match_at(1).fill_into_edit);
+  EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
+            result.match_at(1).provider->type());
+
+  // Third result: search what you typed.
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+            result.match_at(2).type);
+
+  // Split-mode test: Send different input to the on-the-record and off-the-
+  // record profiles, and wait for a message from each. Verify that the
+  // extension received the proper input in each context.
+  ExtensionTestMessageListener on_the_record_listener(/*will_reply=*/false);
+  on_the_record_listener.set_browser_context(profile());
+
+  ExtensionTestMessageListener incognito_listener(/*will_reply=*/false);
+  incognito_listener.set_browser_context(incognito_profile);
+
   {
-    ResultCatcher catcher;
-    AutocompleteInput input(u"kw command incognito",
+    AutocompleteInput input(u"alpha word on the record",
                             metrics::OmniboxEventProto::NTP,
-                            ChromeAutocompleteSchemeClassifier(profile));
-    autocomplete_controller->Start(input);
-    location_bar->AcceptInput();
-    EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+                            ChromeAutocompleteSchemeClassifier(profile()));
+    GetAutocompleteController()->Start(input);
+    GetLocationBar(browser())->AcceptInput();
   }
+  {
+    AutocompleteInput input(
+        u"alpha word incognito", metrics::OmniboxEventProto::NTP,
+        ChromeAutocompleteSchemeClassifier(incognito_profile));
+    incognito_controller->Start(input);
+    GetLocationBar(incognito_browser)->AcceptInput();
+  }
+
+  EXPECT_TRUE(on_the_record_listener.WaitUntilSatisfied());
+  EXPECT_TRUE(incognito_listener.WaitUntilSatisfied());
+
+  EXPECT_EQ("word on the record", on_the_record_listener.message());
+  EXPECT_EQ("word incognito", incognito_listener.message());
 }
 
 // The test is flaky on Win10. crbug.com/1045731.
@@ -354,16 +422,9 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, DISABLED_IncognitoSplitMode) {
 IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_PopupStaysClosed) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
-  // The results depend on the TemplateURLService being loaded. Make sure it is
-  // loaded so that the autocomplete results are consistent.
-  Profile* profile = browser()->profile();
-  search_test_utils::WaitForTemplateURLServiceToLoad(
-      TemplateURLServiceFactory::GetForProfile(profile));
-
   LocationBar* location_bar = GetLocationBar(browser());
   OmniboxView* omnibox_view = location_bar->GetOmniboxView();
-  AutocompleteController* autocomplete_controller =
-      GetAutocompleteController(browser());
+  AutocompleteController* autocomplete_controller = GetAutocompleteController();
 
   // Input a keyword query and wait for suggestions from the extension.
   omnibox_view->OnBeforePossibleChange();
@@ -376,13 +437,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_PopupStaysClosed) {
   // Quickly type another query and accept it before getting suggestions back
   // for the query. The popup will close after accepting input - ensure that it
   // does not reopen when the extension returns its suggestions.
-  extensions::ResultCatcher catcher;
+  ResultCatcher catcher;
 
   // TODO: Rather than send this second request by talking to the controller
   // directly, figure out how to send it via the proper calls to
   // location_bar or location_bar->().
   AutocompleteInput input(u"kw command", metrics::OmniboxEventProto::NTP,
-                          ChromeAutocompleteSchemeClassifier(profile));
+                          ChromeAutocompleteSchemeClassifier(profile()));
   autocomplete_controller->Start(input);
   location_bar->AcceptInput();
   WaitForAutocompleteDone(browser());
@@ -402,74 +463,114 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_PopupStaysClosed) {
 #define MAYBE_DeleteOmniboxSuggestionResult DeleteOmniboxSuggestionResult
 #endif
 IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_DeleteOmniboxSuggestionResult) {
-  ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
+  static constexpr char kManifest[] =
+      R"({
+           "name": "Basic Send Suggestions",
+           "manifest_version": 2,
+           "version": "0.1",
+           "omnibox": { "keyword": "alpha" },
+           "background": { "scripts": [ "background.js" ], "persistent": true }
+         })";
+  static constexpr char kBackground[] =
+      R"(chrome.omnibox.onInputChanged.addListener((text, suggest) => {
+           suggest([
+             {content: text + ' first', description: 'first description'},
+             {
+               content: text + ' second',
+               description: 'second description',
+               deletable: true,
+             },
+             {content: text + ' third', description: 'third description'},
+           ]);
+         });
+         chrome.omnibox.onDeleteSuggestion.addListener((text) => {
+           chrome.test.sendMessage('onDeleteSuggestion: ' + text);
+         });)";
 
-  // The results depend on the TemplateURLService being loaded. Make sure it is
-  // loaded so that the autocomplete results are consistent.
-  Profile* profile = browser()->profile();
-  search_test_utils::WaitForTemplateURLServiceToLoad(
-      TemplateURLServiceFactory::GetForProfile(profile));
+  TestExtensionDir test_dir;
+  test_dir.WriteManifest(kManifest);
+  test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackground);
+  const Extension* extension = LoadExtension(test_dir.UnpackedPath());
+  ASSERT_TRUE(extension);
 
-  AutocompleteController* autocomplete_controller =
-      GetAutocompleteController(browser());
+  AutocompleteController* autocomplete_controller = GetAutocompleteController();
 
   chrome::FocusLocationBar(browser());
   ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
 
-  // Input a keyword query and wait for suggestions from the extension.
-  InputKeys(browser(), {ui::VKEY_K, ui::VKEY_W, ui::VKEY_TAB, ui::VKEY_D});
-
+  // Test that our extension can send suggestions back to us.
+  AutocompleteInput input(u"alpha input", metrics::OmniboxEventProto::NTP,
+                          ChromeAutocompleteSchemeClassifier(profile()));
+  autocomplete_controller->Start(input);
   WaitForAutocompleteDone(browser());
   EXPECT_TRUE(autocomplete_controller->done());
 
   // Peek into the controller to see if it has the results we expect.
   const AutocompleteResult& result = autocomplete_controller->result();
-  ASSERT_EQ(4U, result.size()) << AutocompleteResultAsString(result);
+  ASSERT_EQ(5u, result.size()) << AutocompleteResultAsString(result);
 
-  EXPECT_EQ(u"kw d", result.match_at(0).fill_into_edit);
+  EXPECT_EQ(u"alpha input", result.match_at(0).fill_into_edit);
   EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
             result.match_at(0).provider->type());
   EXPECT_FALSE(result.match_at(0).deletable);
 
-  EXPECT_EQ(u"kw n1", result.match_at(1).fill_into_edit);
+  EXPECT_EQ(u"alpha input first", result.match_at(1).fill_into_edit);
   EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
             result.match_at(1).provider->type());
-  // Verify that the first omnibox extension suggestion is deletable.
-  EXPECT_TRUE(result.match_at(1).deletable);
+  EXPECT_FALSE(result.match_at(1).deletable);
 
-  EXPECT_EQ(u"kw n2", result.match_at(2).fill_into_edit);
+  EXPECT_EQ(u"alpha input second", result.match_at(2).fill_into_edit);
   EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
             result.match_at(2).provider->type());
-  // Verify that the second omnibox extension suggestion is not deletable.
-  EXPECT_FALSE(result.match_at(2).deletable);
+  EXPECT_TRUE(result.match_at(2).deletable);
 
-  EXPECT_EQ(u"kw d", result.match_at(3).fill_into_edit);
-  EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
-            result.match_at(3).type);
+  EXPECT_EQ(u"alpha input third", result.match_at(3).fill_into_edit);
+  EXPECT_EQ(AutocompleteProvider::TYPE_KEYWORD,
+            result.match_at(3).provider->type());
   EXPECT_FALSE(result.match_at(3).deletable);
 
-// This test portion is excluded from Mac because the Mac key combination
-// FN+SHIFT+DEL used to delete an omnibox suggestion cannot be reproduced.
-// This is because the FN key is not supported in interactive_test_util.h.
-#if !BUILDFLAG(IS_MAC)
-  ExtensionTestMessageListener delete_suggestion_listener(
-      "onDeleteSuggestion: des1", false);
+  EXPECT_EQ(u"alpha input", result.match_at(4).fill_into_edit);
+  EXPECT_EQ(AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED,
+            result.match_at(4).type);
+  EXPECT_FALSE(result.match_at(3).deletable);
 
-  // Skip the first suggestion result.
+  // This test portion is excluded from Mac because the Mac key combination
+  // FN+SHIFT+DEL used to delete an omnibox suggestion cannot be reproduced.
+  // This is because the FN key is not supported in interactive_test_util.h.
+  // On (some?) platforms, there is also a navigable "x" in the suggestion that
+  // we could use instead. However, this is more prone to UI churn, and mostly
+  // tests functionality that should instead be tested as part of the omnibox
+  // view. We should have sufficient Mac coverage here by ensuring the result
+  // matches are marked as deletable (verified above).
+#if !BUILDFLAG(IS_MAC)
+  ExtensionTestMessageListener delete_suggestion_listener(/*will_reply=*/false);
+
+  // Skip the first (accept current input) and second (first extension-provided
+  // suggestion) omnibox results.
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_DOWN, false,
                                               false, false, false));
-  // Delete the second suggestion result. On Linux, this is done via SHIFT+DEL.
+  EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_DOWN, false,
+                                              false, false, false));
+
+  // Delete the second suggestion result. On non-Mac, this is done via
+  // SHIFT+DEL.
   EXPECT_TRUE(ui_test_utils::SendKeyPressSync(browser(), ui::VKEY_DELETE, false,
                                               true, false, false));
-  // Verify that the onDeleteSuggestion event was fired.
-  ASSERT_TRUE(delete_suggestion_listener.WaitUntilSatisfied());
 
-  // Verify that the first suggestion result was deleted. There should be one
-  // less suggestion result, 3 now instead of 4.
-  ASSERT_EQ(3U, result.size());
-  EXPECT_EQ(u"kw d", result.match_at(0).fill_into_edit);
-  EXPECT_EQ(u"kw n2", result.match_at(1).fill_into_edit);
-  EXPECT_EQ(u"kw d", result.match_at(2).fill_into_edit);
+  // Verify that the onDeleteSuggestion event was fired. When this happens, the
+  // extension sends us a message.
+  ASSERT_TRUE(delete_suggestion_listener.WaitUntilSatisfied());
+  EXPECT_EQ("onDeleteSuggestion: second description",
+            delete_suggestion_listener.message());
+
+  // Verify that the second suggestion result was deleted. There should be one
+  // less suggestion result, 4 now instead of 5 (accept current input, two
+  // extension-provided suggestions, and "search what you typed").
+  ASSERT_EQ(4u, result.size());
+  EXPECT_EQ(u"alpha input", result.match_at(0).fill_into_edit);
+  EXPECT_EQ(u"alpha input first", result.match_at(1).fill_into_edit);
+  EXPECT_EQ(u"alpha input third", result.match_at(2).fill_into_edit);
+  EXPECT_EQ(u"alpha input", result.match_at(3).fill_into_edit);
 #endif
 }
 
@@ -477,14 +578,7 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, MAYBE_DeleteOmniboxSuggestionResult) {
 IN_PROC_BROWSER_TEST_F(OmniboxApiTest, ExtensionSuggestionsOnlyInKeywordMode) {
   ASSERT_TRUE(RunExtensionTest("omnibox")) << message_;
 
-  // The results depend on the TemplateURLService being loaded. Make sure it is
-  // loaded so that the autocomplete results are consistent.
-  Profile* profile = browser()->profile();
-  search_test_utils::WaitForTemplateURLServiceToLoad(
-      TemplateURLServiceFactory::GetForProfile(profile));
-
-  AutocompleteController* autocomplete_controller =
-      GetAutocompleteController(browser());
+  AutocompleteController* autocomplete_controller = GetAutocompleteController();
 
   chrome::FocusLocationBar(browser());
   ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
@@ -549,13 +643,13 @@ IN_PROC_BROWSER_TEST_F(OmniboxApiTest, ExtensionSuggestionsOnlyInKeywordMode) {
   }
 }
 
-using ContextType = extensions::ExtensionBrowserTest::ContextType;
+using ContextType = ExtensionBrowserTest::ContextType;
 
 class OmniboxApiTestWithContextType
-    : public extensions::ExtensionApiTest,
+    : public OmniboxApiTest,
       public testing::WithParamInterface<ContextType> {
  public:
-  OmniboxApiTestWithContextType() : extensions::ExtensionApiTest(GetParam()) {}
+  OmniboxApiTestWithContextType() : OmniboxApiTest(GetParam()) {}
   ~OmniboxApiTestWithContextType() override = default;
 };
 
@@ -598,31 +692,36 @@ IN_PROC_BROWSER_TEST_P(OmniboxApiTestWithContextType,
              // runtime.lastError.
              // Because of this difference, getting the emitted error is a bit
              // of a pain.
-             let expectedError;
              let error = await new Promise((resolve) => {
                try {
                  chrome.omnibox.setDefaultSuggestion(
                      {description: '<tag> <match>match</match> world'},
                      () => {
-                       expectedError = /Failed to parse suggestion./;
                        resolve(chrome.runtime.lastError.message);
                      });
                } catch (e) {
-                 expectedError = /Opening and ending tag mismatch/;
                  resolve(e.message);
                }
              });
+             let expectedError = /Opening and ending tag mismatch/;
              chrome.test.assertTrue(expectedError.test(error), error);
              chrome.test.succeed();
            }
          ]);)";
-  extensions::TestExtensionDir test_dir;
+  TestExtensionDir test_dir;
   test_dir.WriteManifest(kManifest);
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackground);
   ASSERT_TRUE(RunExtensionTest(test_dir.UnpackedPath(), {}, {})) << message_;
 }
 
-IN_PROC_BROWSER_TEST_P(OmniboxApiTestWithContextType, SetDefaultSuggestion) {
+// Flaky on Linux TSan. https://crbug.com/1304694
+#if (BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER))
+#define MAYBE_SetDefaultSuggestion DISABLED_SetDefaultSuggestion
+#else
+#define MAYBE_SetDefaultSuggestion SetDefaultSuggestion
+#endif
+IN_PROC_BROWSER_TEST_P(OmniboxApiTestWithContextType,
+                       MAYBE_SetDefaultSuggestion) {
   constexpr char kManifest[] =
       R"({
            "name": "SetDefaultSuggestion",
@@ -641,19 +740,12 @@ IN_PROC_BROWSER_TEST_P(OmniboxApiTestWithContextType, SetDefaultSuggestion) {
                  });
            }
          ]);)";
-  extensions::TestExtensionDir test_dir;
+  TestExtensionDir test_dir;
   test_dir.WriteManifest(kManifest);
   test_dir.WriteFile(FILE_PATH_LITERAL("background.js"), kBackground);
   ASSERT_TRUE(RunExtensionTest(test_dir.UnpackedPath(), {}, {})) << message_;
 
-  // The results depend on the TemplateURLService being loaded. Make sure it is
-  // loaded so that the autocomplete results are consistent.
-  // TODO(devlin): Hoist this into a SetUp() method?
-  search_test_utils::WaitForTemplateURLServiceToLoad(
-      TemplateURLServiceFactory::GetForProfile(profile()));
-
-  AutocompleteController* autocomplete_controller =
-      GetAutocompleteController(browser());
+  AutocompleteController* autocomplete_controller = GetAutocompleteController();
 
   chrome::FocusLocationBar(browser());
   ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
@@ -701,3 +793,5 @@ INSTANTIATE_TEST_SUITE_P(ServiceWorker,
 INSTANTIATE_TEST_SUITE_P(PersistentBackground,
                          OmniboxApiTestWithContextType,
                          testing::Values(ContextType::kPersistentBackground));
+
+}  // namespace extensions

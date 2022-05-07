@@ -17,7 +17,6 @@
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
-#include "ash/constants/devicetype.h"
 #include "ash/public/cpp/login_screen.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -45,6 +44,7 @@
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service.h"
 #include "chrome/browser/ash/certificate_provider/certificate_provider_service_factory.h"
 #include "chrome/browser/ash/certificate_provider/pin_dialog_manager.h"
+#include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/reauth_stats.h"
 #include "chrome/browser/ash/login/saml/public_saml_url_fetcher.h"
 #include "chrome/browser/ash/login/saml/saml_metric_utils.h"
@@ -83,6 +83,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/installer/util/google_update_settings.h"
 #include "chromeos/components/onc/certificate_scope.h"
+#include "chromeos/constants/devicetype.h"
 #include "chromeos/dbus/util/version_loader.h"
 #include "chromeos/strings/grit/chromeos_strings.h"
 #include "components/login/localized_values_builder.h"
@@ -294,6 +295,13 @@ base::Value MakeSecurityTokenPinDialogParameters(
 }
 
 bool ShouldPrepareForRecovery(const AccountId& account_id) {
+  // Always return `true` if the testing switch is set. It will allow to test
+  // the recovery without triggering the real recovery conditions which may be
+  // difficult as of now.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kForceCryptohomeRecoveryForTesting))
+    return true;
+
   if (!account_id.is_valid())
     return false;
   // Cryptohome recovery is probably needed when password is entered incorrectly
@@ -645,6 +653,8 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("webviewLoadAborted",
               &GaiaScreenHandler::HandleWebviewLoadAborted);
   AddCallback("completeLogin", &GaiaScreenHandler::HandleCompleteLogin);
+  AddCallback("launchSAMLPublicSession",
+              &GaiaScreenHandler::HandleLaunchSAMLPublicSession);
   AddCallback("completeAuthentication",
               &GaiaScreenHandler::HandleCompleteAuthentication);
   AddCallback("usingSAMLAPI", &GaiaScreenHandler::HandleUsingSAMLAPI);
@@ -815,10 +825,11 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
       signin_partition_name_, signin_partition_manager,
       base::BindOnce(&GaiaScreenHandler::OnCookieWaitTimeout,
                      weak_factory_.GetWeakPtr()),
-      base::BindOnce(&LoginDisplayHost::CompleteLogin,
-                     base::Unretained(LoginDisplayHost::default_host())));
+      base::BindOnce([](std::unique_ptr<UserContext> user_context) {
+        LoginDisplayHost::default_host()->CompleteLogin(*user_context);
+      }));
 
-  pending_user_context_ = std::make_unique<UserContext>();
+  auto user_context = std::make_unique<UserContext>();
   SigninError error;
   if (!login::BuildUserContextForGaiaSignIn(
           login::GetUsertypeFromServicesString(services),
@@ -827,15 +838,14 @@ void GaiaScreenHandler::HandleCompleteAuthentication(
           SamlPasswordAttributes::FromJs(*password_attributes),
           GetSyncTrustedVaultKeysForUserContext(sync_trusted_vault_keys,
                                                 gaia_id),
-          *extension_provided_client_cert_usage_observer_,
-          pending_user_context_.get(), &error)) {
+          *extension_provided_client_cert_usage_observer_, user_context.get(),
+          &error)) {
     LoginDisplayHost::default_host()->GetSigninUI()->ShowSigninError(
         error, /*details=*/std::string());
-    pending_user_context_.reset();
     return;
   }
 
-  online_login_helper_->SetUserContext(std::move(pending_user_context_));
+  online_login_helper_->SetUserContext(std::move(user_context));
   online_login_helper_->RequestCookiesAndCompleteAuthentication();
 
   if (test_expects_complete_login_) {
@@ -860,6 +870,19 @@ void GaiaScreenHandler::HandleCompleteLogin(const std::string& gaia_id,
                                             bool using_saml) {
   VLOG(1) << "HandleCompleteLogin";
   DoCompleteLogin(gaia_id, typed_email, password, using_saml);
+}
+
+void GaiaScreenHandler::HandleLaunchSAMLPublicSession(
+    const std::string& email) {
+  const AccountId account_id =
+      user_manager::KnownUser(g_browser_process->local_state())
+          .GetAccountId(email, std::string() /* id */, AccountType::UNKNOWN);
+
+  UserContext context(user_manager::USER_TYPE_PUBLIC_ACCOUNT, account_id);
+
+  // TODO(https://crbug.com/1298392): Refactor this.
+  LoginDisplayHost::default_host()->GetLoginDisplay()->delegate()->Login(
+      context, SigninSpecifics());
 }
 
 void GaiaScreenHandler::HandleUsingSAMLAPI(bool is_third_party_idp) {
@@ -1317,8 +1340,6 @@ void GaiaScreenHandler::ShowGaiaScreenIfReady() {
   }
 
   LoadAuthExtension(!gaia_silent_load_ /* force */);
-  signin_screen_handler_->UpdateUIState(
-      SigninScreenHandler::UI_STATE_GAIA_SIGNIN);
   core_oobe_view_->UpdateKeyboardState();
 
   if (gaia_silent_load_) {
@@ -1347,7 +1368,7 @@ void GaiaScreenHandler::ShowAllowlistCheckFailedError() {
                                   &family_link_allowed);
   params.SetBoolKey("familyLinkAllowed", family_link_allowed);
 
-  CallJS("login.GaiaSigninScreen.showAllowlistCheckFailedError", true, params);
+  CallJS("login.GaiaSigninScreen.showAllowlistCheckFailedError", params);
 }
 
 void GaiaScreenHandler::LoadAuthExtension(bool force) {
@@ -1375,6 +1396,7 @@ void GaiaScreenHandler::LoadAuthExtension(bool force) {
 
   if (ash::features::IsCryptohomeRecoveryFlowEnabled() &&
       ShouldPrepareForRecovery(populated_account_id_)) {
+    populated_account_id_.clear();
     auto callback = base::BindOnce(&GaiaScreenHandler::OnGaiaReauthTokenFetched,
                                    weak_factory_.GetWeakPtr(), context);
     gaia_reauth_token_fetcher_ =

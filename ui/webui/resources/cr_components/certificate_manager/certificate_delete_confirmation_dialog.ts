@@ -17,11 +17,12 @@ import {assertNotReached} from '../../js/assert.m.js';
 import {I18nMixin} from '../../js/i18n_mixin.js';
 import {loadTimeData} from '../../js/load_time_data.m.js';
 
-import {CertificatesBrowserProxy, CertificatesBrowserProxyImpl, CertificateSubnode, CertificateType} from './certificates_browser_proxy.js';
+import {CertificatesBrowserProxyImpl, CertificateSubnode, CertificateType} from './certificates_browser_proxy.js';
 
 export interface CertificateDeleteConfirmationDialogElement {
   $: {
     dialog: CrDialogElement,
+    ok: HTMLElement,
   };
 }
 
@@ -48,7 +49,7 @@ export class CertificateDeleteConfirmationDialogElement extends
   model: CertificateSubnode;
   certificateType: CertificateType;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.$.dialog.showModal();
   }
@@ -106,6 +107,13 @@ export class CertificateDeleteConfirmationDialogElement extends
                 detail: {error: error, anchor: null},
               }));
             });
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'certificate-delete-confirmation-dialog':
+        CertificateDeleteConfirmationDialogElement;
   }
 }
 

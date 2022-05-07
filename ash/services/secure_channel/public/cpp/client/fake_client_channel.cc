@@ -10,9 +10,7 @@
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 FakeClientChannel::FakeClientChannel() = default;
 
@@ -49,6 +47,4 @@ void FakeClientChannel::PerformRegisterPayloadFile(
   std::move(registration_result_callback).Run(/*success=*/true);
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

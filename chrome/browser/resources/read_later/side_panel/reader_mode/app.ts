@@ -4,7 +4,6 @@
 
 import '../../strings.m.js';
 
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
 import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
@@ -34,7 +33,7 @@ export class ReaderModeElement extends ReaderModeElementBase {
   private listenerIds_: number[];
   private paragraphs_: string[];
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     const callbackRouter = this.apiProxy_.getCallbackRouter();
@@ -45,7 +44,7 @@ export class ReaderModeElement extends ReaderModeElementBase {
     this.apiProxy_.showUI();
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
 
     this.listenerIds_.forEach(

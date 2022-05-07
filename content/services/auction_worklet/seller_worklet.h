@@ -74,25 +74,30 @@ class SellerWorklet : public mojom::SellerWorklet {
   int context_group_id_for_testing() const;
 
   // mojom::SellerWorklet implementation:
-  void ScoreAd(const std::string& ad_metadata_json,
-               double bid,
-               blink::mojom::AuctionAdConfigNonSharedParamsPtr
-                   auction_ad_config_non_shared_params,
-               const url::Origin& browser_signal_interest_group_owner,
-               const GURL& browser_signal_render_url,
-               const std::vector<GURL>& browser_signal_ad_components,
-               uint32_t browser_signal_bidding_duration_msecs,
-               ScoreAdCallback callback) override;
+  void ScoreAd(
+      const std::string& ad_metadata_json,
+      double bid,
+      blink::mojom::AuctionAdConfigNonSharedParamsPtr
+          auction_ad_config_non_shared_params,
+      mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller,
+      const url::Origin& browser_signal_interest_group_owner,
+      const GURL& browser_signal_render_url,
+      const std::vector<GURL>& browser_signal_ad_components,
+      uint32_t browser_signal_bidding_duration_msecs,
+      const absl::optional<base::TimeDelta> seller_timeout,
+      ScoreAdCallback callback) override;
   void SendPendingSignalsRequests() override;
-  void ReportResult(blink::mojom::AuctionAdConfigNonSharedParamsPtr
-                        auction_ad_config_non_shared_params,
-                    const url::Origin& browser_signal_interest_group_owner,
-                    const GURL& browser_signal_render_url,
-                    double browser_signal_bid,
-                    double browser_signal_desirability,
-                    uint32_t scoring_signals_data_version,
-                    bool browser_signal_has_data_version,
-                    ReportResultCallback callback) override;
+  void ReportResult(
+      blink::mojom::AuctionAdConfigNonSharedParamsPtr
+          auction_ad_config_non_shared_params,
+      mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller,
+      const url::Origin& browser_signal_interest_group_owner,
+      const GURL& browser_signal_render_url,
+      double browser_signal_bid,
+      double browser_signal_desirability,
+      uint32_t scoring_signals_data_version,
+      bool browser_signal_has_data_version,
+      ReportResultCallback callback) override;
   void ConnectDevToolsAgent(
       mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent)
       override;
@@ -111,6 +116,7 @@ class SellerWorklet : public mojom::SellerWorklet {
     double bid;
     blink::mojom::AuctionAdConfigNonSharedParamsPtr
         auction_ad_config_non_shared_params;
+    mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller;
     url::Origin browser_signal_interest_group_owner;
     GURL browser_signal_render_url;
     // While these are URLs, it's more concenient to store these as strings
@@ -118,6 +124,7 @@ class SellerWorklet : public mojom::SellerWorklet {
     // ScoringSignals code with BidderWorklets.
     std::vector<std::string> browser_signal_ad_components;
     uint32_t browser_signal_bidding_duration_msecs;
+    absl::optional<base::TimeDelta> seller_timeout;
 
     ScoreAdCallback callback;
 
@@ -143,6 +150,7 @@ class SellerWorklet : public mojom::SellerWorklet {
     // safe to access after that happens.
     blink::mojom::AuctionAdConfigNonSharedParamsPtr
         auction_ad_config_non_shared_params;
+    mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller;
     url::Origin browser_signal_interest_group_owner;
     GURL browser_signal_render_url;
     double browser_signal_bid;
@@ -181,25 +189,30 @@ class SellerWorklet : public mojom::SellerWorklet {
 
     void SetWorkletScript(WorkletLoader::Result worklet_script);
 
-    void ScoreAd(const std::string& ad_metadata_json,
-                 double bid,
-                 blink::mojom::AuctionAdConfigNonSharedParamsPtr
-                     auction_ad_config_non_shared_params,
-                 scoped_refptr<TrustedSignals::Result> trusted_scoring_signals,
-                 const url::Origin& browser_signal_interest_group_owner,
-                 const GURL& browser_signal_render_url,
-                 const std::vector<std::string>& browser_signal_ad_components,
-                 uint32_t browser_signal_bidding_duration_msecs,
-                 ScoreAdCallbackInternal callback);
+    void ScoreAd(
+        const std::string& ad_metadata_json,
+        double bid,
+        blink::mojom::AuctionAdConfigNonSharedParamsPtr
+            auction_ad_config_non_shared_params,
+        scoped_refptr<TrustedSignals::Result> trusted_scoring_signals,
+        mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller,
+        const url::Origin& browser_signal_interest_group_owner,
+        const GURL& browser_signal_render_url,
+        const std::vector<std::string>& browser_signal_ad_components,
+        uint32_t browser_signal_bidding_duration_msecs,
+        const absl::optional<base::TimeDelta> seller_timeout,
+        ScoreAdCallbackInternal callback);
 
-    void ReportResult(blink::mojom::AuctionAdConfigNonSharedParamsPtr
-                          auction_ad_config_non_shared_params,
-                      const url::Origin& browser_signal_interest_group_owner,
-                      const GURL& browser_signal_render_url,
-                      double browser_signal_bid,
-                      double browser_signal_desirability,
-                      absl::optional<uint32_t> scoring_signals_data_version,
-                      ReportResultCallbackInternal callback);
+    void ReportResult(
+        blink::mojom::AuctionAdConfigNonSharedParamsPtr
+            auction_ad_config_non_shared_params,
+        mojom::ComponentAuctionOtherSellerPtr browser_signals_other_seller,
+        const url::Origin& browser_signal_interest_group_owner,
+        const GURL& browser_signal_render_url,
+        double browser_signal_bid,
+        double browser_signal_desirability,
+        absl::optional<uint32_t> scoring_signals_data_version,
+        ReportResultCallbackInternal callback);
 
     void ConnectDevToolsAgent(
         mojo::PendingAssociatedReceiver<blink::mojom::DevToolsAgent> agent);

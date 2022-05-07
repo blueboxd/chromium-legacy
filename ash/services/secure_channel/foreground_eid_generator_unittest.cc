@@ -6,25 +6,16 @@
 
 #include <memory>
 
+#include "ash/services/device_sync/proto/cryptauth_api.pb.h"
 #include "ash/services/secure_channel/raw_eid_generator_impl.h"
 #include "base/strings/string_util.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using testing::_;
-using testing::AtLeast;
-using testing::NiceMock;
-using testing::Return;
-using testing::SaveArg;
-using testing::StrictMock;
-
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 namespace {
 
@@ -651,6 +642,4 @@ TEST_F(SecureChannelForegroundEidGeneratorTest,
   EXPECT_FALSE(data_with_timestamp.ContainsTime(2000L));
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

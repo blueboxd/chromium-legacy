@@ -42,6 +42,7 @@ import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
 
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 /**
@@ -65,7 +66,7 @@ public class OmniboxTestUtils {
     /**
      * Class describing individual suggestion, delivering access to broad range of information.
      *
-     * @param T The type of suggestion view.
+     * @param <T> The type of suggestion view.
      */
     public static class SuggestionInfo<T extends View> {
         public final int index;
@@ -128,10 +129,13 @@ public class OmniboxTestUtils {
     /**
      * Check that the Omnibox reaches the expected focus state.
      *
+     * Note: this is known to cause issues with tests that run animations.
+     * In the event you are running into flakes that concentrate around this call, please consider
+     * adding DisableAnimationsTestRule to your test suite.
+     *
      * @param active Whether the Omnibox is expected to have focus or not.
      */
     public void checkFocus(boolean active) {
-        waitAnimationsComplete();
         CriteriaHelper.pollUiThread(() -> {
             Criteria.checkThat(
                     "unexpected Omnibox focus state", mUrlBar.hasFocus(), Matchers.is(active));
@@ -154,7 +158,6 @@ public class OmniboxTestUtils {
      * Request the Omnibox focus and wait for soft keyboard to show.
      */
     public void requestFocus() {
-        waitAnimationsComplete();
         // During early startup (before completion of its first onDraw), the UrlBar
         // is not focusable. Tests have to wait for that to happen before trying to focus it.
         CriteriaHelper.pollUiThread(() -> {
@@ -171,7 +174,6 @@ public class OmniboxTestUtils {
      * Expects the Omnibox to be focused before the call.
      */
     public void clearFocus() {
-        waitAnimationsComplete();
         sendKey(KeyEvent.KEYCODE_BACK);
         checkFocus(false);
     }
@@ -207,6 +209,33 @@ public class OmniboxTestUtils {
             Criteria.checkThat("suggestion list has no entries",
                     suggestionsDropdown.getDropdownItemViewCountForTest(), Matchers.greaterThan(0));
         }, MAX_TIME_TO_POLL_MS, POLL_INTERVAL_MS);
+    }
+
+    /**
+     * Stops any subsequent AutocompleteResults from being generated.
+     * Ensures that no subsequent asynchronous AutocompleteResults could tamper with test execution.
+     */
+    public void waitForAutocomplete() {
+        AtomicLong previousId = new AtomicLong(-1);
+        AtomicLong count = new AtomicLong();
+
+        CriteriaHelper.pollUiThread(() -> {
+            long currentId = mAutocomplete.getCurrentNativeAutocompleteResult();
+            // Suggestions have changed as a result of a recent push.
+            // Reset the counter and monitor for possible updates.
+            if (currentId != previousId.get()) {
+                previousId.set(currentId);
+                count.set(0);
+                return false;
+            }
+
+            // Check that nothing has changed 3 times in a row, rejecting everything that
+            // arrives late. This guarantees that the suggestions will not change and the list
+            // can be used for testing purposes.
+            if (count.incrementAndGet() < 3) return false;
+            mAutocomplete.stopAutocompleteForTest(false);
+            return true;
+        });
     }
 
     /**
@@ -309,6 +338,8 @@ public class OmniboxTestUtils {
 
     /**
      * Specify the text to be shown in the Omnibox. Cancels all autocompletion.
+     * Use this to initialize the state of the Omnibox, but avoid using this to validate any
+     * behavior.
      *
      * @param userText The text to be shown in the Omnibox.
      */
@@ -320,6 +351,26 @@ public class OmniboxTestUtils {
             mUrlBar.setAutocompleteText(userText, "");
         });
         checkText(Matchers.equalTo(userText), null);
+    }
+
+    /**
+     * Commit text to the Omnibox, as if it was supplied by the soft keyboard
+     * autocorrect/autocomplete feature.
+     *
+     * @param textToCommit The text to supply as if it was supplied by Soft Keyboard.
+     * @param commitAsAutocomplete Whether the text should be applied as autocompletion (true) or
+     *         autocorrection (false). Note that autocorrection works only if the Omnibox is
+     *         currently composing text.
+     */
+    public void commitText(@NonNull String textToCommit, boolean commitAsAutocomplete) {
+        checkFocus(true);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            InputConnection conn = mUrlBar.getInputConnection();
+            if (commitAsAutocomplete) conn.finishComposingText();
+            // Value of 1 always advance the cursor to the position after the full text being
+            // inserted.
+            conn.commitText(textToCommit, 1);
+        });
     }
 
     /**

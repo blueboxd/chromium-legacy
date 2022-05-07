@@ -14,6 +14,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/feature_guide/notifications/feature_notification_guide_service.h"
+#include "chrome/browser/flags/android/chrome_session_state.h"
 #include "chrome/browser/flags/jni_headers/ChromeFeatureList_jni.h"
 #include "chrome/browser/notifications/chime/android/features.h"
 #include "chrome/browser/performance_hints/performance_hints_features.h"
@@ -35,6 +36,7 @@
 #include "components/embedder_support/android/util/cdn_utils.h"
 #include "components/feature_engagement/public/feature_list.h"
 #include "components/feed/feed_feature_list.h"
+#include "components/history_clusters/core/features.h"
 #include "components/invalidation/impl/invalidation_switches.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/messages/android/messages_feature.h"
@@ -122,12 +124,10 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kGiveJavaUiThreadDefaultTaskTraitsUserBlockingPriority,
     &features::kPrivacyGuide,
     &features::kPushMessagingDisallowSenderIDs,
-    &features::kPwaUpdateDialogForNameAndIcon,
+    &features::kPwaUpdateDialogForIcon,
+    &features::kPwaUpdateDialogForName,
     &features::kQuietNotificationPrompts,
     &features::kRequestDesktopSiteForTablets,
-    &features::kSearchHistoryLink,
-    &features::kShareUsageRanking,
-    &features::kShareUsageRankingFixedMore,
     &features::kToolbarUseHardwareBitmapDraw,
     &features::kWebNfc,
     &features::kIncognitoNtpRevamp,
@@ -152,8 +152,10 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &feed::kInterestFeedV2Hearts,
     &feed::kReliabilityLogging,
     &feed::kWebFeed,
+    &feed::kWebFeedOnboarding,
     &feed::kWebFeedSort,
     &feed::kXsurfaceMetricsReporting,
+    &history_clusters::internal::kJourneys,
     &kAdaptiveButtonInTopToolbar,
     &kAdaptiveButtonInTopToolbarCustomizationV2,
     &kAddToHomescreenIPH,
@@ -209,7 +211,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kContextualSearchDebug,
     &kContextualSearchDelayedIntelligence,
     &kContextualSearchForceCaption,
-    &kContextualSearchLiteralSearchTap,
     &kContextualSearchLongpressResolve,
     &kContextualSearchMlTapSuppression,
     &KContextualSearchNewSettings,
@@ -223,11 +224,10 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kDisableCompositedProgressBar,
     &kDownloadFileProvider,
     &kDownloadNotificationBadge,
-    &kDownloadProgressInfoBar,
-    &kDownloadProgressMessage,
     &kDownloadRename,
     &kDuetTabStripIntegrationAndroid,
     &kDynamicColorAndroid,
+    &kDynamicColorButtonsAndroid,
     &kEnableDangerousDownloadDialog,
     &kEnableDuplicateDownloadDialog,
     &kExperimentsForAgsa,
@@ -246,6 +246,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kKitKatSupported,
     &kLensCameraAssistedSearch,
     &kNewWindowAppMenu,
+    &kNotificationPermissionVariant,
     &kOfflineIndicatorV2,
     &kPageAnnotationsService,
     &kBookmarksImprovedSaveFlow,
@@ -269,6 +270,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kServiceManagerForDownload,
     &kShareButtonInTopToolbar,
     &kSharedClipboardUI,
+    &kShowScrollableMVTOnNTPAndroid,
     &kSpannableInlineAutocomplete,
     &kSpecialLocaleWrapper,
     &kSpecialUserDecision,
@@ -345,6 +347,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &password_manager::features::kPasswordChange,
     &password_manager::features::kPasswordScriptsFetching,
     &password_manager::features::kRecoverFromNeverSaveAndroid,
+    &password_manager::features::kTouchToFillPasswordSubmission,
     &password_manager::features::kUnifiedCredentialManagerDryRun,
     &password_manager::features::kUnifiedPasswordManagerAndroid,
     &password_manager::features::kUnifiedPasswordManagerMigration,
@@ -354,7 +357,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &performance_hints::features::kContextMenuPerformanceInfo,
     &policy::features::kChromeManagementPageAndroid,
     &privacy_sandbox::kPrivacySandboxSettings3,
-    &query_tiles::features::kQueryTilesGeoFilter,
     &query_tiles::features::kQueryTiles,
     &query_tiles::features::kQueryTilesInNTP,
     &query_tiles::features::kQueryTilesInOmnibox,
@@ -364,17 +366,18 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &send_tab_to_self::kSendTabToSelfSigninPromo,
     &send_tab_to_self::kSendTabToSelfV2,
     &share::kPersistShareHubOnAppSwitch,
-    &share::kSwapAndroidShareHubRows,
     &share::kUpcomingSharingFeatures,
     &signin::kMobileIdentityConsistencyPromos,
     &switches::kAllowSyncOffForChildAccounts,
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
     &syncer::kSyncTrustedVaultPassphraseRecovery,
+    &syncer::kSyncAndroidPromosRevamp,
     &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &video_tutorials::features::kVideoTutorials,
     &webapps::features::kInstallableAmbientBadgeInfoBar,
+    &webapps::features::kInstallableAmbientBadgeMessage,
 };
 
 const base::Feature* FindFeatureExposedToJava(const std::string& feature_name) {
@@ -566,9 +569,6 @@ const base::Feature kContextualSearchDelayedIntelligence{
 const base::Feature kContextualSearchForceCaption{
     "ContextualSearchForceCaption", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kContextualSearchLiteralSearchTap{
-    "ContextualSearchLiteralSearchTap", base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kContextualSearchLongpressResolve{
     "ContextualSearchLongpressResolve", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -613,12 +613,6 @@ const base::Feature kDownloadAutoResumptionThrottling{
 extern const base::Feature kDownloadHomeForExternalApp{
     "DownloadHomeForExternalApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kDownloadProgressInfoBar{"DownloadProgressInfoBar",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
-const base::Feature kDownloadProgressMessage{"DownloadProgressMessage",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kDownloadFileProvider{"DownloadFileProvider",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -634,6 +628,9 @@ const base::Feature kDuetTabStripIntegrationAndroid{
 const base::Feature kDynamicColorAndroid{"DynamicColorAndroid",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kDynamicColorButtonsAndroid{
+    "DynamicColorButtonsAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kEnableDangerousDownloadDialog{
     "EnableDangerousDownloadDialog", base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -648,9 +645,6 @@ const base::Feature kExperimentsForAgsa{"ExperimentsForAgsa",
 
 const base::Feature kExploreSites{"ExploreSites",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::Feature kFixedUmaSessionResumeOrder{
-    "FixedUmaSessionResumeOrder", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kGridTabSwitcherForTablets{
     "GridTabSwitcherForTablets", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -693,6 +687,9 @@ const base::Feature kSearchEnginePromoNewDeviceV2{
 
 const base::Feature kNewWindowAppMenu{"NewWindowAppMenu",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kNotificationPermissionVariant{
+    "NotificationPermissionVariant", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kInstanceSwitcher{"InstanceSwitcher",
                                       base::FEATURE_ENABLED_BY_DEFAULT};
@@ -747,6 +744,9 @@ const base::Feature kServiceManagerForDownload{
 
 const base::Feature kShareButtonInTopToolbar{"ShareButtonInTopToolbar",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kShowScrollableMVTOnNTPAndroid{
+    "ShowScrollableMVTOnNTPAndroid", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSpannableInlineAutocomplete{
     "SpannableInlineAutocomplete", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -86,9 +86,13 @@ LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
   if (web_contents) {
     Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
     // |browser| can be null in tests.
-    if (browser)
+    if (browser) {
       fullscreen_observation_.Observe(
           browser->exclusive_access_manager()->fullscreen_controller());
+      fullscreen_controller_ = browser->exclusive_access_manager()
+                                   ->fullscreen_controller()
+                                   ->GetWeakPtr();
+    }
   }
   // TODO(pbos): Removing this seems to crash on linux-ozone-rel which seems
   // really wrong. If we need the accessible role before ShowForReason() we
@@ -97,7 +101,9 @@ LocationBarBubbleDelegateView::LocationBarBubbleDelegateView(
   SetAccessibleRole(GetAccessibleRoleForReason(display_reason_));
 }
 
-LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() = default;
+LocationBarBubbleDelegateView::~LocationBarBubbleDelegateView() {
+  CHECK(!fullscreen_controller_.WasInvalidated());
+}
 
 void LocationBarBubbleDelegateView::ShowForReason(DisplayReason reason,
                                                   bool allow_refocus_alert) {
@@ -149,9 +155,6 @@ void LocationBarBubbleDelegateView::WebContentsDestroyed() {
 
 void LocationBarBubbleDelegateView::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!close_on_main_frame_origin_navigation_ ||
       !navigation_handle->IsInPrimaryMainFrame() ||
       !navigation_handle->HasCommitted()) {

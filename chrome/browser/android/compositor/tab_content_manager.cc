@@ -301,7 +301,8 @@ void TabContentManager::CacheTabWithBitmap(JNIEnv* env,
   skbitmap.setImmutable();
 
   if (thumbnail_cache_->CheckAndUpdateThumbnailMetaData(tab_id, url))
-    OnTabReadback(tab_id, nullptr, true, thumbnail_scale, skbitmap);
+    OnTabReadback(tab_id, nullptr, true, aspect_ratio, thumbnail_scale,
+                  skbitmap);
 }
 
 void TabContentManager::InvalidateIfChanged(JNIEnv* env,
@@ -368,6 +369,7 @@ void TabContentManager::OnTabReadback(
     int tab_id,
     base::android::ScopedJavaGlobalRef<jobject> j_callback,
     bool write_to_cache,
+    float aspect_ratio,
     float thumbnail_scale,
     const SkBitmap& bitmap) {
   TabReadbackRequestMap::iterator readback_iter =
@@ -397,11 +399,6 @@ void TabContentManager::SendThumbnailToJava(
     // portrait mode, or it would be shown in the wrong aspect ratio in
     // landscape mode.
     int scale = need_downsampling ? 2 : 1;
-    double aspect_ratio = base::GetFieldTrialParamByFeatureAsDouble(
-        chrome::android::kTabGridLayoutAndroid, "thumbnail_aspect_ratio",
-        kDefaultThumbnailAspectRatio);
-    aspect_ratio = base::clamp(aspect_ratio, 0.5, 2.0);
-
     int width = std::min(bitmap.width() / scale,
                          (int)(bitmap.height() * aspect_ratio / scale));
     int height = std::min(bitmap.height() / scale,

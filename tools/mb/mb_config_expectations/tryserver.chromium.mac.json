@@ -323,6 +323,7 @@
       "use_allocator_shim": false,
       "use_crash_key_stubs": true,
       "use_goma": true,
+      "use_partition_alloc": false,
       "use_platform_icu_alternatives": true
     }
   },
@@ -448,6 +449,30 @@
       "use_goma": true
     }
   },
+  "mac-arm64-on-arm64-rel": {
+    "gn_args": {
+      "blink_enable_generated_code_formatting": false,
+      "dcheck_always_on": true,
+      "is_component_build": false,
+      "is_debug": false,
+      "symbol_level": 0,
+      "target_cpu": "arm64",
+      "use_goma": true
+    }
+  },
+  "mac-builder-next-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "enable_nacl": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "target_cpu": "arm64",
+      "use_goma": true
+    }
+  },
   "mac-clang-tidy-rel": {
     "gn_args": {
       "blink_enable_generated_code_formatting": false,
@@ -455,6 +480,19 @@
       "is_component_build": false,
       "is_debug": false,
       "symbol_level": 0,
+      "use_goma": true
+    }
+  },
+  "mac-fieldtrial-fyi-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "enable_nacl": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "symbol_level": 1,
+      "target_cpu": "arm64",
       "use_goma": true
     }
   },
@@ -484,20 +522,6 @@
     }
   },
   "mac-rel": {
-    "gn_args": {
-      "blink_enable_generated_code_formatting": false,
-      "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",
-      "dcheck_always_on": true,
-      "ffmpeg_branding": "Chrome",
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "symbol_level": 0,
-      "use_clang_coverage": true,
-      "use_goma": true
-    }
-  },
-  "mac-rel-orchestrator": {
     "gn_args": {
       "blink_enable_generated_code_formatting": false,
       "coverage_instrumentation_input_file": "//.code-coverage/files_to_instrument.txt",

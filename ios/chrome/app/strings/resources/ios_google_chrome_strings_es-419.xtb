@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Envía las estadísticas de uso y los informes de fallos a Google para ayudarnos a mejorar Chrome.</translation>
 <translation id="417201473131094001">No es compatible con Chrome Canary</translation>
 <translation id="4214277427269650960">Accede a este sitio y a Chrome. Puedes activar la sincronización más tarde.</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> usó Chrome y dejó favoritos, contraseñas y otros parámetros de configuración en este dispositivo.</translation>
 <translation id="424864128008805179">¿Quieres salir de Chrome?</translation>
 <translation id="4249068189593983585">Sugerencia de Chrome: Para obtener más opciones de pestañas, mantén presionado el botón Mostrar pestañas de la barra de herramientas, que se encuentra en la parte inferior o superior de la pantalla.</translation>
 <translation id="4523886039239821078">Algunos complementos causan bloqueos en Chrome. Desinstala:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome no pudo revisar todas las contraseñas. Vuelve a intentarlo mañana o <ph name="BEGIN_LINK" />revisa las contraseñas guardadas en tu Cuenta de Google.<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">No es compatible en la versión beta de Chrome</translation>
 <translation id="5030102366287574140">Chrome puede protegerte ante violaciones de la seguridad de los datos, sitios web inseguros y mucho más.</translation>
+<translation id="5108659628347594808">Cómo mejorar Chrome</translation>
 <translation id="5119391094379141756">Selecciona Chrome.</translation>
 <translation id="5162467219239570114">Chrome no está actualizado. Si no hay actualizaciones disponibles en <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, es posible que tu dispositivo no sea compatible con nuevas versiones de Chrome.</translation>
 <translation id="5389212809648216794">Google Chrome no puede utilizar tu cámara porque la está usando otra aplicación</translation>
@@ -81,6 +83,15 @@
 <translation id="6709398533399187136">Tu contraseña quedó expuesta en una violación de la seguridad de los datos. El Administrador de contraseñas de Google te recomienda cambiarla ahora.</translation>
 <translation id="6822673484890854830">Chrome no pudo verificar todas las contraseñas. Vuelve a intentarlo más tarde.</translation>
 <translation id="6964931465519938134">Ahora puedes usar Chrome cada vez que presionas vínculos que aparecen en mensajes, documentos u otras apps.</translation>
+<translation id="7046845777663074840">Cuando se activa:
+<ph name="BEGIN_INDENT" />  • Ayuda a mejorar Chrome para las personas que lo usan de la misma forma que tú.<ph name="END_INDENT" />
+
+Aspectos para tener en cuenta:
+<ph name="BEGIN_INDENT" />  • Se envía información sobre tu uso de Chrome a Google, pero no está vinculada a ti.
+
+  • Si Chrome falla, los detalles sobre lo ocurrido pueden incluir información personal.
+
+  • Si desactivas la sincronización, las métricas también pueden incluir información sobre las URLs que visitas.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Personaliza Chrome a tu medida</translation>
 <translation id="7124339256045485976">Mantén Chrome actualizado</translation>
 <translation id="7161390184744336561">Google Chrome está desactualizado</translation>

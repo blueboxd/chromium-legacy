@@ -15,7 +15,6 @@
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/token.h"
-#include "media/capture/mojom/video_capture_types.mojom-shared.h"
 #include "media/capture/video_capture_types.h"
 #include "third_party/blink/public/common/media/video_capture.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
@@ -111,9 +110,6 @@ class BLINK_PLATFORM_EXPORT WebVideoCaptureImplManager {
   void OnFrameDropped(const media::VideoCaptureSessionId& id,
                       media::VideoCaptureFrameDropReason reason);
 
-  virtual std::unique_ptr<VideoCaptureImpl> CreateVideoCaptureImplForTesting(
-      const media::VideoCaptureSessionId& session_id) const;
-
   // Get the feedback callback for the corresponding capture session.
   // Consumers may call the returned callback in any thread to provide
   // the capturer with feedback information.
@@ -123,6 +119,10 @@ class BLINK_PLATFORM_EXPORT WebVideoCaptureImplManager {
  private:
   // Holds bookkeeping info for each VideoCaptureImpl shared by clients.
   struct DeviceEntry;
+
+  virtual std::unique_ptr<VideoCaptureImpl> CreateVideoCaptureImpl(
+      const media::VideoCaptureSessionId& session_id,
+      BrowserInterfaceBrokerProxy* browser_interface_broker) const;
 
   static void ProcessFeedback(VideoCaptureFeedbackCB callback_to_io_thread,
                               const media::VideoCaptureFeedback& feedback);

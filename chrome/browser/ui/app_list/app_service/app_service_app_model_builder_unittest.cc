@@ -144,7 +144,7 @@ scoped_refptr<extensions::Extension> MakeApp(const std::string& name,
 
 // For testing purposes, we want to pretend there are only |app_type| apps on
 // the system. This method removes the others.
-void RemoveApps(apps::mojom::AppType app_type,
+void RemoveApps(apps::AppType app_type,
                 Profile* profile,
                 FakeAppListModelUpdater* model_updater) {
   apps::AppServiceProxy* proxy =
@@ -251,7 +251,7 @@ class BuiltInAppTest : public AppServiceAppModelBuilderTest {
   // Creates a new builder, destroying any existing one.
   void CreateBuilder(bool guest_mode) {
     AppServiceAppModelBuilderTest::CreateBuilder(guest_mode);
-    RemoveApps(apps::mojom::AppType::kBuiltIn, testing_profile(),
+    RemoveApps(apps::AppType::kBuiltIn, testing_profile(),
                model_updater_.get());
   }
 };
@@ -269,7 +269,7 @@ class ExtensionAppTest : public AppServiceAppModelBuilderTest {
   // Creates a new builder, destroying any existing one.
   void CreateBuilder() {
     AppServiceAppModelBuilderTest::CreateBuilder(false /*guest_mode*/);
-    RemoveApps(apps::mojom::AppType::kChromeApp, testing_profile(),
+    RemoveApps(apps::AppType::kChromeApp, testing_profile(),
                model_updater_.get());
   }
 
@@ -331,8 +331,7 @@ class WebAppBuilderTest : public AppServiceAppModelBuilderTest {
   // Creates a new builder, destroying any existing one.
   void CreateBuilder() {
     AppServiceAppModelBuilderTest::CreateBuilder(false /*guest_mode*/);
-    RemoveApps(apps::mojom::AppType::kWeb, testing_profile(),
-               model_updater_.get());
+    RemoveApps(apps::AppType::kWeb, testing_profile(), model_updater_.get());
   }
 
   std::string CreateWebApp(const std::string& app_name) {
@@ -651,7 +650,7 @@ TEST_F(WebAppBuilderTest, WebAppList) {
   CreateWebApp(kAppName);
 
   app_service_test_.SetUp(profile_.get());
-  RemoveApps(apps::mojom::AppType::kWeb, profile(), model_updater_.get());
+  RemoveApps(apps::AppType::kWeb, profile(), model_updater_.get());
   EXPECT_EQ(1u, model_updater_->ItemCount());
   EXPECT_EQ((std::vector<std::string>{kAppName}),
             GetModelContent(model_updater_.get()));
@@ -687,7 +686,7 @@ class WebAppBuilderDemoModeTest : public WebAppBuilderTest {
     demo_mode_test_helper_->InitializeSession();
 
     app_service_test_.SetUp(profile_.get());
-    RemoveApps(apps::mojom::AppType::kWeb, profile(), model_updater_.get());
+    RemoveApps(apps::AppType::kWeb, profile(), model_updater_.get());
   }
 
   void TearDown() override {
@@ -1020,7 +1019,7 @@ class PluginVmAppTest : public testing::Test {
         builder_.get(), base::BindRepeating(&InitAppPosition));
     builder_->Initialize(nullptr, testing_profile_.get(), model_updater_.get());
 
-    RemoveApps(apps::mojom::AppType::kPluginVm, testing_profile_.get(),
+    RemoveApps(apps::AppType::kPluginVm, testing_profile_.get(),
                model_updater_.get());
   }
 
@@ -1079,57 +1078,4 @@ TEST_F(PluginVmAppTest, PluginVmEnabled) {
   EXPECT_EQ(std::vector<std::string>{l10n_util::GetStringUTF8(
                 IDS_PLUGIN_VM_APP_NAME)},
             GetModelContent(model_updater_.get()));
-}
-
-class BorealisAppTest : public AppServiceAppModelBuilderTest {
- public:
-  void SetUp() override {
-    testing_profile_ = std::make_unique<TestingProfile>();
-    web_app::FakeWebAppProvider::Get(testing_profile_.get())->Start();
-    CreateBuilder(/*guest_mode=*/false);
-  }
-
-  void TearDown() override { ResetBuilder(); }
-
- protected:
-  void CreateBuilder(bool guest_mode) {
-    ResetBuilder();  // Destroy any existing builder in the correct order.
-
-    app_service_test_.UninstallAllApps(testing_profile_.get());
-    testing_profile_->SetGuestSession(guest_mode);
-    app_service_test_.SetUp(testing_profile_.get());
-    model_updater_ = std::make_unique<FakeAppListModelUpdater>(
-        /*profile=*/nullptr, /*reorder_delegate=*/nullptr);
-    controller_ = std::make_unique<test::TestAppListControllerDelegate>();
-    builder_ = std::make_unique<AppServiceAppModelBuilder>(controller_.get());
-    scoped_callback_ = std::make_unique<
-        AppServiceAppModelBuilder::ScopedAppPositionInitCallbackForTest>(
-        builder_.get(), base::BindRepeating(&InitAppPosition));
-    builder_->Initialize(nullptr, testing_profile_.get(), model_updater_.get());
-
-    RemoveApps(apps::mojom::AppType::kBorealis, testing_profile_.get(),
-               model_updater_.get());
-  }
-
-  std::unique_ptr<TestingProfile> testing_profile_;
-};
-
-TEST_F(BorealisAppTest, BorealisDisallowed) {
-  ASSERT_NE(borealis::BorealisService::GetForProfile(testing_profile_.get())
-                ->Features()
-                .MightBeAllowed(),
-            borealis::BorealisFeatures::AllowStatus::kAllowed);
-  EXPECT_EQ(std::vector<std::string>{}, GetModelContent(model_updater_.get()));
-}
-
-TEST_F(BorealisAppTest, BorealisAllowed) {
-  borealis::ScopedAllowBorealis allow_borealis(testing_profile_.get(),
-                                               /*also_enable=*/false);
-  // Reset the AppModelBuilder, so that it is created in a state where
-  // Borealis was enabled.
-  CreateBuilder(/*guest_mode=*/false);
-
-  EXPECT_EQ(
-      std::vector<std::string>{l10n_util::GetStringUTF8(IDS_BOREALIS_APP_NAME)},
-      GetModelContent(model_updater_.get()));
 }

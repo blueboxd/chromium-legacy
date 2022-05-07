@@ -11,7 +11,6 @@
 #include <ostream>
 
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/notreached.h"
 #include "build/chromeos_buildflags.h"
 #include "ui/gfx/buffer_types.h"
@@ -210,7 +209,7 @@ unsigned int GLDataType(ResourceFormat format) {
       GL_ZERO,                             // YUV_420_BIPLANAR
       GL_ZERO,                             // P010
   };
-  static_assert(base::size(format_gl_data_type) == (RESOURCE_FORMAT_MAX + 1),
+  static_assert(std::size(format_gl_data_type) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_type does not handle all cases.");
 
   return format_gl_data_type[format];
@@ -241,7 +240,7 @@ unsigned int GLDataFormat(ResourceFormat format) {
       GL_ZERO,       // YUV_420_BIPLANAR
       GL_ZERO,       // P010
   };
-  static_assert(base::size(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
+  static_assert(std::size(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_format does not handle all cases.");
 
   return format_gl_data_format[format];
@@ -299,7 +298,7 @@ unsigned int GLCopyTextureInternalFormat(ResourceFormat format) {
       GL_ZERO,       // P010
   };
 
-  static_assert(base::size(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
+  static_assert(std::size(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
                 "format_gl_data_format does not handle all cases.");
 
   return format_gl_data_format[format];

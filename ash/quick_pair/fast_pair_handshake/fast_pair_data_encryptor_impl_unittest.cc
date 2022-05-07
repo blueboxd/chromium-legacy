@@ -257,6 +257,7 @@ TEST_P(FastPairDataEncryptorImplTest, ParseDecryptedResponse) {
   EXPECT_TRUE(data_encryptor_);
   EXPECT_CALL(*process_manager_, GetProcessReference);
   ParseDecryptedResponse();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_P(FastPairDataEncryptorImplTest, ParseDecryptedPasskey) {
@@ -265,6 +266,7 @@ TEST_P(FastPairDataEncryptorImplTest, ParseDecryptedPasskey) {
   EXPECT_TRUE(data_encryptor_);
   EXPECT_CALL(*process_manager_, GetProcessReference);
   ParseDecryptedPasskey();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_P(FastPairDataEncryptorImplTest, ParseDecryptedPasskey_InvalidInputSize) {
@@ -273,6 +275,7 @@ TEST_P(FastPairDataEncryptorImplTest, ParseDecryptedPasskey_InvalidInputSize) {
   EXPECT_TRUE(data_encryptor_);
   EXPECT_CALL(*process_manager_, GetProcessReference).Times(0);
   ParseDecryptedPasskeyInvalidBytes();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_P(FastPairDataEncryptorImplTest, ParseDecryptedResponse_InvalidInputSize) {
@@ -281,6 +284,7 @@ TEST_P(FastPairDataEncryptorImplTest, ParseDecryptedResponse_InvalidInputSize) {
   EXPECT_TRUE(data_encryptor_);
   EXPECT_CALL(*process_manager_, GetProcessReference).Times(0);
   ParseDecryptedResponseInvalidBytes();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_P(FastPairDataEncryptorImplTest, NoKeyPair) {
@@ -289,7 +293,16 @@ TEST_P(FastPairDataEncryptorImplTest, NoKeyPair) {
   EXPECT_FALSE(data_encryptor_);
 }
 
-TEST_P(FastPairDataEncryptorImplTest, ParseDecryptedPasskey_ProcessStopped) {
+// TODO(crbug.com/1298377) flaky on ASan + LSan bots
+#if defined(ADDRESS_SANITIZER) && defined(LEAK_SANITIZER)
+#define MAYBE_ParseDecryptedPasskey_ProcessStopped \
+  DISABLED_ParseDecryptedPasskey_ProcessStopped
+#else
+#define MAYBE_ParseDecryptedPasskey_ProcessStopped \
+  ParseDecryptedPasskey_ProcessStopped
+#endif
+TEST_P(FastPairDataEncryptorImplTest,
+       MAYBE_ParseDecryptedPasskey_ProcessStopped) {
   SuccessfulSetUp();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(data_encryptor_);
@@ -303,9 +316,19 @@ TEST_P(FastPairDataEncryptorImplTest, ParseDecryptedPasskey_ProcessStopped) {
                 data_parser_remote_, base::DoNothing());
           });
   ParseDecryptedPasskey();
+  base::RunLoop().RunUntilIdle();
 }
 
-TEST_P(FastPairDataEncryptorImplTest, ParseDecryptedResponse_ProcessStopped) {
+// TODO(crbug.com/1298377) flaky on ASan + LSan bots
+#if defined(ADDRESS_SANITIZER) && defined(LEAK_SANITIZER)
+#define MAYBE_ParseDecryptedResponse_ProcessStopped \
+  DISABLED_ParseDecryptedResponse_ProcessStopped
+#else
+#define MAYBE_ParseDecryptedResponse_ProcessStopped \
+  ParseDecryptedResponse_ProcessStopped
+#endif
+TEST_P(FastPairDataEncryptorImplTest,
+       MAYBE_ParseDecryptedResponse_ProcessStopped) {
   SuccessfulSetUp();
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(data_encryptor_);
@@ -319,6 +342,7 @@ TEST_P(FastPairDataEncryptorImplTest, ParseDecryptedResponse_ProcessStopped) {
                 data_parser_remote_, base::DoNothing());
           });
   ParseDecryptedResponse();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_P(FastPairDataEncryptorImplTest, GetPublicKey) {
@@ -327,6 +351,7 @@ TEST_P(FastPairDataEncryptorImplTest, GetPublicKey) {
   EXPECT_TRUE(data_encryptor_);
   EXPECT_CALL(*process_manager_, GetProcessReference);
   ParseDecryptedPasskey();
+  base::RunLoop().RunUntilIdle();
   EXPECT_NE(data_encryptor_->GetPublicKey(), absl::nullopt);
 }
 

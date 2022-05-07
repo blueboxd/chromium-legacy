@@ -105,11 +105,15 @@ void StartupPagesHandler::OnItemsRemoved(int start, int length) {
   OnModelChanged();
 }
 
-void StartupPagesHandler::HandleAddStartupPage(
-    base::Value::ConstListView args) {
+void StartupPagesHandler::HandleAddStartupPage(const base::Value::List& args) {
   CHECK_EQ(2U, args.size());
-
   const base::Value& callback_id = args[0];
+
+  if (!args[1].is_string()) {
+    NOTREACHED();
+    return;
+  }
+
   std::string url_string = args[1].GetString();
 
   GURL url;
@@ -118,18 +122,13 @@ void StartupPagesHandler::HandleAddStartupPage(
     return;
   }
 
-  int row_count = startup_custom_pages_table_model_.RowCount();
-  int index = row_count;
-  if (args[1].is_int() && args[1].GetInt() <= row_count)
-    index = args[1].GetInt();
-
-  startup_custom_pages_table_model_.Add(index, url);
+  startup_custom_pages_table_model_.Add(
+      startup_custom_pages_table_model_.RowCount(), url);
   SaveStartupPagesPref();
   ResolveJavascriptCallback(callback_id, base::Value(true));
 }
 
-void StartupPagesHandler::HandleEditStartupPage(
-    base::Value::ConstListView args) {
+void StartupPagesHandler::HandleEditStartupPage(const base::Value::List& args) {
   CHECK_EQ(args.size(), 3U);
   const base::Value& callback_id = args[0];
   int index = args[1].GetInt();
@@ -155,13 +154,13 @@ void StartupPagesHandler::HandleEditStartupPage(
 }
 
 void StartupPagesHandler::HandleOnStartupPrefsPageLoad(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 }
 
 void StartupPagesHandler::HandleRemoveStartupPage(
-    base::Value::ConstListView args) {
-  DCHECK_GE(args.size(), 1u);
+    const base::Value::List& args) {
+  CHECK_EQ(args.size(), 1u);
   if (!args[0].is_int()) {
     NOTREACHED();
     return;
@@ -179,7 +178,7 @@ void StartupPagesHandler::HandleRemoveStartupPage(
 }
 
 void StartupPagesHandler::HandleSetStartupPagesToCurrentPages(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   startup_custom_pages_table_model_.SetToCurrentlyOpenPages(
       web_ui()->GetWebContents());
   SaveStartupPagesPref();

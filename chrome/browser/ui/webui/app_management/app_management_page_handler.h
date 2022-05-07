@@ -8,22 +8,30 @@
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ui/webui/app_management/app_management_shelf_delegate_chromeos.h"
+#include "chrome/browser/web_applications/app_registrar_observer.h"
+#include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/preferred_apps_list_handle.h"
+#include "components/services/app_service/public/cpp/run_on_os_login_types.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/native_widget_types.h"
-#include "ui/webui/resources/cr_components/app_management/app_management.mojom-forward.h"
+#include "ui/webui/resources/cr_components/app_management/app_management.mojom.h"
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ui/webui/app_management/app_management_shelf_delegate_chromeos.h"
+#endif
 
 class Profile;
 
-class AppManagementPageHandler
-    : public app_management::mojom::PageHandler,
-      public apps::AppRegistryCache::Observer,
-      public apps::PreferredAppsListHandle::Observer {
+class AppManagementPageHandler : public app_management::mojom::PageHandler,
+                                 public apps::AppRegistryCache::Observer,
+                                 public apps::PreferredAppsListHandle::Observer,
+                                 public web_app::AppRegistrarObserver {
  public:
   //  Handles platform specific tasks.
   class Delegate {
@@ -57,9 +65,9 @@ class AppManagementPageHandler
       const std::string& app_id,
       GetExtensionAppPermissionMessagesCallback callback) override;
   void SetPinned(const std::string& app_id,
-                 apps::mojom::OptionalBool pinned) override;
+                 app_management::mojom::OptionalBool pinned) override;
   void SetPermission(const std::string& app_id,
-                     apps::mojom::PermissionPtr permission) override;
+                     apps::PermissionPtr permission) override;
   void SetResizeLocked(const std::string& app_id, bool locked) override;
   void Uninstall(const std::string& app_id) override;
   void OpenNativeSettings(const std::string& app_id) override;
@@ -69,10 +77,15 @@ class AppManagementPageHandler
       const std::string& app_id,
       GetOverlappingPreferredAppsCallback callback) override;
   void SetWindowMode(const std::string& app_id,
-                     apps::mojom::WindowMode window_mode) override;
+                     apps::WindowMode window_mode) override;
   void SetRunOnOsLoginMode(
       const std::string& app_id,
-      apps::mojom::RunOnOsLoginMode run_on_os_login_mode) override;
+      apps::RunOnOsLoginMode run_on_os_login_mode) override;
+  void SetFileHandlingEnabled(const std::string& app_id, bool enabled) override;
+
+  // web_app::AppRegistrarObserver:
+  void OnWebAppFileHandlerApprovalStateChanged(
+      const web_app::AppId& app_id) override;
 
  private:
   app_management::mojom::AppPtr CreateUIAppPtr(const apps::AppUpdate& update);
@@ -109,6 +122,10 @@ class AppManagementPageHandler
   base::ScopedObservation<apps::PreferredAppsListHandle,
                           apps::PreferredAppsListHandle::Observer>
       preferred_apps_list_handle_observer_{this};
+
+  base::ScopedObservation<web_app::WebAppRegistrar,
+                          web_app::AppRegistrarObserver>
+      registrar_observation_{this};
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_APP_MANAGEMENT_APP_MANAGEMENT_PAGE_HANDLER_H_

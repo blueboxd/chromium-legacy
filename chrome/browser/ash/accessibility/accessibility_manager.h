@@ -38,8 +38,6 @@
 #include "ui/accessibility/ax_enums.mojom-forward.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 
-class Browser;
-
 namespace content {
 struct FocusedNodeDetails;
 }  // namespace content
@@ -127,7 +125,7 @@ class AccessibilityManager
   static AccessibilityManager* Get();
 
   // Show the accessibility help as a tab in the browser.
-  static void ShowAccessibilityHelp(Browser* browser);
+  static void ShowAccessibilityHelp();
 
   // Returns true when the accessibility menu should be shown.
   bool ShouldShowAccessibilityMenu();
@@ -365,13 +363,10 @@ class AccessibilityManager
                                   double value);
 
   // SodaInstaller::Observer:
-  void OnSodaInstalled() override;
-  void OnSodaLanguagePackInstalled(speech::LanguageCode language_code) override;
-  void OnSodaError() override;
-  void OnSodaLanguagePackError(speech::LanguageCode language_code) override;
-  void OnSodaProgress(int combined_progress) override {}
-  void OnSodaLanguagePackProgress(int language_progress,
-                                  speech::LanguageCode language_code) override;
+  void OnSodaInstalled(speech::LanguageCode language_code) override;
+  void OnSodaError(speech::LanguageCode language_code) override;
+  void OnSodaProgress(speech::LanguageCode language_code,
+                      int progress) override;
 
   // Test helpers:
   void SetProfileForTest(Profile* profile);
@@ -494,8 +489,6 @@ class AccessibilityManager
 
   // SODA-related methods.
   void MaybeInstallSoda(const std::string& locale);
-  void OnSodaInstallSucceeded();
-  void OnSodaInstallError(speech::LanguageCode language_code);
   void OnSodaInstallUpdated(int progress);
   bool ShouldShowSodaSucceededNotificationForDictation();
   bool ShouldShowSodaFailedNotificationForDictation(
@@ -503,6 +496,7 @@ class AccessibilityManager
   void ShowSodaDownloadNotificationForDictation(bool succeeded);
 
   void ShowDictationLanguageUpgradedNudge(const std::string& locale);
+  speech::LanguageCode GetDictationLanguageCode();
 
   void CreateChromeVoxPanel();
 

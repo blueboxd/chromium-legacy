@@ -54,20 +54,20 @@ export class ProfilePickerAppElement extends ProfilePickerAppElementBase {
   private manageProfilesBrowserProxy_: ManageProfilesBrowserProxy =
       ManageProfilesBrowserProxyImpl.getInstance();
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.setMinimumSize_();
   }
 
-  onRouteChange(route: Routes, step: string) {
+  override onRouteChange(route: Routes, step: string) {
     if (!isProfileCreationAllowed() && route === Routes.NEW_PROFILE) {
       navigateTo(Routes.MAIN);
       return;
     }
 
-    if (step == ProfileCreationSteps.LOAD_FORCE_SIGNIN) {
+    if (step === ProfileCreationSteps.LOAD_FORCE_SIGNIN) {
       assert(
-          route == Routes.NEW_PROFILE,
+          route === Routes.NEW_PROFILE,
           'LOAD_FORCE_SIGNIN step must be a part of NEW_PROFILE route');
       assert(
           isForceSigninEnabled(),

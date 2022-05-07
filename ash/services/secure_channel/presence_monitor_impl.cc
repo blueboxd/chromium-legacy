@@ -4,12 +4,12 @@
 
 #include "ash/services/secure_channel/presence_monitor_impl.h"
 
+#include "ash/services/secure_channel/presence_monitor_delegate.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 
-namespace chromeos {
-namespace secure_channel {
+namespace ash::secure_channel {
 
 PresenceMonitorImpl::PresenceMonitorImpl() = default;
 
@@ -48,5 +48,4 @@ void PresenceMonitorImpl::OnAdapterReceived(
   ready_callback.Run();
 }
 
-}  // namespace secure_channel
-}  // namespace chromeos
+}  // namespace ash::secure_channel

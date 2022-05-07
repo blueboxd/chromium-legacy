@@ -52,6 +52,8 @@ namespace AddWordToDictionary =
     extensions::api::input_method_private::AddWordToDictionary;
 namespace SetCurrentInputMethod =
     extensions::api::input_method_private::SetCurrentInputMethod;
+namespace SwitchToLastUsedInputMethod =
+    extensions::api::input_method_private::SwitchToLastUsedInputMethod;
 namespace SetXkbLayout = extensions::api::input_method_private::SetXkbLayout;
 namespace OpenOptionsPage =
     extensions::api::input_method_private::OpenOptionsPage;
@@ -169,8 +171,16 @@ InputMethodPrivateSetCurrentInputMethodFunction::Run() {
 }
 
 ExtensionFunction::ResponseAction
+InputMethodPrivateSwitchToLastUsedInputMethodFunction::Run() {
+  scoped_refptr<ash::input_method::InputMethodManager::State> ime_state =
+      ash::input_method::InputMethodManager::Get()->GetActiveIMEState();
+  ime_state->SwitchToLastUsedInputMethod();
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
 InputMethodPrivateGetInputMethodsFunction::Run() {
-  std::unique_ptr<base::ListValue> output(new base::ListValue());
+  base::Value::List output;
   auto* manager = ash::input_method::InputMethodManager::Get();
   ash::input_method::InputMethodUtil* util = manager->GetInputMethodUtil();
   scoped_refptr<ash::input_method::InputMethodManager::State> ime_state =
@@ -180,14 +190,13 @@ InputMethodPrivateGetInputMethodsFunction::Run() {
   for (size_t i = 0; i < input_methods->size(); ++i) {
     const ash::input_method::InputMethodDescriptor& input_method =
         (*input_methods)[i];
-    auto val = std::make_unique<base::DictionaryValue>();
-    val->SetStringKey("id", input_method.id());
-    val->SetStringKey("name", util->GetInputMethodLongName(input_method));
-    val->SetStringKey("indicator", input_method.GetIndicator());
-    output->Append(std::move(val));
+    base::Value::Dict val;
+    val.Set("id", input_method.id());
+    val.Set("name", util->GetInputMethodLongName(input_method));
+    val.Set("indicator", input_method.GetIndicator());
+    output.Append(std::move(val));
   }
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(output))));
+  return RespondNow(OneArgument(base::Value(std::move(output))));
 }
 
 ExtensionFunction::ResponseAction
@@ -580,8 +589,6 @@ InputMethodPrivateSetAutocorrectRangeFunction::Run() {
   if (!engine->InputMethodEngine::SetAutocorrectRange(
           params.context_id,
           gfx::Range(params.selection_start, params.selection_end), &error)) {
-    auto results = std::make_unique<base::ListValue>();
-    results->Append(std::make_unique<base::Value>(false));
     return RespondNow(Error(InformativeError(error, static_function_name())));
   }
   return RespondNow(NoArguments());
@@ -604,7 +611,7 @@ InputMethodPrivateSetSelectionRangeFunction::Run() {
           params.context_id, *params.selection_start, *params.selection_end,
           &error)) {
     auto results = std::make_unique<base::ListValue>();
-    results->Append(std::make_unique<base::Value>(false));
+    results->Append(false);
     return RespondNow(ErrorWithArguments(
         std::move(results), InformativeError(error, static_function_name())));
   }

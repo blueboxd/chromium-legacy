@@ -11,44 +11,42 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/webui/settings/ash/os_apps_page/mojom/app_type_mojom_traits.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/cpp/types_util.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace chromeos {
 namespace settings {
 
 namespace {
 app_notification::mojom::AppPtr CreateAppPtr(const apps::AppUpdate& update) {
-  apps::mojom::PermissionPtr permission_copy;
-  for (const auto& permission : update.Permissions()) {
-    if (permission->permission_type ==
-        apps::mojom::PermissionType::kNotifications) {
-      permission_copy = permission->Clone();
-      break;
-    }
-  }
-
   auto app = app_notification::mojom::App::New();
   app->id = update.AppId();
   app->title = update.Name();
-  app->notification_permission = std::move(permission_copy);
   app->readiness = update.Readiness();
+
+  for (const auto& permission : update.Permissions()) {
+    if (permission->permission_type == apps::PermissionType::kNotifications) {
+      app->notification_permission = permission->Clone();
+      break;
+    }
+  }
 
   return app;
 }
 
 bool ShouldIncludeApp(const apps::AppUpdate& update) {
   // Only apps that can be shown in management are supported.
-  if (update.ShowInManagement() != apps::mojom::OptionalBool::kTrue) {
+  if (!update.ShowInManagement().value_or(false)) {
     return false;
   }
 
   // Only kArc and kWeb apps are supported.
-  if (update.AppType() == apps::mojom::AppType::kArc ||
-      update.AppType() == apps::mojom::AppType::kWeb) {
+  if (update.AppType() == apps::AppType::kArc ||
+      update.AppType() == apps::AppType::kWeb) {
     for (const auto& permission : update.Permissions()) {
-      if (permission->permission_type ==
-          apps::mojom::PermissionType::kNotifications) {
+      if (permission->permission_type == apps::PermissionType::kNotifications) {
         return true;
       }
     }
@@ -103,8 +101,9 @@ void AppNotificationHandler::SetQuietMode(bool in_quiet_mode) {
 
 void AppNotificationHandler::SetNotificationPermission(
     const std::string& app_id,
-    apps::mojom::PermissionPtr permission) {
-  app_service_proxy_->SetPermission(app_id, std::move(permission));
+    apps::PermissionPtr permission) {
+  app_service_proxy_->SetPermission(
+      app_id, apps::ConvertPermissionToMojomPermission(permission));
 }
 
 void AppNotificationHandler::GetApps(GetAppsCallback callback) {

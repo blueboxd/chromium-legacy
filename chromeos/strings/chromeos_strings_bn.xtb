@@ -54,6 +54,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> এই ব্যবহারকারীকে ম্যানেজ করে এবং তার ফলে এটি হয়ত অন্য জায়গা থেকে সেটিংস ম্যানেজ করতে এবং ব্যবহারকারীর অ্যাক্টিভিটির উপর নজর রাখতে পারে।</translation>
 <translation id="150962533380566081">ভুল PUK।</translation>
 <translation id="1510238584712386396">লঞ্চার</translation>
+<translation id="152892567002884378">ভলিউম বাড়ান</translation>
 <translation id="155865706765934889">টাচপ্যাড</translation>
 <translation id="1565038567006703504"><ph name="DEVICE_NAME" /> আপডেট করা যাচ্ছে না</translation>
 <translation id="1567064801249837505">অ্যালবাম</translation>
@@ -76,17 +77,20 @@
 <translation id="175763766237925754">ভাল (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1768959921651994223">যাচাইকরণের প্রকার</translation>
 <translation id="1782199038061388045">অনুবাদ</translation>
 <translation id="1792647875738159689">স্ক্যানিং বাতিল করা হচ্ছে</translation>
 <translation id="1807246157184219062">আলো</translation>
 <translation id="1827738518074806965">আর্ট গ্যালারি</translation>
 <translation id="1851218745569890714">ভিডিও কনফারেন্সিং</translation>
+<translation id="1852934301711881861">ChromeOS Flex ইনস্টল করুন</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="1887850431809612466">হার্ডওয়্যার পুনর্বিবেচনাগুলি</translation>
 <translation id="1905710495812624430">সর্বোচ্চ অনুমোদিত প্রচেষ্টা ছাড়িয়ে গেছে।</translation>
 <translation id="1908234395526491708">UDP-এর অনুরোধ করা যায়নি</translation>
 <translation id="1930797645656624981">Chrome OS ইনপুট পদ্ধতি পরিষেবা</translation>
 <translation id="1947737735496445907">প্রিন্ট করা হয়েছে</translation>
+<translation id="1951012854035635156">Assistant</translation>
 <translation id="1979103255016296513">পাসওয়ার্ড পরিবর্তন করার সময় পেরিয়ে গেছে</translation>
 <translation id="1999615961760456652">ক্যাপটিভ পোর্টাল</translation>
 <translation id="2006864819935886708">সংযোজকতা</translation>
@@ -99,14 +103,17 @@
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, ভার্সন <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="TOTAL_MEMORY" /> জিবির মধ্যে <ph name="AVAILABLE_MEMORY" /> জিবি উপলভ্য</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
+<translation id="2152882202543497059"><ph name="NUMBER" />টি ফটো</translation>
 <translation id="2157959690810728433">সারিতে আছে</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: আবার চেষ্টা করুন</translation>
 <translation id="2161394479394250669">প্রিন্ট জবটি বাতিল করা হয়েছে</translation>
 <translation id="2180197493692062006">কোনও সমস্যা হয়েছে। অ্যাপটি আবার খোলার চেষ্টা করে দেখুন।</translation>
+<translation id="2201770616342964496">স্থানীয় আইডেন্টিটি</translation>
 <translation id="2209788852729124853">ট্রাফিক কাউন্টার্স রিসেট করুন</translation>
 <translation id="2212733584906323460">নামের রেজোলিউশন</translation>
 <translation id="2217935453350629363">বর্তমান স্পিড</translation>
 <translation id="2224337661447660594">ইন্টারনেট কানেকশন নেই</translation>
+<translation id="222447520299472966">কমপক্ষে একটি আর্ট গ্যালারি অ্যালবাম বেছে নিতে হবে</translation>
 <translation id="2230005943220647148">সেলসিয়াস</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">সক্রিয়করণ স্থিতি</translation>
@@ -126,6 +133,7 @@
 <translation id="2446553403094072641">ফ্লোটিং পয়েন্ট অ্যাকুরেসি</translation>
 <translation id="2448312741937722512">প্রকার</translation>
 <translation id="2461822463642141190">বর্তমান</translation>
+<translation id="2493126929778606526">আপনার সেরা ফটোগুলি অটোমেটিক বেছে নেওয়া হয়</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">বর্তমান ওয়ালপেপারের ছবি রিফ্রেশ করুন</translation>
 <translation id="2517472476991765520">স্ক্যান করুন</translation>
@@ -136,6 +144,7 @@
 <translation id="2585245331261708204">Chrome OS-এ নতুন কী আছে</translation>
 <translation id="2619761439309613843">প্রতিদিন রিফ্রেশ করা হবে</translation>
 <translation id="2620436844016719705">সিস্টেম</translation>
+<translation id="2640549051766135490">বেছে নেওয়া অ্যালবাম: <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="2695514675076754339">৮-অক্ষরের আনলক কোড লিখুন</translation>
 <translation id="2712812801627182647">TLS যাচাইকরণ কী</translation>
 <translation id="2740531572673183784">ঠিক আছে</translation>
@@ -147,6 +156,7 @@
 <translation id="2859243502336719778">জরুরি আপডেট</translation>
 <translation id="2860473693272905224">স্ক্যানারে অন্য একটি পৃষ্ঠা রাখুন</translation>
 <translation id="2872961005593481000">বন্ধ করুন</translation>
+<translation id="2874939134665556319">পূর্ববর্তী ট্র্যাক</translation>
 <translation id="2878387241690264070"><ph name="NUM_SECONDS" /> সেকেন্ডে <ph name="RATE" /> চার্জ শেষ হয়েছে।</translation>
 <translation id="291142119251986300">অযোগ্য উপাদান</translation>
 <translation id="2926057806159140518">আপনার ব্যবহারকারীর নাম এবং পাসওয়ার্ড লিখুন বা আপনার QR কোড স্ক্যান করুন</translation>
@@ -180,11 +190,13 @@
 <translation id="3340011300870565703">ডিভাইসের ডানদিকের বাডে <ph name="BATTERY_PERCENTAGE" />% ব্যাটারি আছে।</translation>
 <translation id="3368922792935385530">সংযুক্ত</translation>
 <translation id="3369013195428705271">আপনি কি সব প্রিন্ট ইতিহাস মুছে ফেলতে চান? এখন যে প্রিন্ট করার কাজগুলি চলছে সেগুলি মোছা হবে না।</translation>
+<translation id="3413935475507503304">আপডেটগুলি ব্যবহার করে চালিয়ে যাওয়ার জন্য, 'পরবর্তী' বিকল্পে ক্লিক করুন।</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">নিরাপত্তা</translation>
 <translation id="3456078764689556234"><ph name="TOTAL_PAGES" />টি পৃষ্ঠার মধ্যে <ph name="PRINTED_PAGES" /> নম্বর পৃষ্ঠা প্রিন্ট করা হয়েছে।</translation>
 <translation id="345898999683440380">স্ক্যান করা পৃষ্ঠা <ph name="PAGE_NUM" />। <ph name="PERCENTAGE_VALUE" />% হয়ে গেছে।</translation>
 <translation id="3459509316159669723">প্রিন্ট হচ্ছে</translation>
+<translation id="346539236881580388">আবার তুলুন</translation>
 <translation id="3484914941826596830">ফার্মওয়্যার আপডেট করার সময়, এই এক্সটার্নাল ডিভাইসটি আনপ্লাগ করবেন না বা আপনার কম্পিউটার বন্ধ করবেন না। আপনি এই উইন্ডোটি মিনিমাইজ করতে পারবেন। এই আপডেটে কয়েক মিনিট সময় লাগতে পারে এবং এই সময়ে আপনার এক্সটার্নাল ডিভাইস কাজ নাও করতে পারে।</translation>
 <translation id="3486220673238053218">সংজ্ঞা</translation>
 <translation id="3488065109653206955">আংশিকভাবে সক্রিয়</translation>
@@ -226,8 +238,10 @@
 <translation id="4003384961948020559">প্রিন্ট করা যায়নি - আউটপুট বিন ভর্তি হয়ে গেছে</translation>
 <translation id="4034824040120875894">প্রিন্টার</translation>
 <translation id="4044093238444069296">গেটওয়েতে যোগাযোগ করা যাচ্ছে না</translation>
+<translation id="4046123991198612571">পরবর্তী ট্র্যাক</translation>
 <translation id="404928562651467259">সতর্কতা</translation>
 <translation id="409427325554347132">ডায়গনোসিস করে পাওয়া টেস্টের বিবরণ সেভ করুন</translation>
+<translation id="4110686435123617899"><ph name="TITLE" /> <ph name="DESC" /> অ্যালবাম বেছে নিন</translation>
 <translation id="4111761024568264522">ইউএসবি টাচপ্যাড</translation>
 <translation id="4131410914670010031">সাদা ও কালো</translation>
 <translation id="4140251671072434548">RMA সার্ভার আনলক পারফর্ম করুন</translation>
@@ -242,16 +256,17 @@
 <translation id="4238516577297848345">প্রিন্ট করার কোনও কাজ চালু নেই</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4244962993387259361">মেমরি টেস্ট করাতে আপনার ডিভাইসে অন্তত ৫০০ এমবি খালি জায়গা থাকতে হবে। জায়গা খালি করতে 'সেটিংস' &gt; 'স্টোরেজ ম্যানেজ করা' বিকল্পে যান।</translation>
+<translation id="4250229828105606438">স্ক্রিনশট</translation>
 <translation id="4258281355379922695">HTTP লেটেন্সি</translation>
 <translation id="4271957103967917607">ফুল স্ক্রিন দেখুন</translation>
 <translation id="4275799948641988986">রিপেয়ার করার পর ডিভাইসটি কে ব্যবহার করবেন?</translation>
+<translation id="4289540628985791613">ওভারভিউ</translation>
 <translation id="4297501883039923494">বন্ধ হয়ে গেছে - অজানা সমস্যা</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" />টি ছবি</translation>
 <translation id="4378373042927530923">চালানো যায়নি</translation>
 <translation id="4378551569595875038">সংযুক্ত হচ্ছে...</translation>
 <translation id="4382484599443659549">পিডিএফ</translation>
 <translation id="439429847087949098"><ph name="DEVICE_NAME" /> রিস্টার্ট করা হচ্ছে</translation>
-<translation id="4418498623216225764">পেরিফেরাল আপডেট করুন</translation>
 <translation id="4425149324548788773">আমার ড্রাইভ</translation>
 <translation id="4428374560396076622"><ph name="NETWORK_NAME" /> বন্ধ আছে</translation>
 <translation id="4429881212383817840">Kerberos টিকিটের মেয়াদ শীঘ্রই শেষ হয়ে যাবে</translation>
@@ -266,6 +281,7 @@
 <translation id="4511264077854731334">পোর্টাল</translation>
 <translation id="4521826082652183069">সাবজেক্টের বিকল্প নামের সাথে মিল আছে</translation>
 <translation id="4536864596629708641">IP কনফিগারেশন</translation>
+<translation id="4546131424594385779">'ভিডিও লুপিং' তৈরি করুন</translation>
 <translation id="4548483925627140043">সিগন্যাল নেই</translation>
 <translation id="4556753742174065117">সব ফার্মওয়্যার আপ-টু-ডেট আছে</translation>
 <translation id="455835558791489930"><ph name="CHARGE_VALUE" />mAh ব্যাটারি</translation>
@@ -274,6 +290,7 @@
 <translation id="458794348635939462">সব হোস্ট নেম যাচাই করা ব্যর্থ হয়েছে</translation>
 <translation id="4593212453765072419">প্রক্সি প্রমাণীকরণের প্রয়োজন</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="TOTAL_PAGE_NUMBER" />টির মধ্যে <ph name="PRINTED_PAGE_NUMBER" /> নম্বর পৃষ্ঠা। প্রিন্ট করা বাতিল করতে এন্টার প্রেস করুন।</translation>
+<translation id="4627645661474370390">রিমোট আইডেন্টিটি</translation>
 <translation id="463791356324567266">স্ক্যানিং বাতিল করা হচ্ছে...</translation>
 <translation id="4646949265910132906">নিরাপদ ওয়াই-ফাই কানেকশন</translation>
 <translation id="4654549501020883054">রোজ পরিবর্তন করুন</translation>
@@ -282,13 +299,13 @@
 <translation id="467715984478005772">ফায়ারওয়াল রয়েছে বলে মনে হচ্ছে</translation>
 <translation id="4691278870498629773">বন্ধ হয়ে গেছে - ট্রে লাগানো নেই</translation>
 <translation id="469379815867856270">সিগন্যালের ক্ষমতা</translation>
-<translation id="4707579418881001319">L2TP/IPসেকে + ব্যবহারকারীর সার্টিফিকেট</translation>
 <translation id="4731797938093519117">অভিভাবকীয় অ্যাক্সেস</translation>
 <translation id="473775607612524610">আপডেট করুন</translation>
 <translation id="4744944742468440486">আপনার বেছে নেওয়া কন্টেন্টের ব্যাপারে তথ্য</translation>
 <translation id="475869545581454722">Chrome OS-এর পাসওয়ার্ড আপডেট করা হয়েছে</translation>
 <translation id="4773299976671772492">থামানো হয়েছে</translation>
 <translation id="4782311465517282004">আপনি ডানদিকের বোতামে ক্লিক করলে বা টেক্সট প্রেস করে ধরে থাকলে, সংজ্ঞা, অনুবাদ বা ইউনিট কনভার্সন পাবেন</translation>
+<translation id="4791000909649665275"><ph name="NUMBER" />টি ফটো</translation>
 <translation id="4793756956024303490">কম্প্রেশন অ্যালগরিদম</translation>
 <translation id="4794140124556169553">সিপিইউ পরীক্ষা চালালে তার ফলে আপনার সিস্টেম পারফর্ম্যান্সে প্রভাব পড়তে পারে</translation>
 <translation id="4808449224298348341"><ph name="DOCUMENT_TITLE" /> প্রিন্ট করার কাজ বাতিল করা হয়েছে</translation>
@@ -327,12 +344,14 @@
 <translation id="5051044138948155788">শুধুমাত্র এই পৃষ্ঠাটি সরাতে চাই। এটি আপনাকে সেই স্ক্রিনে নিয়ে যাবে যেখানে স্ক্যান শুরু হয়।</translation>
 <translation id="5088172560898466307">সার্ভার হোস্টনাম</translation>
 <translation id="5089810972385038852">রাজ্য</translation>
+<translation id="5090362543162270857">IPsec (IKEv2)</translation>
 <translation id="5142961317498132443">প্রমাণীকরণ</translation>
 <translation id="5154917547274118687">স্মৃতি</translation>
 <translation id="5160857336552977725">আপনার <ph name="DEVICE_TYPE" />-এ সাইন-ইন করুন</translation>
 <translation id="5166918508782100047">'কুইক আন্সার' সেটিংস</translation>
 <translation id="5168185087976003268">ব্যাটারির স্বাস্থ্য</translation>
 <translation id="5170568018924773124">ফোল্ডারে দেখান</translation>
+<translation id="5190187232518914472">আপনার প্রিয় স্মৃতিগুলি রোমন্থন করুন। অ্যালবাম যোগ ও এডিট করতে, <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />-এ যান।</translation>
 <translation id="5212543919916444558">আপনাকে সাহায্য করতে পারি এমন কিছুই আপনার স্ক্রিনে আমি খুঁজে পাইনি। আমাকে কিছু জিজ্ঞাসা করতে মাইকে ট্যাপ করুন।</translation>
 <translation id="5212593641110061691">Tabloid</translation>
 <translation id="5222676887888702881">সাইন-আউট করুন</translation>
@@ -370,6 +389,7 @@
 <translation id="554517032089923082">GTC</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">আবার স্ক্যান করুন</translation>
+<translation id="5583640892426849032">Backspace</translation>
 <translation id="5620281292257375798">শুধুমাত্র ইন্টার্নাল</translation>
 <translation id="5649768706273821470">শুনুন</translation>
 <translation id="5669267381087807207">সক্রিয় করা হচ্ছে</translation>
@@ -379,6 +399,7 @@
 <translation id="5707900041990977207"><ph name="TOTAL_PAGES" />টির মধ্যে <ph name="CURRENT_PAGE" />নম্বর</translation>
 <translation id="5733298426544876109"><ph name="DEVICE_NAME" /> আপডেট করুন</translation>
 <translation id="5760715441271661976">পোর্টালের স্থিতি</translation>
+<translation id="57838592816432529">মিউট করুন</translation>
 <translation id="5784136236926853061">HTTP লেটেন্সি বেশি</translation>
 <translation id="5832805196449965646">একজন ব্যক্তিকে যোগ করুন</translation>
 <translation id="583281660410589416">অজানা</translation>
@@ -386,6 +407,7 @@
 <translation id="5849570051105887917">হোম পরিষেবা প্রদানকারী কোড</translation>
 <translation id="5860033963881614850">বন্ধ করুন</translation>
 <translation id="5866840822086176774">খুব জোরালো</translation>
+<translation id="588258955323874662">সম্পূর্নস্ক্রীণ</translation>
 <translation id="5895138241574237353">পুনর্সূচনা</translation>
 <translation id="5916084858004523819">নিষিদ্ধ</translation>
 <translation id="5916664084637901428">চালু</translation>
@@ -426,6 +448,7 @@
 <translation id="6319207335391420837"><ph name="DEVICE_NAME" />-এ ফার্মওয়্যার আপডেট করুন</translation>
 <translation id="6325525973963619867">ব্যর্থ</translation>
 <translation id="6340526405444716530">নিজের পছন্দ অনুযায়ী বেছে নেওয়া</translation>
+<translation id="6348738456043757611">ইউজারনেম এবং পাসওয়ার্ড</translation>
 <translation id="636850387210749493">এন্টারপ্রাইজ নথিভুক্তিকরণ</translation>
 <translation id="6379086450106841622">টাচস্ক্রিন</translation>
 <translation id="6388847657025262518">স্ক্যানারের ডকুমেন্ট ফিডার কাজ করছে না। ফিডার চেক করে আবার চেষ্টা করুন।</translation>
@@ -448,18 +471,22 @@
 <translation id="6566314079205407217">মাল্টি-পেজ স্ক্যানিং</translation>
 <translation id="6574762126505704998">পূরণ করুন</translation>
 <translation id="6575134580692778371">কনফিগার হয়নি</translation>
+<translation id="6579509898032828423">এই ফটো ব্যবহার করুন</translation>
 <translation id="6596816719288285829">আইপি অ্যাড্রেস</translation>
 <translation id="6618744767048954150">চলছে</translation>
 <translation id="6620487321149975369">ম্যানুয়ালি সরিয়ে না দেওয়া পর্যন্ত প্রিন্ট হওয়া কাজগুলি ইতিহাসে দেখা যাবে</translation>
 <translation id="6643016212128521049">সাফ করুন</translation>
 <translation id="6647510110698214773">এনক্রিপশন অ্যালগরিদম</translation>
 <translation id="6657585470893396449">পাসওয়ার্ড</translation>
+<translation id="6659594942844771486">ট্যাব</translation>
 <translation id="6692996468359469499">আপনার বেছে নেওয়া প্রশ্ন সম্পর্কিত উত্তর পান</translation>
 <translation id="6704062477274546131">DNS রেজোলিউশন</translation>
+<translation id="6723839937902243910">পাওয়ার</translation>
 <translation id="6747215703636344499">বন্ধ হয়ে গেছে - আউটপুট ট্রে ভর্তি হয়ে গেছে</translation>
 <translation id="6749473226660745022">ফটো</translation>
 <translation id="6753452347192452143">ডিভাইস একটি কম্পিউটার।</translation>
 <translation id="6756731097889387912">স্ক্যানিং বাতিল করা যায়নি</translation>
+<translation id="6760706756348334449">ভলিউম কমান</translation>
 <translation id="6766275201586212568">DNS রেজোলিউশন সফল হয়নি</translation>
 <translation id="6768237774506518020">DNS রেজোলিউশনের বেশি ফেল রেট</translation>
 <translation id="680983167891198932">কী</translation>
@@ -494,6 +521,7 @@
 <translation id="7175037578838465313"><ph name="NAME" /> কনফিগার করুন</translation>
 <translation id="7177485034254901881"><ph name="MANAGER" />-এর মাধ্যমে এই <ph name="DEVICE_TYPE" /> ম্যানেজ করা হয়। অ্যাডমিনিস্ট্রেটর অন্য জায়গা থেকে ডিভাইসটি কনফিগার করতে পারেন।</translation>
 <translation id="7180611975245234373">রিফ্রেশ করুন</translation>
+<translation id="7212734716605298123">এক্সটার্নাল ডিভাইসের জন্য ফার্মওয়্যার আপডেট</translation>
 <translation id="7216409898977639127">মোবাইল পরিষেবা প্রদানকারী</translation>
 <translation id="7271040990581020067">স্ক্যানার বর্তমানে ব্যবহার করা হচ্ছে। পরে আবার চেষ্টা করুন।</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
@@ -512,6 +540,7 @@
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{স্ক্যান করা সম্পূর্ণ হয়েছে। ১টি পৃষ্ঠা স্ক্যান করা হয়েছে}one{স্ক্যান করা সম্পূর্ণ হয়েছে। {NUMBER_OF_PAGES}টি পৃষ্ঠা স্ক্যান করা হয়েছে}other{স্ক্যান করা সম্পূর্ণ হয়েছে। {NUMBER_OF_PAGES}টি পৃষ্ঠা স্ক্যান করা হয়েছে}}</translation>
 <translation id="7469648432129124067">পোর্টাল শনাক্ত করা হয়েছে</translation>
+<translation id="7481312909269577407">ফরওয়ার্ড</translation>
 <translation id="7487067081878637334">প্রযুক্তি</translation>
 <translation id="7490813197707563893">MAC ঠিকানা</translation>
 <translation id="7497215489070763236">সার্ভার CA সার্টিফিকেট</translation>
@@ -540,7 +569,6 @@
 <translation id="780301667611848630">না থাক</translation>
 <translation id="7805768142964895445">স্থিতি</translation>
 <translation id="7819857487979277519">PSK (WPA বা RSN)</translation>
-<translation id="7835501727204647447">CloudReady ইনস্টল করুন</translation>
 <translation id="7846634333498149051">কীবোর্ড</translation>
 <translation id="7856267634822906833">ব্লুটুথ টাচস্ক্রিন</translation>
 <translation id="7881066108824108340">DNS</translation>
@@ -566,6 +594,7 @@
 <translation id="8132480444149501833">ট্রাফিক কাউন্টার্স-এর অনুরোধ করুন</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> বেছে নিন</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8206859287963243715">সেলুলার</translation>
 <translation id="8208861521865154048">বিশেষ সুবিধা</translation>
 <translation id="8217675307824400706">কানেক্ট হন</translation>
@@ -606,7 +635,9 @@
 <translation id="8660881923941176839">পাউন্ড</translation>
 <translation id="8662671328352114214"><ph name="TYPE" /> নেটওয়ার্কে সংযুক্ত হন</translation>
 <translation id="8675354002693747642">আগে-থাকতে শেয়ার করা কী</translation>
+<translation id="8677859815076891398">কোনও অ্যালবাম নেই। <ph name="LINK_BEGIN" />Google Photos<ph name="LINK_END" />-এ একটি অ্যালবাম তৈরি করুন।</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> এই ফিচার ম্যানেজ করতে, 'বাঁদিক' বা 'ডানদিকের তীরচিহ্ন' বোতাম ব্যবহার করুন।</translation>
+<translation id="8712637175834984815">বুঝেছি</translation>
 <translation id="871560550817059752">প্রিন্ট করা যায়নি - প্রিন্টারে কালি নেই</translation>
 <translation id="8723108084122415655">নেটওয়ার্ক লেটেন্সির যে ঊর্ধসীমা রয়েছে, তার চেয়ে ডিফল্ট অবস্থায় নেই এমন নেটওয়ার্ক গেটওয়ের লেটেন্সি বেশি</translation>
 <translation id="8726019395068607495">বন্ধ হয়ে গেছে - প্রিন্টার ডোর খোলা আছে</translation>
@@ -647,6 +678,7 @@
 <translation id="9062831201344759865">ডিএনএস রেজোলিউশনে খুব বেশি ল্যাটেন্সি আছে</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">ব্লুটুথ</translation>
+<translation id="9082718469794970195">এই ভিডিওটি ব্যবহার করুন</translation>
 <translation id="9087578468327036362">এই কোয়েরি সম্পর্কে রিপোর্ট করুন</translation>
 <translation id="9088306295921699330">বর্তমান ব্যবহার</translation>
 <translation id="9095415590198785865">ডিভাইস একই মালিকের কাছে থাকবে</translation>
@@ -660,7 +692,6 @@
 <translation id="9149391708638971077">মেমরি টেস্ট করুন</translation>
 <translation id="9173638680043580060">এক মিনিটেরও কম সময় বাকি আছে</translation>
 <translation id="917720651393141712">পরীক্ষা করুন</translation>
-<translation id="9190063653747922532">L2TP/IPসেকে + পূর্বে-শেয়ার করা কী</translation>
 <translation id="9204237731135241582">Android অ্যাপ থেকে গেটওয়েতে যোগাযোগ করা যাচ্ছে না</translation>
 <translation id="9211490828691860325">সব ডেক্স</translation>
 <translation id="939519157834106403">SSID</translation>

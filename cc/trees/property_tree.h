@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -198,6 +199,15 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   }
   float page_scale_factor() const { return page_scale_factor_; }
 
+  void set_overscroll_node_id(int id) { overscroll_node_id_ = id; }
+  int overscroll_node_id() const { return overscroll_node_id_; }
+  void set_fixed_elements_dont_overscroll(bool value) {
+    fixed_elements_dont_overscroll_ = value;
+  }
+  bool fixed_elements_dont_overscroll() const {
+    return fixed_elements_dont_overscroll_;
+  }
+
   void set_device_scale_factor(float device_scale_factor) {
     device_scale_factor_ = device_scale_factor;
   }
@@ -235,6 +245,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   const std::vector<TransformCachedNodeData>& cached_data() const {
     return cached_data_;
   }
+
+  bool ShouldUndoOverscroll(const TransformNode* node) const;
 
   const StickyPositionNodeData* GetStickyPositionData(int node_id) const {
     return const_cast<TransformTree*>(this)->MutableStickyPositionData(node_id);
@@ -276,6 +288,8 @@ class CC_EXPORT TransformTree final : public PropertyTree<TransformNode> {
   // scale is calculated using page scale factor, device scale factor and the
   // scale factor of device transform. So we need to store them explicitly.
   float page_scale_factor_;
+  int overscroll_node_id_;
+  bool fixed_elements_dont_overscroll_;
   float device_scale_factor_;
   float device_transform_scale_factor_;
   std::vector<int> nodes_affected_by_outer_viewport_bounds_delta_;
@@ -378,16 +392,9 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
     return render_surfaces_[id].get();
   }
 
-  void SetSharedElementResourceIdForNodeId(
-      int node_id,
-      viz::SharedElementResourceId resource_id);
-  EffectNode* FindNodeFromSharedElementResourceId(
-      viz::SharedElementResourceId resource_id);
-  const EffectNode* FindNodeFromSharedElementResourceId(
-      viz::SharedElementResourceId resource_id) const;
-  void ClearSharedElementResourceIdToNodeMap() {
-    document_transition_layer_to_node_index_.clear();
-  }
+  void ClearTransitionPseudoElementEffectNodes();
+  void AddTransitionPseudoElementEffectId(int id);
+  std::vector<RenderSurfaceImpl*> GetTransitionPseudoElementRenderSurfaces();
 
   bool ContributesToDrawnSurface(int id) const;
 
@@ -430,11 +437,7 @@ class CC_EXPORT EffectTree final : public PropertyTree<EffectNode> {
   // Indexed by node id.
   std::vector<std::unique_ptr<RenderSurfaceImpl>> render_surfaces_;
 
-  // If an element is being rendered as a "live snapshot" using a
-  // DocumentTransitionLayer, this maps the layer's SharedElementResourceId to
-  // the EffectNode id associated with that layer.
-  base::flat_map<viz::SharedElementResourceId, int>
-      document_transition_layer_to_node_index_;
+  std::unordered_set<int> transition_pseudo_element_effect_nodes_;
 };
 
 // These callbacks are called in the main thread to notify changes of scroll

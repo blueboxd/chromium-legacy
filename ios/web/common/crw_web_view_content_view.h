@@ -5,6 +5,8 @@
 #ifndef IOS_WEB_COMMON_CRW_WEB_VIEW_CONTENT_VIEW_H_
 #define IOS_WEB_COMMON_CRW_WEB_VIEW_CONTENT_VIEW_H_
 
+#import <WebKit/WebKit.h>
+
 #import "ios/web/common/crw_content_view.h"
 #import "ios/web/common/crw_viewport_adjustment.h"
 
@@ -14,9 +16,15 @@
 // The webView passed to |-initWithWebView|.
 @property(nonatomic, strong, readonly) UIView* webView;
 
-// Initializes the CRWWebViewContentView to display |webView|.
+// The fullscreen state of this view
+@property(nonatomic, readonly) CrFullscreenState fullscreenState;
+
+// Initializes the CRWWebViewContentView to display |webView| and passes state
+// of fullscreen mode. This should pass in a default value of
+// CrFullscreenState (e.g., kNotInFullScreen).
 - (instancetype)initWithWebView:(UIView*)webView
                      scrollView:(UIScrollView*)scrollView
+                fullscreenState:(CrFullscreenState)fullscreenState
     NS_DESIGNATED_INITIALIZER;
 
 // Available only for testing.
@@ -26,6 +34,8 @@
 // scrollView:|.
 - (instancetype)initWithCoder:(NSCoder*)decoder NS_UNAVAILABLE;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
+
+- (void)updateFullscreenState:(CrFullscreenState)fullscreenState;
 
 @end
 

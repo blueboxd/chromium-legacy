@@ -11,9 +11,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 FakeFilePayloadListener::FakeFilePayloadListener() = default;
 
@@ -38,6 +36,4 @@ void FakeFilePayloadListener::OnFileTransferUpdate(
   received_updates_.push_back(std::move(update));
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

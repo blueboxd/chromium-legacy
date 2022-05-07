@@ -22,10 +22,10 @@
 #include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
+#include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/ash/app_mode/app_session_ash.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_data.h"
-#include "chrome/browser/ash/app_mode/kiosk_app_external_loader.h"
 #include "chrome/browser/ash/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/ash/app_mode/kiosk_cryptohome_remover.h"
 #include "chrome/browser/ash/app_mode/kiosk_external_updater.h"
@@ -38,6 +38,7 @@
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/chromeos/app_mode/chrome_kiosk_app_installer.h"
 #include "chrome/browser/chromeos/extensions/external_cache_impl.h"
 #include "chrome/browser/extensions/external_loader.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
@@ -80,7 +81,7 @@ std::string GenerateKioskAppAccountId(const std::string& app_id) {
 }
 
 // Check for presence of machine owner public key file.
-void CheckOwnerFilePresence(bool *present) {
+void CheckOwnerFilePresence(bool* present) {
   scoped_refptr<ownership::OwnerKeyUtil> util =
       OwnerSettingsServiceAshFactory::GetInstance()->GetOwnerKeyUtil();
   *present = util.get() && util->IsPublicKeyPresent();
@@ -141,6 +142,10 @@ std::string GetSwitchString(const std::string& flag_name) {
   return cmd_line.argv()[1];
 }
 
+bool IsWebstoreUpdateUrl(const std::string* url) {
+  return url && extension_urls::IsWebstoreUpdateUrl(GURL(*url));
+}
+
 }  // namespace
 
 // static
@@ -183,6 +188,8 @@ void KioskAppManager::InitializeForTesting(Overrides* overrides) {
 void KioskAppManager::Shutdown() {
   if (!GetGlobalManager().has_value())
     return;
+
+  ChromeKioskExternalLoaderBroker::Shutdown();
 
   KioskAppManager::Get()->CleanUp();
   g_test_overrides = nullptr;
@@ -584,69 +591,36 @@ bool KioskAppManager::GetCachedCrx(const std::string& app_id,
   return external_cache_->GetExtension(app_id, file_path, version);
 }
 
-void KioskAppManager::UpdatePrimaryAppLoaderPrefs(const std::string& id) {
-  primary_app_id_ = id;
-
-  if (primary_app_changed_handler_)
-    primary_app_changed_handler_.Run();
-}
-
-std::unique_ptr<base::DictionaryValue>
-KioskAppManager::GetPrimaryAppLoaderPrefs() {
-  if (!primary_app_id_.has_value())
-    return nullptr;
-
-  const std::string& id = primary_app_id_.value();
-  auto prefs = std::make_unique<base::DictionaryValue>();
-
+ChromeKioskAppInstaller::AppInstallData
+KioskAppManager::CreatePrimaryAppInstallData(const std::string& id) const {
   const base::DictionaryValue* extension = nullptr;
-  if (external_cache_->GetCachedExtensions()->GetDictionary(id, &extension)) {
-    prefs->SetKey(id, extension->Clone());
-  } else {
-    LOG(ERROR) << "Can't find app in the cached externsions"
-               << " id = " << id;
+  if (!external_cache_->GetCachedExtensions()->GetDictionary(id, &extension)) {
+    ChromeKioskAppInstaller::AppInstallData data;
+    data.id = id;
+    return data;
   }
-  return prefs;
-}
 
-void KioskAppManager::SetPrimaryAppLoaderPrefsChangedHandler(
-    base::RepeatingClosure handler) {
-  CHECK(handler.is_null() || primary_app_changed_handler_.is_null());
+  const absl::optional<bool> is_store_app_maybe =
+      extension->FindBoolKey(extensions::ExternalProviderImpl::kIsFromWebstore);
+  const std::string* external_update_url_value = extension->FindStringKey(
+      extensions::ExternalProviderImpl::kExternalUpdateUrl);
+  bool is_store_app_bool = is_store_app_maybe.value_or(false) ||
+                           IsWebstoreUpdateUrl(external_update_url_value);
 
-  primary_app_changed_handler_ = std::move(handler);
-}
+  const std::string* crx_file_location =
+      extension->FindStringKey(extensions::ExternalProviderImpl::kExternalCrx);
+  DCHECK(crx_file_location);
 
-void KioskAppManager::UpdateSecondaryAppsLoaderPrefs(
-    const std::vector<std::string>& ids) {
-  secondary_app_ids_ = ids;
+  const std::string* external_version = extension->FindStringKey(
+      extensions::ExternalProviderImpl::kExternalVersion);
+  DCHECK(external_version);
 
-  if (secondary_apps_changed_handler_)
-    secondary_apps_changed_handler_.Run();
-}
-
-std::unique_ptr<base::DictionaryValue>
-KioskAppManager::GetSecondaryAppsLoaderPrefs() {
-  if (!secondary_app_ids_.has_value())
-    return nullptr;
-
-  auto prefs = std::make_unique<base::DictionaryValue>();
-  for (const std::string& id : secondary_app_ids_.value()) {
-    base::Value extension_entry(base::Value::Type::DICTIONARY);
-    extension_entry.SetKey(
-        extensions::ExternalProviderImpl::kExternalUpdateUrl,
-        base::Value(extension_urls::GetWebstoreUpdateUrl().spec()));
-    extension_entry.SetKey(extensions::ExternalProviderImpl::kIsFromWebstore,
-                           base::Value(true));
-    prefs->SetKey(id, std::move(extension_entry));
-  }
-  return prefs;
-}
-
-void KioskAppManager::SetSecondaryAppsLoaderPrefsChangedHandler(
-    base::RepeatingClosure handler) {
-  CHECK(handler.is_null() || secondary_apps_changed_handler_.is_null());
-
-  secondary_apps_changed_handler_ = std::move(handler);
+  ChromeKioskAppInstaller::AppInstallData data;
+  data.id = id;
+  data.is_store_app = is_store_app_bool;
+  data.crx_file_location = *crx_file_location;
+  data.version = *external_version;
+  return data;
 }
 
 void KioskAppManager::UpdateExternalCache() {
@@ -736,8 +710,6 @@ void KioskAppManager::CleanUp() {
   apps_.clear();
   usb_stick_updater_.reset();
   external_cache_.reset();
-  primary_app_id_.reset();
-  secondary_app_ids_.reset();
 }
 
 const KioskAppData* KioskAppManager::GetAppData(

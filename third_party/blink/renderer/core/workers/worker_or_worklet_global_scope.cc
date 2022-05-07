@@ -211,13 +211,6 @@ WorkerOrWorkletGlobalScope::WorkerOrWorkletGlobalScope(
       reporting_proxy_(reporting_proxy) {
   GetSecurityContext().SetSecurityOrigin(std::move(origin));
 
-  // TODO(https://crbug.com/780031): When the right blink feature is disabled,
-  // we can incorrectly compute the secure context bit for this worker. It
-  // should never be true when the creator context was non-secure.
-  if (IsSecureContext() && !is_creator_secure_context_) {
-    CountUse(mojom::blink::WebFeature::kSecureContextIncorrectForWorker);
-  }
-
   SetPolicyContainer(PolicyContainer::CreateEmpty());
   if (worker_clients_)
     worker_clients_->ReattachThread();
@@ -427,13 +420,7 @@ bool WorkerOrWorkletGlobalScope::CanExecuteScripts(
 }
 
 bool WorkerOrWorkletGlobalScope::HasInsecureContextInAncestors() const {
-  if (RuntimeEnabledFeatures::SecureContextFixForWorkersEnabled()) {
-    return !is_creator_secure_context_;
-  }
-
-  // TODO(https://crbug.com/780031): Remove this branch once the feature is
-  // always enabled. This preserves previous functionality in the meantime.
-  return false;
+  return !is_creator_secure_context_;
 }
 
 void WorkerOrWorkletGlobalScope::Dispose() {
@@ -530,16 +517,12 @@ void WorkerOrWorkletGlobalScope::FetchModuleScript(
   }
 
   // credentials mode is credentials mode, and referrer policy is the empty
-  // string."
-  // TODO(domfarolino): Module worker scripts are fetched with kImportanceAuto.
-  // Priority Hints is currently non-standard, but we can assume "fetch a module
-  // worker script tree" sets the script fetch options struct's "importance" to
-  // "auto". See https://github.com/whatwg/html/issues/3670 and
-  // https://crbug.com/821464.
+  // string.
+  // Module worker scripts are fetched with fetchpriority kAuto.
   ScriptFetchOptions options(
       nonce, IntegrityMetadataSet(), integrity_attribute, parser_state,
       credentials_mode, network::mojom::ReferrerPolicy::kDefault,
-      mojom::blink::FetchImportanceMode::kImportanceAuto,
+      mojom::blink::FetchPriorityHint::kAuto,
       RenderBlockingBehavior::kNonBlocking, reject_coep_unsafe_none);
 
   Modulator* modulator = Modulator::From(ScriptController()->GetScriptState());

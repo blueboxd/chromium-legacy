@@ -16,8 +16,11 @@ assert(is_chromeos_ash, "Non-ChromeOS builds cannot depend on //ash")
 source_set("unit_tests") {
   testonly = true
   deps = [
+    "//ash/services/cellular_setup:unit_tests",
+    "//ash/services/device_sync:unit_tests",
     "//ash/services/ime:services_unittests",
     "//ash/services/ime:unit_tests",
+    "//ash/services/multidevice_setup:unit_tests",
     "//ash/services/nearby/public/cpp:unit_tests",
     "//ash/services/quick_pair:unit_tests",
     "//ash/services/secure_channel:unit_tests",

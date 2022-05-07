@@ -1489,10 +1489,6 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
   RuntimeEnabledFeatures::SetAccelerated2dCanvasEnabled(
       prefs.accelerated_2d_canvas_enabled);
 
-  // Enable new canvas 2d api features
-  RuntimeEnabledFeatures::SetNewCanvas2DAPIEnabled(
-      prefs.new_canvas_2d_api_enabled);
-
   RuntimeEnabledFeatures::SetCanvas2dLayersEnabled(
       prefs.canvas_2d_layers_enabled);
 
@@ -1663,6 +1659,7 @@ void WebView::ApplyWebPreferences(const web_pref::WebPreferences& prefs,
       prefs.scroll_top_left_interop_enabled);
   RuntimeEnabledFeatures::SetAcceleratedSmallCanvasesEnabled(
       !prefs.disable_accelerated_small_canvases);
+  RuntimeEnabledFeatures::SetWebAuthEnabled(!prefs.disable_webauthn);
 #endif  // BUILDFLAG(IS_ANDROID)
   settings->SetForceDarkModeEnabled(prefs.force_dark_mode_enabled);
 
@@ -2426,7 +2423,7 @@ void WebViewImpl::SetPageLifecycleStateInternal(
          frame = frame->Tree().TraverseNext()) {
       auto* local_frame = DynamicTo<LocalFrame>(frame);
       if (local_frame && local_frame->View()) {
-        local_frame->IncrementNavigationCounter();
+        local_frame->IncrementNavigationId();
       }
     }
   }

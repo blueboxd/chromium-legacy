@@ -6,20 +6,15 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <xkbcommon/xkbcommon-names.h>
 
 #include <tuple>
 
-#include "base/cxx17_backports.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/dom/dom_code.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/ozone/layout/scoped_keyboard_layout_engine.h"
-
-extern "C" __attribute__((weak)) decltype(
-    xkb_keymap_key_get_mods_for_level) xkb_keymap_key_get_mods_for_level;
 
 namespace ui {
 
@@ -71,8 +66,8 @@ class VkTestXkbKeyboardLayoutEngine : public XkbKeyboardLayoutEngine {
     static const int kTestFlags[] = {EF_SHIFT_DOWN, EF_ALTGR_DOWN,
                                      EF_MOD3_DOWN};
     xkb_flag_map_.clear();
-    xkb_flag_map_.resize(base::size(kTestFlags));
-    for (size_t i = 0; i < base::size(kTestFlags); ++i) {
+    xkb_flag_map_.resize(std::size(kTestFlags));
+    for (size_t i = 0; i < std::size(kTestFlags); ++i) {
       XkbFlagMapEntry e = {kTestFlags[i],
                            static_cast<xkb_mod_mask_t>(kTestFlags[i])};
       xkb_flag_map_.push_back(e);
@@ -773,7 +768,7 @@ TEST_F(XkbLayoutEngineVkTest, KeyboardCodeForPrintable) {
 
   };
 
-  for (size_t i = 0; i < base::size(kVkeyTestCase); ++i) {
+  for (size_t i = 0; i < std::size(kVkeyTestCase); ++i) {
     SCOPED_TRACE(i);
     const auto& e = kVkeyTestCase[i];
     layout_engine_->SetEntry(&e.test);
@@ -909,7 +904,7 @@ TEST_F(XkbLayoutEngineVkTest, XkbRuleNamesForLayoutName) {
       /* 50 */ {"ge", "ge", ""},
       /* 51 */ {"mn", "mn", ""},
       /* 52 */ {"ie", "ie", ""}};
-  for (size_t i = 0; i < base::size(kVkeyTestCase); ++i) {
+  for (size_t i = 0; i < std::size(kVkeyTestCase); ++i) {
     SCOPED_TRACE(i);
     const VkTestXkbKeyboardLayoutEngine::RuleNames* e = &kVkeyTestCase[i];
     std::string layout_id;
@@ -942,39 +937,20 @@ TEST_F(XkbLayoutEngineVkTest, GetDomCodeByKeysym) {
                                                std::strlen(layout.get()));
   }
 
-  constexpr uint32_t kShiftMask = 1;
   constexpr struct {
     uint32_t keysym;
-    uint32_t modifiers;
     DomCode dom_code;
   } kTestCases[] = {
-      {65307, 0, ui::DomCode::ESCAPE},       {65288, 0, ui::DomCode::BACKSPACE},
-      {65293, 0, ui::DomCode::ENTER},        {65289, 0, ui::DomCode::TAB},
-      {65056, kShiftMask, ui::DomCode::TAB},
+      {65307, ui::DomCode::ESCAPE}, {65288, ui::DomCode::BACKSPACE},
+      {65293, ui::DomCode::ENTER},  {65289, ui::DomCode::TAB},
+      {65056, ui::DomCode::TAB},  // SHIFT+TAB.
+      {65289, ui::DomCode::TAB},  // CTRL+TAB.
   };
 
   for (const auto& test_case : kTestCases) {
     SCOPED_TRACE(test_case.keysym);
-    EXPECT_EQ(test_case.dom_code, layout_engine_->GetDomCodeByKeysym(
-                                      test_case.keysym, test_case.modifiers));
-  }
-
-  // Test conflict keysym case. We use '<' as a testing sample.
-  constexpr uint32_t kLessThanCode = 60;
-  if (xkb_keymap_key_get_mods_for_level) {
-    // If there's no modifier, on pc101 us layout, intl_backslash is expected.
-    EXPECT_EQ(ui::DomCode::INTL_BACKSLASH,
-              layout_engine_->GetDomCodeByKeysym(kLessThanCode, 0));
-    // If there's shift modifier, comma key is expected.
-    EXPECT_EQ(ui::DomCode::COMMA,
-              layout_engine_->GetDomCodeByKeysym(kLessThanCode, kShiftMask));
-  } else {
-    // If xkb_keymap_key_get_mods_for_level is unavailable, fallback to older
-    // implementation, which ignores modifiers.
-    EXPECT_EQ(ui::DomCode::COMMA,
-              layout_engine_->GetDomCodeByKeysym(kLessThanCode, 0));
-    EXPECT_EQ(ui::DomCode::COMMA,
-              layout_engine_->GetDomCodeByKeysym(kLessThanCode, kShiftMask));
+    EXPECT_EQ(test_case.dom_code,
+              layout_engine_->GetDomCodeByKeysym(test_case.keysym));
   }
 }
 

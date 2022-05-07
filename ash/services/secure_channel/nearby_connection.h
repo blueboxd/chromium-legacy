@@ -17,9 +17,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Connection implementation which creates a connection to a remote device via
 // mojom::NearbyConnector. Implements mojom::NearbyMessageReceiver to receive
@@ -128,8 +126,6 @@ class NearbyConnection : public Connection,
   base::WeakPtrFactory<NearbyConnection> weak_ptr_factory_{this};
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_NEARBY_CONNECTION_H_

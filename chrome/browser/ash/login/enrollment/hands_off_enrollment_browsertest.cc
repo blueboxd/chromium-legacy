@@ -14,8 +14,6 @@
 #include "chrome/browser/ash/login/test/oobe_screen_waiter.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/policy/enrollment_status.h"
-#include "chrome/browser/ui/webui/chromeos/login/network_screen_handler.h"
-#include "chrome/browser/ui/webui/chromeos/login/welcome_screen_handler.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/shill/shill_service_client.h"
@@ -41,7 +39,7 @@ class HandsOffEnrollmentTest : public MixinBasedInProcessBrowserTest {
   HandsOffEnrollmentTest& operator=(const HandsOffEnrollmentTest&) = delete;
 
  protected:
-  HandsOffEnrollmentTest() {}
+  HandsOffEnrollmentTest() = default;
   ~HandsOffEnrollmentTest() override = default;
 
   // InProcessBrowserTest:
@@ -49,8 +47,7 @@ class HandsOffEnrollmentTest : public MixinBasedInProcessBrowserTest {
     MixinBasedInProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         switches::kEnterpriseEnableZeroTouchEnrollment, "hands-off");
-    command_line->AppendSwitch(
-        switches::kDisableOOBENetworkScreenSkippingForTesting);
+    command_line->AppendSwitch(switches::kLoginManager);
   }
 
   void SetUpOnMainThread() override {
@@ -93,7 +90,9 @@ class HandsOffEnrollmentTest : public MixinBasedInProcessBrowserTest {
   test::EnrollmentHelperMixin enrollment_helper_{&mixin_host_};
 };
 
-IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest, NetworkConnectionReady) {
+// TODO(crbug.com/1303608): Test is flaky.
+IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest,
+                       DISABLED_NetworkConnectionReady) {
   enrollment_helper_.ExpectEnrollmentMode(
       policy::EnrollmentConfig::MODE_ATTESTATION_LOCAL_FORCED);
   enrollment_helper_.ExpectAttestationEnrollmentSuccess();
@@ -138,7 +137,8 @@ IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest, WaitForNetworkConnection) {
   EXPECT_TRUE(StartupUtils::IsDeviceRegistered());
 }
 
-IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest, EnrollmentError) {
+// TODO(crbug.com/1303608): Test is flaky.
+IN_PROC_BROWSER_TEST_F(HandsOffEnrollmentTest, DISABLED_EnrollmentError) {
   enrollment_helper_.SetupClearAuth();
   const policy::EnrollmentStatus enrollment_status =
       policy::EnrollmentStatus::ForRegistrationError(

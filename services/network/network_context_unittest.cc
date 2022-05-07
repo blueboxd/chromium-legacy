@@ -145,7 +145,6 @@
 #if BUILDFLAG(IS_CT_SUPPORTED)
 #include "components/certificate_transparency/chrome_ct_policy_enforcer.h"
 #include "services/network/public/mojom/ct_log_info.mojom.h"
-#include "services/network/sct_auditing/sct_auditing_cache.h"
 #endif
 
 #if BUILDFLAG(ENABLE_REPORTING)
@@ -522,9 +521,8 @@ class NetworkContextTest : public testing::Test {
   }
 
   GURL GetHttpUrlFromHttps(const GURL& https_url) {
-    url::Replacements<char> replacements;
-    const char http[] = "http";
-    replacements.SetScheme(http, url::Component(0, strlen(http)));
+    GURL::Replacements replacements;
+    replacements.SetSchemeStr("http");
     return https_url.ReplaceComponents(replacements);
   }
 
@@ -1841,14 +1839,14 @@ TEST_F(NetworkContextTest, ClearHostCache) {
           base::TimeTicks::Now(), base::Days(1));
     }
     // Sanity check.
-    EXPECT_EQ(base::size(kDomains) * 2, host_cache->entries().size());
+    EXPECT_EQ(std::size(kDomains) * 2, host_cache->entries().size());
 
     // Set up and run the filter, according to |test_case|.
     mojom::ClearDataFilterPtr clear_data_filter;
     if (!test_case.null_filter) {
       clear_data_filter = mojom::ClearDataFilter::New();
       clear_data_filter->type = test_case.type;
-      for (size_t i = 0; i < base::size(kDomains); ++i) {
+      for (size_t i = 0; i < std::size(kDomains); ++i) {
         if (test_case.filter_domains & (1 << i))
           clear_data_filter->domains.push_back(kDomains[i]);
       }
@@ -1860,7 +1858,7 @@ TEST_F(NetworkContextTest, ClearHostCache) {
 
     // Check that only the expected domains remain in the cache.
     size_t expected_cached = 0;
-    for (size_t i = 0; i < base::size(kDomains); ++i) {
+    for (size_t i = 0; i < std::size(kDomains); ++i) {
       bool expect_domain_cached =
           ((test_case.expected_cached_domains & (1 << i)) != 0);
       EXPECT_EQ(expect_domain_cached,
@@ -6343,7 +6341,7 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
   url::SchemeHostPort scheme_host_port(GURL("http://example.test/"));
   net::AuthChallengeInfo challenge;
   challenge.is_proxy = false;
-  challenge.challenger = url::Origin::Create(scheme_host_port.GetURL());
+  challenge.challenger = scheme_host_port;
   challenge.scheme = "basic";
   challenge.realm = "testrealm";
   const char16_t kUsername[] = u"test_user";
@@ -6373,7 +6371,7 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntry) {
   // Add an AUTH_PROXY cache entry.
   url::SchemeHostPort proxy_scheme_host_port(GURL("http://proxy.test/"));
   challenge.is_proxy = true;
-  challenge.challenger = url::Origin::Create(proxy_scheme_host_port.GetURL());
+  challenge.challenger = proxy_scheme_host_port;
   const char16_t kProxyUsername[] = u"test_proxy_user";
   const char16_t kProxyPassword[] = u"test_proxy_pass";
   ASSERT_FALSE(cache->Lookup(proxy_scheme_host_port, net::HttpAuth::AUTH_PROXY,
@@ -6414,14 +6412,13 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntryWithNetworkIsolationKey) {
   ASSERT_TRUE(cache->key_server_entries_by_network_isolation_key());
 
   // Add an AUTH_SERVER cache entry.
-  GURL url("http://example.test/");
-  url::Origin origin = url::Origin::Create(url);
+  url::Origin origin = url::Origin::Create(GURL("http://example.test/"));
   url::SchemeHostPort scheme_host_port =
       origin.GetTupleOrPrecursorTupleIfOpaque();
   net::NetworkIsolationKey network_isolation_key(origin, origin);
   net::AuthChallengeInfo challenge;
   challenge.is_proxy = false;
-  challenge.challenger = url::Origin::Create(scheme_host_port.GetURL());
+  challenge.challenger = scheme_host_port;
   challenge.scheme = "basic";
   challenge.realm = "testrealm";
   const char16_t kUsername[] = u"test_user";
@@ -6450,14 +6447,14 @@ TEST_F(NetworkContextTest, AddHttpAuthCacheEntryWithNetworkIsolationKey) {
 }
 
 TEST_F(NetworkContextTest, CopyHttpAuthCacheProxyEntries) {
-  const GURL kURL("http://foo.com");
+  const url::SchemeHostPort kSchemeHostPort(GURL("http://foo.com"));
 
   std::unique_ptr<NetworkContext> network_context1 =
       CreateContextWithParams(CreateNetworkContextParamsForTesting());
 
   net::AuthChallengeInfo challenge;
   challenge.is_proxy = true;
-  challenge.challenger = url::Origin::Create(kURL);
+  challenge.challenger = kSchemeHostPort;
   challenge.scheme = "basic";
   challenge.realm = "testrealm";
   const char16_t kProxyUsername[] = u"proxy_user";
@@ -6509,13 +6506,11 @@ TEST_F(NetworkContextTest, CopyHttpAuthCacheProxyEntries) {
                                   ->GetSession()
                                   ->http_auth_cache();
   // The server credentials should not have been copied.
-  EXPECT_FALSE(cache->Lookup(
-      challenge.challenger.GetTupleOrPrecursorTupleIfOpaque(),
-      net::HttpAuth::AUTH_SERVER, challenge.realm,
-      net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey()));
+  EXPECT_FALSE(cache->Lookup(kSchemeHostPort, net::HttpAuth::AUTH_SERVER,
+                             challenge.realm, net::HttpAuth::AUTH_SCHEME_BASIC,
+                             net::NetworkIsolationKey()));
   net::HttpAuthCache::Entry* entry = cache->Lookup(
-      challenge.challenger.GetTupleOrPrecursorTupleIfOpaque(),
-      net::HttpAuth::AUTH_PROXY, challenge.realm,
+      kSchemeHostPort, net::HttpAuth::AUTH_PROXY, challenge.realm,
       net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey());
   ASSERT_TRUE(entry);
   EXPECT_EQ(kProxyUsername, entry->credentials().username());
@@ -6523,7 +6518,7 @@ TEST_F(NetworkContextTest, CopyHttpAuthCacheProxyEntries) {
 }
 
 TEST_F(NetworkContextTest, SplitAuthCacheByNetworkIsolationKey) {
-  const GURL kURL("http://foo.com");
+  const url::SchemeHostPort kSchemeHostPort(GURL("http://foo.com"));
 
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateNetworkContextParamsForTesting());
@@ -6537,7 +6532,7 @@ TEST_F(NetworkContextTest, SplitAuthCacheByNetworkIsolationKey) {
   // Add proxy credentials, which should never be deleted.
   net::AuthChallengeInfo challenge;
   challenge.is_proxy = true;
-  challenge.challenger = url::Origin::Create(kURL);
+  challenge.challenger = kSchemeHostPort;
   challenge.scheme = "basic";
   challenge.realm = "testrealm";
   const char16_t kProxyUsername[] = u"proxy_user";
@@ -6576,14 +6571,12 @@ TEST_F(NetworkContextTest, SplitAuthCacheByNetworkIsolationKey) {
 
     // The server credentials should have been deleted.
     EXPECT_FALSE(cache->Lookup(
-        challenge.challenger.GetTupleOrPrecursorTupleIfOpaque(),
-        net::HttpAuth::AUTH_SERVER, challenge.realm,
+        kSchemeHostPort, net::HttpAuth::AUTH_SERVER, challenge.realm,
         net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey()));
 
     // The proxy credentials should still be in the cache.
     net::HttpAuthCache::Entry* entry = cache->Lookup(
-        challenge.challenger.GetTupleOrPrecursorTupleIfOpaque(),
-        net::HttpAuth::AUTH_PROXY, challenge.realm,
+        kSchemeHostPort, net::HttpAuth::AUTH_PROXY, challenge.realm,
         net::HttpAuth::AUTH_SCHEME_BASIC, net::NetworkIsolationKey());
     ASSERT_TRUE(entry);
     EXPECT_EQ(kProxyUsername, entry->credentials().username());
@@ -7436,54 +7429,6 @@ TEST_F(NetworkContextTest, HttpAuthUrlFilter) {
   EXPECT_TRUE(is_url_allowed_to_use_auth_schemes(kGoogleSubdomain));
   EXPECT_TRUE(is_url_allowed_to_use_auth_schemes(kBlocked));
 }
-
-#if BUILDFLAG(IS_CT_SUPPORTED)
-// Tests that NetworkContext doesn't enqueue SCT reports for auditing if the
-// feature is disabled.
-TEST_F(NetworkContextTest, DisableSCTReportAuditing) {
-  const char kHostname[] = "foo.test.";
-  scoped_refptr<net::X509Certificate> chain =
-      net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
-  ASSERT_TRUE(chain.get());
-  const net::HostPortPair kHostPortPair = net::HostPortPair(kHostname, 0);
-
-  scoped_refptr<net::ct::SignedCertificateTimestamp> sct(
-      new net::ct::SignedCertificateTimestamp());
-  sct->version = net::ct::SignedCertificateTimestamp::V1;
-
-  // The particular value of the log ID doesn't matter; it just has to be the
-  // correct length.
-  const unsigned char kTestLogId[] = {
-      0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-      0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-      0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01};
-  const std::string log_id(reinterpret_cast<const char*>(kTestLogId),
-                           sizeof(kTestLogId));
-  sct->log_id = log_id;
-  sct->timestamp = base::Time::Now();
-  sct->origin = net::ct::SignedCertificateTimestamp::SCT_EMBEDDED;
-  net::SignedCertificateTimestampAndStatusList sct_list;
-  sct_list.push_back(
-      net::SignedCertificateTimestampAndStatus(sct, net::ct::SCT_STATUS_OK));
-
-  for (bool enabled : {false, true}) {
-    SCOPED_TRACE(testing::Message() << "Enabled: " << enabled);
-    base::HistogramTester histograms;
-    mojom::NetworkContextParamsPtr params =
-        CreateNetworkContextParamsForTesting();
-    params->sct_auditing_mode =
-        enabled ? mojom::SCTAuditingMode::kEnhancedSafeBrowsingReporting
-                : mojom::SCTAuditingMode::kDisabled;
-    std::unique_ptr<NetworkContext> network_context =
-        CreateContextWithParams(std::move(params));
-    network_context->MaybeEnqueueSCTReport(kHostPortPair, chain.get(),
-                                           sct_list);
-    histograms.ExpectTotalCount("Security.SCTAuditing.OptIn.ReportSampled",
-                                enabled ? 1 : 0);
-    network_service()->ClearSCTAuditingCache();
-  }
-}
-#endif  // BUILDFLAG(IS_CT_SUPPORTED)
 
 }  // namespace
 

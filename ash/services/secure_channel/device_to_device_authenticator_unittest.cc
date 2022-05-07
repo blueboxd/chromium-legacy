@@ -27,9 +27,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 namespace {
 
@@ -369,6 +367,4 @@ TEST_F(SecureChannelDeviceToDeviceAuthenticatorTest,
   connection_.OnBytesReceived(wire_message.Serialize());
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

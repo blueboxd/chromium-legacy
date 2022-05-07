@@ -266,6 +266,10 @@ bool IsAACSupported(const AudioType& type) {
 #if BUILDFLAG(IS_ANDROID)
   return base::android::BuildInfo::GetInstance()->sdk_int() >=
          base::android::SDK_VERSION_P;
+#elif BUILDFLAG(IS_MAC)
+  if (__builtin_available(macOS 10.15, *))
+    return true;
+  return false;
 #else
   return false;
 #endif
@@ -355,10 +359,15 @@ bool IsDefaultSupportedAudioType(const AudioType& type) {
     case AudioCodec::kALAC:
     case AudioCodec::kAC3:
     case AudioCodec::kMpegHAudio:
-    case AudioCodec::kDTS:
-    case AudioCodec::kDTSXP2:
     case AudioCodec::kUnknown:
       return false;
+    case AudioCodec::kDTS:
+    case AudioCodec::kDTSXP2:
+#if BUILDFLAG(ENABLE_PLATFORM_DTS_AUDIO)
+      return true;
+#else
+      return false;
+#endif
   }
 }
 

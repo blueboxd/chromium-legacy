@@ -18,6 +18,8 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
+class PrefService;
+
 namespace optimization_guide {
 namespace features {
 
@@ -31,6 +33,7 @@ extern const base::Feature kOptimizationGuideModelDownloading;
 extern const base::Feature kPageContentAnnotations;
 extern const base::Feature kPageEntitiesPageContentAnnotations;
 extern const base::Feature kPageVisibilityPageContentAnnotations;
+extern const base::Feature kPageEntitiesModelBypassFilters;
 extern const base::Feature kPageTextExtraction;
 extern const base::Feature kPushNotifications;
 extern const base::Feature kOptimizationGuideMetadataValidation;
@@ -38,6 +41,7 @@ extern const base::Feature kPageTopicsBatchAnnotations;
 extern const base::Feature kPageVisibilityBatchAnnotations;
 extern const base::Feature kUseLocalPageEntitiesMetadataProvider;
 extern const base::Feature kBatchAnnotationsValidation;
+extern const base::Feature kPreventLongRunningPredictionModels;
 
 // The grace period duration for how long to give outstanding page text dump
 // requests to respond after DidFinishLoad.
@@ -77,7 +81,7 @@ bool IsOptimizationHintsEnabled();
 
 // Returns true if the feature to fetch from the remote Optimization Guide
 // Service is enabled.
-bool IsRemoteFetchingEnabled();
+bool IsRemoteFetchingEnabled(PrefService* pref_service);
 
 // Returns true if the feature to fetch data for users that have consented to
 // anonymous data collection is enabled but are not Data Saver users.
@@ -189,6 +193,9 @@ base::TimeDelta PredictionModelFetchStartupDelay();
 // refresh models.
 base::TimeDelta PredictionModelFetchInterval();
 
+// The timeout for executing models, if enabled.
+absl::optional<base::TimeDelta> ModelExecutionTimeout();
+
 // Returns a set of field trial name hashes that can be sent in the request to
 // the remote Optimization Guide Service if the client is in one of the
 // specified field trials.
@@ -226,8 +233,9 @@ bool ShouldExtractRelatedSearches();
 // for a user using |locale| as their browser language.
 bool ShouldExecutePageEntitiesModelOnPageContent(const std::string& locale);
 
-// Returns whether the page entities model should be reset on shutdown.
-bool ShouldResetPageEntitiesModelOnShutdown();
+// Whether the path to the filters should be provided to the page entities
+// model.
+bool ShouldProvideFilterPathForPageEntitiesModel();
 
 // Returns whether the page visibility model should be executed on page content
 // for a user using |locale| as their browser language.
@@ -275,6 +283,10 @@ base::TimeDelta BatchAnnotationValidationStartupDelay();
 
 // The size of batches to run for validation.
 size_t BatchAnnotationsValidationBatchSize();
+
+// True if the batch annotations feature should use the PageTopics annotation
+// type instead of ContentVisibility.
+bool BatchAnnotationsValidationUsePageTopics();
 
 // The maximum size of the visit annotation cache.
 size_t MaxVisitAnnotationCacheSize();

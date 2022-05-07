@@ -21,12 +21,11 @@
 #include "mojo/public/cpp/bindings/connection_group.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
-#include "mojo/public/cpp/bindings/interface_ptr_info.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/lib/pending_receiver_state.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/bindings/pending_flush.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "mojo/public/cpp/system/core.h"
 
@@ -93,7 +92,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) BindingStateBase {
                     bool passes_associated_kinds,
                     bool has_sync_methods,
                     MessageReceiverWithResponderStatus* stub,
-                    uint32_t interface_version);
+                    uint32_t interface_version,
+                    MessageToStableIPCHashCallback ipc_hash_callback,
+                    MessageToMethodNameCallback method_name_callback);
 
   scoped_refptr<internal::MultiplexRouter> router_;
   std::unique_ptr<InterfaceEndpointClient> endpoint_client_;
@@ -121,13 +122,14 @@ class BindingState : public BindingStateBase {
         std::move(receiver_state), runner, Interface::Name_,
         std::make_unique<typename Interface::RequestValidator_>(),
         Interface::PassesAssociatedKinds_, Interface::HasSyncMethods_, &stub_,
-        Interface::Version_);
+        Interface::Version_, Interface::MessageToStableIPCHash_,
+        Interface::MessageToMethodName_);
   }
 
-  InterfaceRequest<Interface> Unbind() {
+  PendingReceiver<Interface> Unbind() {
     weak_ptr_factory_.InvalidateWeakPtrs();
     endpoint_client_.reset();
-    InterfaceRequest<Interface> request(router_->PassMessagePipe());
+    PendingReceiver<Interface> request(router_->PassMessagePipe());
     router_ = nullptr;
     return request;
   }

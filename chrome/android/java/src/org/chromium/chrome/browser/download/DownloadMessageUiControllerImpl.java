@@ -26,7 +26,6 @@ import org.chromium.chrome.browser.download.DownloadLaterMetrics.DownloadLaterUi
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper;
 import org.chromium.chrome.browser.download.dialogs.DownloadLaterDialogHelper.Source;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.profiles.OTRProfileID;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.browser_ui.util.date.CalendarUtils;
@@ -34,6 +33,7 @@ import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.messages.MessageIdentifier;
+import org.chromium.components.messages.PrimaryActionClickBehavior;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
@@ -408,8 +408,6 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
      */
     private void computeNextStepForUpdate(OfflineItem updatedItem, boolean forceShowDownloadStarted,
             boolean userCancel, boolean itemWasRemoved) {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_INFOBAR)) return;
-
         if (updatedItem != null && mIgnoredItems.contains(updatedItem.id)) return;
 
         preProcessUpdatedItem(updatedItem);
@@ -720,7 +718,6 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
      */
     @VisibleForTesting
     protected void showMessage(@UiState int state, DownloadProgressMessageUiData info) {
-        assert ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_PROGRESS_MESSAGE);
         if (mDelegate.maybeSwitchToFocusedActivity()) {
             closePreviousMessage();
         }
@@ -769,11 +766,6 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
         mPropertyModel.set(MessageBannerProperties.ON_DISMISSED, this::onMessageDismissed);
         mPropertyModel.set(MessageBannerProperties.ON_PRIMARY_ACTION,
                 () -> onPrimaryAction(info.id, info.schedule));
-        if (getMessageDismissDurationMs() > 0) {
-            mPropertyModel.set(
-                    MessageBannerProperties.DISMISSAL_DURATION, getMessageDismissDurationMs());
-        }
-
         final MessageDispatcher dispatcher = getMessageDispatcher();
         mDismissRunnable = () -> {
             if (dispatcher == null) return;
@@ -896,7 +888,8 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
         mNotificationIds.remove(contentId);
     }
 
-    private void onPrimaryAction(ContentId itemId, final OfflineItemSchedule schedule) {
+    private @PrimaryActionClickBehavior int onPrimaryAction(
+            ContentId itemId, final OfflineItemSchedule schedule) {
         OfflineItem offlineItem = mTrackedItems.remove(itemId);
         removeNotification(itemId);
         if (itemId != null && schedule != null) {
@@ -914,6 +907,7 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
                     getOTRProfileIDForTrackedItems(), DownloadOpenSource.DOWNLOAD_PROGRESS_MESSAGE);
             recordLinkClicked(false /*openItem*/);
         }
+        return PrimaryActionClickBehavior.DISMISS_IMMEDIATELY;
     }
 
     private OTRProfileID getOTRProfileIDForTrackedItems() {
@@ -948,13 +942,6 @@ public class DownloadMessageUiControllerImpl implements DownloadMessageUiControl
                     if (newSchedule == null) return;
                     OfflineContentAggregatorFactory.get().changeSchedule(id, newSchedule);
                 });
-    }
-
-    private long getMessageDismissDurationMs() {
-        return ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
-                       ChromeFeatureList.DOWNLOAD_PROGRESS_MESSAGE,
-                       "message_dismiss_duration_seconds", -1)
-                * 1000;
     }
 
     private static void recordMessageState(@UiState int state, DownloadProgressMessageUiData info) {

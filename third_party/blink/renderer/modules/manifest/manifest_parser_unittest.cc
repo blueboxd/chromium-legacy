@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
@@ -35,7 +36,7 @@ class ManifestParserTest : public testing::Test {
                                                    const KURL& manifest_url,
                                                    const KURL& document_url) {
     ManifestParser parser(data, manifest_url, document_url,
-                          /*feature_context=*/nullptr);
+                          /*execution_context=*/nullptr);
     parser.Parse();
     Vector<mojom::blink::ManifestErrorPtr> errors;
     parser.TakeErrors(&errors);
@@ -71,7 +72,7 @@ TEST_F(ManifestParserTest, CrashTest) {
   // Passing temporary variables should not crash.
   const String json = R"({"start_url": "/"})";
   KURL url("http://example.com");
-  ManifestParser parser(json, url, url, /*feature_context=*/nullptr);
+  ManifestParser parser(json, url, url, /*execution_context=*/nullptr);
 
   bool has_comments = parser.Parse();
   EXPECT_FALSE(has_comments);
@@ -90,7 +91,7 @@ TEST_F(ManifestParserTest, HasComments) {
         "start_url": "/"
       })";
   KURL url("http://example.com");
-  ManifestParser parser(json, url, url, /*feature_context=*/nullptr);
+  ManifestParser parser(json, url, url, /*execution_context=*/nullptr);
 
   bool has_comments = parser.Parse();
   EXPECT_TRUE(has_comments);
@@ -2466,6 +2467,45 @@ TEST_F(ManifestParserTest, FileHandlerParseRules) {
     EXPECT_TRUE(accept_map.Contains(".graph2"));
     EXPECT_TRUE(accept_map.Contains(".graph3"));
     EXPECT_TRUE(accept_map.Contains(".graph4"));
+  }
+
+  // Test `launch_type` parsing and default.
+  {
+    auto& manifest = ParseManifest(
+        R"({
+          "file_handlers": [
+            {
+              "action": "/files",
+              "accept": {
+                "image/png": ".png"
+              },
+              "launch_type": "multiple-clients"
+            },
+            {
+              "action": "/files2",
+              "accept": {
+                "image/jpeg": ".jpeg"
+              },
+              "launch_type": "single-client"
+            },
+            {
+              "action": "/files3",
+              "accept": {
+                "text/plain": ".txt"
+              }
+            }
+          ]
+        })");
+    EXPECT_FALSE(IsManifestEmpty(manifest));
+    EXPECT_FALSE(manifest->file_handlers.IsEmpty());
+    ASSERT_EQ(3U, manifest->file_handlers.size());
+    EXPECT_EQ(mojom::blink::ManifestFileHandler::LaunchType::kMultipleClients,
+              manifest->file_handlers[0]->launch_type);
+    EXPECT_EQ(mojom::blink::ManifestFileHandler::LaunchType::kSingleClient,
+              manifest->file_handlers[1]->launch_type);
+    EXPECT_EQ(mojom::blink::ManifestFileHandler::LaunchType::kSingleClient,
+              manifest->file_handlers[2]->launch_type);
+    EXPECT_EQ(0u, GetErrorCount());
   }
 }
 

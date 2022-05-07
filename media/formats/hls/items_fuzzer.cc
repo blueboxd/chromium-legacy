@@ -19,8 +19,9 @@ bool IsSubstring(base::StringPiece sub, base::StringPiece base) {
 
 media::hls::SourceString GetItemContent(media::hls::TagItem tag) {
   // Ensure the tag kind returned was valid
-  CHECK(tag.kind >= media::hls::TagKind::kUnknown &&
-        tag.kind <= media::hls::TagKind::kMaxValue);
+  auto kind = media::hls::GetTagKind(tag.name);
+  CHECK(kind >= media::hls::TagKind::kUnknown &&
+        kind <= media::hls::TagKind::kMaxValue);
 
   return tag.content;
 }
@@ -33,8 +34,8 @@ media::hls::SourceString GetItemContent(media::hls::UriItem uri) {
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   // Create a StringPiece from the given input
-  const base::StringPiece manifest(reinterpret_cast<const char*>(data), size);
-  media::hls::SourceLineIterator iterator{manifest};
+  const base::StringPiece source(reinterpret_cast<const char*>(data), size);
+  media::hls::SourceLineIterator iterator{source};
 
   while (true) {
     const auto prev_iterator = iterator;
@@ -45,7 +46,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       CHECK(result == media::hls::ParseStatusCode::kReachedEOF ||
             result == media::hls::ParseStatusCode::kInvalidEOL);
 
-      // Ensure that `manifest` is still a substring of the previous manifest
+      // Ensure that `source` is still a substring of the previous source
       CHECK(IsSubstring(iterator.SourceForTesting(),
                         prev_iterator.SourceForTesting()));
       CHECK(iterator.CurrentLineForTesting() >=

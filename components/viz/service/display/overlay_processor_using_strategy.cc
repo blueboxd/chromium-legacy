@@ -18,6 +18,7 @@
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "components/viz/common/display/overlay_strategy.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/common/quads/quad_list.h"
@@ -86,14 +87,8 @@ static void LogStrategyEnumUMA(OverlayStrategy strategy) {
   UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.OverlayStrategy", strategy);
 }
 
-OverlayProcessorUsingStrategy::ProposedCandidateKey
-OverlayProcessorUsingStrategy::ToProposeKey(
-    const OverlayProposedCandidate& proposed) {
-  return {proposed.candidate.tracking_id, proposed.strategy->GetUMAEnum()};
-}
-
 OverlayProcessorUsingStrategy::OverlayProcessorUsingStrategy()
-    : max_overlays_considered_(features::MaxOverlaysConsidered()) {}
+    : max_overlays_config_(features::MaxOverlaysConsidered()) {}
 
 OverlayProcessorUsingStrategy::~OverlayProcessorUsingStrategy() = default;
 
@@ -123,7 +118,7 @@ void OverlayProcessorUsingStrategy::SetFrameSequenceNumber(
 void OverlayProcessorUsingStrategy::ProcessForOverlays(
     DisplayResourceProvider* resource_provider,
     AggregatedRenderPassList* render_passes,
-    const skia::Matrix44& output_color_matrix,
+    const SkM44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap& render_pass_filters,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
@@ -405,7 +400,7 @@ void OverlayProcessorUsingStrategy::AdjustOutputSurfaceOverlay(
 }
 
 bool OverlayProcessorUsingStrategy::AttemptWithStrategies(
-    const skia::Matrix44& output_color_matrix,
+    const SkM44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
@@ -448,7 +443,7 @@ void OverlayProcessorUsingStrategy::SortProposedOverlayCandidatesPrioritized(
   // This loop fills in data for the heuristic sort and thresholds candidates.
   for (auto it = proposed_candidates->begin();
        it != proposed_candidates->end();) {
-    auto key = ToProposeKey(*it);
+    auto key = OverlayProposedCandidate::ToProposeKey(*it);
     // If no tracking exists we create a new one here.
     auto& track_data = tracked_candidates_[key];
     DBG_DRAW_TEXT_OPT(
@@ -533,7 +528,7 @@ void OverlayProcessorUsingStrategy::SortProposedOverlayCandidatesPrioritized(
 }
 
 bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
-    const skia::Matrix44& output_color_matrix,
+    const SkM44& output_color_matrix,
     const OverlayProcessorInterface::FilterOperationsMap&
         render_pass_backdrop_filters,
     DisplayResourceProvider* resource_provider,
@@ -622,7 +617,7 @@ bool OverlayProcessorUsingStrategy::AttemptWithStrategiesPrioritized(
       candidate.strategy->AdjustOutputSurfaceOverlay(primary_plane);
       LogStrategyEnumUMA(candidate.strategy->GetUMAEnum());
       last_successful_strategy_ = candidate.strategy;
-      OnOverlaySwitchUMA(ToProposeKey(candidate));
+      OnOverlaySwitchUMA(OverlayProposedCandidate::ToProposeKey(candidate));
       UMA_HISTOGRAM_ENUMERATION("Viz.DisplayCompositor.OverlayQuadMaterial",
                                 quad_material);
       if (candidate.candidate.requires_overlay) {
@@ -809,7 +804,7 @@ gfx::Rect OverlayProcessorUsingStrategy::GetOverlayDamageRectForOutputSurface(
 }
 
 void OverlayProcessorUsingStrategy::OnOverlaySwitchUMA(
-    OverlayProcessorUsingStrategy::ProposedCandidateKey overlay_tracking_id) {
+    ProposedCandidateKey overlay_tracking_id) {
   auto curr_tick = base::TimeTicks::Now();
   if (!(prev_overlay_tracking_id_ == overlay_tracking_id)) {
     prev_overlay_tracking_id_ = overlay_tracking_id;

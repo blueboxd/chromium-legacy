@@ -54,6 +54,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> gestiona aquest usuari i és possible que gestioni les opcions de configuració i monitori l'activitat de l'usuari de manera remota.</translation>
 <translation id="150962533380566081">El PUK no és vàlid.</translation>
 <translation id="1510238584712386396">Menú d'aplicacions</translation>
+<translation id="152892567002884378">Apuja el volum</translation>
 <translation id="155865706765934889">Ratolí tàctil</translation>
 <translation id="1565038567006703504">No es pot actualitzar <ph name="DEVICE_NAME" /></translation>
 <translation id="1567064801249837505">Àlbums</translation>
@@ -76,17 +77,20 @@
 <translation id="175763766237925754">Bo (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1768959921651994223">Tipus d'autenticació</translation>
 <translation id="1782199038061388045">traducció</translation>
 <translation id="1792647875738159689">S'està cancel·lant l'escaneig</translation>
 <translation id="1807246157184219062">Clar</translation>
 <translation id="1827738518074806965">Galeria d'art</translation>
 <translation id="1851218745569890714">Videoconferències</translation>
+<translation id="1852934301711881861">Instal·la ChromeOS Flex</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="1887850431809612466">Revisió de maquinari</translation>
 <translation id="1905710495812624430">S'ha superat el nombre màxim d'intents permesos.</translation>
 <translation id="1908234395526491708">Errors en la sol·licitud d'UDP</translation>
 <translation id="1930797645656624981">Servei del mètode d'introducció de text a Chrome OS</translation>
 <translation id="1947737735496445907">Imprès</translation>
+<translation id="1951012854035635156">Assistent</translation>
 <translation id="1979103255016296513">Canvi de contrasenya vençut</translation>
 <translation id="1999615961760456652">Portal captiu</translation>
 <translation id="2006864819935886708">Connectivitat</translation>
@@ -99,14 +103,17 @@
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, versió <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" /> GB de <ph name="TOTAL_MEMORY" /> GB disponibles</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
+<translation id="2152882202543497059"><ph name="NUMBER" /> fotos</translation>
 <translation id="2157959690810728433">S'HA POSAT A LA CUA</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />. Torna-ho a provar</translation>
 <translation id="2161394479394250669">Cancel·la la tasca d'impressió</translation>
 <translation id="2180197493692062006">S'ha produït un error. Prova de tornar a obrir l'aplicació.</translation>
+<translation id="2201770616342964496">Identitat local</translation>
 <translation id="2209788852729124853">Restableix els comptadors de trànsit</translation>
 <translation id="2212733584906323460">Resolució del nom</translation>
 <translation id="2217935453350629363">Velocitat actual</translation>
 <translation id="2224337661447660594">Sense connexió a Internet</translation>
+<translation id="222447520299472966">S'ha de seleccionar un àlbum de la galeria d'art com a mínim</translation>
 <translation id="2230005943220647148">Celsius</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Estat d'activació</translation>
@@ -126,6 +133,7 @@
 <translation id="2446553403094072641">Precisió de la coma flotant</translation>
 <translation id="2448312741937722512">Tipus</translation>
 <translation id="2461822463642141190">Actual</translation>
+<translation id="2493126929778606526">Les teves millors fotos, seleccionades automàticament</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> (<ph name="SOURCE_LANGUAGE_NAME" />)</translation>
 <translation id="2505327257735685095">Actualitza la imatge actual del fons de pantalla</translation>
 <translation id="2517472476991765520">Escaneja</translation>
@@ -136,6 +144,7 @@
 <translation id="2585245331261708204">Novetats de Chrome OS</translation>
 <translation id="2619761439309613843">Actualització diària</translation>
 <translation id="2620436844016719705">Sistema</translation>
+<translation id="2640549051766135490">S'ha seleccionat l'àlbum <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="2695514675076754339">Introdueix el codi de desbloqueig de 8 caràcters</translation>
 <translation id="2712812801627182647">Clau d'autenticació TLS</translation>
 <translation id="2740531572673183784">D'acord</translation>
@@ -147,6 +156,7 @@
 <translation id="2859243502336719778">Actualització crítica</translation>
 <translation id="2860473693272905224">Col·loca una altra pàgina a l'escàner</translation>
 <translation id="2872961005593481000">Apaga</translation>
+<translation id="2874939134665556319">Pista anterior</translation>
 <translation id="2878387241690264070">S'ha descarregat un <ph name="RATE" /> en <ph name="NUM_SECONDS" /> segons.</translation>
 <translation id="291142119251986300">Components no qualificats</translation>
 <translation id="2926057806159140518">Introdueix el nom d'usuari i la contrasenya o bé escaneja el codi QR</translation>
@@ -180,11 +190,13 @@
 <translation id="3340011300870565703">L'auricular dret del dispositiu té un <ph name="BATTERY_PERCENTAGE" />% de bateria.</translation>
 <translation id="3368922792935385530">Connectat</translation>
 <translation id="3369013195428705271">Confirmes que vols esborrar tot l'historial d'impressions? Les tasques d'impressió en curs no s'esborraran.</translation>
+<translation id="3413935475507503304">Per continuar amb l'actualització, fes clic a Següent.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Seguretat</translation>
 <translation id="3456078764689556234">S'ha imprès la pàgina <ph name="PRINTED_PAGES" /> de <ph name="TOTAL_PAGES" />.</translation>
 <translation id="345898999683440380">S'està escanejant la pàgina <ph name="PAGE_NUM" />. <ph name="PERCENTAGE_VALUE" />% completat.</translation>
 <translation id="3459509316159669723">Imprimeix</translation>
+<translation id="346539236881580388">Repeteix</translation>
 <translation id="3484914941826596830">Mentre el microprogramari s'actualitza, no desconnectis el dispositiu extern ni apaguis l'ordinador. Pots minimitzar aquesta finestra. Aquesta actualització pot tardar uns quants minuts i és possible que, durant aquest temps, el dispositiu extern no funcioni.</translation>
 <translation id="3486220673238053218">definició</translation>
 <translation id="3488065109653206955">Activat parcialment</translation>
@@ -226,8 +238,10 @@
 <translation id="4003384961948020559">Error: safata de sortida plena</translation>
 <translation id="4034824040120875894">Impressora</translation>
 <translation id="4044093238444069296">No es pot contactar amb la passarel·la</translation>
+<translation id="4046123991198612571">Pista següent</translation>
 <translation id="404928562651467259">ADVERTIMENT</translation>
 <translation id="409427325554347132">Desa els detalls de la prova</translation>
+<translation id="4110686435123617899">Selecciona l'àlbum <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Ratolí tàctil USB</translation>
 <translation id="4131410914670010031">Blanc i negre</translation>
 <translation id="4140251671072434548">Fes un desbloqueig del servidor RMA</translation>
@@ -242,16 +256,17 @@
 <translation id="4238516577297848345">No hi ha tasques d'impressió en curs</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4244962993387259361">Necessites com a mínim 500 MB lliures per executar una prova de memòria. Per alliberar espai, ves a Configuració &gt; Gestió de l'emmagatzematge.</translation>
+<translation id="4250229828105606438">Captura de pantalla</translation>
 <translation id="4258281355379922695">Latència d'HTTP</translation>
 <translation id="4271957103967917607">Mostra en pantalla completa</translation>
 <translation id="4275799948641988986">Després de la reparació, qui utilitzarà el dispositiu?</translation>
+<translation id="4289540628985791613">Visió general</translation>
 <translation id="4297501883039923494">S'ha aturat: error desconegut</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> imatges</translation>
 <translation id="4378373042927530923">No s'ha executat</translation>
 <translation id="4378551569595875038">Connectant...</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="439429847087949098">S'està reiniciant <ph name="DEVICE_NAME" /></translation>
-<translation id="4418498623216225764">Actualitza els perifèrics</translation>
 <translation id="4425149324548788773">La meva unitat</translation>
 <translation id="4428374560396076622">La xarxa <ph name="NETWORK_NAME" /> està desactivada</translation>
 <translation id="4429881212383817840">El tiquet de Kerberos caducarà aviat</translation>
@@ -266,6 +281,7 @@
 <translation id="4511264077854731334">Portal</translation>
 <translation id="4521826082652183069">Nom alternatiu d'assumpte coincident</translation>
 <translation id="4536864596629708641">Configuració de la IP</translation>
+<translation id="4546131424594385779">Crea un vídeo en bucle</translation>
 <translation id="4548483925627140043">No s'ha trobat el senyal</translation>
 <translation id="4556753742174065117">Tot el microprogramari està actualitzat</translation>
 <translation id="455835558791489930">Bateria de <ph name="CHARGE_VALUE" /> mAh</translation>
@@ -274,6 +290,7 @@
 <translation id="458794348635939462">No s'han pogut resoldre tots els amfitrions</translation>
 <translation id="4593212453765072419">Cal l'autenticació del servidor intermediari</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> de <ph name="TOTAL_PAGE_NUMBER" />. Prem Retorn per cancel·lar la tasca d'impressió.</translation>
+<translation id="4627645661474370390">Identitat remota</translation>
 <translation id="463791356324567266">S'està cancel·lant l'escaneig...</translation>
 <translation id="4646949265910132906">Connexió Wi‑Fi segura</translation>
 <translation id="4654549501020883054">Canvia cada dia</translation>
@@ -282,13 +299,13 @@
 <translation id="467715984478005772">Possible tallafoc</translation>
 <translation id="4691278870498629773">S'ha aturat: no es troba la safata</translation>
 <translation id="469379815867856270">Intensitat del senyal</translation>
-<translation id="4707579418881001319">L2TP/IPsec + certificat d'usuari</translation>
 <translation id="4731797938093519117">Accés parental</translation>
 <translation id="473775607612524610">Actualitza</translation>
 <translation id="4744944742468440486">Informació relacionada amb la teva selecció</translation>
 <translation id="475869545581454722">S'ha actualitzat la contrasenya de Chrome OS</translation>
 <translation id="4773299976671772492">En pausa</translation>
 <translation id="4782311465517282004">Obtén definicions, traduccions o conversions d'unitats quan mantinguis premut el text o quan hi facis clic amb el botó dret</translation>
+<translation id="4791000909649665275"><ph name="NUMBER" /> foto</translation>
 <translation id="4793756956024303490">Algoritme de compressió</translation>
 <translation id="4794140124556169553">Executar una prova de CPU pot afectar el rendiment del sistema</translation>
 <translation id="4808449224298348341">S'ha cancel·lat la tasca d'impressió del document <ph name="DOCUMENT_TITLE" /></translation>
@@ -327,12 +344,14 @@
 <translation id="5051044138948155788">Aquesta és l'única pàgina. Se't dirigirà a la pantalla d'inici per escanejar.</translation>
 <translation id="5088172560898466307">Nom d'amfitrió del servidor</translation>
 <translation id="5089810972385038852">Estat</translation>
+<translation id="5090362543162270857">IPsec (IKEv2)</translation>
 <translation id="5142961317498132443">Autenticació</translation>
 <translation id="5154917547274118687">Memòria</translation>
 <translation id="5160857336552977725">Inicieu la sessió al vostre dispositiu (<ph name="DEVICE_TYPE" />)</translation>
 <translation id="5166918508782100047">Configuració de Respostes ràpides</translation>
 <translation id="5168185087976003268">Estat de la bateria</translation>
 <translation id="5170568018924773124">Mostra a la carpeta</translation>
+<translation id="5190187232518914472">Reviu els teus records preferits. Per afegir o editar àlbums, ves a <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="5212543919916444558">No he trobat res a la pantalla amb què et pugui ajudar.
 Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5212593641110061691">Tabloide</translation>
@@ -371,6 +390,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Torna a escanejar</translation>
+<translation id="5583640892426849032">Retrocés</translation>
 <translation id="5620281292257375798">Només intern</translation>
 <translation id="5649768706273821470">Escolta</translation>
 <translation id="5669267381087807207">Activant</translation>
@@ -380,6 +400,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> de <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Actualitza <ph name="DEVICE_NAME" /></translation>
 <translation id="5760715441271661976">Estat del portal</translation>
+<translation id="57838592816432529">Silencia</translation>
 <translation id="5784136236926853061">La latència d'HTTP és alta</translation>
 <translation id="5832805196449965646">Afegeix una persona</translation>
 <translation id="583281660410589416">Desconegut</translation>
@@ -387,6 +408,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="5849570051105887917">Codi del proveïdor domèstic</translation>
 <translation id="5860033963881614850">Desactivat</translation>
 <translation id="5866840822086176774">Molt forta</translation>
+<translation id="588258955323874662">Pantalla completa</translation>
 <translation id="5895138241574237353">Reinicia</translation>
 <translation id="5916084858004523819">Prohibit</translation>
 <translation id="5916664084637901428">Activat</translation>
@@ -427,6 +449,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="6319207335391420837">Actualitza el microprogramari que hi ha a <ph name="DEVICE_NAME" /></translation>
 <translation id="6325525973963619867">Error</translation>
 <translation id="6340526405444716530">Personalització</translation>
+<translation id="6348738456043757611">Nom d'usuari i contrasenya</translation>
 <translation id="636850387210749493">Inscripció empresarial</translation>
 <translation id="6379086450106841622">Pantalla tàctil</translation>
 <translation id="6388847657025262518">L'alimentador de documents de l'escàner està encallat. Comprova l'alimentador i torna-ho a provar.</translation>
@@ -449,18 +472,22 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="6566314079205407217">Cerca en diverses pàgines</translation>
 <translation id="6574762126505704998">Emplena</translation>
 <translation id="6575134580692778371">No configurat</translation>
+<translation id="6579509898032828423">Utilitza aquesta foto</translation>
 <translation id="6596816719288285829">Adreça IP</translation>
 <translation id="6618744767048954150">Comprovació en curs</translation>
 <translation id="6620487321149975369">Les tasques d'impressió es mostraran a l'historial tret que se suprimeixin manualment</translation>
 <translation id="6643016212128521049">Esborra</translation>
 <translation id="6647510110698214773">Algoritme d'encriptació</translation>
 <translation id="6657585470893396449">Contrasenya</translation>
+<translation id="6659594942844771486">Pestanya</translation>
 <translation id="6692996468359469499">Obtén informació relacionada amb la teva selecció</translation>
 <translation id="6704062477274546131">Resolució de DNS</translation>
+<translation id="6723839937902243910">Bateria</translation>
 <translation id="6747215703636344499">S'ha aturat: safata de sortida plena</translation>
 <translation id="6749473226660745022">Fotos</translation>
 <translation id="6753452347192452143">El dispositiu és un ordinador.</translation>
 <translation id="6756731097889387912">No s'ha pogut cancel·lar l'escaneig</translation>
+<translation id="6760706756348334449">Abaixa el volum</translation>
 <translation id="6766275201586212568">Algunes resolucions de DNS han fallat</translation>
 <translation id="6768237774506518020">El percentatge d'error de la resolució de DNS és alt</translation>
 <translation id="680983167891198932">Clau</translation>
@@ -495,6 +522,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7175037578838465313">Configura <ph name="NAME" /></translation>
 <translation id="7177485034254901881">Aquest dispositiu <ph name="DEVICE_TYPE" /> està gestionat per <ph name="MANAGER" />. És possible que els administradors el configurin de manera remota.</translation>
 <translation id="7180611975245234373">Actualitza</translation>
+<translation id="7212734716605298123">Actualitzacions de microprogramari per a dispositius externs</translation>
 <translation id="7216409898977639127">Proveïdor de dades mòbils</translation>
 <translation id="7271040990581020067">L'escàner s'està utilitzant en aquests moments. Torna-ho a provar més tard.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
@@ -513,6 +541,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{S'ha completat l'escaneig. S'ha escanejat 1 pàgina}other{S'ha completat l'escaneig. S'han escanejat {NUMBER_OF_PAGES} pàgines}}</translation>
 <translation id="7469648432129124067">S'ha detectat un portal</translation>
+<translation id="7481312909269577407">Endavant</translation>
 <translation id="7487067081878637334">Tecnologia</translation>
 <translation id="7490813197707563893">Adreça MAC</translation>
 <translation id="7497215489070763236">Certificat de CA del servidor</translation>
@@ -541,7 +570,6 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="780301667611848630">No, gràcies</translation>
 <translation id="7805768142964895445">Estat</translation>
 <translation id="7819857487979277519">PSK (WPA o RSN)</translation>
-<translation id="7835501727204647447">Instal·la CloudReady</translation>
 <translation id="7846634333498149051">Teclat</translation>
 <translation id="7856267634822906833">Pantalla tàctil Bluetooth</translation>
 <translation id="7881066108824108340">DNS</translation>
@@ -567,6 +595,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="8132480444149501833">Sol·licita els comptadors de trànsit</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Selecciona <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
+<translation id="8179976553408161302">Retorn</translation>
 <translation id="8206859287963243715">Cel·lular</translation>
 <translation id="8208861521865154048">Avantatges</translation>
 <translation id="8217675307824400706">Connecta't</translation>
@@ -607,7 +636,9 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="8660881923941176839">lliures</translation>
 <translation id="8662671328352114214">Connecta't a una xarxa <ph name="TYPE" /></translation>
 <translation id="8675354002693747642">Clau precompartida</translation>
+<translation id="8677859815076891398">No hi ha cap àlbum. Crea'n un a <ph name="LINK_BEGIN" />Google Fotos<ph name="LINK_END" />.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Utilitza les tecles de fletxa dreta o esquerra per gestionar aquesta funció.</translation>
+<translation id="8712637175834984815">Entesos</translation>
 <translation id="871560550817059752">Error: no hi ha tinta</translation>
 <translation id="8723108084122415655">La xarxa no predeterminada supera el llindar de latència</translation>
 <translation id="8726019395068607495">S'ha aturat: porta oberta</translation>
@@ -648,6 +679,7 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="9062831201344759865">La resolució de DNS té una latència alta</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9082718469794970195">Utilitza aquest vídeo</translation>
 <translation id="9087578468327036362">Informa d'aquesta consulta</translation>
 <translation id="9088306295921699330">Ús actual</translation>
 <translation id="9095415590198785865">El dispositiu es retornarà al mateix propietari</translation>
@@ -661,7 +693,6 @@ Toca el micròfon per demanar-me qualsevol cosa.</translation>
 <translation id="9149391708638971077">Executa la prova de memòria</translation>
 <translation id="9173638680043580060">Queda menys d'un minut</translation>
 <translation id="917720651393141712">Prova</translation>
-<translation id="9190063653747922532">L2TP/IPsec + clau precompartida</translation>
 <translation id="9204237731135241582">No es pot contactar amb la passarel·la des d'aplicacions d'Android</translation>
 <translation id="9211490828691860325">Tots els escriptoris</translation>
 <translation id="939519157834106403">SSID</translation>

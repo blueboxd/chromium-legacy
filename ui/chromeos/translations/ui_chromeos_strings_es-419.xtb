@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">No se puede cambiar el nombre de "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">Inglés (EE.UU.) con teclado Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" />: host</translation>
+<translation id="1521655867290435174">Hojas de cálculo de Google</translation>
 <translation id="1538729222189715449">Abriendo archivos de Linux…</translation>
 <translation id="1547964879613821194">Inglés (Canadá)</translation>
 <translation id="1556189134700913550">Aplicar a todo</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">Certificado de autenticación rechazado por la red</translation>
 <translation id="2547921442987553570">Agregar a <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Inglés (Estados Unidos; internacional)</translation>
-<translation id="2562685439590298522">Documentos</translation>
 <translation id="2563185590376525700">Rana</translation>
 <translation id="2578394532502990878">Tamil (fonético)</translation>
 <translation id="2579959351793446050">Oriya</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">Inglés (Estados Unidos; extendido)</translation>
 <translation id="290843123675549676">Maratí</translation>
 <translation id="2923240520113693977">Estonio</translation>
-<translation id="2925966894897775835">Hojas de cálculo de Google</translation>
 <translation id="2938685643439809023">Mongol</translation>
-<translation id="2943400156390503548">Presentaciones</translation>
 <translation id="2943503720238418293">Usa un nombre más corto</translation>
 <translation id="2949781154072577687">Formateando <ph name="DRIVE_NAME" />…</translation>
 <translation id="2951236788251446349">Medusa</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />%, administrada por tu administrador, detalles</translation>
 <translation id="4387004326333427325">Certificado de autenticación rechazado de forma remota</translation>
 <translation id="4394214039309501350">Vínculo externo</translation>
+<translation id="4401287888955153199">Extraer todo</translation>
 <translation id="4418686080762064601">Crea un acceso directo a tus archivos</translation>
 <translation id="4425149324548788773">Mi unidad</translation>
 <translation id="4439427728133035643">Red <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, intensidad de la señal: <ph name="SIGNAL_STRENGTH" />%, conectar</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">Haz que los archivos estén disponibles sin conexión</translation>
 <translation id="4658782175094886150">Persona en la nieve</translation>
 <translation id="4669606053856530811">Los miembros de "<ph name="SOURCE_NAME" />" ya no tendrán acceso a estos elementos, a menos que se los comparta con ellos.</translation>
+<translation id="467809019005607715">Presentaciones de Google</translation>
 <translation id="4690246192099372265">Sueco</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694604912444486114">Mono</translation>
@@ -658,6 +658,7 @@
 <translation id="6732801395666424405">No se cargaron los certificados.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">1 carpeta seleccionada</translation>
+<translation id="6755827872271341378">Dispositivo Chrome OS Flex</translation>
 <translation id="6790428901817661496">Reproducir</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6806699711453372963">Administrar uso compartido de Linux</translation>
@@ -735,6 +736,7 @@
 <translation id="7343393116438664539">Vietnamita (Télex)</translation>
 <translation id="7359359531237882347">Copiando <ph name="NUMBER_OF_ITEMS" /> elementos…</translation>
 <translation id="7375951387215729722">La lista de archivos se organiza por <ph name="COLUMN_NAME" /> en orden descendente.</translation>
+<translation id="7402503521691663770">Dispositivos Chrome OS Flex</translation>
 <translation id="7408870451288633753">Checo</translation>
 <translation id="7417453074306512035">Teclado etíope</translation>
 <translation id="7417705661718309329">Mapa de Google</translation>
@@ -950,6 +952,7 @@
 <translation id="9172592259078059678">Guyaratí (transliteración)</translation>
 <translation id="9173120999827300720">Inglés (EE.UU.) con teclado internacional</translation>
 <translation id="9174050671906956834">Los elementos de la papelera se borrarán definitivamente tras 30 días.</translation>
+<translation id="9183302530794969518">Documentos de Google</translation>
 <translation id="9189836632794948435">Kazajo</translation>
 <translation id="9213073329713032541">La instalación se inició de forma correcta.</translation>
 <translation id="9219103736887031265">Imágenes</translation>

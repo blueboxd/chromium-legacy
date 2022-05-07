@@ -54,6 +54,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> можа кіраваць наладамі гэтага карыстальніка і адсочваць яго дзеянні.</translation>
 <translation id="150962533380566081">Няправільны PUK-код.</translation>
 <translation id="1510238584712386396">Панэль запуску</translation>
+<translation id="152892567002884378">Павялічыць гучнасць</translation>
 <translation id="155865706765934889">Сэнсарная панэль</translation>
 <translation id="1565038567006703504">Не ўдалося абнавіць прыладу "<ph name="DEVICE_NAME" />"</translation>
 <translation id="1567064801249837505">Альбомы</translation>
@@ -76,17 +77,20 @@
 <translation id="175763766237925754">Добры (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1768959921651994223">Тып аўтэнтыфікацыі</translation>
 <translation id="1782199038061388045">пераклад</translation>
 <translation id="1792647875738159689">Сканіраванне скасоўваецца</translation>
 <translation id="1807246157184219062">Светлая</translation>
 <translation id="1827738518074806965">Мастацкая галерэя</translation>
 <translation id="1851218745569890714">Відэаканферэнцыі</translation>
+<translation id="1852934301711881861">Усталяваць Chrome OS Flex</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="1887850431809612466">Версія апаратнага забеспячэння</translation>
 <translation id="1905710495812624430">Перавышана максімальная колькасць спроб.</translation>
 <translation id="1908234395526491708">Збоі запытаў UDP</translation>
 <translation id="1930797645656624981">Сэрвіс метадаў уводу Chrome OS</translation>
 <translation id="1947737735496445907">Надрукавана</translation>
+<translation id="1951012854035635156">Памочнік</translation>
 <translation id="1979103255016296513">Пратэрмінавана змена пароля</translation>
 <translation id="1999615961760456652">Партал узаемадзеяння</translation>
 <translation id="2006864819935886708">Магчымасць падключэння</translation>
@@ -99,14 +103,17 @@
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, версія <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">Даступна: <ph name="AVAILABLE_MEMORY" /> з <ph name="TOTAL_MEMORY" /> ГБ</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
+<translation id="2152882202543497059"><ph name="NUMBER" /> фота</translation>
 <translation id="2157959690810728433">У ЧАРЗЕ</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Паўтарыць спробу</translation>
 <translation id="2161394479394250669">Скасаваць заданне друку</translation>
 <translation id="2180197493692062006">Нешта пайшло не так. Паспрабуйце адкрыць праграму паўторна.</translation>
+<translation id="2201770616342964496">Лакальнае пасведчанне</translation>
 <translation id="2209788852729124853">Скінуць лічыльнікі трафіка</translation>
 <translation id="2212733584906323460">Пераўтварэнне імён</translation>
 <translation id="2217935453350629363">Бягучая хуткасць</translation>
 <translation id="2224337661447660594">Няма падключэння да інтэрнэту</translation>
+<translation id="222447520299472966">Неабходна выбраць у мастацкай галерэі як мінімум адзін альбом</translation>
 <translation id="2230005943220647148">Шкала Цэльсія</translation>
 <translation id="2230051135190148440">CHAP</translation>
 <translation id="225692081236532131">Стан актывацыі</translation>
@@ -126,6 +133,7 @@
 <translation id="2446553403094072641">Дакладнасць выкарыстання нефіксаванай коскі</translation>
 <translation id="2448312741937722512">Тып</translation>
 <translation id="2461822463642141190">Цяпер</translation>
+<translation id="2493126929778606526">Найлепшыя фота, выбраныя аўтаматычна</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">Абнавіць відарыс, які выкарыстоўваецца як шпалеры</translation>
 <translation id="2517472476991765520">Пошук</translation>
@@ -136,6 +144,7 @@
 <translation id="2585245331261708204">Што новага ў Chrome OS</translation>
 <translation id="2619761439309613843">Штодзённае абнаўленне</translation>
 <translation id="2620436844016719705">Сістэма</translation>
+<translation id="2640549051766135490">Выбраны альбом "<ph name="TITLE" />" (<ph name="DESC" />)</translation>
 <translation id="2695514675076754339">Увядзіце 8-значны код для разблакіроўкі</translation>
 <translation id="2712812801627182647">Ключ аўтэнтыфікацыі TLS</translation>
 <translation id="2740531572673183784">OK</translation>
@@ -147,6 +156,7 @@
 <translation id="2859243502336719778">Важнае абнаўленне</translation>
 <translation id="2860473693272905224">Палажыце чарговую старонку ў сканер</translation>
 <translation id="2872961005593481000">Завяршыць працу</translation>
+<translation id="2874939134665556319">Папярэдні трэк</translation>
 <translation id="2878387241690264070">Разраджана: <ph name="RATE" /> за <ph name="NUM_SECONDS" /> с.</translation>
 <translation id="291142119251986300">Кампаненты, не спраўджаныя на сумяшчальнасць</translation>
 <translation id="2926057806159140518">Увядзіце імя карыстальніка і пароль або адсканіруйце QR-код</translation>
@@ -180,11 +190,13 @@
 <translation id="3340011300870565703">Узровень зараду акумулятара ў правым навушніку: <ph name="BATTERY_PERCENTAGE" />%.</translation>
 <translation id="3368922792935385530">Падключана</translation>
 <translation id="3369013195428705271">Сапраўды выдаліць гісторыю друку? Бягучыя заданні друку выдалены не будуць.</translation>
+<translation id="3413935475507503304">Каб працягнуць абнаўленне, націсніце "Далей".</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="3435738964857648380">Бяспека</translation>
 <translation id="3456078764689556234">Надрукавана старонка <ph name="PRINTED_PAGES" /> з <ph name="TOTAL_PAGES" />.</translation>
 <translation id="345898999683440380">Сканіруецца старонка <ph name="PAGE_NUM" />. Выканана <ph name="PERCENTAGE_VALUE" /> %.</translation>
 <translation id="3459509316159669723">Друк</translation>
+<translation id="346539236881580388">Перазняць</translation>
 <translation id="3484914941826596830">Падчас абнаўлення ўбудаванага ПЗ не адключайце знешнюю прыладу і не выключайце камп'ютар. Гэта акно можна згарнуць. Абнаўленне зойме некалькі хвілін, і падчас яго знешняя прылада можа не працаваць.</translation>
 <translation id="3486220673238053218">азначэнне</translation>
 <translation id="3488065109653206955">Часткова актывавана</translation>
@@ -226,8 +238,10 @@
 <translation id="4003384961948020559">Збой: выхадны латок запоўнены</translation>
 <translation id="4034824040120875894">Прынтар</translation>
 <translation id="4044093238444069296">Не ўдалося звязацца са шлюзам</translation>
+<translation id="4046123991198612571">Наступны трэк</translation>
 <translation id="404928562651467259">ПАПЯРЭДЖАННЕ</translation>
 <translation id="409427325554347132">Захаваць даныя тэста</translation>
+<translation id="4110686435123617899">Выберыце альбом "<ph name="TITLE" />" (<ph name="DESC" />)</translation>
 <translation id="4111761024568264522">Сэнсарная панэль з USB</translation>
 <translation id="4131410914670010031">Чорна-белы друк</translation>
 <translation id="4140251671072434548">Выканайце серверную разблакіроўку RMA</translation>
@@ -242,16 +256,17 @@
 <translation id="4238516577297848345">Няма дзеючых заданняў друку</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4244962993387259361">Каб выканаць праверку памяці, вам патрэбна не менш за 500 МБ вольнага месца. Каб вызваліць месца, перайдзіце ў раздзел "Налады &gt; Кіраванне сховішчам".</translation>
+<translation id="4250229828105606438">Здымак экрана</translation>
 <translation id="4258281355379922695">Затрымка HTTP-запытаў</translation>
 <translation id="4271957103967917607">Праглядзець у поўнаэкранным рэжыме</translation>
 <translation id="4275799948641988986">Хто будзе выкарыстоўваць прыладу пасля рамонту?</translation>
+<translation id="4289540628985791613">Агляд</translation>
 <translation id="4297501883039923494">Спынена: невядомая памылка</translation>
 <translation id="4300073214558989">Відарысаў: <ph name="IMAGE_COUNT" /></translation>
 <translation id="4378373042927530923">Паслядоўнасць дзеянняў не запускалася</translation>
 <translation id="4378551569595875038">Падключэнне...</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="439429847087949098">Ідзе перазапуск прылады "<ph name="DEVICE_NAME" />"</translation>
-<translation id="4418498623216225764">Абнаўленне ўбудаванага ПЗ перыферыйных прылад</translation>
 <translation id="4425149324548788773">Мой Дыск</translation>
 <translation id="4428374560396076622"><ph name="NETWORK_NAME" />: выключана</translation>
 <translation id="4429881212383817840">Дзеянне білета Kerberos хутка скончыцца</translation>
@@ -266,6 +281,7 @@
 <translation id="4511264077854731334">Партал</translation>
 <translation id="4521826082652183069">Супадзенне па альтэрнатыўным імені суб'екта</translation>
 <translation id="4536864596629708641">Канфігурацыя IP-адраса</translation>
+<translation id="4546131424594385779">Запісаць зацыкленае відэа</translation>
 <translation id="4548483925627140043">Сігнал не знойдзены</translation>
 <translation id="4556753742174065117">Усё ўбудаванае праграмнае забеспячэнне абноўлена</translation>
 <translation id="455835558791489930">Магутнасць акумулятара: <ph name="CHARGE_VALUE" /> мА·г</translation>
@@ -274,6 +290,7 @@
 <translation id="458794348635939462">Не ўдалося супаставіць усе хосты</translation>
 <translation id="4593212453765072419">Патрабуецца аўтэнтыфікацыя проксі-сервера</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> з <ph name="TOTAL_PAGE_NUMBER" />. Каб скасаваць заданне друку, націсніце Enter.</translation>
+<translation id="4627645661474370390">Аддаленае пасведчанне</translation>
 <translation id="463791356324567266">Сканіраванне скасоўваецца…</translation>
 <translation id="4646949265910132906">Бяспечнае падключэнне да сеткі Wi-Fi</translation>
 <translation id="4654549501020883054">Змяняць штодня</translation>
@@ -282,13 +299,13 @@
 <translation id="467715984478005772">Магчыма, уключаны брандмаўар</translation>
 <translation id="4691278870498629773">Спынена: няма латка</translation>
 <translation id="469379815867856270">Магутнасць сігналу</translation>
-<translation id="4707579418881001319">L2TP/IPsec + сертыфікат карыстальніка</translation>
 <translation id="4731797938093519117">Бацькоўскі доступ</translation>
 <translation id="473775607612524610">Абнавіць</translation>
 <translation id="4744944742468440486">Інфармацыя, звязаная з вылучаным вамі фрагментам</translation>
 <translation id="475869545581454722">Пароль Chrome OS зменены</translation>
 <translation id="4773299976671772492">Спынена</translation>
 <translation id="4782311465517282004">Атрымлівайце азначэнні, пераклады або пераводзьце адзінкі вымярэння: для гэтага вам трэба дакрануцца да тэксту і ўтрымліваць палец або націснуць на тэкст правай кнопкай мышы.</translation>
+<translation id="4791000909649665275"><ph name="NUMBER" /> фота</translation>
 <translation id="4793756956024303490">Алгарытм сціскання</translation>
 <translation id="4794140124556169553">Выкананне праверкі ЦП можа паўплываць на прадукцыйнасць сістэмы</translation>
 <translation id="4808449224298348341">Заданне друку "<ph name="DOCUMENT_TITLE" />" скасавана</translation>
@@ -327,12 +344,14 @@
 <translation id="5051044138948155788">Гэта адзіная старонка. Вы будзеце перанакіраваны на пачатковы экран сканіравання.</translation>
 <translation id="5088172560898466307">Назва хоста сервера</translation>
 <translation id="5089810972385038852">Штат</translation>
+<translation id="5090362543162270857">IPsec (IKEv2)</translation>
 <translation id="5142961317498132443">Аўтэнтыфікацыя</translation>
 <translation id="5154917547274118687">Памяць</translation>
 <translation id="5160857336552977725">Уваход у <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166918508782100047">Налады Хуткіх адказаў</translation>
 <translation id="5168185087976003268">Стан акумулятара</translation>
 <translation id="5170568018924773124">Паказаць у папцы</translation>
+<translation id="5190187232518914472">Ажывіце прыемныя ўспаміны. Каб дадаць або змяніць альбомы, перайдзіце ў <ph name="LINK_BEGIN" />Google Фота<ph name="LINK_END" />.</translation>
 <translation id="5212543919916444558">Я не магу знайсці на экране нічога, з чым я мог бы вам дапамагчы.
 Каб спытаць мяне аб чым-небудзь, паспрабуйце дакрануцца да мікрафона.</translation>
 <translation id="5212593641110061691">Таблоід</translation>
@@ -371,6 +390,7 @@
 <translation id="554517032089923082">GTC</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Сканіраваць паўторна</translation>
+<translation id="5583640892426849032">Backspace</translation>
 <translation id="5620281292257375798">Для ўнутранага карыстання</translation>
 <translation id="5649768706273821470">Праслухаць</translation>
 <translation id="5669267381087807207">Ідзе актывацыя</translation>
@@ -380,6 +400,7 @@
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> з <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Абнавіць убудаванае ПЗ прылады "<ph name="DEVICE_NAME" />"</translation>
 <translation id="5760715441271661976">Стан партала</translation>
+<translation id="57838592816432529">Выключыць</translation>
 <translation id="5784136236926853061">Вялікая затрымка HTTP-запытаў</translation>
 <translation id="5832805196449965646">Дадаць карыстальніка</translation>
 <translation id="583281660410589416">Невядома</translation>
@@ -387,6 +408,7 @@
 <translation id="5849570051105887917">Код аператара</translation>
 <translation id="5860033963881614850">Выключана</translation>
 <translation id="5866840822086176774">Вельмі моцны</translation>
+<translation id="588258955323874662">Поўнаэкранны рэжым</translation>
 <translation id="5895138241574237353">Перазапусціць</translation>
 <translation id="5916084858004523819">Забароненая</translation>
 <translation id="5916664084637901428">Уключана</translation>
@@ -427,6 +449,7 @@
 <translation id="6319207335391420837">Абнаўленне ўбудаванага ПЗ прылады "<ph name="DEVICE_NAME" />"</translation>
 <translation id="6325525973963619867">Збой</translation>
 <translation id="6340526405444716530">Персаналізацыя</translation>
+<translation id="6348738456043757611">Імя карыстальніка і пароль</translation>
 <translation id="636850387210749493">Рэгістрацыя для арганізацый</translation>
 <translation id="6379086450106841622">Сэнсарны экран</translation>
 <translation id="6388847657025262518">Заела прыстасаванне сканера для падачы дакументаў. Праверце прыстасаванне і паўтарыце спробу.</translation>
@@ -449,18 +472,22 @@
 <translation id="6566314079205407217">Шматстаронкавае сканіраванне</translation>
 <translation id="6574762126505704998">Запоўніць</translation>
 <translation id="6575134580692778371">Не наладжана</translation>
+<translation id="6579509898032828423">Выкарыстоўваць гэта фота</translation>
 <translation id="6596816719288285829">IP-адрас</translation>
 <translation id="6618744767048954150">Выконваецца</translation>
 <translation id="6620487321149975369">Заданні друку будуць паказвацца ў гісторыі, пакуль яны не будуць выдалены ўручную</translation>
 <translation id="6643016212128521049">Ачысціць</translation>
 <translation id="6647510110698214773">Алгарытм шыфравання</translation>
 <translation id="6657585470893396449">Пароль</translation>
+<translation id="6659594942844771486">Укладка</translation>
 <translation id="6692996468359469499">Атрыманне інфармацыі, звязанай з вылучаным вамі</translation>
 <translation id="6704062477274546131">Супастаўленне імён DNS</translation>
+<translation id="6723839937902243910">Кнопка сілкавання</translation>
 <translation id="6747215703636344499">Спынена: выхадны латок запоўнены</translation>
 <translation id="6749473226660745022">Фота</translation>
 <translation id="6753452347192452143">Гэта камп'ютар.</translation>
 <translation id="6756731097889387912">Не ўдалося скасаваць сканіраванне</translation>
+<translation id="6760706756348334449">Паменшыць гучнасць</translation>
 <translation id="6766275201586212568">Збой супастаўленняў імён DNS</translation>
 <translation id="6768237774506518020">Высокі працэнт збояў супастаўленняў імён DNS</translation>
 <translation id="680983167891198932">Ключ</translation>
@@ -495,6 +522,7 @@
 <translation id="7175037578838465313">Наладка сеткі "<ph name="NAME" />"</translation>
 <translation id="7177485034254901881">Гэтай прыладай <ph name="DEVICE_TYPE" /> кіруе <ph name="MANAGER" />. Адміністратары могуць аддалена задаваць налады прылады.</translation>
 <translation id="7180611975245234373">Абнавіць</translation>
+<translation id="7212734716605298123">Абнаўленні ўбудаванага праграмнага забеспячэння для знешніх прылад</translation>
 <translation id="7216409898977639127">Сотавы аператар</translation>
 <translation id="7271040990581020067">Сканер зараз выкарыстоўваецца. Паўтарыце спробу пазней.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
@@ -513,6 +541,7 @@
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Сканіраванне завершана. Адсканіравана 1 старонка}one{Сканіраванне завершана. Адсканіравана {NUMBER_OF_PAGES} старонка}few{Сканіраванне завершана. Адсканіравана {NUMBER_OF_PAGES} старонкі}many{Сканіраванне завершана. Адсканіравана {NUMBER_OF_PAGES} старонак}other{Сканіраванне завершана. Адсканіравана {NUMBER_OF_PAGES} старонкі}}</translation>
 <translation id="7469648432129124067">Выяўлены партал</translation>
+<translation id="7481312909269577407">Далей</translation>
 <translation id="7487067081878637334">Тэхналогія</translation>
 <translation id="7490813197707563893">MAC-адрас</translation>
 <translation id="7497215489070763236">Сертыфікат ЦС сервера</translation>
@@ -541,7 +570,6 @@
 <translation id="780301667611848630">Не, дзякуй</translation>
 <translation id="7805768142964895445">Стан</translation>
 <translation id="7819857487979277519">PSK (WPA або RSN)</translation>
-<translation id="7835501727204647447">Усталяваць CloudReady</translation>
 <translation id="7846634333498149051">Клавіятура</translation>
 <translation id="7856267634822906833">Сэнсарны экран з Bluetooth</translation>
 <translation id="7881066108824108340">DNS</translation>
@@ -567,6 +595,7 @@
 <translation id="8132480444149501833">Запытаць лічыльнікі трафіка</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Выбраць <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8206859287963243715">Мабільная сетка</translation>
 <translation id="8208861521865154048">Бонусы</translation>
 <translation id="8217675307824400706">Устанавіце падключэнне</translation>
@@ -607,7 +636,9 @@
 <translation id="8660881923941176839">фунт.</translation>
 <translation id="8662671328352114214">Падключэнне да сеткі <ph name="TYPE" /></translation>
 <translation id="8675354002693747642">Папярэдне абагулены ключ</translation>
+<translation id="8677859815076891398">Альбомаў няма. Стварыце альбом у <ph name="LINK_BEGIN" />Google Фота<ph name="LINK_END" />.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Каб кіраваць гэтай функцыяй, выкарыстоўвайце клавішы са стрэлкамі ўлева і ўправа</translation>
+<translation id="8712637175834984815">Зразумела</translation>
 <translation id="871560550817059752">Збой: скончылася чарніла</translation>
 <translation id="8723108084122415655">Затрымка ў нестандартнай сетцы перавышае парогавае значэнне</translation>
 <translation id="8726019395068607495">Спынена: дзверцы прынтара адкрыты</translation>
@@ -648,6 +679,7 @@
 <translation id="9062831201344759865">DNS-пераўтварэнне мае вялікую затрымку</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9082718469794970195">Выкарыстоўваць гэта відэа</translation>
 <translation id="9087578468327036362">Паскардзіцца на гэты запыт</translation>
 <translation id="9088306295921699330">Бягучае выкарыстанне</translation>
 <translation id="9095415590198785865">Прылада застанецца ў ранейшага ўладальніка</translation>
@@ -661,7 +693,6 @@
 <translation id="9149391708638971077">Выканаць праверку памяці</translation>
 <translation id="9173638680043580060">Застаецца менш за хвіліну</translation>
 <translation id="917720651393141712">Праверыць</translation>
-<translation id="9190063653747922532">L2TP/IPsec з папярэдне абагуленым ключом</translation>
 <translation id="9204237731135241582">Не ўдалося звязацца са шлюзам з праграм для Android</translation>
 <translation id="9211490828691860325">Усе працоўныя сталы</translation>
 <translation id="939519157834106403">SSID</translation>

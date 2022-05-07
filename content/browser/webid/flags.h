@@ -15,8 +15,8 @@ bool IsFedCmEnabled();
 // Whether FedCM auto sign-in is enabled.
 bool IsFedCmAutoSigninEnabled();
 
-// Whether FedCM HTTP filtering is enabled.
-bool IsFedCmInterceptionEnabled();
+// Whether FedCM IDP sign-out is enabled.
+bool IsFedCmIdpSignoutEnabled();
 
 }  // namespace content
 

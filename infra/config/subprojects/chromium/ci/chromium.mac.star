@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.mac builder group."""
 
+load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "cpu", "goma", "os", "sheriff_rotations", "xcode")
@@ -295,6 +296,7 @@ ci.thin_tester(
         short_name = "11",
     ),
     cq_mirrors_console_view = "mirrors",
+    sheriff_rotations = args.ignore_default(None),
     triggered_by = ["ci/Mac Builder (dbg)"],
 )
 
@@ -314,8 +316,6 @@ ios_builder(
             short_name = "ctl",
         ),
     ],
-    # TODO(crbug.com/1266211): Use main Xcode when main version >= 13c100.
-    xcode = xcode.x13betabots,
 )
 
 ios_builder(

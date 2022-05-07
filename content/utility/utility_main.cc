@@ -33,6 +33,7 @@
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+#include "components/services/screen_ai/sandbox/screen_ai_sandbox_hook_linux.h"
 #include "content/utility/speech/speech_recognition_sandbox_hook_linux.h"
 #if BUILDFLAG(ENABLE_PRINTING)
 #include "printing/sandbox/print_backend_sandbox_hook_linux.h"
@@ -158,13 +159,16 @@ int UtilityMain(MainFunctionParams parameters) {
       pre_sandbox_hook =
           base::BindOnce(&speech::SpeechRecognitionPreSandboxHook);
       break;
+    case sandbox::mojom::Sandbox::kScreenAI:
+      pre_sandbox_hook = base::BindOnce(&screen_ai::ScreenAIPreSandboxHook);
+      break;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     case sandbox::mojom::Sandbox::kHardwareVideoDecoding:
       pre_sandbox_hook =
           base::BindOnce(&media::HardwareVideoDecodingPreSandboxHook);
       break;
     case sandbox::mojom::Sandbox::kIme:
-      pre_sandbox_hook = base::BindOnce(&chromeos::ime::ImePreSandboxHook);
+      pre_sandbox_hook = base::BindOnce(&ash::ime::ImePreSandboxHook);
       break;
     case sandbox::mojom::Sandbox::kTts:
       pre_sandbox_hook = base::BindOnce(&chromeos::tts::TtsPreSandboxHook);

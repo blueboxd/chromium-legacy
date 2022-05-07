@@ -172,6 +172,10 @@ if (is_win || is_mac || is_linux) {
       "//url",
     ]
 
+    if (is_posix) {
+      sources += [ "remove_uninstalled_apps_task_posix.cc" ]
+    }
+
     if (is_mac) {
       sources += [
         "activity_impl_mac.cc",
@@ -252,6 +256,7 @@ if (is_win || is_mac || is_linux) {
         "policy/win/group_policy_manager.cc",
         "policy/win/group_policy_manager.h",
         "prefs_win.cc",
+        "remove_uninstalled_apps_task_win.cc",
         "setup_win.cc",
         "update_block_check_win.cc",
         "update_usage_stats_task_win.cc",
@@ -265,6 +270,8 @@ if (is_win || is_mac || is_linux) {
         "win/net/network.h",
         "win/net/network_fetcher.cc",
         "win/net/network_fetcher.h",
+        "win/protocol_parser_xml.cc",
+        "win/protocol_parser_xml.h",
         "win/scoped_handle.h",
         "win/scoped_impersonation.cc",
         "win/scoped_impersonation.h",
@@ -309,7 +316,9 @@ if (is_win || is_mac || is_linux) {
       ]
       deps += [
         "//build:branding_buildflags",
-        "//chrome/installer/util:with_no_strings",
+        "//chrome/installer/util:constants",
+        "//chrome/installer/util:metainstaller_utils",
+        "//chrome/installer/util:work_item",
         "//chrome/updater/app/server/win:updater_idl_idl",
         "//chrome/updater/app/server/win:updater_internal_idl_idl",
         "//chrome/updater/app/server/win:updater_legacy_idl_idl",
@@ -327,8 +336,10 @@ if (is_win || is_mac || is_linux) {
       defines = [ "SECURITY_WIN32" ]
 
       libs = [
+        "msxml2.lib",
         "secur32.lib",
         "taskschd.lib",
+        "wtsapi32.lib",
       ]
     }
 
@@ -547,7 +558,10 @@ if (is_win || is_mac || is_linux) {
             "$root_build_dir/base.dll",
             "$root_build_dir/ui_base.dll",
           ]
-          data = [ "$root_build_dir/ucrtbased.dll" ]
+
+          if (is_debug) {
+            data = [ "$root_build_dir/ucrtbased.dll" ]
+          }
 
           deps += [ "//ui/base" ]
         }
@@ -625,6 +639,7 @@ if (is_win || is_mac || is_linux) {
         "util_win_unittest.cc",
         "win/installer_api_unittest.cc",
         "win/net/network_unittest.cc",
+        "win/protocol_parser_xml_unittest.cc",
         "win/setup/setup_util_unittest.cc",
         "win/tag_extractor_unittest.cc",
         "win/task_scheduler_unittest.cc",

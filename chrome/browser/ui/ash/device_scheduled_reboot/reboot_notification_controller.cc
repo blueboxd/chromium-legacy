@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/public/cpp/notification_utils.h"
+#include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "base/callback_helpers.h"
 #include "base/i18n/time_formatting.h"
 #include "base/memory/ptr_util.h"
@@ -26,6 +28,9 @@ namespace {
 constexpr char kPendingRebootNotificationId[] =
     "ash.device_scheduled_reboot_pending_notification";
 
+// Id of the post reboot notification
+constexpr char kPostRebootNotificationId[] =
+    "ash.device_scheduled_reboot_post_reboot_notification";
 }  // namespace
 
 RebootNotificationController::RebootNotificationController() = default;
@@ -34,13 +39,10 @@ RebootNotificationController::~RebootNotificationController() = default;
 
 void RebootNotificationController::MaybeShowPendingRebootNotification(
     const base::Time& reboot_time,
-    ButtonClickCallback reboot_callback) const {
-  if (!user_manager::UserManager::IsInitialized() ||
-      !user_manager::UserManager::Get()->IsUserLoggedIn() ||
-      user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp()) {
+    base::RepeatingClosure reboot_callback) {
+  if (!ShouldNotifyUser())
     return;
-  }
-
+  notification_callback_ = std::move(reboot_callback);
   std::u16string reboot_title =
       l10n_util::GetStringUTF16(IDS_POLICY_DEVICE_SCHEDULED_REBOOT_TITLE);
   std::u16string reboot_message =
@@ -54,10 +56,57 @@ void RebootNotificationController::MaybeShowPendingRebootNotification(
       l10n_util::GetStringUTF16(IDS_POLICY_REBOOT_BUTTON));
   scoped_refptr<message_center::NotificationDelegate> delegate =
       base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
-          std::move(reboot_callback));
+          base::BindRepeating(
+              &RebootNotificationController::HandleNotificationClick,
+              weak_ptr_factory_.GetWeakPtr()));
 
   ShowNotification(kPendingRebootNotificationId, reboot_title, reboot_message,
                    notification_data, delegate);
+}
+
+void RebootNotificationController::MaybeShowPendingRebootDialog(
+    const base::Time& reboot_time,
+    base::OnceClosure reboot_callback) {
+  if (!ShouldNotifyUser())
+    return;
+
+  gfx::NativeView parent =
+      ash::Shell::GetContainer(ash::Shell::GetRootWindowForNewWindows(),
+                               ash::kShellWindowId_SystemModalContainer);
+  // Closes old dialog if it was active at the moment and shows a new dialog
+  // notifying the user about the reboot.
+  scheduled_reboot_dialog_ = std::make_unique<ScheduledRebootDialog>(
+      reboot_time, parent, std::move(reboot_callback));
+}
+
+void RebootNotificationController::MaybeShowPostRebootNotification() const {
+  if (!ShouldNotifyUser())
+    return;
+  std::u16string title =
+      l10n_util::GetStringUTF16(IDS_POLICY_DEVICE_POST_REBOOT_TITLE);
+  scoped_refptr<message_center::NotificationDelegate> delegate =
+      base::MakeRefCounted<message_center::HandleNotificationClickDelegate>(
+          base::BindRepeating(
+              &RebootNotificationController::HandleNotificationClick,
+              weak_ptr_factory_.GetWeakPtr()));
+  ShowNotification(kPostRebootNotificationId, title, std::u16string(),
+                   message_center::RichNotificationData(), delegate);
+}
+
+void RebootNotificationController::CloseRebootNotification() const {
+  if (!ShouldNotifyUser())
+    return;
+  NotificationDisplayService* notification_display_service =
+      NotificationDisplayService::GetForProfile(
+          ProfileManager::GetActiveUserProfile());
+  notification_display_service->Close(NotificationHandler::Type::TRANSIENT,
+                                      kPendingRebootNotificationId);
+}
+
+void RebootNotificationController::CloseRebootDialog() {
+  if (scheduled_reboot_dialog_) {
+    scheduled_reboot_dialog_.reset();
+  }
 }
 
 void RebootNotificationController::ShowNotification(
@@ -83,4 +132,19 @@ void RebootNotificationController::ShowNotification(
   notification_display_service->Display(NotificationHandler::Type::TRANSIENT,
                                         *notification,
                                         /*metadata=*/nullptr);
+}
+
+bool RebootNotificationController::ShouldNotifyUser() const {
+  return (user_manager::UserManager::IsInitialized() &&
+          user_manager::UserManager::Get()->IsUserLoggedIn() &&
+          !user_manager::UserManager::Get()->IsLoggedInAsAnyKioskApp());
+}
+
+void RebootNotificationController::HandleNotificationClick(
+    absl::optional<int> button_index) const {
+  // Only request restart when the button is clicked, i.e. ignore the clicks
+  // on the body of the notification.
+  if (!button_index)
+    return;
+  notification_callback_.Run();
 }

@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webui/chromeos/in_session_password_change/lock_screen_reauth_handler.h"
 
+#include <memory>
+
 #include "ash/components/login/auth/challenge_response/cert_utils.h"
 #include "ash/components/login/auth/cryptohome_key_constants.h"
 #include "ash/constants/ash_features.h"
@@ -97,15 +99,14 @@ LockScreenReauthHandler::LockScreenReauthHandler(const std::string& email)
 
 LockScreenReauthHandler::~LockScreenReauthHandler() = default;
 
-void LockScreenReauthHandler::HandleInitialize(
-    base::Value::ConstListView value) {
+void LockScreenReauthHandler::HandleInitialize(const base::Value::List& value) {
   AllowJavascript();
   OnReauthDialogReadyForTesting();
   LoadAuthenticatorParam();
 }
 
 void LockScreenReauthHandler::HandleAuthenticatorLoaded(
-    base::Value::ConstListView value) {
+    const base::Value::List& value) {
   VLOG(1) << "Authenticator finished loading";
   authenticator_state_ = AuthenticatorState::LOADED;
 
@@ -241,8 +242,8 @@ void LockScreenReauthHandler::CallJavascript(const std::string& function,
 }
 
 void LockScreenReauthHandler::HandleCompleteAuthentication(
-    base::Value::ConstListView params) {
-  CHECK_EQ(params.size(), 6);
+    const base::Value::List& params) {
+  CHECK_EQ(params.size(), 6u);
   std::string gaia_id, email, password;
   bool using_saml;
   ::login::StringList services = ::login::StringList();
@@ -305,9 +306,9 @@ void LockScreenReauthHandler::OnReauthDialogReadyForTesting() {
 }
 
 void LockScreenReauthHandler::CheckCredentials(
-    const UserContext& user_context) {
+    std::unique_ptr<UserContext> user_context) {
   Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByAccountId(
-      user_context.GetAccountId());
+      user_context->GetAccountId());
   if (!profile) {
     LOG(ERROR) << "Invalid account id";
     return;
@@ -317,12 +318,12 @@ void LockScreenReauthHandler::CheckCredentials(
                           weak_factory_.GetWeakPtr());
   password_sync_manager_ =
       InSessionPasswordSyncManagerFactory::GetForProfile(profile);
-  password_sync_manager_->CheckCredentials(user_context,
+  password_sync_manager_->CheckCredentials(*user_context,
                                            password_changed_callback);
 }
 
 void LockScreenReauthHandler::HandleUpdateUserPassword(
-    base::Value::ConstListView value) {
+    const base::Value::List& value) {
   DCHECK(!value.empty());
   std::string old_password = value[0].GetString();
   password_sync_manager_->UpdateUserPassword(old_password);

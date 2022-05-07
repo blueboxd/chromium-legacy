@@ -1041,12 +1041,14 @@ class DnsOverHttpsProbeRunner : public DnsProbeRunner {
         DnsResponseResultExtractor extractor(response);
         HostCache::Entry results(ERR_FAILED, HostCache::Entry::SOURCE_UNKNOWN);
         DnsResponseResultExtractor::ExtractionError extraction_error =
-            extractor.ExtractDnsResults(DnsQueryType::A, &results);
+            extractor.ExtractDnsResults(
+                DnsQueryType::A,
+                /*original_domain_name=*/kDoHProbeHostname,
+                /*request_port=*/0, &results);
 
         if (extraction_error ==
                 DnsResponseResultExtractor::ExtractionError::kOk &&
-            results.legacy_addresses() &&
-            !results.legacy_addresses().value().empty()) {
+            results.ip_endpoints() && !results.ip_endpoints()->empty()) {
           // The DoH probe queries don't go through the standard DnsAttempt
           // path, so the ServerStats have not been updated yet.
           context_->RecordServerSuccess(

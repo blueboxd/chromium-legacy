@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/constants/ash_features.h"
+#include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "ash/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "ash/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
 #include "ash/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
@@ -19,26 +21,25 @@
 #include "base/time/time.h"
 #include "base/timer/mock_timer.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-namespace secure_channel {
+namespace ash::secure_channel {
+
 namespace {
+
+using ::ash::multidevice_setup::mojom::HostStatus;
+
 const char kSecureChannelFeatureName[] = "phone_hub";
 const char kConnectionResultMetricName[] = "PhoneHub.Connection.Result";
 const char kConnectionDurationMetricName[] = "PhoneHub.Connection.Duration";
 const char kConnectionLatencyMetricName[] = "PhoneHub.Connectivity.Latency";
-
-using multidevice_setup::mojom::HostStatus;
 
 constexpr base::TimeDelta kFakeConnectionLatencyTime(base::Seconds(3u));
 constexpr base::TimeDelta kFakeConnectionDurationTime(base::Seconds(10u));
 
 constexpr base::TimeDelta kExpectedTimeoutSeconds(base::Seconds(15u));
 
-class FakeObserver : public secure_channel::ConnectionManager::Observer {
+class FakeObserver : public ConnectionManager::Observer {
  public:
   FakeObserver() = default;
   ~FakeObserver() override = default;
@@ -48,7 +49,7 @@ class FakeObserver : public secure_channel::ConnectionManager::Observer {
 
   const std::string& last_message() const { return last_message_; }
 
-  // secure_channel::ConnectionManager::Observer:
+  // ConnectionManager::Observer:
   void OnConnectionStatusChanged() override { ++status_changed_num_calls_; }
   void OnMessageReceived(const std::string& payload) override {
     last_message_ = payload;
@@ -71,8 +72,7 @@ class ConnectionManagerImplTest : public testing::Test {
         test_local_device_(
             chromeos::multidevice::CreateRemoteDeviceRefForTest()),
         fake_secure_channel_client_(
-            std::make_unique<
-                chromeos::secure_channel::FakeSecureChannelClient>()) {}
+            std::make_unique<FakeSecureChannelClient>()) {}
 
   ConnectionManagerImplTest(const ConnectionManagerImplTest&) = delete;
   ConnectionManagerImplTest& operator=(const ConnectionManagerImplTest&) =
@@ -90,23 +90,21 @@ class ConnectionManagerImplTest : public testing::Test {
     fake_device_sync_client_.set_local_device_metadata(test_local_device_);
     fake_multidevice_setup_client_.SetHostStatusWithDevice(
         std::make_pair(HostStatus::kHostVerified, test_remote_device_));
-    connection_manager_ =
-        base::WrapUnique(new secure_channel::ConnectionManagerImpl(
-            &fake_multidevice_setup_client_, &fake_device_sync_client_,
-            fake_secure_channel_client_.get(), std::move(timer),
-            kSecureChannelFeatureName, kConnectionResultMetricName,
-            kConnectionLatencyMetricName, kConnectionDurationMetricName,
-            test_clock_.get()));
+    connection_manager_ = base::WrapUnique(new ConnectionManagerImpl(
+        &fake_multidevice_setup_client_, &fake_device_sync_client_,
+        fake_secure_channel_client_.get(), std::move(timer),
+        kSecureChannelFeatureName, kConnectionResultMetricName,
+        kConnectionLatencyMetricName, kConnectionDurationMetricName,
+        test_clock_.get()));
     connection_manager_->AddObserver(&fake_observer_);
-    EXPECT_EQ(secure_channel::ConnectionManager::Status::kDisconnected,
-              GetStatus());
+    EXPECT_EQ(ConnectionManager::Status::kDisconnected, GetStatus());
   }
 
   void TearDown() override {
     connection_manager_->RemoveObserver(&fake_observer_);
   }
 
-  secure_channel::ConnectionManager::Status GetStatus() const {
+  ConnectionManager::Status GetStatus() const {
     return connection_manager_->GetStatus();
   }
 
@@ -119,8 +117,7 @@ class ConnectionManagerImplTest : public testing::Test {
   }
 
   void CreateFakeConnectionAttempt() {
-    auto fake_connection_attempt =
-        std::make_unique<chromeos::secure_channel::FakeConnectionAttempt>();
+    auto fake_connection_attempt = std::make_unique<FakeConnectionAttempt>();
     fake_connection_attempt_ = fake_connection_attempt.get();
     fake_secure_channel_client_->set_next_initiate_connection_attempt(
         test_remote_device_, test_local_device_,
@@ -151,11 +148,10 @@ class ConnectionManagerImplTest : public testing::Test {
   chromeos::multidevice::RemoteDeviceRef test_local_device_;
   device_sync::FakeDeviceSyncClient fake_device_sync_client_;
   multidevice_setup::FakeMultiDeviceSetupClient fake_multidevice_setup_client_;
-  std::unique_ptr<chromeos::secure_channel::FakeSecureChannelClient>
-      fake_secure_channel_client_;
-  std::unique_ptr<secure_channel::ConnectionManagerImpl> connection_manager_;
+  std::unique_ptr<FakeSecureChannelClient> fake_secure_channel_client_;
+  std::unique_ptr<ConnectionManagerImpl> connection_manager_;
   FakeObserver fake_observer_;
-  chromeos::secure_channel::FakeConnectionAttempt* fake_connection_attempt_;
+  FakeConnectionAttempt* fake_connection_attempt_;
   std::unique_ptr<base::SimpleTestClock> test_clock_;
   base::HistogramTester histogram_tester_;
 };
@@ -167,19 +163,17 @@ TEST_F(ConnectionManagerImplTest, SuccessfullyAttemptConnection) {
   // Status has been updated to connecting, verify that the status observer
   // has been called.
   EXPECT_EQ(1u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kConnecting,
-            GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kConnecting, GetStatus());
 
   test_clock_->Advance(kFakeConnectionLatencyTime);
 
-  auto fake_client_channel =
-      std::make_unique<chromeos::secure_channel::FakeClientChannel>();
+  auto fake_client_channel = std::make_unique<FakeClientChannel>();
   fake_connection_attempt_->NotifyConnection(std::move(fake_client_channel));
 
   // Status has been updated to connected, verify that the status observer has
   // been called.
   EXPECT_EQ(2u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kConnected, GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kConnected, GetStatus());
 
   histogram_tester_.ExpectTimeBucketCount(kConnectionLatencyMetricName,
                                           kFakeConnectionLatencyTime, 1);
@@ -193,18 +187,15 @@ TEST_F(ConnectionManagerImplTest, FailedToAttemptConnection) {
   // Status has been updated to connecting, verify that the status observer
   // has been called.
   EXPECT_EQ(1u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kConnecting,
-            GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kConnecting, GetStatus());
 
   fake_connection_attempt_->NotifyConnectionAttemptFailure(
-      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason::
-          AUTHENTICATION_ERROR);
+      mojom::ConnectionAttemptFailureReason::AUTHENTICATION_ERROR);
 
   // Status has been updated to disconnected, verify that the status observer
   // has been called.
   EXPECT_EQ(2u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kDisconnected,
-            GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kDisconnected, GetStatus());
 
   VerifyConnectionResultHistogram(false, 1);
 }
@@ -216,21 +207,18 @@ TEST_F(ConnectionManagerImplTest, SuccessfulAttemptConnectionButDisconnected) {
   // Status has been updated to connecting, verify that the status observer
   // has been called.
   EXPECT_EQ(1u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kConnecting,
-            GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kConnecting, GetStatus());
 
   test_clock_->Advance(kFakeConnectionLatencyTime);
 
-  auto fake_client_channel =
-      std::make_unique<chromeos::secure_channel::FakeClientChannel>();
-  chromeos::secure_channel::FakeClientChannel* fake_client_channel_raw =
-      fake_client_channel.get();
+  auto fake_client_channel = std::make_unique<FakeClientChannel>();
+  FakeClientChannel* fake_client_channel_raw = fake_client_channel.get();
   fake_connection_attempt_->NotifyConnection(std::move(fake_client_channel));
 
   // Status has been updated to connected, verify that the status observer has
   // been called.
   EXPECT_EQ(2u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kConnected, GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kConnected, GetStatus());
 
   histogram_tester_.ExpectTimeBucketCount(kConnectionLatencyMetricName,
                                           kFakeConnectionLatencyTime, 1);
@@ -242,8 +230,7 @@ TEST_F(ConnectionManagerImplTest, SuccessfulAttemptConnectionButDisconnected) {
 
   // Expect status to be updated to disconnected.
   EXPECT_EQ(3u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kDisconnected,
-            GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kDisconnected, GetStatus());
 
   histogram_tester_.ExpectTimeBucketCount(kConnectionDurationMetricName,
                                           kFakeConnectionDurationTime, 1);
@@ -256,15 +243,12 @@ TEST_F(ConnectionManagerImplTest, AttemptConnectionWithMessageReceived) {
   // Status has been updated to connecting, verify that the status observer
   // has been called.
   EXPECT_EQ(1u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kConnecting,
-            GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kConnecting, GetStatus());
 
   test_clock_->Advance(kFakeConnectionLatencyTime);
 
-  auto fake_client_channel =
-      std::make_unique<chromeos::secure_channel::FakeClientChannel>();
-  chromeos::secure_channel::FakeClientChannel* fake_client_channel_raw =
-      fake_client_channel.get();
+  auto fake_client_channel = std::make_unique<FakeClientChannel>();
+  FakeClientChannel* fake_client_channel_raw = fake_client_channel.get();
   fake_connection_attempt_->NotifyConnection(std::move(fake_client_channel));
 
   histogram_tester_.ExpectTimeBucketCount(kConnectionLatencyMetricName,
@@ -274,7 +258,7 @@ TEST_F(ConnectionManagerImplTest, AttemptConnectionWithMessageReceived) {
   // Status has been updated to connected, verify that the status observer has
   // been called.
   EXPECT_EQ(2u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kConnected, GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kConnected, GetStatus());
 
   // Simulate a message being sent.
   const std::string expected_payload = "payload";
@@ -294,8 +278,7 @@ TEST_F(ConnectionManagerImplTest, AttemptConnectionWithoutLocalDevice) {
   // Status is still disconnected since there is a missing device, verify that
   // the status observer did not get called (exited early).
   EXPECT_EQ(0u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kDisconnected,
-            GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kDisconnected, GetStatus());
 }
 
 TEST_F(ConnectionManagerImplTest, AttemptConnectionWithoutRemoteDevice) {
@@ -308,8 +291,7 @@ TEST_F(ConnectionManagerImplTest, AttemptConnectionWithoutRemoteDevice) {
   // Status is still disconnected since there is a missing device, verify that
   // the status observer did not get called (exited early).
   EXPECT_EQ(0u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kDisconnected,
-            GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kDisconnected, GetStatus());
 }
 
 TEST_F(ConnectionManagerImplTest, ConnectionTimeout) {
@@ -319,8 +301,7 @@ TEST_F(ConnectionManagerImplTest, ConnectionTimeout) {
   // Status has been updated to connecting, verify that the status observer
   // has been called.
   EXPECT_EQ(1u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kConnecting,
-            GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kConnecting, GetStatus());
   VerifyTimerSet();
 
   // Simulate fast forwarding time to time out the connection request.
@@ -328,8 +309,7 @@ TEST_F(ConnectionManagerImplTest, ConnectionTimeout) {
 
   VerifyTimerStopped();
   EXPECT_EQ(2u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kDisconnected,
-            GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kDisconnected, GetStatus());
   VerifyConnectionResultHistogram(false, 1);
 }
 
@@ -340,15 +320,13 @@ TEST_F(ConnectionManagerImplTest, DisconnectConnection) {
   // Status has been updated to connecting, verify that the status observer
   // has been called.
   EXPECT_EQ(1u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kConnecting,
-            GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kConnecting, GetStatus());
   VerifyTimerSet();
 
   // Disconnect the connection attempt.
   connection_manager_->Disconnect();
   EXPECT_EQ(2u, GetNumStatusObserverCalls());
-  EXPECT_EQ(secure_channel::ConnectionManager::Status::kDisconnected,
-            GetStatus());
+  EXPECT_EQ(ConnectionManager::Status::kDisconnected, GetStatus());
   VerifyTimerStopped();
   VerifyConnectionResultHistogram(false, 1);
 }
@@ -356,10 +334,8 @@ TEST_F(ConnectionManagerImplTest, DisconnectConnection) {
 TEST_F(ConnectionManagerImplTest, RegisterPayloadFiles) {
   CreateFakeConnectionAttempt();
   connection_manager_->AttemptNearbyConnection();
-  auto fake_client_channel =
-      std::make_unique<chromeos::secure_channel::FakeClientChannel>();
-  chromeos::secure_channel::FakeClientChannel* fake_client_channel_raw =
-      fake_client_channel.get();
+  auto fake_client_channel = std::make_unique<FakeClientChannel>();
+  FakeClientChannel* fake_client_channel_raw = fake_client_channel.get();
   fake_connection_attempt_->NotifyConnection(std::move(fake_client_channel));
   int registeration_result_count = 0;
 
@@ -398,5 +374,4 @@ TEST_F(ConnectionManagerImplTest, RegisterPayloadFilesBeforeConnection) {
   EXPECT_EQ(1, registeration_result_count);
 }
 
-}  // namespace secure_channel
-}  // namespace chromeos
+}  // namespace ash::secure_channel

@@ -8,10 +8,12 @@
 #include <map>
 #include <string>
 
+#include "base/callback_forward.h"
 #include "base/component_export.h"
 #include "base/containers/queue.h"
 #include "base/observer_list.h"
 #include "chromeos/dbus/update_engine/update_engine_client.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace chromeos {
 
@@ -78,6 +80,10 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS_UPDATE_ENGINE) FakeUpdateEngineClient
   void set_update_check_result(
       const UpdateEngineClient::UpdateCheckResult& result);
 
+  void set_reboot_after_update_callback(base::OnceClosure callback) {
+    reboot_after_update_callback_ = std::move(callback);
+  }
+
   void set_can_rollback_check_result(bool result) {
     can_rollback_stub_result_ = result;
   }
@@ -115,13 +121,14 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS_UPDATE_ENGINE) FakeUpdateEngineClient
   }
 
   void SetToggleFeature(const std::string& feature,
-                        std::optional<bool> opt_enabled);
+                        absl::optional<bool> opt_enabled);
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;
   base::queue<update_engine::StatusResult> status_queue_;
   update_engine::StatusResult default_status_;
   UpdateCheckResult update_check_result_ = UPDATE_RESULT_SUCCESS;
+  base::OnceClosure reboot_after_update_callback_;
   bool can_rollback_stub_result_ = false;
   int reboot_after_update_call_count_ = 0;
   int request_update_check_call_count_ = 0;
@@ -130,7 +137,7 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS_UPDATE_ENGINE) FakeUpdateEngineClient
   int can_rollback_call_count_ = 0;
   int update_over_cellular_permission_count_ = 0;
   int update_over_cellular_one_time_permission_count_ = 0;
-  std::map<std::string, std::optional<bool>> features_;
+  std::map<std::string, absl::optional<bool>> features_;
   base::Time eol_date_;
 };
 

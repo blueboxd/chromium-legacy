@@ -120,7 +120,8 @@ LayoutUnit ResolveInlineLengthInternal(
     case Length::kCalculated: {
       const LayoutUnit percentage_resolution_size =
           constraint_space.PercentageResolutionInlineSize();
-      DCHECK(length.IsFixed() || percentage_resolution_size != kIndefiniteSize);
+      DCHECK(length.IsFixed() || percentage_resolution_size != kIndefiniteSize)
+          << length.ToString();
       LayoutUnit value =
           MinimumValueForLength(length, percentage_resolution_size);
 
@@ -996,7 +997,10 @@ LogicalSize ComputeReplacedSize(const NGBlockNode& node,
       size = InlineSizeFromAspectRatio(border_padding, aspect_ratio, box_sizing,
                                        *replaced_block);
     } else if (natural_size) {
-      size = natural_size->inline_size;
+      DCHECK_NE(mode, ReplacedSizeMode::kIgnoreInlineLengths);
+      size = ComputeReplacedSize(node, space, border_padding,
+                                 ReplacedSizeMode::kIgnoreInlineLengths)
+                 .inline_size;
     } else {
       // We don't have a natural size - default to stretching.
       size = StretchFit();
@@ -1234,29 +1238,6 @@ NGBoxStrut ComputeMarginsFor(const NGConstraintSpace& constraint_space,
       constraint_space.PercentageResolutionInlineSizeForParentWritingMode();
   return ComputePhysicalMargins(style, percentage_resolution_size)
       .ConvertToLogical(compute_for.GetWritingDirection());
-}
-
-NGBoxStrut ComputeMinMaxMargins(const ComputedStyle& parent_style,
-                                NGLayoutInputNode child) {
-  // An inline child just produces line-boxes which don't have any margins.
-  if (child.IsInline() || !child.Style().MayHaveMargin())
-    return NGBoxStrut();
-
-  const Length& inline_start_margin_length =
-      child.Style().MarginStartUsing(parent_style);
-  const Length& inline_end_margin_length =
-      child.Style().MarginEndUsing(parent_style);
-
-  // TODO(ikilpatrick): We may want to re-visit calculated margins at some
-  // point. Currently "margin-left: calc(10px + 50%)" will resolve to 0px, but
-  // 10px would be more correct, (as percentages resolve to zero).
-  NGBoxStrut margins;
-  if (inline_start_margin_length.IsFixed())
-    margins.inline_start = LayoutUnit(inline_start_margin_length.Value());
-  if (inline_end_margin_length.IsFixed())
-    margins.inline_end = LayoutUnit(inline_end_margin_length.Value());
-
-  return margins;
 }
 
 namespace {
@@ -1620,8 +1601,9 @@ LayoutUnit ClampIntrinsicBlockSize(
   if (default_intrinsic_size != kIndefiniteSize) {
     // <textarea>'s intrinsic size should ignore scrollbar existence.
     if (node.IsTextArea()) {
-      return default_intrinsic_size + border_scrollbar_padding.BlockSum() -
-             ComputeScrollbars(space, node).BlockSum();
+      return default_intrinsic_size -
+             ComputeScrollbars(space, node).BlockSum() +
+             border_scrollbar_padding.BlockSum();
     }
     return default_intrinsic_size + border_scrollbar_padding.BlockSum();
   }

@@ -8,7 +8,6 @@
 #include <string>
 #include <vector>
 
-#include "base/cxx17_backports.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
 #include "base/test/bind.h"
@@ -70,23 +69,26 @@ class DebugConnector : public auction_worklet::mojom::BidderWorklet {
       const absl::optional<std::string>& auction_signals_json,
       const absl::optional<std::string>& per_buyer_signals_json,
       const absl::optional<base::TimeDelta> per_buyer_timeout,
-      const url::Origin& seller_origin,
+      const url::Origin& browser_signal_seller_origin,
+      const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
       auction_worklet::mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
       base::Time auction_start_time,
       GenerateBidCallback generate_bid_callback) override {
     ADD_FAILURE() << "GenerateBid shouldn't be called on DebugConnector";
   }
 
-  void ReportWin(const std::string& interest_group_name,
-                 const absl::optional<std::string>& auction_signals_json,
-                 const absl::optional<std::string>& per_buyer_signals_json,
-                 const std::string& seller_signals_json,
-                 const GURL& browser_signal_render_url,
-                 double browser_signal_bid,
-                 const url::Origin& browser_signal_seller_origin,
-                 uint32_t bidding_data_version,
-                 bool has_biding_data_version,
-                 ReportWinCallback report_win_callback) override {
+  void ReportWin(
+      const std::string& interest_group_name,
+      const absl::optional<std::string>& auction_signals_json,
+      const absl::optional<std::string>& per_buyer_signals_json,
+      const std::string& seller_signals_json,
+      const GURL& browser_signal_render_url,
+      double browser_signal_bid,
+      const url::Origin& browser_signal_seller_origin,
+      const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
+      uint32_t bidding_data_version,
+      bool has_biding_data_version,
+      ReportWinCallback report_win_callback) override {
     ADD_FAILURE() << "ReportWin shouldn't be called on DebugConnector";
   }
 
@@ -1266,13 +1268,12 @@ TEST_F(AuctionV8HelperTest, CompileWasm) {
 
   v8::Local<v8::WasmModuleObject> wasm_module;
   absl::optional<std::string> compile_error;
-  ASSERT_TRUE(
-      helper_
-          ->CompileWasm(std::string(kMinimalWasmModuleBytes,
-                                    base::size(kMinimalWasmModuleBytes)),
-                        GURL("https://foo.test/"),
-                        /*debug_id=*/nullptr, compile_error)
-          .ToLocal(&wasm_module));
+  ASSERT_TRUE(helper_
+                  ->CompileWasm(std::string(kMinimalWasmModuleBytes,
+                                            std::size(kMinimalWasmModuleBytes)),
+                                GURL("https://foo.test/"),
+                                /*debug_id=*/nullptr, compile_error)
+                  .ToLocal(&wasm_module));
   EXPECT_FALSE(compile_error.has_value());
 }
 
@@ -1317,7 +1318,7 @@ TEST_F(AuctionV8HelperTest, CompileWasmDebug) {
   absl::optional<std::string> error_out;
   EXPECT_TRUE(CompileWasmOnV8ThreadAndWait(
       id, GURL("https://example.com"),
-      std::string(kMinimalWasmModuleBytes, base::size(kMinimalWasmModuleBytes)),
+      std::string(kMinimalWasmModuleBytes, std::size(kMinimalWasmModuleBytes)),
       &error_out));
   TestDevToolsAgentClient::Event script_parsed =
       debug_client.WaitForMethodNotification("Debugger.scriptParsed");
@@ -1348,13 +1349,12 @@ TEST_F(AuctionV8HelperTest, CloneWasmModule) {
   // Compile the WASM module...
   v8::Local<v8::WasmModuleObject> wasm_module;
   absl::optional<std::string> error_msg;
-  ASSERT_TRUE(
-      helper_
-          ->CompileWasm(std::string(kMinimalWasmModuleBytes,
-                                    base::size(kMinimalWasmModuleBytes)),
-                        GURL("https://foo.test/"),
-                        /*debug_id=*/nullptr, error_msg)
-          .ToLocal(&wasm_module));
+  ASSERT_TRUE(helper_
+                  ->CompileWasm(std::string(kMinimalWasmModuleBytes,
+                                            std::size(kMinimalWasmModuleBytes)),
+                                GURL("https://foo.test/"),
+                                /*debug_id=*/nullptr, error_msg)
+                  .ToLocal(&wasm_module));
   EXPECT_FALSE(error_msg.has_value());
 
   // And the test script.

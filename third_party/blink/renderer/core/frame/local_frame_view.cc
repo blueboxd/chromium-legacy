@@ -37,6 +37,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/timer/lap_timer.h"
+#include "base/trace_event/typed_macros.h"
 #include "cc/animation/animation_host.h"
 #include "cc/document_transition/document_transition_request.h"
 #include "cc/input/main_thread_scrolling_reason.h"
@@ -315,6 +316,7 @@ LocalFrameView::~LocalFrameView() {
 void LocalFrameView::Trace(Visitor* visitor) const {
   visitor->Trace(part_update_set_);
   visitor->Trace(frame_);
+  visitor->Trace(deferred_to_be_locked_);
   visitor->Trace(update_plugins_timer_);
   visitor->Trace(layout_subtree_root_list_);
   visitor->Trace(orthogonal_writing_mode_root_list_);
@@ -514,6 +516,20 @@ void LocalFrameView::InvalidateAllCustomScrollbarsOnActiveChanged() {
   for (const auto& scrollbar : scrollbars_) {
     if (uses_window_inactive_selector && scrollbar->IsCustomScrollbar())
       scrollbar->StyleChanged();
+  }
+}
+
+void LocalFrameView::UsesOverlayScrollbarsChanged() {
+  if (!user_scrollable_areas_)
+    return;
+  for (const auto& scrollable_area : *user_scrollable_areas_) {
+    if (scrollable_area->ScrollsOverflow() || scrollable_area->HasScrollbar()) {
+      scrollable_area->RemoveScrollbarsForReconstruction();
+      if (auto* layout_box = scrollable_area->GetLayoutBox()) {
+        layout_box->SetNeedsLayout(
+            layout_invalidation_reason::kScrollbarChanged);
+      }
+    }
   }
 }
 
@@ -843,8 +859,7 @@ void LocalFrameView::PerformLayout() {
               !frame_->PagePopupOwner() &&
               !FirstMeaningfulPaintDetector::From(*frame_->GetDocument())
                    .SeenFirstMeaningfulPaint());
-      DeferredShapingViewportScope viewport_scope(
-          *this, GetLayoutView()->InitialContainingBlockSize().block_size);
+      DeferredShapingViewportScope viewport_scope(*this, *GetLayoutView());
       GetLayoutView()->UpdateLayout();
     }
   }
@@ -1476,7 +1491,8 @@ static bool PrepareOrthogonalWritingModeRootForLayout(LayoutObject& root) {
   DCHECK(To<LayoutBox>(root).IsOrthogonalWritingModeRoot());
   if (!root.NeedsLayout() || root.IsOutOfFlowPositioned() ||
       root.IsColumnSpanAll() || root.StyleRef().LogicalHeight().IsSpecified() ||
-      To<LayoutBox>(root).IsGridItem() || root.IsTablePart())
+      To<LayoutBox>(root).IsGridItem() || root.IsTablePart() ||
+      root.IsLayoutFlowThread())
     return false;
 
   if (RuntimeEnabledFeatures::LayoutNGEnabled()) {
@@ -1892,6 +1908,16 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
   ScheduleUpdatePluginsIfNecessary();
   if (visual_viewport_size_changed && !document->Printing())
     frame_->GetDocument()->EnqueueVisualViewportResizeEvent();
+
+  if (deferred_to_be_locked_.size() > 0) {
+    DCHECK(RuntimeEnabledFeatures::DeferredShapingEnabled());
+    for (auto& element : deferred_to_be_locked_) {
+      auto& context = element->EnsureDisplayLockContext();
+      context.SetRequestedState(EContentVisibility::kAuto);
+      context.NotifyChildLayoutWasBlocked();
+    }
+    deferred_to_be_locked_.resize(0);
+  }
 }
 
 float LocalFrameView::InputEventsScaleFactor() const {
@@ -2737,6 +2763,8 @@ void LocalFrameView::RunPaintLifecyclePhase(PaintBenchmarkMode benchmark_mode) {
           for (PaintLayerScrollableArea* area : *animating_scrollable_areas)
             area->UpdateCompositorScrollAnimations();
         }
+        frame_view.GetPage()->GetLinkHighlight().UpdateAfterPaint(
+            paint_artifact_compositor_.get());
         Document& document = frame_view.GetLayoutView()->GetDocument();
         {
           // Updating animations can notify ready promises which could mutate
@@ -3624,7 +3652,10 @@ void LocalFrameView::ServiceScriptedAnimations(base::TimeTicks start_time) {
   document->ServiceScriptedAnimations(start_time, can_throttle);
 }
 
-void LocalFrameView::ScheduleAnimation(base::TimeDelta delay) {
+void LocalFrameView::ScheduleAnimation(base::TimeDelta delay,
+                                       base::Location location) {
+  TRACE_EVENT("cc", "LocalFrameView::ScheduleAnimation", "frame", GetFrame(),
+              "delay", delay, "location", location);
   if (auto* client = GetChromeClient())
     client->ScheduleAnimation(this, delay);
 }
@@ -4917,6 +4948,10 @@ DarkModeFilter& LocalFrameView::EnsureDarkModeFilter() {
         std::make_unique<DarkModeFilter>(GetCurrentDarkModeSettings());
   }
   return *dark_mode_filter_;
+}
+
+void LocalFrameView::RequestToLockDeferred(Element& element) {
+  deferred_to_be_locked_.push_back(element);
 }
 
 }  // namespace blink

@@ -56,6 +56,7 @@ ios_web_view_public_headers = [
   "public/cwv_flags.h",
   "public/cwv_html_element.h",
   "public/cwv_identity.h",
+  "public/cwv_lookalike_url_handler.h",
   "public/cwv_metrics_provider.h",
   "public/cwv_navigation_action.h",
   "public/cwv_navigation_delegate.h",
@@ -118,6 +119,8 @@ source_set("web_view_sources") {
     "internal/autofill/web_view_personal_data_manager_factory.mm",
     "internal/autofill/web_view_strike_database_factory.h",
     "internal/autofill/web_view_strike_database_factory.mm",
+    "internal/component_updater/web_view_component_updater_configurator.h",
+    "internal/component_updater/web_view_component_updater_configurator.mm",
     "internal/cwv_back_forward_list.mm",
     "internal/cwv_back_forward_list_internal.h",
     "internal/cwv_back_forward_list_item.mm",
@@ -130,6 +133,8 @@ source_set("web_view_sources") {
     "internal/cwv_flags_internal.h",
     "internal/cwv_html_element.mm",
     "internal/cwv_html_element_internal.h",
+    "internal/cwv_lookalike_url_handler.mm",
+    "internal/cwv_lookalike_url_handler_internal.h",
     "internal/cwv_navigation_action.mm",
     "internal/cwv_navigation_action_internal.h",
     "internal/cwv_navigation_type.mm",
@@ -269,6 +274,8 @@ source_set("web_view_sources") {
     "//components/autofill/ios/form_util",
     "//components/autofill/ios/form_util:form_handler_feature",
     "//components/browser_sync",
+    "//components/component_updater",
+    "//components/component_updater/installer_policies",
     "//components/flags_ui",
     "//components/flags_ui:switches",
     "//components/gcm_driver",
@@ -283,6 +290,7 @@ source_set("web_view_sources") {
     "//components/language/core/language_model",
     "//components/language/ios/browser",
     "//components/leveldb_proto",
+    "//components/lookalikes/core",
     "//components/metrics:library_support",
     "//components/metrics/demographics",
     "//components/password_manager/core/browser",
@@ -298,6 +306,8 @@ source_set("web_view_sources") {
     "//components/proxy_config",
     "//components/safe_browsing/core/common:safe_browsing_prefs",
     "//components/security_state/ios",
+    "//components/services/patch:in_process",
+    "//components/services/unzip:in_process",
     "//components/signin/core/browser",
     "//components/signin/ios/browser",
     "//components/signin/public/identity_manager",
@@ -311,6 +321,8 @@ source_set("web_view_sources") {
     "//components/translate/core/common",
     "//components/translate/ios/browser",
     "//components/unified_consent",
+    "//components/update_client",
+    "//components/update_client:common_impl",
     "//components/url_formatter",
     "//components/variations",
     "//components/variations/net",
@@ -322,6 +334,7 @@ source_set("web_view_sources") {
     "//ios/components/credential_provider_extension:password_spec_fetcher",
     "//ios/components/credential_provider_extension:password_util",
     "//ios/components/io_thread",
+    "//ios/components/security_interstitials/lookalikes",
     "//ios/components/webui:provider",
     "//ios/components/webui:url_constants",
     "//ios/components/webui/sync_internals",
@@ -435,6 +448,7 @@ test("ios_web_view_unittests") {
     "internal/cwv_favicon_unittest.mm",
     "internal/cwv_flags_unittest.mm",
     "internal/cwv_html_element_unittest.mm",
+    "internal/cwv_lookalike_url_handler_unittest.mm",
     "internal/cwv_preferences_unittest.mm",
     "internal/cwv_preview_element_info_unittest.mm",
     "internal/cwv_ssl_error_handler_unittest.mm",
@@ -527,8 +541,8 @@ repack_locales("repack_locales") {
     "//ui/strings:ax_strings",
     "//ui/strings:ui_strings",
   ]
-  input_locales = ios_packed_locales
-  output_locales = ios_packed_locales_as_mac_outputs
+  input_locales = platform_pak_locales
+  output_locales = locales_as_apple_outputs
   copy_data_to_bundle = true
 }
 

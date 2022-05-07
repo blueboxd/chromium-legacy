@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">Не ўдалося перайменаваць файл "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">Англійская (ЗША) з раскладкай Дворака</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – хост</translation>
+<translation id="1521655867290435174">Табліцы Google</translation>
 <translation id="1538729222189715449">Адкрываюцца файлы Linux...</translation>
 <translation id="1547964879613821194">Англійская (Канада)</translation>
 <translation id="1556189134700913550">Прымяніць да ўсяго</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">Сертыфікат аўтэнтыфікацыі адхілены сеткай</translation>
 <translation id="2547921442987553570">Дадаць у пашырэнне "<ph name="EXTENSION_NAME" />"</translation>
 <translation id="255937426064304553">ЗША, міжнародная</translation>
-<translation id="2562685439590298522">Дакументы</translation>
 <translation id="2563185590376525700">Жаба</translation>
 <translation id="2578394532502990878">Тамільская (фанетычная раскладка)</translation>
 <translation id="2579959351793446050">Орыя</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">ЗША, пашыраная</translation>
 <translation id="290843123675549676">Маратхі</translation>
 <translation id="2923240520113693977">Эстонская</translation>
-<translation id="2925966894897775835">Табліцы</translation>
 <translation id="2938685643439809023">Мангольская</translation>
-<translation id="2943400156390503548">Прэзентацыі</translation>
 <translation id="2943503720238418293">Выкарыстайце карацейшую назву</translation>
 <translation id="2949781154072577687">Фармаціруецца дыск "<ph name="DRIVE_NAME" />"...</translation>
 <translation id="2951236788251446349">Медуза</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, знаходзіцца пад кіраваннем адміністратара, падрабязныя звесткі</translation>
 <translation id="4387004326333427325">Сертыфікат аўтэнтыфікацыі адхілены аддалена</translation>
 <translation id="4394214039309501350">Знешняя спасылка</translation>
+<translation id="4401287888955153199">Выняць усё</translation>
 <translation id="4418686080762064601">Стварайце ярлыкі для файлаў</translation>
 <translation id="4425149324548788773">Мой Дыск</translation>
 <translation id="4439427728133035643">Сетка <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, магутнасць сігналу – <ph name="SIGNAL_STRENGTH" />%, падключыцца</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">Доступ да файлаў у пазасеткавым рэжыме</translation>
 <translation id="4658782175094886150">Чалавек у снезе</translation>
 <translation id="4669606053856530811">Удзельнікі дыска "<ph name="SOURCE_NAME" />" страцяць доступ да гэтых элементаў, калі гэтыя элементы не абагулены з імі.</translation>
+<translation id="467809019005607715">Прэзентацыі Google</translation>
 <translation id="4690246192099372265">Шведская</translation>
 <translation id="4693155481716051732">Сушы</translation>
 <translation id="4694604912444486114">Малпа</translation>
@@ -657,6 +657,7 @@
 <translation id="6732801395666424405">Сертыфікаты не загружаны</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">Выбрана 1 папка</translation>
+<translation id="6755827872271341378">Прылада з Chrome OS Flex</translation>
 <translation id="6790428901817661496">Прайграць</translation>
 <translation id="6795884519221689054">Панда</translation>
 <translation id="6806699711453372963">Кіраваць абагульваннем з Linux</translation>
@@ -734,6 +735,7 @@
 <translation id="7343393116438664539">В'етнамская (раскладка Telex)</translation>
 <translation id="7359359531237882347">Ідзе капіраванне элементаў (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="7375951387215729722">Файлы ў спісе адсартаваны па параметры "<ph name="COLUMN_NAME" />" (у пачатку будуць нядаўна змененыя).</translation>
+<translation id="7402503521691663770">Прылады з Chrome OS Flex</translation>
 <translation id="7408870451288633753">Чэшская</translation>
 <translation id="7417453074306512035">Эфіопская раскладка</translation>
 <translation id="7417705661718309329">Карта Google</translation>
@@ -949,6 +951,7 @@
 <translation id="9172592259078059678">Гуджараці (транслітарацыя)</translation>
 <translation id="9173120999827300720">Англійская (ЗША) з міжнароднай клавіятурай</translation>
 <translation id="9174050671906956834">Элементы выдаляюцца са сметніцы назаўсёды праз 30 дзён.</translation>
+<translation id="9183302530794969518">Дакументы Google</translation>
 <translation id="9189836632794948435">Казахская</translation>
 <translation id="9213073329713032541">Пачалося ўсталяванне.</translation>
 <translation id="9219103736887031265">Відарысы</translation>

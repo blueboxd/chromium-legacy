@@ -19,15 +19,9 @@
 #include "chrome/common/buildflags.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
-#include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
-#include "chrome/browser/web_applications/os_integration/url_handler_manager.h"
-#include "components/services/app_service/public/cpp/url_handler_info.h"
-#endif
 
 namespace web_app {
 namespace test {
@@ -53,7 +47,7 @@ void AwaitStartWebAppProviderAndSubsystems(Profile* profile) {
 AppId InstallDummyWebApp(Profile* profile,
                          const std::string& app_name,
                          const GURL& start_url) {
-  const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
+  AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, start_url);
   WebAppInstallInfo web_app_info;
 
   web_app_info.start_url = start_url;
@@ -114,39 +108,6 @@ AppId InstallWebApp(Profile* profile,
   return app_id;
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || \
-    (BUILDFLAG(IS_LINUX) && !BUILDFLAG(IS_CHROMEOS_LACROS))
-AppId InstallWebAppWithUrlHandlers(
-    Profile* profile,
-    const GURL& start_url,
-    const std::u16string& app_name,
-    const std::vector<apps::UrlHandlerInfo>& url_handlers) {
-  std::unique_ptr<WebAppInstallInfo> info =
-      std::make_unique<WebAppInstallInfo>();
-  info->start_url = start_url;
-  info->title = app_name;
-  info->user_display_mode = DisplayMode::kStandalone;
-  info->url_handlers = url_handlers;
-  web_app::AppId app_id =
-      web_app::test::InstallWebApp(profile, std::move(info));
-
-  auto& url_handler_manager = WebAppProvider::GetForTest(profile)
-                                  ->os_integration_manager()
-                                  .url_handler_manager_for_testing();
-
-  base::RunLoop run_loop;
-  url_handler_manager.RegisterUrlHandlers(
-      app_id, base::BindLambdaForTesting([&](Result result) {
-        EXPECT_EQ(Result::kOk, result);
-        run_loop.Quit();
-      }));
-  run_loop.Run();
-  // Allow updates to be published to App Service listeners.
-  base::RunLoop().RunUntilIdle();
-  return app_id;
-}
-#endif
-
 void UninstallWebApp(Profile* profile, const AppId& app_id) {
   WebAppProvider* const provider = WebAppProvider::GetForTest(profile);
   base::RunLoop run_loop;
@@ -154,8 +115,8 @@ void UninstallWebApp(Profile* profile, const AppId& app_id) {
   DCHECK(provider->install_finalizer().CanUserUninstallWebApp(app_id));
   provider->install_finalizer().UninstallWebApp(
       app_id, webapps::WebappUninstallSource::kAppMenu,
-      base::BindLambdaForTesting([&](bool uninstalled) {
-        EXPECT_TRUE(uninstalled);
+      base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
+        EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
         run_loop.Quit();
       }));
 

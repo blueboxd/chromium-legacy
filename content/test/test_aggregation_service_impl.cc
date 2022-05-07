@@ -41,13 +41,14 @@ AggregationServicePayloadContents::Operation ConvertToOperation(
   }
 }
 
-AggregationServicePayloadContents::ProcessingType ConvertToProcessingType(
-    TestAggregationService::ProcessingType processing_type) {
-  switch (processing_type) {
-    case TestAggregationService::ProcessingType::kTwoParty:
-      return AggregationServicePayloadContents::ProcessingType::kTwoParty;
-    case TestAggregationService::ProcessingType::kSingleServer:
-      return AggregationServicePayloadContents::ProcessingType::kSingleServer;
+AggregationServicePayloadContents::AggregationMode ConvertToAggregationMode(
+    TestAggregationService::AggregationMode aggregation_mode) {
+  switch (aggregation_mode) {
+    case TestAggregationService::AggregationMode::kTeeBased:
+      return AggregationServicePayloadContents::AggregationMode::kTeeBased;
+    case TestAggregationService::AggregationMode::kExperimentalPoplar:
+      return AggregationServicePayloadContents::AggregationMode::
+          kExperimentalPoplar;
   }
 }
 
@@ -76,10 +77,13 @@ TestAggregationServiceImpl::TestAggregationServiceImpl(
           /*run_in_memory=*/true,
           /*path_to_database=*/base::FilePath(),
           clock)),
-      sender_(AggregatableReportSender::CreateForTesting(url_loader_factory)),
-      assembler_(
-          AggregatableReportAssembler::CreateForTesting(/*manager=*/this,
-                                                        url_loader_factory)) {
+      sender_(AggregatableReportSender::CreateForTesting(
+          url_loader_factory,
+          /*enable_debug_logging=*/true)),
+      assembler_(AggregatableReportAssembler::CreateForTesting(
+          /*storage_context=*/this,
+          url_loader_factory,
+          /*enable_debug_logging=*/true)) {
   DCHECK(clock);
 }
 
@@ -97,7 +101,7 @@ void TestAggregationServiceImpl::SetDisablePayloadEncryption(
 }
 
 void TestAggregationServiceImpl::SetPublicKeys(
-    const url::Origin& origin,
+    const GURL& url,
     const std::string& json_string,
     base::OnceCallback<void(bool)> callback) {
   JSONStringValueDeserializer deserializer(json_string);
@@ -121,7 +125,7 @@ void TestAggregationServiceImpl::SetPublicKeys(
                       /*fetch_time=*/clock_.Now(),
                       /*expiry_time=*/base::Time::Max());
   storage_.AsyncCall(&AggregationServiceKeyStorage::SetPublicKeys)
-      .WithArgs(origin, std::move(keyset))
+      .WithArgs(url, std::move(keyset))
       .Then(base::BindOnce(std::move(callback), true));
 }
 
@@ -129,8 +133,10 @@ void TestAggregationServiceImpl::AssembleReport(
     AssembleRequest request,
     base::OnceCallback<void(base::Value::DictStorage)> callback) {
   AggregationServicePayloadContents payload_contents(
-      ConvertToOperation(request.operation), request.bucket, request.value,
-      ConvertToProcessingType(request.processing_type));
+      ConvertToOperation(request.operation),
+      {AggregationServicePayloadContents::HistogramContribution{
+          .bucket = request.bucket, .value = request.value}},
+      ConvertToAggregationMode(request.aggregation_mode));
 
   AggregatableReportSharedInfo shared_info(
       /*scheduled_report_time=*/base::Time::Now() + base::Seconds(30),
@@ -143,7 +149,7 @@ void TestAggregationServiceImpl::AssembleReport(
 
   absl::optional<AggregatableReportRequest> report_request =
       AggregatableReportRequest::CreateForTesting(
-          std::move(request.processing_origins), std::move(payload_contents),
+          std::move(request.processing_urls), std::move(payload_contents),
           std::move(shared_info));
   if (!report_request.has_value()) {
     std::move(callback).Run(base::Value::DictStorage());
@@ -171,10 +177,10 @@ void TestAggregationServiceImpl::SendReport(
 }
 
 void TestAggregationServiceImpl::GetPublicKeys(
-    const url::Origin& origin,
+    const GURL& url,
     base::OnceCallback<void(std::vector<PublicKey>)> callback) const {
   storage_.AsyncCall(&AggregationServiceKeyStorage::GetPublicKeys)
-      .WithArgs(origin)
+      .WithArgs(url)
       .Then(std::move(callback));
 }
 

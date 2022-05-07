@@ -4,6 +4,8 @@
 
 #include "chromeos/services/network_config/cros_network_config.h"
 
+#include <tuple>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
@@ -30,6 +32,7 @@
 #include "chromeos/network/network_profile_handler.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_type_pattern.h"
+#include "chromeos/network/policy_util.h"
 #include "chromeos/network/prohibited_technologies_handler.h"
 #include "chromeos/network/proxy/ui_proxy_config_service.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
@@ -71,6 +74,28 @@ const char kCellularTestApnName3[] = "Test Apn 3";
 const char kCellularTestApnUsername3[] = "Test User";
 const char kCellularTestApnPassword3[] = "Test Pass";
 const char kCellularTestApnAttach3[] = "attach";
+
+// Escaped twice, as it will be embedded as part of a JSON string, which should
+// have a single level of escapes still present.
+const char kOpenVPNTLSAuthContents[] =
+    "-----BEGIN OpenVPN Static key V1-----\\n"
+    "83f8e7ccd99be189b4663e18615f9166\\n"
+    "d885cdea6c8accb0ebf5be304f0b8081\\n"
+    "5404f2a6574e029815d7a2fb65b83d0c\\n"
+    "676850714c6a56b23415a78e06aad6b1\\n"
+    "34900dd512049598382039e4816cb5ff\\n"
+    "1848532b71af47578c9b4a14b5bca49f\\n"
+    "99e0ae4dae2f4e5eadfea374aeb8fb1e\\n"
+    "a6fdf02adc73ea778dfd43d64bf7bc75\\n"
+    "7779d629498f8c2fbfd32812bfdf6df7\\n"
+    "8cebafafef3e5496cb13202274f2768a\\n"
+    "1959bc53d67a70945c4c8c6f34b63327\\n"
+    "fb60dc84990ffec1243461e0b6310f61\\n"
+    "e90aee1f11fb6292d6f5fcd7cd508aab\\n"
+    "50d80f9963589c148cb4b933ec86128d\\n"
+    "ed77d3fad6005b62f36369e2319f52bd\\n"
+    "09c6d2e52cce2362a05009dc29b6b39a\\n"
+    "-----END OpenVPN Static key V1-----\\n";
 
 enum ComparisonType {
   INTEGER = 0,
@@ -187,9 +212,18 @@ class CrosNetworkConfigTest : public testing::Test {
       }
 }  )");
 
+    base::Value openvpn_onc = onc::ReadDictionaryFromJson(base::StringPrintf(
+        R"({ "GUID": "openvpn_guid", "Name": "openvpn", "Type": "VPN", "VPN": {
+          "Host": "my.vpn.example.com", "Type": "OpenVPN", "OpenVPN": {
+          "Auth": "MD5", "Cipher": "AES-192-CBC", "ClientCertType": "None",
+          "CompressionAlgorithm": "LZO", "KeyDirection": "1",
+          "TLSAuthContents": "%s"}}})",
+        kOpenVPNTLSAuthContents));
+
     base::ListValue user_policy_onc;
     user_policy_onc.Append(std::move(wifi2_onc));
     user_policy_onc.Append(std::move(wifi_eap_onc));
+    user_policy_onc.Append(std::move(openvpn_onc));
     managed_network_configuration_handler->SetPolicy(
         ::onc::ONC_SOURCE_USER_POLICY, helper()->UserHash(), user_policy_onc,
         /*global_network_config=*/base::DictionaryValue());
@@ -262,8 +296,17 @@ class CrosNetworkConfigTest : public testing::Test {
         kCellularTestIccid,
         NetworkProfileHandler::GetSharedProfilePath().c_str()));
     vpn_path_ = helper()->ConfigureService(
-        R"({"GUID": "vpn_guid", "Type": "vpn", "State": "association",
+        R"({"GUID": "vpn_l2tp_guid", "Type": "vpn", "State": "association",
             "Provider": {"Type": "l2tpipsec"}})");
+    helper()->ConfigureService(base::StringPrintf(
+        R"({"GUID":"openvpn_guid", "Type": "vpn", "Name": "openvpn",
+          "Provider.Host": "vpn.my.domain.com", "Provider.Type": "openvpn",
+          "OpenVPN.Auth": "MD5", "OpenVPN.Cipher": "AES-192-CBC",
+          "OpenVPN.Compress": "lzo", "OpenVPN.KeyDirection": "1",
+          "OpenVPN.TLSAuthContents": "%s"})",
+        kOpenVPNTLSAuthContents));
+    helper()->ConfigureService(R"({"GUID": "vpn_ikev2_guid", "Type": "vpn",
+            "State": "idle", "Provider": {"Type": "ikev2"}})");
 
     // Add a non visible configured wifi service.
     std::string wifi3_path = helper()->ConfigureService(
@@ -800,14 +843,25 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
   EXPECT_EQ(mojom::OncSource::kDevice, network->source);
   EXPECT_TRUE(cellular->sim_locked);
 
-  network = GetNetworkState("vpn_guid");
+  network = GetNetworkState("vpn_l2tp_guid");
   ASSERT_TRUE(network);
-  EXPECT_EQ("vpn_guid", network->guid);
+  EXPECT_EQ("vpn_l2tp_guid", network->guid);
   EXPECT_EQ(mojom::NetworkType::kVPN, network->type);
   EXPECT_EQ(mojom::ConnectionStateType::kConnecting, network->connection_state);
   ASSERT_TRUE(network->type_state);
   ASSERT_TRUE(network->type_state->is_vpn());
   EXPECT_EQ(mojom::VpnType::kL2TPIPsec, network->type_state->get_vpn()->type);
+  EXPECT_EQ(mojom::OncSource::kNone, network->source);
+
+  network = GetNetworkState("vpn_ikev2_guid");
+  ASSERT_TRUE(network);
+  EXPECT_EQ("vpn_ikev2_guid", network->guid);
+  EXPECT_EQ(mojom::NetworkType::kVPN, network->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
+            network->connection_state);
+  ASSERT_TRUE(network->type_state);
+  ASSERT_TRUE(network->type_state->is_vpn());
+  EXPECT_EQ(mojom::VpnType::kIKEv2, network->type_state->get_vpn()->type);
   EXPECT_EQ(mojom::OncSource::kNone, network->source);
 
   // TODO(919691): Test ProxyMode once UIProxyConfigService logic is improved.
@@ -824,7 +878,7 @@ TEST_F(CrosNetworkConfigTest, GetNetworkStateList) {
   ASSERT_EQ(3u, networks.size());
   EXPECT_EQ("eth_guid", networks[0]->guid);
   EXPECT_EQ("wifi1_guid", networks[1]->guid);
-  EXPECT_EQ("vpn_guid", networks[2]->guid);
+  EXPECT_EQ("vpn_l2tp_guid", networks[2]->guid);
 
   // First active network
   filter->limit = 1;
@@ -1155,9 +1209,9 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
   EXPECT_TRUE(cellular->sim_locked);
   EXPECT_EQ(mojom::ActivationStateType::kActivated, cellular->activation_state);
 
-  properties = GetManagedProperties("vpn_guid");
+  properties = GetManagedProperties("vpn_l2tp_guid");
   ASSERT_TRUE(properties);
-  EXPECT_EQ("vpn_guid", properties->guid);
+  EXPECT_EQ("vpn_l2tp_guid", properties->guid);
   EXPECT_EQ(mojom::NetworkType::kVPN, properties->type);
   EXPECT_EQ(mojom::ConnectionStateType::kConnecting,
             properties->connection_state);
@@ -1225,6 +1279,27 @@ TEST_F(CrosNetworkConfigTest, GetManagedPropertiesPolicy) {
   EXPECT_EQ(mojom::PolicySource::kUserPolicyEnforced,
             properties->priority->policy_source);
   EXPECT_EQ(0, properties->priority->policy_value);
+
+  properties = GetManagedProperties("openvpn_guid");
+  ASSERT_TRUE(properties);
+  ASSERT_EQ("openvpn_guid", properties->guid);
+  ASSERT_TRUE(properties->type_properties);
+  mojom::ManagedVPNProperties* vpn =
+      properties->type_properties->get_vpn().get();
+  ASSERT_TRUE(vpn);
+  ASSERT_TRUE(vpn->open_vpn);
+  std::vector<std::tuple<mojom::ManagedString*, std::string>> checks = {
+      {vpn->open_vpn->auth.get(), "MD5"},
+      {vpn->open_vpn->cipher.get(), "AES-192-CBC"},
+      {vpn->open_vpn->compression_algorithm.get(), "LZO"},
+      {vpn->open_vpn->tls_auth_contents.get(), policy_util::kFakeCredential},
+      {vpn->open_vpn->key_direction.get(), "1"}};
+  for (const auto& [property, expected] : checks) {
+    ASSERT_TRUE(property);
+    EXPECT_EQ(expected, property->active_value);
+    EXPECT_EQ(mojom::PolicySource::kUserPolicyEnforced,
+              property->policy_source);
+  }
 }
 
 // Test managed EAP properties which are merged from a separate EthernetEAP
@@ -2062,7 +2137,7 @@ TEST_F(CrosNetworkConfigTest, GetAlwaysOnVpn) {
                                base::Value(vpn_path()));
   properties = GetAlwaysOnVpn();
   EXPECT_EQ(mojom::AlwaysOnVpnMode::kOff, properties->mode);
-  EXPECT_EQ("vpn_guid", properties->service_guid);
+  EXPECT_EQ("vpn_l2tp_guid", properties->service_guid);
 
   helper()->SetProfileProperty(helper()->ProfilePathUser(),
                                shill::kAlwaysOnVpnModeProperty,
@@ -2080,7 +2155,7 @@ TEST_F(CrosNetworkConfigTest, GetAlwaysOnVpn) {
 TEST_F(CrosNetworkConfigTest, SetAlwaysOnVpn) {
   mojom::AlwaysOnVpnPropertiesPtr properties =
       mojom::AlwaysOnVpnProperties::New(mojom::AlwaysOnVpnMode::kBestEffort,
-                                        "vpn_guid");
+                                        "vpn_l2tp_guid");
   SetAlwaysOnVpn(std::move(properties));
 
   EXPECT_EQ("best-effort",

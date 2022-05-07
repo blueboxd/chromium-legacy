@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from '../../assert.js';
 import {Point} from '../../geometry.js';
 import {
   Facing,
@@ -67,7 +68,7 @@ class DocumentPhotoHandler implements PhotoHandler {
  */
 export class Scan extends Photo {
   constructor(
-      video: PreviewVideo, facing: Facing, captureResolution: Resolution,
+      video: PreviewVideo, facing: Facing, captureResolution: Resolution|null,
       scanHandler: ScanHandler) {
     super(
         video, facing, captureResolution,
@@ -83,12 +84,14 @@ export class ScanFactory extends ModeFactory {
    * @param constraints Constraints for preview stream.
    */
   constructor(
-      constraints: StreamConstraints, captureResolution: Resolution,
+      constraints: StreamConstraints, captureResolution: Resolution|null,
       protected readonly handler: ScanHandler) {
     super(constraints, captureResolution);
   }
 
   produce(): ModeBase {
+    assert(this.previewVideo !== null);
+    assert(this.facing !== null);
     return new Scan(
         this.previewVideo,
         this.facing,

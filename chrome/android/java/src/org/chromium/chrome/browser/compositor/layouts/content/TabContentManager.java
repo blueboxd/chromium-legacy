@@ -653,7 +653,7 @@ public class TabContentManager {
         // Class Object Methods
         long init(TabContentManager caller, int defaultCacheSize, int approximationCacheSize,
                 int compressionQueueMaxSize, int writeQueueMaxSize,
-                boolean useApproximationThumbnail, boolean saveJpegThumbnails);
+                boolean useApproximationThumbnail, boolean saveJpegThumbnails, float aspectRatio);
 
         void attachTab(long nativeTabContentManager, TabContentManager caller, Tab tab, int tabId);
         void detachTab(long nativeTabContentManager, TabContentManager caller, Tab tab, int tabId);

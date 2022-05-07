@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/accessibility/accessibility_controller_impl.h"
 #include "ash/constants/ash_constants.h"
 #include "ash/constants/ash_features.h"
 #include "ash/focus_cycler.h"
@@ -31,6 +32,7 @@
 #include "ash/wm/window_state_observer.h"
 #include "ash/wm/window_util.h"
 #include "ash/wm/wm_event.h"
+#include "ash/wm/wm_metrics.h"
 #include "base/auto_reset.h"
 #include "base/containers/adapters.h"
 #include "base/containers/fixed_flat_map.h"
@@ -1187,6 +1189,19 @@ bool WindowState::CanUnresizableSnapOnDisplay(display::Display display) const {
   }
 
   return true;
+}
+
+void WindowState::RecordAndResetWindowSnapActionSource() {
+  base::UmaHistogramEnumeration(kWindowSnapActionSourceHistogram,
+                                snap_action_source_);
+  snap_action_source_ = WindowSnapActionSource::kOthers;
+}
+
+void WindowState::ReadOutWindowCycleSnapAction(int message_id) {
+  Shell::Get()
+      ->accessibility_controller()
+      ->TriggerAccessibilityAlertWithMessage(
+          l10n_util::GetStringUTF8(message_id));
 }
 
 }  // namespace ash

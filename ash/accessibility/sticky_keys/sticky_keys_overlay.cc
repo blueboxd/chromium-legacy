@@ -10,6 +10,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/wm/work_area_insets.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -257,6 +258,13 @@ void StickyKeysOverlay::Show(bool visible) {
   overlay_widget_->GetLayer()->SetTransform(gfx::Transform());
 }
 
+void StickyKeysOverlay::UpdateBoundsIfVisible() {
+  if (!is_visible_)
+    return;
+
+  overlay_widget_->SetBounds(CalculateOverlayBounds());
+}
+
 void StickyKeysOverlay::SetModifierVisible(ui::EventFlags modifier,
                                            bool visible) {
   overlay_view_->SetModifierVisible(modifier, visible);
@@ -281,8 +289,15 @@ views::Widget* StickyKeysOverlay::GetWidgetForTesting() {
 }
 
 gfx::Rect StickyKeysOverlay::CalculateOverlayBounds() {
+  // Get work area to inset overlay (below Docked Magnifier or ChromeVox).
+  gfx::Rect work_area = WorkAreaInsets::ForWindow(Shell::GetPrimaryRootWindow())
+                            ->user_work_area_bounds();
+
   int x = is_visible_ ? kHorizontalOverlayOffset : -widget_size_.width();
-  return gfx::Rect(gfx::Point(x, kVerticalOverlayOffset), widget_size_);
+
+  return gfx::Rect(
+      gfx::Point(work_area.x() + x, work_area.y() + kVerticalOverlayOffset),
+      widget_size_);
 }
 
 void StickyKeysOverlay::OnImplicitAnimationsCompleted() {

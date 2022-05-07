@@ -110,8 +110,6 @@ class VideoDecoder::Vp8Impl final : public VideoDecoder::ImplBase {
       return;
 
     vpx_codec_dec_cfg_t cfg = {0};
-    // TODO(miu): Revisit this for typical multi-core desktop use case.  This
-    // feels like it should be 4 or 8.
     cfg.threads = 1;
 
     DCHECK(vpx_codec_get_caps(vpx_codec_vp8_dx()) & VPX_CODEC_CAP_POSTPROC);
@@ -175,7 +173,6 @@ class VideoDecoder::Vp8Impl final : public VideoDecoder::ImplBase {
   vpx_codec_ctx_t context_;
 };
 
-#ifndef OFFICIAL_BUILD
 // A fake video decoder that always output 2x2 black frames.
 class VideoDecoder::FakeImpl final : public VideoDecoder::ImplBase {
  public:
@@ -209,23 +206,19 @@ class VideoDecoder::FakeImpl final : public VideoDecoder::ImplBase {
 
   int last_decoded_id_;
 };
-#endif
 
 VideoDecoder::VideoDecoder(
     const scoped_refptr<CastEnvironment>& cast_environment,
     Codec codec)
     : cast_environment_(cast_environment) {
   switch (codec) {
-#ifndef OFFICIAL_BUILD
     case CODEC_VIDEO_FAKE:
       impl_ = new FakeImpl(cast_environment);
       break;
-#endif
     case CODEC_VIDEO_VP8:
       impl_ = new Vp8Impl(cast_environment);
       break;
     case CODEC_VIDEO_H264:
-      // TODO(miu): Need implementation.
       NOTIMPLEMENTED();
       break;
     default:

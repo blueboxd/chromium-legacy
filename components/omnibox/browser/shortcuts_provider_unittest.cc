@@ -14,7 +14,6 @@
 #include <string>
 #include <vector>
 
-#include "base/cxx17_backports.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
@@ -249,6 +248,12 @@ ShortcutsDatabase::Shortcut MakeShortcut(
 
 }  // namespace
 
+class MockHistoryService : public history::HistoryService {
+ public:
+  MockHistoryService() = default;
+  MOCK_METHOD1(DeleteURLs, void(const std::vector<GURL>&));
+};
+
 // ShortcutsProviderTest ------------------------------------------------------
 
 class ShortcutsProviderTest : public testing::Test {
@@ -284,12 +289,18 @@ ShortcutsProviderTest::ShortcutsProviderTest() {
 
 void ShortcutsProviderTest::SetUp() {
   client_ = std::make_unique<FakeAutocompleteProviderClient>();
+  client_->set_history_service(std::make_unique<MockHistoryService>());
+  auto shortcuts_backend = base::MakeRefCounted<ShortcutsBackend>(
+      client_->GetTemplateURLService(), std::make_unique<SearchTermsData>(),
+      client_->GetHistoryService(), base::FilePath(), true);
+  shortcuts_backend->Init();
+  client_->set_shortcuts_backend(std::move(shortcuts_backend));
 
   ASSERT_TRUE(client_->GetShortcutsBackend());
   provider_ = base::MakeRefCounted<ShortcutsProvider>(client_.get());
   PopulateShortcutsBackendWithTestData(client_->GetShortcutsBackend(),
                                        shortcut_test_db,
-                                       base::size(shortcut_test_db));
+                                       std::size(shortcut_test_db));
 }
 
 void ShortcutsProviderTest::TearDown() {
@@ -636,7 +647,7 @@ TEST_F(ShortcutsProviderTest, DeleteMatch) {
   size_t original_shortcuts_count = backend->shortcuts_map().size();
 
   PopulateShortcutsBackendWithTestData(backend, shortcuts_to_test_delete,
-                                       base::size(shortcuts_to_test_delete));
+                                       std::size(shortcuts_to_test_delete));
 
   EXPECT_EQ(original_shortcuts_count + 4, backend->shortcuts_map().size());
   EXPECT_FALSE(backend->shortcuts_map().end() ==

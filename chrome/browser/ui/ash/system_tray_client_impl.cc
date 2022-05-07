@@ -18,6 +18,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/ash/accessibility/accessibility_manager.h"
+#include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
 #include "chrome/browser/ash/policy/core/browser_policy_connector_ash.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_manager_ash.h"
@@ -62,6 +63,7 @@
 #include "net/base/escape.h"
 #include "third_party/cros_system_api/dbus/shill/dbus-constants.h"
 #include "ui/events/event_constants.h"
+#include "url/gurl.h"
 
 using chromeos::DBusThreadManager;
 using chromeos::UpdateEngineClient;
@@ -124,7 +126,8 @@ bool ShouldOpenCellularSetupPsimFlowOnClick(const std::string& network_id) {
   const chromeos::NetworkState* network_state = GetNetworkState(network_id);
   return network_state && network_state->type() == shill::kTypeCellular &&
          network_state->activation_state() ==
-             shill::kActivationStateNotActivated;
+             shill::kActivationStateNotActivated &&
+         network_state->eid().empty();
 }
 
 apps::AppServiceProxyAsh* GetActiveUserAppServiceProxyAsh() {
@@ -405,6 +408,11 @@ void SystemTrayClientImpl::ShowPrivacyAndSecuritySettings() {
       chromeos::settings::mojom::kPrivacyAndSecuritySectionPath);
 }
 
+void SystemTrayClientImpl::ShowSmartPrivacySettings() {
+  ShowSettingsSubPageForActiveUser(
+      chromeos::settings::mojom::kSmartPrivacySubpagePath);
+}
+
 void SystemTrayClientImpl::ShowChromeSlow() {
   chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetPrimaryUserProfile());
@@ -444,9 +452,7 @@ void SystemTrayClientImpl::ShowAboutChromeOS() {
 }
 
 void SystemTrayClientImpl::ShowAccessibilityHelp() {
-  chrome::ScopedTabbedBrowserDisplayer displayer(
-      ProfileManager::GetActiveUserProfile());
-  ash::AccessibilityManager::ShowAccessibilityHelp(displayer.browser());
+  ash::AccessibilityManager::ShowAccessibilityHelp();
 }
 
 void SystemTrayClientImpl::ShowAccessibilitySettings() {
@@ -469,6 +475,12 @@ void SystemTrayClientImpl::ShowGestureEducationHelp() {
 }
 
 void SystemTrayClientImpl::ShowPaletteHelp() {
+  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
+    crosapi::BrowserManager::Get()->SwitchToTab(
+        GURL(chrome::kChromePaletteHelpURL));
+    return;
+  }
+
   chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetActiveUserProfile());
   ShowSingletonTab(displayer.browser(), GURL(chrome::kChromePaletteHelpURL));
@@ -489,6 +501,12 @@ void SystemTrayClientImpl::ShowEnterpriseInfo() {
   }
 
   // Otherwise show enterprise management info page.
+  if (crosapi::browser_util::IsLacrosPrimaryBrowser()) {
+    crosapi::BrowserManager::Get()->SwitchToTab(
+        GURL(chrome::kChromeUIManagementURL));
+    return;
+  }
+
   chrome::ScopedTabbedBrowserDisplayer displayer(
       ProfileManager::GetActiveUserProfile());
   chrome::ShowEnterpriseManagementPageInTabbedBrowser(displayer.browser());

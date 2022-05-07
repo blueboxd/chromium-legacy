@@ -416,6 +416,12 @@ const char kLaunchPaletteOnEjectEvent[] =
 const char kLocalStateDevicePeripheralDataAccessEnabled[] =
     "settings.local_state_device_pci_data_access_enabled";
 
+// The timestamps (in milliseconds since UNIX Epoch, aka JavaTime) of the user
+// pressed the shutdown button from shelf.
+// static
+const char kLoginShutdownTimestampPrefName[] =
+    "ash.shelf.login_shutdown_timestamp";
+
 // A boolean pref that specifies if the cellular setup notification can be
 // shown or not. This notification should be shown post-OOBE if the user has a
 // cellular-capable device but no available cellular networks. It should only be
@@ -460,6 +466,10 @@ const char kColorModeThemed[] = "ash.dark_mode.color_mode_themed";
 
 // A boolean pref that indicates whether dark mode is enabled.
 const char kDarkModeEnabled[] = "ash.dark_mode.enabled";
+
+// A boolean pref that indicates whether dark mode is automatically
+// turned on at sunset and turned off at sunrise.
+const char kDarkModeAutoScheduled[] = "ash.dark_mode.auto_scheduled";
 
 // A boolean pref storing the enabled status of the NightLight feature.
 const char kNightLightEnabled[] = "ash.night_light.enabled";
@@ -688,6 +698,11 @@ const char kQuickUnlockFingerprintRecord[] = "quick_unlock.fingerprint.record";
 // on this list.
 const char kQuickUnlockModeAllowlist[] = "quick_unlock_mode_allowlist";
 
+// A list of allowed WebAuthn factors. A WebAuthn factor can only be
+// used if its type is on this list, or if type all (all WebAuthn factors
+// enabled) is on this list.
+const char kWebAuthnFactors[] = "authfactors.restrictions.webauthn";
+
 // String pref storing the salt for the pin quick unlock mechanism.
 const char kQuickUnlockPinSalt[] = "quick_unlock.pin.salt";
 
@@ -774,6 +789,11 @@ const char kBatteryChargeCustomStopCharging[] =
 // For details see "DeviceUsbPowerShareEnabled" in policy_templates.json.
 // Ignored unless powerd is configured to honor charging-related prefs.
 const char kUsbPowerShareEnabled[] = "ash.power.usb_power_share_enabled";
+
+// A bool pref to block the USB-C cable limiting device speed notification if it
+// has already been clicked by the user.
+const char kUsbPeripheralCableSpeedNotificationShown[] =
+    "ash.usb_peripheral_cable_speed_notification_shown";
 
 // An integer pref that specifies how many times the Suggested Content privacy
 // info has been shown in Launcher. This value will increment by one every time

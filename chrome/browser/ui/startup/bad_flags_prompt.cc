@@ -17,6 +17,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/infobars/simple_alert_infobar_creator.h"
 #include "chrome/browser/ui/simple_message_box.h"
+#include "chrome/browser/webauthn/webauthn_switches.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/grit/chromium_strings.h"
@@ -42,6 +43,7 @@
 #include "ui/base/resource/resource_bundle.h"
 
 #if BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/android/flags/bad_flags_snackbar_manager.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #else
 #include "chrome/browser/ui/browser.h"
@@ -146,6 +148,11 @@ static const char* kBadFlags[] = {
     // with a high potential for security / privacy abuse) for specified
     // origins.
     switches::kRestrictedApiOrigins,
+
+    // Allows the specified origin to make Web Authentication API requests on
+    // behalf of other origins, if a corresponding Google-internal
+    // platform-level enterprise policy is also applied.
+    webauthn::switches::kRemoteProxiedRequestsAllowedAdditionalOrigin,
 };
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -189,8 +196,14 @@ void ShowBadFlagsPrompt(content::WebContents* web_contents) {
 
   for (const base::Feature* feature : kBadFeatureFlagsInAboutFlags) {
     if (base::FeatureList::IsEnabled(*feature)) {
+#if BUILDFLAG(IS_ANDROID)
+      ShowBadFlagsSnackbar(web_contents, l10n_util::GetStringFUTF16(
+                                             IDS_BAD_FEATURES_WARNING_MESSAGE,
+                                             base::UTF8ToUTF16(feature->name)));
+#else
       ShowBadFlagsInfoBarHelper(web_contents, IDS_BAD_FEATURES_WARNING_MESSAGE,
                                 feature->name);
+#endif
       return;
     }
   }

@@ -86,10 +86,19 @@ const base::Feature kEnhancedProtection {
 
 const base::Feature kExtensionTelemetry{"SafeBrowsingExtensionTelemetry",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::FeatureParam<int> kExtensionTelemetryUploadIntervalSeconds{
     &kExtensionTelemetry, "UploadIntervalSeconds",
     /*default_value=*/3600};
+const base::Feature kExtensionTelemetryTabsExecuteScriptSignal{
+    "SafeBrowsingExtensionTelemetryTabsExecuteScriptSignal",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kExtensionTelemetryReportContactedHosts{
+    "SafeBrowsingExtensionTelemetryReportContactedHosts",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kFileTypePoliciesTag{"FileTypePoliciesTag",
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kFileTypePoliciesTag{"FileTypePoliciesTag",
                                          base::FEATURE_ENABLED_BY_DEFAULT};
@@ -98,7 +107,13 @@ const base::Feature kSimplifiedUrlDisplay{"SimplifiedUrlDisplay",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kTailoredSecurityIntegration{
-    "TailoredSecurityIntegration", base::FEATURE_DISABLED_BY_DEFAULT};
+  "TailoredSecurityIntegration",
+#if BUILDFLAG(IS_ANDROID)
+      base::FEATURE_DISABLED_BY_DEFAULT
+#else
+      base::FEATURE_ENABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature kOmitNonUserGesturesFromReferrerChain{
     "SafeBrowsingOmitNonUserGesturesFromReferrerChain",
@@ -183,6 +198,7 @@ constexpr struct {
     {&kDownloadBubble, true},
     {&kEnhancedProtection, true},
     {&kExtensionTelemetry, true},
+    {&kExtensionTelemetryReportContactedHosts, true},
     {&kFileTypePoliciesTag, true},
     {&kOmitNonUserGesturesFromReferrerChain, true},
     {&kPasswordProtectionForSignedInUsers, true},

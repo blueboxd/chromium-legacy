@@ -25,7 +25,7 @@ import {loadTimeData} from '//resources/js/load_time_data.m.js';
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Route, Router} from '../../router.js';
-import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
+import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
 import {LockScreenUnlockType, LockStateBehavior, LockStateBehaviorImpl} from '../os_people_page/lock_state_behavior.m.js';
 import {routes} from '../os_route.m.js';
 import {PrefsBehavior} from '../prefs_behavior.js';
@@ -114,18 +114,6 @@ Polymer({
       type: Boolean,
       value() {
         return loadTimeData.getBoolean('fingerprintUnlockEnabled');
-      },
-      readOnly: true,
-    },
-
-    /**
-     * True if Pciguard UI is enabled.
-     * @private
-     */
-    isPciguardUiEnabled_: {
-      type: Boolean,
-      value() {
-        return loadTimeData.getBoolean('pciguardUiEnabled');
       },
       readOnly: true,
     },
@@ -255,7 +243,7 @@ Polymer({
 
     this.browserProxy_.isThunderboltSupported().then(enabled => {
       this.isThunderboltSupported_ = enabled;
-      if (this.isPciguardUiEnabled_ && this.isThunderboltSupported_) {
+      if (this.isThunderboltSupported_) {
         this.supportedSettingIds.add(
             chromeos.settings.mojom.Setting.kPeripheralDataAccessProtection);
       }
@@ -514,7 +502,7 @@ Polymer({
    * @private
    */
   onDataAccessFlagsSet_() {
-    if (this.isThunderboltSupported_ && this.isPciguardUiEnabled_) {
+    if (this.isThunderboltSupported_) {
       this.browserProxy_.getPolicyState()
           .then(policy => {
             this.dataAccessProtectionPrefName_ = policy.prefName;

@@ -512,7 +512,7 @@ TEST_F(BorealisUninstallerTest, UninstallationRemovesAllNecessaryPieces) {
       guest_os::GuestOsRegistryServiceFactory::GetForProfile(&profile_)
           ->GetRegisteredApps(vm_tools::apps::ApplicationList_VmType_BOREALIS)
           .size(),
-      1);
+      1u);
 
   EXPECT_CALL(*test_context_manager_, ShutDownBorealis(testing::_))
       .WillOnce(testing::Invoke(
@@ -535,7 +535,7 @@ TEST_F(BorealisUninstallerTest, UninstallationRemovesAllNecessaryPieces) {
       guest_os::GuestOsRegistryServiceFactory::GetForProfile(&profile_)
           ->GetRegisteredApps(vm_tools::apps::ApplicationList_VmType_BOREALIS)
           .size(),
-      0);
+      0u);
 
   // Borealis has no stateful disk.
   EXPECT_GE(FakeConciergeClient()->destroy_disk_image_call_count(), 1);

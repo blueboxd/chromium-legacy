@@ -40,12 +40,13 @@ class IntegrationTestCommands
   virtual void ExpectSelfUpdateSequence(ScopedServer* test_server) const = 0;
   virtual void ExpectUpdateSequence(ScopedServer* test_server,
                                     const std::string& app_id,
+                                    const std::string& install_data_index,
                                     const base::Version& from_version,
                                     const base::Version& to_version) const = 0;
   virtual void ExpectVersionActive(const std::string& version) const = 0;
   virtual void ExpectVersionNotActive(const std::string& version) const = 0;
   virtual void Uninstall() const = 0;
-  virtual void RegisterApp(const std::string& app_id) const = 0;
+  virtual void InstallApp(const std::string& app_id) const = 0;
   virtual void CopyLog() const = 0;
   virtual void SetupFakeUpdaterHigherVersion() const = 0;
   virtual void SetupFakeUpdaterLowerVersion() const = 0;
@@ -53,13 +54,14 @@ class IntegrationTestCommands
   virtual void SetExistenceCheckerPath(const std::string& app_id,
                                        const base::FilePath& path) const = 0;
   virtual void SetServerStarts(int value) const = 0;
-  virtual void ExpectAppUnregisteredExistenceCheckerPath(
-      const std::string& app_id) const = 0;
+  virtual void ExpectRegistered(const std::string& app_id) const = 0;
+  virtual void ExpectNotRegistered(const std::string& app_id) const = 0;
   virtual void ExpectAppVersion(const std::string& app_id,
                                 const base::Version& version) const = 0;
   virtual void RunWake(int exit_code) const = 0;
   virtual void RunWakeActive(int exit_code) const = 0;
-  virtual void Update(const std::string& app_id) const = 0;
+  virtual void Update(const std::string& app_id,
+                      const std::string& install_data_index) const = 0;
   virtual void UpdateAll() const = 0;
   virtual void PrintLog() const = 0;
   virtual base::FilePath GetDifferentUserPath() const = 0;
@@ -77,6 +79,7 @@ class IntegrationTestCommands
 #endif  // BUILDFLAG(IS_WIN)
   virtual void StressUpdateService() const = 0;
   virtual void CallServiceUpdate(const std::string& app_id,
+                                 const std::string& install_data_index,
                                  UpdateService::PolicySameVersionUpdate
                                      policy_same_version_update) const = 0;
 
@@ -86,6 +89,7 @@ class IntegrationTestCommands
                                     const base::Version& version) const = 0;
   virtual void ExpectLastChecked() const = 0;
   virtual void ExpectLastStarted() const = 0;
+  virtual void UninstallApp(const std::string& app_id) const = 0;
 
  protected:
   friend class base::RefCountedThreadSafe<IntegrationTestCommands>;

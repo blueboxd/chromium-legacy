@@ -50,6 +50,11 @@ const char kAutofillParseMerchantPromoCodeFieldsDescription[] =
     "When enabled, Autofill will attempt to find merchant promo/coupon/gift "
     "code fields when parsing forms.";
 
+const char kAutofillPasswordRichIPHName[] = "Autofill password rich IPH";
+const char kAutofillPasswordRichIPHDescription[] =
+    "When enabled, display rich in-product help for autofill password "
+    "suggestions.";
+
 const char kAutofillPruneSuggestionsName[] = "Autofill Prune Suggestions";
 const char kAutofillPruneSuggestionsDescription[] =
     "Further limits the number of suggestions in the Autofill dropdown.";
@@ -84,6 +89,12 @@ const char kContentSuggestionsHeaderMigrationName[] =
 const char kContentSuggestionsHeaderMigrationDescription[] =
     "When enabled, the Content Suggestions header will be logically moved to "
     "the Discover feed ScrollView";
+
+const char kContentSuggestionsUIViewControllerMigrationName[] =
+    "Content Suggestions UIViewController migration";
+const char kContentSuggestionsUIViewControllerMigrationDescription[] =
+    "When enabled, the Content Suggestions will be logically moved to a "
+    "UIViewController subclass implementation";
 
 const char kCrashpadIOSName[] = "Use Crashpad for crash collection.";
 const char kCrashpadIOSDescription[] =
@@ -186,6 +197,12 @@ const char kEnableFREDefaultBrowserScreenTestingDescription[] =
     "This test display the FRE default browser screen and other default "
     "browser promo depending on experiment.";
 
+const char kEnableFaviconForPasswordsName[] =
+    "Enable favicons in the Password Manager";
+const char kEnableFaviconForPasswordsDescription[] =
+    "Show favicons in the Password Manager settings for the Saved Passwords "
+    "and Never Saved sections.";
+
 const char kEnableFREUIModuleIOSName[] = "Enable FRE UI module with options";
 const char kEnableFREUIModuleIOSDescription[] =
     "Use the new FRE UI module for first run. There are 4 UI options: Identity "
@@ -237,10 +254,10 @@ const char kEnableShortenedPasswordAutoFillInstructionDescription[] =
     "When enabled, the instructions to turn on Password AutoFill will have "
     "shorter steps and come with a button that links the user to iOS Settings.";
 
-const char kEnableWebChannelsName[] = "Enable WebChannels";
+const char kEnableWebChannelsName[] = "Enable WebFeed";
 const char kEnableWebChannelsDescription[] =
     "Enable folowing content from web and display Following feed on NTP based "
-    "on web channels that users followed.";
+    "on sites that users followed.";
 
 const char kEnhancedProtectionName[] = "Enable Enhanced Safe Browsing";
 const char kEnhancedProtectionDescription[] =
@@ -266,11 +283,6 @@ const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
 const char kForceStartupSigninPromoDescription[] =
     "When enabled, the startup sign-in promo is always displayed when starting "
     "Chrome.";
-
-const char kFREMobileIdentityConsistencyName[] = "Display the MICe FRE";
-const char kFREMobileIdentityConsistencyDescription[] =
-    "When enabled, the FRE with MICe (the welcome screen and sign-in screen "
-    "are merged).";
 
 const char kFullscreenSmoothScrollingName[] = "Fullscreen Smooth Scrolling";
 const char kFullscreenSmoothScrollingDescription[] =
@@ -357,6 +369,10 @@ const char kMuteCompromisedPasswordsName[] =
 const char kMuteCompromisedPasswordsDescription[] =
     "Enables muting/unmuting compromised passwords in bulk leak check.";
 
+const char kNewMobileIdentityConsistencyFREName[] = "New MICE FRE";
+const char kNewMobileIdentityConsistencyFREDescription[] =
+    "New Mobile Identity Consistency FRE";
+
 const char kNewOverflowMenuName[] = "New Overflow Menu";
 const char kNewOverflowMenuDescription[] = "Enables the new overflow menu";
 
@@ -398,6 +414,10 @@ const char kOmniboxNewImplementationName[] =
     "Use experimental omnibox textfield";
 const char kOmniboxNewImplementationDescription[] =
     "Uses a textfield implementation that doesn't use UILabels internally";
+
+const char kIOSOmniboxUpdatedPopupUIName[] = "Popup refresh";
+const char kIOSOmniboxUpdatedPopupUIDescription[] =
+    "Enable the new SwiftUI Popup implementation";
 
 const char kPasswordReuseDetectionName[] =
     "PhishGuard password reuse detection";
@@ -553,6 +573,12 @@ const char kUseLensToSearchForImageName[] =
 const char kUseLensToSearchForImageDescription[] =
     "When enabled, use Lens to search for images from the long press context "
     "menu when Google is the selected search engine.";
+
+const char kUseLoadSimulatedRequestForErrorPageNavigationName[] =
+    "Use loadSimulatedRequest:responseHTMLString: when displaying error pages";
+const char kUseLoadSimulatedRequestForErrorPageNavigationDescription[] =
+    "When enabled, CRWWKNavigationHandler uses the iOS 15 "
+    "loadSimulatedRequest:responseHTMLString: API for displaying error pages";
 
 const char kUseSFSymbolsSamplesName[] = "Replace Image by SFSymbols";
 const char kUseSFSymbolsSamplesDescription[] =

@@ -19,7 +19,7 @@ namespace ash {
 namespace input_method {
 namespace {
 
-namespace mojom = chromeos::ime::mojom;
+namespace mojom = ::ash::ime::mojom;
 
 constexpr char kUsEnglishEngineId[] = "xkb:us::eng";
 constexpr char kKoreanEngineId[] = "ko-t-i0-und";
@@ -273,7 +273,7 @@ TEST(CreateSettingsFromPrefsTest, CreateZhuyinSettingsDefault) {
   EXPECT_EQ(zhuyin_settings.layout, mojom::ZhuyinLayout::kStandard);
   EXPECT_EQ(zhuyin_settings.selection_keys,
             mojom::ZhuyinSelectionKeys::k1234567890);
-  EXPECT_EQ(zhuyin_settings.page_size, 10);
+  EXPECT_EQ(zhuyin_settings.page_size, 10u);
 }
 
 TEST(CreateSettingsFromPrefsTest, CreateZhuyinSettings) {
@@ -292,7 +292,7 @@ TEST(CreateSettingsFromPrefsTest, CreateZhuyinSettings) {
   EXPECT_EQ(zhuyin_settings.layout, mojom::ZhuyinLayout::kIbm);
   EXPECT_EQ(zhuyin_settings.selection_keys,
             mojom::ZhuyinSelectionKeys::kAsdfghjkl);
-  EXPECT_EQ(zhuyin_settings.page_size, 8);
+  EXPECT_EQ(zhuyin_settings.page_size, 8u);
 }
 
 }  // namespace

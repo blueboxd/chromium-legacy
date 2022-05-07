@@ -4,69 +4,6 @@
      found in the LICENSE file. -->
 
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Theme shared between Chrome and embedders. -->
-    <!-- TODO(https://crbug.com/1227450): This should be dissolved into the base theme or moved to
-         themes.xml. -->
-    <style name="Theme.BrowserUI" parent="Base.Theme.BrowserUI">
-        <!-- Control styles -->
-        <item name="checkboxStyle">@style/Widget.BrowserUI.CheckBox</item>
-        <item name="radioButtonStyle">@style/Widget.BrowserUI.RadioButton</item>
-        <item name="switchStyle">@style/Widget.BrowserUI.Switch</item>
-
-        <!-- Window Properties -->
-        <item name="android:windowBackground">@macro/default_bg_color</item>
-
-        <!-- Status bar color -->
-        <item name="android:statusBarColor" tools:targetApi="21">@android:color/black</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="23">false</item>
-
-        <!-- Spinner styles -->
-        <item name="spinnerStyle">@style/SpinnerStyle</item>
-        <item name="android:progressBarStyle">@style/ProgressBarStyle</item>
-
-        <!-- Popup styles -->
-        <!-- Set android popup menu attributes for context menu styles because the context menus are
-             OS-dependent. -->
-        <item name="android:popupMenuStyle">@style/PopupMenuStyle</item>
-        <item name="android:textAppearanceLargePopupMenu">
-            @style/TextAppearance.TextLarge.Primary
-        </item>
-        <item name="android:textAppearanceSmallPopupMenu">
-            @style/TextAppearance.TextLarge.Primary
-        </item>
-        <item name="android:contextPopupMenuStyle" tools:targetApi="24">@style/PopupMenuStyle</item>
-
-        <!-- This is for keeping the current TextInputLayout style.
-             TODO(crbug.com/1206024): Remove or update once the design for the app is updated. -->
-        <item name="textInputStyle">@style/Widget.BrowserUI.TextInputLayout</item>
-    </style>
-
-    <style name="Theme.BrowserUI.DayNight" />
-
-    <!-- This theme is used instead of android:style/Theme.NoDisplay so that it has the required
-         attributes in case the context ends up being used to inflate views. -->
-    <style name="Theme.BrowserUI.NoDisplay" parent="Theme.BrowserUI.DayNight">
-        <item name="android:windowBackground">@null</item>
-        <item name="android:windowContentOverlay">@null</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowAnimationStyle">@null</item>
-        <item name="android:windowDisablePreview">true</item>
-        <item name="android:windowNoDisplay">true</item>
-    </style>
-
-    <!-- These themes are used instead of android:style/Theme.Translucent* so that they have the
-         required attributes in case the context ends up being used to inflate views. -->
-    <style name="Theme.BrowserUI.Translucent" parent="Theme.BrowserUI.DayNight">
-        <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:colorBackgroundCacheHint">@null</item>
-        <item name="android:windowIsTranslucent">true</item>
-        <item name="android:windowAnimationStyle">@android:style/Animation</item>
-    </style>
-    <style name="Theme.BrowserUI.Translucent.NoTitleBar">
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowContentOverlay">@null</item>
-    </style>
-
     <!-- Control styles -->
     <style name="Widget.BrowserUI.CheckBox" parent="Widget.Material3.CompoundButton.CheckBox">
         <item name="buttonTint">@color/selection_control_button_tint</item>
@@ -184,6 +121,12 @@
         <item name="android:background">@macro/default_bg_color</item>
     </style>
 
+    <style name="TextButton.OnAccent1" tools:ignore="UnusedResources">
+        <item name="android:textAppearance">@style/TextAppearance.Button.OnAccent1</item>
+        <item name="buttonTextColor">@color/default_text_color_on_accent1_list</item>
+        <item name="rippleColor">@color/filled_button_ripple_color</item>
+    </style>
+
     <!-- Text styles -->
     <!-- Primary text styles -->
     <style name="TextAppearance.Headline.Primary">
@@ -264,6 +207,7 @@
     <style name="TextAppearance.TextSmall.Primary.OnAccent1" tools:ignore="UnusedResources">
         <item name="android:textColor">@color/default_text_color_on_accent1_list</item>
     </style>
+    <style name="TextAppearance.Button.OnAccent1" parent="TextAppearance.TextMediumThick.Primary.OnAccent1"/>
 
     <!-- Chip Text Styles -->
     <style name="TextAppearance.ChipText" parent="TextAppearance.TextAccentMediumThick">

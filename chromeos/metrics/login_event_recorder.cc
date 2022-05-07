@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
@@ -297,6 +298,13 @@ LoginEventRecorder::LoginEventRecorder()
   DCHECK(base::CurrentUIThread::IsSet());
   login_time_markers_.reserve(30);
   logout_time_markers_.reserve(30);
+
+  // Remember login events for later retrieval by tests.
+  constexpr char kKeepLoginEventsForTesting[] = "keep-login-events-for-testing";
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          kKeepLoginEventsForTesting)) {
+    PrepareEventCollectionForTesting();  // IN-TEST
+  }
 }
 
 LoginEventRecorder::~LoginEventRecorder() = default;
@@ -320,6 +328,11 @@ void LoginEventRecorder::AddLoginTimeMarkerWithURL(
     bool write_to_file) {
   AddMarker(&login_time_markers_,
             TimeMarker(marker_name, url, send_to_uma, write_to_file));
+  // Store a copy for testing.
+  if (login_time_markers_for_testing_.has_value()) {
+    login_time_markers_for_testing_.value().push_back(
+        login_time_markers_.back());
+  }
 }
 
 void LoginEventRecorder::AddLogoutTimeMarker(const char* marker_name,
@@ -371,6 +384,19 @@ void LoginEventRecorder::WriteLogoutTimes(const std::string base_name,
                                           const std::string uma_name,
                                           const std::string uma_prefix) {
   WriteTimes(base_name, uma_name, uma_prefix, std::move(logout_time_markers_));
+}
+
+void LoginEventRecorder::PrepareEventCollectionForTesting() {
+  if (login_time_markers_for_testing_.has_value())
+    return;
+
+  login_time_markers_for_testing_ = login_time_markers_;
+}
+
+const std::vector<LoginEventRecorder::TimeMarker>&
+LoginEventRecorder::GetCollectedLoginEventsForTesting() {
+  PrepareEventCollectionForTesting();  // IN-TEST
+  return login_time_markers_for_testing_.value();
 }
 
 void LoginEventRecorder::AddMarker(std::vector<TimeMarker>* vector,

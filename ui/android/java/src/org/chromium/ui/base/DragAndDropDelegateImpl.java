@@ -17,7 +17,6 @@ import android.util.Pair;
 import android.view.DragEvent;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
-import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityManager;
 import android.widget.ImageView;
 
@@ -304,10 +303,6 @@ class DragAndDropDelegateImpl implements ViewAndroidDelegate.DragAndDropDelegate
             // TODO(https://crbug.com/1289393): Handle link dragging.
             return DragTargetType.INVALID;
         }
-    }
-
-    private static int getDragShadowMinWidth(Resources resources) {
-        return resources.getDimensionPixelSize(R.dimen.drag_shadow_min_width);
     }
 
     private void reset() {

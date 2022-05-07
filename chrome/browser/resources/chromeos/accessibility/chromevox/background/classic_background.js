@@ -6,32 +6,14 @@
  * @fileoverview Script that runs on the background page.
  */
 
-goog.provide('ChromeVoxBackground');
+import {TtsBackground} from '../common/tts_background.js';
 
-goog.require('ChromeVoxState');
-goog.require('ConsoleTts');
-goog.require('EventStreamLogger');
-goog.require('LogStore');
-goog.require('Msgs');
-goog.require('constants');
-goog.require('AbstractEarcons');
-goog.require('BrailleBackground');
-goog.require('BrailleCaptionsBackground');
-goog.require('ChromeVox');
-goog.require('ChromeVoxEditableTextBase');
-goog.require('ChromeVoxPrefs');
-goog.require('CompositeTts');
-goog.require('ExtensionBridge');
-goog.require('InjectedScriptLoader');
-goog.require('NavBraille');
-goog.require('QueueMode');
-goog.require('TtsBackground');
-
+import {InjectedScriptLoader} from './injected_script_loader.js';
 
 /**
  * This is the legacy ChromeVox background object.
  */
-ChromeVoxBackground = class {
+export class ChromeVoxBackground {
   constructor() {
     ChromeVoxBackground.readPrefs();
 
@@ -351,4 +333,4 @@ ChromeVoxBackground = class {
         background.backgroundBraille_.getTranslatorManager();
     window['getCurrentVoice'] = background.getCurrentVoice.bind(background);
   }
-};
+}

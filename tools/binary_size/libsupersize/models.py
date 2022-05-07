@@ -32,6 +32,7 @@ METADATA_ELF_FILENAME = 'elf_file_name'  # Path relative to output_directory.
 METADATA_ELF_MTIME = 'elf_mtime'  # int timestamp in utc.
 METADATA_ELF_BUILD_ID = 'elf_build_id'
 METADATA_ELF_RELOCATIONS_COUNT = 'elf_relocations_count'
+METADATA_PROGUARD_MAPPING_FILENAME = 'proguard_mapping_file_name'
 
 # New sections should also be added to the SuperSize UI.
 SECTION_BSS = '.bss'
@@ -626,10 +627,7 @@ class DeltaSymbol(BaseSymbol):
   to one symbol in the |before|, and then be an alias to another in |after|.
   """
 
-  __slots__ = (
-      'before_symbol',
-      'after_symbol',
-  )
+  __slots__ = ('before_symbol', 'after_symbol', 'disassembly')
 
   def __init__(self, before_symbol, after_symbol):
     self.before_symbol = before_symbol

@@ -1054,7 +1054,7 @@ void OverviewGrid::OnDisplayMetricsChanged() {
   if (split_view_drag_indicators_)
     split_view_drag_indicators_->OnDisplayBoundsChanged();
 
-  UpdateCannotSnapWarningVisibility();
+  UpdateCannotSnapWarningVisibility(/*animate=*/true);
 
   // In case of split view mode, the grid bounds and item positions will be
   // updated in |OnSplitViewDividerPositionChanged|.
@@ -1739,8 +1739,6 @@ void OverviewGrid::ShowDesksTemplatesGrid(bool was_zero_state) {
   desks_templates_grid_widget_->Show();
 
   // Fade in the widget from its current opacity.
-  // TODO(crbug.com/1277160): Consider adding animate flag to determine whether
-  // to disable animations.
   PerformFadeInLayer(desks_templates_grid_widget_->GetLayer(),
                      /*animate=*/true);
 
@@ -1912,17 +1910,32 @@ void OverviewGrid::UpdateSaveDeskAsTemplateButton() {
   PerformFadeInLayer(save_desk_as_template_widget_->GetLayer(),
                      /*animate=*/true);
 
-  // Disable the save template button if the current number of templates has
-  // reached the max or the current desk has only unsupported apps.
   auto* save_template = static_cast<SaveDeskTemplateButton*>(
       save_desk_as_template_widget_->GetContentsView());
   auto* presenter = DesksTemplatesPresenter::Get();
-  if (presenter->GetEntryCount() >= presenter->GetMaxEntryCount() ||
-      DesksController::Get()->active_desk()->num_supported_windows() == 0) {
+  int tooltip_text_id;
+  if (presenter->GetEntryCount() >= presenter->GetMaxEntryCount()) {
+    // Disable the button if maximum number of templates has been reached.
+    save_template->SetEnabled(false);
+    tooltip_text_id = IDS_ASH_DESKS_TEMPLATES_MAX_TEMPLATES_TOOLTIP;
+  } else if (static_cast<size_t>(num_incognito_windows_ +
+                                 num_unsupported_windows_) == size()) {
+    // Disable the button if the desk has no supported windows.
+    if (num_incognito_windows_ == 0) {
+      tooltip_text_id = IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_LINUX_APPS_TOOLTIP;
+    } else if (static_cast<size_t>(num_incognito_windows_) != size()) {
+      tooltip_text_id =
+          IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_LINUX_APPS_AND_INCOGNITO_TOOLTIP;
+    } else {
+      tooltip_text_id = IDS_ASH_DESKS_TEMPLATES_UNSUPPORTED_INCOGNITO_TOOLTIP;
+    }
     save_template->SetEnabled(false);
   } else {
+    // Enable the button otherwise.
     save_template->SetEnabled(true);
+    tooltip_text_id = IDS_ASH_DESKS_TEMPLATES_SAVE_DESK_AS_TEMPLATE_BUTTON;
   }
+  save_template->SetTooltipText(l10n_util::GetStringUTF16(tooltip_text_id));
 
   // Set the widget position above the overview item window and default width
   // and height.
@@ -1989,7 +2002,7 @@ void OverviewGrid::OnSplitViewStateChanged(
   }
 
   // Update the cannot snap warnings and adjust the grid bounds.
-  UpdateCannotSnapWarningVisibility();
+  UpdateCannotSnapWarningVisibility(/*animate=*/true);
   SetBoundsAndUpdatePositions(GetGridBoundsInScreen(root_window_),
                               /*ignored_items=*/{}, /*animate=*/false);
 
@@ -2386,9 +2399,9 @@ gfx::Rect OverviewGrid::GetDesksWidgetBounds() const {
                                               root_window_);
 }
 
-void OverviewGrid::UpdateCannotSnapWarningVisibility() {
+void OverviewGrid::UpdateCannotSnapWarningVisibility(bool animate) {
   for (auto& overview_mode_item : window_list_)
-    overview_mode_item->UpdateCannotSnapWarningVisibility();
+    overview_mode_item->UpdateCannotSnapWarningVisibility(animate);
 }
 
 void OverviewGrid::OnSaveDeskAsTemplateButtonPressed() {
@@ -2422,7 +2435,7 @@ void OverviewGrid::UpdateNumIncognitoUnsupportedWindows(aura::Window* window,
   // TODO(crbug.com/1297710): Separate apps without Full Restore app id from
   // unsupported apps so that they are not labeled as "Linux" apps in text.
   const bool has_restore_id =
-      wm::GetTransientParent(window) &&
+      !wm::GetTransientParent(window) &&
       (Shell::Get()
            ->desks_controller()
            ->disable_app_id_check_for_desk_templates() ||

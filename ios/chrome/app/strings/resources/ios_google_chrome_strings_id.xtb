@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Bantu penyempurnaan Chrome dengan mengirimkan statistik penggunaan dan laporan error ke Google.</translation>
 <translation id="417201473131094001">Tidak didukung di Chrome Canary</translation>
 <translation id="4214277427269650960">Login ke situs ini dan Chrome. Anda dapat mengaktifkan sinkronisasi nanti.</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> menggunakan Chrome dan meninggalkan bookmark, sandi, serta setelan lainnya di perangkat ini.</translation>
 <translation id="424864128008805179">Logout dari Chrome?</translation>
 <translation id="4249068189593983585">Tips Chrome. Untuk opsi tab lainnya, sentuh lama tombol Tampilkan Tab di toolbar, yang terdapat di bagian bawah atau atas layar.</translation>
 <translation id="4523886039239821078">Beberapa pengaya (pengaya) menyebabkan Chrome mogok. Uninstal:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome tidak dapat memeriksa semua sandi. Coba lagi besok atau <ph name="BEGIN_LINK" />periksa sandi di Akun Google Anda<ph name="END_LINK" />.</translation>
 <translation id="484033449593719797">Tidak didukung di Chrome Beta</translation>
 <translation id="5030102366287574140">Chrome dapat membantu Anda agar tetap aman dari pelanggaran data, situs yang tidak aman, dan lainnya.</translation>
+<translation id="5108659628347594808">Buat Chrome Menjadi Lebih Baik</translation>
 <translation id="5119391094379141756">Pilih Chrome</translation>
 <translation id="5162467219239570114">Versi Chrome sudah usang. Jika tidak tersedia update di <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, mungkin saja perangkat Anda tidak lagi mendukung versi baru Chrome.</translation>
 <translation id="5389212809648216794">Google Chrome tidak dapat menggunakan kamera karena sedang digunakan aplikasi lain</translation>
@@ -81,6 +83,15 @@
 <translation id="6709398533399187136">Sandi Anda terekspos dalam pelanggaran data. Pengelola Sandi Google merekomendasikan untuk mengubahnya sekarang.</translation>
 <translation id="6822673484890854830">Chrome tidak dapat memeriksa semua sandi. Coba lagi nanti.</translation>
 <translation id="6964931465519938134">Anda sekarang dapat menggunakan Chrome kapan saja dengan mengetuk link di pesan, dokumen, dan aplikasi lainnya.</translation>
+<translation id="7046845777663074840">Jika aktif:
+<ph name="BEGIN_INDENT" />  • Membantu Chrome menjadi lebih baik bagi pengguna lain seperti Anda.<ph name="END_INDENT" />
+
+Hal-hal yang perlu dipertimbangkan:
+<ph name="BEGIN_INDENT" />  • Info tentang penggunaan Chrome akan dikirim ke Google, tetapi tidak dikaitkan dengan Anda.
+
+  • Jika Chrome mengalami error, detail tentang error tersebut dapat menyertakan beberapa info pribadi.
+
+  • Jika Anda mengaktifkan sinkronisasi, metrik juga dapat menyertakan info tentang URL yang Anda buka.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Sesuaikan Chrome dengan Selera Anda</translation>
 <translation id="7124339256045485976">Pastikan Chrome selalu terupdate</translation>
 <translation id="7161390184744336561">Versi Google Chrome sudah usang</translation>

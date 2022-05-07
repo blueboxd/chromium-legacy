@@ -13,6 +13,7 @@
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"
+#include "ash/strings/grit/ash_strings.h"
 #include "ash/wm/desks/desks_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -294,12 +295,17 @@ void TabletModeWindowState::OnWMEvent(WindowState* window_state,
     case WM_EVENT_RESTORE: {
       // We special handle WM_EVENT_RESTORE event here.
       WindowStateType restore_state = window_state->GetRestoreWindowState();
-      if (restore_state == WindowStateType::kPrimarySnapped)
+      if (restore_state == WindowStateType::kPrimarySnapped) {
+        window_state->set_snap_action_source(
+            WindowSnapActionSource::kSnapByWindowStateRestore);
         DoTabletSnap(window_state, WM_EVENT_SNAP_PRIMARY);
-      else if (restore_state == WindowStateType::kSecondarySnapped)
+      } else if (restore_state == WindowStateType::kSecondarySnapped) {
+        window_state->set_snap_action_source(
+            WindowSnapActionSource::kSnapByWindowStateRestore);
         DoTabletSnap(window_state, WM_EVENT_SNAP_SECONDARY);
-      else
+      } else {
         UpdateWindow(window_state, restore_state, /*animate=*/true);
+      }
       break;
     }
     case WM_EVENT_SNAP_PRIMARY:
@@ -529,11 +535,18 @@ void TabletModeWindowState::CycleTabletSnap(
   if (window == split_view_controller->GetSnappedWindow(snap_position)) {
     UpdateWindow(window_state, window_state->GetMaximizedOrCenteredWindowType(),
                  /*animated=*/true);
+    window_state->ReadOutWindowCycleSnapAction(
+        IDS_WM_RESTORE_SNAPPED_WINDOW_ON_SHORTCUT);
     return;
   }
   // If |window| can snap in split view, then snap |window| in |snap_position|.
   if (split_view_controller->CanSnapWindow(window)) {
+    window_state->RecordAndResetWindowSnapActionSource();
     split_view_controller->SnapWindow(window, snap_position);
+    window_state->ReadOutWindowCycleSnapAction(
+        snap_position == SplitViewController::LEFT
+            ? IDS_WM_SNAP_WINDOW_TO_LEFT_ON_SHORTCUT
+            : IDS_WM_SNAP_WINDOW_TO_RIGHT_ON_SHORTCUT);
     return;
   }
   // Otherwise, show the cannot snap toast.
@@ -553,6 +566,8 @@ void TabletModeWindowState::DoTabletSnap(WindowState* window_state,
   }
 
   window_state->set_bounds_changed_by_user(true);
+  window_state->RecordAndResetWindowSnapActionSource();
+
   // A snap WMEvent will put the window in tablet split view.
   split_view_controller->OnWindowSnapWMEvent(window, snap_event_type);
 

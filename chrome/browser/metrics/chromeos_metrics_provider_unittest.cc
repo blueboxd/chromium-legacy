@@ -6,6 +6,8 @@
 
 #include <string>
 
+#include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client_impl.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -19,8 +21,6 @@
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/login/login_state/login_state.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client_impl.h"
 #include "chromeos/system/fake_statistics_provider.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -33,28 +33,28 @@
 namespace {
 
 class FakeMultiDeviceSetupClientImplFactory
-    : public chromeos::multidevice_setup::MultiDeviceSetupClientImpl::Factory {
+    : public ash::multidevice_setup::MultiDeviceSetupClientImpl::Factory {
  public:
   FakeMultiDeviceSetupClientImplFactory(
-      std::unique_ptr<chromeos::multidevice_setup::FakeMultiDeviceSetupClient>
+      std::unique_ptr<ash::multidevice_setup::FakeMultiDeviceSetupClient>
           fake_multidevice_setup_client)
       : fake_multidevice_setup_client_(
             std::move(fake_multidevice_setup_client)) {}
 
   ~FakeMultiDeviceSetupClientImplFactory() override = default;
 
-  // chromeos::multidevice_setup::MultiDeviceSetupClientImpl::Factory:
+  // ash::multidevice_setup::MultiDeviceSetupClientImpl::Factory:
   // NOTE: At most, one client should be created per-test.
-  std::unique_ptr<chromeos::multidevice_setup::MultiDeviceSetupClient>
+  std::unique_ptr<ash::multidevice_setup::MultiDeviceSetupClient>
   CreateInstance(
-      mojo::PendingRemote<chromeos::multidevice_setup::mojom::MultiDeviceSetup>)
+      mojo::PendingRemote<ash::multidevice_setup::mojom::MultiDeviceSetup>)
       override {
     EXPECT_TRUE(fake_multidevice_setup_client_);
     return std::move(fake_multidevice_setup_client_);
   }
 
  private:
-  std::unique_ptr<chromeos::multidevice_setup::FakeMultiDeviceSetupClient>
+  std::unique_ptr<ash::multidevice_setup::FakeMultiDeviceSetupClient>
       fake_multidevice_setup_client_;
 };
 
@@ -96,13 +96,13 @@ class ChromeOSMetricsProviderTest : public testing::Test {
 
     ash::multidevice_setup::MultiDeviceSetupClientFactory::GetInstance()
         ->SetServiceIsNULLWhileTestingForTesting(false);
-    auto fake_multidevice_setup_client = std::make_unique<
-        chromeos::multidevice_setup::FakeMultiDeviceSetupClient>();
+    auto fake_multidevice_setup_client =
+        std::make_unique<ash::multidevice_setup::FakeMultiDeviceSetupClient>();
     fake_multidevice_setup_client_ = fake_multidevice_setup_client.get();
     fake_multidevice_setup_client_impl_factory_ =
         std::make_unique<FakeMultiDeviceSetupClientImplFactory>(
             std::move(fake_multidevice_setup_client));
-    chromeos::multidevice_setup::MultiDeviceSetupClientImpl::Factory::
+    ash::multidevice_setup::MultiDeviceSetupClientImpl::Factory::
         SetFactoryForTesting(fake_multidevice_setup_client_impl_factory_.get());
 
     profile_manager_ = std::make_unique<TestingProfileManager>(
@@ -123,13 +123,13 @@ class ChromeOSMetricsProviderTest : public testing::Test {
     // Destroy the login state tracker if it was initialized.
     chromeos::LoginState::Shutdown();
     chromeos::PowerManagerClient::Shutdown();
-    chromeos::multidevice_setup::MultiDeviceSetupClientImpl::Factory::
+    ash::multidevice_setup::MultiDeviceSetupClientImpl::Factory::
         SetFactoryForTesting(nullptr);
     profile_manager_.reset();
   }
 
  protected:
-  chromeos::multidevice_setup::FakeMultiDeviceSetupClient*
+  ash::multidevice_setup::FakeMultiDeviceSetupClient*
       fake_multidevice_setup_client_;
   base::test::ScopedFeatureList scoped_feature_list_;
   chromeos::system::ScopedFakeStatisticsProvider fake_statistics_provider_;
@@ -187,18 +187,18 @@ TEST_F(ChromeOSMetricsProviderTest, MultiProfileCountInvalidated) {
 }
 
 TEST_F(ChromeOSMetricsProviderTest, HasLinkedAndroidPhoneAndEnabledFeatures) {
-  fake_multidevice_setup_client_->SetHostStatusWithDevice(std::make_pair(
-      chromeos::multidevice_setup::mojom::HostStatus::kHostVerified,
-      chromeos::multidevice::CreateRemoteDeviceRefForTest()));
+  fake_multidevice_setup_client_->SetHostStatusWithDevice(
+      std::make_pair(ash::multidevice_setup::mojom::HostStatus::kHostVerified,
+                     chromeos::multidevice::CreateRemoteDeviceRefForTest()));
   fake_multidevice_setup_client_->SetFeatureState(
-      chromeos::multidevice_setup::mojom::Feature::kInstantTethering,
-      chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser);
+      ash::multidevice_setup::mojom::Feature::kInstantTethering,
+      ash::multidevice_setup::mojom::FeatureState::kEnabledByUser);
   fake_multidevice_setup_client_->SetFeatureState(
-      chromeos::multidevice_setup::mojom::Feature::kSmartLock,
-      chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser);
+      ash::multidevice_setup::mojom::Feature::kSmartLock,
+      ash::multidevice_setup::mojom::FeatureState::kEnabledByUser);
   fake_multidevice_setup_client_->SetFeatureState(
-      chromeos::multidevice_setup::mojom::Feature::kMessages,
-      chromeos::multidevice_setup::mojom::FeatureState::kFurtherSetupRequired);
+      ash::multidevice_setup::mojom::Feature::kMessages,
+      ash::multidevice_setup::mojom::FeatureState::kFurtherSetupRequired);
 
   // |scoped_enabler| takes over the lifetime of |user_manager|.
   auto* user_manager = new ash::FakeChromeUserManager();

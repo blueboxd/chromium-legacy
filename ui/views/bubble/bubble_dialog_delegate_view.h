@@ -460,31 +460,10 @@ VIEW_BUILDER_PROPERTY(bool, OwnedByWidget)
 VIEW_BUILDER_PROPERTY(bool, ShowCloseButton)
 VIEW_BUILDER_PROPERTY(bool, ShowIcon)
 VIEW_BUILDER_PROPERTY(bool, ShowTitle)
-// Manually define the SetTitle methods to resolve the overloads properly.
-BuilderT& SetTitle(const std::u16string& value) & {
-  auto setter = std::make_unique<::views::internal::PropertySetter<
-      ViewClass_, std::u16string,
-      decltype((static_cast<void (WidgetDelegate::*)(const std::u16string&)>(
-          &ViewClass_::SetTitle))),
-      &WidgetDelegate::SetTitle>>(value);
-  ::views::internal::ViewBuilderCore::AddPropertySetter(std::move(setter));
-  return *static_cast<BuilderT*>(this);
-}
-BuilderT&& SetTitle(const std::u16string& value) && {
-  return std::move(this->SetTitle(value));
-}
-BuilderT& SetTitle(int value) & {
-  auto setter = std::make_unique<::views::internal::PropertySetter<
-      ViewClass_, int,
-      decltype(
-          (static_cast<void (WidgetDelegate::*)(int)>(&ViewClass_::SetTitle))),
-      &WidgetDelegate::SetTitle>>(value);
-  ::views::internal::ViewBuilderCore::AddPropertySetter(std::move(setter));
-  return *static_cast<BuilderT*>(this);
-}
-BuilderT&& SetTitle(int value) && {
-  return std::move(this->SetTitle(value));
-}
+VIEW_BUILDER_OVERLOAD_METHOD_CLASS(WidgetDelegate,
+                                   SetTitle,
+                                   const std::u16string&)
+VIEW_BUILDER_OVERLOAD_METHOD_CLASS(WidgetDelegate, SetTitle, int)
 #if defined(USE_AURA)
 VIEW_BUILDER_PROPERTY(bool, CenterTitle)
 #endif
@@ -498,6 +477,7 @@ VIEW_BUILDER_METHOD(set_corner_radius, int)
 VIEW_BUILDER_METHOD(set_draggable, bool)
 VIEW_BUILDER_METHOD(set_use_custom_frame, bool)
 VIEW_BUILDER_METHOD(set_fixed_width, int)
+VIEW_BUILDER_METHOD(set_highlight_button_when_shown, bool)
 VIEW_BUILDER_PROPERTY(base::OnceClosure, AcceptCallback)
 VIEW_BUILDER_PROPERTY(base::OnceClosure, CancelCallback)
 VIEW_BUILDER_PROPERTY(base::OnceClosure, CloseCallback)

@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Hjälp till att förbättra Chrome genom att skicka användningsstatistik och felrapporter till Google.</translation>
 <translation id="417201473131094001">Stöds inte på Chrome Canary</translation>
 <translation id="4214277427269650960">Logga in på den här webbplatsen och i Chrome. Du kan aktivera synkronisering senare.</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> använde Chrome och har lämnat kvar bokmärken, lösenord och andra inställningar på enheten.</translation>
 <translation id="424864128008805179">Vill du logga ut från Chrome?</translation>
 <translation id="4249068189593983585">Tips för Chrome. Tryck länge på Visa flikar i verktygsfältet så visas fler flikalternativ. Du hittar verktygsfältet längst ned eller högst upp på skärmen.</translation>
 <translation id="4523886039239821078">Några tillägg har fått Chrome att krascha. Avinstallera följande:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome kunde inte kontrollera alla lösenord. Försök igen i morgon eller <ph name="BEGIN_LINK" />kontrollera lösenorden i ditt Google-konto<ph name="END_LINK" />.</translation>
 <translation id="484033449593719797">Stöds inte på Chrome Beta</translation>
 <translation id="5030102366287574140">Chrome kan skydda dig från dataintrång, osäkra webbplatser med mera.</translation>
+<translation id="5108659628347594808">Gör Chrome bättre</translation>
 <translation id="5119391094379141756">Välj Chrome</translation>
 <translation id="5162467219239570114">Den här versionen av Chrome är inaktuell. Om det inte finns någon uppdatering i <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> kan det hända att enheten inte längre har stöd för nya versioner av Chrome.</translation>
 <translation id="5389212809648216794">Google Chrome kan inte använda kameran eftersom den används av en annan app</translation>
@@ -81,6 +83,13 @@
 <translation id="6709398533399187136">Ditt lösenord har läckt ut vid ett dataintrång. Du rekommenderas av Google Lösenordshantering att byta lösenord nu.</translation>
 <translation id="6822673484890854830">Chrome kunde inte kontrollera alla lösenord. Försök igen senare.</translation>
 <translation id="6964931465519938134">Nu kan du använda Chrome varje gång du trycker på länkar i meddelanden, dokument och andra appar.</translation>
+<translation id="7046845777663074840">När detta är aktiverat:
+<ph name="BEGIN_INDENT" />  • Du hjälper oss att göra Chrome bättre för den som använder programmet på samma sätt som du.<ph name="END_INDENT" />
+
+Tänk på detta:
+<ph name="BEGIN_INDENT" />  • Information om hur du använder Chrome skickas till Google men kopplas inte till dig.
+  • Om Chrome kraschar kan personliga uppgifter finnas med i kraschinformationen.
+  • Om du aktiverar synkronisering kan mätvärdena även innehålla information om webbadresser du besöker.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Anpassa Chrome</translation>
 <translation id="7124339256045485976">Håll Chrome uppdaterad</translation>
 <translation id="7161390184744336561">Google Chrome-versionen är inaktuell</translation>

@@ -71,10 +71,6 @@ def main(argv, stderr):
         printer.cleanup()
         return exit_codes.UNEXPECTED_ERROR_EXIT_STATUS
 
-    # Spawn ends up with pickle errors while creating workers on fuchsia.
-    if not six.PY2 and ("fuchsia" not in port.port_name):
-        multiprocessing.set_start_method('spawn')
-
     try:
         return run(port, options, args, printer).exit_code
 
@@ -328,11 +324,10 @@ def parse_args(args):
                 dest='build',
                 action='store_false',
                 help="Don't check to see if the build is up to date."),
-            optparse.make_option(
-                '--no-virtual-tests',
-                action='store_true',
-                default=False,
-                help=('Do not run virtual tests.')),
+            optparse.make_option('--no-virtual-tests',
+                                 action='store_true',
+                                 default=False,
+                                 help=('Do not run virtual tests.')),
             optparse.make_option('--child-processes',
                                  '--jobs',
                                  '-j',
@@ -616,7 +611,28 @@ def parse_args(args):
                  'use case is to leave enough time to allow the process to '
                  'finish post-run hooks, such as dumping code coverage data. '
                  'Default is 1 second, can be overriden for specific use cases.'
-                 ))
+                 )),
+            optparse.make_option(
+                '--git-revision',
+                help=(
+                    'The Chromium git revision being tested. This is only used '
+                    'for an experimental Skia Gold dryrun.')),
+            optparse.make_option(
+                '--gerrit-issue',
+                help=(
+                    'The Gerrit issue/CL number being tested, if applicable. '
+                    'This is only used for an experimental Skia Gold dryrun.'
+                )),
+            optparse.make_option(
+                '--gerrit-patchset',
+                help=(
+                    'The Gerrit patchset being tested, if applicable. This is '
+                    'only used for an experimental Skia Gold dryrun.')),
+            optparse.make_option(
+                '--buildbucket-id',
+                help=(
+                    'The Buildbucket ID of the bot running the test. This is '
+                    'only used for an experimental Skia Gold dryrun.')),
         ]))
 
     # FIXME: Move these into json_results_generator.py.
@@ -753,4 +769,6 @@ def run(port, options, args, printer):
 
 
 if __name__ == '__main__':
+    if not six.PY2:
+        multiprocessing.set_start_method('spawn')
     sys.exit(main(sys.argv[1:], sys.stderr))

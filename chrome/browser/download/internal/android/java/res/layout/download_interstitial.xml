@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright 2022 The Chromium Authors. All rights reserved.
+     Use of this source code is governed by a BSD-style license that can be
+     found in the LICENSE file. -->
+
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:background="@color/default_bg_color"
+    android:fillViewport="true"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <!-- TODO(alexmitra): Add contentDescription. -->
+        <ImageView
+            android:id="@+id/icon"
+            android:layout_width="324dp"
+            android:layout_height="322dp"
+            android:layout_gravity="center_horizontal"
+            android:src="@drawable/download_interstitial_icon"
+            tools:ignore="ContentDescription" />
+
+        <TextView
+            android:id="@+id/heading"
+            android:layout_width="324dp"
+            android:layout_height="wrap_content"
+            android:text="@string/menu_download"
+            android:textAppearance="@style/TextAppearance.DownloadDialogTitle"
+            android:layout_gravity="center_horizontal"/>
+
+        <FrameLayout
+            android:id="@+id/file_info"
+            android:layout_width="match_parent"
+            android:layout_height="75dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginHorizontal="16dp">
+            <!-- TODO(alexmitra): Replace text with @string resource once UX have given a new design. -->
+            <TextView
+                android:id="@+id/loading_message"
+                android:layout_width="324dp"
+                android:layout_height="wrap_content"
+                android:text="Preparing your Download..."
+                android:textAppearance="@style/TextAppearance.TextMedium.Secondary"
+                android:layout_gravity="center_horizontal"
+                tools:ignore="HardcodedText" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom">
+
+        <org.chromium.components.browser_ui.widget.DualControlLayout
+            android:id="@+id/button_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:background="@color/default_bg_color"
+            app:stackedMargin="24dp"
+            app:buttonAlignment="end"/>
+    </FrameLayout>
+</FrameLayout>

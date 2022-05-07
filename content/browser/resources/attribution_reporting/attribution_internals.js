@@ -7,7 +7,7 @@ import {getTrustedHTML} from 'chrome://resources/js/static_types.js';
 import {$, getRequiredElement} from 'chrome://resources/js/util.m.js';
 import {Origin} from 'chrome://resources/mojo/url/mojom/origin.mojom-webui.js';
 
-import {AttributionInternalsHandler, AttributionInternalsHandlerRemote, AttributionInternalsObserverInterface, AttributionInternalsObserverReceiver, SourceType, WebUIAttributionReport, WebUIAttributionReport_Status, WebUIAttributionSource, WebUIAttributionSource_Attributability} from './attribution_internals.mojom-webui.js';
+import {AttributionInternalsHandler, AttributionInternalsHandlerRemote, AttributionInternalsObserverInterface, AttributionInternalsObserverReceiver, AttributionSourceType, WebUIAttributionReport, WebUIAttributionReport_Status, WebUIAttributionSource, WebUIAttributionSource_Attributability} from './attribution_internals.mojom-webui.js';
 
 /**
  * @template T
@@ -426,6 +426,7 @@ class Source {
     this.expiryTime = new Date(mojo.expiryTime);
     this.sourceType = SourceTypeToText(mojo.sourceType);
     this.priority = mojo.priority;
+    this.filterData = JSON.stringify(mojo.filterData, null, ' ');
     this.debugKey = mojo.debugKey ? mojo.debugKey.value : '';
     this.dedupKeys = mojo.dedupKeys.join(', ');
     this.status = AttributabilityToText(mojo.attributability);
@@ -446,6 +447,7 @@ class SourceTableModel extends TableModel {
       new DateColumn('Expiry Time', (e) => e.expiryTime),
       new ValueColumn('Source Type', (e) => e.sourceType),
       new ValueColumn('Priority', (e) => e.priority),
+      new CodeColumn('Filter Data', (e) => e.filterData),
       new ValueColumn('Debug Key', (e) => e.debugKey),
       new ValueColumn('Dedup Keys', (e) => e.dedupKeys, /*compare=*/ null),
       new ValueColumn('Status', (e) => e.status),
@@ -550,6 +552,9 @@ class Report extends Selectable {
       case WebUIAttributionReport_Status.kNetworkError:
         this.status = 'Network error';
         break;
+      case WebUIAttributionReport_Status.kNoMatchingSourceFilterData:
+        this.status = 'Dropped due to no matching source filter data';
+        break;
     }
   }
 }
@@ -642,29 +647,29 @@ let reportTableModel = null;
  * @return {string}
  */
 function OriginToText(origin) {
-  if (origin.host.length == 0) {
+  if (origin.host.length === 0) {
     return 'Null';
   }
 
   let result = origin.scheme + '://' + origin.host;
 
-  if ((origin.scheme == 'https' && origin.port != '443') ||
-      (origin.scheme == 'http' && origin.port != '80')) {
+  if ((origin.scheme === 'https' && origin.port !== 443) ||
+      (origin.scheme === 'http' && origin.port !== 80)) {
     result += ':' + origin.port;
   }
   return result;
 }
 
 /**
- * Converts a mojo SourceType into a user-readable string.
- * @param {SourceType} sourceType Source type to convert
+ * Converts a mojo AttributionSourceType into a user-readable string.
+ * @param {AttributionSourceType} sourceType Source type to convert
  * @return {string}
  */
 function SourceTypeToText(sourceType) {
   switch (sourceType) {
-    case SourceType.kNavigation:
+    case AttributionSourceType.kNavigation:
       return 'Navigation';
-    case SourceType.kEvent:
+    case AttributionSourceType.kEvent:
       return 'Event';
     default:
       return sourceType.toString();
@@ -685,8 +690,8 @@ function AttributabilityToText(attributability) {
       return 'Unattributable: noised';
     case WebUIAttributionSource_Attributability.kReplacedByNewerSource:
       return 'Unattributable: replaced by newer source';
-    case WebUIAttributionSource_Attributability.kReachedAttributionLimit:
-      return 'Unattributable: reached attribution limit';
+    case WebUIAttributionSource_Attributability.kReachedEventLevelAttributionLimit:
+      return 'Attributable: reached event-level attribution limit';
     case WebUIAttributionSource_Attributability.kInternalError:
       return 'Rejected: internal error';
     case WebUIAttributionSource_Attributability.kInsufficientSourceCapacity:

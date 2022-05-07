@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">Não é possível mudar o nome de "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">Inglês (EUA) com teclado Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – Anfitrião</translation>
+<translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1538729222189715449">A abrir ficheiros Linux…</translation>
 <translation id="1547964879613821194">Inglês canadiano</translation>
 <translation id="1556189134700913550">Aplicar a todas</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">Certificado de autenticação rejeitado pela rede</translation>
 <translation id="2547921442987553570">Adicionar a <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">EUA internacional</translation>
-<translation id="2562685439590298522">Google Docs</translation>
 <translation id="2563185590376525700">Sapo</translation>
 <translation id="2578394532502990878">Fonética de tâmil</translation>
 <translation id="2579959351793446050">Oriá</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">EUA alargado</translation>
 <translation id="290843123675549676">Marati</translation>
 <translation id="2923240520113693977">Estónio</translation>
-<translation id="2925966894897775835">Folhas</translation>
 <translation id="2938685643439809023">Mongol</translation>
-<translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">Utilize um nome mais curto.</translation>
 <translation id="2949781154072577687">A formatar <ph name="DRIVE_NAME" />…</translation>
 <translation id="2951236788251446349">Medusa</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />%, gerida pelo administrador, detalhes</translation>
 <translation id="4387004326333427325">Certificado de autenticação rejeitado remotamente</translation>
 <translation id="4394214039309501350">Link externo</translation>
+<translation id="4401287888955153199">Extrair tudo</translation>
 <translation id="4418686080762064601">Crie um atalho para os seus ficheiros</translation>
 <translation id="4425149324548788773">O meu disco</translation>
 <translation id="4439427728133035643">Rede <ph name="NETWORK_INDEX" /> de <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, intensidade do sinal: <ph name="SIGNAL_STRENGTH" />%, ligar</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">Disponibilize ficheiros offline</translation>
 <translation id="4658782175094886150">Pessoa na neve</translation>
 <translation id="4669606053856530811">Os membros de "<ph name="SOURCE_NAME" />" irão perder o acesso, exceto se estes itens forem partilhados com eles.</translation>
+<translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">Sueco</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694604912444486114">Macaco</translation>
@@ -658,6 +658,7 @@
 <translation id="6732801395666424405">Certificados não carregados</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [ <ph name="ISSUED_TO" /> ]</translation>
 <translation id="6751256176799620176">1 pasta selecionada</translation>
+<translation id="6755827872271341378">Dispositivo com ChromeOS Flex</translation>
 <translation id="6790428901817661496">Reproduzir</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6806699711453372963">Gerir partilha do Linux</translation>
@@ -735,6 +736,7 @@
 <translation id="7343393116438664539">Telex vietnamita</translation>
 <translation id="7359359531237882347">A copiar <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
 <translation id="7375951387215729722">Lista de ficheiros ordenada por <ph name="COLUMN_NAME" /> por ordem descendente.</translation>
+<translation id="7402503521691663770">Dispositivos com ChromeOS Flex</translation>
 <translation id="7408870451288633753">Checo</translation>
 <translation id="7417453074306512035">Teclado etíope</translation>
 <translation id="7417705661718309329">Mapa Google</translation>
@@ -824,6 +826,7 @@
 <translation id="8042602468072383151">Áudio <ph name="AUDIO_TYPE" /></translation>
 <translation id="8045462269890919536">Romeno</translation>
 <translation id="8049184478152619004">Introduza a chave de desbloqueio pessoal (PUK)</translation>
+<translation id="807187749540895545">A extrair <ph name="FILE_NAME" />…</translation>
 <translation id="8079530767338315840">Repetir</translation>
 <translation id="8087576439476816834">Transferir, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Partilhado comigo</translation>
@@ -875,6 +878,7 @@
 <translation id="8484284835977497781">Escolha a partir das suas fotos recentes.</translation>
 <translation id="8487700953926739672">Disponível offline</translation>
 <translation id="8492972329130824181">A rede doméstica não está disponível. O roaming de dados móveis tem de estar ativado para estabelecer a ligação.</translation>
+<translation id="8499098729323186194">A extrair <ph name="NUMBER_OF_ITEMS" /> itens…</translation>
 <translation id="8521441079177373948">Reino Unido</translation>
 <translation id="8525306231823319788">Ecrã inteiro</translation>
 <translation id="853494022971700746">Francês (França)</translation>
@@ -950,6 +954,7 @@
 <translation id="9172592259078059678">Transliteração de guzerate</translation>
 <translation id="9173120999827300720">Inglês (EUA) com teclado internacional</translation>
 <translation id="9174050671906956834">Os itens no lixo são eliminados definitivamente após 30 dias.</translation>
+<translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">Cazaque</translation>
 <translation id="9213073329713032541">A instalação foi iniciada com êxito.</translation>
 <translation id="9219103736887031265">Imagens</translation>

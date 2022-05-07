@@ -53,7 +53,7 @@ import './downloads_page/downloads_page.js';
 import './languages_page/languages_page.js';
 // </if>
 import './reset_page/reset_page.js';
-// <if expr="not chromeos and not lacros">
+// <if expr="not chromeos">
 import './system_page/system_page.js';
 // </if>
 
@@ -83,7 +83,7 @@ export {SettingsPasswordCheckElement} from './autofill_page/password_check.js';
 export {SettingsPasswordCheckEditDialogElement} from './autofill_page/password_check_edit_dialog.js';
 export {SettingsPasswordEditDisclaimerDialogElement} from './autofill_page/password_check_edit_disclaimer_dialog.js';
 export {PasswordCheckListItemElement} from './autofill_page/password_check_list_item.js';
-export {PasswordEditDialogElement} from './autofill_page/password_edit_dialog.js';
+export {PasswordDialogMode, PasswordEditDialogElement} from './autofill_page/password_edit_dialog.js';
 export {PasswordListItemElement} from './autofill_page/password_list_item.js';
 export {PasswordMoveMultiplePasswordsToAccountDialogElement} from './autofill_page/password_move_multiple_passwords_to_account_dialog.js';
 export {PasswordMoveToAccountDialogElement} from './autofill_page/password_move_to_account_dialog.js';
@@ -191,7 +191,7 @@ export {ZoomLevelsElement} from './site_settings/zoom_levels.js';
 export {SettingsRecentSitePermissionsElement} from './site_settings_page/recent_site_permissions.js';
 export {defaultSettingLabel} from './site_settings_page/site_settings_list.js';
 export {SettingsSiteSettingsPageElement} from './site_settings_page/site_settings_page.js';
-// <if expr="not chromeos and not lacros">
+// <if expr="not chromeos">
 export {SettingsSystemPageElement} from './system_page/system_page.js';
 export {SystemPageBrowserProxy, SystemPageBrowserProxyImpl} from './system_page/system_page_browser_proxy.js';
 

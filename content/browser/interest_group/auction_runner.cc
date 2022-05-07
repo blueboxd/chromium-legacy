@@ -40,7 +40,7 @@ namespace content {
 
 namespace {
 
-constexpr base::TimeDelta kMaxPerBuyerTimeout = base::Milliseconds(500);
+constexpr base::TimeDelta kMaxTimeout = base::Milliseconds(500);
 
 // All URLs received from worklets must be valid HTTPS URLs. It's up to callers
 // to call ReportBadMessage() on invalid URLs.
@@ -77,7 +77,7 @@ AuctionRunner::BidState::BidState(BidState&&) = default;
 AuctionRunner::Bid::Bid(std::string ad_metadata,
                         double bid,
                         GURL render_url,
-                        absl::optional<std::vector<GURL>> ad_components,
+                        std::vector<GURL> ad_components,
                         base::TimeDelta bid_duration,
                         absl::optional<uint32_t> bidding_signals_data_version,
                         const blink::InterestGroup::Ad* bid_ad,
@@ -114,20 +114,20 @@ AuctionRunner::ScoredBid::~ScoredBid() = default;
 
 AuctionRunner::Auction::Auction(
     blink::mojom::AuctionAdConfig* config,
-    bool is_component_auction,
+    const Auction* parent,
     AuctionWorkletManager* auction_worklet_manager,
     InterestGroupManagerImpl* interest_group_manager,
     base::Time auction_start_time)
     : auction_worklet_manager_(auction_worklet_manager),
       interest_group_manager_(interest_group_manager),
       config_(config),
-      is_component_auction_(is_component_auction),
+      parent_(parent),
       auction_start_time_(auction_start_time) {
   for (const auto& component_auction_config : config->component_auctions) {
     // Nested component auctions are not supported.
-    DCHECK(!is_component_auction);
+    DCHECK(!parent_);
     component_auctions_.emplace_back(std::make_unique<Auction>(
-        component_auction_config.get(), /*is_component_auction=*/true,
+        component_auction_config.get(), /*parent=*/this,
         auction_worklet_manager, interest_group_manager, auction_start_time));
   }
 }
@@ -137,7 +137,7 @@ AuctionRunner::Auction::~Auction() {
     final_auction_result_ = AuctionResult::kAborted;
 
   // TODO(mmenke): Record histograms for component auctions.
-  if (!is_component_auction_) {
+  if (!parent_) {
     UMA_HISTOGRAM_ENUMERATION("Ads.InterestGroup.Auction.Result",
                               *final_auction_result_);
 
@@ -284,7 +284,7 @@ void AuctionRunner::Auction::StartReportingPhase(
   // Component auctions unload their seller worklets on completion, so need to
   // reload the seller worklet in the case of a component auction.
   if (!seller_worklet_handle_) {
-    DCHECK(is_component_auction_);
+    DCHECK(parent_);
     if (!auction_worklet_manager_->RequestSellerWorklet(
             config_->decision_logic_url, config_->trusted_scoring_signals_url,
             base::BindOnce(&Auction::ReportSellerResult,
@@ -322,8 +322,8 @@ void AuctionRunner::Auction::GetInterestGroupsThatBid(
 
   for (const BidState& bid_state : bid_states_) {
     if (bid_state.made_bid) {
-      interest_groups.emplace(std::pair(bid_state.bidder.interest_group.owner,
-                                        bid_state.bidder.interest_group.name));
+      interest_groups.emplace(bid_state.bidder.interest_group.owner,
+                              bid_state.bidder.interest_group.name);
     }
   }
 
@@ -465,7 +465,7 @@ void AuctionRunner::Auction::OnOneLoadCompleted() {
 
   // Record histograms about the interest groups participating in the auction.
   // TODO(mmenke): Record histograms for component auctions.
-  if (!is_component_auction_) {
+  if (!parent_) {
     // Only record histograms if there were interest groups that could
     // theoretically participate in the auction.
     if (num_owners_loaded_ > 0) {
@@ -591,6 +591,7 @@ void AuctionRunner::Auction::OnBidderWorkletReceived(BidState* bid_state) {
           interest_group.ad_components),
       config_->auction_ad_config_non_shared_params->auction_signals,
       PerBuyerSignals(bid_state), PerBuyerTimeout(bid_state), config_->seller,
+      parent_ ? parent_->config_->seller : absl::optional<url::Origin>(),
       bid_state->bidder.bidding_browser_signals.Clone(), auction_start_time_,
       base::BindOnce(&Auction::OnGenerateBidComplete,
                      weak_ptr_factory_.GetWeakPtr(), bid_state));
@@ -736,9 +737,9 @@ void AuctionRunner::Auction::ScoreBidIfReady(std::unique_ptr<Bid> bid) {
   seller_worklet_handle_->GetSellerWorklet()->ScoreAd(
       bid_raw->ad_metadata, bid_raw->bid,
       config_->auction_ad_config_non_shared_params.Clone(),
-      bid_raw->interest_group->owner, bid_raw->render_url,
-      bid_raw->ad_components ? *bid_raw->ad_components : std::vector<GURL>(),
-      bid_raw->bid_duration.InMilliseconds(),
+      GetOtherSellerParam(*bid_raw), bid_raw->interest_group->owner,
+      bid_raw->render_url, bid_raw->ad_components,
+      bid_raw->bid_duration.InMilliseconds(), SellerTimeout(),
       base::BindOnce(&Auction::OnBidScored, weak_ptr_factory_.GetWeakPtr(),
                      std::move(bid)));
 
@@ -839,16 +840,23 @@ absl::optional<base::TimeDelta> AuctionRunner::Auction::PerBuyerTimeout(
   if (per_buyer_timeouts.has_value()) {
     auto it =
         per_buyer_timeouts.value().find(state->bidder.interest_group.owner);
-    if (it != per_buyer_timeouts.value().end()) {
-      // Any per buyer timeout higher than kMaxPerBuyerTimeout ms will be
-      // clamped to kMaxPerBuyerTimeout ms.
-      return std::min(it->second, kMaxPerBuyerTimeout);
-    }
+    if (it != per_buyer_timeouts.value().end())
+      return std::min(it->second, kMaxTimeout);
   }
   const auto& all_buyers_timeout =
       config_->auction_ad_config_non_shared_params->all_buyers_timeout;
   if (all_buyers_timeout.has_value())
-    return std::min(all_buyers_timeout.value(), kMaxPerBuyerTimeout);
+    return std::min(all_buyers_timeout.value(), kMaxTimeout);
+  return absl::nullopt;
+}
+
+absl::optional<base::TimeDelta> AuctionRunner::Auction::SellerTimeout() {
+  if (config_->auction_ad_config_non_shared_params->seller_timeout
+          .has_value()) {
+    return std::min(
+        config_->auction_ad_config_non_shared_params->seller_timeout.value(),
+        kMaxTimeout);
+  }
   return absl::nullopt;
 }
 
@@ -889,7 +897,7 @@ void AuctionRunner::Auction::OnBiddingAndScoringComplete(
   // If this is a component auction, have to unload the seller worklet handle to
   // avoid deadlock. Otherwise, loading the top-level seller worklet may be
   // blocked by component seller worklets taking up all the quota.
-  if (is_component_auction_)
+  if (parent_)
     seller_worklet_handle_.reset();
 
   // If the seller loaded callback hasn't been invoked yet, call it now. This is
@@ -933,8 +941,8 @@ void AuctionRunner::Auction::ReportSellerResult() {
 
   seller_worklet_handle_->GetSellerWorklet()->ReportResult(
       config_->auction_ad_config_non_shared_params.Clone(),
-      top_bid_->bid->interest_group->owner, top_bid_->bid->render_url,
-      top_bid_->bid->bid, top_bid_->score,
+      GetOtherSellerParam(*top_bid_->bid), top_bid_->bid->interest_group->owner,
+      top_bid_->bid->render_url, top_bid_->bid->bid, top_bid_->score,
       top_bid_->scoring_signals_data_version.value_or(0),
       top_bid_->scoring_signals_data_version.has_value(),
       base::BindOnce(&Auction::OnReportSellerResultComplete,
@@ -1015,6 +1023,7 @@ void AuctionRunner::Auction::ReportBidWin(
       config_->auction_ad_config_non_shared_params->auction_signals,
       PerBuyerSignals(top_bid_->bid->bid_state), signals_for_winner_arg,
       top_bid_->bid->render_url, top_bid_->bid->bid, config_->seller,
+      parent_ ? parent_->config_->seller : absl::optional<url::Origin>(),
       top_bid_->bid->bidding_signals_data_version.value_or(0),
       top_bid_->bid->bidding_signals_data_version.has_value(),
       base::BindOnce(&Auction::OnReportBidWinComplete,
@@ -1108,6 +1117,26 @@ void AuctionRunner::Auction::OnReportingPhaseComplete(
       .Run(auction_result == AuctionResult::kSuccess);
 }
 
+auction_worklet::mojom::ComponentAuctionOtherSellerPtr
+AuctionRunner::Auction::GetOtherSellerParam(const Bid& bid) const {
+  auction_worklet::mojom::ComponentAuctionOtherSellerPtr
+      browser_signals_other_seller;
+  if (parent_) {
+    // This is a component seller scoring a bid from its own auction.
+    // Need to provide the top-level seller origin.
+    browser_signals_other_seller =
+        auction_worklet::mojom::ComponentAuctionOtherSeller::NewTopLevelSeller(
+            parent_->config_->seller);
+  } else if (bid.auction != this) {
+    // This is a top-level seller scoring a bid from a component auction.
+    // Need to provide the component seller origin.
+    browser_signals_other_seller =
+        auction_worklet::mojom::ComponentAuctionOtherSeller::NewComponentSeller(
+            bid.auction->config_->seller);
+  }
+  return browser_signals_other_seller;
+}
+
 bool AuctionRunner::Auction::RequestBidderWorklet(
     BidState& bid_state,
     base::OnceClosure worklet_available_callback,
@@ -1151,7 +1180,8 @@ void AuctionRunner::FailAuction() {
 
   std::move(callback_).Run(
       this, /*render_url=*/absl::nullopt,
-      /*ad_component_urls=*/absl::nullopt,
+      /*winning_group_key=*/absl::nullopt,
+      /*ad_component_urls=*/{},
       /*report_urls=*/{}, std::move(debug_loss_report_urls),
       std::move(debug_win_report_urls), auction_.TakeErrors());
 }
@@ -1164,7 +1194,7 @@ AuctionRunner::AuctionRunner(AuctionWorkletManager* auction_worklet_manager,
       owned_auction_config_(std::move(auction_config)),
       callback_(std::move(callback)),
       auction_(owned_auction_config_.get(),
-               /*is_component_auction=*/false,
+               /*parent=*/nullptr,
                auction_worklet_manager,
                interest_group_manager,
                /*auction_start_time=*/base::Time::Now()) {}
@@ -1194,6 +1224,7 @@ std::unique_ptr<AuctionRunner::Bid> AuctionRunner::Auction::TryToCreateBid(
     return nullptr;
   }
 
+  std::vector<GURL> ad_components;
   // Validate `ad_component` URLs, if present.
   if (mojo_bid->ad_components) {
     // Only InterestGroups with ad components should return bids with ad
@@ -1217,6 +1248,7 @@ std::unique_ptr<AuctionRunner::Bid> AuctionRunner::Auction::TryToCreateBid(
         return nullptr;
       }
     }
+    ad_components = *std::move(mojo_bid->ad_components);
   }
 
   // Validate `debug_loss_report_url` and `debug_win_report_url`, if present.
@@ -1233,7 +1265,7 @@ std::unique_ptr<AuctionRunner::Bid> AuctionRunner::Auction::TryToCreateBid(
 
   return std::make_unique<Bid>(
       std::move(mojo_bid->ad), mojo_bid->bid, std::move(mojo_bid->render_url),
-      std::move(mojo_bid->ad_components), mojo_bid->bid_duration,
+      std::move(ad_components), mojo_bid->bid_duration,
       bidding_signals_data_version, matching_ad, &bid_state, this);
 }
 
@@ -1261,9 +1293,8 @@ void AuctionRunner::OnBidsGeneratedAndScored(bool success) {
   InterestGroupSet interest_groups_that_bid;
   auction_.GetInterestGroupsThatBid(interest_groups_that_bid);
   for (const auto& interest_group : interest_groups_that_bid) {
-    interest_group_manager_->RecordInterestGroupBid(
-        /*owner=*/interest_group.first,
-        /*name=*/interest_group.second);
+    interest_group_manager_->RecordInterestGroupBid(interest_group.owner,
+                                                    interest_group.name);
   }
   if (!success) {
     FailAuction();
@@ -1303,8 +1334,12 @@ void AuctionRunner::OnReportingPhaseComplete(bool success) {
   std::vector<GURL> debug_loss_report_urls;
   auction_.TakeDebugReportUrls(debug_win_report_urls, debug_loss_report_urls);
 
+  DCHECK(auction_.top_bid()->bid->interest_group);
+  const blink::InterestGroup& winning_group =
+      *auction_.top_bid()->bid->interest_group;
+  InterestGroupKey winning_group_key({winning_group.owner, winning_group.name});
   std::move(callback_).Run(
-      this, auction_.top_bid()->bid->render_url,
+      this, std::move(winning_group_key), auction_.top_bid()->bid->render_url,
       auction_.top_bid()->bid->ad_components, auction_.TakeReportUrls(),
       std::move(debug_loss_report_urls), std::move(debug_win_report_urls),
       auction_.TakeErrors());

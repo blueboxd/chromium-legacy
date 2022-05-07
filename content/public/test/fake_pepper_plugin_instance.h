@@ -41,20 +41,6 @@ class FakePepperPluginInstance : public PepperPluginInstance {
   void SetLinkUnderCursor(const std::string& url) override;
   void SetTextInputType(ui::TextInputType type) override;
   void PostMessageToJavaScript(PP_Var message) override;
-  void SetCaretPosition(const gfx::PointF& position) override;
-  void MoveRangeSelectionExtent(const gfx::PointF& extent) override;
-  void SetSelectionBounds(const gfx::PointF& base,
-                          const gfx::PointF& extent) override;
-  bool CanEditText() override;
-  bool HasEditableText() override;
-  void ReplaceSelection(const std::string& text) override;
-  void SelectAll() override;
-  bool CanUndo() override;
-  bool CanRedo() override;
-  void Undo() override;
-  void Redo() override;
-  void HandleAccessibilityAction(
-      const PP_PdfAccessibilityActionData& action_data) override;
 
  private:
   GURL gurl_;

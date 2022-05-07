@@ -6,11 +6,11 @@
 
 #include "ash/components/phonehub/feature_status.h"
 #include "ash/components/phonehub/phone_hub_manager.h"
+#include "ash/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/components/multidevice/software_feature.h"
 #include "chromeos/components/multidevice/software_feature_state.h"
-#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 
 namespace ash {
 namespace eche_app {
@@ -21,9 +21,9 @@ using ::chromeos::multidevice::RemoteDeviceRefList;
 using ::chromeos::multidevice::SoftwareFeature;
 using ::chromeos::multidevice::SoftwareFeatureState;
 
-using ::chromeos::multidevice_setup::mojom::Feature;
-using ::chromeos::multidevice_setup::mojom::FeatureState;
-using ::chromeos::multidevice_setup::mojom::HostStatus;
+using multidevice_setup::mojom::Feature;
+using multidevice_setup::mojom::FeatureState;
+using multidevice_setup::mojom::HostStatus;
 
 bool IsHostDisabled(const RemoteDeviceRef& device) {
   return device.GetSoftwareFeatureState(SoftwareFeature::kBetterTogetherHost) !=

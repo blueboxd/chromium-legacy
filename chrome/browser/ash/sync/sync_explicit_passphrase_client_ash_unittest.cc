@@ -17,7 +17,6 @@ namespace ash {
 
 namespace {
 
-using testing::_;
 using testing::Eq;
 using testing::NotNull;
 using testing::Return;
@@ -183,20 +182,20 @@ TEST_F(SyncExplicitPassphraseClientAshTest,
   wrong_account_key->id = "user2";
   wrong_account_key->account_type = crosapi::mojom::AccountType::kGaia;
 
-  EXPECT_CALL(*sync_user_settings(), SetDecryptionNigoriKey(_)).Times(0);
+  EXPECT_CALL(*sync_user_settings(), SetDecryptionNigoriKey).Times(0);
   client()->SetDecryptionNigoriKey(std::move(wrong_account_key),
                                    MakeTestMojoNigoriKey());
 }
 
 TEST_F(SyncExplicitPassphraseClientAshTest,
        ShouldHandleNullKeyWhenSettingDecryptionKey) {
-  EXPECT_CALL(*sync_user_settings(), SetDecryptionNigoriKey(_)).Times(0);
+  EXPECT_CALL(*sync_user_settings(), SetDecryptionNigoriKey).Times(0);
   client()->SetDecryptionNigoriKey(GetSyncingAccountKey(), nullptr);
 }
 
 TEST_F(SyncExplicitPassphraseClientAshTest,
        ShouldHandleInvalidKeyWhenSettingDecryptionKey) {
-  EXPECT_CALL(*sync_user_settings(), SetDecryptionNigoriKey(_)).Times(0);
+  EXPECT_CALL(*sync_user_settings(), SetDecryptionNigoriKey).Times(0);
 
   crosapi::mojom::NigoriKeyPtr mojo_nigori_key =
       crosapi::mojom::NigoriKey::New();
@@ -204,12 +203,13 @@ TEST_F(SyncExplicitPassphraseClientAshTest,
   mojo_nigori_key->encryption_key = {1, 2, 3};
   mojo_nigori_key->mac_key = {1, 2, 3};
 
-  EXPECT_CALL(*sync_user_settings(), SetDecryptionNigoriKey(_)).Times(0);
+  EXPECT_CALL(*sync_user_settings(), SetDecryptionNigoriKey).Times(0);
   client()->SetDecryptionNigoriKey(GetSyncingAccountKey(),
                                    std::move(mojo_nigori_key));
 }
 
-TEST_F(SyncExplicitPassphraseClientAshTest, ShouldNotifyObserver) {
+TEST_F(SyncExplicitPassphraseClientAshTest,
+       ShouldNotifyObserverAboutPassphraseRequired) {
   TestSyncExplicitPassphraseClientObserver observer;
   observer.Observe(client());
 
@@ -223,14 +223,25 @@ TEST_F(SyncExplicitPassphraseClientAshTest, ShouldNotifyObserver) {
   client()->FlushMojoForTesting();
   EXPECT_THAT(observer.GetNumOnPassphraseAvailableCalls(), Eq(0));
   EXPECT_THAT(observer.GetNumOnPassphraseRequiredCalls(), Eq(1));
+}
+
+TEST_F(SyncExplicitPassphraseClientAshTest,
+       ShouldNotifyObserverAboutPassphraseAvailable) {
+  TestSyncExplicitPassphraseClientObserver observer;
+  observer.Observe(client());
+
+  ASSERT_THAT(observer.GetNumOnPassphraseAvailableCalls(), Eq(0));
+  ASSERT_THAT(observer.GetNumOnPassphraseRequiredCalls(), Eq(0));
 
   // Mimic passphrase being entered by the user.
+  ON_CALL(*sync_user_settings(), IsUsingExplicitPassphrase())
+      .WillByDefault(Return(true));
   ON_CALL(*sync_user_settings(), IsPassphraseRequired())
       .WillByDefault(Return(false));
   client()->OnStateChanged(sync_service());
   client()->FlushMojoForTesting();
   EXPECT_THAT(observer.GetNumOnPassphraseAvailableCalls(), Eq(1));
-  EXPECT_THAT(observer.GetNumOnPassphraseRequiredCalls(), Eq(1));
+  EXPECT_THAT(observer.GetNumOnPassphraseRequiredCalls(), Eq(0));
 }
 
 TEST_F(SyncExplicitPassphraseClientAshTest,
@@ -252,10 +263,10 @@ TEST_F(SyncExplicitPassphraseClientAshTest,
 TEST_F(SyncExplicitPassphraseClientAshTest,
        ShouldNotifyNewObserverAboutPassphraseAvailable) {
   // Mimic passphrase being entered by the user.
+  ON_CALL(*sync_user_settings(), IsUsingExplicitPassphrase())
+      .WillByDefault(Return(true));
   ON_CALL(*sync_user_settings(), IsPassphraseRequired())
       .WillByDefault(Return(false));
-  ON_CALL(*sync_user_settings(), GetDecryptionNigoriKey())
-      .WillByDefault(MakeTestNigoriKey);
   client()->OnStateChanged(sync_service());
   client()->FlushMojoForTesting();
 

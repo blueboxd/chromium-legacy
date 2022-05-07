@@ -311,6 +311,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   _mode = mode;
   // TODO(crbug.com/1300369): Enable dragging items from search results.
   self.collectionView.dragInteractionEnabled = (_mode != TabGridModeSearch);
+  self.emptyStateView.tabGridMode = _mode;
 
   if (IsTabsSearchRegularResultsSuggestedActionsEnabled()) {
     if (mode == TabGridModeSearch && self.suggestedActionsDelegate) {
@@ -668,9 +669,16 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
   GridCell* cell = base::mac::ObjCCastStrict<GridCell>(
       [self.collectionView cellForItemAtIndexPath:indexPath]);
-  MenuScenario scenario = _mode == TabGridModeSearch
-                              ? MenuScenario::kTabGridSearchResult
-                              : MenuScenario::kTabGridEntry;
+
+  MenuScenario scenario;
+  if (_mode == TabGridModeSearch) {
+    scenario = MenuScenario::kTabGridSearchResult;
+  } else if (self.currentLayout == self.horizontalLayout) {
+    scenario = MenuScenario::kThumbStrip;
+  } else {
+    scenario = MenuScenario::kTabGridEntry;
+  }
+
   return [self.menuProvider contextMenuConfigurationForGridCell:cell
                                                    menuScenario:scenario];
 }
@@ -1601,7 +1609,6 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 #pragma mark Suggested Actions Section
 
 - (void)updateSuggestedActionsSection {
-  DCHECK(IsTabsSearchEnabled());
   if (!self.suggestedActionsDelegate)
     return;
   // In search mode if there is already a search query, and the suggested
@@ -1722,8 +1729,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
         addGestureRecognizer:self.thumbStripSwipeUpDismissRecognizer];
   }
 
-  if (panHandler.currentState == ViewRevealState::Revealed ||
-      panHandler.currentState == ViewRevealState::Fullscreen) {
+  if (panHandler.currentState == ViewRevealState::Revealed) {
     self.thumbStripDismissRecognizer.enabled = NO;
     self.thumbStripSwipeUpDismissRecognizer.enabled = NO;
     collectionView.collectionViewLayout = self.gridLayout;
@@ -1774,7 +1780,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   _thumbStripEnabled = NO;
 }
 
-#pragma mark-- Thumbstrip tap dismiss handling
+#pragma mark - Thumbstrip tap dismiss handling
 
 - (void)handleThumbStripBackgroundTapGesture:(UIGestureRecognizer*)recognizer {
   if (recognizer.state != UIGestureRecognizerStateEnded)

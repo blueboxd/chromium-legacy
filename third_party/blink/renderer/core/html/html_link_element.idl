@@ -37,7 +37,7 @@
     [Reflect, ReflectOnly=("script","style","image", "track", "font", "fetch")] attribute DOMString as;
     [CEReactions, Reflect, ReflectOnly=("","no-referrer","origin","no-referrer-when-downgrade","origin-when-cross-origin","unsafe-url"), ReflectMissing="", ReflectInvalid=""] attribute DOMString referrerPolicy;
     [PutForwards=value] readonly attribute DOMTokenList sizes;
-    [CEReactions, MeasureAs=PriorityHints, RuntimeEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString importance;
+    [CEReactions, MeasureAs=PriorityHints, RuntimeEnabled=PriorityHints, Reflect, ReflectOnly=("low", "auto", "high"), ReflectMissing="auto", ReflectInvalid="auto"] attribute DOMString fetchpriority;
     [CEReactions, Reflect] attribute DOMString imageSrcset;
     [CEReactions, Reflect] attribute DOMString imageSizes;
 
@@ -60,4 +60,7 @@
     // crbug.com/1082020
     [RuntimeEnabled=SubresourceWebBundles, PutForwards=value, SecureContext] readonly attribute DOMTokenList resources;
     [RuntimeEnabled=SubresourceWebBundles, PutForwards=value, SecureContext] readonly attribute DOMTokenList scopes;
+
+    // https://html.spec.whatwg.org/multipage/semantics.html#dom-link-blocking
+    [RuntimeEnabled=BlockingAttribute, SameObject, PutForwards=value] readonly attribute DOMTokenList blocking;
 };

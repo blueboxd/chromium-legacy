@@ -5,34 +5,45 @@
 #ifndef IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_CONSUMER_H_
 #define IOS_CHROME_BROWSER_UI_CONTENT_SUGGESTIONS_CONTENT_SUGGESTIONS_CONSUMER_H_
 
-#import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
+@class ContentSuggestionsMostVisitedActionItem;
+@class ContentSuggestionsMostVisitedItem;
+@class ContentSuggestionsReturnToRecentTabItem;
+@class ContentSuggestionsWhatsNewItem;
 
-@class CollectionViewItem;
-@class ContentSuggestionsSectionInformation;
-@protocol SuggestedContent;
-
-using CSCollectionViewItem = CollectionViewItem<SuggestedContent>;
-
+// Supports adding/removing/updating UI elements to the ContentSuggestions
+// UIViewController.
 @protocol ContentSuggestionsConsumer
 
-// Informs the consumer to reload with |sections| and |items|.
-- (void)reloadDataWithSections:
-            (NSArray<ContentSuggestionsSectionInformation*>*)sections
-                      andItems:(NSMutableDictionary<NSNumber*, NSArray*>*)items;
+// Indicates to the consumer to present the WhatsNew tile with |config|.
+- (void)showWhatsNewViewWithConfig:(ContentSuggestionsWhatsNewItem*)config;
 
-// Informs the consumer to add |sectionInfo| to the model and call |completion|
-// if a section is added. If the section already exists, |completion| will not
-// be called.
-- (void)addSection:(ContentSuggestionsSectionInformation*)sectionInfo
-         withItems:(NSArray<CSCollectionViewItem*>*)items
-        completion:(void (^)(void))completion;
+// Indicates to the consumer to hide the WhatsNew tile.
+- (void)hideWhatsNewView;
 
-// The section corresponding to |sectionInfo| has been invalidated and must be
-// cleared now.
-- (void)clearSection:(ContentSuggestionsSectionInformation*)sectionInfo;
+// Indicates to the consumer to present the Return to Recent Tab tile with
+// |config|.
+- (void)showReturnToRecentTabTileWithConfig:
+    (ContentSuggestionsReturnToRecentTabItem*)config;
 
-// Notifies the consumer that the |item| has changed.
-- (void)itemHasChanged:(CollectionViewItem<SuggestedContent>*)item;
+// Indicates to the consumer to hide the Return to Recent Tab tile.
+- (void)hideReturnToRecentTabTile;
+
+// Indicates to the consumer the current Most Visited tiles to show with
+// |configs|.
+- (void)setMostVisitedTilesWithConfigs:
+    (NSArray<ContentSuggestionsMostVisitedItem*>*)configs;
+
+// Indicates to the consumer the current Shortcuts tiles to show with |configs|.
+- (void)setShortcutTilesWithConfigs:
+    (NSArray<ContentSuggestionsMostVisitedActionItem*>*)configs;
+
+// Indicates to the consumer to update the Reading List count badge with
+// |count|.
+- (void)updateReadingListCount:(NSInteger)count;
+
+// Indicates to the consumer update the Most Visited tile associated with
+// |config|.
+- (void)updateMostVisitedTileConfig:(ContentSuggestionsMostVisitedItem*)config;
 
 @end
 

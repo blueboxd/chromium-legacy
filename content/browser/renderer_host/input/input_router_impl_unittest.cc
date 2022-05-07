@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
@@ -966,7 +965,13 @@ TEST_F(InputRouterImplTest, TouchTypesIgnoringAck) {
   EXPECT_FALSE(HasPendingEvents());
 }
 
-TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
+// Flaky on Linux: https://crbug.com/1295039
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_GestureTypesIgnoringAck DISABLED_GestureTypesIgnoringAck
+#else
+#define MAYBE_GestureTypesIgnoringAck GestureTypesIgnoringAck
+#endif
+TEST_F(InputRouterImplTest, MAYBE_GestureTypesIgnoringAck) {
   // We test every gesture type, ensuring that the stream of gestures is valid.
 
 #if BUILDFLAG(IS_WIN)
@@ -1001,7 +1006,7 @@ TEST_F(InputRouterImplTest, GestureTypesIgnoringAck) {
       WebInputEvent::Type::kGesturePinchUpdate,
       WebInputEvent::Type::kGesturePinchEnd,
       WebInputEvent::Type::kGestureScrollEnd};
-  for (size_t i = 0; i < base::size(eventTypes); ++i) {
+  for (size_t i = 0; i < std::size(eventTypes); ++i) {
     WebInputEvent::Type type = eventTypes[i];
     if (type == WebInputEvent::Type::kGestureFlingStart ||
         type == WebInputEvent::Type::kGestureFlingCancel) {
@@ -1099,7 +1104,7 @@ TEST_F(InputRouterImplTest, RequiredEventAckTypes) {
       WebInputEvent::Type::kGestureScrollUpdate,
       WebInputEvent::Type::kTouchStart,
       WebInputEvent::Type::kTouchMove};
-  for (size_t i = 0; i < base::size(kRequiredEventAckTypes); ++i) {
+  for (size_t i = 0; i < std::size(kRequiredEventAckTypes); ++i) {
     const WebInputEvent::Type required_ack_type = kRequiredEventAckTypes[i];
     ASSERT_TRUE(ShouldBlockEventStream(GetEventWithType(required_ack_type)))
         << WebInputEvent::GetName(required_ack_type);

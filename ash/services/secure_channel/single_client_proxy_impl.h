@@ -11,14 +11,11 @@
 #include "ash/services/secure_channel/client_connection_parameters.h"
 #include "ash/services/secure_channel/file_transfer_update_callback.h"
 #include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
 #include "ash/services/secure_channel/single_client_proxy.h"
 #include "base/callback.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Concrete SingleClientProxy implementation, which forwards client requests to
 // its delegate, and utilizes a mojo::Remote<MessageReceiver> to receive
@@ -84,8 +81,6 @@ class SingleClientProxyImpl : public SingleClientProxy,
   mojo::Remote<mojom::MessageReceiver> message_receiver_remote_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_SINGLE_CLIENT_PROXY_IMPL_H_

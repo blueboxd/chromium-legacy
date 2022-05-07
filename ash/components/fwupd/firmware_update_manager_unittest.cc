@@ -49,7 +49,9 @@ using ::testing::Return;
 namespace {
 
 const char kFakeDeviceIdForTesting[] = "Fake_Device_ID";
+const char kFakeInternalDeviceIdForTesting[] = "Fake_Internal_Device_ID";
 const char kFakeDeviceNameForTesting[] = "Fake Device Name";
+const char kFakeInternalDeviceNameForTesting[] = "Fake Internal Device Name";
 const char kFakeUpdateDescriptionForTesting[] =
     "This is a fake update for testing.";
 const uint32_t kFakeUpdatePriorityForTesting = 1;
@@ -58,6 +60,8 @@ const char kFakeUpdateVersionForTesting[] = "1.0.0";
 const char kFakeUpdateUriForTesting[] =
     "file:///usr/share/fwupd/remotes.d/vendor/firmware/testFirmwarePath-V1.cab";
 const char kFakeUpdateFileNameForTesting[] = "testFirmwarePath-V1.cab";
+const char kEmptyFileSha256ForTesting[] =
+    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
 const char kFilePathIdentifier[] = "file://";
 const char kFwupdServiceName[] = "org.freedesktop.fwupd";
 const char kFwupdServicePath[] = "/";
@@ -67,11 +71,14 @@ const char kNameKey[] = "Name";
 const char kPriorityKey[] = "Urgency";
 const char kUriKey[] = "Uri";
 const char kVersionKey[] = "Version";
+const char kChecksumKey[] = "Checksum";
 const char kDownloadDir[] = "firmware-updates";
 const char kCacheDir[] = "cache";
 const char kCabExtension[] = ".cab";
 const char kFirmwareUpdateNotificationId[] =
     "cros_firmware_update_notification_id";
+const char kFlagsKey[] = "Flags";
+const uint64_t kFakeFlagForTesting = 1;
 
 void RunResponseCallback(dbus::ObjectProxy::ResponseOrErrorCallback callback,
                          std::unique_ptr<dbus::Response> response) {
@@ -261,6 +268,40 @@ class FirmwareUpdateManagerTest : public AshTestBase {
     return response;
   }
 
+  std::unique_ptr<dbus::Response> CreateInternalDeviceResponse() {
+    auto response = dbus::Response::CreateEmpty();
+
+    dbus::MessageWriter response_writer(response.get());
+    dbus::MessageWriter response_array_writer(nullptr);
+    dbus::MessageWriter device_array_writer(nullptr);
+    dbus::MessageWriter dict_writer(nullptr);
+
+    // The response is an array of arrays of dictionaries. Each dictionary is
+    // one device description.
+    response_writer.OpenArray("a{sv}", &response_array_writer);
+    response_array_writer.OpenArray("{sv}", &device_array_writer);
+
+    device_array_writer.OpenDictEntry(&dict_writer);
+    dict_writer.AppendString(kNameKey);
+    dict_writer.AppendVariantOfString(kFakeInternalDeviceNameForTesting);
+    device_array_writer.CloseContainer(&dict_writer);
+
+    device_array_writer.OpenDictEntry(&dict_writer);
+    dict_writer.AppendString(kIdKey);
+    dict_writer.AppendVariantOfString(kFakeInternalDeviceIdForTesting);
+    device_array_writer.CloseContainer(&dict_writer);
+
+    device_array_writer.OpenDictEntry(&dict_writer);
+    dict_writer.AppendString(kFlagsKey);
+    dict_writer.AppendVariantOfUint64(kFakeFlagForTesting);
+    device_array_writer.CloseContainer(&dict_writer);
+
+    response_array_writer.CloseContainer(&device_array_writer);
+    response_writer.CloseContainer(&response_array_writer);
+
+    return response;
+  }
+
   std::unique_ptr<dbus::Response> CreateTwoDeviceResponse() {
     auto response = dbus::Response::CreateEmpty();
 
@@ -341,6 +382,56 @@ class FirmwareUpdateManagerTest : public AshTestBase {
     dict_writer.AppendVariantOfString(kFakeUpdateUriForTesting);
     device_array_writer.CloseContainer(&dict_writer);
 
+    device_array_writer.OpenDictEntry(&dict_writer);
+    dict_writer.AppendString(kChecksumKey);
+    dict_writer.AppendVariantOfString(kEmptyFileSha256ForTesting);
+    device_array_writer.CloseContainer(&dict_writer);
+
+    response_array_writer.CloseContainer(&device_array_writer);
+    response_writer.CloseContainer(&response_array_writer);
+
+    return response;
+  }
+
+  std::unique_ptr<dbus::Response> CreateOneUpdateResponseWithChecksum(
+      const std::string& checksum) {
+    auto response = dbus::Response::CreateEmpty();
+
+    dbus::MessageWriter response_writer(response.get());
+    dbus::MessageWriter response_array_writer(nullptr);
+    dbus::MessageWriter device_array_writer(nullptr);
+    dbus::MessageWriter dict_writer(nullptr);
+
+    // The response is an array of arrays of dictionaries. Each dictionary is
+    // one device description.
+    response_writer.OpenArray("a{sv}", &response_array_writer);
+    response_array_writer.OpenArray("{sv}", &device_array_writer);
+
+    device_array_writer.OpenDictEntry(&dict_writer);
+    dict_writer.AppendString(kDescriptionKey);
+    dict_writer.AppendVariantOfString(kFakeUpdateDescriptionForTesting);
+    device_array_writer.CloseContainer(&dict_writer);
+
+    device_array_writer.OpenDictEntry(&dict_writer);
+    dict_writer.AppendString(kVersionKey);
+    dict_writer.AppendVariantOfString(kFakeUpdateVersionForTesting);
+    device_array_writer.CloseContainer(&dict_writer);
+
+    device_array_writer.OpenDictEntry(&dict_writer);
+    dict_writer.AppendString(kPriorityKey);
+    dict_writer.AppendVariantOfUint32(kFakeUpdatePriorityForTesting);
+    device_array_writer.CloseContainer(&dict_writer);
+
+    device_array_writer.OpenDictEntry(&dict_writer);
+    dict_writer.AppendString(kUriKey);
+    dict_writer.AppendVariantOfString(kFakeUpdateUriForTesting);
+    device_array_writer.CloseContainer(&dict_writer);
+
+    device_array_writer.OpenDictEntry(&dict_writer);
+    dict_writer.AppendString(kChecksumKey);
+    dict_writer.AppendVariantOfString(checksum);
+    device_array_writer.CloseContainer(&dict_writer);
+
     response_array_writer.CloseContainer(&device_array_writer);
     response_writer.CloseContainer(&response_array_writer);
 
@@ -378,6 +469,11 @@ class FirmwareUpdateManagerTest : public AshTestBase {
     device_array_writer.OpenDictEntry(&dict_writer);
     dict_writer.AppendString(kUriKey);
     dict_writer.AppendVariantOfString(kFakeUpdateUriForTesting);
+    device_array_writer.CloseContainer(&dict_writer);
+
+    device_array_writer.OpenDictEntry(&dict_writer);
+    dict_writer.AppendString(kChecksumKey);
+    dict_writer.AppendVariantOfString(kEmptyFileSha256ForTesting);
     device_array_writer.CloseContainer(&dict_writer);
 
     response_array_writer.CloseContainer(&device_array_writer);
@@ -780,6 +876,61 @@ TEST_F(FirmwareUpdateManagerTest, InvalidFile) {
   EXPECT_TRUE(!update_progress_observer.GetLatestUpdate());
 }
 
+TEST_F(FirmwareUpdateManagerTest, InvalidChecksum) {
+  base::HistogramTester histogram_tester;
+  EXPECT_CALL(*proxy_, DoCallMethodWithErrorResponse(_, _, _))
+      .WillRepeatedly(Invoke(this, &FirmwareUpdateManagerTest::OnMethodCalled));
+
+  dbus_responses_.push_back(CreateOneDeviceResponse());
+  dbus_responses_.push_back(CreateOneUpdateResponseWithChecksum(
+      "badbbadbad1ef97238fb24c5e40a979bc544bb2b0967b863e43e7d58e0d9a923f"));
+  dbus_responses_.push_back(dbus::Response::CreateEmpty());
+  FakeUpdateObserver update_observer;
+  SetupObserver(&update_observer);
+  ASSERT_EQ(1, update_observer.num_times_notified());
+
+  // No updates available since checksum is empty.
+  const auto& updates = update_observer.updates();
+  ASSERT_TRUE(updates.empty());
+}
+
+TEST_F(FirmwareUpdateManagerTest, EmptyChecksum) {
+  base::HistogramTester histogram_tester;
+  EXPECT_CALL(*proxy_, DoCallMethodWithErrorResponse(_, _, _))
+      .WillRepeatedly(Invoke(this, &FirmwareUpdateManagerTest::OnMethodCalled));
+
+  dbus_responses_.push_back(CreateOneDeviceResponse());
+  dbus_responses_.push_back(CreateOneUpdateResponseWithChecksum(""));
+  dbus_responses_.push_back(dbus::Response::CreateEmpty());
+
+  FakeUpdateObserver update_observer;
+  SetupObserver(&update_observer);
+  ASSERT_EQ(1, update_observer.num_times_notified());
+
+  // No updates available since checksum is empty.
+  const auto& updates = update_observer.updates();
+  ASSERT_TRUE(updates.empty());
+}
+
+TEST_F(FirmwareUpdateManagerTest, WrongChecksumVariant) {
+  base::HistogramTester histogram_tester;
+  EXPECT_CALL(*proxy_, DoCallMethodWithErrorResponse(_, _, _))
+      .WillRepeatedly(Invoke(this, &FirmwareUpdateManagerTest::OnMethodCalled));
+
+  dbus_responses_.push_back(CreateOneDeviceResponse());
+  dbus_responses_.push_back(CreateOneUpdateResponseWithChecksum(
+      "badbbadbad1ef97238fb24c5e40a979bc544bb2b"));
+  dbus_responses_.push_back(dbus::Response::CreateEmpty());
+
+  FakeUpdateObserver update_observer;
+  SetupObserver(&update_observer);
+  ASSERT_EQ(1, update_observer.num_times_notified());
+
+  // No updates available since checksum is empty.
+  const auto& updates = update_observer.updates();
+  ASSERT_TRUE(updates.empty());
+}
+
 TEST_F(FirmwareUpdateManagerTest, NotificationShownForCriticalUpdate) {
   InitializeNotificationController();
   EXPECT_CALL(*proxy_, DoCallMethodWithErrorResponse(_, _, _))
@@ -942,4 +1093,22 @@ TEST_F(FirmwareUpdateStartupNotificationTest,
       kFirmwareUpdateNotificationId));
 }
 
+TEST_F(FirmwareUpdateManagerTest, InternalDeviceFiltered) {
+  EXPECT_CALL(*proxy_, DoCallMethodWithErrorResponse(_, _, _))
+      .WillRepeatedly(Invoke(this, &FirmwareUpdateManagerTest::OnMethodCalled));
+
+  dbus_responses_.push_back(CreateOneDeviceResponse());
+  dbus_responses_.push_back(CreateOneUpdateResponse());
+  dbus_responses_.push_back(CreateInternalDeviceResponse());
+  dbus_responses_.push_back(CreateOneUpdateResponse());
+
+  FakeUpdateObserver update_observer;
+  SetupObserver(&update_observer);
+  const std::vector<firmware_update::mojom::FirmwareUpdatePtr>& updates =
+      update_observer.updates();
+
+  base::RunLoop().RunUntilIdle();
+  ASSERT_EQ(1U, updates.size());
+  EXPECT_EQ(kFakeDeviceIdForTesting, updates[0]->device_id);
+}
 }  // namespace ash

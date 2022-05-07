@@ -30,9 +30,7 @@ chromium-metrics-reviews@google.com.
 
 <variants name="ModelExecutionStatus">
   <variant name="ExecutionError"/>
-  <variant name="InvalidMetadata"/>
   <variant name="Success"/>
-  <variant name="Unknown"/>
 </variants>
 
 <variants name="SegmentationKey">
@@ -79,7 +77,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.AdaptiveToolbar.SegmentSelected.Startup"
-    enum="AdaptiveToolbarButtonVariant" expires_after="2022-06-26">
+    enum="AdaptiveToolbarButtonVariant" expires_after="2022-08-28">
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -352,6 +350,18 @@ chromium-metrics-reviews@google.com.
     segmentation model.
 
     Recorded every time a {SegmentationModel} segmentation model is executed.
+
+    Before M100: The ExecutionError could mean either model not available or
+    execution failed.
+
+    In M100 in addition to ExecutionError,
+    OptimizationGuide.ModelExecutor.ExecutionStatus will also record
+    FileNotValid when model is not available.
+
+    M101: SkippedModelNotReady was added which counts execution attempts before
+    model was ready, and ExecutionError means the model failed after it was
+    ready. Also other cases when execution was skipped are added to this
+    histogram (&quot;Skipped*&quot;).
   </summary>
   <token key="SegmentationModel" variants="SegmentationModel"/>
 </histogram>
@@ -384,7 +394,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="SegmentationPlatform.SelectionFailedReason"
-    enum="SegmentationSelectionFailureReason" expires_after="2022-07-31">
+    enum="SegmentationSelectionFailureReason" expires_after="2022-09-11">
   <owner>ssid@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>
   <summary>
@@ -394,9 +404,21 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="SegmentationPlatform.SelectionFailedReason.{SegmentationKey}"
+    enum="SegmentationSelectionFailureReason" expires_after="2022-07-31">
+  <owner>ssid@chromium.org</owner>
+  <owner>chrome-segmentation-platform@google.com</owner>
+  <summary>
+    Records the reason why the segmentation platform was unable to return a
+    segment selection for {SegmentationKey}, or if a result was available.
+    Recorded when failure is hit when trying to compute selection, or when
+    reading the selected segment.
+  </summary>
+</histogram>
+
 <histogram
     name="SegmentationPlatform.SignalDatabase.GetSamples.DatabaseEntryCount"
-    units="entries" expires_after="2022-06-26">
+    units="entries" expires_after="2022-08-28">
   <owner>nyquist@chromium.org</owner>
   <owner>shaktisahu@chromium.org</owner>
   <owner>chrome-segmentation-platform@google.com</owner>

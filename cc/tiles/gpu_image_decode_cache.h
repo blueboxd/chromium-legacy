@@ -22,6 +22,7 @@
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "cc/tiles/image_decode_cache.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkYUVAInfo.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -696,13 +697,14 @@ class CC_EXPORT GpuImageDecodeCache
   void UploadImageIfNecessary_TransferCache_SoftwareDecode_YUVA(
       const DrawImage& draw_image,
       ImageData* image_data,
-      sk_sp<SkColorSpace> decoded_target_colorspace);
+      sk_sp<SkColorSpace> decoded_target_colorspace,
+      absl::optional<TargetColorParams> target_color_params);
   void UploadImageIfNecessary_TransferCache_SoftwareDecode_RGBA(
       const DrawImage& draw_image,
       ImageData* image_data,
       bool needs_adjusted_color_space,
       sk_sp<SkColorSpace> decoded_target_colorspace,
-      sk_sp<SkColorSpace> color_space);
+      absl::optional<TargetColorParams> target_color_params);
   void UploadImageIfNecessary_GpuCpu_YUVA(
       const DrawImage& draw_image,
       ImageData* image_data,

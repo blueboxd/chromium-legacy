@@ -32,6 +32,7 @@ namespace views {
 class Widget;
 }  // namespace views
 
+class PrefService;
 class Profile;
 
 namespace crostini {
@@ -197,6 +198,9 @@ void ShowCrostiniRecoveryView(Profile* profile,
                               const std::vector<LaunchArg>& args,
                               CrostiniSuccessCallback callback);
 
+// Remove duplicate containers in the existing kCrostiniContainers pref.
+void RemoveDuplicateContainerEntries(PrefService* prefs);
+
 // Add a newly created LXD container to the kCrostiniContainers pref
 void AddNewLxdContainerToPrefs(Profile* profile,
                                const ContainerId& container_id);
@@ -242,6 +246,10 @@ bool IsCrostiniWindow(const aura::Window* window);
 void RecordAppLaunchHistogram(CrostiniAppLaunchAppType app_type);
 void RecordAppLaunchResultHistogram(CrostiniAppLaunchAppType type,
                                     crostini::CrostiniResult reason);
+
+// Tests whether or not the specified Container is the last one running on it's
+// VM. Returns true if the VM should be stopped.
+bool ShouldStopVm(Profile* profile, const ContainerId& container_id);
 
 }  // namespace crostini
 

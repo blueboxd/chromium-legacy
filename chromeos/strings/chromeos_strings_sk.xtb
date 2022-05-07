@@ -20,6 +20,7 @@
 <translation id="1181037720776840403">Odstrániť</translation>
 <translation id="1195447618553298278">Neznáma chyba.</translation>
 <translation id="1196959502276349371">Verzia <ph name="VERSION" /></translation>
+<translation id="1199355487114804640">Prehratie alebo pozastavenie</translation>
 <translation id="1201402288615127009">Ďalej</translation>
 <translation id="1204296502688602597">Latencia DNS</translation>
 <translation id="123124571410524056">Podozrenie na portál</translation>
@@ -43,6 +44,7 @@
 <translation id="1413240736185167732">Nepodarilo sa – zlyhal filter</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">Mám pár kľúčov</translation>
+<translation id="1423591390236870726">Nebol stlačený kláves <ph name="KEY_NAME" /></translation>
 <translation id="1435763214710588005">Automaticky každý mesiac resetuje spotrebu dát vo vybraný deň</translation>
 <translation id="1442433966118452622">Zdroj obrázka</translation>
 <translation id="1451536289672181509">Zariadenie je klávesnica.</translation>
@@ -54,6 +56,7 @@
 <translation id="1499900233129743732"><ph name="MANAGER" /> spravuje tohto používateľa a môže vzdialene spravovať nastavenia a sledovať aktivitu používateľa.</translation>
 <translation id="150962533380566081">Neplatný kód PUK.</translation>
 <translation id="1510238584712386396">Spúšťač</translation>
+<translation id="152892567002884378">Zvýšenie hlasitosti</translation>
 <translation id="155865706765934889">Touchpad</translation>
 <translation id="1565038567006703504"><ph name="DEVICE_NAME" /> sa nedá aktualizovať</translation>
 <translation id="1567064801249837505">Albumy</translation>
@@ -76,17 +79,21 @@
 <translation id="175763766237925754">Dobré (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1768959921651994223">Typ overenia</translation>
 <translation id="1782199038061388045">preklad</translation>
 <translation id="1792647875738159689">Ruší sa skenovanie</translation>
 <translation id="1807246157184219062">Svetlý režim</translation>
 <translation id="1827738518074806965">Umelecká galéria</translation>
 <translation id="1851218745569890714">Videokonferencie</translation>
+<translation id="1852934301711881861">Nainštalovať Chrome OS Flex</translation>
+<translation id="1856388568474281774">Šípka nadol</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="1887850431809612466">Revízia hardvéru</translation>
 <translation id="1905710495812624430">Maximálny počet povolených pokusov bol prekročený.</translation>
 <translation id="1908234395526491708">Neúspešné žiadosti UDP</translation>
 <translation id="1930797645656624981">Služba metódy vstupu systému Chrome OS</translation>
 <translation id="1947737735496445907">Vytlačené</translation>
+<translation id="1951012854035635156">Asistent</translation>
 <translation id="1979103255016296513">Uplynul termín zmeny hesla</translation>
 <translation id="1999615961760456652">Prihlasovací portál</translation>
 <translation id="2006864819935886708">Pripojiteľnosť</translation>
@@ -94,21 +101,26 @@
 <translation id="2016697457005847575">Vyskúšať kroky na riešenie problémov</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">Ďalšie nastavenia</translation>
+<translation id="2085089206770112532">Zníženie jasu obrazovky</translation>
 <translation id="2104796393919810494">Oprava je dokončená</translation>
 <translation id="2105810540595158374">Zariadenie je herný ovládač.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, verzia <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">K dispozícii je <ph name="AVAILABLE_MEMORY" /> GB z <ph name="TOTAL_MEMORY" /> GB.</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" /> %</translation>
+<translation id="2152882202543497059">Počet fotiek: <ph name="NUMBER" /></translation>
 <translation id="2157959690810728433">V PORADÍ</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Skúsiť znova</translation>
 <translation id="2161394479394250669">Zrušiť tlačovú úlohu</translation>
 <translation id="2180197493692062006">Vyskytol sa problém. Skúste aplikáciu znova otvoriť.</translation>
+<translation id="2201770616342964496">Miestna identita</translation>
 <translation id="2209788852729124853">Resetovať počítadlá návštevnosti</translation>
 <translation id="2212733584906323460">Preklad názvu</translation>
 <translation id="2217935453350629363">Aktuálna rýchlosť</translation>
 <translation id="2224337661447660594">Bez internetu</translation>
+<translation id="222447520299472966">Je potrebné vybrať aspoň jeden album z umeleckej galérie</translation>
 <translation id="2230005943220647148">Celzius</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2240366984605217732">Prepínanie rozloženia</translation>
 <translation id="225692081236532131">Stav aktivácie</translation>
 <translation id="2287186687001756809">K dispozícii nie je žiadny obrázok. Ak chcete pridať fotky, prejdite na <ph name="LINK" />.</translation>
 <translation id="2307344026739914387">Použitie aktuálneho páru kľúčov</translation>
@@ -126,6 +138,7 @@
 <translation id="2446553403094072641">Presnosť pohyblivej rádovej čiarky</translation>
 <translation id="2448312741937722512">Typ</translation>
 <translation id="2461822463642141190">Aktuálna</translation>
+<translation id="2493126929778606526">Vaše najlepšie fotky, vybrané automaticky</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">Obnoviť aktuálny obrázok tapety</translation>
 <translation id="2517472476991765520">Skenovať</translation>
@@ -136,6 +149,7 @@
 <translation id="2585245331261708204">Chrome OS – čo je nové</translation>
 <translation id="2619761439309613843">Obnovovať denne</translation>
 <translation id="2620436844016719705">Systém</translation>
+<translation id="2640549051766135490">Album <ph name="TITLE" /> <ph name="DESC" /> bol vybraný</translation>
 <translation id="2695514675076754339">Zadajte odomykací kód s ôsmimi znakmi</translation>
 <translation id="2712812801627182647">Overovací kľúč TLS</translation>
 <translation id="2740531572673183784">OK</translation>
@@ -147,6 +161,7 @@
 <translation id="2859243502336719778">Kľúčová aktualizácia</translation>
 <translation id="2860473693272905224">Položte na skener ďalšiu stranu</translation>
 <translation id="2872961005593481000">Vypnúť</translation>
+<translation id="2874939134665556319">Predchádzajúca skladba</translation>
 <translation id="2878387241690264070">Za <ph name="NUM_SECONDS" /> s sa batéria vybila o <ph name="RATE" /></translation>
 <translation id="291142119251986300">Nekvalifikujúce sa komponenty</translation>
 <translation id="2926057806159140518">Zadajte používateľské meno a heslo alebo naskenujte QR kód</translation>
@@ -180,11 +195,13 @@
 <translation id="3340011300870565703">Úroveň batérie pravého slúchadla zariadenia je <ph name="BATTERY_PERCENTAGE" /> %.</translation>
 <translation id="3368922792935385530">Pripojené</translation>
 <translation id="3369013195428705271">Naozaj chcete vymazať celú históriu tlače? Prebiehajúce tlačové úlohy nebudú vymazané.</translation>
+<translation id="3413935475507503304">Ak chcete pokračovať v aktualizácii, kliknite na Ďalej.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" /> %</translation>
 <translation id="3435738964857648380">Bezpečnosť</translation>
 <translation id="3456078764689556234">Bola vytlačená <ph name="PRINTED_PAGES" />. strana z <ph name="TOTAL_PAGES" />.</translation>
 <translation id="345898999683440380">Skenuje sa <ph name="PAGE_NUM" />. strana. Dokončené: <ph name="PERCENTAGE_VALUE" /> %.</translation>
 <translation id="3459509316159669723">Tlač</translation>
+<translation id="346539236881580388">Odfotiť znova</translation>
 <translation id="3484914941826596830">Počas aktualizovania firmvéru neodpájajte toto zariadenie ani nevypínajte počítač. Toto okno môžete minimalizovať. Táto aktualizácia môže trvať niekoľko minút a vaše externé zariadenie nemusí počas nej fungovať.</translation>
 <translation id="3486220673238053218">definícia</translation>
 <translation id="3488065109653206955">Čiastočne aktivované</translation>
@@ -195,9 +212,11 @@
 <translation id="357889014807611375">Wi‑Fi s meraním dát</translation>
 <translation id="3583278742022654445">Slabý signál. Skúste sa priblížiť k zdroju signálu Wi-Fi.</translation>
 <translation id="3595596368722241419">Batéria je nabitá</translation>
+<translation id="3600339377155080675">Zrkadlenie obrazovky</translation>
 <translation id="3603829704940252505">Avatar</translation>
 <translation id="360565022852130722">Sieť Wi‑Fi je zabezpečená slabým protokolom WEP 802.1x</translation>
 <translation id="3606583719724308068">Vysoká latencia na weboch HTTPS</translation>
+<translation id="3632579075709132555">Prepínanie zámky na ochranu súkromia</translation>
 <translation id="3689839747745352263">Test <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Načítava sa...</translation>
 <translation id="3708186454126126312">Predtým pripojené zariadenia</translation>
@@ -226,8 +245,10 @@
 <translation id="4003384961948020559">Nepodarilo sa – výstup je plný</translation>
 <translation id="4034824040120875894">Tlačiareň</translation>
 <translation id="4044093238444069296">Brána sa nedá kontaktovať</translation>
+<translation id="4046123991198612571">Ďalšia skladba</translation>
 <translation id="404928562651467259">UPOZORNENIE</translation>
 <translation id="409427325554347132">Uložiť podrobnosti o teste</translation>
+<translation id="4110686435123617899">Vyberte album <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">Touchpad USB</translation>
 <translation id="4131410914670010031">Čiernobielo</translation>
 <translation id="4140251671072434548">Odblokujte server povolení na vrátenie tovaru</translation>
@@ -242,16 +263,18 @@
 <translation id="4238516577297848345">Neprebiehajú žiadne tlačové úlohy</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4244962993387259361">Na spustenie testu pamäte potrebujete aspoň 500 MB voľného miesta. Miesto uvoľnite v sekcii Nastavenia &gt; Správa priestoru.</translation>
+<translation id="4250229828105606438">Snímka obrazovky</translation>
 <translation id="4258281355379922695">Latencia protokolu HTTP</translation>
 <translation id="4271957103967917607">Zobraziť na celú obrazovku</translation>
 <translation id="4275799948641988986">Kto bude zariadenie používať po oprave?</translation>
+<translation id="4289540628985791613">Prehľad</translation>
 <translation id="4297501883039923494">Zastavené – neznáma chyba</translation>
 <translation id="4300073214558989">Počet obrázkov: <ph name="IMAGE_COUNT" /></translation>
+<translation id="4333390807948134856">Bol stlačený kláves <ph name="KEY_NAME" /></translation>
 <translation id="4378373042927530923">Nebolo spustené</translation>
 <translation id="4378551569595875038">Pripája sa...</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="439429847087949098"><ph name="DEVICE_NAME" /> sa reštartuje</translation>
-<translation id="4418498623216225764">Aktualizácia periférií</translation>
 <translation id="4425149324548788773">Môj disk</translation>
 <translation id="4428374560396076622">Sieť <ph name="NETWORK_NAME" /> je vypnutá</translation>
 <translation id="4429881212383817840">Platnosť tiketu Kerberos čoskoro uplynie</translation>
@@ -263,9 +286,11 @@
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Nepredvolenú bránu siete sa nepodarilo otestovať</translation>
 <translation id="4485626319513081846">Túto možnosť vyberte, ak bolo zariadenie opätovne naskladnené alebo repasované na distribúciu novému zákazníkovi.</translation>
+<translation id="4503223151711056411">Šípka doľava</translation>
 <translation id="4511264077854731334">Portál</translation>
 <translation id="4521826082652183069">Zhoda alternatívneho názvu subjektu</translation>
 <translation id="4536864596629708641">Konfigurácia adresy IP</translation>
+<translation id="4546131424594385779">Vytvoriť videoslučku</translation>
 <translation id="4548483925627140043">Signál sa nenašiel</translation>
 <translation id="4556753742174065117">Všetok firmvér je aktuálny</translation>
 <translation id="455835558791489930">Batéria s kapacitou <ph name="CHARGE_VALUE" /> mAh</translation>
@@ -273,22 +298,25 @@
 <translation id="4562494484721939086">Žiadny signál</translation>
 <translation id="458794348635939462">Nepodarilo sa vybrať všetkých hostiteľov</translation>
 <translation id="4593212453765072419">Vyžaduje sa overenie servera proxy</translation>
+<translation id="4609350030397390689">Zníženie jasu klávesnice</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" /> z <ph name="TOTAL_PAGE_NUMBER" />. Tlačovú úlohu zrušíte stlačením klávesa Enter.</translation>
+<translation id="4627645661474370390">Vzdialená identita</translation>
 <translation id="463791356324567266">Ruší sa skenovanie…</translation>
 <translation id="4646949265910132906">Zabezpečené pripojenie Wi‑Fi</translation>
+<translation id="4650608062294027130">Pravý kláves Shift</translation>
 <translation id="4654549501020883054">Meniť denne</translation>
 <translation id="4665014895760275686">Výrobca</translation>
 <translation id="467510802200863975">Heslá sa nezhodujú</translation>
 <translation id="467715984478005772">Podozrenie na firewall</translation>
 <translation id="4691278870498629773">Zastavené – chýba zásobník</translation>
 <translation id="469379815867856270">Intenzita signálu</translation>
-<translation id="4707579418881001319">L2TP/IPSec + certifikát používateľa</translation>
 <translation id="4731797938093519117">Rodičovský prístup</translation>
 <translation id="473775607612524610">Aktualizovať</translation>
 <translation id="4744944742468440486">Informácie súvisiace s vaším výberom</translation>
 <translation id="475869545581454722">Heslo systému Chrome OS bolo aktualizované</translation>
 <translation id="4773299976671772492">Zastavené</translation>
 <translation id="4782311465517282004">Získavajte definície, preklady alebo prevody jednotiek kliknutím pravým tlačidlom alebo pridržaním textu</translation>
+<translation id="4791000909649665275"><ph name="NUMBER" /> fotka</translation>
 <translation id="4793756956024303490">Algoritmus kompresie</translation>
 <translation id="4794140124556169553">Spustenie testu procesora môže ovplyvniť výkon systému</translation>
 <translation id="4808449224298348341">Bola zrušená tlačová úloha <ph name="DOCUMENT_TITLE" /></translation>
@@ -327,12 +355,14 @@
 <translation id="5051044138948155788">Toto je jediná strana. Prejdete na úvodnú obrazovku skenovania.</translation>
 <translation id="5088172560898466307">Názov hostiteľského servera</translation>
 <translation id="5089810972385038852">Štát</translation>
+<translation id="5090362543162270857">IPsec (IKEv2)</translation>
 <translation id="5142961317498132443">Overenie totožnosti</translation>
 <translation id="5154917547274118687">Pamäť</translation>
 <translation id="5160857336552977725">Prihláste sa do svojho zariadenia <ph name="DEVICE_TYPE" /></translation>
 <translation id="5166918508782100047">Nastavenia rýchlych odpovedí</translation>
 <translation id="5168185087976003268">Stav batérie</translation>
 <translation id="5170568018924773124">Zobraziť v priečinku</translation>
+<translation id="5190187232518914472">Pripomeňte si obľúbené spomienky. Ak chcete pridať alebo upraviť albumy, prejdite do <ph name="LINK_BEGIN" />Fotiek Google<ph name="LINK_END" />.</translation>
 <translation id="5212543919916444558">Na obrazovke nie je nič, s čím by som mohol pomôcť.
 Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="5212593641110061691">Tabloid</translation>
@@ -371,8 +401,11 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Skenovať znova</translation>
+<translation id="5583640892426849032">Backspace</translation>
+<translation id="5600027863942488546">Bol otestovaný kláves <ph name="KEY_NAME" /></translation>
 <translation id="5620281292257375798">Iba interné</translation>
 <translation id="5649768706273821470">Počúvať</translation>
+<translation id="5655283760733841251">Zvýšenie jasu obrazovky</translation>
 <translation id="5669267381087807207">Aktivuje sa</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Rodina</translation>
@@ -380,6 +413,8 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="5707900041990977207"><ph name="CURRENT_PAGE" /> z <ph name="TOTAL_PAGES" /></translation>
 <translation id="5733298426544876109">Aktualizovať zariadenie <ph name="DEVICE_NAME" /></translation>
 <translation id="5760715441271661976">Stav portálu</translation>
+<translation id="576835345334454681">Zvýšenie jasu obrazovky</translation>
+<translation id="57838592816432529">Vypnúť zvuk</translation>
 <translation id="5784136236926853061">Vysoká latencia protokolu HTTPS</translation>
 <translation id="5832805196449965646">Pridať osobu</translation>
 <translation id="583281660410589416">Neznáme</translation>
@@ -387,6 +422,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="5849570051105887917">Kód poskytovateľa domácej siete</translation>
 <translation id="5860033963881614850">Vypnuté</translation>
 <translation id="5866840822086176774">Veľmi silné</translation>
+<translation id="588258955323874662">Celá obrazovka</translation>
 <translation id="5895138241574237353">Reštartovať</translation>
 <translation id="5916084858004523819">Zakázané</translation>
 <translation id="5916664084637901428">Zapnuté</translation>
@@ -408,6 +444,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="6104112872696127344">Skenovanie bolo zrušené</translation>
 <translation id="6106186594183574873">Ak chcete zmenu dokončiť, zadajte staré heslo</translation>
 <translation id="6108689792487843350">Brána je nedostupná</translation>
+<translation id="6113701710518389813">Šípka nahor</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6137767437444130246">Certifikát používateľa</translation>
 <translation id="6146993107019042706">Ak chcete zmenu dokončiť, zadajte nové heslo</translation>
@@ -421,12 +458,14 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="6232017090690406397">Batéria</translation>
 <translation id="6235460611964961764">Manuálne resetovať spotrebu dát</translation>
 <translation id="6243280677745499710">Práve nastavená</translation>
+<translation id="6275224645089671689">Šípka doprava</translation>
 <translation id="6278428485366576908">Motív</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6302401976930124515">Test <ph name="TEST_NAME" /> bol zrušený</translation>
 <translation id="6319207335391420837">Aktualizácia firmvéru zariadenia <ph name="DEVICE_NAME" /></translation>
 <translation id="6325525973963619867">Zlyhanie</translation>
 <translation id="6340526405444716530">Prispôsobenie</translation>
+<translation id="6348738456043757611">Používateľské meno a heslo</translation>
 <translation id="636850387210749493">Registrácia podniku</translation>
 <translation id="6379086450106841622">Dotyková obrazovka</translation>
 <translation id="6388847657025262518">Podávač dokumentov skenera je zaseknutý. Skontrolujte ho a skúste to znova.</translation>
@@ -449,18 +488,23 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="6566314079205407217">Viacstránkový sken</translation>
 <translation id="6574762126505704998">Výplň</translation>
 <translation id="6575134580692778371">Nenakonfigurované</translation>
+<translation id="6579509898032828423">Použiť túto fotku</translation>
 <translation id="6596816719288285829">Adresa IP</translation>
 <translation id="6618744767048954150">Beží</translation>
 <translation id="6620487321149975369">Tlačové úlohy sa budú zobrazovať v histórii, dokým ich neodstránite ručne</translation>
 <translation id="6643016212128521049">Vymazať</translation>
 <translation id="6647510110698214773">Algoritmus šifrovania</translation>
+<translation id="6650062777702288430">Prepínanie písmen kana a alfanumerických znakov</translation>
 <translation id="6657585470893396449">Heslo</translation>
+<translation id="6659594942844771486">Karta</translation>
 <translation id="6692996468359469499">Získajte informácie súvisiace s vaším výberom</translation>
 <translation id="6704062477274546131">Prevod adresy IP na názov domény systémom DNS</translation>
+<translation id="6723839937902243910">Napájanie</translation>
 <translation id="6747215703636344499">Zastavené – výstup je plný</translation>
 <translation id="6749473226660745022">Fotky</translation>
 <translation id="6753452347192452143">Zariadenie je počítač.</translation>
 <translation id="6756731097889387912">Skenovanie sa nepodarilo zrušiť</translation>
+<translation id="6760706756348334449">Zníženie hlasitosti</translation>
 <translation id="6766275201586212568">Neúspešné preklady DNS</translation>
 <translation id="6768237774506518020">Vysoká miera neúspešných prekladov DNS</translation>
 <translation id="680983167891198932">Kľúč</translation>
@@ -495,6 +539,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="7175037578838465313">Konfigurácia siete <ph name="NAME" /></translation>
 <translation id="7177485034254901881">Toto zariadenie <ph name="DEVICE_TYPE" /> spravuje <ph name="MANAGER" />. Správcovia ho môžu vzdialene konfigurovať.</translation>
 <translation id="7180611975245234373">Obnoviť</translation>
+<translation id="7212734716605298123">Aktualizácie firmvéru pre externé zariadenia</translation>
 <translation id="7216409898977639127">Poskytovateľ mobilného pripojenia</translation>
 <translation id="7271040990581020067">Skener sa momentálne používa. Skúste to neskôr.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
@@ -513,6 +558,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Skenovanie je dokončené. Bola naskenovaná 1 strana.}few{Skenovanie je dokončené. Boli naskenované {NUMBER_OF_PAGES} strany.}many{Skenovanie je dokončené. {NUMBER_OF_PAGES} pages scanned}other{Skenovanie je dokončené. Bolo naskenovaných {NUMBER_OF_PAGES} strán.}}</translation>
 <translation id="7469648432129124067">Bol rozpoznaný portál</translation>
+<translation id="7481312909269577407">Dopredu</translation>
 <translation id="7487067081878637334">Technológia</translation>
 <translation id="7490813197707563893">Adresa MAC</translation>
 <translation id="7497215489070763236">Certifikát CA servera</translation>
@@ -541,7 +587,6 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="780301667611848630">Nie, ďakujem</translation>
 <translation id="7805768142964895445">Stav</translation>
 <translation id="7819857487979277519">PSK (WPA alebo RSN)</translation>
-<translation id="7835501727204647447">Inštalovať CloudReady</translation>
 <translation id="7846634333498149051">Klávesnica</translation>
 <translation id="7856267634822906833">Dotyková obrazovka s rozhraním Bluetooth</translation>
 <translation id="7881066108824108340">DNS</translation>
@@ -567,6 +612,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="8132480444149501833">Požiadať o údaje počítadiel návštevnosti</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073">Vyberte <ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /></translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8206859287963243715">Mobilné</translation>
 <translation id="8208861521865154048">Výhody</translation>
 <translation id="8217675307824400706">Pripojte sa</translation>
@@ -607,7 +653,9 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="8660881923941176839">libry</translation>
 <translation id="8662671328352114214">Pridanie sa k sieti <ph name="TYPE" /></translation>
 <translation id="8675354002693747642">Predzdieľaný kľúč</translation>
+<translation id="8677859815076891398">Žiadne albumy Vytvorte album vo <ph name="LINK_BEGIN" />Fotkách Google<ph name="LINK_END" />.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> Spravujte túto funkciu pomocou ľavej alebo pravej šípky.</translation>
+<translation id="8712637175834984815">Dobre</translation>
 <translation id="871560550817059752">Nepodarilo sa – minul sa atrament</translation>
 <translation id="8723108084122415655">Nepredvolená sieť prekračuje úroveň latencie</translation>
 <translation id="8726019395068607495">Zastavené – dvierka sú otvorené</translation>
@@ -648,6 +696,7 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="9062831201344759865">Preklad DNS má vysokú latenciu</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9082718469794970195">Použiť toto video</translation>
 <translation id="9087578468327036362">Nahlásiť tento dopyt</translation>
 <translation id="9088306295921699330">Aktuálne využitie</translation>
 <translation id="9095415590198785865">Zariadenie zostane u rovnakého vlastníka</translation>
@@ -658,10 +707,10 @@ Skúste klepnúť na mikrofón a niečo prikázať.</translation>
 <translation id="9122602430962285795">Ak sa chcete znova pripojiť, prejdite do Nastavení</translation>
 <translation id="9126720536733509015">Ukladať viacero strán do jedného súboru PDF</translation>
 <translation id="9137526406337347448">Služby Google</translation>
+<translation id="9138630967333032450">Ľavý kláves Shift</translation>
 <translation id="9149391708638971077">Spustiť test pamäte</translation>
 <translation id="9173638680043580060">Zostáva menej ako minúta</translation>
 <translation id="917720651393141712">Testovať</translation>
-<translation id="9190063653747922532">L2TP/IPSec + predzdieľaný kľúč</translation>
 <translation id="9204237731135241582">Brána sa nedá kontaktovať v aplikáciách pre Android</translation>
 <translation id="9211490828691860325">Všetky plochy</translation>
 <translation id="939519157834106403">SSID</translation>

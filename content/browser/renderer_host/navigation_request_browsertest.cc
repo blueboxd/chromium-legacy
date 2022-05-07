@@ -56,6 +56,7 @@
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom.h"
 #include "ui/base/page_transition_types.h"
+#include "url/scheme_host_port.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -3117,7 +3118,7 @@ IN_PROC_BROWSER_TEST_F(NavigationRequestBrowserTest, AuthChallengeInfo) {
   EXPECT_TRUE(observer.has_committed());
   ASSERT_TRUE(observer.auth_challenge_info().has_value());
   EXPECT_FALSE(observer.auth_challenge_info()->is_proxy);
-  EXPECT_EQ(url::Origin::Create(url),
+  EXPECT_EQ(url::SchemeHostPort(url),
             observer.auth_challenge_info()->challenger);
   EXPECT_EQ("basic", observer.auth_challenge_info()->scheme);
   EXPECT_EQ("testrealm", observer.auth_challenge_info()->realm);
@@ -3470,6 +3471,41 @@ IN_PROC_BROWSER_TEST_F(
             fenced_frame_host->cross_origin_embedder_policy().value);
 }
 
+// Ensure that fenced frames don't enable the view source mode since navigations
+// in fenced frames to view-sources URLs are blocked.
+IN_PROC_BROWSER_TEST_F(NavigationRequestFencedFrameBrowserTest,
+                       ViewSourceNavigation_FencedFrame) {
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
+
+  GURL fenced_frame_url =
+      embedded_test_server()->GetURL("/fenced_frames/title1.html");
+  RenderFrameHost* fenced_frame_host =
+      fenced_frame_test_helper().CreateFencedFrame(
+          shell()->web_contents()->GetMainFrame(), fenced_frame_url);
+  EXPECT_NE(nullptr, fenced_frame_host);
+
+  GURL view_source_url(kViewSourceScheme + std::string(":") +
+                       fenced_frame_url.spec());
+  WebContentsConsoleObserver console_observer(shell()->web_contents());
+  console_observer.SetPattern("Not allowed to load local resource: " +
+                              view_source_url.spec());
+
+  // Attempt to navigate to a view source url in the fenced frame.
+  EXPECT_EQ(view_source_url.spec(),
+            EvalJs(fenced_frame_host,
+                   JsReplace(R"({location.href = $1;})", view_source_url)));
+  console_observer.Wait();
+
+  // Original page shouldn't navigate away.
+  EXPECT_EQ(fenced_frame_url, fenced_frame_host->GetLastCommittedURL());
+  EXPECT_FALSE(shell()
+                   ->web_contents()
+                   ->GetController()
+                   .GetLastCommittedEntry()
+                   ->IsViewSourceMode());
+}
+
 enum class TestMPArchType {
   kPrerender,
   kFencedFrame,
@@ -3555,7 +3591,7 @@ IN_PROC_BROWSER_TEST_P(NavigationRequestMPArchBrowserTest,
           EXPECT_TRUE(navigation_handle->ShouldUpdateHistory());
         }));
 
-    // Navigate the primary pagea.
+    // Navigate the primary page.
     EXPECT_TRUE(
         NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   }

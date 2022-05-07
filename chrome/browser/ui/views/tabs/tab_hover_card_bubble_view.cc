@@ -17,7 +17,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/themes/theme_properties.h"
@@ -871,7 +871,7 @@ void TabHoverCardBubbleView::UpdateCardContent(const Tab* tab) {
   GURL domain_url;
   // Use committed URL to determine if no page has yet loaded, since the title
   // can be blank for some web pages.
-  if (tab->data().last_committed_url.is_empty()) {
+  if (!tab->data().last_committed_url.is_valid()) {
     domain_url = tab->data().visible_url;
     title = tab->data().IsCrashed()
                 ? l10n_util::GetStringUTF16(IDS_HOVER_CARD_CRASHED_TITLE)

@@ -13,7 +13,6 @@
 #include "base/hash/hash.h"
 #include "base/memory/raw_ptr.h"
 #include "build/build_config.h"
-#include "components/viz/common/display/overlay_strategy.h"
 #include "components/viz/common/quads/aggregated_render_pass.h"
 #include "components/viz/service/display/display_resource_provider.h"
 #include "components/viz/service/display/output_surface.h"
@@ -55,7 +54,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
   void ProcessForOverlays(
       DisplayResourceProvider* resource_provider,
       AggregatedRenderPassList* render_passes,
-      const skia::Matrix44& output_color_matrix,
+      const SkM44& output_color_matrix,
       const FilterOperationsMap& render_pass_filters,
       const FilterOperationsMap& render_pass_backdrop_filters,
       SurfaceDamageRectList surface_damage_rect_list,
@@ -118,6 +117,13 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
   OverlayPrioritizationConfig prioritization_config_;
   OverlayCandidateTemporalTracker::Config tracker_config_;
 
+  // This is controlled by the "UseMultipleOverlays" feature's "max_overlays"
+  // param.
+  const int max_overlays_config_;
+  // This will remain 1 until hardware support for more than one overlay is
+  // confirmed in `OverlayProcessorOzone::ReceiveHardwareCapabilities`.
+  int max_overlays_considered_ = 1;
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
  protected:
   // TODO(b/181974042):  Remove when color space is plumbed.
@@ -172,7 +178,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
   // through as a const member because the underlay strategy changes the
   // |primary_plane|'s blending setting.
   bool AttemptWithStrategies(
-      const skia::Matrix44& output_color_matrix,
+      const SkM44& output_color_matrix,
       const OverlayProcessorInterface::FilterOperationsMap&
           render_pass_backdrop_filters,
       DisplayResourceProvider* resource_provider,
@@ -190,7 +196,7 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
   // through as a const member because the underlay strategy changes the
   // |primary_plane|'s blending setting.
   bool AttemptWithStrategiesPrioritized(
-      const skia::Matrix44& output_color_matrix,
+      const SkM44& output_color_matrix,
       const OverlayProcessorInterface::FilterOperationsMap&
           render_pass_backdrop_filters,
       DisplayResourceProvider* resource_provider,
@@ -253,28 +259,6 @@ class VIZ_SERVICE_EXPORT OverlayProcessorUsingStrategy
   // Moves `curr_overlays` into `prev_overlays`, and updates `curr_overlays` to
   // reflect the overlays that will be promoted this frame in `candidates`.
   void UpdateOverlayStatusMap(const OverlayCandidateList& candidates);
-
-  struct ProposedCandidateKey {
-    OverlayCandidate::TrackingId tracking_id =
-        OverlayCandidate::kDefaultTrackingId;
-    OverlayStrategy strategy_id = OverlayStrategy::kUnknown;
-
-    bool operator==(const ProposedCandidateKey& other) const {
-      return (tracking_id == other.tracking_id &&
-              strategy_id == other.strategy_id);
-    }
-  };
-
-  struct ProposedCandidateKeyHasher {
-    std::size_t operator()(const ProposedCandidateKey& k) const {
-      return base::Hash(&k, sizeof(k));
-    }
-  };
-
-  static ProposedCandidateKey ToProposeKey(
-      const OverlayProposedCandidate& proposed);
-
-  const int max_overlays_considered_;
 
   std::unordered_map<ProposedCandidateKey,
                      OverlayCandidateTemporalTracker,

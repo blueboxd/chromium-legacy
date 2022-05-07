@@ -6,9 +6,7 @@
 
 #include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 ClientConnectionParameters::ClientConnectionParameters(
     const std::string& feature)
@@ -87,6 +85,4 @@ std::ostream& operator<<(std::ostream& stream,
   return stream;
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

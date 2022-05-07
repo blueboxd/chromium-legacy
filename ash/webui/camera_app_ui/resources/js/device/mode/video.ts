@@ -83,6 +83,7 @@ export function setAvc1Parameters(params: h264.EncoderParameters|null): void {
 
 /**
  * Gets video recording MIME type. Mkv with AVC1 is the only preferred format.
+ *
  * @return Video recording MIME type.
  */
 function getVideoMimeType(param: h264.EncoderParameters|null): string {
@@ -143,10 +144,13 @@ export interface VideoHandler {
   onVideoCaptureDone(videoResult: VideoResult): Promise<void>;
 }
 
+// This is used as an enum.
+/* eslint-disable @typescript-eslint/naming-convention */
 const RecordType = {
   NORMAL: state.State.RECORD_TYPE_NORMAL,
   GIF: state.State.RECORD_TYPE_GIF,
 } as const;
+/* eslint-enable @typescript-eslint/naming-convention */
 
 type RecordType = typeof RecordType[keyof typeof RecordType];
 
@@ -155,6 +159,7 @@ type RecordType = typeof RecordType[keyof typeof RecordType];
  */
 export class Video extends ModeBase {
   private readonly captureResolution: Resolution;
+
   private captureStream: MediaStream|null = null;
 
   /**
@@ -176,7 +181,7 @@ export class Video extends ModeBase {
   /**
    * Record-time for the elapsed gif recording time.
    */
-  private gifRecordTime: GifRecordTime;
+  private readonly gifRecordTime: GifRecordTime;
 
   /**
    * Record type of ongoing recording.
@@ -199,14 +204,11 @@ export class Video extends ModeBase {
    */
   private everPaused = false;
 
-  /**
-   * @param stream Preview stream.
-   */
   constructor(
       video: PreviewVideo,
       private readonly captureConstraints: StreamConstraints|null,
-      captureResolution: Resolution,
-      private readonly snapshotResolution: Resolution,
+      captureResolution: Resolution|null,
+      private readonly snapshotResolution: Resolution|null,
       facing: Facing,
       private readonly handler: VideoHandler,
   ) {
@@ -224,7 +226,7 @@ export class Video extends ModeBase {
         {maxTime: MAX_GIF_DURATION_MS, onMaxTimeout: () => this.stop()});
   }
 
-  async clear(): Promise<void> {
+  override async clear(): Promise<void> {
     await this.stopCapture();
     if (this.captureStream !== null) {
       await StreamManager.getInstance().closeCaptureStream(this.captureStream);
@@ -240,7 +242,7 @@ export class Video extends ModeBase {
     if (state.get(state.State.SHOULD_HANDLE_INTENT_RESULT)) {
       return RecordType.NORMAL;
     }
-    return Object.values(RecordType).find((t) => state.get(t)) ||
+    return Object.values(RecordType).find((t) => state.get(t)) ??
         RecordType.NORMAL;
   }
 
@@ -256,6 +258,7 @@ export class Video extends ModeBase {
 
   /**
    * Takes a video snapshot during recording.
+   *
    * @return Promise resolved when video snapshot is finished.
    */
   async takeSnapshot(): Promise<void> {
@@ -269,6 +272,7 @@ export class Video extends ModeBase {
         let blob: Blob;
         let metadata: Metadata|null = null;
         if (await this.isBlobVideoSnapshotEnabled()) {
+          assert(this.snapshotResolution !== null);
           const photoSettings: PhotoSettings = {
             imageWidth: this.snapshotResolution.width,
             imageHeight: this.snapshotResolution.height,
@@ -299,6 +303,7 @@ export class Video extends ModeBase {
 
   /**
    * Toggles pause/resume state of video recording.
+   *
    * @return Promise resolved when recording is paused/resumed.
    */
   async togglePaused(): Promise<void> {
@@ -323,12 +328,12 @@ export class Video extends ModeBase {
       this.togglePausedInternal = null;
       waitable.signal();
     };
-    const playEffect = async () => {
+    async function playEffect() {
       state.set(state.State.RECORDING_UI_PAUSED, toBePaused);
       await sound.play(dom.get(
           toBePaused ? '#sound-rec-pause' : '#sound-rec-start',
           HTMLAudioElement));
-    };
+    }
 
     this.mediaRecorder.addEventListener(toggledEvent, onToggled);
     if (toBePaused) {
@@ -348,7 +353,7 @@ export class Video extends ModeBase {
     if (avc1Parameters !== null) {
       return avc1Parameters;
     }
-    const preference = encoderPreference.get(loadTimeData.getBoard()) ||
+    const preference = encoderPreference.get(loadTimeData.getBoard()) ??
         {profile: h264.Profile.HIGH, multiplier: 2};
     const {profile, multiplier} = preference;
     const {width, height, frameRate} =
@@ -381,7 +386,7 @@ export class Video extends ModeBase {
     return this.getRecordingStream().getVideoTracks()[0];
   }
 
-  async start(): Promise<() => Promise<void>> {
+  async start(): Promise<[Promise<void>]> {
     assert(this.snapshotting === null);
     this.togglePausedInternal = null;
     this.everPaused = false;
@@ -418,7 +423,7 @@ export class Video extends ModeBase {
     }
 
     this.recordingType = this.getToggledRecordOption();
-    // TODO(b:191950622): Remove complex state logic bind with this enable flag
+    // TODO(b/191950622): Remove complex state logic bind with this enable flag
     // after GIF recording move outside of expert mode and replace it with
     // |RECORD_TYPE_GIF|.
     state.set(
@@ -434,14 +439,14 @@ export class Video extends ModeBase {
       state.set(state.State.RECORDING, false);
       this.gifRecordTime.stop({pause: false});
 
-      // TODO(b:191950622): Close capture stream before onGifCaptureDone()
+      // TODO(b/191950622): Close capture stream before onGifCaptureDone()
       // opening preview page when multi-stream recording enabled.
-      return () => this.handler.onGifCaptureDone({
+      return [this.handler.onGifCaptureDone({
         name: gifName,
         gifSaver,
         resolution: this.captureResolution,
         duration: this.gifRecordTime.inMilliseconds(),
-      });
+      })];
     } else {
       this.recordTime.start({resume: false});
       let videoSaver: VideoSaver|null = null;
@@ -470,12 +475,10 @@ export class Video extends ModeBase {
         assert(videoSaver !== null);
         toast.show(I18nString.ERROR_MSG_VIDEO_TOO_SHORT);
         await videoSaver.cancel();
-        return async () => {
-          await this.snapshotting;
-        };
+        return [this.snapshotting ?? Promise.resolve()];
       }
 
-      return async () => {
+      return [(async () => {
         assert(videoSaver !== null);
         await this.handler.onVideoCaptureDone({
           resolution: this.captureResolution,
@@ -484,11 +487,11 @@ export class Video extends ModeBase {
           everPaused: this.everPaused,
         });
         await this.snapshotting;
-      };
+      })()];
     }
   }
 
-  stop(): void {
+  override stop(): void {
     if (this.recordingType === RecordType.GIF) {
       state.set(state.State.RECORDING, false);
     } else {
@@ -506,10 +509,11 @@ export class Video extends ModeBase {
   /**
    * Starts recording gif animation and waits for stop recording event triggered
    * by stop shutter or time out over 5 seconds.
+   *
    * @return Saves recorded video.
    */
   private async captureGif(): Promise<GifSaver> {
-    // TODO(b:191950622): Grab frames from capture stream when multistream
+    // TODO(b/191950622): Grab frames from capture stream when multistream
     // enabled.
     const video = this.video.video;
     let {videoWidth: width, videoHeight: height} = video;
@@ -526,7 +530,7 @@ export class Video extends ModeBase {
     await new Promise<void>((resolve) => {
       let encodedFrames = 0;
       let start = 0.0;
-      const updateCanvas = (now: number) => {
+      function updateCanvas(now: number) {
         if (start === 0.0) {
           start = now;
         }
@@ -540,7 +544,7 @@ export class Video extends ModeBase {
           gifSaver.write(context.getImageData(0, 0, width, height).data);
         }
         video.requestVideoFrameCallback(updateCanvas);
-      };
+      }
       video.requestVideoFrameCallback(updateCanvas);
     });
     return gifSaver;
@@ -549,6 +553,7 @@ export class Video extends ModeBase {
   /**
    * Starts recording and waits for stop recording event triggered by stop
    * shutter.
+   *
    * @return Saves recorded video.
    */
   private async captureVideo(): Promise<VideoSaver> {
@@ -558,14 +563,14 @@ export class Video extends ModeBase {
       await new Promise((resolve, reject) => {
         let noChunk = true;
 
-        const ondataavailable = (event: BlobEvent) => {
+        function onDataAvailable(event: BlobEvent) {
           if (event.data && event.data.size > 0) {
             noChunk = false;
             saver.write(event.data);
           }
-        };
+        }
 
-        const onstop = async () => {
+        const onStop = async () => {
           assert(this.mediaRecorder !== null);
 
           state.set(state.State.RECORDING, false);
@@ -573,8 +578,8 @@ export class Video extends ModeBase {
           state.set(state.State.RECORDING_UI_PAUSED, false);
 
           this.mediaRecorder.removeEventListener(
-              'dataavailable', ondataavailable);
-          this.mediaRecorder.removeEventListener('stop', onstop);
+              'dataavailable', onDataAvailable);
+          this.mediaRecorder.removeEventListener('stop', onStop);
 
           if (noChunk) {
             reject(new NoChunkError());
@@ -584,17 +589,17 @@ export class Video extends ModeBase {
           }
         };
 
-        const onstart = () => {
+        const onStart = () => {
           assert(this.mediaRecorder !== null);
 
           state.set(state.State.RECORDING, true);
-          this.mediaRecorder.removeEventListener('start', onstart);
+          this.mediaRecorder.removeEventListener('start', onStart);
         };
 
         assert(this.mediaRecorder !== null);
-        this.mediaRecorder.addEventListener('dataavailable', ondataavailable);
-        this.mediaRecorder.addEventListener('stop', onstop);
-        this.mediaRecorder.addEventListener('start', onstart);
+        this.mediaRecorder.addEventListener('dataavailable', onDataAvailable);
+        this.mediaRecorder.addEventListener('stop', onStop);
+        this.mediaRecorder.addEventListener('start', onStart);
 
         window.addEventListener('beforeunload', beforeUnloadListener);
 
@@ -620,8 +625,8 @@ export class VideoFactory extends ModeFactory {
    */
   constructor(
       constraints: StreamConstraints,
-      captureResolution: Resolution,
-      private readonly snapshotResolution: Resolution,
+      captureResolution: Resolution|null,
+      private readonly snapshotResolution: Resolution|null,
       private readonly handler: VideoHandler,
   ) {
     super(constraints, captureResolution);
@@ -641,6 +646,8 @@ export class VideoFactory extends ModeFactory {
         },
       };
     }
+    assert(this.previewVideo !== null);
+    assert(this.facing !== null);
     return new Video(
         this.previewVideo, captureConstraints, this.captureResolution,
         this.snapshotResolution, this.facing, this.handler);

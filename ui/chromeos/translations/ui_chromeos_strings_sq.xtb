@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">Është i pamundur riemërtimi i "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">Anglisht (SHBA) me tastierë Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - pritësi</translation>
+<translation id="1521655867290435174">Fletët e Google</translation>
 <translation id="1538729222189715449">Po hapen skedarët e Linux...</translation>
 <translation id="1547964879613821194">Anglishte kanadeze</translation>
 <translation id="1556189134700913550">Zbatoje për të gjitha</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">Certifikata e vërtetimit u refuzua nga rrjeti</translation>
 <translation id="2547921442987553570">Shto te <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Amerikane ndërkombëtare</translation>
-<translation id="2562685439590298522">Dokumente</translation>
 <translation id="2563185590376525700">Bretkosa</translation>
 <translation id="2578394532502990878">Tamilisht fonetike</translation>
 <translation id="2579959351793446050">Odiaisht</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">Amerikane e zgjeruar</translation>
 <translation id="290843123675549676">Maratisht</translation>
 <translation id="2923240520113693977">Estonisht</translation>
-<translation id="2925966894897775835">Fletët</translation>
 <translation id="2938685643439809023">Mongolisht</translation>
-<translation id="2943400156390503548">Diapozitivat</translation>
 <translation id="2943503720238418293">Përdor një emër më të shkurtër</translation>
 <translation id="2949781154072577687"><ph name="DRIVE_NAME" /> po formatohet...</translation>
 <translation id="2951236788251446349">Kandili i detit</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032">Rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" />%, menaxhuar nga administratori yt, detaje</translation>
 <translation id="4387004326333427325">Certifikata e vërtetimit u refuzua në largësi</translation>
 <translation id="4394214039309501350">Lidhje e jashtme</translation>
+<translation id="4401287888955153199">Nxirri të gjitha</translation>
 <translation id="4418686080762064601">Krijo një shkurtore për skedarët e tu</translation>
 <translation id="4425149324548788773">Disku im</translation>
 <translation id="4439427728133035643">Rrjeti <ph name="NETWORK_INDEX" /> nga <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, fuqia e sinjalit <ph name="SIGNAL_STRENGTH" />%, lidhu</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">Bëji skedarët të disponueshëm jashtë linje</translation>
 <translation id="4658782175094886150">Person në dëborë</translation>
 <translation id="4669606053856530811">Anëtarët e "<ph name="SOURCE_NAME" />" do të humbin qasjen në rast se këta artikuj nuk ndahen me ta.</translation>
+<translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">Suedisht</translation>
 <translation id="4693155481716051732">Sushi</translation>
 <translation id="4694604912444486114">Majmun</translation>
@@ -657,6 +657,7 @@
 <translation id="6732801395666424405">Certifikatat nuk janë ngarkuar</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">U zgjodh 1 dosje</translation>
+<translation id="6755827872271341378">Pajisja Chrome OS Flex</translation>
 <translation id="6790428901817661496">Luaj</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6806699711453372963">Menaxho ndarjen në Linux</translation>
@@ -734,6 +735,7 @@
 <translation id="7343393116438664539">Vietnamisht Telex</translation>
 <translation id="7359359531237882347">Po kopjon <ph name="NUMBER_OF_ITEMS" /> artikuj...</translation>
 <translation id="7375951387215729722">Lista e skedarëve është renditur sipas kolonës "<ph name="COLUMN_NAME" />" në rend zbritës.</translation>
+<translation id="7402503521691663770">Pajisjet Chrome OS Flex</translation>
 <translation id="7408870451288633753">Çekisht</translation>
 <translation id="7417453074306512035">Tastiera në etiopisht</translation>
 <translation id="7417705661718309329">Hartë e Google</translation>
@@ -949,6 +951,7 @@
 <translation id="9172592259078059678">Guxharatisht me transliterim</translation>
 <translation id="9173120999827300720">Anglisht (SHBA) me tastierë ndërkombëtare</translation>
 <translation id="9174050671906956834">Artikujt te "Koshi" fshihen përgjithmonë pas 30 ditësh.</translation>
+<translation id="9183302530794969518">Dokumentet e Google</translation>
 <translation id="9189836632794948435">Kazakisht</translation>
 <translation id="9213073329713032541">Instalimi filloi me sukses.</translation>
 <translation id="9219103736887031265">Imazhet</translation>

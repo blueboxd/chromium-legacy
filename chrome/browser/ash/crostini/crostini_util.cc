@@ -460,6 +460,22 @@ bool MatchContainerDict(const base::Value& dict,
 
 }  // namespace
 
+void RemoveDuplicateContainerEntries(PrefService* prefs) {
+  ListPrefUpdate updater(prefs, crostini::prefs::kCrostiniContainers);
+
+  std::set<ContainerId> seen_containers;
+  auto& containers = updater->GetList();
+  for (auto it = containers.begin(); it != containers.end();) {
+    ContainerId containerId(*it);
+    if (seen_containers.find(containerId) == seen_containers.end()) {
+      seen_containers.insert(containerId);
+      it++;
+    } else {
+      it = containers.erase(it);
+    }
+  }
+}
+
 void AddNewLxdContainerToPrefs(Profile* profile,
                                const ContainerId& container_id) {
   ListPrefUpdate updater(profile->GetPrefs(),
@@ -637,6 +653,26 @@ void RecordAppLaunchResultHistogram(CrostiniAppLaunchAppType type,
                                     reason);
       break;
   }
+}
+
+bool ShouldStopVm(Profile* profile, const ContainerId& container_id) {
+  bool is_last_container = true;
+  base::Value::ConstListView containers =
+      profile->GetPrefs()
+          ->GetList(prefs::kCrostiniContainers)
+          ->GetListDeprecated();
+  for (const auto& dict : containers) {
+    ContainerId container(dict);
+    if (container.container_name != container_id.container_name &&
+        container.vm_name == container_id.vm_name) {
+      if (CrostiniManager::GetForProfile(profile)->GetContainerInfo(
+              container)) {
+        is_last_container = false;
+        break;
+      }
+    }
+  }
+  return is_last_container;
 }
 
 }  // namespace crostini

@@ -26,11 +26,10 @@ class OmniboxPedalImplementationsTest : public testing::Test {
             std::make_unique<TestOmniboxEditController>()) {}
 
   void SetUp() override {
-    feature_list_.InitWithFeatures(
-        {omnibox::kOmniboxPedalsBatch2NonEnglish, omnibox::kOmniboxPedalsBatch3,
-         omnibox::kOmniboxPedalsBatch3NonEnglish,
-         omnibox::kOmniboxPedalsTranslationConsole},
-        {});
+    feature_list_.InitWithFeatures({omnibox::kOmniboxPedalsBatch2NonEnglish,
+                                    omnibox::kOmniboxPedalsBatch3NonEnglish,
+                                    omnibox::kOmniboxPedalsTranslationConsole},
+                                   {});
     InitPedals();
   }
 
@@ -15980,6 +15979,7 @@ class OmniboxPedalImplementationsTest : public testing::Test {
             "play chrome dino",
             "play chrome dino game",
             "play chrome dinosaur",
+            "play dino",
             "play dino game",
             "play dino run",
         },
@@ -18471,7 +18471,6 @@ class OmniboxPedalImplementationsWithoutTranslationConsoleTest
     feature_list_.InitWithFeatures(
         {
             omnibox::kOmniboxPedalsBatch2NonEnglish,
-            omnibox::kOmniboxPedalsBatch3,
             omnibox::kOmniboxPedalsBatch3NonEnglish,
         },
         {});

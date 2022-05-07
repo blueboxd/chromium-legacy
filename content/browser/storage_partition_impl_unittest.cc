@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/storage_partition_impl.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -16,7 +18,6 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -42,7 +43,6 @@
 #include "components/services/storage/public/mojom/storage_service.mojom.h"
 #include "components/services/storage/storage_service_impl.h"
 #include "content/browser/aggregation_service/aggregation_service_impl.h"
-#include "content/browser/aggregation_service/aggregation_service_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
 #include "content/browser/attribution_reporting/attribution_trigger.h"
@@ -50,7 +50,6 @@
 #include "content/browser/code_cache/generated_code_cache_context.h"
 #include "content/browser/gpu/shader_cache_factory.h"
 #include "content/browser/interest_group/interest_group_manager_impl.h"
-#include "content/browser/storage_partition_impl.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/generated_code_cache_settings.h"
@@ -64,7 +63,6 @@
 #include "content/public/test/test_utils.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "net/base/network_isolation_key.h"
-#include "net/base/schemeful_site.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_access_result.h"
@@ -392,8 +390,8 @@ class RemoveLocalStorageTester {
     std::vector<uint8_t> serialized_origin(origin_str.begin(),
                                            origin_str.end());
     std::vector<uint8_t> key;
-    key.reserve(base::size(kMetaPrefix) + serialized_origin.size());
-    key.insert(key.end(), kMetaPrefix, kMetaPrefix + base::size(kMetaPrefix));
+    key.reserve(std::size(kMetaPrefix) + serialized_origin.size());
+    key.insert(key.end(), kMetaPrefix, kMetaPrefix + std::size(kMetaPrefix));
     key.insert(key.end(), serialized_origin.begin(), serialized_origin.end());
     return key;
   }
@@ -923,10 +921,8 @@ class StoragePartitionImplTest : public testing::Test {
     // Configures the Conversion API to run in memory to speed up its
     // initialization and avoid timeouts. See https://crbug.com/1080764.
     AttributionManagerImpl::RunInMemoryForTesting();
-    feature_list_.InitWithFeatures(
-        {blink::features::kInterestGroupStorage,
-         features::kPrivacySandboxAggregationService},
-        {});
+    feature_list_.InitWithFeatures({blink::features::kInterestGroupStorage},
+                                   {});
   }
 
   StoragePartitionImplTest(const StoragePartitionImplTest&) = delete;
@@ -1985,7 +1981,7 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForOrigin) {
   run_loop.Run();
 
   EXPECT_TRUE(
-      GetAttributionsToReportForTesting(attribution_manager, base::Time::Max())
+      GetAttributionReportsForTesting(attribution_manager, base::Time::Max())
           .empty());
 }
 
@@ -2002,7 +1998,7 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataWrongMask) {
   attribution_manager->HandleTrigger(DefaultTrigger());
 
   EXPECT_FALSE(
-      GetAttributionsToReportForTesting(attribution_manager, base::Time::Max())
+      GetAttributionReportsForTesting(attribution_manager, base::Time::Max())
           .empty());
 
   // Arbitrary non-conversions mask.
@@ -2012,7 +2008,7 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataWrongMask) {
                        now, run_loop.QuitClosure());
   run_loop.Run();
   EXPECT_FALSE(
-      GetAttributionsToReportForTesting(attribution_manager, base::Time::Max())
+      GetAttributionReportsForTesting(attribution_manager, base::Time::Max())
           .empty());
 }
 
@@ -2041,7 +2037,7 @@ TEST_F(StoragePartitionImplTest, ConversionsClearAllData) {
   run_loop.Run();
 
   EXPECT_TRUE(
-      GetAttributionsToReportForTesting(attribution_manager, base::Time::Max())
+      GetAttributionReportsForTesting(attribution_manager, base::Time::Max())
           .empty());
 }
 
@@ -2066,15 +2062,14 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForFilter) {
                                           .SetConversionOrigin(conv)
                                           .SetExpiry(base::Days(2))
                                           .Build());
-    attribution_manager->HandleTrigger(
-        TriggerBuilder()
-            .SetConversionDestination(net::SchemefulSite(conv))
-            .SetReportingOrigin(reporter)
-            .Build());
+    attribution_manager->HandleTrigger(TriggerBuilder()
+                                           .SetDestinationOrigin(conv)
+                                           .SetReportingOrigin(reporter)
+                                           .Build());
   }
 
-  EXPECT_EQ(5u, GetAttributionsToReportForTesting(attribution_manager,
-                                                  base::Time::Max())
+  EXPECT_EQ(5u, GetAttributionReportsForTesting(attribution_manager,
+                                                base::Time::Max())
                     .size());
 
   // Match against enough Origins to delete three of the imp/conv pairs.
@@ -2089,8 +2084,8 @@ TEST_F(StoragePartitionImplTest, ConversionsClearDataForFilter) {
   partition->ClearData(StoragePartition::REMOVE_DATA_MASK_CONVERSIONS, 0, func,
                        nullptr, false, now, now, run_loop.QuitClosure());
   run_loop.Run();
-  EXPECT_EQ(2u, GetAttributionsToReportForTesting(attribution_manager,
-                                                  base::Time::Max())
+  EXPECT_EQ(2u, GetAttributionReportsForTesting(attribution_manager,
+                                                base::Time::Max())
                     .size());
 }
 

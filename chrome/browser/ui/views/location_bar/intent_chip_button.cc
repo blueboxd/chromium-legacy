@@ -27,8 +27,8 @@ IntentChipButton::IntentChipButton(Browser* browser,
                         true),
       browser_(browser),
       delegate_(delegate) {
-  SetTheme(Theme::kLowVisibility);
-  ResetAnimation(1);
+  SetFocusBehavior(views::View::FocusBehavior::ACCESSIBLE_ONLY);
+  SetTooltipText(l10n_util::GetStringUTF16(IDS_INTENT_CHIP_LABEL));
 }
 
 IntentChipButton::~IntentChipButton() = default;
@@ -37,6 +37,12 @@ void IntentChipButton::Update() {
   bool was_visible = GetVisible();
   bool is_visible = GetShowChip();
   SetVisible(is_visible);
+
+  if (is_visible) {
+    bool collapsed = GetChipCollapsed();
+    ResetAnimation(!collapsed);
+    SetTheme(collapsed ? Theme::kIconStyle : Theme::kLowVisibility);
+  }
 
   if (was_visible && !is_visible)
     IntentPickerBubbleView::CloseCurrentBubble();
@@ -48,6 +54,11 @@ bool IntentChipButton::GetShowChip() const {
 
   auto* tab_helper = GetTabHelper();
   return tab_helper && tab_helper->should_show_icon();
+}
+
+bool IntentChipButton::GetChipCollapsed() const {
+  auto* tab_helper = GetTabHelper();
+  return tab_helper && tab_helper->should_show_collapsed_chip();
 }
 
 void IntentChipButton::HandlePressed() {

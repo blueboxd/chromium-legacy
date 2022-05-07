@@ -38,6 +38,7 @@
 #include "base/callback.h"
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/heap/heap_test_utilities.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/testing/code_cache_loader_mock.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -64,7 +65,7 @@ class TestingPlatformSupport : public Platform {
   WebString DefaultLocale() override;
   WebData GetDataResource(int resource_id,
                           ui::ResourceScaleFactor scale_factor) override;
-  WebData UncompressDataResource(int resource_id) override;
+  std::string GetDataResourceString(int resource_id) override;
   ThreadSafeBrowserInterfaceBrokerProxy* GetBrowserInterfaceBroker() override;
   bool IsThreadedAnimationEnabled() override;
   bool IsUseZoomForDSFEnabled() override;
@@ -155,6 +156,8 @@ class ScopedTestingPlatformSupport final {
 };
 
 class ScopedUnittestsEnvironmentSetup final {
+  STACK_ALLOCATED();
+
  public:
   ScopedUnittestsEnvironmentSetup(int argc, char** argv);
   ScopedUnittestsEnvironmentSetup(const ScopedUnittestsEnvironmentSetup&) =
@@ -169,6 +172,7 @@ class ScopedUnittestsEnvironmentSetup final {
   std::unique_ptr<Platform> dummy_platform_;
   std::unique_ptr<v8::Platform> v8_platform_for_heap_testing_;
   std::unique_ptr<TestingPlatformSupport> testing_platform_support_;
+  absl::optional<HeapPointersOnStackScope> conservative_gc_scope_;
 };
 
 }  // namespace blink

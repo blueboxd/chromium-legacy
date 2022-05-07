@@ -56,10 +56,13 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/content_features.h"
@@ -172,8 +175,8 @@ base::flat_set<std::string> GetInstalledAppOrigins(Profile* profile) {
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->AppRegistryCache()
       .ForEachApp([&origins](const apps::AppUpdate& update) {
-        if (update.AppType() == apps::mojom::AppType::kWeb ||
-            update.AppType() == apps::mojom::AppType::kSystemWeb) {
+        if (update.AppType() == apps::AppType::kWeb ||
+            update.AppType() == apps::AppType::kSystemWeb) {
           // For web apps, |PublisherId()| is set to the start URL.
           const GURL start_url(update.PublisherId());
           DCHECK(start_url.is_valid());
@@ -784,8 +787,7 @@ void SiteSettingsHandler::OnZoomLevelChanged(
   SendZoomLevels();
 }
 
-void SiteSettingsHandler::HandleFetchUsageTotal(
-    base::Value::ConstListView args) {
+void SiteSettingsHandler::HandleFetchUsageTotal(const base::Value::List& args) {
   AllowJavascript();
   CHECK_EQ(1U, args.size());
   usage_host_ = args[0].GetString();
@@ -800,7 +802,7 @@ void SiteSettingsHandler::HandleFetchUsageTotal(
 }
 
 void SiteSettingsHandler::HandleClearUnpartitionedUsage(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   const std::string& origin_string = args[0].GetString();
   auto origin = url::Origin::Create(GURL(origin_string));
@@ -814,7 +816,7 @@ void SiteSettingsHandler::HandleClearUnpartitionedUsage(
 }
 
 void SiteSettingsHandler::HandleClearPartitionedUsage(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(2U, args.size());
   const std::string& origin = args[0].GetString();
   const std::string& etld_plus1 = args[1].GetString();
@@ -823,7 +825,7 @@ void SiteSettingsHandler::HandleClearPartitionedUsage(
 }
 
 void SiteSettingsHandler::HandleSetDefaultValueForContentType(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(2U, args.size());
   const std::string& content_type = args[0].GetString();
   const std::string& setting = args[1].GetString();
@@ -858,7 +860,7 @@ void SiteSettingsHandler::HandleSetDefaultValueForContentType(
 }
 
 void SiteSettingsHandler::HandleGetDefaultValueForContentType(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(2U, args.size());
@@ -875,7 +877,7 @@ void SiteSettingsHandler::HandleGetDefaultValueForContentType(
   ResolveJavascriptCallback(callback_id, category);
 }
 
-void SiteSettingsHandler::HandleGetAllSites(base::Value::ConstListView args) {
+void SiteSettingsHandler::HandleGetAllSites(const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(1U, args.size());
@@ -943,8 +945,7 @@ void SiteSettingsHandler::HandleGetAllSites(base::Value::ConstListView args) {
   ResolveJavascriptCallback(base::Value(callback_id), result);
 }
 
-void SiteSettingsHandler::HandleGetCategoryList(
-    base::Value::ConstListView args) {
+void SiteSettingsHandler::HandleGetCategoryList(const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(2U, args.size());
@@ -961,7 +962,7 @@ void SiteSettingsHandler::HandleGetCategoryList(
 }
 
 void SiteSettingsHandler::HandleGetCookieSettingDescription(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   CHECK_EQ(1U, args.size());
   std::string callback_id = args[0].GetString();
@@ -970,7 +971,7 @@ void SiteSettingsHandler::HandleGetCookieSettingDescription(
 }
 
 void SiteSettingsHandler::HandleGetRecentSitePermissions(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(2U, args.size());
@@ -1075,7 +1076,7 @@ void SiteSettingsHandler::OnStorageFetched() {
 }
 
 void SiteSettingsHandler::HandleGetFormattedBytes(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   CHECK_EQ(2U, args.size());
   int64_t num_bytes = static_cast<int64_t>(args[1].GetDouble());
@@ -1084,7 +1085,7 @@ void SiteSettingsHandler::HandleGetFormattedBytes(
 }
 
 void SiteSettingsHandler::HandleGetExceptionList(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(2U, args.size());
@@ -1119,7 +1120,7 @@ void SiteSettingsHandler::HandleGetExceptionList(
 }
 
 void SiteSettingsHandler::HandleGetChooserExceptionList(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(2U, args.size());
@@ -1135,7 +1136,7 @@ void SiteSettingsHandler::HandleGetChooserExceptionList(
 }
 
 void SiteSettingsHandler::HandleGetOriginPermissions(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(3U, args.size());
@@ -1183,7 +1184,7 @@ void SiteSettingsHandler::HandleGetOriginPermissions(
 }
 
 void SiteSettingsHandler::HandleSetOriginPermissions(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(3U, args.size());
   std::string origin_string = args[0].GetString();
   const std::string* type_string = args[1].GetIfString();
@@ -1250,7 +1251,7 @@ void SiteSettingsHandler::HandleSetOriginPermissions(
 }
 
 void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(4U, args.size());
   const std::string& primary_pattern_string = args[0].GetString();
   const std::string& secondary_pattern_string = args[1].GetString();
@@ -1307,7 +1308,7 @@ void SiteSettingsHandler::HandleResetCategoryPermissionForPattern(
 }
 
 void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(5U, args.size());
   const std::string& primary_pattern_string = args[0].GetString();
   const std::string& secondary_pattern_string = args[1].GetString();
@@ -1373,7 +1374,7 @@ void SiteSettingsHandler::HandleSetCategoryPermissionForPattern(
 }
 
 void SiteSettingsHandler::HandleResetChooserExceptionForSite(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(4U, args.size());
 
   const std::string& chooser_type_str = args[0].GetString();
@@ -1395,7 +1396,7 @@ void SiteSettingsHandler::HandleResetChooserExceptionForSite(
                                           args[3]);
 }
 
-void SiteSettingsHandler::HandleIsOriginValid(base::Value::ConstListView args) {
+void SiteSettingsHandler::HandleIsOriginValid(const base::Value::List& args) {
   AllowJavascript();
   CHECK_EQ(2U, args.size());
   const base::Value& callback_id = args[0];
@@ -1406,7 +1407,7 @@ void SiteSettingsHandler::HandleIsOriginValid(base::Value::ConstListView args) {
 }
 
 void SiteSettingsHandler::HandleIsPatternValidForType(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   CHECK_EQ(3U, args.size());
   const base::Value& callback_id = args[0];
@@ -1424,14 +1425,13 @@ void SiteSettingsHandler::HandleIsPatternValidForType(
 }
 
 void SiteSettingsHandler::HandleUpdateIncognitoStatus(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   FireWebUIListener("onIncognitoStatusChanged",
                     base::Value(profile_->HasPrimaryOTRProfile()));
 }
 
-void SiteSettingsHandler::HandleFetchZoomLevels(
-    base::Value::ConstListView args) {
+void SiteSettingsHandler::HandleFetchZoomLevels(const base::Value::List& args) {
   AllowJavascript();
   SendZoomLevels();
 }
@@ -1514,8 +1514,7 @@ void SiteSettingsHandler::SendZoomLevels() {
   FireWebUIListener("onZoomLevelsChanged", zoom_levels_exceptions);
 }
 
-void SiteSettingsHandler::HandleRemoveZoomLevel(
-    base::Value::ConstListView args) {
+void SiteSettingsHandler::HandleRemoveZoomLevel(const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
 
   std::string origin = args[0].GetString();
@@ -1532,7 +1531,7 @@ void SiteSettingsHandler::HandleRemoveZoomLevel(
 }
 
 void SiteSettingsHandler::HandleFetchBlockAutoplayStatus(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   SendBlockAutoplayStatus();
 }
@@ -1562,7 +1561,7 @@ void SiteSettingsHandler::SendBlockAutoplayStatus() {
 }
 
 void SiteSettingsHandler::HandleSetBlockAutoplayEnabled(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   if (!UnifiedAutoplayConfig::IsBlockAutoplayUserModifiable(profile_))
@@ -1724,7 +1723,7 @@ void SiteSettingsHandler::GetOriginCookies(
 }
 
 void SiteSettingsHandler::HandleClearEtldPlus1DataAndCookies(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   const std::string& etld_plus1 = args[0].GetString();
 
@@ -1760,7 +1759,7 @@ void SiteSettingsHandler::HandleClearEtldPlus1DataAndCookies(
   RemoveNonTreeModelData(affected_origins);
 }
 
-void SiteSettingsHandler::HandleRecordAction(base::Value::ConstListView args) {
+void SiteSettingsHandler::HandleRecordAction(const base::Value::List& args) {
   const auto& list = args;
   CHECK_EQ(1U, list.size());
   int action = list[0].GetInt();
@@ -1781,6 +1780,22 @@ void SiteSettingsHandler::RemoveNonTreeModelData(
                                         ContentSettingsType::CLIENT_HINTS,
                                         base::Value());
   }
+  // Remove Privacy Sandbox API data.
+  content::BrowsingDataRemover* remover = profile_->GetBrowsingDataRemover();
+  std::unique_ptr<content::BrowsingDataFilterBuilder> filter =
+      content::BrowsingDataFilterBuilder::Create(
+          content::BrowsingDataFilterBuilder::Mode::kDelete);
+  for (const auto& origin : origins) {
+    filter->AddOrigin(origin);
+  }
+  remover->RemoveWithFilter(
+      base::Time::Min(), base::Time::Max(),
+      content::BrowsingDataRemover::DATA_TYPE_INTEREST_GROUPS &
+          content::BrowsingDataRemover::DATA_TYPE_AGGREGATION_SERVICE &
+          content::BrowsingDataRemover::DATA_TYPE_CONVERSIONS &
+          content::BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
+      content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+      std::move(filter));
 }
 
 void SiteSettingsHandler::SetCookiesTreeModelForTesting(

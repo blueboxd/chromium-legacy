@@ -14,7 +14,6 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shell.h"
-#include "ash/shutdown_reason.h"
 #include "ash/system/power/power_button_display_controller.h"
 #include "ash/system/power/power_button_menu_item_view.h"
 #include "ash/system/power/power_button_menu_metrics_type.h"
@@ -168,7 +167,7 @@ void PowerButtonController::OnLegacyPowerButtonEvent(bool down) {
   // button press. On a further press while the menu is open, simply shut down
   // (http://crbug.com/945005).
   if (!show_menu_animation_done_)
-    StartPowerMenuAnimation();
+    StartPowerMenuAnimation(ShutdownReason::POWER_BUTTON);
   else
     lock_state_controller_->RequestShutdown(ShutdownReason::POWER_BUTTON);
 }
@@ -210,15 +209,16 @@ void PowerButtonController::OnPowerButtonEvent(
     }
 
     if (!UseTabletBehavior()) {
-      StartPowerMenuAnimation();
+      StartPowerMenuAnimation(ShutdownReason::POWER_BUTTON);
     } else {
       base::TimeDelta timeout = screen_off_when_power_button_down_
                                     ? kShowMenuWhenScreenOffTimeout
                                     : kShowMenuWhenScreenOnTimeout;
 
       power_button_menu_timer_.Start(
-          FROM_HERE, timeout, this,
-          &PowerButtonController::StartPowerMenuAnimation);
+          FROM_HERE, timeout,
+          base::BindOnce(&PowerButtonController::StartPowerMenuAnimation,
+                         base::Unretained(this), ShutdownReason::POWER_BUTTON));
     }
   } else {
     uint32_t up_state = UP_NONE;
@@ -298,11 +298,6 @@ void PowerButtonController::OnLockButtonEvent(
     lock_state_controller_->CancelLockAnimation();
 }
 
-void PowerButtonController::CancelPowerButtonEvent() {
-  force_off_on_button_up_ = false;
-  StopTimersAndDismissMenu();
-}
-
 bool PowerButtonController::IsMenuOpened() const {
   return menu_widget_ && menu_widget_->GetLayer()->GetTargetVisibility();
 }
@@ -320,6 +315,15 @@ void PowerButtonController::DismissMenu() {
 
 void PowerButtonController::StopForcingBacklightsOff() {
   display_controller_->SetBacklightsForcedOff(false);
+}
+
+void PowerButtonController::OnArcPowerButtonMenuEvent() {
+  StartPowerMenuAnimation(ShutdownReason::ARC_POWER_BUTTON);
+}
+
+void PowerButtonController::CancelPowerButtonEvent() {
+  force_off_on_button_up_ = false;
+  StopTimersAndDismissMenu();
 }
 
 void PowerButtonController::OnDisplayModeChanged(
@@ -443,7 +447,9 @@ void PowerButtonController::StopTimersAndDismissMenu() {
   DismissMenu();
 }
 
-void PowerButtonController::StartPowerMenuAnimation() {
+void PowerButtonController::StartPowerMenuAnimation(ShutdownReason reason) {
+  shutdown_reason_ = reason;
+
   // Avoid a distracting deactivation animation on the formerly-active
   // window when the menu is activated.
   views::Widget* active_toplevel_widget =
@@ -456,7 +462,8 @@ void PowerButtonController::StartPowerMenuAnimation() {
   if (!menu_widget_) {
     menu_widget_ = CreateMenuWidget();
     menu_widget_->SetContentsView(std::make_unique<PowerButtonMenuScreenView>(
-        power_button_position_, power_button_offset_percentage_,
+        shutdown_reason_, power_button_position_,
+        power_button_offset_percentage_,
         base::BindRepeating(&PowerButtonController::SetShowMenuAnimationDone,
                             base::Unretained(this))));
   }
@@ -504,7 +511,8 @@ void PowerButtonController::LockScreenIfRequired() {
 
 void PowerButtonController::SetShowMenuAnimationDone() {
   show_menu_animation_done_ = true;
-  if (button_type_ != ButtonType::LEGACY) {
+  if (button_type_ != ButtonType::LEGACY &&
+      shutdown_reason_ == ShutdownReason::POWER_BUTTON) {
     pre_shutdown_timer_.Start(FROM_HERE, kStartShutdownAnimationTimeout, this,
                               &PowerButtonController::OnPreShutdownTimeout);
   }

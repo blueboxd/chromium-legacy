@@ -24,8 +24,7 @@ class EcheAppIntegrationTest : public SystemWebAppIntegrationTest {
  public:
   EcheAppIntegrationTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{chromeos::features::kEcheSWA,
-                              chromeos::features::kPhoneHubRecentApps},
+        /*enabled_features=*/{chromeos::features::kEcheSWA},
         /*disabled_features=*/{});
   }
 
@@ -57,11 +56,11 @@ IN_PROC_BROWSER_TEST_P(EcheAppIntegrationTest,
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
   int expected_width = work_area.height() / 2;
-  int expected_hight = work_area.height() / 2 * aspect_ratio;
+  int expected_height = work_area.height() * aspect_ratio / 2;
   int x = (work_area.width() - expected_width) / 2;
-  int y = (work_area.height() - expected_hight) / 2;
+  int y = (work_area.height() - expected_height) / 2;
   EXPECT_EQ(browser->window()->GetBounds(),
-            gfx::Rect(x, y, expected_width, expected_hight));
+            gfx::Rect(x, y, expected_width, expected_height));
 }
 
 IN_PROC_BROWSER_TEST_P(EcheAppIntegrationTest,
@@ -78,11 +77,11 @@ IN_PROC_BROWSER_TEST_P(EcheAppIntegrationTest,
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
   int expected_width = work_area.width() / 2;
-  int expected_hight = work_area.width() / 2 * aspect_ratio;
+  int expected_height = work_area.width() * aspect_ratio / 2;
   int x = (work_area.width() - expected_width) / 2;
-  int y = (work_area.height() - expected_hight) / 2;
+  int y = (work_area.height() - expected_height) / 2;
   EXPECT_EQ(browser->window()->GetBounds(),
-            gfx::Rect(x, y, expected_width, expected_hight));
+            gfx::Rect(x, y, expected_width, expected_height));
 }
 
 IN_PROC_BROWSER_TEST_P(EcheAppIntegrationTest,
@@ -142,30 +141,3 @@ IN_PROC_BROWSER_TEST_P(EcheAppIntegrationTest, ShouldAllowCloseWindow) {
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
     EcheAppIntegrationTest);
-
-class EcheAppEnableResizingTest : public SystemWebAppIntegrationTest {
- public:
-  EcheAppEnableResizingTest() {
-    scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{chromeos::features::kEcheSWA,
-                              chromeos::features::kEcheSWAResizing,
-                              chromeos::features::kPhoneHubRecentApps},
-        /*disabled_features=*/{});
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
-IN_PROC_BROWSER_TEST_P(EcheAppEnableResizingTest,
-                       WindowResizeableAfterEnableEcheSWAResizingFlag) {
-  WaitForTestSystemAppInstall();
-  Browser* browser;
-  LaunchApp(web_app::SystemAppType::ECHE, &browser);
-  BrowserView* const browser_view =
-      BrowserView::GetBrowserViewForBrowser(browser);
-  EXPECT_TRUE(browser_view->CanResize());
-}
-
-INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(
-    EcheAppEnableResizingTest);

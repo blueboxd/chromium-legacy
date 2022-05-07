@@ -153,19 +153,18 @@ void WebUIIOSImpl::ProcessWebUIIOSMessage(const GURL& source_url,
     return;
 
   // Look up the callback for this message.
-  MessageCallbackMap::const_iterator callback =
-      message_callbacks_.find(message);
-  if (callback != message_callbacks_.end()) {
+  auto message_callback_it = message_callbacks_.find(message);
+  if (message_callback_it != message_callbacks_.end()) {
     // Forward this message and content on.
-    callback->second.Run(args.GetListDeprecated());
+    message_callback_it->second.Run(args.GetList());
+    return;
   }
 
   // Look up the deprecated callback for this message.
-  DeprecatedMessageCallbackMap::const_iterator deprecated_callback =
-      deprecated_message_callbacks_.find(message);
-  if (deprecated_callback != deprecated_message_callbacks_.end()) {
+  auto deprecated_callback_it = deprecated_message_callbacks_.find(message);
+  if (deprecated_callback_it != deprecated_message_callbacks_.end()) {
     // Forward this message and content on.
-    deprecated_callback->second.Run(&base::Value::AsListValue(args));
+    deprecated_callback_it->second.Run(&base::Value::AsListValue(args));
   }
 }
 

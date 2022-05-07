@@ -39,18 +39,26 @@ int GetThemePropertyId(OmniboxPart part, OmniboxPartState state) {
     case OmniboxPart::LOCATION_BAR_CLEAR_ALL:
     case OmniboxPart::LOCATION_BAR_TEXT_DEFAULT:
       return TP::COLOR_OMNIBOX_TEXT;
-    case OmniboxPart::RESULTS_TEXT_DEFAULT:
-      return selected
-                 ? static_cast<int>(TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED)
-                 : static_cast<int>(TP::COLOR_OMNIBOX_TEXT);
     case OmniboxPart::LOCATION_BAR_TEXT_DIMMED:
       return TP::COLOR_OMNIBOX_TEXT_DIMMED;
-    case OmniboxPart::RESULTS_TEXT_DIMMED:
-      return selected ? TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED
-                      : TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED;
     case OmniboxPart::RESULTS_ICON:
       return selected ? TP::COLOR_OMNIBOX_RESULTS_ICON_SELECTED
                       : TP::COLOR_OMNIBOX_RESULTS_ICON;
+    case OmniboxPart::RESULTS_TEXT_DEFAULT:
+      return selected ? int{TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED}
+                      : int{TP::COLOR_OMNIBOX_TEXT};
+    case OmniboxPart::RESULTS_TEXT_DIMMED:
+      return selected ? TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED
+                      : TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED;
+    case OmniboxPart::RESULTS_TEXT_NEGATIVE:
+      return selected ? TP::COLOR_OMNIBOX_RESULTS_TEXT_NEGATIVE_SELECTED
+                      : TP::COLOR_OMNIBOX_RESULTS_TEXT_NEGATIVE;
+    case OmniboxPart::RESULTS_TEXT_POSITIVE:
+      return selected ? TP::COLOR_OMNIBOX_RESULTS_TEXT_POSITIVE_SELECTED
+                      : TP::COLOR_OMNIBOX_RESULTS_TEXT_POSITIVE;
+    case OmniboxPart::RESULTS_TEXT_SECONDARY:
+      return selected ? TP::COLOR_OMNIBOX_RESULTS_TEXT_SECONDARY_SELECTED
+                      : TP::COLOR_OMNIBOX_RESULTS_TEXT_SECONDARY;
     case OmniboxPart::RESULTS_TEXT_URL:
       return selected ? TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED
                       : TP::COLOR_OMNIBOX_RESULTS_URL;
@@ -60,6 +68,9 @@ int GetThemePropertyId(OmniboxPart part, OmniboxPartState state) {
                  : TP::COLOR_OMNIBOX_BUBBLE_OUTLINE;
     case OmniboxPart::RESULTS_BUTTON_BORDER:
       return TP::COLOR_OMNIBOX_RESULTS_BUTTON_BORDER;
+    case OmniboxPart::RESULTS_BUTTON_INK_DROP:
+      return selected ? TP::COLOR_OMNIBOX_RESULTS_BUTTON_INK_DROP_SELECTED
+                      : TP::COLOR_OMNIBOX_RESULTS_BUTTON_INK_DROP;
     default:
       NOTREACHED();
       return -1;

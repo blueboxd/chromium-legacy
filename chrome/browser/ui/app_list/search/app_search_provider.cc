@@ -46,6 +46,7 @@
 #include "chromeos/components/string_matching/fuzzy_tokenized_string_match.h"
 #include "chromeos/components/string_matching/tokenized_string.h"
 #include "chromeos/components/string_matching/tokenized_string_match.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync_sessions/session_sync_service.h"
@@ -322,9 +323,9 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
     proxy_->AppRegistryCache().ForEachApp([this, apps_vector](
                                               const apps::AppUpdate& update) {
       if (!apps_util::IsInstalled(update.Readiness()) ||
-          (update.ShowInSearch() != apps::mojom::OptionalBool::kTrue &&
-           !(update.Recommendable() == apps::mojom::OptionalBool::kTrue &&
-             update.AppType() == apps::mojom::AppType::kBuiltIn))) {
+          (!update.ShowInSearch().value_or(false) &&
+           !(update.Recommendable().value_or(false) &&
+             update.AppType() == apps::AppType::kBuiltIn))) {
         return;
       }
 
@@ -342,14 +343,12 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
                                    : update.ShortName();
       apps_vector->emplace_back(std::make_unique<AppSearchProvider::App>(
           this, update.AppId(), name, update.LastLaunchTime(),
-          update.InstallTime(),
-          update.InstalledInternally() == apps::mojom::OptionalBool::kTrue));
+          update.InstallTime(), update.InstalledInternally()));
       apps_vector->back()->set_recommendable(
-          update.Recommendable() == apps::mojom::OptionalBool::kTrue &&
-          update.Paused() != apps::mojom::OptionalBool::kTrue &&
-          update.Readiness() != apps::mojom::Readiness::kDisabledByPolicy);
-      apps_vector->back()->set_searchable(update.Searchable() ==
-                                          apps::mojom::OptionalBool::kTrue);
+          update.Recommendable().value_or(false) &&
+          !update.Paused().value_or(false) &&
+          update.Readiness() != apps::Readiness::kDisabledByPolicy);
+      apps_vector->back()->set_searchable(update.Searchable().value_or(false));
 
       // Until it's been installed, the Crostini Terminal is hidden and
       // requires a few characters before being shown in search results.
@@ -382,7 +381,7 @@ class AppServiceDataSource : public AppSearchProvider::DataSource,
       icon_cache_.RemoveIcon(update.AppType(), update.AppId());
     }
 
-    if (update.Readiness() == apps::mojom::Readiness::kReady) {
+    if (update.Readiness() == apps::Readiness::kReady) {
       owner()->RefreshAppsAndUpdateResultsDeferred();
     } else {
       owner()->RefreshAppsAndUpdateResults();

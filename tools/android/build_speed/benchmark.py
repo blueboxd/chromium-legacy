@@ -48,18 +48,24 @@ from devil.android import device_utils
 
 _EMULATOR_AVD_DIR = _SRC_ROOT / 'tools' / 'android' / 'avd'
 _AVD_SCRIPT = _EMULATOR_AVD_DIR / 'avd.py'
-# Use API 28 as it's the highest API version that monochrome supports.
-_AVD_CONFIG = _EMULATOR_AVD_DIR / 'proto' / 'generic_android28.textpb'
+_AVD_CONFIG_DIR = _EMULATOR_AVD_DIR / 'proto'
 _SECONDS_TO_POLL_FOR_EMULATOR = 30
+
+# Use API 28 as it's the highest API version that monochrome supports.
+_DEFAULT_EMULATOR = 'generic_android28.textpb'
+_SUPPORTED_EMULATORS = {
+    'generic_android23.textpb': 'x86',
+    'generic_android27.textpb': 'x86',
+    'generic_android28.textpb': 'x86',
+    'generic_android29.textpb': 'x86',
+    'generic_android30.textpb': 'x86',
+    'generic_android31.textpb': 'x64',
+}
 
 _GN_ARGS = [
     'target_os="android"',
     'use_goma=true',
     'incremental_install=true',
-]
-
-_EMULATOR_GN_ARGS = [
-    'target_cpu="x86"',
 ]
 
 _TARGETS = {
@@ -227,25 +233,41 @@ def _poll_for_emulators(
 
 
 @contextlib.contextmanager
-def _emulator():
+def _emulator(emulator_avd_name):
     _poll_for_emulators(lambda emulators: len(emulators) == 0,
                         expected='no running emulators')
+    avd_config = _AVD_CONFIG_DIR / emulator_avd_name
+    is_debug = logging.getLogger().isEnabledFor(logging.DEBUG)
+    # Always start with --wipe-data to get consistent results. It takes around
+    # 20 seconds to finish starting from scratch.
+    cmd = [_AVD_SCRIPT, 'start', '--wipe-data', '--avd-config', avd_config]
+    if not is_debug:
+        cmd.append('-q')
+    logging.debug('Starting emulator with cmd: %s', cmd)
     try:
-        cmd = [_AVD_SCRIPT, 'start', '-q', '--avd-config', _AVD_CONFIG]
-        subprocess.run(cmd, check=True, capture_output=True)
+        subprocess.run(cmd, check=True, capture_output=not is_debug)
     except subprocess.CalledProcessError:
         print('Unable to start the emulator. Perhaps you need to install it:')
-        print(f'{_AVD_SCRIPT} install --avd-config {_AVD_CONFIG}')
+        print(f'{_AVD_SCRIPT} install --avd-config {avd_config}')
         raise
     _poll_for_emulators(lambda emulators: len(emulators) == 1,
                         expected='exactly one emulator started successfully')
     device = _detect_emulators()[0]
-    logging.debug(f'Started: {device.serial}.')
+    logging.debug('Started: %s', device.serial)
     try:
         # Ensure the emulator and its disk are fully set up.
         device.WaitUntilFullyBooted(decrypt=True)
-        # TODO(wnwen): Remove once split apks are used instead of side-loading.
-        device.adb.Shell('settings put global hidden_api_policy_p_apps 0')
+        if device.build_version_sdk >= 28:
+            # In P, there are two settings:
+            #  * hidden_api_policy_p_apps
+            #  * hidden_api_policy_pre_p_apps
+            # In Q, there is just one:
+            #  * hidden_api_policy
+            if device.build_version_sdk == 28:
+                setting_name = 'hidden_api_policy_p_apps'
+            else:
+                setting_name = 'hidden_api_policy'
+            device.adb.Shell(f'settings put global {setting_name} 0')
         yield device
     finally:
         device.adb.Emu('kill')
@@ -278,13 +300,13 @@ def _run_autoninja(out_dir: str, target: str) -> float:
     return _run_and_time_cmd(['autoninja', '-C', out_dir, target])
 
 
-def _run_install(out_dir: str, target: str) -> float:
+def _run_install(out_dir: str, target: str, device_serial: str) -> float:
     # Example script path: out/Debug/bin/chrome_public_apk
     script_path = os.path.join(out_dir, 'bin', target)
     # Disable first run to get a more accurate timing of startup.
     cmd = [
-        script_path, 'run', '--args=--disable-fre', '--exit-on-match',
-        '^Successfully loaded native library$'
+        script_path, 'run', '--device', device_serial, '--args=--disable-fre',
+        '--exit-on-match', '^Successfully loaded native library$'
     ]
     if logging.getLogger().isEnabledFor(logging.DEBUG):
         cmd += ['-vv']
@@ -295,7 +317,7 @@ def _remove_deleted_files(emulator: device_utils.DeviceUtils):
     # This is necessary to terminate all non-chrome processes still holding
     # file descriptors open for deleted chrome apk files. Otherwise the
     # emulator will run out of space.
-    find_holders_of_deleted_fds_cmd = 'lsof | grep "(deleted)" | grep ".apk" | grep chrome | sed "s/  */ /g"'
+    find_holders_of_deleted_fds_cmd = 'lsof | grep "(deleted)" | grep ".apk" | grep chrome | sed "s/  +/ /g"'
     # Example output:
     # COMMAND PID USER FD TYPE DEVICE SIZE/OFF NODE NAME
     # gle.android.gms 2492 u0_a10 94r REG 252,1 652841428 172035 /data/app/org.chromium.chrome-UDsQx3j_rw_6nevertBVeQ==/base.apk (deleted)
@@ -340,7 +362,7 @@ def _run_and_maybe_install(out_dir: str, target: str,
                            ) -> float:
     total_time = _run_autoninja(out_dir, target)
     if emulator:
-        total_time += _run_install(out_dir, target)
+        total_time += _run_install(out_dir, target, emulator.serial)
         _remove_deleted_files(emulator)
     return total_time
 
@@ -348,7 +370,10 @@ def _run_and_maybe_install(out_dir: str, target: str,
 def _maybe_uninstall(out_dir: str, target: str,
                      emulator: Optional[device_utils.DeviceUtils]):
     if emulator:
-        _run_and_time_cmd([os.path.join(out_dir, 'bin', target), 'uninstall'])
+        _run_and_time_cmd([
+            os.path.join(out_dir, 'bin', target), 'uninstall', '--device',
+            emulator.serial
+        ])
 
 
 def _run_incremental_benchmark(*, out_dir: str, target: str, from_string: str,
@@ -416,13 +441,18 @@ def _parse_benchmarks(benchmarks: List[str]) -> Iterator[Benchmark]:
 
 def run_benchmarks(benchmarks: List[str], gn_args: List[str],
                    output_directory: str, target: str, repeat: int,
-                   no_server: bool,
-                   use_emulator: bool) -> Iterator[Tuple[str, List[float]]]:
+                   no_server: bool, emulator_avd_name: Optional[str]
+                   ) -> Iterator[Tuple[str, List[float]]]:
     out_dir = os.path.relpath(output_directory, _SRC_ROOT)
     args_gn_path = os.path.join(out_dir, 'args.gn')
-    emulator_ctx = _emulator if use_emulator else contextlib.nullcontext
-    server_ctx = _server if not no_server else contextlib.nullcontext
-    with _backup_file(args_gn_path), emulator_ctx() as emulator:
+    if emulator_avd_name is None:
+        emulator_ctx = contextlib.nullcontext()
+    else:
+        emulator_ctx = _emulator(emulator_avd_name)
+    server_ctx_func = _server if not no_server else contextlib.nullcontext
+    # Emulator startup and the initial install takes a long time, so use the
+    # same emulator for the entire run.
+    with _backup_file(args_gn_path), emulator_ctx as emulator:
         with open(args_gn_path, 'w') as f:
             # Use newlines instead of spaces since autoninja.py uses regex to
             # determine whether use_goma is turned on or off.
@@ -436,7 +466,7 @@ def run_benchmarks(benchmarks: List[str], gn_args: List[str],
                 # Run the fast local dev server fresh for each benchmark run
                 # to avoid later benchmarks being slower due to the server
                 # accumulating queued tasks.
-                with server_ctx():
+                with server_ctx_func():
                     for elapsed in _run_benchmark(out_dir=out_dir,
                                                   target=target,
                                                   emulator=emulator,
@@ -491,6 +521,9 @@ def main():
         '--use-emulator',
         action='store_true',
         help='Use an emulator to include install/launch timing.')
+    parser.add_argument('--emulator',
+                        choices=list(_SUPPORTED_EMULATORS.keys()),
+                        help='Specify this to override the default emulator.')
     parser.add_argument('--target',
                         help='Specify this to override the default target.')
     parser.add_argument('-v',
@@ -514,20 +547,27 @@ def main():
     logging.basicConfig(
         level=level, format='%(levelname).1s %(relativeCreated)6d %(message)s')
 
+    if args.emulator:
+        args.use_emulator = True
+    elif args.use_emulator:
+        args.emulator = _DEFAULT_EMULATOR
+
     gn_args = _GN_ARGS
     if args.use_emulator:
         devil_chromium.Initialize()
-        gn_args += _EMULATOR_GN_ARGS
+        logging.info('Using emulator %s', args.emulator)
+        gn_args.append(f'target_cpu="{_SUPPORTED_EMULATORS[args.emulator]}"')
 
     if args.target:
         target = args.target
     else:
         target = _TARGETS['bundle' if args.bundle else 'apk']
     results = run_benchmarks(args.benchmark, gn_args, out_dir, target,
-                             args.repeat, args.no_server, args.use_emulator)
+                             args.repeat, args.no_server, args.emulator)
     server_str = f'{"not " if args.no_server else ""}using build server'
     emulator_str = f'{"" if args.use_emulator else "not "}using emulator'
     print(f'Summary ({server_str}; {emulator_str})')
+    print(f'emulator: {args.emulator}')
     print(f'gn args: {" ".join(gn_args)}')
     print(f'target: {target}')
     for name, result in results:

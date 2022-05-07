@@ -14,7 +14,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.browser.content_creation.reactions.ReactionGifDrawable;
 import org.chromium.chrome.browser.content_creation.reactions.internal.R;
 import org.chromium.ui.widget.ChromeImageButton;
@@ -134,6 +133,10 @@ public class ReactionLayout extends RelativeLayout {
                                 screenHeight - (layoutParams.topMargin - mHeight);
                         ReactionLayout.this.setLayoutParams(layoutParams);
                         break;
+                    case MotionEvent.ACTION_UP:
+                        view.announceForAccessibility(mContext.getString(
+                                R.string.lightweight_reactions_reaction_moved_announcement));
+                        break;
                 }
                 return true;
             }
@@ -198,6 +201,10 @@ public class ReactionLayout extends RelativeLayout {
                                 % 360.0;
                         ReactionLayout.this.setRotation((float) newAngle);
                         break;
+                    case MotionEvent.ACTION_UP:
+                        view.announceForAccessibility(mContext.getString(
+                                R.string.lightweight_reactions_reaction_adjusted_announcement));
+                        break;
                 }
                 return true;
             }
@@ -210,7 +217,7 @@ public class ReactionLayout extends RelativeLayout {
         // Programmatically tint vector icons since this is impossible in the drawable's XML. Mutate
         // is called to prevent this from affecting other drawables using the same resource.
         copyDrawable.findDrawableByLayerId(R.id.icon).mutate().setTint(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.button_icon_color));
+                getContext().getColor(R.color.button_icon_color));
 
         mCopyButton.setOnClickListener(view -> {
             if (mSceneEditorDelegate.canAddReaction()) {
@@ -223,6 +230,10 @@ public class ReactionLayout extends RelativeLayout {
 
     private void setUpDeleteButton() {
         mDeleteButton = findViewById(R.id.delete_button);
-        mDeleteButton.setOnClickListener(view -> mSceneEditorDelegate.removeReaction(this));
+        mDeleteButton.setOnClickListener(view -> {
+            view.announceForAccessibility(mContext.getString(
+                    R.string.lightweight_reactions_reaction_deleted_announcement));
+            mSceneEditorDelegate.removeReaction(this);
+        });
     }
 }

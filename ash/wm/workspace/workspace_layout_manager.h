@@ -47,6 +47,8 @@ class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager,
     return backdrop_controller_.get();
   }
 
+  bool is_fullscreen() { return is_fullscreen_; }
+
   // aura::LayoutManager:
   void OnWindowResized() override;
   void OnWindowAddedToLayout(aura::Window* child) override;
@@ -166,9 +168,9 @@ class ASH_EXPORT WorkspaceLayoutManager : public aura::LayoutManager,
   // changes to system ui areas on the display they are on.
   void NotifySystemUiAreaChanged() const;
 
-  // Notifies the autoclick controller about a workspace event. If autoclick
-  // is enabled, the autoclick bubble may need to move in response to that
-  // event.
+  // Notifies the accessibility controller about a workspace event. If autoclick
+  // or stick keys is enabled, the autoclick bubble or sticky keys overlay may
+  // need to move in response to that event.
   void NotifyAccessibilityWorkspaceChanged() const;
 
   // Updates the window workspace.

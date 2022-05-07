@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/check.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -195,7 +194,7 @@ class SimpleIndexFileTest : public net::TestWithTaskEnvironment {
 TEST_F(SimpleIndexFileTest, Serialize) {
   SimpleIndex::EntrySet entries;
   static const uint64_t kHashes[] = {11, 22, 33};
-  static const size_t kNumHashes = base::size(kHashes);
+  static const size_t kNumHashes = std::size(kHashes);
   EntryMetadata metadata_entries[kNumHashes];
 
   SimpleIndexFile::IndexMetadata index_metadata(
@@ -235,7 +234,7 @@ TEST_F(SimpleIndexFileTest, Serialize) {
 TEST_F(SimpleIndexFileTest, SerializeAppCache) {
   SimpleIndex::EntrySet entries;
   static const uint64_t kHashes[] = {11, 22, 33};
-  static const size_t kNumHashes = base::size(kHashes);
+  static const size_t kNumHashes = std::size(kHashes);
   static const int32_t kTrailerPrefetches[] = {123, -1, 987};
   EntryMetadata metadata_entries[kNumHashes];
 
@@ -276,9 +275,9 @@ TEST_F(SimpleIndexFileTest, SerializeAppCache) {
 TEST_F(SimpleIndexFileTest, ReadV7Format) {
   static const uint64_t kHashes[] = {11, 22, 33};
   static const uint32_t kSizes[] = {394, 594, 495940};
-  static_assert(base::size(kHashes) == base::size(kSizes),
+  static_assert(std::size(kHashes) == std::size(kSizes),
                 "Need same number of hashes and sizes");
-  static const size_t kNumHashes = base::size(kHashes);
+  static const size_t kNumHashes = std::size(kHashes);
 
   V7IndexMetadataForTest v7_metadata(kNumHashes, 100 * 1024 * 1024);
 
@@ -319,9 +318,9 @@ TEST_F(SimpleIndexFileTest, ReadV7Format) {
 TEST_F(SimpleIndexFileTest, ReadV8Format) {
   static const uint64_t kHashes[] = {11, 22, 33};
   static const uint32_t kSizes[] = {394, 594, 495940};
-  static_assert(base::size(kHashes) == base::size(kSizes),
+  static_assert(std::size(kHashes) == std::size(kSizes),
                 "Need same number of hashes and sizes");
-  static const size_t kNumHashes = base::size(kHashes);
+  static const size_t kNumHashes = std::size(kHashes);
 
   // V8 to V9 should not make any modifications for non-APP_CACHE modes.
   // Verify that the data is preserved through the migration.
@@ -360,9 +359,9 @@ TEST_F(SimpleIndexFileTest, ReadV8Format) {
 TEST_F(SimpleIndexFileTest, ReadV8FormatAppCache) {
   static const uint64_t kHashes[] = {11, 22, 33};
   static const uint32_t kSizes[] = {394, 594, 495940};
-  static_assert(base::size(kHashes) == base::size(kSizes),
+  static_assert(std::size(kHashes) == std::size(kSizes),
                 "Need same number of hashes and sizes");
-  static const size_t kNumHashes = base::size(kHashes);
+  static const size_t kNumHashes = std::size(kHashes);
 
   // To simulate an upgrade from v8 to v9 write out the v8 schema
   // using DISK_CACHE mode.  The read it back in in APP_CACHE mode.
@@ -448,7 +447,7 @@ TEST_F(SimpleIndexFileTest, WriteThenLoadIndex) {
 
   SimpleIndex::EntrySet entries;
   static const uint64_t kHashes[] = {11, 22, 33};
-  static const size_t kNumHashes = base::size(kHashes);
+  static const size_t kNumHashes = std::size(kHashes);
   EntryMetadata metadata_entries[kNumHashes];
   for (size_t i = 0; i < kNumHashes; ++i) {
     uint64_t hash = kHashes[i];
@@ -569,8 +568,9 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
             base::WriteFile(old_index_file, index_file_contents.data(),
                             index_file_contents.size()));
 
+  TrivialFileOperations file_operations;
   // Upgrade the cache.
-  ASSERT_EQ(disk_cache::UpgradeSimpleCacheOnDisk(cache_path),
+  ASSERT_EQ(disk_cache::UpgradeSimpleCacheOnDisk(&file_operations, cache_path),
             SimpleCacheConsistencyResult::kOK);
 
   // Create the backend and initiate index flush by destroying the backend.
@@ -582,17 +582,17 @@ TEST_F(SimpleIndexFileTest, SimpleCacheUpgrade) {
   net::TestClosure post_cleanup;
   cleanup_tracker->AddPostCleanupCallback(post_cleanup.closure());
 
-  disk_cache::SimpleBackendImpl* simple_cache =
-      new disk_cache::SimpleBackendImpl(
-          cache_path, cleanup_tracker, /* file_tracker = */ nullptr, 0,
-          net::DISK_CACHE, /* net_log = */ nullptr);
+  auto simple_cache = std::make_unique<disk_cache::SimpleBackendImpl>(
+      /*file_operations_factory=*/nullptr, cache_path, cleanup_tracker,
+      /*file_tracker=*/nullptr, 0, net::DISK_CACHE,
+      /*net_log=*/nullptr);
   net::TestCompletionCallback cb;
   int rv = simple_cache->Init(cb.callback());
   EXPECT_THAT(cb.GetResult(rv), IsOk());
   simple_cache->index()->ExecuteWhenReady(cb.callback());
   rv = cb.WaitForResult();
   EXPECT_THAT(rv, IsOk());
-  delete simple_cache;
+  simple_cache.reset();
   cleanup_tracker = nullptr;
 
   // The backend flushes the index on destruction; it will run the post-cleanup

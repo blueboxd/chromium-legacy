@@ -17,12 +17,18 @@ declare global {
   interface Window {
     // Used for GA to support renaming, see
     // https://developers.google.com/analytics/devguides/collection/analyticsjs/tracking-snippet-reference#tracking-unminified
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     GoogleAnalyticsObject: 'ga';
+    // GA use global `ga-disable-GA_MEASUREMENT_ID` to disable a particular
+    // measurement. See
+    // https://developers.google.com/analytics/devguides/collection/gtagjs/user-opt-out
+    [key: `ga-disable-${string}`]: boolean;
   }
 }
 
 /**
  * Initializes GA for sending metrics.
+ *
  * @param id The GA tracker ID to send metrics.
  * @param clientId The GA client ID representing the current client.
  * @param setClientIdCallback Callback to store client id.
@@ -35,9 +41,9 @@ function initGA(
   window.GoogleAnalyticsObject = 'ga';
   // Creates an initial ga() function.
   // The queued commands will be executed once analytics.js loads.
-  window.ga = window.ga || function(...args: unknown[]) {
-    (window.ga.q = window.ga.q || []).push(args);
-  } as UniversalAnalytics.ga;
+  window.ga = window.ga || ((...args: unknown[]) => {
+                             (window.ga.q = window.ga.q || []).push(args);
+                           }) as UniversalAnalytics.ga;
   window.ga.l = Date.now();
   const a = document.createElement('script');
   const m = document.getElementsByTagName('script')[0];
@@ -48,8 +54,8 @@ function initGA(
   m.parentNode.insertBefore(a, m);
 
   window.ga('create', id, {
-    'storage': 'none',
-    'clientId': clientId,
+    storage: 'none',
+    clientId: clientId,
   });
 
   window.ga((tracker?: UniversalAnalytics.Tracker) => {
@@ -69,6 +75,7 @@ function initGA(
 
 /**
  * Sends event to GA.
+ *
  * @param event Event to send.
  */
 function sendGAEvent(event: UniversalAnalytics.FieldsObject): void {
@@ -77,20 +84,15 @@ function sendGAEvent(event: UniversalAnalytics.FieldsObject): void {
 
 /**
  * Sets if GA can send metrics.
+ *
  * @param id The GA tracker ID.
  * @param enabled True if the metrics is enabled.
  */
 function setMetricsEnabled(id: string, enabled: boolean): void {
-  // GA use global `ga-disable-GA_MEASUREMENT_ID` to disable a particular
-  // measurement. See
-  // https://developers.google.com/analytics/devguides/collection/gtagjs/user-opt-out
-  // TODO(pihsun): Use `ga-disable-${string}` as index and move into the
-  // declare global block when we have newer TypeScript compiler to support
-  // that.
-  (window as unknown as Record<string, boolean>)[`ga-disable-${id}`] = !enabled;
+  window[`ga-disable-${id}`] = !enabled;
 }
 
-export interface GAHelperInterface {
+export interface GAHelper {
   initGA: typeof initGA;
   sendGAEvent: typeof sendGAEvent;
   setMetricsEnabled: typeof setMetricsEnabled;

@@ -44,6 +44,7 @@
 <translation id="3344973607274501920">Chromium 无法检查您的密码。请尝试检查您的互联网连接。</translation>
 <translation id="3472200483164753384">在 Chromium Canary 版中不受支持</translation>
 <translation id="3639997914391704523">您需要先登录 Google 帐号才能使用 Chromium 的密码检查功能。</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" /> 原本使用 Chromium，并在此设备上保存了书签、密码及其他设置。</translation>
 <translation id="3805899903892079518">Chromium 无权访问您的照片或视频。请依次点按 iOS 中的“设置”&gt;“隐私”&gt;“照片”，授予其访问权限。</translation>
 <translation id="4043291146360695975">系统会将密码仅保存到此设备上的密码管理器中。</translation>
 <translation id="4099085513035183040">在 Chromium Beta 版中不受支持</translation>
@@ -55,6 +56,15 @@
 <translation id="4828317641996116749">Chromium 无法检查所有密码。请稍后再试。</translation>
 <translation id="4985291216379576555">已离线，Chromium 无法检查是否有更新</translation>
 <translation id="4999538639245140991">由于您要退出的帐号是由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理，因此系统将会从这部设备中删除您的 Chromium 数据，但这些数据仍会保留在您的 Google 帐号中。</translation>
+<translation id="5039881550736388123">处于开启状态时：
+<ph name="BEGIN_INDENT" />  • 可协助改进 Chromium，让所有像您这样使用 Chromium 的用户都能够获享更好的体验。<ph name="END_INDENT" />
+
+注意事项：
+<ph name="BEGIN_INDENT" />  • 系统会向 Google 发送与您的 Chromium 使用情况相关的信息，但这些信息与您没有关联。
+
+  • 如果 Chromium 崩溃，崩溃事件的相关详情中可能会包含一些个人信息。
+
+  • 如果您开启同步功能，相关指标可能会包含与您访问的网址相关的信息。<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">登录 Chromium</translation>
 <translation id="5224391634244552924">尚未保存任何密码。您需要先保存密码才能使用 Chromium 的密码检查功能。</translation>
 <translation id="5308226104666789935">Chromium 无法检查是否有更新</translation>
@@ -65,6 +75,7 @@
 <translation id="5777187867430702742">Chromium 网页</translation>
 <translation id="5862307444128926510">欢迎使用 Chromium</translation>
 <translation id="5945387852661427312">您正要登录由 <ph name="DOMAIN" /> 管理的帐号，并要授权其管理员控制您的 Chromium 数据。您的数据将与此帐号永久关联。退出 Chromium 后，您的数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
+<translation id="5983312940147103417">帮助改善 Chromium</translation>
 <translation id="602807004951640891">使用 Chromium 即表示您同意接受<ph name="BEGIN_LINK_TOS" />服务条款<ph name="END_LINK_TOS" />。</translation>
 <translation id="6119647025869519954">若要将 Chromium 设为默认浏览器，请执行以下操作：
 1. 打开“设置”

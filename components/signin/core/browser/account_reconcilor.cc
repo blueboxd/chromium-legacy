@@ -14,11 +14,13 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -27,6 +29,7 @@
 #include "components/signin/public/base/account_consistency_method.h"
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/accounts_cookie_mutator.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
@@ -34,6 +37,10 @@
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/google_service_auth_error.h"
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "components/signin/core/browser/consistency_cookie_manager.h"
+#endif
 
 using signin::AccountReconcilorDelegate;
 using signin::ConsentLevel;
@@ -223,11 +230,12 @@ void AccountReconcilor::EnableReconcile() {
 }
 
 void AccountReconcilor::DisableReconcile(bool logout_all_accounts) {
+  const bool log_out_in_progress = log_out_in_progress_;
   AbortReconcile();
   SetState(AccountReconcilorState::ACCOUNT_RECONCILOR_INACTIVE);
   UnregisterWithAllDependencies();
 
-  if (logout_all_accounts)
+  if (logout_all_accounts && !log_out_in_progress)
     PerformLogoutAllAccountsAction();
 }
 
@@ -589,7 +597,8 @@ void AccountReconcilor::OnAccountsInCookieUpdated(
   std::vector<CoreAccountId> chrome_accounts =
       LoadValidAccountsFromTokenService();
 
-  if (delegate_->ShouldAbortReconcileIfPrimaryHasError() &&
+  if (!primary_account.empty() &&
+      delegate_->ShouldAbortReconcileIfPrimaryHasError() &&
       !base::Contains(chrome_accounts, primary_account)) {
     VLOG(1) << "Primary account has error, abort.";
     DCHECK(is_reconcile_started_);
@@ -795,6 +804,21 @@ bool AccountReconcilor::IsReconcileBlocked() const {
   DCHECK_GE(account_reconcilor_lock_count_, 0);
   return account_reconcilor_lock_count_ > 0;
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+signin::ConsistencyCookieManager*
+AccountReconcilor::GetConsistencyCookieManager() {
+  if (base::FeatureList::IsEnabled(switches::kLacrosNonSyncingProfiles) &&
+      !consistency_cookie_manager_) {
+    // TODO(https://crbug.com/1260291): Instantiate the ConsistencyCookieManager
+    // at creation of the AccountReconcilor, once the cookie can be cleared
+    // correctly.
+    consistency_cookie_manager_ =
+        std::make_unique<signin::ConsistencyCookieManager>(client_, this);
+  }
+  return consistency_cookie_manager_.get();
+}
+#endif
 
 void AccountReconcilor::BlockReconcile() {
   DCHECK(IsReconcileBlocked());

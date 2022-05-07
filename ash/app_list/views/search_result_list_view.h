@@ -67,9 +67,12 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
     // kPlayStore contains suggested apps from the playstore that are not
     // currently installed.
     kPlayStore,
-    // kSearchAndAssistant contain suggestions from Search and Google Assistant.
+    // kSearchAndAssistant contains suggestions from Search and Google
+    // Assistant.
     kSearchAndAssistant,
-    kMaxValue = kSearchAndAssistant,
+    // kGames contains cloud game search results.
+    kGames,
+    kMaxValue = kGames,
   };
 
   SearchResultListView(
@@ -103,10 +106,14 @@ class ASH_EXPORT SearchResultListView : public SearchResultContainerView {
   SearchResultView* GetResultViewAt(size_t index) override;
   absl::optional<ResultsAnimationInfo> ScheduleResultAnimations(
       const ResultsAnimationInfo& aggregate_animation_info) override;
+  bool HasAnimatingChildView() override;
 
   // Fades the view in and animates a vertical transform based on the view's
-  // position in the overall search container view.
-  void ShowViewWithAnimation(views::View* view, int position);
+  // position in the overall search container view. Returns whether fast
+  // animations were used.
+  void ShowViewWithAnimation(views::View* view,
+                             int position,
+                             bool use_short_animations);
 
   AppListMainView* app_list_main_view() const { return main_view_; }
 

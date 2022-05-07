@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
@@ -40,7 +41,7 @@
 namespace safe_browsing {
 namespace {
 
-const int kRepeatingCheckTailoredSecurityBitDelayInMinutes = 5;
+const int kRepeatingCheckTailoredSecurityBitDelayInMinutes = 10;
 
 constexpr char kAPIScope[] =
     "https://www.googleapis.com/auth/chrome-safe-browsing";

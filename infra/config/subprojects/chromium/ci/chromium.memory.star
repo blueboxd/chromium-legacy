@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 """Definitions of builders in the chromium.memory builder group."""
 
+load("//lib/args.star", "args")
 load("//lib/branches.star", "branches")
 load("//lib/builders.star", "goma", "os", "sheriff_rotations")
 load("//lib/ci.star", "ci", "rbe_instance", "rbe_jobs")
@@ -250,8 +251,11 @@ ci.builder(
         short_name = "asn",
     ),
     os = os.LINUX_DEFAULT,
-    sheriff_rotations = sheriff_rotations.ANDROID,
+    sheriff_rotations = args.ignore_default(None),
     tree_closing = False,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -264,6 +268,9 @@ ci.builder(
     cores = 32,
     tree_closing = False,
     os = os.LINUX_BIONIC_REMOVE,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(

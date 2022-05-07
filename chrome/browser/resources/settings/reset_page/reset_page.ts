@@ -76,7 +76,7 @@ export class SettingsResetPageElement extends SettingsResetPageElementBase {
   /**
    * RouteObserverMixin
    */
-  currentRouteChanged(route: Route) {
+  override currentRouteChanged(route: Route) {
     const lazyRender = this.$.resetProfileDialog;
 
     if (route === routes.TRIGGERED_RESET_DIALOG ||
@@ -96,7 +96,7 @@ export class SettingsResetPageElement extends SettingsResetPageElementBase {
   }
 
   private onResetProfileDialogClose_() {
-    Router.getInstance().navigateToPreviousRoute();
+    Router.getInstance().navigateTo(routes.RESET_DIALOG.parent!);
     focusWithoutInk(assert(this.$.resetProfile));
   }
 

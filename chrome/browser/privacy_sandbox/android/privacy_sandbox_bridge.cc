@@ -34,7 +34,7 @@ ScopedJavaLocalRef<jobjectArray> ToJavaTopicsArray(
   std::vector<ScopedJavaLocalRef<jobject>> j_topics;
   for (const auto& topic : topics) {
     j_topics.push_back(Java_PrivacySandboxBridge_createTopic(
-        env, topic.topic_id(), topic.taxonomy_version(),
+        env, topic.topic_id().value(), topic.taxonomy_version(),
         ConvertUTF16ToJavaString(env, topic.GetLocalizedRepresentation())));
   }
   return base::android::ToJavaArrayOfObjects(
@@ -48,6 +48,11 @@ static jboolean JNI_PrivacySandboxBridge_IsPrivacySandboxEnabled(JNIEnv* env) {
 
 static jboolean JNI_PrivacySandboxBridge_IsPrivacySandboxManaged(JNIEnv* env) {
   return GetPrivacySandboxService()->IsPrivacySandboxManaged();
+}
+
+static jboolean JNI_PrivacySandboxBridge_IsPrivacySandboxRestricted(
+    JNIEnv* env) {
+  return GetPrivacySandboxService()->IsPrivacySandboxRestricted();
 }
 
 static void JNI_PrivacySandboxBridge_SetPrivacySandboxEnabled(
@@ -104,8 +109,6 @@ JNI_PrivacySandboxBridge_GetFlocResetExplanationString(JNIEnv* env) {
       env, GetPrivacySandboxService()->GetFlocResetExplanationForDisplay());
 }
 
-// TODO(crbug.com/1286276): Remove this fake implementation and call
-// PrivacySandboxService.
 static ScopedJavaLocalRef<jobjectArray>
 JNI_PrivacySandboxBridge_GetCurrentTopTopics(JNIEnv* env) {
   return ToJavaTopicsArray(env,
@@ -122,7 +125,9 @@ static void JNI_PrivacySandboxBridge_SetTopicAllowed(JNIEnv* env,
                                                      jint taxonomy_version,
                                                      jboolean allowed) {
   GetPrivacySandboxService()->SetTopicAllowed(
-      privacy_sandbox::CanonicalTopic(topic_id, taxonomy_version), allowed);
+      privacy_sandbox::CanonicalTopic(browsing_topics::Topic(topic_id),
+                                      taxonomy_version),
+      allowed);
 }
 
 static jint JNI_PrivacySandboxBridge_GetRequiredDialogType(JNIEnv* env) {

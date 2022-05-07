@@ -7,7 +7,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/components/phonehub/camera_roll_manager.h"
-#include "ash/system/phonehub/camera_roll_opt_in_view.h"
 #include "base/gtest_prod_util.h"
 #include "ui/views/view.h"
 #include "ui/views/view_model.h"
@@ -37,14 +36,9 @@ class ASH_EXPORT CameraRollView : public views::View,
   // views::View:
   const char* GetClassName() const override;
 
- protected:
-  bool should_disable_annimator_timer_for_test_ = false;
-
  private:
   friend class CameraRollViewTest;
-  FRIEND_TEST_ALL_PREFIXES(CameraRollViewTest, DisplayOptInView);
   FRIEND_TEST_ALL_PREFIXES(CameraRollViewTest, OptInAlready);
-  FRIEND_TEST_ALL_PREFIXES(CameraRollViewTest, RightAfterOptIn);
   FRIEND_TEST_ALL_PREFIXES(CameraRollViewTest, ViewLayout);
   FRIEND_TEST_ALL_PREFIXES(CameraRollViewTest, ImageThumbnail);
   FRIEND_TEST_ALL_PREFIXES(CameraRollViewTest, VideoThumbnail);
@@ -57,7 +51,6 @@ class ASH_EXPORT CameraRollView : public views::View,
     CameraRollItemsView operator=(CameraRollItemsView&) = delete;
 
     void AddCameraRollItem(views::View* camera_roll_item);
-    void AddLoadingAnimatedItem(bool disable_repeated_animation_for_test);
     void Reset();
 
     // views::View:
@@ -81,7 +74,6 @@ class ASH_EXPORT CameraRollView : public views::View,
 
   phonehub::CameraRollManager* camera_roll_manager_ = nullptr;
   phonehub::UserActionRecorder* user_action_recorder_ = nullptr;
-  CameraRollOptInView* opt_in_view_ = nullptr;
   CameraRollItemsView* items_view_ = nullptr;
 };
 

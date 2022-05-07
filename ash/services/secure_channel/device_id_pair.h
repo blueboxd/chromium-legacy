@@ -9,9 +9,7 @@
 #include <string>
 #include <unordered_set>
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Pair of IDs belonging to two devices associated with a connection attempt:
 // one for the remote device (i.e., the one to which this device is connecting),
@@ -43,14 +41,6 @@ typedef std::unordered_set<DeviceIdPair, DeviceIdPairHash> DeviceIdPairSet;
 
 std::ostream& operator<<(std::ostream& stream, const DeviceIdPair& details);
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash::secure_channel {
-using ::chromeos::secure_channel::DeviceIdPair;
-using ::chromeos::secure_channel::DeviceIdPairSet;
 }  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_DEVICE_ID_PAIR_H_

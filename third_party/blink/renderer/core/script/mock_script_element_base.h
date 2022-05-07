@@ -29,7 +29,7 @@ class MockScriptElementBase : public GarbageCollected<MockScriptElementBase>,
   MOCK_CONST_METHOD0(ForAttributeValue, String());
   MOCK_CONST_METHOD0(IntegrityAttributeValue, String());
   MOCK_CONST_METHOD0(ReferrerPolicyAttributeValue, String());
-  MOCK_CONST_METHOD0(ImportanceAttributeValue, String());
+  MOCK_CONST_METHOD0(FetchPriorityAttributeValue, String());
   MOCK_CONST_METHOD0(LanguageAttributeValue, String());
   MOCK_CONST_METHOD0(NomoduleAttributeValue, bool());
   MOCK_CONST_METHOD0(SourceAttributeValue, String());
@@ -42,6 +42,7 @@ class MockScriptElementBase : public GarbageCollected<MockScriptElementBase>,
   MOCK_CONST_METHOD0(GetNonceForElement, const AtomicString&());
   MOCK_CONST_METHOD0(ElementHasDuplicateAttributes, bool());
   MOCK_CONST_METHOD0(InitiatorName, AtomicString());
+  MOCK_CONST_METHOD0(IsRenderBlocking, bool());
   MOCK_METHOD3(AllowInlineScriptForCSP,
                bool(const AtomicString&,
                     const WTF::OrdinalNumber&,

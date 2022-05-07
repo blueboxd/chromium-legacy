@@ -10,8 +10,9 @@
 #include "ash/components/phonehub/fake_camera_roll_download_manager.h"
 #include "ash/components/phonehub/fake_message_receiver.h"
 #include "ash/components/phonehub/fake_message_sender.h"
-#include "ash/components/phonehub/pref_names.h"
 #include "ash/components/phonehub/proto/phonehub_api.pb.h"
+#include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "ash/services/secure_channel/public/cpp/client/fake_connection_manager.h"
 #include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
 #include "base/callback.h"
@@ -19,11 +20,6 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/gfx/image/image.h"
@@ -38,8 +34,8 @@ using BatchDecodeResult = CameraRollThumbnailDecoder::BatchDecodeResult;
 using BatchDecodeCallback =
     base::OnceCallback<void(BatchDecodeResult,
                             const std::vector<CameraRollItem>&)>;
-using FeatureState = chromeos::multidevice_setup::mojom::FeatureState;
-using FileTransferStatus = chromeos::secure_channel::mojom::FileTransferStatus;
+using FeatureState = multidevice_setup::mojom::FeatureState;
+using FileTransferStatus = secure_channel::mojom::FileTransferStatus;
 
 class FakeObserver : public CameraRollManager::Observer {
  public:
@@ -70,14 +66,6 @@ class FakeObserver : public CameraRollManager::Observer {
   absl::optional<CameraRollManager::Observer::DownloadErrorType>
       last_download_error_ = absl::nullopt;
 };
-
-// Registers preferences for
-void RegisterHasDismissedOnBoardingUiPreferences(
-    TestingPrefServiceSimple* pref_service) {
-  DCHECK(pref_service);
-  pref_service->registry()->RegisterBooleanPref(
-      prefs::kHasDismissedCameraRollOnboardingUi, false);
-}
 
 void PopulateItemProto(proto::CameraRollItem* item_proto, std::string key) {
   proto::CameraRollItemMetadata* metadata = item_proto->mutable_metadata();
@@ -148,7 +136,6 @@ class CameraRollManagerImplTest : public testing::Test {
   ~CameraRollManagerImplTest() override = default;
 
   void SetUp() override {
-    RegisterHasDismissedOnBoardingUiPreferences(&pref_service_);
     fake_multidevice_setup_client_ =
         std::make_unique<multidevice_setup::FakeMultiDeviceSetupClient>();
     fake_connection_manager_ =
@@ -161,7 +148,7 @@ class CameraRollManagerImplTest : public testing::Test {
 
     SetCameraRollFeatureState(FeatureState::kEnabledByUser);
     camera_roll_manager_ = std::make_unique<CameraRollManagerImpl>(
-        &pref_service_, &fake_message_receiver_, &fake_message_sender_,
+        &fake_message_receiver_, &fake_message_sender_,
         fake_multidevice_setup_client_.get(), fake_connection_manager_.get(),
         std::move(fake_camera_roll_download_manager));
     camera_roll_manager_->thumbnail_decoder_ =
@@ -237,8 +224,7 @@ class CameraRollManagerImplTest : public testing::Test {
 
   void SetCameraRollFeatureState(FeatureState feature_state) {
     fake_multidevice_setup_client_->SetFeatureState(
-        chromeos::multidevice_setup::mojom::Feature::kPhoneHubCameraRoll,
-        feature_state);
+        multidevice_setup::mojom::Feature::kPhoneHubCameraRoll, feature_state);
   }
 
   void UngrantAndroidStoragePermission() {
@@ -282,7 +268,7 @@ class CameraRollManagerImplTest : public testing::Test {
                               uint64_t total_bytes,
                               uint64_t bytes_transferred) {
     fake_connection_manager_->SendFileTransferUpdate(
-        chromeos::secure_channel::mojom::FileTransferUpdate::New(
+        secure_channel::mojom::FileTransferUpdate::New(
             payload_id, status, total_bytes, bytes_transferred));
   }
 
@@ -290,10 +276,9 @@ class CameraRollManagerImplTest : public testing::Test {
                                   FileTransferStatus status,
                                   uint64_t total_bytes,
                                   uint64_t bytes_transferred) {
-    const chromeos::secure_channel::mojom::FileTransferUpdatePtr&
-        latest_update = fake_camera_roll_download_manager_
-                            ->GetFileTransferUpdates(payload_id)
-                            .back();
+    const secure_channel::mojom::FileTransferUpdatePtr& latest_update =
+        fake_camera_roll_download_manager_->GetFileTransferUpdates(payload_id)
+            .back();
     EXPECT_EQ(payload_id, latest_update->payload_id);
     EXPECT_EQ(status, latest_update->status);
     EXPECT_EQ(total_bytes, latest_update->total_bytes);
@@ -320,7 +305,6 @@ class CameraRollManagerImplTest : public testing::Test {
   base::HistogramTester histogram_tester_;
 
  private:
-  TestingPrefServiceSimple pref_service_;
   FakeMessageSender fake_message_sender_;
   std::unique_ptr<secure_channel::FakeConnectionManager>
       fake_connection_manager_;
@@ -497,7 +481,7 @@ TEST_F(CameraRollManagerImplTest,
   SendPhoneStatusUpdate(/*has_camera_roll_updates=*/true);
 
   EXPECT_EQ(0UL, GetSentFetchCameraRollItemsRequestCount());
-  EXPECT_EQ(CameraRollManager::CameraRollUiState::CAN_OPT_IN,
+  EXPECT_EQ(CameraRollManager::CameraRollUiState::SHOULD_HIDE,
             camera_roll_manager()->ui_state());
   EXPECT_EQ(4, GetOnCameraRollViewUiStateUpdatedCallCount());
   EXPECT_EQ(0, GetCurrentItemsCount());
@@ -542,7 +526,7 @@ TEST_F(CameraRollManagerImplTest,
   SendPhoneStatusSnapshot();
 
   EXPECT_EQ(0UL, GetSentFetchCameraRollItemsRequestCount());
-  EXPECT_EQ(CameraRollManager::CameraRollUiState::CAN_OPT_IN,
+  EXPECT_EQ(CameraRollManager::CameraRollUiState::SHOULD_HIDE,
             camera_roll_manager()->ui_state());
   EXPECT_EQ(4, GetOnCameraRollViewUiStateUpdatedCallCount());
   EXPECT_EQ(0, GetCurrentItemsCount());
@@ -576,7 +560,7 @@ TEST_F(CameraRollManagerImplTest, OnFeatureOnFeatureStatesChangedToDisabled) {
 
   SetCameraRollFeatureState(FeatureState::kDisabledByUser);
 
-  EXPECT_EQ(CameraRollManager::CameraRollUiState::CAN_OPT_IN,
+  EXPECT_EQ(CameraRollManager::CameraRollUiState::SHOULD_HIDE,
             camera_roll_manager()->ui_state());
   EXPECT_EQ(3, GetOnCameraRollViewUiStateUpdatedCallCount());
   EXPECT_EQ(0, GetCurrentItemsCount());
@@ -590,57 +574,6 @@ TEST_F(CameraRollManagerImplTest, FeatureProhibitedByPolicy) {
       snapshot.mutable_properties()->mutable_camera_roll_access_state();
   access_state->set_storage_permission_granted(true);
   fake_message_receiver_.NotifyPhoneStatusSnapshotReceived(snapshot);
-
-  EXPECT_EQ(CameraRollManager::CameraRollUiState::SHOULD_HIDE,
-            camera_roll_manager()->ui_state());
-}
-
-TEST_F(CameraRollManagerImplTest, EnableFromOptInDialog) {
-  SetCameraRollFeatureState(FeatureState::kDisabledByUser);
-  proto::PhoneStatusSnapshot snapshot;
-  proto::CameraRollAccessState* access_state =
-      snapshot.mutable_properties()->mutable_camera_roll_access_state();
-  access_state->set_storage_permission_granted(true);
-  fake_message_receiver_.NotifyPhoneStatusSnapshotReceived(snapshot);
-  EXPECT_EQ(CameraRollManager::CameraRollUiState::CAN_OPT_IN,
-            camera_roll_manager()->ui_state());
-
-  camera_roll_manager()->EnableCameraRollFeatureInSystemSetting();
-  // Verify that the CameraRollManager attempted to enable the feature via the
-  // MultideviceSetupClient. Then actually set the feature state to
-  // kEnabledByUser since the FakeMultideviceSetupClient doesn't do that.
-  fake_multidevice_setup_client_->InvokePendingSetFeatureEnabledStateCallback(
-      /*expected_feature=*/chromeos::multidevice_setup::mojom::Feature::
-          kPhoneHubCameraRoll,
-      /*expected_enabled=*/true,
-      /*expected_auth_token=*/absl::nullopt,
-      /*success=*/true);
-  SetCameraRollFeatureState(FeatureState::kEnabledByUser);
-  // The UI should change into the loading view after the setting is enabled and
-  // before the items are received.
-  EXPECT_EQ(CameraRollManager::CameraRollUiState::LOADING_VIEW,
-            camera_roll_manager()->ui_state());
-
-  proto::FetchCameraRollItemsResponse response;
-  PopulateItemProto(response.add_items(), "key2");
-  PopulateItemProto(response.add_items(), "key1");
-  fake_message_receiver_.NotifyFetchCameraRollItemsResponseReceived(response);
-  CompleteThumbnailDecoding(BatchDecodeResult::kCompleted);
-  EXPECT_EQ(CameraRollManager::CameraRollUiState::ITEMS_VISIBLE,
-            camera_roll_manager()->ui_state());
-}
-
-TEST_F(CameraRollManagerImplTest, DismissOptInDialog) {
-  SetCameraRollFeatureState(FeatureState::kDisabledByUser);
-  proto::PhoneStatusSnapshot snapshot;
-  proto::CameraRollAccessState* access_state =
-      snapshot.mutable_properties()->mutable_camera_roll_access_state();
-  access_state->set_storage_permission_granted(true);
-  fake_message_receiver_.NotifyPhoneStatusSnapshotReceived(snapshot);
-  EXPECT_EQ(CameraRollManager::CameraRollUiState::CAN_OPT_IN,
-            camera_roll_manager()->ui_state());
-
-  camera_roll_manager()->OnCameraRollOnboardingUiDismissed();
 
   EXPECT_EQ(CameraRollManager::CameraRollUiState::SHOULD_HIDE,
             camera_roll_manager()->ui_state());

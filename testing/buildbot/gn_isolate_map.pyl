@@ -877,16 +877,6 @@
     "label": "//fuchsia/release:fuchsia_sizes",
     "type": "generated_script",
   },
-  "fuchsia_telemetry_gpu_integration_test": {
-    "args": [
-      "../../content/test/gpu/run_gpu_integration_test_fuchsia.py",
-      "--logs-dir",
-      "${ISOLATED_OUTDIR}",
-    ],
-    "label": "//content/test:fuchsia_telemetry_gpu_integration_test",
-    "script": "//testing/scripts/run_gpu_integration_test_as_googletest.py",
-    "type": "script",
-  },
   "gcm_unit_tests": {
     "label": "//google_apis/gcm:gcm_unit_tests",
     "type": "console_test_launcher",
@@ -1084,6 +1074,10 @@
     "label": "//ios/showcase:ios_showcase_eg2tests_module",
     "type": "generated_script",
   },
+  "ios_swift_interop_xcuitests_module": {
+    "label": "//ios/chrome/test/swift_interop:ios_swift_interop_xcuitests_module",
+    "type": "generated_script",
+  },
   "ios_testing_unittests": {
     "label": "//ios/testing:ios_testing_unittests",
     "type": "generated_script",
@@ -1130,6 +1124,13 @@
   },
   "lacros_all_tast_tests": {
     "label": "//chromeos/lacros:lacros_all_tast_tests",
+    "type": "generated_script",
+    "args": [
+      "--logs-dir=${ISOLATED_OUTDIR}",
+    ],
+  },
+  "lacros_all_tast_tests_informational": {
+    "label": "//chromeos/lacros:lacros_all_tast_tests_informational",
     "type": "generated_script",
     "args": [
       "--logs-dir=${ISOLATED_OUTDIR}",
@@ -1282,17 +1283,9 @@
     # coverage.
     "type": "additional_compile_target",
   },
-  "mojo_rust_unittests": {
-    "label": "//mojo/public/rust:mojo_rust_unittests",
-    # We don't yet support running Rust test binaries. For now, at least build
-    # the target. TODO(https://crbug.com/1260120): make this a test.
-    "type": "additional_compile_target",
-  },
-  "mojo_rust_extra_tests": {
-    "label": "//mojo/public/rust:mojo_rust",
-    # We don't yet support running Rust test binaries. For now, at least build
-    # the target. TODO(https://crbug.com/1260120): make this a test.
-    "type": "additional_compile_target",
+  "mojo_rust_tests": {
+    "label": "//mojo/public/rust:mojo_rust_tests",
+    "type": "generated_script",
   },
   "mojo_test_apk": {
     "label": "//mojo/public/java/system:mojo_test_apk",
@@ -1598,6 +1591,10 @@
     "label": "//build/rust/tests",
     "type": "additional_compile_target",
   },
+  "rust_gtest_interop_unittests": {
+    "label": "//testing/rust_gtest_interop:rust_gtest_interop_unittests",
+    "type": "console_test_launcher",
+  },
   "sandbox_linux_unittests": {
     "label": "//sandbox/linux:sandbox_linux_unittests",
     "type": "console_test_launcher",
@@ -1774,6 +1771,16 @@
     "script": "//testing/scripts/run_telemetry_as_googletest.py",
     "type": "script",
   },
+  "telemetry_perf_unittests_android_monochrome": {
+    "args": [
+      "../../tools/perf/run_tests",
+      "-v",
+    ],
+    "label": "//chrome/test:telemetry_perf_unittests_android_monochrome",
+    "script": "//testing/scripts/run_telemetry_as_googletest.py",
+    "type": "script",
+    "python3": True,
+  },
   "telemetry_unittests": {
     "args": [
       "--xvfb",
@@ -1801,8 +1808,8 @@
     "label": "//build/rust/tests/test_cpp_including_rust:test_cpp_including_rust_unittests",
     "type": "console_test_launcher",
   },
-  "test_serde_jsonrc": {
-    "label": "//build/rust/tests/test_serde_jsonrc:test_serde_jsonrc",
+  "test_serde_json_lenient": {
+    "label": "//build/rust/tests/test_serde_json_lenient:test_serde_json_lenient",
     "type": "console_test_launcher",
   },
   "third_party/openscreen/src/cast/cast_core/api": {

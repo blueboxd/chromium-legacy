@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Help om Chrome te verbeter deur gebruikstatistiek en omvalverslae na Google te stuur.</translation>
 <translation id="417201473131094001">Nie gesteun op Chrome Kanarie nie</translation>
 <translation id="4214277427269650960">Meld by hierdie werf en Chrome aan. Jy kan sinkronisering later aanskakel.</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> het Chrome gebruik en het boekmerke, wagwoorde en ander instellings op hierdie toestel gelos.</translation>
 <translation id="424864128008805179">Meld af uit Chrome?</translation>
 <translation id="4249068189593983585">Chrome-wenk. Vir meer oortjieopsies, raak en hou die Wys Oortjies-knoppie op die nutsbalk aan die onderkant of bokant van jou skerm.</translation>
 <translation id="4523886039239821078">Sekere byvoegings het veroorsaak dat Chrome omval. Probeer om hulle te deïnstalleer:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome kon nie alle wagwoorde nagaan nie. Probeer môre weer of <ph name="BEGIN_LINK" />gaan wagwoorde in jou Google-rekening na<ph name="END_LINK" />.</translation>
 <translation id="484033449593719797">Nie op Chrome Beta gesteun nie</translation>
 <translation id="5030102366287574140">Chrome kan help om jou teen dataskendings, onveilige webwerwe en meer te beskerm.</translation>
+<translation id="5108659628347594808">Maak Chrome beter</translation>
 <translation id="5119391094379141756">Kies Chrome</translation>
 <translation id="5162467219239570114">Chrome is verouderd. As geen opdatering in die <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> beskikbaar is nie, is dit moontlik dat jou toestel nie meer nuwe weergawes van Chrome steun nie.</translation>
 <translation id="5389212809648216794">Google Chrome kan nie jou kamera gebruik nie omdat dit deur 'n ander program gebruik word</translation>
@@ -81,6 +83,15 @@
 <translation id="6709398533399187136">Jou wagwoord is in 'n dataskending blootgestel. Google Wagwoordbestuurder beveel aan dat jy dit nou verander.</translation>
 <translation id="6822673484890854830">Chrome kon nie alle wagwoorde nagaan nie. Probeer later weer.</translation>
 <translation id="6964931465519938134">Jy kan Chrome nou enige tyd gebruik wanneer jy op skakels in boodskappe, dokumente en ander programme tik.</translation>
+<translation id="7046845777663074840">Wanneer dit aan is:
+<ph name="BEGIN_INDENT" />  • Help dit om Chrome beter te maak vir mense wat dit gebruik soos wat jy dit gebruik.<ph name="END_INDENT" />
+
+Dinge om te oorweeg:
+<ph name="BEGIN_INDENT" />  • Inligting oor jou gebruik van Chrome word aan Google gestuur, maar dit word nie aan jou verbind nie.
+
+  • As Chrome omval, kan besonderhede oor die omval sekere persoonlike inligting insluit.
+
+  • As jy sinkronisering aanskakel, kan maatstawwe inligting insluit oor URL'e wat jy besoek.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Maak Chrome jou eie</translation>
 <translation id="7124339256045485976">Hou Chrome op datum</translation>
 <translation id="7161390184744336561">Google Chrome is verouderd</translation>

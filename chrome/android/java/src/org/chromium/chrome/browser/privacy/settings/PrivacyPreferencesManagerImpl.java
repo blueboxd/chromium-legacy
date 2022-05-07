@@ -78,7 +78,7 @@ public class PrivacyPreferencesManagerImpl implements PrivacyPreferencesManager 
         // Skip if native browser process is not yet fully initialized.
         if (!BrowserStartupController.getInstance().isNativeStarted()) return;
 
-        setMetricsReportingEnabled(isUsageAndCrashReportingPermittedByUser());
+        setMetricsReportingEnabled(isUsageAndCrashReportingPermitted());
     }
 
     @Override
@@ -102,6 +102,13 @@ public class PrivacyPreferencesManagerImpl implements PrivacyPreferencesManager 
     }
 
     @Override
+    public boolean isUsageAndCrashReportingPermittedByPolicy() {
+        // TODO(https://crbug.com/1301701) This function is being called from an invalid thread.
+        // This constant return value is set while figuring out the problem.
+        return true;
+    }
+
+    @Override
     public boolean isUsageAndCrashReportingPermittedByUser() {
         return mPrefs.readBoolean(ChromePreferenceKeys.PRIVACY_METRICS_REPORTING, false);
     }
@@ -114,7 +121,7 @@ public class PrivacyPreferencesManagerImpl implements PrivacyPreferencesManager 
     @Override
     public boolean isMetricsUploadPermitted() {
         return isNetworkAvailable()
-                && (isUsageAndCrashReportingPermittedByUser() || isUploadEnabledForTests());
+                && (isUsageAndCrashReportingPermitted() || isUploadEnabledForTests());
     }
 
     @Override

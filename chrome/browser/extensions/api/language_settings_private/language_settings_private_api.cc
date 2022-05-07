@@ -44,7 +44,6 @@
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_prefs.h"
 #include "third_party/icu/source/i18n/unicode/coll.h"
-#include "ui/base/ime/ash/input_method_descriptor.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/l10n_util_collator.h"
 
@@ -53,6 +52,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/ime/ash/component_extension_ime_manager.h"
 #include "ui/base/ime/ash/extension_ime_util.h"
+#include "ui/base/ime/ash/input_method_descriptor.h"
 #include "ui/base/ime/ash/input_method_manager.h"
 #include "ui/base/ime/ash/input_method_util.h"
 #endif
@@ -259,7 +259,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
     }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-    language_list_->Append(language.ToValue());
+    language_list_->Append(base::Value::FromUniquePtrValue(language.ToValue()));
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -271,7 +271,7 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
     language.code = ash::extension_ime_util::kArcImeLanguage;
     language.display_name =
         l10n_util::GetStringUTF8(IDS_SETTINGS_LANGUAGES_KEYBOARD_APPS);
-    language_list_->Append(language.ToValue());
+    language_list_->Append(base::Value::FromUniquePtrValue(language.ToValue()));
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

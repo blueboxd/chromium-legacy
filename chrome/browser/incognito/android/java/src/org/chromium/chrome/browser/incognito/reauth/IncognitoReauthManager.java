@@ -37,15 +37,10 @@ public class IncognitoReauthManager {
         void onIncognitoReauthFailure();
     }
 
-    /**
-     * Constructor for {@link IncognitoReauthManager}. Initialises |mReauthenticatorBridge|.
-     */
     public IncognitoReauthManager() {
-        mReauthenticatorBridge =
-                new ReauthenticatorBridge(BiometricAuthRequester.INCOGNITO_REAUTH_PAGE);
+        this(new ReauthenticatorBridge(BiometricAuthRequester.INCOGNITO_REAUTH_PAGE));
     }
 
-    @VisibleForTesting
     public IncognitoReauthManager(ReauthenticatorBridge reauthenticatorBridge) {
         mReauthenticatorBridge = reauthenticatorBridge;
     }

@@ -292,7 +292,8 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
     const ThreadUnsafeCommitState* unsafe_state,
     base::TimeTicks main_thread_start_time,
     const viz::BeginFrameArgs& commit_args,
-    CommitTimestamps* commit_timestamps) {
+    CommitTimestamps* commit_timestamps,
+    bool commit_timeout) {
   TRACE_EVENT0("cc", "ProxyImpl::NotifyReadyToCommitOnImpl");
   DCHECK(!data_for_commit_.get());
   DCHECK(IsImplThread());
@@ -326,7 +327,9 @@ void ProxyImpl::NotifyReadyToCommitOnImpl(
   scheduler_->NotifyBeginMainFrameStarted(main_thread_start_time);
 
   auto& begin_main_frame_metrics = commit_state->begin_main_frame_metrics;
-  host_impl_->ReadyToCommit(commit_args, begin_main_frame_metrics.get());
+
+  host_impl_->ReadyToCommit(commit_args, begin_main_frame_metrics.get(),
+                            commit_timeout);
 
   data_for_commit_ = std::make_unique<DataForCommit>(
       std::make_unique<ScopedCommitCompletionEvent>(
@@ -817,13 +820,13 @@ DrawResult ProxyImpl::DrawInternal(bool forced_draw) {
   }
 
   if (draw_frame) {
-    if (absl::optional<EventMetricsSet> events_metrics =
+    if (absl::optional<LayerTreeHostImpl::SubmitInfo> submit_info =
             host_impl_->DrawLayers(&frame)) {
       DCHECK_NE(frame.frame_token, 0u);
       // Drawing implies we submitted a frame to the LayerTreeFrameSink.
-      scheduler_->DidSubmitCompositorFrame(frame.frame_token,
-                                           std::move(*events_metrics),
-                                           frame.has_missing_content);
+      scheduler_->DidSubmitCompositorFrame(
+          frame.frame_token, submit_info->time,
+          std::move(submit_info->events_metrics), frame.has_missing_content);
     }
     result = DRAW_SUCCESS;
   } else {

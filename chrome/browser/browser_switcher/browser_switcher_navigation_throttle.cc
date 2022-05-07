@@ -17,7 +17,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/navigation_interception/intercept_navigation_throttle.h"
-#include "components/navigation_interception/navigation_params.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
@@ -29,9 +28,12 @@ namespace browser_switcher {
 namespace {
 
 // Open 'chrome://browser-switch/?url=...' in the current tab.
-void OpenBrowserSwitchPage(content::WebContents* web_contents,
+void OpenBrowserSwitchPage(base::WeakPtr<content::WebContents> web_contents,
                            const GURL& url,
                            ui::PageTransition transition_type) {
+  if (!web_contents)
+    return;
+
   GURL about_url(chrome::kChromeUIBrowserSwitchURL);
   about_url = net::AppendQueryParameter(about_url, "url", url.spec());
   content::OpenURLParams params(about_url, content::Referrer(),
@@ -41,14 +43,13 @@ void OpenBrowserSwitchPage(content::WebContents* web_contents,
 }
 
 bool MaybeLaunchAlternativeBrowser(
-    content::WebContents* web_contents,
-    const navigation_interception::NavigationParams& params) {
+    content::NavigationHandle* navigation_handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   BrowserSwitcherService* service =
       BrowserSwitcherServiceFactory::GetForBrowserContext(
-          web_contents->GetBrowserContext());
-  const GURL& url = params.url();
+          navigation_handle->GetWebContents()->GetBrowserContext());
+  const GURL& url = navigation_handle->GetURL();
   bool should_switch = service->sitelist()->ShouldSwitch(url);
 
   if (!should_switch)
@@ -57,14 +58,14 @@ bool MaybeLaunchAlternativeBrowser(
   // Redirect top-level navigations only. This excludes iframes and webviews
   // in particular. Since we can only navigate a guest after attaching to the
   // outer WebContents, this check works for both guests and portals.
-  if (web_contents->GetOuterWebContents())
+  if (navigation_handle->GetWebContents()->GetOuterWebContents())
     return false;
 
   // If no-state prefetching, don't launch the alternative browser but abort the
   // navigation.
   prerender::NoStatePrefetchContents* no_state_prefetch_contents =
       prerender::ChromeNoStatePrefetchContentsDelegate::FromWebContents(
-          web_contents);
+          navigation_handle->GetWebContents());
   if (no_state_prefetch_contents) {
     no_state_prefetch_contents->Destroy(prerender::FINAL_STATUS_BROWSER_SWITCH);
     return true;
@@ -72,8 +73,9 @@ bool MaybeLaunchAlternativeBrowser(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(&OpenBrowserSwitchPage, base::Unretained(web_contents),
-                     url, params.transition_type()));
+      base::BindOnce(&OpenBrowserSwitchPage,
+                     navigation_handle->GetWebContents()->GetWeakPtr(), url,
+                     navigation_handle->GetPageTransition()));
   return true;
 }
 

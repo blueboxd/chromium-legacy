@@ -210,10 +210,10 @@ TEST_F(WebApkInstallTaskTest, SuccessfulInstall) {
   EXPECT_EQ(manifest.start_url(), kTestAppUrl);
   EXPECT_EQ(manifest.icons(0).src(), kTestAppIcon);
 
-  ASSERT_EQ(fake_webapk_instance()->handled_packages().size(), 1);
+  ASSERT_EQ(fake_webapk_instance()->handled_packages().size(), 1u);
   ASSERT_EQ(fake_webapk_instance()->handled_packages().count(
                 "org.chromium.webapk.some_package"),
-            1);
+            1u);
 
   ASSERT_THAT(apps::webapk_prefs::GetWebApkAppIds(profile()),
               testing::ElementsAre(app_id));
@@ -223,8 +223,6 @@ TEST_F(WebApkInstallTaskTest, SuccessfulInstall) {
                                apps::WebApkInstallStatus::kSuccess, 1);
   histograms.ExpectBucketCount(apps::kWebApkArcInstallResultHistogram,
                                arc::mojom::WebApkInstallResult::kSuccess, 1);
-  histograms.ExpectBucketCount(apps::kWebApkMinterErrorCodeHistogram,
-                               net::HTTP_OK, 1);
 }
 
 TEST_F(WebApkInstallTaskTest, ShareTarget) {
@@ -273,7 +271,7 @@ TEST_F(WebApkInstallTaskTest, NoIconInManifest) {
   base::HistogramTester histograms;
 
   ASSERT_FALSE(InstallWebApk(app_id));
-  ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0);
+  ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0u);
   histograms.ExpectBucketCount(apps::kWebApkInstallResultHistogram,
                                apps::WebApkInstallStatus::kAppInvalid, 1);
 }
@@ -287,12 +285,10 @@ TEST_F(WebApkInstallTaskTest, FailedServerCall) {
 
   ASSERT_FALSE(InstallWebApk(app_id));
 
-  ASSERT_EQ(fake_webapk_instance()->handled_packages().size(), 0);
-  ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0);
+  ASSERT_EQ(fake_webapk_instance()->handled_packages().size(), 0u);
+  ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0u);
   histograms.ExpectBucketCount(apps::kWebApkInstallResultHistogram,
                                apps::WebApkInstallStatus::kNetworkError, 1);
-  histograms.ExpectBucketCount(apps::kWebApkMinterErrorCodeHistogram,
-                               net::HTTP_BAD_REQUEST, 1);
 }
 
 TEST_F(WebApkInstallTaskTest, FailedArcInstall) {
@@ -307,8 +303,8 @@ TEST_F(WebApkInstallTaskTest, FailedArcInstall) {
   ASSERT_FALSE(InstallWebApk(app_id));
   ASSERT_EQ(fake_webapk_instance()->handled_packages().count(
                 "org.chromium.webapk.some_package"),
-            1);
-  ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0);
+            1u);
+  ASSERT_EQ(apps::webapk_prefs::GetWebApkAppIds(profile()).size(), 0u);
   histograms.ExpectBucketCount(apps::kWebApkInstallResultHistogram,
                                apps::WebApkInstallStatus::kGooglePlayError, 1);
   histograms.ExpectBucketCount(
@@ -409,7 +405,7 @@ TEST_F(WebApkInstallTaskTest, SuccessfulUpdateScope) {
               ::testing::ElementsAre(webapk::WebApk::SCOPE_DIFFERS));
 
   webapk::WebAppManifest manifest = last_webapk_request()->manifest();
-  EXPECT_EQ(last_webapk_request()->manifest().scopes_size(), 1);
+  EXPECT_EQ(last_webapk_request()->manifest().scopes_size(), 1u);
   EXPECT_EQ(last_webapk_request()->manifest().scopes(0),
             "https://www.differentexample.com/");
 

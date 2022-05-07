@@ -16,8 +16,8 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include <memory>
 
+#include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "chrome/browser/ash/android_sms/fake_android_sms_app_manager.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #endif
 
 class PushMessagingNotificationManagerTest
@@ -64,11 +64,11 @@ TEST_F(PushMessagingNotificationManagerTest,
       std::make_unique<ash::android_sms::FakeAndroidSmsAppManager>();
   fake_android_sms_app_manager->SetInstalledAppUrl(app_url);
 
-  auto fake_multidevice_setup_client = std::make_unique<
-      chromeos::multidevice_setup::FakeMultiDeviceSetupClient>();
+  auto fake_multidevice_setup_client =
+      std::make_unique<ash::multidevice_setup::FakeMultiDeviceSetupClient>();
   fake_multidevice_setup_client->SetFeatureState(
-      chromeos::multidevice_setup::mojom::Feature::kMessages,
-      chromeos::multidevice_setup::mojom::FeatureState::kEnabledByUser);
+      ash::multidevice_setup::mojom::Feature::kMessages,
+      ash::multidevice_setup::mojom::FeatureState::kEnabledByUser);
 
   PushMessagingNotificationManager manager(profile());
   manager.SetTestMultiDeviceSetupClient(fake_multidevice_setup_client.get());

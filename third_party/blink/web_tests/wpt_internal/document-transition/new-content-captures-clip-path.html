@@ -23,25 +23,24 @@
 
 div.dst { background: lightgreen; }
 /* We're verifying what we capture, so just display the new contents for 5 minutes.  */
-html::transition-container(*) { animation-duration: 300s; }
-html::transition-new-content(*) { animation-duration: 0s; opacity: 1; }
-html::transition-old-content(*) { animation-duration: 0s; opacity: 0; }
+html::page-transition-container(*) { animation-duration: 300s; }
+html::page-transition-image-wrapper(*) { isolation: isolate; }
+html::page-transition-incoming-image(*) { animation: unset; opacity: 1; }
+html::page-transition-outgoing-image(*) { animation: unset; opacity: 0; }
 /* hide the root so we show transition background to ensure we're in a transition */
-html::transition-container(root) { animation-duration: 0s; opacity: 0; }
-html::transition { background: lightpink; }
+html::page-transition-container(root) { animation: unset; opacity: 0; }
+html::page-transition { background: lightpink; }
 </style>
 <div id=e1 class=box></div>
 <script>
 async function runTest() {
-  await document.documentTransition.prepare({
-    rootTransition: "none",
-    sharedElements: [e1]
+  let t = document.createDocumentTransition();
+  t.setElement(e1, "e1");
+  t.start(() => {
+    t.setElement(e1, "e1");
+    e1.classList.add("dst");
+    requestAnimationFrame(() => requestAnimationFrame(takeScreenshot));
   });
-  e1.classList.add("dst");
-  document.documentTransition.start({
-    sharedElements: [e1]
-  });
-  requestAnimationFrame(() => requestAnimationFrame(takeScreenshot));
 }
 onload = () => requestAnimationFrame(() => requestAnimationFrame(runTest));
 </script>

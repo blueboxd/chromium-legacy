@@ -104,6 +104,8 @@ public class Snackbar {
     public static final int UMA_PRICE_TRACKING_FAILURE = 48;
     public static final int UMA_PRIVACY_SANDBOX_ADD_INTEREST = 49;
     public static final int UMA_PRIVACY_SANDBOX_REMOVE_INTEREST = 50;
+    public static final int UMA_BAD_FLAGS = 51;
+    public static final int UMA_DOWNLOAD_INTERSTITIAL_DOWNLOAD_DELETED = 52;
 
     private @Nullable SnackbarController mController;
     private CharSequence mText;

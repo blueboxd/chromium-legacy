@@ -15,7 +15,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #import "base/mac/foundation_util.h"
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
@@ -68,6 +67,7 @@
 #include "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/sessions/session_features.h"
 #include "ios/chrome/browser/system_flags.h"
+#import "ios/chrome/browser/ui/autofill/features.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/default_promo/default_browser_utils.h"
 #import "ios/chrome/browser/ui/download/features.h"
@@ -149,19 +149,19 @@ const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches12[] = {
 const FeatureEntry::FeatureVariation
     kOmniboxUIMaxAutocompleteMatchesVariations[] = {
         {"3 matches", kOmniboxUIMaxAutocompleteMatches3,
-         base::size(kOmniboxUIMaxAutocompleteMatches3), nullptr},
+         std::size(kOmniboxUIMaxAutocompleteMatches3), nullptr},
         {"4 matches", kOmniboxUIMaxAutocompleteMatches4,
-         base::size(kOmniboxUIMaxAutocompleteMatches4), nullptr},
+         std::size(kOmniboxUIMaxAutocompleteMatches4), nullptr},
         {"5 matches", kOmniboxUIMaxAutocompleteMatches5,
-         base::size(kOmniboxUIMaxAutocompleteMatches5), nullptr},
+         std::size(kOmniboxUIMaxAutocompleteMatches5), nullptr},
         {"6 matches", kOmniboxUIMaxAutocompleteMatches6,
-         base::size(kOmniboxUIMaxAutocompleteMatches6), nullptr},
+         std::size(kOmniboxUIMaxAutocompleteMatches6), nullptr},
         {"8 matches", kOmniboxUIMaxAutocompleteMatches8,
-         base::size(kOmniboxUIMaxAutocompleteMatches8), nullptr},
+         std::size(kOmniboxUIMaxAutocompleteMatches8), nullptr},
         {"10 matches", kOmniboxUIMaxAutocompleteMatches10,
-         base::size(kOmniboxUIMaxAutocompleteMatches10), nullptr},
+         std::size(kOmniboxUIMaxAutocompleteMatches10), nullptr},
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
-         base::size(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
+         std::size(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
 
 const FeatureEntry::FeatureParam
     kAutofillUseMobileLabelDisambiguationShowAll[] = {
@@ -177,9 +177,9 @@ const FeatureEntry::FeatureParam
 const FeatureEntry::FeatureVariation
     kAutofillUseMobileLabelDisambiguationVariations[] = {
         {"(show all)", kAutofillUseMobileLabelDisambiguationShowAll,
-         base::size(kAutofillUseMobileLabelDisambiguationShowAll), nullptr},
+         std::size(kAutofillUseMobileLabelDisambiguationShowAll), nullptr},
         {"(show one)", kAutofillUseMobileLabelDisambiguationShowOne,
-         base::size(kAutofillUseMobileLabelDisambiguationShowOne), nullptr}};
+         std::size(kAutofillUseMobileLabelDisambiguationShowOne), nullptr}};
 
 const FeatureEntry::FeatureParam
     kDefaultBrowserFullscreenPromoExperimentRemindMeLater[] = {
@@ -188,14 +188,14 @@ const FeatureEntry::FeatureVariation
     kDefaultBrowserFullscreenPromoExperimentVariations[] = {
         {"Remind me later",
          kDefaultBrowserFullscreenPromoExperimentRemindMeLater,
-         base::size(kDefaultBrowserFullscreenPromoExperimentRemindMeLater),
+         std::size(kDefaultBrowserFullscreenPromoExperimentRemindMeLater),
          nullptr}};
 
 const FeatureEntry::FeatureParam kDiscoverFeedInNtpEnableNativeUI[] = {
     {kDiscoverFeedIsNativeUIEnabled, "true"}};
 const FeatureEntry::FeatureVariation kDiscoverFeedInNtpVariations[] = {
     {"Native UI", kDiscoverFeedInNtpEnableNativeUI,
-     base::size(kDiscoverFeedInNtpEnableNativeUI), nullptr}};
+     std::size(kDiscoverFeedInNtpEnableNativeUI), nullptr}};
 
 const FeatureEntry::FeatureParam kDiscoverFeedSRSReconstructedTemplates[] = {
     {kDiscoverFeedSRSReconstructedTemplatesEnabled, "true"}};
@@ -204,9 +204,9 @@ const FeatureEntry::FeatureParam kDiscoverFeedSRSPreloadTemplates[] = {
 const FeatureEntry::FeatureVariation
     kEnableDiscoverFeedStaticResourceServingVariations[] = {
         {"Reconstruct Templates", kDiscoverFeedSRSReconstructedTemplates,
-         base::size(kDiscoverFeedSRSReconstructedTemplates), nullptr},
+         std::size(kDiscoverFeedSRSReconstructedTemplates), nullptr},
         {"Preload Templates", kDiscoverFeedSRSPreloadTemplates,
-         base::size(kDiscoverFeedSRSPreloadTemplates), nullptr},
+         std::size(kDiscoverFeedSRSPreloadTemplates), nullptr},
 };
 
 const FeatureEntry::FeatureParam kStartSurfaceTenSecondsShrinkLogo[] = {
@@ -251,30 +251,29 @@ const FeatureEntry::FeatureParam
 const FeatureEntry::FeatureVariation kStartSurfaceVariations[] = {
     {"10s:Show Return to Recent Tab tile",
      kStartSurfaceTenSecondsReturnToRecentTab,
-     base::size(kStartSurfaceTenSecondsReturnToRecentTab), nullptr},
+     std::size(kStartSurfaceTenSecondsReturnToRecentTab), nullptr},
     {"10s:Shrink Logo", kStartSurfaceTenSecondsShrinkLogo,
-     base::size(kStartSurfaceTenSecondsShrinkLogo), nullptr},
+     std::size(kStartSurfaceTenSecondsShrinkLogo), nullptr},
     {"10s:Hide Shortcuts", kStartSurfaceTenSecondsHideShortcuts,
-     base::size(kStartSurfaceTenSecondsHideShortcuts), nullptr},
+     std::size(kStartSurfaceTenSecondsHideShortcuts), nullptr},
     {"10s:Shrink Logo and show Return to Recent Tab tile",
      kStartSurfaceTenSecondsShrinkLogoReturnToRecentTab,
-     base::size(kStartSurfaceTenSecondsShrinkLogoReturnToRecentTab), nullptr},
+     std::size(kStartSurfaceTenSecondsShrinkLogoReturnToRecentTab), nullptr},
     {"10s:Hide Shortcuts and show Return to Recent Tab tile",
      kStartSurfaceTenSecondsHideShortcutsReturnToRecentTab,
-     base::size(kStartSurfaceTenSecondsHideShortcutsReturnToRecentTab),
-     nullptr},
+     std::size(kStartSurfaceTenSecondsHideShortcutsReturnToRecentTab), nullptr},
     {"1h:Show Return to Recent Tab tile", kStartSurfaceOneHourReturnToRecentTab,
-     base::size(kStartSurfaceOneHourReturnToRecentTab), nullptr},
+     std::size(kStartSurfaceOneHourReturnToRecentTab), nullptr},
     {"1h:Shrink Logo", kStartSurfaceOneHourShrinkLogo,
-     base::size(kStartSurfaceOneHourShrinkLogo), nullptr},
+     std::size(kStartSurfaceOneHourShrinkLogo), nullptr},
     {"1h:Hide Shortcuts", kStartSurfaceOneHourHideShortcuts,
-     base::size(kStartSurfaceOneHourHideShortcuts), nullptr},
+     std::size(kStartSurfaceOneHourHideShortcuts), nullptr},
     {"1h:Shrink Logo and show Return to Recent Tab tile",
      kStartSurfaceOneHourShrinkLogoReturnToRecentTab,
-     base::size(kStartSurfaceOneHourShrinkLogoReturnToRecentTab), nullptr},
+     std::size(kStartSurfaceOneHourShrinkLogoReturnToRecentTab), nullptr},
     {"1h:Hide Shortcuts and show Return to Recent Tab tile",
      kStartSurfaceOneHourHideShortcutsReturnToRecentTab,
-     base::size(kStartSurfaceOneHourHideShortcutsReturnToRecentTab), nullptr},
+     std::size(kStartSurfaceOneHourHideShortcutsReturnToRecentTab), nullptr},
 };
 
 const FeatureEntry::FeatureParam kFREDefaultPromoTestingDefaultDelay[] = {
@@ -286,12 +285,12 @@ const FeatureEntry::FeatureParam kFREDefaultPromoTestingShortDelay[] = {
 const FeatureEntry::FeatureVariation kFREDefaultPromoTestingVariations[] = {
     {"Wait 14 days after FRE default browser promo",
      kFREDefaultPromoTestingDefaultDelay,
-     base::size(kFREDefaultPromoTestingDefaultDelay), nullptr},
+     std::size(kFREDefaultPromoTestingDefaultDelay), nullptr},
     {"FRE default browser promo only", kFREDefaultPromoTestingOnly,
-     base::size(kFREDefaultPromoTestingOnly), nullptr},
+     std::size(kFREDefaultPromoTestingOnly), nullptr},
     {"Wait 3 days after FRE default browser promo",
      kFREDefaultPromoTestingShortDelay,
-     base::size(kFREDefaultPromoTestingShortDelay), nullptr},
+     std::size(kFREDefaultPromoTestingShortDelay), nullptr},
 };
 
 const FeatureEntry::FeatureVariation kEnableFREUIModuleIOSVariations[] = {
@@ -315,6 +314,24 @@ const FeatureEntry::FeatureVariation kEnableFREUIModuleIOSVariations[] = {
          {kFREUIIdentitySwitcherPositionParam, "bottom"},
          {kFREUIStringsSetParam, "new"}},
      2, nullptr}};
+
+const FeatureEntry::FeatureParam kNewMICEFREWithUMADialog[] = {
+    {kNewMobileIdentityConsistencyFREParam,
+     kNewMobileIdentityConsistencyFREParamUMADialog}};
+const FeatureEntry::FeatureParam kNewMICEFREWithThreeSteps[] = {
+    {kNewMobileIdentityConsistencyFREParam,
+     kNewMobileIdentityConsistencyFREParamThreeSteps}};
+const FeatureEntry::FeatureParam kNewMICEFREWithTwoSteps[] = {
+    {kNewMobileIdentityConsistencyFREParam,
+     kNewMobileIdentityConsistencyFREParamTwoSteps}};
+const FeatureEntry::FeatureVariation
+    kNewMobileIdentityConsistencyFREVariations[] = {
+        {"New FRE with UMA dialog", kNewMICEFREWithUMADialog,
+         std::size(kNewMICEFREWithUMADialog), nullptr},
+        {"new FRE with 3 steps", kNewMICEFREWithThreeSteps,
+         std::size(kNewMICEFREWithThreeSteps), nullptr},
+        {"new FRE with 2 steps", kNewMICEFREWithTwoSteps,
+         std::size(kNewMICEFREWithTwoSteps), nullptr}};
 
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
@@ -459,6 +476,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFREUIModuleIOS,
                                     kEnableFREUIModuleIOSVariations,
                                     "EnableFREUIModuleIOS")},
+    {"new-mobile-identity-consistency-fre",
+     flag_descriptions::kNewMobileIdentityConsistencyFREName,
+     flag_descriptions::kNewMobileIdentityConsistencyFREDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(signin::kNewMobileIdentityConsistencyFRE,
+                                    kNewMobileIdentityConsistencyFREVariations,
+                                    "NewMobileIdentityConsistencyFRE")},
     {"enable-long-message-duration",
      flag_descriptions::kEnableLongMessageDurationName,
      flag_descriptions::kEnableLongMessageDurationDescription, flags_ui::kOsIos,
@@ -523,6 +547,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxNewImplementationName,
      flag_descriptions::kOmniboxNewImplementationDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kIOSNewOmniboxImplementation)},
+    {"omnibox-new-popup-ui", flag_descriptions::kIOSOmniboxUpdatedPopupUIName,
+     flag_descriptions::kIOSOmniboxUpdatedPopupUIDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kIOSOmniboxUpdatedPopupUI)},
     {"start-surface", flag_descriptions::kStartSurfaceName,
      flag_descriptions::kStartSurfaceDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kStartSurface,
@@ -651,6 +678,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseLensToSearchForImageName,
      flag_descriptions::kUseLensToSearchForImageDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUseLensToSearchForImage)},
+    {"use-load-simulated-request-for-error-page-navigation",
+     flag_descriptions::kUseLoadSimulatedRequestForErrorPageNavigationName,
+     flag_descriptions::
+         kUseLoadSimulatedRequestForErrorPageNavigationDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         web::features::kUseLoadSimulatedRequestForErrorPageNavigation)},
     {"download-vcard", flag_descriptions::kDownloadVcardName,
      flag_descriptions::kDownloadVcardDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kDownloadVcard)},
@@ -752,11 +786,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableUnicornAccountSupportDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(signin::kEnableUnicornAccountSupport)},
-    {"fre-mobile-identity-consistency",
-     flag_descriptions::kFREMobileIdentityConsistencyName,
-     flag_descriptions::kFREMobileIdentityConsistencyDescription,
-     flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(signin::kFREMobileIdentityConsistency)},
     {"single-cell-content-suggestions",
      flag_descriptions::kSingleCellContentSuggestionsName,
      flag_descriptions::kSingleCellContentSuggestionsDescription,
@@ -775,6 +804,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMuteCompromisedPasswordsName,
      flag_descriptions::kMuteCompromisedPasswordsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kMuteCompromisedPasswords)},
+    {"enable-favicon-passwords",
+     flag_descriptions::kEnableFaviconForPasswordsName,
+     flag_descriptions::kEnableFaviconForPasswordsDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(
+         password_manager::features::kEnableFaviconForPasswords)},
     {"autofill-enable-sending-bcn-in-get-upload-details",
      flag_descriptions::kAutofillEnableSendingBcnInGetUploadDetailsName,
      flag_descriptions::kAutofillEnableSendingBcnInGetUploadDetailsDescription,
@@ -805,6 +839,15 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSendTabToSelfSigninPromoName,
      flag_descriptions::kSendTabToSelfSigninPromoDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(send_tab_to_self::kSendTabToSelfSigninPromo)},
+    {"content-suggestions-uiviewcontroller-migration",
+     flag_descriptions::kContentSuggestionsUIViewControllerMigrationName,
+     flag_descriptions::kContentSuggestionsUIViewControllerMigrationDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kContentSuggestionsUIViewControllerMigration)},
+    {"autofill-password-rich-iph",
+     flag_descriptions::kAutofillPasswordRichIPHName,
+     flag_descriptions::kAutofillPasswordRichIPHDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kAutofillPasswordRichIPH)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -1156,7 +1199,7 @@ namespace testing {
 
 base::span<const flags_ui::FeatureEntry> GetFeatureEntries() {
   return base::span<const flags_ui::FeatureEntry>(kFeatureEntries,
-                                                  base::size(kFeatureEntries));
+                                                  std::size(kFeatureEntries));
 }
 
 }  // namespace testing

@@ -387,13 +387,11 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     [self broadcastIncognitoContentVisibility];
     [self configureButtonsForActiveAndCurrentPage];
   }
-  [self arriveAtCurrentPage];
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
   self.currentPage = GetPageFromScrollView(scrollView);
   self.scrollViewAnimatingContentOffset = NO;
-  [self arriveAtCurrentPage];
   [self broadcastIncognitoContentVisibility];
   [self configureButtonsForActiveAndCurrentPage];
 }
@@ -739,10 +737,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   self.currentState = currentViewRevealState;
   self.scrollView.scrollEnabled = NO;
   [self updateNotSelectedTabCellOpacityForState:currentViewRevealState];
-  if (nextViewRevealState != ViewRevealState::Fullscreen) {
-    // Reset tag grid mode, unless the grid is fullscreen.
-    self.tabGridMode = TabGridModeNormal;
-  }
+  // Reset tab grid mode.
+  self.tabGridMode = TabGridModeNormal;
   switch (currentViewRevealState) {
     case ViewRevealState::Hidden: {
       // If the tab grid is just showing up, make sure that the active page is
@@ -774,7 +770,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     case ViewRevealState::Peeked:
       break;
     case ViewRevealState::Revealed:
-    case ViewRevealState::Fullscreen:
       self.plusSignButton.alpha = 0;
       break;
   }
@@ -818,8 +813,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                                 .fractionVisibleOfLastItem];
       break;
     }
-    case ViewRevealState::Revealed:
-    case ViewRevealState::Fullscreen: {
+    case ViewRevealState::Revealed: {
       self.foregroundView.alpha = 0;
       self.topToolbar.transform = CGAffineTransformIdentity;
       regularViewController.gridView.transform =
@@ -848,9 +842,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       // No-op.
       break;
     case ViewRevealState::Revealed:
-    case ViewRevealState::Fullscreen:
       self.scrollView.scrollEnabled = YES;
       [self setInsetForRemoteTabs];
+      [self.delegate dismissBVC];
       break;
   }
 }
@@ -869,7 +863,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
           kNotSelectedTabsOpacity;
       break;
     case ViewRevealState::Revealed:
-    case ViewRevealState::Fullscreen:
       regularViewController.notSelectedTabCellOpacity = 1.0f;
       incognitoViewController.notSelectedTabCellOpacity = 1.0f;
       break;
@@ -1042,6 +1035,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   CGFloat pageWidth = self.scrollView.frame.size.width;
   NSUInteger pageIndex = GetPageIndexFromPage(targetPage);
   CGPoint targetOffset = CGPointMake(pageIndex * pageWidth, 0);
+  BOOL changed = self.currentPage != targetPage;
+  BOOL scrolled =
+      !CGPointEqualToPoint(self.scrollView.contentOffset, targetOffset);
 
   // If the view is visible and |animated| is YES, animate the change.
   // Otherwise don't.
@@ -1051,26 +1047,23 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     // Important updates (e.g., button configurations, incognito visibility) are
     // made at the end of scrolling animations after |self.currentPage| is set.
     // Since this codepath has no animations, updates must be called manually.
-    [self arriveAtCurrentPage];
     [self broadcastIncognitoContentVisibility];
     [self configureButtonsForActiveAndCurrentPage];
   } else {
     // Only set |scrollViewAnimatingContentOffset| to YES if there's an actual
     // change in the contentOffset, as |-scrollViewDidEndScrollingAnimation:| is
     // never called if the animation does not occur.
-    if (!CGPointEqualToPoint(self.scrollView.contentOffset, targetOffset)) {
+    if (scrolled) {
       self.scrollViewAnimatingContentOffset = YES;
       [self.scrollView setContentOffset:targetOffset animated:YES];
       // |self.currentPage| is set in scrollViewDidEndScrollingAnimation:
     } else {
-      BOOL changed = self.currentPage != targetPage;
       self.currentPage = targetPage;
       if (changed) {
         // When there is no scrolling and the page changed, it can be due to
         // the user dragging the slider and dropping it right on the spot.
         // Something easy to reproduce with the two edges (incognito / recent
         // tabs), but also possible with middle position (normal).
-        [self arriveAtCurrentPage];
         [self broadcastIncognitoContentVisibility];
         [self configureButtonsForActiveAndCurrentPage];
       }
@@ -1081,22 +1074,9 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // does not notify observers when entries are removed. When close all tabs
   // removes entries, the remote tabs page in the tab grid are not updated. This
   // ensures that the table is updated whenever scrolling to it.
-  if (targetPage == TabGridPageRemoteTabs) {
+  if (targetPage == TabGridPageRemoteTabs && (changed || scrolled)) {
     [self.remoteTabsViewController loadModel];
     [self.remoteTabsViewController.tableView reloadData];
-  }
-}
-
-// Updates the state when the scroll view stops scrolling at a given page,
-// whether the scroll is from dragging or programmatic.
-- (void)arriveAtCurrentPage {
-  if (!self.viewVisible) {
-    return;
-  }
-  if (self.thumbStripEnabled) {
-    [self.tabPresentationDelegate showActiveTabInPage:self.currentPage
-                                         focusOmnibox:NO
-                                         closeTabGrid:NO];
   }
 }
 
@@ -1330,7 +1310,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 // Adds the top toolbar and sets constraints.
 - (void)setupTopToolbar {
-  TabGridTopToolbar* topToolbar = [[TabGridTopToolbar alloc] init];
+  // In iOS 13+, constraints break if the UIToolbar is initialized with a null
+  // or zero rect frame. An arbitrary non-zero frame fixes this issue.
+  TabGridTopToolbar* topToolbar =
+      [[TabGridTopToolbar alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
   self.topToolbar = topToolbar;
   topToolbar.translatesAutoresizingMaskIntoConstraints = NO;
   [self.view addSubview:topToolbar];
@@ -1587,14 +1570,17 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (self.thumbStripEnabled) {
     GridViewController* gridViewController =
         [self gridViewControllerForPage:self.currentPage];
-    DCHECK(gridViewController);
-    if (gridViewController.fractionVisibleOfLastItem >= 0.999) {
-      // Don't show the bottom new tab button because the plus sign cell is
-      // visible.
-      return;
+    // gridViewController can be null if page configuration disables the
+    // currentPage mode.
+    if (gridViewController) {
+      if (gridViewController.fractionVisibleOfLastItem >= 0.999) {
+        // Don't show the bottom new tab button because the plus sign cell is
+        // visible.
+        return;
+      }
+      self.plusSignButton.alpha =
+          1 - gridViewController.fractionVisibleOfLastItem;
     }
-    self.plusSignButton.alpha =
-        1 - gridViewController.fractionVisibleOfLastItem;
   }
   [self.bottomToolbar show];
 }
@@ -1755,7 +1741,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
           TabSwitcherPageChangeInteraction::kControlDrag);
       break;
   }
-  self.pageChangeInteraction = PageChangeInteractionNone;
+  // Don't reset |self.pageChangeInteraction| here, because a drag may still be
+  // in process.
 }
 
 // Tells the appropriate delegate to create a new item, and then tells the
@@ -2104,7 +2091,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     // Exit selection mode if there are no more tabs.
     if (count == 0) {
       self.tabGridMode = TabGridModeNormal;
-      [self.delegate showFullscreen:NO];
     }
     [self updateSelectionModeToolbars];
   }
@@ -2156,6 +2142,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     (GridViewController*)gridViewController {
   // Actions on both bars should be disabled during dragging.
   [self.topToolbar setDoneButtonEnabled:NO];
+  self.topToolbar.pageControl.userInteractionEnabled = NO;
   [self.bottomToolbar setDoneButtonEnabled:NO];
   [self.topToolbar setNewTabButtonEnabled:NO];
   [self.topToolbar setSelectAllButtonEnabled:NO];
@@ -2168,6 +2155,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)gridViewControllerDragSessionDidEnd:
     (GridViewController*)gridViewController {
+  // -configureDoneButtonBasedOnPage will enable the page control.
   [self configureDoneButtonBasedOnPage:self.currentPage];
   [self configureCloseAllButtonForCurrentPageAndUndoAvailability];
   [self configureNewTabButtonBasedOnContentPermissions];
@@ -2181,7 +2169,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // mode.
   if (self.tabGridMode == TabGridModeSelection) {
     self.tabGridMode = TabGridModeNormal;
-    [self.delegate showFullscreen:NO];
     // Records action when user exit the selection mode.
     base::RecordAction(base::UserMetricsAction("MobileTabGridSelectionDone"));
     return;
@@ -2207,7 +2194,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 
 - (void)selectTabsButtonTapped:(id)sender {
   self.tabGridMode = TabGridModeSelection;
-  [self.delegate showFullscreen:YES];
   base::RecordAction(base::UserMetricsAction("MobileTabGridSelectTabs"));
 }
 
@@ -2403,7 +2389,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     didUpdateAuthenticationRequirement:(BOOL)isRequired {
   if (isRequired) {
     self.tabGridMode = TabGridModeNormal;
-    [self.delegate showFullscreen:NO];
   }
 }
 

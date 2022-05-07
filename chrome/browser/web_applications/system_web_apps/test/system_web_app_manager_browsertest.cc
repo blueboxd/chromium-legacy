@@ -46,6 +46,7 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/permissions/permission_util.h"
 #include "components/services/app_service/public/cpp/app_registry_cache.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/cpp/intent_util.h"
 #include "components/services/app_service/public/mojom/types.mojom-shared.h"
@@ -129,10 +130,10 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerBrowserTest, Install) {
   GetAppServiceProxy(browser()->profile())
       ->AppRegistryCache()
       .ForOneApp(app_id, [](const apps::AppUpdate& update) {
-        EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInLauncher());
-        EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.ShowInSearch());
-        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInManagement());
-        EXPECT_EQ(apps::mojom::Readiness::kReady, update.Readiness());
+        EXPECT_TRUE(update.ShowInLauncher().value_or(false));
+        EXPECT_TRUE(update.ShowInSearch().value_or(false));
+        EXPECT_FALSE(update.ShowInManagement().value_or(true));
+        EXPECT_EQ(apps::Readiness::kReady, update.Readiness());
       });
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
@@ -260,21 +261,20 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
             include_launch_directory);
   }
 
-  content::WebContents* LaunchApp(
-      const std::vector<base::FilePath> launch_files,
-      bool wait_for_load = true) {
+  content::WebContents* LaunchApp(std::vector<base::FilePath> launch_files,
+                                  bool wait_for_load = true) {
     apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
     params.launch_source = apps::mojom::LaunchSource::kFromChromeInternal;
-    params.launch_files = launch_files;
+    params.launch_files = std::move(launch_files);
 
     return SystemWebAppBrowserTestBase::LaunchApp(std::move(params));
   }
 
   content::WebContents* LaunchAppWithoutWaiting(
-      const std::vector<base::FilePath> launch_files) {
+      std::vector<base::FilePath> launch_files) {
     apps::AppLaunchParams params = LaunchParamsForApp(GetMockAppType());
     params.launch_source = apps::mojom::LaunchSource::kFromChromeInternal;
-    params.launch_files = launch_files;
+    params.launch_files = std::move(launch_files);
 
     return SystemWebAppBrowserTestBase::LaunchAppWithoutWaiting(
         std::move(params));
@@ -313,7 +313,7 @@ class SystemWebAppManagerFileHandlingBrowserTestBase
   }
 
   std::string GetJsStatementValueAsString(content::WebContents* web_contents,
-                                          std::string js_statement) {
+                                          const std::string& js_statement) {
     std::string str;
     EXPECT_TRUE(content::ExecuteScriptAndExtractString(
         web_contents, "domAutomationController.send( " + js_statement + ");",
@@ -902,7 +902,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerNotShownInLauncherTest,
   GetAppServiceProxy(browser()->profile())
       ->AppRegistryCache()
       .ForOneApp(app_id, [](const apps::AppUpdate& update) {
-        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInLauncher());
+        EXPECT_FALSE(update.ShowInLauncher().value_or(true));
       });
   // The |AppList| should have all apps visible in the launcher, apps get
   // removed from the |AppList| when they are hidden.
@@ -938,7 +938,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerNotShownInSearchTest,
   GetAppServiceProxy(browser()->profile())
       ->AppRegistryCache()
       .ForOneApp(app_id, [](const apps::AppUpdate& update) {
-        EXPECT_EQ(apps::mojom::OptionalBool::kFalse, update.ShowInSearch());
+        EXPECT_FALSE(update.ShowInSearch().value_or(true));
       });
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
@@ -965,7 +965,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerHandlesFileOpenIntentsTest,
   GetAppServiceProxy(browser()->profile())
       ->AppRegistryCache()
       .ForOneApp(app_id, [](const apps::AppUpdate& update) {
-        EXPECT_EQ(apps::mojom::OptionalBool::kTrue, update.HandlesIntents());
+        EXPECT_TRUE(update.HandlesIntents().value_or(false));
       });
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 }
@@ -1102,8 +1102,8 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerUninstallBrowserTest, Uninstall) {
   bool swa_found = false;
   app_service_proxy->AppRegistryCache().ForEachApp(
       [&](const apps::AppUpdate& app) {
-        if (app.AppType() == apps::mojom::AppType::kSystemWeb ||
-            app.AppType() == apps::mojom::AppType::kWeb) {
+        if (app.AppType() == apps::AppType::kSystemWeb ||
+            app.AppType() == apps::AppType::kWeb) {
           swa_found = true;
         }
       });
@@ -1244,17 +1244,6 @@ class SystemWebAppManagerOriginTrialsBrowserTest
   ~SystemWebAppManagerOriginTrialsBrowserTest() override = default;
 
  protected:
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. A caller in WebAppTabHelper was converted automatically to the
-  // primary main frame to preserve its semantics. This mock was also updated
-  // due to this rewrite. Follow up to confirm correctness.
-  class MockNavigationHandle : public content::MockNavigationHandle {
-   public:
-    explicit MockNavigationHandle(const GURL& url)
-        : content::MockNavigationHandle(url, nullptr) {}
-    bool IsInMainFrame() const override { return IsInPrimaryMainFrame(); }
-  };
-
   std::unique_ptr<content::WebContents> CreateTestWebContents() {
     content::WebContents::CreateParams create_params(browser()->profile());
     return content::WebContents::Create(create_params);
@@ -1281,7 +1270,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
 
   // Simulate when first navigating into app's launch url.
   {
-    MockNavigationHandle mock_nav_handle(main_url_);
+    content::MockNavigationHandle mock_nav_handle(main_url_, nullptr);
     mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(main_url_trials_));
@@ -1291,7 +1280,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
 
   // Simulate loading app's embedded child-frame that has origin trials.
   {
-    MockNavigationHandle mock_nav_handle(trial_url_);
+    content::MockNavigationHandle mock_nav_handle(trial_url_, nullptr);
     mock_nav_handle.set_is_in_primary_main_frame(false);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(trial_url_trials_));
@@ -1300,7 +1289,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
 
   // Simulate loading app's embedded child-frame that has no origin trial.
   {
-    MockNavigationHandle mock_nav_handle(notrial_url_);
+    content::MockNavigationHandle mock_nav_handle(notrial_url_, nullptr);
     mock_nav_handle.set_is_in_primary_main_frame(false);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials).Times(0);
@@ -1317,7 +1306,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
 
   // Simulate when first navigating into app's launch url.
   {
-    MockNavigationHandle mock_nav_handle(main_url_);
+    content::MockNavigationHandle mock_nav_handle(main_url_, nullptr);
     mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(main_url_trials_));
@@ -1327,7 +1316,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
 
   // Simulate same-document navigation.
   {
-    MockNavigationHandle mock_nav_handle(main_url_);
+    content::MockNavigationHandle mock_nav_handle(main_url_, nullptr);
     mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(true);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials).Times(0);
@@ -1350,7 +1339,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
 
   // Simulate when first navigating into app's launch url.
   {
-    MockNavigationHandle mock_nav_handle(main_url_);
+    content::MockNavigationHandle mock_nav_handle(main_url_, nullptr);
     mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(main_url_trials_));
@@ -1360,7 +1349,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
 
   // Simulate navigating to a different site without origin trials.
   {
-    MockNavigationHandle mock_nav_handle(notrial_url_);
+    content::MockNavigationHandle mock_nav_handle(notrial_url_, nullptr);
     mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials).Times(0);
@@ -1370,7 +1359,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
 
   // Simulatenavigating back to a SWA with origin trials.
   {
-    MockNavigationHandle mock_nav_handle(main_url_);
+    content::MockNavigationHandle mock_nav_handle(main_url_, nullptr);
     mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials(main_url_trials_));
@@ -1382,7 +1371,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerOriginTrialsBrowserTest,
   // origin trials when embedded by SWA. However, when this url is loaded in the
   // main frame, it should not get origin trials.
   {
-    MockNavigationHandle mock_nav_handle(trial_url_);
+    content::MockNavigationHandle mock_nav_handle(trial_url_, nullptr);
     mock_nav_handle.set_is_in_primary_main_frame(true);
     mock_nav_handle.set_is_same_document(false);
     EXPECT_CALL(mock_nav_handle, ForceEnableOriginTrials).Times(0);
@@ -1400,8 +1389,8 @@ class SystemWebAppManagerAppSuspensionBrowserTest
   SystemWebAppManagerAppSuspensionBrowserTest()
       : SystemWebAppManagerBrowserTest(false) {}
 
-  apps::mojom::Readiness GetAppReadiness(const AppId& app_id) {
-    apps::mojom::Readiness readiness;
+  apps::Readiness GetAppReadiness(const AppId& app_id) {
+    apps::Readiness readiness;
     bool app_found =
         GetAppServiceProxy(browser()->profile())
             ->AppRegistryCache()
@@ -1412,8 +1401,8 @@ class SystemWebAppManagerAppSuspensionBrowserTest
     return readiness;
   }
 
-  apps::mojom::IconKeyPtr GetAppIconKey(const AppId& app_id) {
-    apps::mojom::IconKeyPtr icon_key;
+  absl::optional<apps::IconKey> GetAppIconKey(const AppId& app_id) {
+    absl::optional<apps::IconKey> icon_key;
     bool app_found =
         GetAppServiceProxy(browser()->profile())
             ->AppRegistryCache()
@@ -1442,8 +1431,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
       GetManager().GetAppIdForSystemApp(SystemAppType::SETTINGS);
   DCHECK(settings_id.has_value());
 
-  EXPECT_EQ(apps::mojom::Readiness::kDisabledByPolicy,
-            GetAppReadiness(*settings_id));
+  EXPECT_EQ(apps::Readiness::kDisabledByPolicy, GetAppReadiness(*settings_id));
   EXPECT_TRUE(apps::IconEffects::kBlocked &
               GetAppIconKey(*settings_id)->icon_effects);
 
@@ -1454,7 +1442,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
     list->ClearList();
   }
   GetAppServiceProxy(browser()->profile())->FlushMojoCallsForTesting();
-  EXPECT_EQ(apps::mojom::Readiness::kReady, GetAppReadiness(*settings_id));
+  EXPECT_EQ(apps::Readiness::kReady, GetAppReadiness(*settings_id));
   EXPECT_FALSE(apps::IconEffects::kBlocked &
                GetAppIconKey(*settings_id)->icon_effects);
 }
@@ -1467,7 +1455,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
   absl::optional<AppId> settings_id =
       GetManager().GetAppIdForSystemApp(SystemAppType::SETTINGS);
   DCHECK(settings_id.has_value());
-  EXPECT_EQ(apps::mojom::Readiness::kReady, GetAppReadiness(*settings_id));
+  EXPECT_EQ(apps::Readiness::kReady, GetAppReadiness(*settings_id));
 
   {
     ListPrefUpdate update(TestingBrowserProcess::GetGlobal()->local_state(),
@@ -1478,8 +1466,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
 
   auto* proxy = GetAppServiceProxy(browser()->profile());
   proxy->FlushMojoCallsForTesting();
-  EXPECT_EQ(apps::mojom::Readiness::kDisabledByPolicy,
-            GetAppReadiness(*settings_id));
+  EXPECT_EQ(apps::Readiness::kDisabledByPolicy, GetAppReadiness(*settings_id));
   EXPECT_TRUE(apps::IconEffects::kBlocked &
               GetAppIconKey(*settings_id)->icon_effects);
 
@@ -1490,7 +1477,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerAppSuspensionBrowserTest,
     list->ClearList();
   }
   proxy->FlushMojoCallsForTesting();
-  EXPECT_EQ(apps::mojom::Readiness::kReady, GetAppReadiness(*settings_id));
+  EXPECT_EQ(apps::Readiness::kReady, GetAppReadiness(*settings_id));
   EXPECT_FALSE(apps::IconEffects::kBlocked &
                GetAppIconKey(*settings_id)->icon_effects);
 }

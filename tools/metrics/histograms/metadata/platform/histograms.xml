@@ -117,6 +117,22 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Platform.Chaps.ReinitializingToken"
+    enum="ChapsReinitializingToken" expires_after="2022-08-15">
+  <owner>chenyian@google.com</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
+  <summary>
+    Each sample is the status code when Chaps needs to reinitializing token.
+  </summary>
+</histogram>
+
+<histogram name="Platform.Chaps.TPMAvailability" enum="ChapsTPMAvailability"
+    expires_after="2022-08-15">
+  <owner>chenyian@google.com</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
+  <summary>Each sample is the TPM Availability status.</summary>
+</histogram>
+
 <histogram name="Platform.CompressedSwapSize" units="MB"
     expires_after="2021-11-07">
   <owner>sonnyrao@chromium.org</owner>
@@ -553,7 +569,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.LogicalCpuCount" units="units"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>sonnyrao@chromium.org</owner>
   <owner>chromeos-performance@google.com</owner>
   <summary>
@@ -720,7 +736,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.MountEncrypted.EncryptionKeyStatus"
-    enum="MountEncryptedEncryptionKeyStatus" expires_after="2022-06-26">
+    enum="MountEncryptedEncryptionKeyStatus" expires_after="2022-08-28">
   <owner>apronin@chromium.org</owner>
   <owner>mnissler@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -732,7 +748,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.MountEncrypted.SystemKeyStatus"
-    enum="MountEncryptedSystemKeyStatus" expires_after="2022-06-26">
+    enum="MountEncryptedSystemKeyStatus" expires_after="2022-08-28">
   <owner>apronin@chromium.org</owner>
   <owner>mnissler@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
@@ -1171,9 +1187,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.AuthErrorCode" enum="TPMResultCodeEnum"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>yich@google.com</owner>
-  <owner>cros-hwsec-userland-eng+uma@chromium.org</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
     Each sample is the result code of a TPM authorized command issued through
     tcsd. Success is 0. For the other error codes, see
@@ -1184,7 +1200,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Platform.TPM.AuthFailCommand.Auth2Fail"
     enum="TPM12CommandOrdinal" expires_after="2021-10-10">
   <owner>cylai@google.com</owner>
-  <owner>cros-hwsec-userland-eng+uma@chromium.org</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
     Reporting the TPM command ordinal that results in TPM_E_AUTH2FAIL code. Note
     that this is only applicable for TPM1.2.
@@ -1194,7 +1210,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Platform.TPM.AuthFailCommand.AuthFail"
     enum="TPM12CommandOrdinal" expires_after="2021-10-10">
   <owner>cylai@google.com</owner>
-  <owner>cros-hwsec-userland-eng+uma@chromium.org</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
     Reporting the TPM command ordinal that results in TPM_E_AUTHFAIL code. Note
     that this is only applicable for TPM1.2.
@@ -1202,9 +1218,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.DictionaryAttackCounter" units="units"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>cylai@chromium.org</owner>
-  <owner>cros-hwsec-userland-eng+uma@chromium.org</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
     Each sample is the value of the TPM dictionary attack counter reported at
     boot and hourly while running. Any non-zero value is unexpected.
@@ -1214,7 +1230,7 @@ chromium-metrics-reviews@google.com.
 <histogram name="Platform.TPM.DictionaryAttackResetStatus"
     enum="CrosTPMDictionaryAttackResetStatusEnum" expires_after="2022-08-14">
   <owner>cylai@chromium.org</owner>
-  <owner>cros-hwsec-userland-eng+uma@chromium.org</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
     Each sample is the status of an hourly attempt to reset the TPM dictionary
     attack counter.
@@ -1222,9 +1238,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.ErrorCode" enum="TPMResultCodeEnum"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>yich@google.com</owner>
-  <owner>cros-hwsec-userland-eng+uma@chromium.org</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>
     Each sample is the result code of a TPM command issued through tcsd. Success
     is 0. For the other error codes, see /usr/include/tss/tpm_error.h.
@@ -1245,7 +1261,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.FirmwareUpdate.Result"
-    enum="TPMFirmwareUpdateResult" expires_after="2022-07-01">
+    enum="TPMFirmwareUpdateResult" expires_after="2022-09-11">
   <owner>mnissler@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>Status of a complete TPM firmware update attempt.</summary>
@@ -1286,7 +1302,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.TPM.VersionFingerprint" enum="TPMVersionFingerprint"
-    expires_after="2022-04-17">
+    expires_after="2022-08-21">
   <owner>mnissler@chromium.org</owner>
   <owner>cros-hwsec+uma@chromium.org</owner>
   <summary>
@@ -1336,14 +1352,14 @@ chromium-metrics-reviews@google.com.
 <histogram name="Platform.U2F.Command" enum="Cr50U2FCommands"
     expires_after="2022-02-20">
   <owner>cylai@chromium.org</owner>
-  <owner>cros-hwsec-userland-eng+uma@chromium.org</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>Records occurrences of U2F commands sent to cr50.</summary>
 </histogram>
 
 <histogram name="Platform.U2F.LegacyCommand" enum="Cr50U2FCommands"
     expires_after="2021-12-21">
   <owner>cylai@chromium.org</owner>
-  <owner>cros-hwsec-userland-eng+uma@chromium.org</owner>
+  <owner>cros-hwsec-userland-eng+uma@google.com</owner>
   <summary>Records occurrences of legacy U2F commands sent to cr50.</summary>
 </histogram>
 
@@ -1415,7 +1431,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.WiFiDeviceCount" units="wifi devices"
-    expires_after="2022-04-24">
+    expires_after="2022-12-01">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1425,7 +1441,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.WiFiDisapppearedFromPCI" units="units"
-    expires_after="2022-04-17">
+    expires_after="2022-12-01">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1438,7 +1454,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Platform.WiFiStatusAfterForcedPCIRescan" enum="WiFiPCIStatus"
-    expires_after="2022-04-10">
+    expires_after="2022-12-01">
   <owner>norvez@chromium.org</owner>
   <owner>cros-network-metrics@google.com</owner>
   <summary>
@@ -1575,7 +1591,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PlatformThread.Mac.AttemptedRealtimePeriod"
-    units="microseconds" expires_after="2022-06-26">
+    units="microseconds" expires_after="2022-08-28">
   <owner>olka@chromium.org</owner>
   <owner>handellm@chromium.org</owner>
   <summary>
@@ -1585,7 +1601,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PlatformThread.Mac.SucceededRealtimePeriod"
-    units="microseconds" expires_after="2022-07-03">
+    units="microseconds" expires_after="2022-09-11">
   <owner>olka@chromium.org</owner>
   <owner>handellm@chromium.org</owner>
   <summary>

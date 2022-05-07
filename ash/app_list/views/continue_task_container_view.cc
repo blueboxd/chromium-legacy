@@ -20,11 +20,13 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
+#include "ui/events/keycodes/keyboard_codes_posix.h"
 #include "ui/gfx/geometry/transform_util.h"
 #include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/animation_builder.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/table_layout.h"
@@ -143,7 +145,7 @@ ContinueTaskContainerView::ContinueTaskContainerView(
       l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_CONTINUE_SECTION_LABEL));
 }
 
-ContinueTaskContainerView::~ContinueTaskContainerView() {}
+ContinueTaskContainerView::~ContinueTaskContainerView() = default;
 
 void ContinueTaskContainerView::ListItemsAdded(size_t start, size_t count) {
   ScheduleUpdate();
@@ -169,6 +171,22 @@ void ContinueTaskContainerView::VisibilityChanged(views::View* starting_from,
   } else {
     animations_timer_.Start(FROM_HERE, base::Seconds(2), base::DoNothing());
   }
+}
+
+bool ContinueTaskContainerView::OnKeyPressed(const ui::KeyEvent &event) {
+  // No special focus handling in tablet mode.
+  if (tablet_mode_) {
+    return false;
+  }
+  if (event.key_code() == ui::VKEY_UP) {
+    MoveFocusUp();
+    return true;
+  }
+  if (event.key_code() == ui::VKEY_DOWN) {
+    MoveFocusDown();
+    return true;
+  }
+  return false;
 }
 
 void ContinueTaskContainerView::Update() {
@@ -320,12 +338,11 @@ void ContinueTaskContainerView::ScheduleContainerUpdateAnimation(
   animation_builder.OnAborted(base::BindOnce(
       &ContinueTaskContainerView::ClearAnimatingViews, base::Unretained(this)));
 
-  views::AnimationSequenceBlock last_sequence = animation_builder.Once();
-  last_sequence.SetDuration(base::Milliseconds(100));
+  animation_builder.Once().SetDuration(base::Milliseconds(100));
 
   // Fade out views for results that got removed.
   for (auto* view : views_to_fade_out)
-    ScheduleFadeOutAnimation(view, &last_sequence);
+    ScheduleFadeOutAnimation(view, &animation_builder.GetCurrentSequence());
 
   // Immediately hide views that remained in place, and for which the new result
   // views will not be animated in.
@@ -337,18 +354,18 @@ void ContinueTaskContainerView::ScheduleContainerUpdateAnimation(
   // Slide out old result views for results whose position changed.
   base::TimeDelta delay =
       views_to_fade_out.empty() ? base::TimeDelta() : base::Milliseconds(200);
-  last_sequence = last_sequence.At(delay);
-  last_sequence.SetDuration(base::Milliseconds(100));
+  animation_builder.GetCurrentSequence().At(delay).SetDuration(
+      base::Milliseconds(100));
   for (auto& view : views_to_slide_out) {
     ScheduleSlideOutAnimation(view.second, tablet_mode_ ? 0 : -34, is_rtl,
-                              &last_sequence);
+                              &animation_builder.GetCurrentSequence());
   }
 
   // Animate new views in.
   delay = views_to_fade_out.empty() ? base::Milliseconds(100)
                                     : base::Milliseconds(300);
-  last_sequence = last_sequence.At(delay);
-  last_sequence.SetDuration(base::Milliseconds(300));
+  animation_builder.GetCurrentSequence().At(delay).SetDuration(
+      base::Milliseconds(300));
 
   for (auto* view : suggestion_tasks_views_) {
     const std::string& result_id = view->result()->id();
@@ -369,7 +386,8 @@ void ContinueTaskContainerView::ScheduleContainerUpdateAnimation(
         initial_offset = -initial_offset;
       }
     }
-    ScheduleSlideInAnimation(view, initial_offset, is_rtl, &last_sequence);
+    ScheduleSlideInAnimation(view, initial_offset, is_rtl,
+                             &animation_builder.GetCurrentSequence());
   }
 }
 
@@ -405,6 +423,44 @@ void ContinueTaskContainerView::DisableFocusForShowingActiveFolder(
     bool disabled) {
   for (views::View* child : suggestion_tasks_views_)
     child->SetEnabled(!disabled);
+}
+
+void ContinueTaskContainerView::AnimateSlideInSuggestions(
+    int available_space,
+    base::TimeDelta duration,
+    gfx::Tween::Type tween) {
+  DCHECK(!tablet_mode_);
+  DCHECK(columns_);
+
+  SetVisible(true);
+
+  const int rows =
+      std::ceil(static_cast<double>(suggestion_tasks_views_.size()) / columns_);
+  double space_per_row = static_cast<double>(available_space) / rows;
+
+  for (size_t i = 0; i < suggestion_tasks_views_.size(); i++) {
+    views::View* view = suggestion_tasks_views_[i];
+    gfx::Transform translation;
+
+    int row_number = (i / columns_) + 1;
+    // Distribute the space between the elements so that the space between the
+    // previous element in the parent view and the first row is the same as the
+    // space between rows. The items in the first row will just be translated by
+    // `space_per_row`. The items from the second row need to carry over
+    // the space translated by the first row and translate again
+    // `space_per_row` to have even space between elements.
+    translation.Translate(0, space_per_row * row_number);
+
+    view->layer()->SetTransform(translation);
+  }
+  views::AnimationBuilder animation_builder;
+  animation_builder.Once().SetDuration(duration);
+
+  for (auto* view : suggestion_tasks_views_) {
+    animation_builder.GetCurrentSequence()
+        .SetTransform(view, gfx::Transform(), tween)
+        .SetOpacity(view, 1.0f, tween);
+  }
 }
 
 void ContinueTaskContainerView::RemoveViewFromLayout(ContinueTaskView* view) {
@@ -472,6 +528,52 @@ void ContinueTaskContainerView::InitializeTableLayout() {
   table_layout_->AddRows(1, views::TableLayout::kFixedSize);
   table_layout_->AddPaddingRow(views::TableLayout::kFixedSize, kRowSpacing);
   table_layout_->AddRows(1, views::TableLayout::kFixedSize);
+}
+
+void ContinueTaskContainerView::MoveFocusUp() {
+  DVLOG(1) << __FUNCTION__;
+  // This function should only run when a child has focus.
+  DCHECK(Contains(GetFocusManager()->GetFocusedView()));
+  DCHECK(!suggestion_tasks_views_.empty());
+  int focused_index = GetIndexOfFocusedTaskView();
+  DCHECK_GE(focused_index, 0);
+  // Try to move up by one row.
+  int target_index = focused_index - columns_;
+  // If that would move before the first item, focus the first item and reverse
+  // focus out of the section.
+  if (target_index < 0) {
+    suggestion_tasks_views_[0]->RequestFocus();
+    GetFocusManager()->AdvanceFocus(/*reverse=*/true);
+    return;
+  }
+  suggestion_tasks_views_[target_index]->RequestFocus();
+}
+
+void ContinueTaskContainerView::MoveFocusDown() {
+  DVLOG(1) << __FUNCTION__;
+  // This function should only run when a child has focus.
+  DCHECK(Contains(GetFocusManager()->GetFocusedView()));
+  DCHECK(!suggestion_tasks_views_.empty());
+  int focused_index = GetIndexOfFocusedTaskView();
+  DCHECK_GE(focused_index, 0);
+  // Try to move down by one row.
+  int target_index = focused_index + columns_;
+  // If that would move past the last item, focus the last item and advance
+  // focus out of the section.
+  if (target_index >= static_cast<int>(suggestion_tasks_views_.size())) {
+    suggestion_tasks_views_.back()->RequestFocus();
+    GetFocusManager()->AdvanceFocus(/*reverse=*/false);
+    return;
+  }
+  suggestion_tasks_views_[target_index]->RequestFocus();
+}
+
+int ContinueTaskContainerView::GetIndexOfFocusedTaskView() const {
+  for (size_t i = 0; i < suggestion_tasks_views_.size(); ++i) {
+    if (suggestion_tasks_views_[i]->HasFocus())
+      return i;
+  }
+  return -1;
 }
 
 BEGIN_METADATA(ContinueTaskContainerView, views::View)

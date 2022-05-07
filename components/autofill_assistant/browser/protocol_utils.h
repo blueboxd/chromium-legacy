@@ -72,6 +72,17 @@ class ProtocolUtils {
       const ClientContextProto& client_context,
       const ScriptParameters& script_parameters);
 
+  // Create request to get user data.
+  static std::string CreateGetUserDataRequest(
+      uint64_t run_id,
+      bool request_name,
+      bool request_email,
+      bool request_phone,
+      bool request_shipping,
+      bool request_payment_methods,
+      const std::vector<std::string>& supported_card_networks,
+      const std::string& client_token);
+
   // Create an action from the |action|.
   static std::unique_ptr<Action> CreateAction(ActionDelegate* delegate,
                                               const ActionProto& action);
@@ -96,6 +107,7 @@ class ProtocolUtils {
   // proto. Return false if parse failed, otherwise return true.
   static bool ParseActions(ActionDelegate* delegate,
                            const std::string& response,
+                           uint64_t* run_id,
                            std::string* return_global_payload,
                            std::string* return_script_payload,
                            std::vector<std::unique_ptr<Action>>* actions,

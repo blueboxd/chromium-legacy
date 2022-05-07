@@ -6,30 +6,28 @@
 # This is generated, do not edit. Update BuildConfigGenerator.groovy and
 # 3ppFetch.template instead.
 
-from __future__ import print_function
-
 import argparse
 import json
 import os
 import re
-
-from six.moves import urllib
+import urllib.request
 
 _REPO_URL = 'https://repo.maven.apache.org/maven2'
 _GROUP_NAME = 'org/jetbrains/kotlinx'
 _MODULE_NAME = 'kotlinx-metadata-jvm'
 _FILE_EXT = 'jar'
 _OVERRIDE_LATEST = None
-_PATCH_VERSION = 'cr0'
+_PATCH_VERSION = 'cr1'
 
 
 def do_latest():
     if _OVERRIDE_LATEST is not None:
-        print(_OVERRIDE_LATEST)
+        print(_OVERRIDE_LATEST + f'.{_PATCH_VERSION}')
         return
     maven_metadata_url = '{}/{}/{}/maven-metadata.xml'.format(
         _REPO_URL, _GROUP_NAME, _MODULE_NAME)
-    metadata = urllib.request.urlopen(maven_metadata_url).read().decode('utf-8')
+    metadata = urllib.request.urlopen(maven_metadata_url).read().decode(
+        'utf-8')
     # Do not parse xml with the python included parser since it is susceptible
     # to maliciously crafted xmls. Only use regular expression parsing to be
     # safe. RE should be enough to handle what we need to extract.
@@ -65,10 +63,10 @@ def main():
     ap = argparse.ArgumentParser()
     sub = ap.add_subparsers()
 
-    latest = sub.add_parser("latest")
+    latest = sub.add_parser('latest')
     latest.set_defaults(func=lambda _opts: do_latest())
 
-    download = sub.add_parser("get_url")
+    download = sub.add_parser('get_url')
     download.set_defaults(
         func=lambda _opts: get_download_url(os.environ['_3PP_VERSION']))
 

@@ -9,8 +9,8 @@
 #             mountainlion sierra
 #         win win7 win8 win10 ]
 # Devices
-# tags: [ android-nexus-5 android-nexus-5x android-nexus-9 android-pixel-2
-#             android-pixel-4 android-pixel-6 android-shield-android-tv
+# tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
+#             android-pixel-6 android-shield-android-tv
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
 # Platform
@@ -135,6 +135,11 @@ crbug.com/976497 [ android ] TraceTest_WebGPU* [ Skip ]
 crbug.com/852089 [ chromeos ] TraceTest_WebGPU* [ Skip ]
 crbug.com/852089 [ fuchsia ] TraceTest_WebGPU* [ Skip ]
 crbug.com/852089 [ win7 ] TraceTest_WebGPU* [ Skip ]
+
+# Tests that crash on gpu-fyi-win10-nvidia-rel-32
+crbug.com/1300670 [ win nvidia-0x2184 ] TraceTest_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
+crbug.com/1300670 [ win nvidia-0x2184 ] TraceTest_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+crbug.com/1300670 [ win nvidia-0x2184 ] TraceTest_WebGPUImportVideoFrameUnaccelerated [ Failure ]
 
 ###############################
 # Temporary Skip Expectations #

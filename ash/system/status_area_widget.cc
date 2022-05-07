@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "ash/system/accessibility/dictation_button_tray.h"
 #include "ash/system/accessibility/select_to_speak/select_to_speak_tray.h"
+#include "ash/system/eche/eche_tray.h"
 #include "ash/system/holding_space/holding_space_tray.h"
 #include "ash/system/ime_menu/ime_menu_tray.h"
 #include "ash/system/media/media_tray.h"
@@ -148,6 +149,12 @@ void StatusAreaWidget::Initialize() {
     auto media_tray = std::make_unique<MediaTray>(shelf_);
     media_tray_ = media_tray.get();
     AddTrayButton(std::move(media_tray));
+  }
+
+  if (chromeos::features::IsEcheCustomWidgetEnabled()) {
+    auto eche_tray = std::make_unique<EcheTray>(shelf_);
+    eche_tray_ = eche_tray.get();
+    AddTrayButton(std::move(eche_tray));
   }
 
   if (chromeos::features::IsPhoneHubEnabled()) {

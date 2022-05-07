@@ -12,7 +12,6 @@
 
 #include "base/auto_reset.h"
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/mac/call_with_eh_frame.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -135,7 +134,7 @@ class MessagePumpCFRunLoopBase::ScopedModeEnabler {
         // Process work when AppKit is highlighting an item on the main menubar.
         CFSTR("NSUnhighlightMenuRunLoopMode"),
     };
-    static_assert(base::size(modes) == kNumModes, "mode size mismatch");
+    static_assert(std::size(modes) == kNumModes, "mode size mismatch");
     static_assert((1 << kNumModes) - 1 == kAllModesMask,
                   "kAllModesMask not large enough");
 
@@ -183,8 +182,10 @@ void MessagePumpCFRunLoopBase::ScheduleWork() {
 
 // Must be called on the run loop thread.
 void MessagePumpCFRunLoopBase::ScheduleDelayedWork(
-    const TimeTicks& delayed_work_time) {
-  ScheduleDelayedWorkImpl(delayed_work_time - TimeTicks::Now());
+    const Delegate::NextWorkInfo& next_work_info) {
+  DCHECK(!next_work_info.is_immediate());
+  if (!next_work_info.delayed_run_time.is_max())
+    ScheduleDelayedWorkImpl(next_work_info.remaining_delay());
 }
 
 MessagePumpCFRunLoopBase::LudicrousSlackSetting

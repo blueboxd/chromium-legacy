@@ -399,11 +399,11 @@ void AboutHandler::OnDeviceAutoUpdatePolicyChanged(
   }
 }
 
-void AboutHandler::HandlePageReady(base::Value::ConstListView args) {
+void AboutHandler::HandlePageReady(const base::Value::List& args) {
   AllowJavascript();
 }
 
-void AboutHandler::HandleRefreshUpdateStatus(base::Value::ConstListView args) {
+void AboutHandler::HandleRefreshUpdateStatus(const base::Value::List& args) {
   RefreshUpdateStatus();
 }
 
@@ -419,12 +419,12 @@ void AboutHandler::RefreshUpdateStatus() {
 }
 
 #if BUILDFLAG(IS_MAC)
-void AboutHandler::PromoteUpdater(base::Value::ConstListView args) {
+void AboutHandler::PromoteUpdater(const base::Value::List& args) {
   version_updater_->PromoteUpdater();
 }
 #endif
 
-void AboutHandler::HandleOpenFeedbackDialog(base::Value::ConstListView args) {
+void AboutHandler::HandleOpenFeedbackDialog(const base::Value::List& args) {
   DCHECK(args.empty());
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
@@ -432,7 +432,7 @@ void AboutHandler::HandleOpenFeedbackDialog(base::Value::ConstListView args) {
                              chrome::kFeedbackSourceMdSettingsAboutPage);
 }
 
-void AboutHandler::HandleOpenHelpPage(base::Value::ConstListView args) {
+void AboutHandler::HandleOpenHelpPage(const base::Value::List& args) {
   DCHECK(args.empty());
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
@@ -440,18 +440,18 @@ void AboutHandler::HandleOpenHelpPage(base::Value::ConstListView args) {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-void AboutHandler::HandleOpenDiagnostics(base::Value::ConstListView args) {
+void AboutHandler::HandleOpenDiagnostics(const base::Value::List& args) {
   DCHECK(args.empty());
   chrome::ShowDiagnosticsApp(profile_);
 }
 
-void AboutHandler::HandleOpenFirmwareUpdates(base::Value::ConstListView args) {
+void AboutHandler::HandleOpenFirmwareUpdates(const base::Value::List& args) {
   DCHECK(args.empty());
   chrome::ShowFirmwareUpdatesApp(profile_);
 }
 
 void AboutHandler::HandleCheckInternetConnection(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   const std::string& callback_id = args[0].GetString();
 
@@ -463,7 +463,7 @@ void AboutHandler::HandleCheckInternetConnection(
                             base::Value(network && network->IsOnline()));
 }
 
-void AboutHandler::HandleLaunchReleaseNotes(base::Value::ConstListView args) {
+void AboutHandler::HandleLaunchReleaseNotes(const base::Value::List& args) {
   DCHECK(args.empty());
   // We can always show the release notes since the Help app caches it, or can
   // show an appropriate error state (e.g. No internet connection).
@@ -472,14 +472,14 @@ void AboutHandler::HandleLaunchReleaseNotes(base::Value::ConstListView args) {
                              apps::mojom::LaunchSource::kFromOtherApp);
 }
 
-void AboutHandler::HandleOpenOsHelpPage(base::Value::ConstListView args) {
+void AboutHandler::HandleOpenOsHelpPage(const base::Value::List& args) {
   DCHECK(args.empty());
   Browser* browser =
       chrome::FindBrowserWithWebContents(web_ui()->GetWebContents());
   chrome::ShowHelp(browser, chrome::HELP_SOURCE_WEBUI_CHROME_OS);
 }
 
-void AboutHandler::HandleSetChannel(base::Value::ConstListView args) {
+void AboutHandler::HandleSetChannel(const base::Value::List& args) {
   DCHECK(args.size() == 2);
 
   if (!CanChangeChannel(profile_)) {
@@ -504,7 +504,7 @@ void AboutHandler::HandleSetChannel(base::Value::ConstListView args) {
   }
 }
 
-void AboutHandler::HandleGetVersionInfo(base::Value::ConstListView args) {
+void AboutHandler::HandleGetVersionInfo(const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   const std::string& callback_id = args[0].GetString();
   base::ThreadPool::PostTaskAndReplyWithResult(
@@ -520,7 +520,7 @@ void AboutHandler::OnGetVersionInfoReady(
   ResolveJavascriptCallback(base::Value(callback_id), *version_info);
 }
 
-void AboutHandler::HandleGetRegulatoryInfo(base::Value::ConstListView args) {
+void AboutHandler::HandleGetRegulatoryInfo(const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   const std::string& callback_id = args[0].GetString();
 
@@ -531,7 +531,7 @@ void AboutHandler::HandleGetRegulatoryInfo(base::Value::ConstListView args) {
                      weak_factory_.GetWeakPtr(), callback_id));
 }
 
-void AboutHandler::HandleGetChannelInfo(base::Value::ConstListView args) {
+void AboutHandler::HandleGetChannelInfo(const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   const std::string& callback_id = args[0].GetString();
   version_updater_->GetChannel(
@@ -540,7 +540,7 @@ void AboutHandler::HandleGetChannelInfo(base::Value::ConstListView args) {
                      weak_factory_.GetWeakPtr(), callback_id));
 }
 
-void AboutHandler::HandleCanChangeChannel(base::Value::ConstListView args) {
+void AboutHandler::HandleCanChangeChannel(const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   const std::string& callback_id = args[0].GetString();
   ResolveJavascriptCallback(base::Value(callback_id),
@@ -573,12 +573,12 @@ void AboutHandler::OnGetTargetChannel(std::string callback_id,
   ResolveJavascriptCallback(base::Value(callback_id), *channel_info);
 }
 
-void AboutHandler::HandleRequestUpdate(base::Value::ConstListView args) {
+void AboutHandler::HandleRequestUpdate(const base::Value::List& args) {
   RequestUpdate();
 }
 
 void AboutHandler::HandleRequestUpdateOverCellular(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(2U, args.size());
 
   const std::string& update_version = args[0].GetString();
@@ -598,7 +598,7 @@ void AboutHandler::RequestUpdateOverCellular(const std::string& update_version,
 }
 
 void AboutHandler::HandleRefreshTPMFirmwareUpdateStatus(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   ash::tpm_firmware_update::GetAvailableUpdateModes(
       base::BindOnce(&AboutHandler::RefreshTPMFirmwareUpdateStatus,
                      weak_factory_.GetWeakPtr()),
@@ -612,7 +612,7 @@ void AboutHandler::RefreshTPMFirmwareUpdateStatus(
   FireWebUIListener("tpm-firmware-update-status-changed", *event);
 }
 
-void AboutHandler::HandleGetEndOfLifeInfo(base::Value::ConstListView args) {
+void AboutHandler::HandleGetEndOfLifeInfo(const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   const std::string& callback_id = args[0].GetString();
   version_updater_->GetEolInfo(base::BindOnce(&AboutHandler::OnGetEndOfLifeInfo,
@@ -634,8 +634,8 @@ void AboutHandler::OnGetEndOfLifeInfo(
         "aboutPageEndOfLifeMessage",
         l10n_util::GetStringFUTF16(
             eol_string_id,
-            base::TimeFormatMonthAndYear(eol_info.eol_date,
-                                         /*time_zone=*/icu::TimeZone::getGMT()),
+            base::TimeFormatMonthAndYearForTimeZone(eol_info.eol_date,
+                                                    icu::TimeZone::getGMT()),
             base::ASCIIToUTF16(has_eol_passed ? chrome::kEolNotificationURL
                                               : chrome::kAutoUpdatePolicyURL)));
   } else {

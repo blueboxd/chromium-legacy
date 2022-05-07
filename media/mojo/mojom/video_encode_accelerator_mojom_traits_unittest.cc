@@ -12,6 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
+
 TEST(VideoEncodeAcceleratorSupportedProfile, RoundTrip) {
   ::media::VideoEncodeAccelerator::SupportedProfile input;
   input.profile = VP9PROFILE_PROFILE0;
@@ -114,6 +115,30 @@ TEST(VideoEncodeAcceleratorConfigStructTraitTest, RoundTripVariableBitrate) {
       mojo::test::SerializeAndDeserialize<mojom::VideoEncodeAcceleratorConfig>(
           input_config, output_config));
   EXPECT_EQ(input_config, output_config);
+}
+
+TEST(VariableBitrateStructTraitTest, PeakZeroBps_Rejected) {
+  mojom::VariableBitratePtr mojom_variable_bitrate =
+      mojom::VariableBitrate::New();
+  mojom_variable_bitrate->target_bps = 0u;
+  mojom_variable_bitrate->peak_bps = 0u;
+  Bitrate output;
+
+  bool result = mojo::test::SerializeAndDeserialize<mojom::VariableBitrate>(
+      mojom_variable_bitrate, output);
+  EXPECT_FALSE(result);
+}
+
+TEST(VariableBitrateStructTraitTest, PeakLessThanTarget_Rejected) {
+  mojom::VariableBitratePtr mojom_variable_bitrate =
+      mojom::VariableBitrate::New();
+  mojom_variable_bitrate->target_bps = 6000u;
+  mojom_variable_bitrate->peak_bps = 5999u;
+  Bitrate output;
+
+  bool result = mojo::test::SerializeAndDeserialize<mojom::VariableBitrate>(
+      mojom_variable_bitrate, output);
+  EXPECT_FALSE(result);
 }
 
 TEST(BitstreamBufferMetadataTraitTest, RoundTrip) {

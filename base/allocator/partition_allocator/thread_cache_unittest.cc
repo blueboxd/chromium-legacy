@@ -29,8 +29,7 @@
 #if !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) && \
     defined(PA_THREAD_CACHE_SUPPORTED)
 
-namespace base {
-namespace internal {
+namespace base::internal {
 
 namespace {
 
@@ -912,8 +911,8 @@ TEST_P(PartitionAllocThreadCacheTest, MAYBE_Bookkeeping) {
   void* arr[kFillCountForMediumBucket] = {};
   auto* tcache = root_->thread_cache_for_testing();
 
-  root_->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans |
-                     PartitionPurgeDiscardUnusedSystemPages);
+  root_->PurgeMemory(PurgeFlags::kDecommitEmptySlotSpans |
+                     PurgeFlags::kDiscardUnusedSystemPages);
   root_->ResetBookkeepingForTesting();
 
   // The ThreadCache is allocated before we change buckets, so its size is
@@ -973,6 +972,27 @@ TEST_P(PartitionAllocThreadCacheTest, MAYBE_Bookkeeping) {
   tcache->Purge();
   EXPECT_EQ(root_->get_total_size_of_allocated_bytes(),
             GetBucketSizeForThreadCache());
+}
+
+TEST_P(PartitionAllocThreadCacheTest, TryPurgeNoAllocs) {
+  auto* tcache = root_->thread_cache_for_testing();
+  tcache->TryPurge();
+}
+
+TEST_P(PartitionAllocThreadCacheTest, TryPurgeMultipleCorrupted) {
+  auto* tcache = root_->thread_cache_for_testing();
+
+  void* ptr = root_->Alloc(kMediumSize, "");
+
+  auto* medium_bucket =
+      &root_->buckets[root_->SizeToBucketIndex(kMediumSize, GetParam())];
+
+  auto* curr = medium_bucket->active_slot_spans_head->get_freelist_head();
+  curr = curr->GetNextForThreadCache<true>(kMediumSize);
+  curr->CorruptNextForTesting(0x12345678);
+  tcache->TryPurge();
+  curr->SetNext(nullptr);
+  root_->Free(ptr);
 }
 
 TEST(AlternateBucketDistributionTest, SizeToIndex) {
@@ -1088,8 +1108,7 @@ TEST(AlternateBucketDistributionTest, SwitchAfterAlloc) {
     internal::ThreadCache::RemoveTombstoneForTesting();
 }
 
-}  // namespace internal
-}  // namespace base
+}  // namespace base::internal
 
 #endif  // !defined(MEMORY_TOOL_REPLACES_ALLOCATOR) &&
         // defined(PA_THREAD_CACHE_SUPPORTED)

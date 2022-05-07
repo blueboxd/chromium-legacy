@@ -20,7 +20,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
@@ -215,9 +214,7 @@ class ReparsePoint {
 
 #endif
 
-// Fuchsia doesn't support file permissions.
-#if !BUILDFLAG(IS_FUCHSIA)
-#if BUILDFLAG(IS_POSIX)
+#if BUILDFLAG(IS_MAC)
 // Provide a simple way to change the permissions bits on |path| in tests.
 // ASSERT failures will return, but not stop the test.  Caller should wrap
 // calls to this function in ASSERT_NO_FATAL_FAILURE().
@@ -233,8 +230,10 @@ void ChangePosixFilePermissions(const FilePath& path,
   mode &= ~mode_bits_to_clear;
   ASSERT_TRUE(SetPosixFilePermissions(path, mode));
 }
-#endif  // BUILDFLAG(IS_POSIX)
+#endif  // BUILDFLAG(IS_MAC)
 
+// Fuchsia doesn't support file permissions.
+#if !BUILDFLAG(IS_FUCHSIA)
 // Sets the source file to read-only.
 void SetReadOnly(const FilePath& path, bool read_only) {
 #if BUILDFLAG(IS_WIN)
@@ -351,7 +350,7 @@ std::wstring ReadTextFile(const FilePath& filename) {
   file.open(filename.value());
 #endif  // BUILDFLAG(IS_WIN)
   EXPECT_TRUE(file.is_open());
-  file.getline(contents, size(contents));
+  file.getline(contents, std::size(contents));
   file.close();
   return std::wstring(contents);
 }
@@ -2545,7 +2544,7 @@ TEST_F(FileUtilTest, GetTempDirTest) {
   ASSERT_EQ(0, ::_tdupenv_s(&original_tmp, &original_tmp_size, kTmpKey));
   // original_tmp may be NULL.
 
-  for (unsigned int i = 0; i < size(kTmpValues); ++i) {
+  for (unsigned int i = 0; i < std::size(kTmpValues); ++i) {
     FilePath path;
     ::_tputenv_s(kTmpKey, kTmpValues[i]);
     GetTempDir(&path);
@@ -3761,7 +3760,7 @@ TEST_F(FileUtilTest, SetCloseOnExec) {
 
 #endif
 
-#if BUILDFLAG(IS_POSIX)
+#if BUILDFLAG(IS_MAC)
 
 // Testing VerifyPathControlledByAdmin() is hard, because there is no
 // way a test can make a file owned by root, or change file paths
@@ -4045,7 +4044,7 @@ TEST_F(VerifyPathControlledByUserTest, WriteBitChecks) {
   EXPECT_TRUE(VerifyPathControlledByUser(sub_dir_, text_file_, uid_, ok_gids_));
 }
 
-#endif  // BUILDFLAG(IS_POSIX)
+#endif  // BUILDFLAG(IS_MAC)
 
 // Flaky test: crbug/1054637
 #if BUILDFLAG(IS_ANDROID)
@@ -4152,7 +4151,7 @@ TEST_F(FileUtilTest, PreReadFile_ExistingFile_ExactSize) {
   CreateTextFile(text_file, bogus_content);
 
   EXPECT_TRUE(
-      PreReadFile(text_file, /*is_executable=*/false, base::size(bogus_content))
+      PreReadFile(text_file, /*is_executable=*/false, std::size(bogus_content))
           .succeeded());
 }
 
@@ -4161,7 +4160,7 @@ TEST_F(FileUtilTest, PreReadFile_ExistingFile_OverSized) {
   CreateTextFile(text_file, bogus_content);
 
   EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false,
-                          base::size(bogus_content) * 2)
+                          std::size(bogus_content) * 2)
                   .succeeded());
 }
 
@@ -4170,7 +4169,7 @@ TEST_F(FileUtilTest, PreReadFile_ExistingFile_UnderSized) {
   CreateTextFile(text_file, bogus_content);
 
   EXPECT_TRUE(PreReadFile(text_file, /*is_executable=*/false,
-                          base::size(bogus_content) / 2)
+                          std::size(bogus_content) / 2)
                   .succeeded());
 }
 

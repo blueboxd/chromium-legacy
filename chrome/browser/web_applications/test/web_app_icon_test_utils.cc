@@ -21,6 +21,7 @@
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "url/gurl.h"
 
 namespace web_app {
@@ -61,7 +62,7 @@ void AddIconToIconsMap(const GURL& icon_url,
 
 void AddEmptyIconToIconsMap(const GURL& icon_url, IconsMap* icons_map) {
   std::vector<SkBitmap> bitmaps;
-  bitmaps.emplace_back(SkBitmap{});
+  bitmaps.emplace_back();
 
   icons_map->emplace(icon_url, std::move(bitmaps));
 }
@@ -121,7 +122,7 @@ bool ReadBitmap(FileUtilsWrapper* utils,
 }
 
 base::span<const int> GetIconSizes() {
-  return base::span<const int>(kIconSizes, base::size(kIconSizes));
+  return base::span<const int>(kIconSizes, std::size(kIconSizes));
 }
 
 bool ContainsOneIconOfEachSize(
@@ -202,7 +203,9 @@ GeneratedIconsInfo::GeneratedIconsInfo(const GeneratedIconsInfo&) = default;
 GeneratedIconsInfo::GeneratedIconsInfo(IconPurpose purpose,
                                        std::vector<SquareSizePx> sizes_px,
                                        std::vector<SkColor> colors)
-    : purpose(purpose), sizes_px(sizes_px), colors(colors) {}
+    : purpose(purpose),
+      sizes_px(std::move(sizes_px)),
+      colors(std::move(colors)) {}
 
 GeneratedIconsInfo::~GeneratedIconsInfo() = default;
 

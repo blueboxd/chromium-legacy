@@ -154,6 +154,8 @@ DecoderStatus D3D11H265Accelerator::SubmitFrameMetadata(
 
   int i = 0;
   for (auto& it : ref_pic_list) {
+    if (!it)
+      continue;
     D3D11H265Picture* our_ref_pic = it->AsD3D11H265Picture();
     if (!our_ref_pic)
       continue;
@@ -415,6 +417,8 @@ bool D3D11H265Accelerator::PicParamsFromRefLists(
   } while (0)
 
   for (auto& it : ref_pic_list0) {
+    if (!it)
+      continue;
     auto poc = it->pic_order_cnt_val_;
     auto idx = poc_index_into_ref_pic_list_[poc];
     if (idx < 0) {
@@ -438,6 +442,8 @@ bool D3D11H265Accelerator::PicParamsFromRefLists(
     }
   }
   for (auto& it : ref_pic_list1) {
+    if (!it)
+      continue;
     auto poc = it->pic_order_cnt_val_;
     auto idx = poc_index_into_ref_pic_list_[poc];
     if (idx < 0) {
@@ -730,7 +736,7 @@ bool D3D11H265Accelerator::SubmitSliceData() {
 
   hr = video_context_->SubmitDecoderBuffers(
       video_decoder_.Get(),
-      use_scaling_lists_ ? base::size(buffers) : base::size(buffers) - 1,
+      use_scaling_lists_ ? std::size(buffers) : std::size(buffers) - 1,
       buffers);
   current_offset_ = 0;
   slice_info_.clear();

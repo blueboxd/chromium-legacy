@@ -4,9 +4,7 @@
 
 #include "ash/services/secure_channel/public/cpp/client/fake_connection_attempt.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 FakeConnectionAttempt::FakeConnectionAttempt() = default;
 
@@ -26,6 +24,4 @@ void FakeConnectionAttempt::OnConnection(
   std::move(on_connection_callback_).Run();
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

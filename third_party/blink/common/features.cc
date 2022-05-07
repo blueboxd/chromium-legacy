@@ -34,9 +34,6 @@ const base::Feature kBlockingDownloadsInAdFrameWithoutUserActivation{
     "BlockingDownloadsInAdFrameWithoutUserActivation",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kCOLRV1Fonts{"COLRV1Fonts",
-                                 base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enable CSS Container Queries. Also implies LayoutNGGrid and CSSContainSize1D.
 const base::Feature kCSSContainerQueries{"CSSContainerQueries",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
@@ -135,11 +132,23 @@ const base::Feature kJSONModules{"JSONModules",
 const base::Feature kForceSynchronousHTMLParsing{
     "ForceSynchronousHTMLParsing", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kDeferredFontShaping{"DeferredShaping",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enable EditingNG by default. This feature is for a kill switch.
 const base::Feature kEditingNG{"EditingNG", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable LayoutNG.
 const base::Feature kLayoutNG{"LayoutNG", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables the use of the PaintCache for Path2D objects that are rasterized
+// out of process.  Has no effect when kCanvasOopRasterization is disabled.
+const base::Feature kPath2DPaintCache{"Path2DPaintCache",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable by default. This feature is for a kill switch.
+const base::Feature kLayoutNGBlockInInline{"LayoutNGBlockInInline",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
@@ -176,6 +185,10 @@ const base::Feature kNavigationPredictor {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
+
+// Anchor Element Interaction
+const base::Feature kAnchorElementInteraction{
+    "AnchorElementInteraction", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable browser-initiated dedicated worker script loading
 // (PlzDedicatedWorker). https://crbug.com/906991
@@ -218,7 +231,7 @@ const base::Feature kSharedStorageAPI{"SharedStorageAPI",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 const base::FeatureParam<int>
     kSharedStorageURLSelectionOperationInputURLSizeLimit{
-        &kSharedStorageAPI, "url_selection_operation_input_url_size_limit", 5};
+        &kSharedStorageAPI, "url_selection_operation_input_url_size_limit", 8};
 const base::FeatureParam<int> kMaxSharedStorageStringLength = {
     &kSharedStorageAPI, "MaxSharedStorageStringLength", 1024};
 const base::FeatureParam<int> kMaxSharedStorageEntriesPerOrigin = {
@@ -276,6 +289,11 @@ bool IsFencedFramesEnabled() {
 bool IsFencedFramesMPArchBased() {
   return blink::features::kFencedFramesImplementationTypeParam.Get() ==
          blink::features::FencedFramesImplementationType::kMPArch;
+}
+
+bool IsFencedFramesShadowDOMBased() {
+  return blink::features::kFencedFramesImplementationTypeParam.Get() ==
+         blink::features::FencedFramesImplementationType::kShadowDOM;
 }
 
 const base::Feature kInitialNavigationEntry{"InitialNavigationEntry",
@@ -610,7 +628,7 @@ const base::Feature kBlinkHeapIncrementalMarkingStress{
 // compositor & IO threads.
 const base::Feature kBlinkCompositorUseDisplayThreadPriority {
   "BlinkCompositorUseDisplayThreadPriority",
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_WIN)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -885,13 +903,6 @@ const base::Feature kWebAppEnableTranslations{
 const base::Feature kWebAppEnableUrlHandlers{"WebAppEnableUrlHandlers",
                                              base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables Protocol handling feature in web apps. Controls parsing of
-// "protocol_handlers" field in web app manifests. See explainer for more
-// information:
-// https://github.com/MicrosoftEdge/MSEdgeExplainers/blob/main/URLProtocolHandler/explainer.md
-const base::Feature kWebAppEnableProtocolHandlers{
-    "WebAppEnableProtocolHandlers", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Makes network loading tasks unfreezable so that they can be processed while
 // the page is frozen.
 const base::Feature kLoadingTasksUnfreezable{"LoadingTasksUnfreezable",
@@ -953,6 +964,13 @@ const base::FeatureParam<std::string>
 // Controls whether the Sanitizer API is available.
 const base::Feature kSanitizerAPI{"SanitizerAPI",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Controls whether the Sanitizer API allows namespaced content (SVG + MathML).
+//
+// This feature is unlikely to be launched as-is. The primary purpose is to
+// allow testing of different non-standard configurations.
+const base::Feature kSanitizerAPINamespaces{"SanitizerAPINamespacesForTesting",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for the blocking of the navigation of top from a cross origin
 // iframe to a different protocol. TODO(https://crbug.com/1151507): Remove in
@@ -1019,6 +1037,38 @@ BLINK_COMMON_EXPORT bool IsAllowURNsInIframeEnabled() {
   return base::FeatureList::IsEnabled(blink::features::kAllowURNsInIframes);
 }
 
+// https://github.com/jkarlin/topics
+// Kill switch for the Topics API.
+const base::Feature kBrowsingTopics{"BrowsingTopics",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+// The number of epochs from where to calculate the topics to give to a
+// requesting contexts.
+const base::FeatureParam<int> kBrowsingTopicsNumberOfEpochsToExpose{
+    &kBrowsingTopics, "number_of_epochs_to_expose", 3};
+// The number of top topics to derive and to keep for each epoch (week).
+const base::FeatureParam<int> kBrowsingTopicsNumberOfTopTopicsPerEpoch{
+    &kBrowsingTopics, "number_of_top_topics_per_epoch", 5};
+// The probability (in percent number) to return the random topic to a site. The
+// "random topic" is per-site, and is selected from the full taxonomy uniformly
+// at random, and each site has a
+// `kBrowsingTopicsUseRandomTopicProbabilityPercent`% chance to see their random
+// topic instead of one of the top topics.
+const base::FeatureParam<int> kBrowsingTopicsUseRandomTopicProbabilityPercent{
+    &kBrowsingTopics, "use_random_topic_probability_percent", 5};
+// The max number of entries allowed to be retrieved from the
+// `BrowsingTopicsSiteDataStorage` database for each query for the API usage
+// contexts. The query will occur once per epoch (week) at topics calculation
+// time. The intent is to cap the peak memory usage.
+const base::FeatureParam<int>
+    kBrowsingTopicsMaxNumberOfApiUsageContextEntriesToLoadPerEpoch{
+        &kBrowsingTopics,
+        "max_number_of_api_usage_context_entries_to_load_per_epoch", 100000};
+// Encodes the rest of the configuration parameters. Each version number should
+// only be mapped to one configuration set. In practice, this can be guaranteed
+// by always bumping up the version number whenever parameters are updated.
+const base::FeatureParam<int> kBrowsingTopicsConfigVersion{&kBrowsingTopics,
+                                                           "config_version", 1};
+
 // Enable the ability to minimize processing in the WebRTC APM when all audio
 // tracks are disabled. If disabled, the APM in WebRTC will ignore attempts to
 // set it in a low-processing mode when all audio tracks are disabled.
@@ -1046,10 +1096,6 @@ const base::Feature kClipboardCustomFormats{"ClipboardCustomFormats",
 // heuristic where images occupying the full viewport are ignored.
 const base::Feature kUsePageViewportInLCP{"UsePageViewportInLCP",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Send all user interaction latency data from renderer to the browser process.
-const base::Feature kSendAllUserInteractionLatencies{
-    "SendAllUserInteractionLatencies", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable `Sec-CH-UA-Platform` client hint and request header to be sent by
 // default
@@ -1121,10 +1167,6 @@ const base::Feature kClientHintsResourceWidth{"ClientHintsResourceWidth",
 const base::Feature kClientHintsViewportWidth{"ClientHintsViewportWidth",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Allows third party use of WebSQL (`DOMWindowWebDatabase::openDatabase`).
-const base::Feature kWebSQLInThirdPartyContextEnabled{
-    "WebSQLInThirdPartyContextEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enable legacy `device-memory` client hint.
 const base::Feature kClientHintsDeviceMemory_DEPRECATED{
     "ClientHintsDeviceMemory_DEPRECATED", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1153,6 +1195,21 @@ bool IsSetTimeoutWithoutClampEnabled() {
   return base::FeatureList::IsEnabled(blink::features::kSetTimeoutWithoutClamp);
 }
 
+// If enabled, the setTimeout(..., 0) will clamp to 4ms after a custom `nesting`
+// level.
+// Tracking bug: https://crbug.com/1108877.
+const base::Feature kMaxUnthrottledTimeoutNestingLevel{
+    "MaxUnthrottledTimeoutNestingLevel", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::FeatureParam<int> kMaxUnthrottledTimeoutNestingLevelParam{
+    &kMaxUnthrottledTimeoutNestingLevel, "nesting", 10};
+bool IsMaxUnthrottledTimeoutNestingLevelEnabled() {
+  return base::FeatureList::IsEnabled(
+      blink::features::kMaxUnthrottledTimeoutNestingLevel);
+}
+int GetMaxUnthrottledTimeoutNestingLevel() {
+  return kMaxUnthrottledTimeoutNestingLevelParam.Get();
+}
+
 const base::Feature kTabSwitchMetrics2{"TabSwitchMetrics2",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1160,11 +1217,6 @@ const base::Feature kTabSwitchMetrics2{"TabSwitchMetrics2",
 // of an animated image was painted.
 const base::Feature kLCPAnimatedImagesReporting{
     "LCPAnimatedImagesReporting", base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Throws when `kWebSQLInThirdPartyContextEnabled` is disabled.
-const base::Feature kWebSQLInThirdPartyContextThrowsWhenDisabled{
-    "WebSQLInThirdPartyContextThrowsWhenDisabled",
-    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // https://blog.whatwg.org/newline-normalizations-in-form-submission
 const base::Feature kLateFormNewlineNormalization{
@@ -1258,6 +1310,27 @@ const base::Feature kFreeNonRequiredTileResourcesForInactiveWindows{
 // Enables the WindowPlacement RuntimeEnabledFeature.
 const base::Feature kWindowPlacement{"WindowPlacement",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
+// TODO(crbug.com/1277431): This flag should be eventually disabled.
+const base::Feature kEventPath{"EventPath", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kReduceUserAgentMinorVersion{
+    "ReduceUserAgentMinorVersion", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables correctly computing whether dedicated workers are secure contexts.
+// TODO(https://crbug.com/780031): Remove this once fully shipped.
+const base::Feature kSecureContextFixForWorkers{
+    "SecureContextFixForWorkers", base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kZeroCopyTabCapture{"ZeroCopyTabCapture",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kUserAgentOverrideExperiment{
+    "UserAgentOverrideExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Allow access to WebSQL APIs.
+const base::Feature kWebSQLAccess{"kWebSQLAccess",
+                                  base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

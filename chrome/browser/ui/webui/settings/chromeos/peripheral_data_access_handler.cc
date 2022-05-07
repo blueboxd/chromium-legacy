@@ -90,7 +90,7 @@ void PeripheralDataAccessHandler::OnJavascriptAllowed() {}
 void PeripheralDataAccessHandler::OnJavascriptDisallowed() {}
 
 void PeripheralDataAccessHandler::HandleThunderboltSupported(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   CHECK_EQ(1u, args.size());
   const std::string& callback_id = args[0].GetString();
@@ -104,7 +104,7 @@ void PeripheralDataAccessHandler::HandleThunderboltSupported(
 }
 
 void PeripheralDataAccessHandler::HandleGetPolicyState(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   CHECK_EQ(1u, args.size());
   const std::string& callback_id = args[0].GetString();

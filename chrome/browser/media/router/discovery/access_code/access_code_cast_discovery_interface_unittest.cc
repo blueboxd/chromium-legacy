@@ -193,8 +193,10 @@ class AccessCodeCastDiscoveryInterfaceTest : public testing::Test {
         TRAFFIC_ANNOTATION_FOR_TESTS, test_url_loader_factory,
         identity_test_env_.identity_manager());
 
+    logger_ = std::make_unique<LoggerImpl>();
+
     discovery_interface_ = std::make_unique<AccessCodeCastDiscoveryInterface>(
-        profile, "123456", std::move(endpoint_fetcher_));
+        profile, "123456", logger_.get(), std::move(endpoint_fetcher_));
 
     in_process_data_decoder_ =
         std::make_unique<data_decoder::test::InProcessDataDecoder>();
@@ -239,9 +241,12 @@ class AccessCodeCastDiscoveryInterfaceTest : public testing::Test {
   }
 
   void SignIn() {
-    identity_test_env_.MakePrimaryAccountAvailable(kEmail,
-                                                   signin::ConsentLevel::kSync);
+    SetProfileConsent(signin::ConsentLevel::kSync);
     identity_test_env_.SetAutomaticIssueOfAccessTokens(true);
+  }
+
+  void SetProfileConsent(signin::ConsentLevel consent_level) {
+    identity_test_env_.MakePrimaryAccountAvailable(kEmail, consent_level);
   }
 
   MockEndpointFetcherCallback& endpoint_fetcher_callback() {
@@ -274,6 +279,7 @@ class AccessCodeCastDiscoveryInterfaceTest : public testing::Test {
   std::unique_ptr<EndpointFetcher> endpoint_fetcher_;
   std::unique_ptr<data_decoder::test::InProcessDataDecoder>
       in_process_data_decoder_;
+  std::unique_ptr<LoggerImpl> logger_;
 };
 
 TEST_F(AccessCodeCastDiscoveryInterfaceTest,
@@ -302,6 +308,18 @@ TEST_F(AccessCodeCastDiscoveryInterfaceTest, ServerError) {
 
   EXPECT_CALL(mock_callback,
               Run(Eq(absl::nullopt), AddSinkResultCode::SERVER_ERROR));
+
+  stub_interface()->ValidateDiscoveryAccessCode(mock_callback.Get());
+  base::RunLoop().RunUntilIdle();
+}
+
+TEST_F(AccessCodeCastDiscoveryInterfaceTest, SyncError) {
+  // Test to validate a fetch request without sync set for the account will
+  // return a SYNC_ERROR.
+  MockDiscoveryDeviceCallback mock_callback;
+  identity_test_env().RevokeSyncConsent();
+  EXPECT_CALL(mock_callback,
+              Run(Eq(absl::nullopt), AddSinkResultCode::PROFILE_SYNC_ERROR));
 
   stub_interface()->ValidateDiscoveryAccessCode(mock_callback.Get());
   base::RunLoop().RunUntilIdle();

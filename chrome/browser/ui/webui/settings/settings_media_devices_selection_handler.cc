@@ -67,7 +67,7 @@ void MediaDevicesSelectionHandler::OnUpdateVideoDevices(
 }
 
 void MediaDevicesSelectionHandler::GetDefaultCaptureDevices(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_EQ(1U, args.size());
   if (!args[0].is_string()) {
     NOTREACHED();
@@ -83,7 +83,7 @@ void MediaDevicesSelectionHandler::GetDefaultCaptureDevices(
 }
 
 void MediaDevicesSelectionHandler::SetDefaultCaptureDevice(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_EQ(2U, args.size());
   if (!args[0].is_string() || !args[1].is_string()) {
     NOTREACHED();

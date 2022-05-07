@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">Не вдається перейменувати "<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">Англійська (США), розкладка Дворака</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – хост</translation>
+<translation id="1521655867290435174">Google Таблиці</translation>
 <translation id="1538729222189715449">Відкриваються файли Linux…</translation>
 <translation id="1547964879613821194">Англійська (Канада)</translation>
 <translation id="1556189134700913550">Застосувати до всіх</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">Сертифікат автентифікації відхилений мережею</translation>
 <translation id="2547921442987553570">Додати в <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Міжнародна (США)</translation>
-<translation id="2562685439590298522">Документи</translation>
 <translation id="2563185590376525700">Жаба</translation>
 <translation id="2578394532502990878">Тамільська, фонетична розкладка</translation>
 <translation id="2579959351793446050">Орія</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">Американська розширена</translation>
 <translation id="290843123675549676">Маратхі</translation>
 <translation id="2923240520113693977">Естонська</translation>
-<translation id="2925966894897775835">Таблиці</translation>
 <translation id="2938685643439809023">Монгольська</translation>
-<translation id="2943400156390503548">Презентації</translation>
 <translation id="2943503720238418293">Введіть коротшу назву</translation>
 <translation id="2949781154072577687">Форматування диска "<ph name="DRIVE_NAME" />"…</translation>
 <translation id="2951236788251446349">Медуза</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032">Мережа №<ph name="NETWORK_INDEX" />, загалом мереж: <ph name="NETWORK_COUNT" />, назва: <ph name="NETWORK_NAME" />, оператор: <ph name="NETWORK_PROVIDER_NAME" />, стан з'єднання: <ph name="CONNECTION_STATUS" />, рівень сигналу: <ph name="SIGNAL_STRENGTH" />%, мережею керує адміністратор, відомості</translation>
 <translation id="4387004326333427325">Сертифікат автентифікації відхилений дистанційно</translation>
 <translation id="4394214039309501350">Зовнішнє посилання</translation>
+<translation id="4401287888955153199">Видобути все</translation>
 <translation id="4418686080762064601">Створіть ярлики для своїх файлів</translation>
 <translation id="4425149324548788773">Мій диск</translation>
 <translation id="4439427728133035643">Мережа <ph name="NETWORK_INDEX" /> з <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, рівень сигналу – <ph name="SIGNAL_STRENGTH" />%. Підключитися</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">Можливість роботи з файлами без підключення до Інтернету</translation>
 <translation id="4658782175094886150">Людина в снігу</translation>
 <translation id="4669606053856530811">Учасники, які мають доступ до розташування "<ph name="SOURCE_NAME" />", втратять доступ до елементів, якими з ними не поділилися.</translation>
+<translation id="467809019005607715">Google Презентації</translation>
 <translation id="4690246192099372265">Шведська</translation>
 <translation id="4693155481716051732">Суші</translation>
 <translation id="4694604912444486114">Мавпа</translation>
@@ -658,6 +658,7 @@
 <translation id="6732801395666424405">Сертифікати не завантажено</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">Вибрано 1 папку</translation>
+<translation id="6755827872271341378">Пристрій з ОС Chrome Flex</translation>
 <translation id="6790428901817661496">Відтворити</translation>
 <translation id="6795884519221689054">Панда</translation>
 <translation id="6806699711453372963">Керувати спільним доступом Linux</translation>
@@ -735,6 +736,7 @@
 <translation id="7343393116438664539">В'єтнамська, телекс</translation>
 <translation id="7359359531237882347">Копіювання елементів (<ph name="NUMBER_OF_ITEMS" />)…</translation>
 <translation id="7375951387215729722">Список файлів відсортовано в порядку спадання за таким критерієм: <ph name="COLUMN_NAME" />.</translation>
+<translation id="7402503521691663770">Пристрої з ОС Chrome Flex</translation>
 <translation id="7408870451288633753">Чеська</translation>
 <translation id="7417453074306512035">Ефіопська клавіатура</translation>
 <translation id="7417705661718309329">Карта Google</translation>
@@ -950,6 +952,7 @@
 <translation id="9172592259078059678">Гуджараті, транслітерація</translation>
 <translation id="9173120999827300720">Англійська (США), міжнародна розкладка</translation>
 <translation id="9174050671906956834">Файли зберігаються в кошику 30 днів, а потім видаляються назавжди.</translation>
+<translation id="9183302530794969518">Google Документи</translation>
 <translation id="9189836632794948435">Казахська</translation>
 <translation id="9213073329713032541">Встановлення розпочато.</translation>
 <translation id="9219103736887031265">Зображення</translation>

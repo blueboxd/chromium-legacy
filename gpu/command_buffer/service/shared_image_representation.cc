@@ -7,6 +7,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "gpu/command_buffer/service/shared_context_state.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "third_party/skia/include/core/SkPromiseImageTexture.h"
 #include "third_party/skia/include/gpu/GrBackendSurfaceMutableState.h"
@@ -179,7 +180,7 @@ SharedImageRepresentationSkia::BeginScopedWriteAccess(
     AllowUnclearedAccess allow_uncleared,
     bool use_sk_surface) {
   return BeginScopedWriteAccess(
-      0 /* final_msaa_count */,
+      /*final_msaa_count=*/1,
       SkSurfaceProps(0 /* flags */, kUnknown_SkPixelGeometry), begin_semaphores,
       end_semaphores, allow_uncleared, use_sk_surface);
 }
@@ -440,12 +441,15 @@ SharedImageRepresentationRaster::BeginScopedReadAccess() {
 
 std::unique_ptr<SharedImageRepresentationRaster::ScopedWriteAccess>
 SharedImageRepresentationRaster::BeginScopedWriteAccess(
+    scoped_refptr<SharedContextState> context_state,
     int final_msaa_count,
     const SkSurfaceProps& surface_props,
-    const absl::optional<SkColor>& clear_color) {
+    const absl::optional<SkColor>& clear_color,
+    bool visible) {
   return std::make_unique<ScopedWriteAccess>(
       base::PassKey<SharedImageRepresentationRaster>(), this,
-      BeginWriteAccess(final_msaa_count, surface_props, clear_color));
+      BeginWriteAccess(std::move(context_state), final_msaa_count,
+                       surface_props, clear_color, visible));
 }
 
 }  // namespace gpu

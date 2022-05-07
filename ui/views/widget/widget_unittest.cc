@@ -2368,6 +2368,38 @@ TEST_F(WidgetTest, LockParentPaintAsActive) {
   EXPECT_EQ(other_control.CallCount(), 4);
 }
 
+// Tests to make sure that child widgets do not cause their parent widget to
+// paint inactive immediately when they are closed. This avoids having the
+// parent paint as inactive in the time between when the bubble is closed and
+// when it's eventually destroyed by its native widget (see crbug.com/1303549).
+TEST_F(DesktopWidgetTest,
+       ClosingActiveChildDoesNotPrematurelyPaintParentInactive) {
+  // top_level_widget that owns the bubble widget.
+  auto top_level_widget = CreateTestWidget();
+  top_level_widget->Show();
+
+  // Create the child bubble widget.
+  auto bubble_widget = std::make_unique<Widget>();
+  Widget::InitParams init_params =
+      CreateParamsForTestWidget(Widget::InitParams::TYPE_BUBBLE);
+  init_params.parent = top_level_widget->GetNativeView();
+  bubble_widget->Init(std::move(init_params));
+  bubble_widget->Show();
+
+  EXPECT_TRUE(bubble_widget->ShouldPaintAsActive());
+  EXPECT_TRUE(top_level_widget->ShouldPaintAsActive());
+
+  // Closing the bubble wiget should not immediately cause the top level widget
+  // to paint inactive.
+  PaintAsActiveCallbackCounter top_level_counter(top_level_widget.get());
+  PaintAsActiveCallbackCounter bubble_counter(bubble_widget.get());
+  bubble_widget->Close();
+  EXPECT_FALSE(bubble_widget->ShouldPaintAsActive());
+  EXPECT_TRUE(top_level_widget->ShouldPaintAsActive());
+  EXPECT_EQ(top_level_counter.CallCount(), 0);
+  EXPECT_EQ(bubble_counter.CallCount(), 0);
+}
+
 // Widget used to destroy itself when OnNativeWidgetDestroyed is called.
 class TestNativeWidgetDestroyedWidget : public Widget {
  public:
@@ -4134,6 +4166,37 @@ TEST_F(WidgetTest, MouseWheelEvent) {
 
   event_generator->MoveMouseWheel(1, 1);
   EXPECT_EQ(1, event_count_view->GetEventCount(ui::ET_MOUSEWHEEL));
+}
+
+class CloseFromClosingObserver : public WidgetObserver {
+ public:
+  ~CloseFromClosingObserver() override {
+    EXPECT_TRUE(was_on_widget_closing_called_);
+  }
+  // WidgetObserver:
+  void OnWidgetClosing(Widget* widget) override {
+    // OnWidgetClosing() should only be called once, even if Close() is called
+    // after CloseNow().
+    ASSERT_FALSE(was_on_widget_closing_called_);
+    was_on_widget_closing_called_ = true;
+    widget->Close();
+  }
+
+ private:
+  bool was_on_widget_closing_called_ = false;
+};
+
+TEST_F(WidgetTest, CloseNowFollowedByCloseDoesntCallOnWidgetClosingTwice) {
+  CloseFromClosingObserver observer;
+  std::unique_ptr<Widget> widget = std::make_unique<Widget>();
+  Widget::InitParams params = CreateParams(Widget::InitParams::TYPE_WINDOW);
+  params.ownership = Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+  widget->Init(std::move(params));
+  widget->AddObserver(&observer);
+  widget->CloseNow();
+  widget->RemoveObserver(&observer);
+  widget.reset();
+  // Assertions are in CloseFromClosingObserver.
 }
 
 class WidgetShadowTest : public WidgetTest {

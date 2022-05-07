@@ -200,6 +200,7 @@ class ExtensionDownloader {
 
  private:
   friend class ExtensionDownloaderTest;
+  friend class ExtensionDownloaderTestHelper;
   friend class ExtensionUpdaterTest;
 
   // These counters are bumped as extensions are added to be fetched. They
@@ -253,17 +254,6 @@ class ExtensionDownloader {
     int oauth2_attempt_count;
   };
 
-  // Parameters for special cases that aren't used for most requests.
-  struct ExtraParams {
-    // Additional data to be passed up in the update request.
-    std::string update_url_data;
-
-    // Indicates whether this extension is being reinstalled due to corruption.
-    bool is_corrupt_reinstall;
-
-    ExtraParams();
-  };
-
   // We limit the number of extensions grouped together in one batch to avoid
   // running into the limits on the length of http GET requests, this represents
   // the key for grouping these extensions.
@@ -296,8 +286,7 @@ class ExtensionDownloader {
   void UpdateURLStats(const GURL& update_url, Manifest::Type extension_type);
 
   // Helper for AddExtension() and AddPendingExtension().
-  bool AddExtensionData(const ExtensionDownloaderTask& task,
-                        const ExtraParams& extra);
+  bool AddExtensionData(ExtensionDownloaderTask task);
 
   // Adds all recorded stats taken so far to histogram counts.
   void ReportStats() const;
@@ -476,11 +465,8 @@ class ExtensionDownloader {
   // Collects UMA samples that are reported when ReportStats() is called.
   URLStats url_stats_;
 
-  // We limit the number of extensions grouped together in one batch to avoid
-  // running into the limits on the length of http GET requests, so there might
-  // be multiple ManifestFetchData* objects with the same update_url.
-  std::map<FetchDataGroupKey, std::vector<std::unique_ptr<ManifestFetchData>>>
-      fetches_preparing_;
+  // List of update requests added to the downloader but not started yet.
+  std::vector<ExtensionDownloaderTask> pending_tasks_;
 
   // Outstanding url loader requests for manifests and updates.
   std::unique_ptr<network::SimpleURLLoader> manifest_loader_;

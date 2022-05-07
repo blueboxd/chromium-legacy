@@ -15,9 +15,7 @@
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // static
 SecureChannel::Factory* SecureChannel::Factory::factory_instance_ = nullptr;
@@ -328,6 +326,4 @@ void SecureChannel::OnAuthenticationResult(
   TransitionToStatus(Status::AUTHENTICATED);
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

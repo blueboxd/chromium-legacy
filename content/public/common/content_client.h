@@ -167,6 +167,9 @@ class CONTENT_EXPORT ContentClient {
   // Returns the raw bytes of a scale independent data resource.
   virtual base::RefCountedMemory* GetDataResourceBytes(int resource_id);
 
+  // Returns the string contents of a resource given the resource id.
+  virtual std::string GetDataResourceString(int resource_id);
+
   // Returns a native image given its id.
   virtual gfx::Image& GetNativeImageNamed(int resource_id);
 
@@ -204,8 +207,6 @@ class CONTENT_EXPORT ContentClient {
   virtual void ExposeInterfacesToBrowser(
       scoped_refptr<base::SequencedTaskRunner> io_task_runner,
       mojo::BinderMap* binders);
-
-  virtual std::u16string GetLocalizedProtocolName(const std::string&);
 
  private:
   friend class ContentClientInitializer;  // To set these pointers.

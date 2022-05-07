@@ -4,6 +4,8 @@
 
 import {MechanicalLayout, PhysicalLayout, TopRowKey} from 'chrome://resources/ash/common/keyboard_diagram.js';
 import {KeyboardKeyState} from 'chrome://resources/ash/common/keyboard_key.js';
+import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
+
 import {assertEquals, assertNotEquals, assertThrows, assertTrue} from '../../chai_assert.js';
 import {flushTasks, waitAfterNextRender} from '../../test_util.js';
 
@@ -12,6 +14,51 @@ export function keyboardDiagramTestSuite() {
   let diagramElement = null;
 
   setup(() => {
+    // TODO(b/223455415): serve the Ash common JavaScript from its own WebUI
+    // request handler for the tests, to avoid having to duplicate the strings
+    // here.
+    if (!loadTimeData.isInitialized()) {
+      loadTimeData.data = {
+        'keyboardDiagramAriaLabelNotPressed': '$1 key not pressed',
+        'keyboardDiagramAriaLabelPressed': '$1 key pressed',
+        'keyboardDiagramAriaLabelTested': '$1 key tested',
+        'keyboardDiagramAriaNameArrowDown': 'Down arrow',
+        'keyboardDiagramAriaNameArrowLeft': 'Left arrow',
+        'keyboardDiagramAriaNameArrowRight': 'Right arrow',
+        'keyboardDiagramAriaNameArrowUp': 'Up arrow',
+        'keyboardDiagramAriaNameAssistant': 'Assistant',
+        'keyboardDiagramAriaNameBack': 'Back',
+        'keyboardDiagramAriaNameBackspace': 'Backspace',
+        'keyboardDiagramAriaNameEnter': 'Enter',
+        'keyboardDiagramAriaNameForward': 'Forward',
+        'keyboardDiagramAriaNameFullscreen': 'Fullscreen',
+        'keyboardDiagramAriaNameJisLetterSwitch': 'Kana/alphanumeric switch',
+        'keyboardDiagramAriaNameKeyboardBacklightDown':
+            'Keyboard brightness down',
+        'keyboardDiagramAriaNameKeyboardBacklightUp': 'Keyboard brightness up',
+        'keyboardDiagramAriaNameLauncher': 'Launcher',
+        'keyboardDiagramAriaNameLayoutSwitch': 'Layout switch',
+        'keyboardDiagramAriaNameMute': 'Mute',
+        'keyboardDiagramAriaNameOverview': 'Overview',
+        'keyboardDiagramAriaNamePlayPause': 'Play/Pause',
+        'keyboardDiagramAriaNamePower': 'Power',
+        'keyboardDiagramAriaNamePrivacyScreenToggle': 'Privacy screen toggle',
+        'keyboardDiagramAriaNameRefresh': 'Refresh',
+        'keyboardDiagramAriaNameScreenBrightnessDown':
+            'Display brightness down',
+        'keyboardDiagramAriaNameScreenBrightnessUp': 'Display brightness up',
+        'keyboardDiagramAriaNameScreenMirror': 'Screen mirror',
+        'keyboardDiagramAriaNameScreenshot': 'Screenshot',
+        'keyboardDiagramAriaNameShiftLeft': 'Left shift',
+        'keyboardDiagramAriaNameShiftRight': 'Right shift',
+        'keyboardDiagramAriaNameTab': 'Tab',
+        'keyboardDiagramAriaNameTrackNext': 'Next track',
+        'keyboardDiagramAriaNameTrackPrevious': 'Previous track',
+        'keyboardDiagramAriaNameVolumeDown': 'Volume down',
+        'keyboardDiagramAriaNameVolumeUp': 'Volume up',
+      };
+    }
+
     diagramElement = /** @type {!KeyboardDiagramElement} */ (
         document.createElement('keyboard-diagram'));
     document.body.appendChild(diagramElement);
@@ -144,6 +191,7 @@ export function keyboardDiagramTestSuite() {
     assertEquals(testKeySet.length + 2, keyElements.length);
 
     assertEquals('keyboard:back', keyElements[1].icon);
+    assertEquals('Back', keyElements[1].ariaName);
     assertEquals('delete', keyElements[6].mainGlyph);
   });
 
@@ -233,5 +281,41 @@ export function keyboardDiagramTestSuite() {
     const pressedKeys = diagramElement.root.querySelectorAll(
         `keyboard-key[state="${KeyboardKeyState.kPressed}"]`);
     assertEquals(0, pressedKeys.length);
+  });
+
+  test('visualLayout_mainGlyph', async () => {
+    diagramElement.regionCode = 'fr';
+
+    const escKey = diagramElement.root.querySelector('[data-code="1"]');
+    assertEquals('échap', escKey.mainGlyph);
+  });
+
+  test('visualLayout_enterKeyLowerPartDoesntGetGlyph', async () => {
+    diagramElement.regionCode = 'us';
+
+    const enterKeyLowerPart = diagramElement.$.enterKeyLowerPart;
+    assertEquals(undefined, enterKeyLowerPart.mainGlyph);
+  });
+
+  test('visualLayout_iconAndCornerGlyphs', async () => {
+    diagramElement.regionCode = 'jp';
+
+    const letterSwitchKey =
+        diagramElement.root.querySelector('[data-code="41"]');
+    assertEquals('keyboard:jis-letter-switch', letterSwitchKey.icon);
+
+    const slashKey = diagramElement.root.querySelector('[data-code="53"]');
+    assertEquals('/', slashKey.bottomLeftGlyph);
+    assertEquals('?', slashKey.topLeftGlyph);
+    assertEquals('•', slashKey.topRightGlyph);
+    assertEquals('め', slashKey.bottomRightGlyph);
+  });
+
+  test('visualLayout_ariaNames', async () => {
+    diagramElement.regionCode = 'jp';
+
+    const letterSwitchKey =
+        diagramElement.root.querySelector('[data-code="41"]');
+    assertEquals('Kana/alphanumeric switch', letterSwitchKey.ariaName);
   });
 }

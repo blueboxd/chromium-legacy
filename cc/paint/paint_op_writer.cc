@@ -18,8 +18,24 @@
 #include "cc/paint/skottie_wrapper.h"
 #include "cc/paint/transfer_cache_serialize_helper.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkColorSpace.h"
+#include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkFlattenable.h"
+#include "third_party/skia/include/core/SkM44.h"
+#include "third_party/skia/include/core/SkMatrix.h"
+#include "third_party/skia/include/core/SkPath.h"
+#include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/core/SkSamplingOptions.h"
+#include "third_party/skia/include/core/SkScalar.h"
 #include "third_party/skia/include/core/SkSerialProcs.h"
+#include "third_party/skia/include/core/SkSize.h"
 #include "third_party/skia/include/core/SkTextBlob.h"
+#include "third_party/skia/include/core/SkTypeface.h"
+#include "third_party/skia/include/private/chromium/GrSlug.h"
 #include "third_party/skia/include/private/chromium/SkChromeRemoteGlyphCache.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/skia_conversions.h"
@@ -383,6 +399,31 @@ void PaintOpWriter::Write(const SkColorSpace* color_space) {
 
   memory_ += written;
   remaining_bytes_ -= written;
+}
+
+void PaintOpWriter::Write(const sk_sp<GrSlug>& slug) {
+  if (!valid_)
+    return;
+
+  AlignMemory(4);
+  uint64_t* size_memory = WriteSize(0u);
+  if (!valid_)
+    return;
+
+  size_t bytes_written = 0;
+  if (slug) {
+    // TODO(penghuang): should we use a unique id to avoid sending the same
+    // slug?
+    bytes_written = slug->serialize(
+        memory_, base::bits::AlignDown(remaining_bytes_, kSkiaAlignment));
+    if (bytes_written == 0u) {
+      valid_ = false;
+      return;
+    }
+  }
+  *size_memory = bytes_written;
+  memory_ += bytes_written;
+  remaining_bytes_ -= bytes_written;
 }
 
 void PaintOpWriter::Write(const sk_sp<SkTextBlob>& blob) {
@@ -942,10 +983,14 @@ void PaintOpWriter::Write(const PaintRecord* record,
   // converted to a fixed scale mode (hence |post_scale|), which means they are
   // first rendered offscreen via SkImage::MakeFromPicture. This inherently does
   // not support lcd text, so reflect that in the serialization options.
-  PaintOp::SerializeOptions lcd_disabled_options = options_;
-  lcd_disabled_options.can_use_lcd_text = false;
+  // Draw GrSlug with SkPictureRecorder canvas is not supported yet, so disable
+  // RawDraw here.
+  // TODO(penghuang): enable RawDraw when draw GrSlug is supported.
+  PaintOp::SerializeOptions lcd_and_rawdraw_disabled_options = options_;
+  lcd_and_rawdraw_disabled_options.can_use_lcd_text = false;
+  lcd_and_rawdraw_disabled_options.raw_draw = false;
   SimpleBufferSerializer serializer(memory_, remaining_bytes_,
-                                    lcd_disabled_options);
+                                    lcd_and_rawdraw_disabled_options);
   serializer.Serialize(record, playback_rect, post_scale);
 
   if (!serializer.valid()) {

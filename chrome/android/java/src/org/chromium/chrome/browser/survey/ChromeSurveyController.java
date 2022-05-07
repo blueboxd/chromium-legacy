@@ -50,7 +50,7 @@ import org.chromium.components.messages.DismissReason;
 import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.messages.MessageIdentifier;
-import org.chromium.components.messages.MessageScopeType;
+import org.chromium.components.messages.PrimaryActionClickBehavior;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.url.GURL;
 
@@ -280,7 +280,10 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
                             .with(MessageBannerProperties.PRIMARY_BUTTON_TEXT,
                                     resources.getString(R.string.chrome_survey_message_button))
                             .with(MessageBannerProperties.ON_PRIMARY_ACTION,
-                                    () -> showSurvey(siteId))
+                                    () -> {
+                                        showSurvey(siteId);
+                                        return PrimaryActionClickBehavior.DISMISS_IMMEDIATELY;
+                                    })
                             .with(MessageBannerProperties.ON_DISMISSED,
                                     this::recordSurveyPromptMetrics)
                             .build();
@@ -339,8 +342,7 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
                 mLifecycleDispatcher.register(mLifecycleObserver);
             }
 
-            mMessageDispatcher.enqueueMessage(
-                    message, mSurveyPromptTab.getWebContents(), MessageScopeType.NAVIGATION, false);
+            mMessageDispatcher.enqueueWindowScopedMessage(message, false);
             sMessageShown = true;
         } else {
             InfoBarContainer.get(tab).addAnimationListener(this);
@@ -702,11 +704,10 @@ public class ChromeSurveyController implements InfoBarAnimationListener {
                 || ChromeFeatureList.isEnabled(ChromeFeatureList.CHROME_SURVEY_NEXT_ANDROID);
     }
 
-    /** @return Whether the user has consented to reporting usage metrics and crash dumps. */
+    /** @return Whether metrics and crash dumps are enabled. */
     private static boolean isUMAEnabled() {
         return sForceUmaEnabledForTesting
-                || PrivacyPreferencesManagerImpl.getInstance()
-                           .isUsageAndCrashReportingPermittedByUser();
+                || PrivacyPreferencesManagerImpl.getInstance().isUsageAndCrashReportingPermitted();
     }
 
     /** @return Whether survey is enabled by command line flag. */

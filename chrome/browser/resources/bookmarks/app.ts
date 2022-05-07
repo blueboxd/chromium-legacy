@@ -100,7 +100,7 @@ export class BookmarksAppElement extends BookmarksAppElementBase {
     }
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     document.documentElement.classList.remove('loading');
@@ -142,7 +142,7 @@ export class BookmarksAppElement extends BookmarksAppElementBase {
     this.scrollTarget = this.shadowRoot!.querySelector('bookmarks-list');
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
 
     this.eventTracker_.remove(window, 'resize');
@@ -161,7 +161,7 @@ export class BookmarksAppElement extends BookmarksAppElementBase {
     }
     this.sidebarWidth_ = getComputedStyle(splitterTarget).width;
 
-    splitter.addEventListener('resize', (e) => {
+    splitter.addEventListener('resize', (_e: Event) => {
       window.localStorage[LOCAL_STORAGE_TREE_WIDTH_KEY] =
           splitterTarget.style.width;
       this.updateSidebarWidth_();
@@ -212,7 +212,7 @@ export class BookmarksAppElement extends BookmarksAppElementBase {
   }
 
   // Override FindShortcutMixin methods.
-  handleFindShortcut(modalContextOpen: boolean): boolean {
+  override handleFindShortcut(modalContextOpen: boolean): boolean {
     if (modalContextOpen) {
       return false;
     }
@@ -222,7 +222,7 @@ export class BookmarksAppElement extends BookmarksAppElementBase {
   }
 
   // Override FindShortcutMixin methods.
-  searchInputHasFocus(): boolean {
+  override searchInputHasFocus(): boolean {
     return this.shadowRoot!.querySelector<BookmarksToolbarElement>(
         'bookmarks-toolbar')!.searchField.isSearchFocused();
   }
@@ -233,7 +233,7 @@ export class BookmarksAppElement extends BookmarksAppElementBase {
   }
 
   /** Overridden from IronScrollTargetBehavior */
-  _scrollHandler() {
+  override _scrollHandler() {
     this.toolbarShadow_ = this.scrollTarget!.scrollTop !== 0;
   }
 }

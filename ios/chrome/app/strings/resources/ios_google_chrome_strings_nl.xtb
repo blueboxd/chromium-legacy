@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Verzend automatisch gebruiksstatistieken en crashmeldingen naar Google.</translation>
 <translation id="417201473131094001">Niet ondersteund in Chrome Canary</translation>
 <translation id="4214277427269650960">Log in bij deze site en Chrome. Je kunt synchronisatie later aanzetten.</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> heeft Chrome gebruikt en heeft bookmarks, wachtwoorden en andere instellingen op dit apparaat laten staan.</translation>
 <translation id="424864128008805179">Uitloggen bij Chrome?</translation>
 <translation id="4249068189593983585">Chrome-tip. Voor meer tabbladopties tik je in de werkbalk onder- of bovenaan het scherm op de knop Tabbladen bekijken en houd je deze vast.</translation>
 <translation id="4523886039239821078">Sommige add-ons kunnen ervoor zorgen dat Chrome crasht. Verwijder de volgende add-ons:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome kan niet alle wachtwoorden checken. Probeer het morgen opnieuw of <ph name="BEGIN_LINK" />check de wachtwoorden in je Google-account<ph name="END_LINK" />.</translation>
 <translation id="484033449593719797">Niet ondersteund in Chrome (bèta)</translation>
 <translation id="5030102366287574140">Chrome kan je beschermen tegen gegevenslekken, onveilige websites en meer.</translation>
+<translation id="5108659628347594808">Chrome verbeteren</translation>
 <translation id="5119391094379141756">Selecteer Chrome</translation>
 <translation id="5162467219239570114">Chrome is verouderd. Als er geen update beschikbaar is in de <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, ondersteunt je apparaat nieuwe versies van Chrome mogelijk niet.</translation>
 <translation id="5389212809648216794">Google Chrome kan je camera niet gebruiken omdat deze wordt gebruikt door een andere app</translation>
@@ -81,6 +83,15 @@
 <translation id="6709398533399187136">Je wachtwoord is gelekt bij een gegevenslek. Google Wachtwoordmanager raadt je aan dit wachtwoord nu te wijzigen.</translation>
 <translation id="6822673484890854830">Chrome kan niet alle wachtwoorden checken. Probeer het later opnieuw.</translation>
 <translation id="6964931465519938134">Je kunt Chrome nu gebruiken als je op links in berichten, documenten en andere apps tikt.</translation>
+<translation id="7046845777663074840">Indien aan:
+<ph name="BEGIN_INDENT" />  • Help Chrome te verbeteren voor mensen die de browser gebruiken op dezelfde manier als jij.<ph name="END_INDENT" />
+
+Aandachtspunten:
+<ph name="BEGIN_INDENT" />  • Er wordt informatie over je Chrome-gebruik naar Google gestuurd, maar deze informatie wordt niet aan jou gekoppeld.
+
+  • Als Chrome crasht, kunnen details over de crash bepaalde persoonlijke informatie bevatten.
+
+  • Als je synchronisatie aanzet, kunnen statistieken ook informatie bevatten over de URL's die je bezoekt.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Chrome personaliseren</translation>
 <translation id="7124339256045485976">Houd Chrome up-to-date</translation>
 <translation id="7161390184744336561">Google Chrome is verouderd</translation>

@@ -15,8 +15,13 @@ import {getTemplate} from './settings_textarea.html.js';
 
 export interface SettingsTextareaElement {
   $: {
+    firstFooter: HTMLElement,
+    footerContainer: HTMLElement,
     input: HTMLTextAreaElement,
     label: HTMLElement,
+    mirror: HTMLElement,
+    secondFooter: HTMLElement,
+    underline: HTMLElement,
   };
 }
 
@@ -52,6 +57,17 @@ export class SettingsTextareaElement extends PolymerElement {
         observer: 'onDisabledChanged_'
       },
 
+      /** Maximum length (in characters) of the text area. */
+      maxlength: {
+        type: Number,
+      },
+
+      /**
+       * Whether the text area is read only. If read-only, content cannot be
+       * changed.
+       */
+      readonly: Boolean,
+
       /** Number of rows (lines) of the text area. */
       rows: {
         type: Number,
@@ -68,21 +84,57 @@ export class SettingsTextareaElement extends PolymerElement {
       /**
        * Text inside the text area. If the text exceeds the bounds of the text
        * area, i.e. if it has more than |rows| lines, a scrollbar is shown by
-       * default.
+       * default when autogrow is not set.
        */
       value: {
         type: String,
         value: '',
         notify: true,
       },
+
+      /** Whether the textarea can auto-grow vertically or not. */
+      autogrow: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
+
+      /** Whether the textarea is invalid or not. */
+      invalid: {
+        type: Boolean,
+        value: false,
+        reflectToAttribute: true,
+      },
+
+      /**
+       * First footer text below the text area. Can be used to warn user about
+       * character limits.
+       */
+      firstFooter: {
+        type: String,
+        value: '',
+      },
+
+      /**
+       * Second footer text below the text area. Can be used to show current
+       * character count.
+       */
+      secondFooter: {
+        type: String,
+        value: '',
+      },
     };
   }
 
-  autofocus: boolean;
+  override autofocus: boolean;
   disabled: boolean;
   rows: number;
   label: string;
   value: string;
+  autogrow: boolean;
+  invalid: boolean;
+  firstFooter: String;
+  secondFooter: String;
 
   /**
    * 'change' event fires when <input> value changes and user presses 'Enter'.
@@ -92,6 +144,20 @@ export class SettingsTextareaElement extends PolymerElement {
   private onInputChange_(e: Event) {
     this.dispatchEvent(new CustomEvent(
         'change', {bubbles: true, composed: true, detail: {sourceEvent: e}}));
+  }
+
+  private calculateMirror_(): string {
+    if (!this.autogrow) {
+      return '';
+    }
+    // Browsers do not render empty divs. The extra space is used to render the
+    // div when empty.
+    const tokens = this.value ? this.value.split('\n') : [''];
+
+    while (this.rows > 0 && tokens.length < this.rows) {
+      tokens.push('');
+    }
+    return tokens.join('\n') + '&nbsp;';
   }
 
   private onInputFocusChange_() {
@@ -106,6 +172,14 @@ export class SettingsTextareaElement extends PolymerElement {
 
   private onDisabledChanged_() {
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
+  }
+
+  private shouldShowFooter_(): boolean {
+    return !!(this.firstFooter || this.secondFooter);
+  }
+
+  private getFooterAria_(): string {
+    return this.invalid ? 'assertive' : 'polite';
   }
 }
 

@@ -547,7 +547,7 @@ TEST_F(ToastManagerImplTest,
 
   // Cancel the shown toast and wait for the animation to finish.
   CancelToast(id1);
-  task_environment()->FastForwardBy(base::Seconds(1));
+  task_environment()->FastForwardBy(base::Seconds(2));
 
   // Confirm that the toast now showing corresponds with id2.
   EXPECT_EQ(u"TEXT2", GetCurrentText());

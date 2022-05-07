@@ -164,6 +164,7 @@ void SearchBoxView::ClearSearch() {
     app_list_view_->SetStateFromSearchBoxView(
         /*search_box_is_empty=*/true, /*triggered_by_contents_change=*/false);
   }
+  NotifyQueryChanged();
 }
 
 void SearchBoxView::HandleSearchBoxEvent(ui::LocatedEvent* located_event) {
@@ -299,7 +300,7 @@ void SearchBoxView::OnPaintBackground(gfx::Canvas* canvas) {
   if (is_app_list_bubble_) {
     // When the search box is focused, paint a vertical focus bar along the left
     // edge, vertically aligned with the search icon.
-    if (search_box()->HasFocus() && search_box()->GetText().empty()) {
+    if (search_box()->HasFocus() && IsTrimmedQueryEmpty(current_query_)) {
       gfx::Point icon_origin;
       views::View::ConvertPointToTarget(search_icon(), this, &icon_origin);
       PaintFocusBar(canvas, gfx::Point(0, icon_origin.y()),
@@ -582,12 +583,32 @@ void SearchBoxView::ProcessAutocomplete(
   ClearAutocompleteText();
 }
 
+void SearchBoxView::ClearAutocompleteText() {
+  if (!ShouldProcessAutocomplete())
+    return;
+
+  // Avoid triggering subsequent query by temporarily setting controller to
+  // nullptr.
+  search_box()->set_controller(nullptr);
+  // search_box()->ClearCompositionText() does not work here because
+  // SetAutocompleteText() calls SelectRange(), which comfirms the active
+  // composition text (so there is nothing to clear here). Set empty composition
+  // text to clear the selected range.
+  search_box()->SetCompositionText(ui::CompositionText());
+  search_box()->set_controller(this);
+  ResetHighlightRange();
+}
+
 void SearchBoxView::OnResultContainerVisibilityChanged(bool visible) {
   if (search_result_page_visible_ == visible)
     return;
   search_result_page_visible_ = visible;
   UpdateBackground(current_app_list_state_);
   SchedulePaint();
+}
+
+bool SearchBoxView::HasValidQuery() {
+  return !IsTrimmedQueryEmpty(current_query_);
 }
 
 void SearchBoxView::UpdateTextColor() {
@@ -632,22 +653,6 @@ bool SearchBoxView::HasAutocompleteText() {
          highlight_range_.length() > 0;
 }
 
-void SearchBoxView::ClearAutocompleteText() {
-  if (!ShouldProcessAutocomplete())
-    return;
-
-  // Avoid triggering subsequent query by temporarily setting controller to
-  // nullptr.
-  search_box()->set_controller(nullptr);
-  // search_box()->ClearCompositionText() does not work here because
-  // SetAutocompleteText() calls SelectRange(), which comfirms the active
-  // composition text (so there is nothing to clear here). Set empty composition
-  // text to clear the selected range.
-  search_box()->SetCompositionText(ui::CompositionText());
-  search_box()->set_controller(this);
-  ResetHighlightRange();
-}
-
 void SearchBoxView::OnBeforeUserAction(views::Textfield* sender) {
   if (a11y_active_descendant_)
     SetA11yActiveDescendant(absl::nullopt);
@@ -655,10 +660,17 @@ void SearchBoxView::OnBeforeUserAction(views::Textfield* sender) {
 
 void SearchBoxView::ContentsChanged(views::Textfield* sender,
                                     const std::u16string& new_contents) {
-  if (IsTrimmedQueryEmpty(current_query_) && !IsSearchBoxTrimmedQueryEmpty()) {
+  bool current_query_empty = IsTrimmedQueryEmpty(current_query_);
+  bool new_contents_empty = IsTrimmedQueryEmpty(new_contents);
+  if (current_query_empty && !new_contents_empty) {
     // User enters a new search query. Record the action.
     base::RecordAction(base::UserMetricsAction("AppList_SearchQueryStarted"));
   }
+
+  // Schedule paint to update the focus bar, a part of the search box background
+  // that is dependent on whether the query is empty.
+  if (current_query_empty != new_contents_empty)
+    SchedulePaint();
 
   current_query_ = new_contents;
 

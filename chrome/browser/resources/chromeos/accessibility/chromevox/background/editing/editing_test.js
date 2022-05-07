@@ -15,6 +15,18 @@ ChromeVoxEditingTest = class extends ChromeVoxNextE2ETest {
     super();
   }
 
+  /** @override */
+  async setUpDeferred() {
+    await super.setUpDeferred();
+    await importModule(
+        'DesktopAutomationInterface',
+        '/chromevox/background/desktop_automation_interface.js');
+    await importModule(
+        'TextEditHandler', '/chromevox/background/editing/editing.js');
+    await importModule('TtsBackground', '/chromevox/common/tts_background.js');
+    await super.setUpDeferred();
+  }
+
   press(keyCode, modifiers) {
     return function() {
       EventGenerator.sendKeyPress(keyCode, modifiers);
@@ -23,7 +35,7 @@ ChromeVoxEditingTest = class extends ChromeVoxNextE2ETest {
 
   waitForEditableEvent() {
     return new Promise(resolve => {
-      DesktopAutomationHandler.instance.textEditHandler_.onEvent = (e) =>
+      DesktopAutomationInterface.instance.textEditHandler_.onEvent = (e) =>
           resolve(e);
     });
   }
@@ -1907,7 +1919,7 @@ TEST_F(
         // The initial real input is a simple non-rich text field.
         assertEquals(
             'AutomationEditableText',
-            DesktopAutomationHandler.instance.textEditHandler.editableText_
+            DesktopAutomationInterface.instance.textEditHandler.editableText_
                 .constructor.name,
             'Real text field was not a non-rich text.');
 
@@ -1927,7 +1939,7 @@ TEST_F(
         let didThrow = false;
         let handler;
         try {
-          handler = editing.TextEditHandler(input);
+          handler = new TextEditHandler(input);
         } catch (e) {
           didThrow = true;
         }
@@ -1937,7 +1949,7 @@ TEST_F(
         htmlAttributes = {};
         htmlTag = '';
         state = {editable: true};
-        handler = new editing.TextEditHandler(input);
+        handler = new TextEditHandler(input);
         assertEquals(
             'AutomationEditableText', handler.editableText_.constructor.name,
             'Incorrect backing object for simple editable.');
@@ -1946,7 +1958,7 @@ TEST_F(
         htmlAttributes = {};
         htmlTag = '';
         state = {editable: true, multiline: true};
-        handler = new editing.TextEditHandler(input);
+        handler = new TextEditHandler(input);
         assertEquals(
             'AutomationEditableText', handler.editableText_.constructor.name,
             'Incorrect object for multiline editable.');
@@ -1955,7 +1967,7 @@ TEST_F(
         htmlAttributes = {};
         htmlTag = 'textarea';
         state = {editable: true};
-        handler = new editing.TextEditHandler(input);
+        handler = new TextEditHandler(input);
         assertEquals(
             'AutomationRichEditableText',
             handler.editableText_.constructor.name,
@@ -1965,7 +1977,7 @@ TEST_F(
         htmlAttributes = {};
         htmlTag = '';
         state = {editable: true, richlyEditable: true};
-        handler = new editing.TextEditHandler(input);
+        handler = new TextEditHandler(input);
         assertEquals(
             'AutomationRichEditableText',
             handler.editableText_.constructor.name,
@@ -1975,7 +1987,7 @@ TEST_F(
         htmlAttributes = {contenteditable: ''};
         htmlTag = '';
         state = {editable: true};
-        handler = new editing.TextEditHandler(input);
+        handler = new TextEditHandler(input);
         assertEquals(
             'AutomationRichEditableText',
             handler.editableText_.constructor.name,
@@ -1986,7 +1998,7 @@ TEST_F(
         htmlAttributes = {contenteditable: 'true'};
         htmlTag = '';
         state = {editable: true};
-        handler = new editing.TextEditHandler(input);
+        handler = new TextEditHandler(input);
         assertEquals(
             'AutomationRichEditableText',
             handler.editableText_.constructor.name,
@@ -2101,76 +2113,83 @@ TEST_F('ChromeVoxEditingTest', 'TableNavigation', function() {
   });
 });
 
-TEST_F('ChromeVoxEditingTest', 'InputTextBrailleContractions', function() {
-  const site = `
+TEST_F(
+    'ChromeVoxEditingTest', 'InputTextBrailleContractions', function() {
+      const site = `
     <input type=text value="about that"></input>
   `;
-  this.runWithLoadedTree(site, async function(root) {
-    await this.focusFirstTextField(root);
+      this.runWithLoadedTree(site, async function(root) {
+        await this.focusFirstTextField(root);
 
-    // In case LibLouis takes a while to load.
-    if (!ChromeVox.braille.displayManager_.translatorManager_.liblouis_
-             .isLoaded()) {
-      await new Promise(r => {
-        ChromeVox.braille.displayManager_.translatorManager_.liblouis_
-            .onInstanceLoad_ = r;
+        // In case LibLouis takes a while to load.
+        if (!ChromeVox.braille.displayManager_.translatorManager_.liblouis_
+                 .isLoaded()) {
+          await new Promise(r => {
+            ChromeVox.braille.displayManager_.translatorManager_.liblouis_
+                .onInstanceLoad_ = r;
+          });
+        }
+
+        // Fake an available display.
+        ChromeVox.braille.displayManager_.refreshDisplayState_(
+            {available: true, textRowCount: 1, textColumnCount: 40});
+
+        // Set braille to use 6-dot braille (which is defaulted to UEB grade 2
+        // contracted braille).
+        localStorage['brailleTable'] = 'en-ueb-g2';
+
+        // Wait for it to be fully refreshed (liblouis loads the new tables, our
+        // translators are re-created).
+        await BrailleBackground.getInstance()
+            .getTranslatorManager()
+            .loadTablesForTest();
+
+        async function waitForBrailleDots(expectedDots) {
+          return new Promise(r => {
+            chrome.brailleDisplayPrivate.writeDots = (dotsBuffer) => {
+              const view = new Uint8Array(dotsBuffer);
+              const dots = new Array(view.length);
+              view.forEach((item, index) => dots[index] = item.toString(2));
+              if (expectedDots.toString() === dots.toString()) {
+                r();
+              }
+            };
+          });
+        }
+
+        this.press(KeyCode.END)();
+
+        // This test intentionally leaves the raw binary encoding for braille.
+        // Dots are read from right to left.
+        await waitForBrailleDots([
+          // 'ab' is 'about' in UEB Grade 2.
+          1 /* a */, 11 /* b */,
+
+          0 /* space */,
+
+          11110 /* t */, 10011 /* h */, 1 /* a */, 11110 /* t */,
+
+          11000000 /* cursor _ */,
+
+          101011 /* ed contraction */
+        ]);
+
+        this.press(KeyCode.HOME)();
+        await waitForBrailleDots([
+          11000001 /* a with a cursor _*/, 11 /* b */, 10101 /* o */,
+          100101 /* u */, 11110 /* t */,
+
+          0 /* space */,
+
+          // 't' by itself is contracted as 'that'.
+          11110 /* t */,
+
+          0 /* space */,
+
+          101011 /* ed contraction */
+        ]);
       });
-    }
-
-    // Fake an available display.
-    ChromeVox.braille.displayManager_.refreshDisplayState_(
-        {available: true, textRowCount: 1, textColumnCount: 40});
-
-    // Set braille to use 6-dot braille (which is defaulted to UEB grade 2
-    // contracted braille).
-    localStorage['brailleTable'] = 'en-ueb-g2';
-
-    async function waitForBrailleDots(expectedDots) {
-      return new Promise(r => {
-        chrome.brailleDisplayPrivate.writeDots = (dotsBuffer) => {
-          const view = new Uint8Array(dotsBuffer);
-          const dots = new Array(view.length);
-          view.forEach((item, index) => dots[index] = item.toString(2));
-          if (expectedDots.toString() === dots.toString()) {
-            r();
-          }
-        };
-      });
-    }
-
-    this.press(KeyCode.END)();
-
-    // This test intentionally leaves the raw binary encoding for braille. Dots
-    // are read from right to left.
-    await waitForBrailleDots([
-      // 'ab' is 'about' in UEB Grade 2.
-      1 /* a */, 11 /* b */,
-
-      0 /* space */,
-
-      11110 /* t */, 10011 /* h */, 1 /* a */, 11110 /* t */,
-
-      11000000 /* cursor _ */,
-
-      101011 /* ed contraction */
-    ]);
-
-    this.press(KeyCode.HOME)();
-    await waitForBrailleDots([
-      11000001 /* a with a cursor _*/, 11 /* b */, 10101 /* o */,
-      100101 /* u */, 11110 /* t */,
-
-      0 /* space */,
-
-      // 't' by itself is contracted as 'that'.
-      11110 /* t */,
-
-      0 /* space */,
-
-      101011 /* ed contraction */
-    ]);
-  });
-});
+    });
 
 
 TEST_F('ChromeVoxEditingTest', 'ContextMenus', function() {

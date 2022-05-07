@@ -11,14 +11,22 @@ GEN_INCLUDE(['../testing/fake_objects.js']);
  */
 ChromeVoxDesktopAutomationHandlerTest = class extends ChromeVoxNextE2ETest {
   /** @override */
-  setUp() {
-    super.setUp();
+  async setUpDeferred() {
+    await super.setUpDeferred();
+
     window.press = this.press;
 
-    const runTest = this.deferRunTest(WhenTestDone.EXPECT);
-    chrome.automation.getDesktop(desktop => {
-      this.handler_ = new DesktopAutomationHandler(desktop);
-      runTest();
+    await importModule(
+        'DesktopAutomationHandler',
+        '/chromevox/background/desktop_automation_handler.js');
+    await importModule(
+        'DesktopAutomationInterface',
+        '/chromevox/background/desktop_automation_interface.js');
+    await new Promise(r => {
+      chrome.automation.getDesktop(desktop => {
+        this.handler_ = DesktopAutomationInterface.instance;
+        r();
+      });
     });
   }
 

@@ -355,7 +355,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Browser.MemoryFootprint.OnBackground" units="MiB"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>justincohen@chromium.org</owner>
   <owner>olivierrobin@chromium.org</owner>
   <summary>
@@ -391,7 +391,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Browser.PrivateMemoryFootprint.HasZombieProfile"
-    units="MB" expires_after="2022-06-19">
+    units="MB" expires_after="2022-08-21">
+  <obsolete>
+    This histogram was used to measure the impact of the
+    DestroyProfileOnBrowserClose prior to its general launch. Now that it's 100%
+    launched, there is no active A/B test.
+  </obsolete>
   <owner>nicolaso@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -461,7 +466,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Discardable.FreeListReleaseTime" units="microseconds"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -484,7 +489,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Discardable.FreelistSize.Foreground" units="KiB"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -494,7 +499,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Discardable.LargeAllocationFromFreelist"
-    enum="BooleanLargeAllocationFromFreelist" expires_after="2022-07-11">
+    enum="BooleanLargeAllocationFromFreelist" expires_after="2022-09-11">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -504,7 +509,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Discardable.LockingSuccess"
-    enum="BooleanLockingSuccess" expires_after="2022-06-26">
+    enum="BooleanLockingSuccess" expires_after="2022-08-28">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -514,7 +519,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Discardable.Size.Foreground" units="KiB"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -524,7 +529,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Discardable.VirtualSize.Foreground" units="KiB"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -534,7 +539,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.DiscardableAllocationSize" units="KB"
-    expires_after="2022-07-11">
+    expires_after="2022-09-11">
   <owner>reveman@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -1554,7 +1559,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Memory.NativeLibrary.MappedAndResidentMemoryFootprintCollectionStatus"
-    enum="MappedAndResidentPagesDumpState" expires_after="2022-06-26">
+    enum="MappedAndResidentPagesDumpState" expires_after="2022-09-11">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -1805,7 +1810,6 @@ chromium-metrics-reviews@google.com.
     units="MB" expires_after="2022-08-14">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>yashard@chromium.org</owner>
   <summary>
     A rough estimate of the private memory footprint of the paint preview
     compositor process.
@@ -1826,7 +1830,6 @@ chromium-metrics-reviews@google.com.
     expires_after="2023-01-10">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>yashard@chromium.org</owner>
   <summary>
     An amount of private memory of the paint preview compositor process placed
     in swap (VmSwap).
@@ -1840,7 +1843,6 @@ chromium-metrics-reviews@google.com.
     expires_after="2022-08-14">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>yashard@chromium.org</owner>
   <summary>
     The size of the resident memory in a paint preview compositor process. This
     is influenced by factors we control (e.g. memory that is not accessed can be
@@ -1864,7 +1866,6 @@ chromium-metrics-reviews@google.com.
     units="MB" expires_after="2023-01-10">
   <owner>ckitagawa@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>yashard@chromium.org</owner>
   <summary>
     A rough estimate of the shared memory footprint of the paint preview
     compositor process.
@@ -1875,7 +1876,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableImage.DiskIsUsable.5min" enum="BooleanYesNo"
-    expires_after="2022-04-17">
+    expires_after="2022-08-21">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -1887,7 +1888,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableImage.OnDiskSize.5min" units="KiB"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -1910,7 +1911,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableImage.Read.Size" units="KiB"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -1920,7 +1921,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableImage.Read.Throughput" units="MiBps"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -1930,7 +1931,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableImage.Read.TimeSinceFreeze" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -1940,7 +1941,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableImage.TotalReadTime.5min" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -1970,7 +1971,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableImage.UnparkedSize.5min" units="KiB"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>thiabaud@google.com</owner>
   <owner>lizeb@chromium.org</owner>
   <summary>
@@ -2022,7 +2023,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.Compression.Latency"
-    units="microseconds" expires_after="2022-06-19">
+    units="microseconds" expires_after="2022-08-21">
   <owner>lizeb@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -2052,7 +2053,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.CompressionRatio.5min" units="%"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2063,7 +2064,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.Decompression.Latency"
-    units="microseconds" expires_after="2022-06-19">
+    units="microseconds" expires_after="2022-08-21">
   <owner>lizeb@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -2085,7 +2086,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.Decompression.ThroughputMBps"
-    units="MBps" expires_after="2022-06-19">
+    units="MBps" expires_after="2022-08-21">
   <owner>lizeb@chromium.org</owner>
   <owner>thiabaud@google.com</owner>
   <summary>
@@ -2129,7 +2130,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.MainThreadTime.5min" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2140,7 +2141,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.MemorySavingsKb.5min" units="KB"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2175,7 +2176,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.ParkingThreadTime.5min" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2186,7 +2187,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.Read.Latency" units="microseconds"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2198,7 +2199,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.Read.SinceLastDiskWrite" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2207,7 +2208,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.Read.SizeKb" units="KB"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>Size read from disk for a ParkableString.</summary>
@@ -2231,7 +2232,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.ParkableString.SavingsKb.5min" units="KB"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>lizeb@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <summary>
@@ -2358,7 +2359,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Memory.PressureWindowDuration" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
 <!-- Name completed by histogram_suffixes name="Memory.Pressure.TransitionType" -->
 
   <owner>fdoray@chromium.org</owner>
@@ -2603,7 +2604,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.PrivateMemoryFootprint.HasZombieProfile"
-    units="MB" expires_after="2022-06-19">
+    units="MB" expires_after="2022-08-21">
+  <obsolete>
+    This histogram was used to measure the impact of the
+    DestroyProfileOnBrowserClose prior to its general launch. Now that it's 100%
+    launched, there is no active A/B test.
+  </obsolete>
   <owner>nicolaso@chromium.org</owner>
   <owner>cbe-eng@google.com</owner>
   <summary>
@@ -2689,7 +2695,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Memory.Total.SystemCommitLimit" units="GB"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>sadrul@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -2769,6 +2775,14 @@ chromium-metrics-reviews@google.com.
     Android and 30 minutes on other platforms.
 
     Note: Histogram data may be missing between M77 to M87 due to expiry.
+  </summary>
+</histogram>
+
+<histogram name="Memory.UX.Study.1" enum="UXStudy1Arm" expires_after="M110">
+  <owner>erikchen@chromium.org</owner>
+  <owner>meredithguo@google.com</owner>
+  <summary>
+    The arm that the user has opted into for UX Study 1. Logged once on startup.
   </summary>
 </histogram>
 

@@ -10,6 +10,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/components/attestation/fake_certificate.h"
 #include "ash/components/attestation/mock_attestation_flow.h"
 #include "ash/components/cryptohome/system_salt_getter.h"
 #include "ash/constants/ash_switches.h"
@@ -21,6 +22,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_client_factory_ash.h"
@@ -100,11 +102,26 @@ void CopyLockResult(base::RunLoop* loop,
 }
 
 void CertCallbackSuccess(
-    ash::attestation::AttestationFlow::CertificateCallback callback) {
+    ash::attestation::AttestationFlow::CertificateCallback callback,
+    std::string certificate) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(std::move(callback),
-                     chromeos::attestation::ATTESTATION_SUCCESS, "fake_cert"));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                chromeos::attestation::ATTESTATION_SUCCESS,
+                                std::move(certificate)));
+}
+
+void CertCallbackSuccessWithValidCertificate(
+    ash::attestation::AttestationFlow::CertificateCallback callback) {
+  std::string certificate;
+  ash::attestation::GetFakeCertificatePEM(base::Days(10), &certificate);
+  CertCallbackSuccess(std::move(callback), std::move(certificate));
+}
+
+void CertCallbackSuccessWithExpiredCertificate(
+    ash::attestation::AttestationFlow::CertificateCallback callback) {
+  std::string certificate;
+  ash::attestation::GetFakeCertificatePEM(base::Days(-1), &certificate);
+  CertCallbackSuccess(std::move(callback), std::move(certificate));
 }
 
 class TestingDeviceCloudPolicyManagerAsh : public DeviceCloudPolicyManagerAsh {
@@ -122,6 +139,18 @@ class TestingDeviceCloudPolicyManagerAsh : public DeviceCloudPolicyManagerAsh {
   }
 
   ~TestingDeviceCloudPolicyManagerAsh() override {}
+
+  ManagedSessionService* GetManagedSessionService() {
+    return managed_session_service_.get();
+  }
+
+  ash::reporting::LoginLogoutReporter* GetLoginLogoutReporter() {
+    return login_logout_reporter_.get();
+  }
+
+  reporting::UserAddedRemovedReporter* GetUserAddedRemovedReporter() {
+    return user_added_removed_reporter_.get();
+  }
 };
 
 class DeviceCloudPolicyManagerAshTest
@@ -140,11 +169,6 @@ class DeviceCloudPolicyManagerAshTest
         chromeos::system::kSerialNumberKeyForTest, "test_sn");
     fake_statistics_provider_.SetMachineStatistic(
         chromeos::system::kHardwareClassKey, "test_hw");
-    std::vector<std::string> state_keys;
-    state_keys.push_back("1");
-    state_keys.push_back("2");
-    state_keys.push_back("3");
-    session_manager_client_.set_server_backed_state_keys(state_keys);
     session_manager_client_.AddObserver(this);
   }
 
@@ -230,10 +254,23 @@ class DeviceCloudPolicyManagerAshTest
     ASSERT_EQ(chromeos::InstallAttributes::LOCK_SUCCESS, result);
   }
 
+  void AddStateKeys() {
+    std::vector<std::string> state_keys;
+    state_keys.push_back("1");
+    state_keys.push_back("2");
+    state_keys.push_back("3");
+    session_manager_client_.set_server_backed_state_keys(state_keys);
+  }
+
   void ConnectManager(bool expectExternalDataManagerConnectCall = true) {
     if (expectExternalDataManagerConnectCall) {
       EXPECT_CALL(*external_data_manager_, Connect(_));
     }
+    AddStateKeys();
+    InitDeviceCloudPolicyInitializer();
+  }
+
+  void InitDeviceCloudPolicyInitializer() {
     manager_->Initialize(&local_state_);
     policy::EnrollmentRequisitionManager::Initialize();
     initializer_ = std::make_unique<DeviceCloudPolicyInitializer>(
@@ -348,6 +385,9 @@ TEST_F(DeviceCloudPolicyManagerAshTest, EnrolledDevice) {
             job_type);
   // Should create a status uploader for reporting on enrolled devices.
   EXPECT_TRUE(manager_->GetStatusUploader());
+  EXPECT_TRUE(manager_->GetManagedSessionService());
+  EXPECT_TRUE(manager_->GetLoginLogoutReporter());
+  EXPECT_TRUE(manager_->GetUserAddedRemovedReporter());
   VerifyPolicyPopulated();
 
   ShutdownManager();
@@ -386,6 +426,9 @@ TEST_F(DeviceCloudPolicyManagerAshTest, UnmanagedDevice) {
   // Should create a status provider for reporting on enrolled devices, even
   // those that aren't managed.
   EXPECT_TRUE(manager_->GetStatusUploader());
+  EXPECT_TRUE(manager_->GetManagedSessionService());
+  EXPECT_TRUE(manager_->GetLoginLogoutReporter());
+  EXPECT_TRUE(manager_->GetUserAddedRemovedReporter());
 
   // Switch back to ACTIVE, service the policy fetch and let it propagate.
   device_policy_->policy_data().set_state(em::PolicyData::ACTIVE);
@@ -417,9 +460,43 @@ TEST_F(DeviceCloudPolicyManagerAshTest, ConsumerDevice) {
   EXPECT_TRUE(manager_->policies().Equals(bundle));
   // Should not create a status provider for reporting on consumer devices.
   EXPECT_FALSE(manager_->GetStatusUploader());
+  EXPECT_FALSE(manager_->GetManagedSessionService());
+  EXPECT_FALSE(manager_->GetLoginLogoutReporter());
+  EXPECT_FALSE(manager_->GetUserAddedRemovedReporter());
 
   ShutdownManager();
   EXPECT_TRUE(manager_->policies().Equals(bundle));
+}
+
+TEST_F(DeviceCloudPolicyManagerAshTest, EnrolledDeviceNoStateKeysGenerated) {
+  LockDevice();
+  FlushDeviceSettings();
+  EXPECT_EQ(CloudPolicyStore::STATUS_OK, store_->status());
+  EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
+  VerifyPolicyPopulated();
+
+  EXPECT_CALL(job_creation_handler_, OnJobCreation).Times(0);
+  AllowUninterestingRemoteCommandFetches();
+
+  EXPECT_FALSE(manager_->GetManagedSessionService());
+  EXPECT_FALSE(manager_->GetLoginLogoutReporter());
+  EXPECT_FALSE(manager_->GetUserAddedRemovedReporter());
+
+  InitDeviceCloudPolicyInitializer();
+
+  // Status uploader for reporting on enrolled devices is only created on
+  // connect call.
+  EXPECT_FALSE(manager_->GetStatusUploader());
+  // Managed session service and reporters are created when notified by
+  // |DeviceCloudPolicyInitializer| that the policy store is ready.
+  EXPECT_TRUE(manager_->GetManagedSessionService());
+  EXPECT_TRUE(manager_->GetLoginLogoutReporter());
+  EXPECT_TRUE(manager_->GetUserAddedRemovedReporter());
+
+  ShutdownManager();
+
+  EXPECT_EQ(store_->policy()->service_account_identity(),
+            PolicyBuilder::kFakeServiceAccountIdentity);
 }
 
 class DeviceCloudPolicyManagerAshObserverTest
@@ -533,9 +610,27 @@ class DeviceCloudPolicyManagerAshEnrollmentTest
     EXPECT_TRUE(manager_->policies().Equals(bundle));
 
     if (ShouldRegisterWithCert()) {
-      EXPECT_CALL(mock_attestation_flow_, GetCertificate(_, _, _, _, _, _))
-          .WillOnce(WithArgs<5>(Invoke(CertCallbackSuccess)));
+      // TODO(crbug.com/1298989): This expectation tests implementation details
+      // of EnrollmentHandler which is not the scope of this tests. Remove it
+      // once EnrollmentHandler has its own unit tests.
+      EXPECT_CALL(
+          mock_attestation_flow_,
+          GetCertificate(
+              ash::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE, _, _,
+              /*force_new_key=*/false, _, _))
+          .Times(1)
+          .WillOnce(
+              WithArgs<5>(Invoke(CertCallbackSuccessWithExpiredCertificate)));
+      EXPECT_CALL(
+          mock_attestation_flow_,
+          GetCertificate(
+              ash::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE, _, _,
+              /*force_new_key=*/true, _, _))
+          .Times(1)
+          .WillOnce(
+              WithArgs<5>(Invoke(CertCallbackSuccessWithValidCertificate)));
     }
+    AddStateKeys();
   }
 
   void ExpectFailedEnrollment(EnrollmentStatus::Status status) {

@@ -142,25 +142,12 @@ void CoreOobeHandler::FocusReturned(bool reverse) {
   CallJS("cr.ui.Oobe.focusReturned", reverse);
 }
 
-void CoreOobeHandler::ResetSignInUI(bool force_online) {
-  CallJS("cr.ui.Oobe.resetSigninUI", force_online);
-}
-
 void CoreOobeHandler::ReloadContent(const base::DictionaryValue& dictionary) {
   CallJS("cr.ui.Oobe.reloadContent", dictionary);
 }
 
 void CoreOobeHandler::SetVirtualKeyboardShown(bool shown) {
   CallJS("cr.ui.Oobe.setVirtualKeyboardShown", shown);
-}
-
-void CoreOobeHandler::SetClientAreaSize(int width, int height) {
-  // TODO(crbug.com/1180291) - Remove once OOBE JS calls are fixed.
-  if (IsSafeToCallJavascript()) {
-    CallJS("cr.ui.Oobe.setClientAreaSize", width, height);
-  } else {
-    LOG(ERROR) << "Silently dropping SetClientAreaSize request.";
-  }
 }
 
 void CoreOobeHandler::SetShelfHeight(int height) {
@@ -320,7 +307,6 @@ void CoreOobeHandler::OnTabletModeEnded() {
 }
 
 void CoreOobeHandler::UpdateClientAreaSize(const gfx::Size& size) {
-  SetClientAreaSize(size.width(), size.height());
   SetShelfHeight(ash::ShelfConfig::Get()->shelf_size());
   const gfx::Size display_size =
       display::Screen::GetScreen()->GetPrimaryDisplay().size();

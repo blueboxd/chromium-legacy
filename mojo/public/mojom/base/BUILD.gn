@@ -315,12 +315,22 @@ mojom_component("base") {
           move_only = true
         },
         {
+          mojom = "mojo_base.mojom.DictionaryValue"
+          cpp = "::base::Value::Dict"
+          move_only = true
+        },
+        {
           mojom = "mojo_base.mojom.ListValue"
+          cpp = "::base::Value::List"
+          move_only = true
+        },
+        {
+          mojom = "mojo_base.mojom.DeprecatedDictionaryValue"
           cpp = "::base::Value"
           move_only = true
         },
         {
-          mojom = "mojo_base.mojom.DictionaryValue"
+          mojom = "mojo_base.mojom.DeprecatedListValue"
           cpp = "::base::Value"
           move_only = true
         },

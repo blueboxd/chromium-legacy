@@ -158,44 +158,31 @@ ProcessorEntity* ClientTagBasedRemoteUpdateHandler::ProcessUpdate(
   // moved away into ResolveConflict().
   const std::string update_encryption_key_name = update.encryption_key_name;
   const bool update_is_tombstone = data.is_deleted();
-  if (entity && entity->IsUnsynced()) {
+  if (entity == nullptr) {
+    // Remote creation.
+    DCHECK(!data.is_deleted());
+    entity = CreateEntity(update);
+    entity_changes->push_back(EntityChange::CreateAdd(
+        entity->storage_key(), std::move(update.entity)));
+  } else if (entity->IsUnsynced()) {
+    // Conflict.
     ResolveConflict(std::move(update), entity, entity_changes,
                     storage_key_to_clear);
+  } else if (data.is_deleted()) {
+    // Remote deletion. Note that the local data cannot be already deleted,
+    // because it would have been treated as a conflict earlier above.
+    DCHECK(!entity->metadata().is_deleted());
+    entity->RecordAcceptedRemoteUpdate(update);
+    entity_changes->push_back(
+        EntityChange::CreateDelete(entity->storage_key()));
+  } else if (entity->MatchesData(data)) {
+    // Remote update that is a no-op and can be ignored.
+    entity->RecordIgnoredRemoteUpdate(update);
   } else {
-    // Handle simple create/delete/update.
-    absl::optional<EntityChange::ChangeType> change_type;
-
-    if (entity == nullptr) {
-      entity = CreateEntity(data);
-      change_type = EntityChange::ACTION_ADD;
-    } else if (data.is_deleted()) {
-      DCHECK(!entity->metadata().is_deleted());
-      change_type = EntityChange::ACTION_DELETE;
-    } else if (!entity->MatchesData(data)) {
-      change_type = EntityChange::ACTION_UPDATE;
-    }
-    entity->RecordAcceptedUpdate(update);
-    // Inform the bridge about the changes if needed.
-    if (change_type) {
-      switch (change_type.value()) {
-        case EntityChange::ACTION_ADD:
-          entity_changes->push_back(EntityChange::CreateAdd(
-              entity->storage_key(), std::move(update.entity)));
-          break;
-        case EntityChange::ACTION_DELETE:
-          // The entity was deleted; inform the bridge. Note that the local data
-          // can never be deleted at this point because it would have either
-          // been acked (the add case) or pending (the conflict case).
-          entity_changes->push_back(
-              EntityChange::CreateDelete(entity->storage_key()));
-          break;
-        case EntityChange::ACTION_UPDATE:
-          // Specifics have changed, so update the bridge.
-          entity_changes->push_back(EntityChange::CreateUpdate(
-              entity->storage_key(), std::move(update.entity)));
-          break;
-      }
-    }
+    // Remote update.
+    entity->RecordAcceptedRemoteUpdate(update);
+    entity_changes->push_back(EntityChange::CreateUpdate(
+        entity->storage_key(), std::move(update.entity)));
   }
 
   // If the received entity has out of date encryption, we schedule another
@@ -249,13 +236,13 @@ void ClientTagBasedRemoteUpdateHandler::ResolveConflict(
   switch (resolution_type) {
     case ConflictResolution::kChangesMatch:
       // Record the update and squash the pending commit.
-      entity->RecordForcedUpdate(update);
+      entity->RecordForcedRemoteUpdate(update);
       break;
     case ConflictResolution::kUseLocal:
     case ConflictResolution::kIgnoreRemoteEncryption:
       // Record that we received the update from the server but leave the
       // pending commit intact.
-      entity->RecordIgnoredUpdate(update);
+      entity->RecordIgnoredRemoteUpdate(update);
       break;
     case ConflictResolution::kUseRemote:
     case ConflictResolution::kIgnoreLocalEncryption:
@@ -263,11 +250,11 @@ void ClientTagBasedRemoteUpdateHandler::ResolveConflict(
       if (update.entity.is_deleted()) {
         DCHECK(!entity->metadata().is_deleted());
         // Squash the pending commit.
-        entity->RecordForcedUpdate(update);
+        entity->RecordForcedRemoteUpdate(update);
         changes->push_back(EntityChange::CreateDelete(entity->storage_key()));
       } else if (!entity->metadata().is_deleted()) {
         // Squash the pending commit.
-        entity->RecordForcedUpdate(update);
+        entity->RecordForcedRemoteUpdate(update);
         changes->push_back(EntityChange::CreateUpdate(
             entity->storage_key(), std::move(update.entity)));
       } else {
@@ -279,7 +266,7 @@ void ClientTagBasedRemoteUpdateHandler::ResolveConflict(
           DCHECK(entity->storage_key().empty());
         }
         // Squash the pending commit.
-        entity->RecordForcedUpdate(update);
+        entity->RecordForcedRemoteUpdate(update);
         changes->push_back(EntityChange::CreateAdd(entity->storage_key(),
                                                    std::move(update.entity)));
       }
@@ -288,23 +275,19 @@ void ClientTagBasedRemoteUpdateHandler::ResolveConflict(
 }
 
 ProcessorEntity* ClientTagBasedRemoteUpdateHandler::CreateEntity(
-    const std::string& storage_key,
-    const EntityData& data) {
-  DCHECK(!data.client_tag_hash.value().empty());
-  DCHECK(!bridge_->SupportsGetStorageKey() || !storage_key.empty());
-  return entity_tracker_->Add(storage_key, data);
-}
-
-ProcessorEntity* ClientTagBasedRemoteUpdateHandler::CreateEntity(
-    const EntityData& data) {
+    const UpdateResponseData& update) {
+  DCHECK(!update.entity.client_tag_hash.value().empty());
   if (bridge_->SupportsGetClientTag()) {
-    DCHECK_EQ(data.client_tag_hash,
-              ClientTagHash::FromUnhashed(type_, bridge_->GetClientTag(data)));
+    DCHECK_EQ(update.entity.client_tag_hash,
+              ClientTagHash::FromUnhashed(
+                  type_, bridge_->GetClientTag(update.entity)));
   }
   std::string storage_key;
-  if (bridge_->SupportsGetStorageKey())
-    storage_key = bridge_->GetStorageKey(data);
-  return CreateEntity(storage_key, data);
+  if (bridge_->SupportsGetStorageKey()) {
+    storage_key = bridge_->GetStorageKey(update.entity);
+    DCHECK(!storage_key.empty());
+  }
+  return entity_tracker_->AddRemote(storage_key, update);
 }
 
 }  // namespace syncer

@@ -62,7 +62,6 @@
 <translation id="2666092431469916601">Vrch</translation>
 <translation id="2701330563083355633">Zdieľané zo zariadenia <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Nové</translation>
-<translation id="2743387203779672305">Kopírovať do schránky</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{pred rokom}few{pred # rokmi}many{pred # rokom}other{pred # rokmi}}</translation>
 <translation id="2878511608894704031">Odstrániť všetko</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{o 1 d.}few{o # d.}many{o # d.}other{o # d.}}</translation>
@@ -94,10 +93,11 @@
 <translation id="3889424535448813030">Šípka doprava</translation>
 <translation id="3897092660631435901">Ponuka</translation>
 <translation id="3909791450649380159">&amp;Vystrihnúť</translation>
+<translation id="3924145049010392604">Meta</translation>
 <translation id="3990502903496589789">Pravý okraj</translation>
 <translation id="3994749195054421561">Stĺpec <ph name="COLUMN_NAME" /> je zoradený vo vzostupnom poradí.</translation>
+<translation id="4031910098617850788">F5</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 neprečítané upozornenie}few{# neprečítané upozornenia}many{# Unread Notifications}other{# neprečítaných upozornení}}</translation>
-<translation id="4250229828105606438">Snímka obrazovky</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{pred mesiacom}few{pred # mesiacmi}many{pred # mesiacom}other{pred # mesiacmi}}</translation>
 <translation id="4289300219472526559">Začať hovoriť</translation>
 <translation id="4289540628985791613">Prehľad</translation>
@@ -204,7 +204,6 @@
 <translation id="8730621377337864115">Hotovo</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}few{# h}many{# h}other{# h}}</translation>
 <translation id="8798099450830957504">Predvolené</translation>
-<translation id="883911313571074303">Pridať k obrázku poznámku</translation>
 <translation id="8841375032071747811">Tlačidlo Späť</translation>
 <translation id="8867568208303837180">Odosiela sa...</translation>
 <translation id="8876215549894133151">Formát:</translation>

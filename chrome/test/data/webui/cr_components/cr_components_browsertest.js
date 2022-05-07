@@ -43,7 +43,7 @@ TEST_F('CrComponentsColorChangeListenerTest', 'All', function() {
 var CrComponentsManagedFootnoteTest = class extends CrComponentsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_components/managed_footnote_test.js';
+    return 'chrome://test/test_loader.html?module=cr_components/managed_footnote_test.js&host=webui-test';
   }
 };
 
@@ -60,7 +60,7 @@ GEN('#if BUILDFLAG(USE_NSS_CERTS)');
 var CrComponentsCertificateManagerTest = class extends CrComponentsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_test.js';
+    return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_test.js&host=webui-test';
   }
 };
 
@@ -82,7 +82,7 @@ var CrComponentsCertificateManagerProvisioningTest =
     class extends CrComponentsCertificateManagerTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_provisioning_test.js';
+    return 'chrome://settings/test_loader.html?module=cr_components/certificate_manager_provisioning_test.js&host=webui-test';
   }
 };
 
@@ -95,10 +95,21 @@ GEN('#endif  // BUILDFLAG(USE_NSS_CERTS) && BUILDFLAG(IS_CHROMEOS_ASH)');
 var CrComponentsManagedDialogTest = class extends CrComponentsBrowserTest {
   /** @override */
   get browsePreload() {
-    return 'chrome://test/test_loader.html?module=cr_components/managed_dialog_test.js';
+    return 'chrome://test/test_loader.html?module=cr_components/managed_dialog_test.js&host=webui-test';
   }
 };
 
 TEST_F('CrComponentsManagedDialogTest', 'All', function() {
+  mocha.run();
+});
+
+var CrComponentsLocalizedLinkTest = class extends CrComponentsBrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://test/test_loader.html?module=cr_components/localized_link_test.js';
+  }
+};
+
+TEST_F('CrComponentsLocalizedLinkTest', 'All', function() {
   mocha.run();
 });

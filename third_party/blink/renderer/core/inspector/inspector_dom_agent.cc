@@ -40,6 +40,7 @@
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_container_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/dom/attr.h"
 #include "third_party/blink/renderer/core/dom/character_data.h"
 #include "third_party/blink/renderer/core/dom/container_node.h"
@@ -210,14 +211,16 @@ protocol::DOM::PseudoType InspectorDOMAgent::ProtocolPseudoElementType(
       return protocol::DOM::PseudoTypeEnum::Resizer;
     case kPseudoIdInputListButton:
       return protocol::DOM::PseudoTypeEnum::InputListButton;
-    case kPseudoIdTransition:
-      return protocol::DOM::PseudoTypeEnum::Transition;
-    case kPseudoIdTransitionContainer:
-      return protocol::DOM::PseudoTypeEnum::TransitionContainer;
-    case kPseudoIdTransitionNewContent:
-      return protocol::DOM::PseudoTypeEnum::TransitionNewContent;
-    case kPseudoIdTransitionOldContent:
-      return protocol::DOM::PseudoTypeEnum::TransitionOldContent;
+    case kPseudoIdPageTransition:
+      return protocol::DOM::PseudoTypeEnum::PageTransition;
+    case kPseudoIdPageTransitionContainer:
+      return protocol::DOM::PseudoTypeEnum::PageTransitionContainer;
+    case kPseudoIdPageTransitionImageWrapper:
+      return protocol::DOM::PseudoTypeEnum::PageTransitionImageWrapper;
+    case kPseudoIdPageTransitionIncomingImage:
+      return protocol::DOM::PseudoTypeEnum::PageTransitionIncomingImage;
+    case kPseudoIdPageTransitionOutgoingImage:
+      return protocol::DOM::PseudoTypeEnum::PageTransitionOutgoingImage;
     case kAfterLastInternalPseudoId:
     case kPseudoIdNone:
       CHECK(false);
@@ -1447,11 +1450,9 @@ Response InspectorDOMAgent::getNodeStackTraces(
   if (!response.IsSuccess())
     return response;
 
-  InspectorSourceLocation* creation_inspector_source_location =
-      node_to_creation_source_location_map_.at(node);
-  if (creation_inspector_source_location) {
-    SourceLocation& source_location =
-        creation_inspector_source_location->GetSourceLocation();
+  auto it = node_to_creation_source_location_map_.find(node);
+  if (it != node_to_creation_source_location_map_.end()) {
+    SourceLocation& source_location = it->value->GetSourceLocation();
     *creation = source_location.BuildInspectorObject();
   }
   return Response::Success();
@@ -1592,7 +1593,8 @@ Response InspectorDOMAgent::getContainerForNode(
   element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
   StyleResolver& style_resolver = element->GetDocument().GetStyleResolver();
   Element* container = style_resolver.FindContainerForElement(
-      element, AtomicString(container_name.fromMaybe(g_null_atom)));
+      element,
+      ContainerSelector(AtomicString(container_name.fromMaybe(g_null_atom))));
   if (container)
     *container_node_id = PushNodePathToFrontend(container);
   return Response::Success();
@@ -1648,7 +1650,7 @@ bool InspectorDOMAgent::ContainerQueriedByElement(Element* container,
       auto* container_rule = DynamicTo<CSSContainerRule>(parent_rule);
       if (container_rule) {
         if (container == style_resolver.FindContainerForElement(
-                             element, container_rule->Name()))
+                             element, container_rule->Selector()))
           return true;
       }
 

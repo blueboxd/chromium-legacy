@@ -330,7 +330,8 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
       bool scroll_and_viewport_changes_synced);
   virtual void ReadyToCommit(
       const viz::BeginFrameArgs& commit_args,
-      const BeginMainFrameMetrics* begin_main_frame_metrics);
+      const BeginMainFrameMetrics* begin_main_frame_metrics,
+      bool commit_timeout = false);
   virtual void BeginCommit(int source_frame_number);
   virtual void FinishCommit(CommitState& commit_state,
                             const ThreadUnsafeCommitState& unsafe_state);
@@ -468,9 +469,14 @@ class CC_EXPORT LayerTreeHostImpl : public TileManagerClient,
   // `DrawLayers()` is called between the two.
   virtual DrawResult PrepareToDraw(FrameData* frame);
 
-  // If there is no damage, returns `absl::nullopt`; otherwise, returns set of
+  // If there is no damage, returns `absl::nullopt`; otherwise, returns
+  // information about the submitted frame including submit time and a set of
   // `EventMetrics` for the frame.
-  virtual absl::optional<EventMetricsSet> DrawLayers(FrameData* frame);
+  struct SubmitInfo {
+    base::TimeTicks time;
+    EventMetricsSet events_metrics;
+  };
+  virtual absl::optional<SubmitInfo> DrawLayers(FrameData* frame);
 
   // Must be called if and only if PrepareToDraw was called.
   void DidDrawAllLayers(const FrameData& frame);

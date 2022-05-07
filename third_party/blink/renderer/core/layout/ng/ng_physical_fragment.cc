@@ -28,12 +28,11 @@ namespace blink {
 namespace {
 
 struct SameSizeAsNGPhysicalFragment
-    : RefCounted<const NGPhysicalFragment, NGPhysicalFragmentTraits> {
-  UntracedMember<void*> layout_object;
+    : public GarbageCollected<SameSizeAsNGPhysicalFragment> {
+  Member<void*> layout_object;
   PhysicalSize size;
   unsigned flags;
-  Persistent<void*> break_token;
-  std::unique_ptr<void> oof_data;
+  Member<void*> members[2];
 };
 
 ASSERT_SIZE(NGPhysicalFragment, SameSizeAsNGPhysicalFragment);
@@ -327,11 +326,6 @@ class FragmentTreeDumper {
 
 }  // namespace
 
-// static
-void NGPhysicalFragmentTraits::Destruct(const NGPhysicalFragment* fragment) {
-  fragment->Destroy();
-}
-
 NGPhysicalFragment::NGPhysicalFragment(NGContainerFragmentBuilder* builder,
                                        WritingMode block_or_line_writing_mode,
                                        NGFragmentType type,
@@ -373,16 +367,15 @@ NGPhysicalFragment::NGPhysicalFragment(NGContainerFragmentBuilder* builder,
   children_valid_ = true;
 }
 
-std::unique_ptr<NGPhysicalFragment::OutOfFlowData>
-NGPhysicalFragment::OutOfFlowDataFromBuilder(
+NGPhysicalFragment::OutOfFlowData* NGPhysicalFragment::OutOfFlowDataFromBuilder(
     NGContainerFragmentBuilder* builder) {
-  std::unique_ptr<OutOfFlowData> oof_data;
+  OutOfFlowData* oof_data = nullptr;
   if (has_fragmented_out_of_flow_data_)
     oof_data = FragmentedOutOfFlowDataFromBuilder(builder);
 
   if (!builder->oof_positioned_descendants_.IsEmpty()) {
     if (!oof_data)
-      oof_data = std::make_unique<OutOfFlowData>();
+      oof_data = MakeGarbageCollected<OutOfFlowData>();
     oof_data->oof_positioned_descendants.ReserveCapacity(
         builder->oof_positioned_descendants_.size());
     const PhysicalSize& size = Size();
@@ -444,19 +437,17 @@ NGPhysicalFragment::NGPhysicalFragment(const NGPhysicalFragment& other,
   DCHECK(children_valid_);
 }
 
-// Keep the implementation of the destructor here, to avoid dependencies on
-// ComputedStyle in the header file.
-NGPhysicalFragment::~NGPhysicalFragment() = default;
+NGPhysicalFragment::~NGPhysicalFragment() {
+  Dispose();
+}
 
-void NGPhysicalFragment::Destroy() const {
-  if (UNLIKELY(oof_data_ && has_fragmented_out_of_flow_data_))
-    const_cast<NGPhysicalFragment*>(this)->ClearOutOfFlowData();
+void NGPhysicalFragment::Dispose() {
   switch (Type()) {
     case kFragmentBox:
-      delete static_cast<const NGPhysicalBoxFragment*>(this);
+      static_cast<NGPhysicalBoxFragment*>(this)->Dispose();
       break;
     case kFragmentLineBox:
-      delete static_cast<const NGPhysicalLineBoxFragment*>(this);
+      static_cast<NGPhysicalLineBoxFragment*>(this)->Dispose();
       break;
   }
 }
@@ -466,34 +457,27 @@ bool NGPhysicalFragment::IsBlockFlow() const {
 }
 
 bool NGPhysicalFragment::IsTextControlContainer() const {
-  return blink::IsTextControlContainer(layout_object_->GetNode());
+  return IsCSSBox() && blink::IsTextControlContainer(layout_object_->GetNode());
 }
 
 bool NGPhysicalFragment::IsTextControlPlaceholder() const {
-  return blink::IsTextControlPlaceholder(layout_object_->GetNode());
-}
-
-bool NGPhysicalFragment::IsPlacedByLayoutNG() const {
-  // TODO(kojii): Move this to a flag for |LayoutNGBlockFlow::UpdateBlockLayout|
-  // to set.
-  if (IsLineBox())
-    return false;
-  if (IsFragmentainerBox())
-    return true;
-  const LayoutBlock* container = layout_object_->ContainingBlock();
-  if (!container)
-    return false;
-  return container->IsLayoutNGObject();
+  return IsCSSBox() &&
+         blink::IsTextControlPlaceholder(layout_object_->GetNode());
 }
 
 NGFragmentedOutOfFlowData* NGPhysicalFragment::FragmentedOutOfFlowData() const {
   if (!has_fragmented_out_of_flow_data_)
     return nullptr;
   auto* oof_data =
-      reinterpret_cast<NGFragmentedOutOfFlowData*>(oof_data_.get());
+      reinterpret_cast<NGFragmentedOutOfFlowData*>(oof_data_.Get());
   DCHECK(!oof_data->multicols_with_pending_oofs.IsEmpty() ||
          !oof_data->oof_positioned_fragmentainer_descendants.IsEmpty());
   return oof_data;
+}
+
+bool NGPhysicalFragment::HasNestedMulticolsWithOOFs() const {
+  const NGFragmentedOutOfFlowData* oof_data = FragmentedOutOfFlowData();
+  return oof_data && !oof_data->multicols_with_pending_oofs.IsEmpty();
 }
 
 bool NGPhysicalFragment::NeedsOOFPositionedInfoPropagation() const {
@@ -507,20 +491,13 @@ bool NGPhysicalFragment::NeedsOOFPositionedInfoPropagation() const {
   return !!oof_data_;
 }
 
-void NGPhysicalFragment::ClearOutOfFlowData() {
-  CHECK(oof_data_ && has_fragmented_out_of_flow_data_);
-  auto* oof_data = const_cast<std::unique_ptr<OutOfFlowData>*>(&oof_data_);
-  reinterpret_cast<std::unique_ptr<NGFragmentedOutOfFlowData>*>(oof_data)
-      ->reset();
-}
-
-std::unique_ptr<NGPhysicalFragment::OutOfFlowData>
-NGPhysicalFragment::CloneOutOfFlowData() const {
+NGPhysicalFragment::OutOfFlowData* NGPhysicalFragment::CloneOutOfFlowData()
+    const {
   DCHECK(oof_data_);
   if (!has_fragmented_out_of_flow_data_)
-    return std::make_unique<OutOfFlowData>(*oof_data_);
+    return MakeGarbageCollected<OutOfFlowData>(*oof_data_);
   DCHECK(FragmentedOutOfFlowData());
-  return std::make_unique<NGFragmentedOutOfFlowData>(
+  return MakeGarbageCollected<NGFragmentedOutOfFlowData>(
       *FragmentedOutOfFlowData());
 }
 
@@ -638,23 +615,6 @@ void NGPhysicalFragment::AdjustScrollableOverflowForPropagation(
   }
 }
 
-const HeapVector<NGInlineItem>&
-NGPhysicalFragment::InlineItemsOfContainingBlock() const {
-  DCHECK(IsInline());
-  DCHECK(GetLayoutObject());
-  LayoutBlockFlow* block_flow = GetLayoutObject()->FragmentItemsContainer();
-  // TODO(xiaochengh): Code below is copied from ng_offset_mapping.cc with
-  // modification. Unify them.
-  DCHECK(block_flow);
-  NGBlockNode block_node = NGBlockNode(block_flow);
-  DCHECK(block_node.IsInlineFormattingContextRoot());
-  DCHECK(block_node.CanUseNewLayout());
-  NGLayoutInputNode node = block_node.FirstChild();
-
-  // TODO(xiaochengh): Handle ::first-line.
-  return To<NGInlineNode>(node).ItemsData(false).items;
-}
-
 TouchAction NGPhysicalFragment::EffectiveAllowedTouchAction() const {
   DCHECK(layout_object_);
   return layout_object_->EffectiveAllowedTouchAction();
@@ -669,12 +629,6 @@ LogicalRect NGPhysicalFragment::ConvertChildToLogical(
     const PhysicalRect& physical_rect) const {
   return WritingModeConverter(Style().GetWritingDirection(), Size())
       .ToLogical(physical_rect);
-}
-
-PhysicalRect NGPhysicalFragment::ConvertChildToPhysical(
-    const LogicalRect& logical_rect) const {
-  return WritingModeConverter(Style().GetWritingDirection(), Size())
-      .ToPhysical(logical_rect);
 }
 
 String NGPhysicalFragment::ToString() const {
@@ -724,6 +678,25 @@ String NGPhysicalFragment::DumpFragmentTree(const LayoutObject& root,
   return string_builder.ToString();
 }
 
+void NGPhysicalFragment::Trace(Visitor* visitor) const {
+  switch (Type()) {
+    case kFragmentBox:
+      static_cast<const NGPhysicalBoxFragment*>(this)->TraceAfterDispatch(
+          visitor);
+      break;
+    case kFragmentLineBox:
+      static_cast<const NGPhysicalLineBoxFragment*>(this)->TraceAfterDispatch(
+          visitor);
+      break;
+  }
+}
+
+void NGPhysicalFragment::TraceAfterDispatch(Visitor* visitor) const {
+  visitor->Trace(layout_object_);
+  visitor->Trace(break_token_);
+  visitor->Trace(oof_data_);
+}
+
 // TODO(dlibby): remove `Children` and `PostLayoutChildren` and move the
 // casting and/or branching to the callers.
 base::span<const NGLink> NGPhysicalFragment::Children() const {
@@ -746,7 +719,7 @@ void NGPhysicalFragment::SetChildrenInvalid() const {
     return;
 
   for (const NGLink& child : Children()) {
-    const_cast<NGLink&>(child).fragment->Release();
+    const_cast<NGLink&>(child).fragment = nullptr;
   }
   children_valid_ = false;
 }
@@ -1065,8 +1038,8 @@ bool NGPhysicalFragment::DependsOnPercentageBlockSize(
   return false;
 }
 
-PhysicalRect NGPhysicalFragmentWithOffset::RectInContainerBox() const {
-  return {offset_to_container_box, fragment->Size()};
+void NGPhysicalFragment::OutOfFlowData::Trace(Visitor* visitor) const {
+  visitor->Trace(oof_positioned_descendants);
 }
 
 std::ostream& operator<<(std::ostream& out,

@@ -5,28 +5,37 @@
 #include "gpu/command_buffer/service/shared_image_representation_dawn_egl_image.h"
 
 #include "build/build_config.h"
-#if BUILDFLAG(IS_WIN)
-#include "gpu/command_buffer/service/shared_image_backing_d3d.h"
-#endif
+#include "gpu/command_buffer/service/texture_manager.h"
 
 #include <dawn/native/OpenGLBackend.h>
+
+namespace {
+GLenum ToSharedImageAccessGLMode(WGPUTextureUsage usage) {
+  if (usage & (WGPUTextureUsage_CopyDst | WGPUTextureUsage_RenderAttachment |
+               WGPUTextureUsage_StorageBinding | WGPUTextureUsage_Present)) {
+    return GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM;
+  } else {
+    return GL_SHARED_IMAGE_ACCESS_MODE_READ_CHROMIUM;
+  }
+}
+}  // namespace
 
 namespace gpu {
 
 SharedImageRepresentationDawnEGLImage::SharedImageRepresentationDawnEGLImage(
+    std::unique_ptr<SharedImageRepresentationGLTexturePassthrough>
+        gl_representation,
     SharedImageManager* manager,
     SharedImageBacking* backing,
     MemoryTypeTracker* tracker,
     WGPUDevice device,
-    EGLImage image,
     const WGPUTextureDescriptor& texture_descriptor)
     : SharedImageRepresentationDawn(manager, backing, tracker),
+      gl_representation_(std::move(gl_representation)),
       device_(device),
-      image_(image),
       texture_descriptor_(texture_descriptor),
       dawn_procs_(dawn::native::GetProcs()) {
   DCHECK(device_);
-  DCHECK(image_);
 
   // Keep a reference to the device so that it stays valid.
   dawn_procs_.deviceReference(device_);
@@ -41,16 +50,13 @@ SharedImageRepresentationDawnEGLImage::
 
 WGPUTexture SharedImageRepresentationDawnEGLImage::BeginAccess(
     WGPUTextureUsage usage) {
-#if BUILDFLAG(IS_WIN)
-  // On D3D11 backings, we must acquire the keyed mutex to do interop. If we
-  // ever switch to non-D3D backings on Windows, this code will break horribly.
-  // TODO(senorblanco): This should probably be a virtual on SharedImageBacking
-  // to avoid this cast.
-  static_cast<SharedImageBackingD3D*>(backing())->BeginAccessD3D11();
-#endif
+  gl_representation_->BeginAccess(ToSharedImageAccessGLMode(usage));
   dawn::native::opengl::ExternalImageDescriptorEGLImage externalImageDesc;
   externalImageDesc.cTextureDescriptor = &texture_descriptor_;
-  externalImageDesc.image = image_;
+  const auto& texture = gl_representation_->GetTexturePassthrough();
+  externalImageDesc.image =
+      texture->GetLevelImage(texture->target(), 0u)->GetEGLImage();
+  DCHECK(externalImageDesc.image);
   externalImageDesc.isInitialized = true;
   texture_ =
       dawn::native::opengl::WrapExternalEGLImage(device_, &externalImageDesc);
@@ -64,11 +70,7 @@ void SharedImageRepresentationDawnEGLImage::EndAccess() {
   if (dawn::native::IsTextureSubresourceInitialized(texture_, 0, 1, 0, 1)) {
     SetCleared();
   }
-#if BUILDFLAG(IS_WIN)
-  // TODO(senorblanco): This should probably be a virtual on SharedImageBacking
-  // to avoid this cast.
-  static_cast<SharedImageBackingD3D*>(backing())->EndAccessD3D11();
-#endif
+  gl_representation_->EndAccess();
   // All further operations on the textures are errors (they would be racy
   // with other backings).
   dawn_procs_.textureDestroy(texture_);

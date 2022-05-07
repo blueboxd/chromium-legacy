@@ -20,14 +20,11 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/version.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_background_task.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
-// TODO(b/174811949): Hide behind ChromeOS build flag.
-#include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_constants.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
+#include "chrome/browser/web_applications/system_web_apps/system_web_app_background_task.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -50,6 +47,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/web_preferences/web_preferences.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/ui_base_features.h"
@@ -69,6 +67,7 @@
 #include "ash/webui/shimless_rma/url_constants.h"
 #include "ash/webui/shortcut_customization_ui/url_constants.h"
 #include "chrome/browser/ash/web_applications/camera_app/camera_system_web_app_info.h"
+#include "chrome/browser/ash/web_applications/camera_app/chrome_camera_app_ui_constants.h"
 #include "chrome/browser/ash/web_applications/connectivity_diagnostics_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/crosh_system_web_app_info.h"
 #include "chrome/browser/ash/web_applications/diagnostics_system_web_app_info.h"
@@ -111,41 +110,36 @@ SystemAppDelegateMap CreateSystemWebApps(Profile* profile) {
   // TODO(crbug.com/1051229): Currently unused, will be hooked up
   // post-migration. We're making delegates for everything, and will then use
   // them in place of SystemAppInfos.
-  info_vec.emplace_back(std::make_unique<CameraSystemAppDelegate>(profile));
-  info_vec.emplace_back(
-      std::make_unique<DiagnosticsSystemAppDelegate>(profile));
-  info_vec.emplace_back(std::make_unique<OSSettingsSystemAppDelegate>(profile));
-  info_vec.emplace_back(std::make_unique<CroshSystemAppDelegate>(profile));
-  info_vec.emplace_back(std::make_unique<TerminalSystemAppDelegate>(profile));
-  info_vec.emplace_back(
-      std::make_unique<ash::HelpAppSystemAppDelegate>(profile));
-  info_vec.emplace_back(std::make_unique<MediaSystemAppDelegate>(profile));
-  info_vec.emplace_back(
+  info_vec.push_back(std::make_unique<CameraSystemAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<DiagnosticsSystemAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<OSSettingsSystemAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<CroshSystemAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<TerminalSystemAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<ash::HelpAppSystemAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<MediaSystemAppDelegate>(profile));
+  info_vec.push_back(
       std::make_unique<PrintManagementSystemAppDelegate>(profile));
-  info_vec.emplace_back(std::make_unique<ScanningSystemAppDelegate>(profile));
-  info_vec.emplace_back(
-      std::make_unique<ShimlessRMASystemAppDelegate>(profile));
-  info_vec.emplace_back(
+  info_vec.push_back(std::make_unique<ScanningSystemAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<ShimlessRMASystemAppDelegate>(profile));
+  info_vec.push_back(
       std::make_unique<ConnectivityDiagnosticsSystemAppDelegate>(profile));
-  info_vec.emplace_back(std::make_unique<EcheSystemAppDelegate>(profile));
-  info_vec.emplace_back(
+  info_vec.push_back(std::make_unique<EcheSystemAppDelegate>(profile));
+  info_vec.push_back(
       std::make_unique<PersonalizationSystemAppDelegate>(profile));
-  info_vec.emplace_back(
+  info_vec.push_back(
       std::make_unique<ShortcutCustomizationSystemAppDelegate>(profile));
-  info_vec.emplace_back(std::make_unique<OSFeedbackAppDelegate>(profile));
-  info_vec.emplace_back(
-      std::make_unique<FileManagerSystemAppDelegate>(profile));
-  info_vec.emplace_back(
-      std::make_unique<ProjectorSystemWebAppDelegate>(profile));
-  info_vec.emplace_back(
+  info_vec.push_back(std::make_unique<OSFeedbackAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<FileManagerSystemAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<ProjectorSystemWebAppDelegate>(profile));
+  info_vec.push_back(
       std::make_unique<OsUrlHandlerSystemWebAppDelegate>(profile));
-  info_vec.emplace_back(
+  info_vec.push_back(
       std::make_unique<FirmwareUpdateSystemAppDelegate>(profile));
-  info_vec.emplace_back(std::make_unique<OsFlagsSystemWebAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<OsFlagsSystemWebAppDelegate>(profile));
 
 #if !defined(OFFICIAL_BUILD)
-  info_vec.emplace_back(std::make_unique<DemoModeSystemAppDelegate>(profile));
-  info_vec.emplace_back(std::make_unique<SampleSystemAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<DemoModeSystemAppDelegate>(profile));
+  info_vec.push_back(std::make_unique<SampleSystemAppDelegate>(profile));
 #endif  // !defined(OFFICIAL_BUILD)
 
   SystemAppDelegateMap delegate_map;
@@ -357,7 +351,7 @@ absl::optional<AppId> SystemWebAppManager::GetAppIdForSystemApp(
 }
 
 absl::optional<SystemAppType> SystemWebAppManager::GetSystemAppTypeForAppId(
-    AppId app_id) const {
+    const AppId& app_id) const {
   const WebApp* web_app = registrar_->GetAppById(app_id);
   if (!web_app || !web_app->client_data().system_web_app_data.has_value()) {
     return absl::nullopt;
@@ -462,7 +456,7 @@ absl::optional<SystemAppType> SystemWebAppManager::GetCapturingSystemAppForURL(
     // move this into the camera one.
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (type == SystemAppType::CAMERA) {
-    url::Replacements<char> replacements;
+    GURL::Replacements replacements;
     replacements.ClearQuery();
     replacements.ClearRef();
     if (url.ReplaceComponents(replacements).spec() !=
@@ -597,7 +591,7 @@ void SystemWebAppManager::OnAppsSynchronized(
   for (const auto& it : system_app_delegates_) {
     absl::optional<SystemAppBackgroundTaskInfo> background_info =
         it.second->GetTimerInfo();
-    if (background_info) {
+    if (background_info && it.second->IsAppEnabled()) {
       tasks_.push_back(std::make_unique<SystemAppBackgroundTask>(
           profile_, background_info.value()));
     }

@@ -189,13 +189,16 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         # Both the tests go into the same metadata file, named without any
         # variants.
         metadata_file = os.path.join("out", "variant.html.ini")
+        with metadata_builder.fs.open_text_file_for_reading(
+                metadata_file) as f:
+            data = f.read()
         # Inside the metadata file, we have separate entries for each variant
         self.assertEqual(
-            "[variant.html?foo=baz]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n"
-            "  expected: [TIMEOUT]\n"
             "[variant.html?foo=bar/abc]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n"
-            "  expected: [FAIL, ERROR]\n",
-            metadata_builder.fs.read_text_file(metadata_file))
+            "  expected: [FAIL, ERROR]\n"
+            "[variant.html?foo=baz]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n"
+            "  expected: [TIMEOUT]\n",
+            data)
 
     def test_parse_baseline_all_pass(self):
         """A WPT test with an all-pass baseline doesn't get metadata."""
@@ -498,15 +501,15 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         mb.checked_in_metadata_dir = "src"
         mb.metadata_output_dir = "out"
         mock_checked_in_files = {
-            "src/a/b/c.html": "",
-            "src/a/b/c.html.ini": "",
-            "src/a/d/e.html": "",
-            "src/a/d/e.html.ini": "checked-in",
-            "src/a/tox.ini": "",
+            "src/a/b/c.html": b"",
+            "src/a/b/c.html.ini": b"",
+            "src/a/d/e.html": b"",
+            "src/a/d/e.html.ini": b"checked-in",
+            "src/a/tox.ini": b"",
 
             # Put one duplicate file in the output directory to simulate a test
             # with both legacy expectations and checked-in metadata
-            "out/a/d/e.html.ini": "legacy",
+            "out/a/d/e.html.ini": b"legacy",
         }
         mb.fs = MockFileSystem(files=mock_checked_in_files)
 
@@ -634,9 +637,11 @@ class WPTMetadataBuilderTest(unittest.TestCase):
         # Ensure that the data written to the metadata file is the translated
         # status, not the checked-in contents.
         resulting_ini_file = os.path.join("out", "test.html.ini")
+        with mb.fs.open_text_file_for_reading(resulting_ini_file) as f:
+            data = f.read()
         self.assertEqual(
             "[test.html]\n  blink_expect_any_subtest_status: True # wpt_metadata_builder.py\n  expected: [TIMEOUT]\n",
-            mb.fs.read_text_file(resulting_ini_file))
+            data)
 
     def test_use_subtest_results_flag_with_expectation(self):
         """Test that the --use-subtest-results flag updates metadata correctly.

@@ -15,7 +15,7 @@ import 'chrome://resources/polymer/v3_0/paper-progress/paper-progress.js';
 import '../settings_shared_css.js';
 
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {html, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 // <if expr="chromeos_ash or chromeos_lacros">
 import {BlockingRequestManager} from './blocking_request_manager.js';
@@ -116,12 +116,12 @@ export class PasswordsExportDialogElement extends
     this.delayedProgress_ = null;
   }
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener('cancel', this.close);
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.switchToDialog_(States.START);

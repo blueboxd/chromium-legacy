@@ -14,7 +14,7 @@ import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_butto
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {html, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 
@@ -91,7 +91,7 @@ export class SettingsSearchEngineEditDialogElement extends
     this.DEFAULT_MODEL_INDEX = -1;
   }
 
-  ready() {
+  override ready() {
     super.ready();
 
     if (this.model) {
@@ -121,7 +121,7 @@ export class SettingsSearchEngineEditDialogElement extends
         'search-engines-changed', this.enginesChanged_.bind(this));
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     microTask.run(() => this.updateActionButtonState_());

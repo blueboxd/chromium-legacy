@@ -50,9 +50,8 @@ extern const base::Feature kMuteNotificationSnoozeAction;
 extern const base::Feature kPrewarmSearchResultsPageFonts;
 #endif
 
-extern const base::Feature kPwaUpdateDialogForNameAndIcon;
-
 extern const base::Feature kSandboxExternalProtocolBlocked;
+extern const base::Feature kSandboxExternalProtocolBlockedWarning;
 extern const base::Feature kTriggerNetworkDataMigration;
 
 extern const base::Feature kWebUsbDeviceDetection;

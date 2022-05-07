@@ -4,11 +4,11 @@
 
 #include "ash/services/secure_channel/public/cpp/client/presence_monitor_client_impl.h"
 
+#include "ash/services/secure_channel/public/cpp/shared/presence_monitor.h"
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 
-namespace chromeos {
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // static
 PresenceMonitorClientImpl::Factory*
@@ -58,5 +58,4 @@ void PresenceMonitorClientImpl::StopMonitoring() {
   presence_monitor_->StopMonitoring();
 }
 
-}  // namespace secure_channel
-}  // namespace chromeos
+}  // namespace ash::secure_channel

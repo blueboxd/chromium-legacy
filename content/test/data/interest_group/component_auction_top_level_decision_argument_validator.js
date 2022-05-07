@@ -13,7 +13,7 @@ function scoreAd(adMetadata, bid, auctionConfig, trustedScoringSignals,
   if (browserSignals.biddingDurationMsec < 0)
     throw 'Wrong biddingDurationMsec ' + browserSignals.biddingDurationMsec;
 
-  return 37;
+  return {desirability: 37, allowComponentAuction: true};
 }
 
 function reportResult(auctionConfig, browserSignals) {
@@ -56,6 +56,8 @@ function validateAuctionConfig(auctionConfig) {
   const sellerSignalsJson = JSON.stringify(auctionConfig.sellerSignals);
   if (sellerSignalsJson !== '["top-level seller signals"]')
     throw 'Wrong sellerSignals ' + auctionConfig.sellerSignalsJSON;
+  if (auctionConfig.sellerTimeout !== 300)
+    throw 'Wrong sellerTimeout ' + auctionConfig.sellerTimeout;
   const perBuyerSignalsJson = JSON.stringify(auctionConfig.perBuyerSignals);
   if (!perBuyerSignalsJson.includes('a.test') ||
       !perBuyerSignalsJson.includes('["top-level buyer signals"]')) {
@@ -86,6 +88,10 @@ function validateBrowserSignals(browserSignals, isScoreAd) {
   // Fields common to scoreAd() and reportResult().
   if (browserSignals.topWindowHostname !== 'c.test')
     throw 'Wrong topWindowHostname ' + browserSignals.topWindowHostname;
+  if ('topLeverSeller' in browserSignals)
+    throw 'Wrong topLeverSeller ' + browserSignals.topLeverSeller;
+  if (!browserSignals.componentSeller.startsWith('https://d.test'))
+    throw 'Wrong componentSeller ' + browserSignals.componentSeller;
   if (!browserSignals.interestGroupOwner.startsWith('https://a.test'))
     throw 'Wrong interestGroupOwner ' + browserSignals.interestGroupOwner;
   if (browserSignals.renderUrl !== "https://example.com/render")
@@ -93,7 +99,7 @@ function validateBrowserSignals(browserSignals, isScoreAd) {
 
   // Fields that vary by method.
   if (isScoreAd) {
-    if (Object.keys(browserSignals).length !== 6) {
+    if (Object.keys(browserSignals).length !== 7) {
       throw 'Wrong number of browser signals fields ' +
           JSON.stringify(browserSignals);
     }
@@ -105,7 +111,7 @@ function validateBrowserSignals(browserSignals, isScoreAd) {
     if (browserSignals.dataVersion !== 1234)
       throw 'Wrong dataVersion ' + browserSignals.dataVersion;
   } else {
-    if (Object.keys(browserSignals).length !== 6) {
+    if (Object.keys(browserSignals).length !== 7) {
       throw 'Wrong number of browser signals fields ' +
           JSON.stringify(browserSignals);
     }

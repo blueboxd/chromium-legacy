@@ -20,9 +20,11 @@
 #include "chrome/browser/web_applications/web_app_id.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/services/app_service/public/cpp/app_types.h"
+#include "components/services/app_service/public/cpp/run_on_os_login_types.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/views/widget/any_widget_observer.h"
 #include "url/gurl.h"
 
 class Browser;
@@ -36,7 +38,7 @@ namespace web_app {
 
 struct TabState {
   TabState(GURL tab_url, bool is_tab_installable)
-      : url(tab_url), is_installable(is_tab_installable) {}
+      : url(std::move(tab_url)), is_installable(is_tab_installable) {}
   TabState(const TabState&) = default;
   TabState& operator=(const TabState&) = default;
   bool operator==(const TabState& other) const {
@@ -69,12 +71,12 @@ struct BrowserState {
 
 struct AppState {
   AppState(AppId app_id,
-           const std::string app_name,
-           const GURL app_scope,
-           const apps::mojom::WindowMode& window_mode,
-           const apps::mojom::RunOnOsLoginMode& run_on_os_login_mode,
-           const blink::mojom::DisplayMode& effective_display_mode,
-           const blink::mojom::DisplayMode& user_display_mode,
+           std::string app_name,
+           GURL app_scope,
+           apps::WindowMode window_mode,
+           apps::RunOnOsLoginMode run_on_os_login_mode,
+           blink::mojom::DisplayMode effective_display_mode,
+           blink::mojom::DisplayMode user_display_mode,
            bool is_installed_locally,
            bool is_shortcut_created);
   ~AppState();
@@ -84,8 +86,8 @@ struct AppState {
   AppId id;
   std::string name;
   GURL scope;
-  apps::mojom::WindowMode window_mode;
-  apps::mojom::RunOnOsLoginMode run_on_os_login_mode;
+  apps::WindowMode window_mode;
+  apps::RunOnOsLoginMode run_on_os_login_mode;
   blink::mojom::DisplayMode effective_display_mode;
   blink::mojom::DisplayMode user_display_mode;
   bool is_installed_locally;
@@ -111,7 +113,7 @@ struct StateSnapshot {
 
   base::flat_map<Profile*, ProfileState> profiles;
 };
-std::ostream& operator<<(std::ostream& out, const StateSnapshot& snapshot);
+std::ostream& operator<<(std::ostream& os, const StateSnapshot& snapshot);
 
 class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
  public:
@@ -148,8 +150,8 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void AcceptAppIdUpdateDialog();
   void CloseCustomToolbar();
   void ClosePwa();
-  void DisableRunOnOSLoginMode(const std::string& site_mode);
-  void EnableRunOnOSLoginMode(const std::string& site_mode);
+  void DisableRunOnOSLogin(const std::string& site_mode);
+  void EnableRunOnOSLogin(const std::string& site_mode);
   void InstallCreateShortcutTabbed(const std::string& site_mode);
   void InstallCreateShortcutWindowed(const std::string& site_mode);
   void InstallMenuOption(const std::string& site_mode);
@@ -160,21 +162,25 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void InstallPolicyAppWindowedNoShortcut(const std::string& site_mode);
   void InstallPolicyAppWindowedShortcut(const std::string& site_mode);
   // These functions install apps which are tabbed and creates shortcuts.
-  void InstallPolicyAppOsLoginModeAllowed(const std::string& site_mode);
-  void InstallPolicyAppOsLoginModeBlocked(const std::string& site_mode);
+  void ApplyRunOnOsLoginPolicyAllowed(const std::string& site_mode);
+  void ApplyRunOnOsLoginPolicyBlocked(const std::string& site_mode);
+  void ApplyRunOnOsLoginPolicyRunWindowed(const std::string& site_mode);
+  void RemoveRunOnOsLoginPolicy(const std::string& site_mode);
   void LaunchFromChromeApps(const std::string& site_mode);
   void LaunchFromLaunchIcon(const std::string& site_mode);
   void LaunchFromMenuOption(const std::string& site_mode);
-  void LaunchFromShortcut(const std::string& site_mode);
-  void LaunchAppSettingsFromChromeApps(const std::string& site_mode);
-  void LaunchAppSettingsFromAppMenu(const std::string& site_mode);
+  void LaunchFromPlatformShortcut(const std::string& site_mode);
+  void OpenAppSettingsFromChromeApps(const std::string& site_mode);
+  void OpenAppSettingsFromAppMenu(const std::string& site_mode);
   void NavigateBrowser(const std::string& site_mode);
   void NavigatePwaSiteATo(const std::string& site_mode);
   void NavigateNotfoundUrl();
   void NavigateTabbedBrowserToSite(const GURL& url);
   void ManifestUpdateTitle(const std::string& site_mode);
+  void ManifestUpdateDisplayBrowser(const std::string& site_mode);
   void ManifestUpdateDisplayMinimal(const std::string& site_mode);
   void ManifestUpdateScopeSiteAFooTo(const std::string& scope_mode);
+  void OpenInChrome();
   void SetOpenInTab(const std::string& site_mode);
   void SetOpenInWindow(const std::string& site_mode);
   void SwitchProfileClients(const std::string& client_mode);
@@ -182,6 +188,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void SyncTurnOn();
   void UninstallFromList(const std::string& site_mode);
   void UninstallFromMenu(const std::string& site_mode);
+  void UninstallFromAppSettings(const std::string& site_mode);
   void UninstallPolicyApp(const std::string& site_mode);
   void UninstallFromOs(const std::string& site_mode);
 
@@ -196,21 +203,23 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   void CheckAppNotInList(const std::string& site_mode);
   void CheckAppTitleSiteA(const std::string& title);
   void CheckAppWindowMode(const std::string& site_mode,
-                          apps::mojom::WindowMode window_mode);
+                          apps::WindowMode window_mode);
   void CheckInstallable();
   void CheckInstallIconShown();
   void CheckInstallIconNotShown();
   void CheckLaunchIconShown();
   void CheckLaunchIconNotShown();
   void CheckTabCreated();
+  void CheckTabNotCreated();
   void CheckCustomToolbar();
   void CheckPlatformShortcutAndIcon(const std::string& site_mode);
   void CheckPlatformShortcutNotExists(const std::string& site_mode);
-  void CheckRunOnOSLoginModeEnabled(const std::string& site_mode);
-  void CheckRunOnOSLoginModeDisabled(const std::string& site_mode);
+  void CheckRunOnOSLoginEnabled(const std::string& site_mode);
+  void CheckRunOnOSLoginDisabled(const std::string& site_mode);
   void CheckUserDisplayModeInternal(DisplayMode display_mode);
   void CheckWindowClosed();
   void CheckWindowCreated();
+  void CheckWindowDisplayBrowser();
   void CheckWindowDisplayMinimal();
   void CheckWindowDisplayStandalone();
 
@@ -221,11 +230,11 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
 
  private:
   // Must be called at the beginning of every state change action function.
-  void BeforeStateChangeAction();
+  void BeforeStateChangeAction(const char* function);
   // Must be called at the end of every state change action function.
   void AfterStateChangeAction();
   // Must be called at the beginning of every state check action function.
-  void BeforeStateCheckAction();
+  void BeforeStateCheckAction(const char* function);
   // Must be called at the end of every state check action function.
   void AfterStateCheckAction();
 
@@ -245,18 +254,18 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   GURL GetURLForSiteMode(const std::string& site_mode);
   void InstallCreateShortcut(bool open_in_window);
 
-  void InstallPolicyAppInternal(
-      const std::string& site_mode,
-      base::Value default_launch_container,
-      const bool create_shortcut,
-      const apps::mojom::RunOnOsLoginPtr os_login_mode);
+  void InstallPolicyAppInternal(const std::string& site_mode,
+                                base::Value default_launch_container,
+                                bool create_shortcut);
+  void ApplyRunOnOsLoginPolicy(const std::string& site_mode,
+                               const char* policy);
 
   void UninstallPolicyAppById(const AppId& id);
   // This action only works if no navigations to the given app_url occur
   // between app installation and calls to this action.
   bool AreNoAppWindowsOpen(Profile* profile, const AppId& app_id);
   void ForceUpdateManifestContents(const std::string& site_mode,
-                                   GURL app_url_with_manifest_param);
+                                   const GURL& app_url_with_manifest_param);
   void MaybeWaitForManifestUpdates();
 
   void MaybeNavigateTabbedBrowserInScope(const std::string& site_mode);
@@ -271,7 +280,9 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
                                 const AppId& id);
 
   void SetRunOnOsLoginMode(const std::string& site_mode,
-                           apps::mojom::RunOnOsLoginMode login_mode);
+                           apps::RunOnOsLoginMode login_mode);
+
+  void LaunchAppStartupBrowserCreator(const AppId& app_id);
 
   Browser* browser();
   const net::EmbeddedTestServer* embedded_test_server();
@@ -314,6 +325,7 @@ class WebAppIntegrationTestDriver : WebAppInstallManagerObserver {
   AppId active_app_id_;
   raw_ptr<Browser> app_browser_ = nullptr;
 
+  std::unique_ptr<views::NamedWidgetShownWaiter> app_id_update_dialog_waiter_;
   base::ScopedObservation<web_app::WebAppInstallManager,
                           web_app::WebAppInstallManagerObserver>
       observation_{this};

@@ -255,6 +255,8 @@ namespace autotestPrivate {
 
   callback IsArcPackageListInitialRefreshedCallback = void (boolean refreshed);
 
+  callback IsLacrosPrimaryBrowserCallback = void (boolean primary);
+
   dictionary ArcAppDict {
     DOMString name;
     DOMString packageName;
@@ -342,6 +344,14 @@ namespace autotestPrivate {
   };
 
   callback GetAllInstalledAppsCallback = void (App[] apps);
+
+  dictionary CryptohomeRecoveryDataDict {
+    DOMString reauthProofToken;
+    DOMString refreshToken;
+  };
+
+  callback GetCryptohomeRecoveryDataCallback = void (
+    CryptohomeRecoveryDataDict dict);
 
   dictionary ShelfItem {
     DOMString appId;
@@ -611,6 +621,20 @@ namespace autotestPrivate {
 
   callback CouldAllowCrostiniCallback = void (boolean canBeAllowed);
 
+  // Collected chromeos::LoginEventRecorder data.
+  dictionary LoginEventRecorderData {
+    // Event name
+    DOMString name;
+    // Number of frames actually shown for this animation.
+    long microsecnods_since_unix_epoch;
+  };
+
+  // Callback invoked to report the collection ui::LoginEventRecorder data
+  // after getLoginEventRecorderLoginEvents is called.
+  callback GetLoginEventRecorderLoginEventsCallback = void
+      (LoginEventRecorderData[] data);
+
+
   interface Functions {
     // Must be called to allow autotestPrivateAPI events to be fired.
     static void initializeEvents();
@@ -714,6 +738,13 @@ namespace autotestPrivate {
     [supportsPromises] static void isArcProvisioned(
         IsArcProvisionedCallback callback);
 
+    // Returns true if Lacros is the primary browser. This includes the case
+    // where Lacros is the only browser.
+    // NOTE: Because the answer depends on the policy, this function should
+    // be used only after profile initialization.
+    [supportsPromises] static void isLacrosPrimaryBrowser(
+        IsLacrosPrimaryBrowserCallback callback);
+
     // Gets information about the requested ARC app.
     [supportsPromises] static void getArcApp(DOMString appId,
                                              GetArcAppCallback callback);
@@ -722,6 +753,10 @@ namespace autotestPrivate {
     [supportsPromises] static void getArcPackage(
         DOMString packageName,
         GetArcPackageCallback callback);
+
+    // Gets the data needed for Cryptohome Recovery.
+    [supportsPromises] static void getCryptohomeRecoveryData(
+        GetCryptohomeRecoveryDataCallback callback);
 
     // Waits for system web apps to complete the installation.
     [supportsPromises] static void waitForSystemWebAppsInstall(
@@ -865,6 +900,11 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     [supportsPromises] static void bootstrapMachineLearningService(
         VoidCallback callback);
+
+    // Triggers an on-demand update of smart dim component and checks whether
+    // it's successfully loaded by smart dim ml_agent.
+    // |callback|: Called when the operation has completed.
+    [supportsPromises] static void loadSmartDimComponent(VoidCallback callback);
 
     // Enables/disables the Google Assistant.
     // |callback|: Called when the operation has completed.
@@ -1249,6 +1289,17 @@ namespace autotestPrivate {
     [supportsPromises] static void resetHoldingSpace(
         optional ResetHoldingSpaceOptions options,
         VoidCallback callback);
+
+    // Starts collection of ui::LoginEventRecorder data.
+    static void startLoginEventRecorderDataCollection(VoidCallback callback);
+
+    // Stops ui::LoginEventRecorder data collection and reports all the
+    // collected data.
+    static void getLoginEventRecorderLoginEvents(
+        GetLoginEventRecorderLoginEventsCallback callback);
+
+    // Adds login event to test LoginEventRecorderDataCollection API.
+    static void addLoginEventForTesting(VoidCallback callback);
   };
 
   interface Events {

@@ -36,6 +36,13 @@ consoles.list_view(
 )
 
 try_.builder(
+    name = "mac-arm64-on-arm64-rel",
+    builderless = False,
+    cpu = cpu.ARM64,
+    os = os.MAC_11,
+)
+
+try_.builder(
     name = "mac-osxbeta-rel",
     mirrors = [
         "ci/Mac Builder",
@@ -58,9 +65,14 @@ try_.builder(
 )
 
 try_.builder(
-    name = "mac-clang-tidy-rel",
-    executable = "recipe:tricium_clang_tidy_wrapper",
-    goma_jobs = goma.jobs.J150,
+    name = "mac-fieldtrial-fyi-rel",
+    os = os.MAC_DEFAULT,
+    mirrors = ["ci/mac-fieldtrial-rel"],
+)
+
+try_.builder(
+    name = "mac-builder-next-rel",
+    os = os.MAC_12,
 )
 
 try_.orchestrator_builder(
@@ -215,8 +227,6 @@ ios_builder(
 
 ios_builder(
     name = "ios-catalyst",
-    # TODO(crbug.com/1266211): Use main Xcode when main version >= 13c100.
-    xcode = xcode.x13betabots,
 )
 
 ios_builder(

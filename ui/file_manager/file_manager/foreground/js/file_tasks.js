@@ -339,15 +339,27 @@ export class FileTasks {
         } else if (parsedActionId === 'open-hosted-gdoc') {
           task.iconType = 'gdoc';
           task.title = loadTimeData.getString('TASK_OPEN_GDOC');
-          task.verb = undefined;
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
         } else if (parsedActionId === 'open-hosted-gsheet') {
           task.iconType = 'gsheet';
           task.title = loadTimeData.getString('TASK_OPEN_GSHEET');
-          task.verb = undefined;
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
         } else if (parsedActionId === 'open-hosted-gslides') {
           task.iconType = 'gslides';
           task.title = loadTimeData.getString('TASK_OPEN_GSLIDES');
-          task.verb = undefined;
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
+        } else if (parsedActionId === 'open-web-drive-office-word') {
+          task.iconType = 'gdoc';
+          task.title = loadTimeData.getString('TASK_OPEN_GDOC');
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
+        } else if (parsedActionId === 'open-web-drive-office-excel') {
+          task.iconType = 'gsheet';
+          task.title = loadTimeData.getString('TASK_OPEN_GSHEET');
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
+        } else if (parsedActionId === 'open-web-drive-office-powerpoint') {
+          task.iconType = 'gslides';
+          task.title = loadTimeData.getString('TASK_OPEN_GSLIDES');
+          task.verb = chrome.fileManagerPrivate.Verb.OPEN_WITH;
         } else if (parsedActionId === 'install-linux-package') {
           task.iconType = 'crostini';
           task.title = loadTimeData.getString('TASK_INSTALL_LINUX_PACKAGE');
@@ -455,7 +467,7 @@ export class FileTasks {
         isMyFiles ? 'CONFIRM_MOVE_BUTTON_LABEL' : 'CONFIRM_COPY_BUTTON_LABEL'));
     dialog.show(isMyFiles ? moveMessage : copyMessage, async () => {
       if (!fileTransferController) {
-        console.error('FileTransferController not set');
+        console.warn('FileTransferController not set');
         return;
       }
 
@@ -612,7 +624,7 @@ export class FileTasks {
   executeInternal_(task) {
     const onFileManagerPrivateExecuteTask = result => {
       if (chrome.runtime.lastError) {
-        console.error(
+        console.warn(
             'Unable to execute task: ' + chrome.runtime.lastError.message);
         return;
       }
@@ -891,7 +903,7 @@ export class FileTasks {
 
         this.directoryModel_.changeDirectoryEntry(displayRoot);
       } catch (error) {
-        console.error(`Cannot resolve display root after mounting: ${
+        console.warn(`Cannot resolve display root after mounting: ${
             error.stack || error}`);
       }
     } catch (error) {
@@ -911,7 +923,7 @@ export class FileTasks {
       item.state = ProgressItemState.ERROR;
       this.progressCenter_.updateItem(item);
 
-      console.error(`Cannot mount '${url}': ${error.stack || error}`);
+      console.warn(`Cannot mount '${url}': ${error.stack || error}`);
     }
   }
 

@@ -17,6 +17,7 @@
 #include "base/i18n/case_conversion.h"
 #include "base/json/json_writer.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/observer_list.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -29,6 +30,7 @@
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_db_task.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/history_clusters_buildflags.h"
 #include "components/history_clusters/core/history_clusters_db_tasks.h"
@@ -90,6 +92,7 @@ std::string GetDebugJSONForClusters(
   for (const auto& cluster : clusters) {
     base::DictionaryValue debug_cluster;
 
+    debug_cluster.SetStringKey("label", cluster.label.value_or(u""));
     base::ListValue debug_keywords;
     for (const auto& keyword : cluster.keywords) {
       debug_keywords.Append(keyword);
@@ -190,7 +193,8 @@ HistoryClustersService::HistoryClustersService(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     site_engagement::SiteEngagementScoreProvider* engagement_score_provider)
     : is_journeys_enabled_(
-          ::history_clusters::IsJourneysEnabled(application_locale)),
+          GetConfig().is_journeys_enabled_no_locale_check &&
+          IsApplicationLocaleSupportedByJourneys(application_locale)),
       history_service_(history_service),
       visit_deletion_observer_(this) {
   DCHECK(history_service_);
@@ -212,12 +216,20 @@ base::WeakPtr<HistoryClustersService> HistoryClustersService::GetWeakPtr() {
 
 void HistoryClustersService::Shutdown() {}
 
+bool HistoryClustersService::IsJourneysEnabled() const {
+  return is_journeys_enabled_;
+}
+
 void HistoryClustersService::AddObserver(Observer* obs) {
   observers_.AddObserver(obs);
 }
 
 void HistoryClustersService::RemoveObserver(Observer* obs) {
   observers_.RemoveObserver(obs);
+}
+
+bool HistoryClustersService::ShouldNotifyDebugMessage() const {
+  return !observers_.empty();
 }
 
 void HistoryClustersService::NotifyDebugMessage(
@@ -260,7 +272,7 @@ void HistoryClustersService::CompleteVisitContextAnnotationsIfReady(
     // If the main Journeys feature is enabled, we want to persist visits.
     // And if the persist-only switch is enabled, we also want to persist them.
     if (IsJourneysEnabled() ||
-        base::FeatureList::IsEnabled(kPersistContextAnnotationsInHistoryDb)) {
+        GetConfig().persist_context_annotations_in_history_db) {
       history_service_->AddContextAnnotationsForVisit(
           visit_context_annotations.visit_row.visit_id,
           visit_context_annotations.context_annotations);
@@ -275,13 +287,15 @@ void HistoryClustersService::QueryClusters(
     base::Time end_time,
     QueryClustersCallback callback,
     base::CancelableTaskTracker* task_tracker) {
-  NotifyDebugMessage("HistoryClustersService::QueryClusters()");
-  NotifyDebugMessage(
-      "  begin_time = " +
-      (begin_time.is_null() ? "null" : base::TimeToISO8601(begin_time)));
-  NotifyDebugMessage("  end_time = " + (end_time.is_null()
-                                            ? "null"
-                                            : base::TimeToISO8601(end_time)));
+  if (ShouldNotifyDebugMessage()) {
+    NotifyDebugMessage("HistoryClustersService::QueryClusters()");
+    NotifyDebugMessage(
+        "  begin_time = " +
+        (begin_time.is_null() ? "null" : base::TimeToISO8601(begin_time)));
+    NotifyDebugMessage("  end_time = " + (end_time.is_null()
+                                              ? "null"
+                                              : base::TimeToISO8601(end_time)));
+  }
 
   if (!backend_) {
     NotifyDebugMessage(
@@ -298,7 +312,8 @@ void HistoryClustersService::QueryClusters(
           incomplete_visit_context_annotations_, begin_time, end_time,
           base::BindOnce(&HistoryClustersService::OnGotHistoryVisits,
                          weak_ptr_factory_.GetWeakPtr(),
-                         clustering_request_source, std::move(callback))),
+                         clustering_request_source, base::TimeTicks::Now(),
+                         std::move(callback))),
       task_tracker);
 }
 
@@ -338,7 +353,7 @@ bool HistoryClustersService::DoesQueryMatchAnyCluster(
         /*begin_time=*/base::Time(),
         /*end_time=*/base::Time(),
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
-                       weak_ptr_factory_.GetWeakPtr(),
+                       weak_ptr_factory_.GetWeakPtr(), base::ElapsedTimer(),
                        /*begin_time=*/base::Time(),
                        std::make_unique<std::vector<std::u16string>>(),
                        &all_keywords_cache_),
@@ -356,7 +371,7 @@ bool HistoryClustersService::DoesQueryMatchAnyCluster(
         ClusteringRequestSource::kKeywordCacheGeneration,
         /*begin_time=*/all_keywords_cache_timestamp_, /*end_time=*/base::Time(),
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
-                       weak_ptr_factory_.GetWeakPtr(),
+                       weak_ptr_factory_.GetWeakPtr(), base::ElapsedTimer(),
                        all_keywords_cache_timestamp_,
                        std::make_unique<std::vector<std::u16string>>(),
                        &short_keyword_cache_),
@@ -383,12 +398,14 @@ void HistoryClustersService::ClearKeywordCache() {
 }
 
 void HistoryClustersService::PopulateClusterKeywordCache(
+    base::ElapsedTimer total_latency_timer,
     base::Time begin_time,
     std::unique_ptr<std::vector<std::u16string>> keyword_accumulator,
     KeywordSet* cache,
     std::vector<history::Cluster> clusters,
     base::Time continuation_end_time) {
-  const size_t max_keyword_phrases = kMaxKeywordPhrases.Get();
+  base::ElapsedThreadTimer populate_keywords_thread_timer;
+  const size_t max_keyword_phrases = GetConfig().max_keyword_phrases;
 
   // Copy keywords from every cluster into a the accumulator set.
   for (auto& cluster : clusters) {
@@ -424,6 +441,8 @@ void HistoryClustersService::PopulateClusterKeywordCache(
   // Make a continuation request to get the next page of clusters and their
   // keywords only if both 1) there is more clusters remaining, and 2) we
   // haven't reached the soft cap `max_keyword_phrases` (or there is no cap).
+  constexpr char kKeywordCacheThreadTimeUmaName[] =
+      "History.Clusters.KeywordCache.ThreadTime";
   if (!continuation_end_time.is_null() &&
       (max_keyword_phrases == 0 ||
        keyword_accumulator->size() < max_keyword_phrases)) {
@@ -431,10 +450,14 @@ void HistoryClustersService::PopulateClusterKeywordCache(
         ClusteringRequestSource::kKeywordCacheGeneration, begin_time,
         continuation_end_time,
         base::BindOnce(&HistoryClustersService::PopulateClusterKeywordCache,
-                       weak_ptr_factory_.GetWeakPtr(), begin_time,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(total_latency_timer), begin_time,
                        // Pass on the accumulator set to the next callback.
                        std::move(keyword_accumulator), cache),
         &cache_query_task_tracker_);
+    // Log this even if we go back for more clusters.
+    base::UmaHistogramTimes(kKeywordCacheThreadTimeUmaName,
+                            populate_keywords_thread_timer.Elapsed());
     return;
   }
 
@@ -442,8 +465,10 @@ void HistoryClustersService::PopulateClusterKeywordCache(
   // via the constructor for efficiency (as recommended by the flat_set docs).
   // De-duplication is handled by the flat_set itself.
   *cache = KeywordSet(*keyword_accumulator);
-  NotifyDebugMessage("Cache construction complete:");
-  NotifyDebugMessage(GetDebugJSONForKeywordSet(*cache));
+  if (ShouldNotifyDebugMessage()) {
+    NotifyDebugMessage("Cache construction complete:");
+    NotifyDebugMessage(GetDebugJSONForKeywordSet(*cache));
+  }
 
   // Record keyword phrase & keyword counts for the appropriate cache.
   if (cache == &all_keywords_cache_) {
@@ -461,20 +486,32 @@ void HistoryClustersService::PopulateClusterKeywordCache(
         "History.Clusters.Backend.KeywordCache.ShortKeywordsCount",
         static_cast<int>(cache->size()));
   }
+
+  base::UmaHistogramTimes(kKeywordCacheThreadTimeUmaName,
+                          populate_keywords_thread_timer.Elapsed());
+  base::UmaHistogramMediumTimes("History.Clusters.KeywordCache.Latency",
+                                total_latency_timer.Elapsed());
 }
 
 void HistoryClustersService::OnGotHistoryVisits(
     ClusteringRequestSource clustering_request_source,
+    base::TimeTicks query_visits_start,
     QueryClustersCallback callback,
     std::vector<history::AnnotatedVisit> annotated_visits,
     base::Time continuation_end_time) const {
-  NotifyDebugMessage("HistoryClustersService::OnGotHistoryVisits()");
-  NotifyDebugMessage(base::StringPrintf("  annotated_visits.size() = %zu",
-                                        annotated_visits.size()));
-  NotifyDebugMessage("  continuation_end_time = " +
-                     (continuation_end_time.is_null()
-                          ? "null (i.e. exhausted history)"
-                          : base::TimeToISO8601(continuation_end_time)));
+  if (ShouldNotifyDebugMessage()) {
+    NotifyDebugMessage("HistoryClustersService::OnGotHistoryVisits()");
+    NotifyDebugMessage(base::StringPrintf("  annotated_visits.size() = %zu",
+                                          annotated_visits.size()));
+    NotifyDebugMessage("  continuation_end_time = " +
+                       (continuation_end_time.is_null()
+                            ? "null (i.e. exhausted history)"
+                            : base::TimeToISO8601(continuation_end_time)));
+  }
+
+  base::UmaHistogramTimes(
+      "Histogram.Clusters.Backend.QueryAnnotatedVisitsLatency",
+      base::TimeTicks::Now() - query_visits_start);
 
   if (annotated_visits.empty()) {
     // Early exit without calling backend if there's no annotated visits.
@@ -482,10 +519,11 @@ void HistoryClustersService::OnGotHistoryVisits(
     return;
   }
 
-  NotifyDebugMessage("  Visits JSON follows:");
-  NotifyDebugMessage(GetDebugJSONForVisits(annotated_visits));
-
-  NotifyDebugMessage("Calling backend_->GetClusters()");
+  if (ShouldNotifyDebugMessage()) {
+    NotifyDebugMessage("  Visits JSON follows:");
+    NotifyDebugMessage(GetDebugJSONForVisits(annotated_visits));
+    NotifyDebugMessage("Calling backend_->GetClusters()");
+  }
   base::UmaHistogramCounts1000("History.Clusters.Backend.NumVisitsToCluster",
                                static_cast<int>(annotated_visits.size()));
 
@@ -494,7 +532,7 @@ void HistoryClustersService::OnGotHistoryVisits(
       base::BindOnce(&HistoryClustersService::OnGotRawClusters,
                      weak_ptr_factory_.GetWeakPtr(), continuation_end_time,
                      base::TimeTicks::Now(), std::move(callback)),
-      annotated_visits);
+      std::move(annotated_visits));
 }
 
 void HistoryClustersService::OnGotRawClusters(
@@ -502,15 +540,16 @@ void HistoryClustersService::OnGotRawClusters(
     base::TimeTicks cluster_start_time,
     QueryClustersCallback callback,
     std::vector<history::Cluster> clusters) const {
-  NotifyDebugMessage("HistoryClustersService::OnGotRawClusters()");
-
   base::UmaHistogramTimes("History.Clusters.Backend.GetClustersLatency",
                           base::TimeTicks::Now() - cluster_start_time);
   base::UmaHistogramCounts1000("History.Clusters.Backend.NumClustersReturned",
                                clusters.size());
 
-  NotifyDebugMessage("  Raw Clusters from Backend JSON follows:");
-  NotifyDebugMessage(GetDebugJSONForClusters(clusters));
+  if (ShouldNotifyDebugMessage()) {
+    NotifyDebugMessage("HistoryClustersService::OnGotRawClusters()");
+    NotifyDebugMessage("  Raw Clusters from Backend JSON follows:");
+    NotifyDebugMessage(GetDebugJSONForClusters(clusters));
+  }
 
   std::move(callback).Run(clusters, continuation_end_time);
 }

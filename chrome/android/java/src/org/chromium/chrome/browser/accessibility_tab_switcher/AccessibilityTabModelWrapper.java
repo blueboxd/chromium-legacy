@@ -24,6 +24,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.components.browser_ui.styles.SemanticColorUtils;
 import org.chromium.ui.widget.ChromeImageView;
 
@@ -161,8 +162,7 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
 
         updateVisibilityForLayoutOrStackButton();
         if (incognitoSelected) {
-            setBackgroundColor(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_bg_color_dark));
+            setBackgroundColor(getContext().getColor(R.color.default_bg_color_dark));
             mStackButtonWrapper.setSelectedTabIndicatorColor(
                     mTabIconSelectedLightColor.getDefaultColor());
             ApiCompatibilityUtils.setImageTintList(mStandardButtonIcon, mTabIconLightColor);
@@ -194,6 +194,16 @@ public class AccessibilityTabModelWrapper extends LinearLayout {
 
     private AccessibilityTabModelAdapter getAdapter() {
         return (AccessibilityTabModelAdapter) mAccessibilityView.getAdapter();
+    }
+
+    /**
+     * Scroll to and focus a tab.
+     * @param tabId The id of the tab.
+     */
+    void scrollToTabAndFocus(int tabId) {
+        final int index = TabModelUtils.getTabIndexById(mTabModelSelector.getCurrentModel(), tabId);
+        mAccessibilityView.smoothScrollToPosition(index);
+        getAdapter().focusTabWithId(tabId);
     }
 
     /**

@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {I18nBehavior, I18nBehaviorInterface} from 'chrome://resources/js/i18n_behavior.m.js';
+import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {KeyboardKeyState} from './keyboard_key.js';
+import {getKeyboardLayoutForRegionCode} from './keyboard_layouts.js';
 
 /**
  * @fileoverview
@@ -40,35 +42,96 @@ export const PhysicalLayout = {
 
 /**
  * Enum of action keys to be shown on the top row.
- * @enum {!Object<string, !{icon: ?string, text: ?string}>}
+ * @enum {!Object<string,
+ *                !{icon: ?string, text: ?string, ariaNameI18n: ?string}>}
  */
 export const TopRowKey = {
   kNone: {},
-  kBack: {icon: 'keyboard:back'},
-  kForward: {icon: 'keyboard:forward'},
-  kRefresh: {icon: 'keyboard:refresh'},
-  kFullscreen: {icon: 'keyboard:fullscreen'},
-  kOverview: {icon: 'keyboard:overview'},
-  kScreenshot: {icon: 'keyboard:screenshot'},
-  kScreenBrightnessDown: {icon: 'keyboard:display-brightness-down'},
-  kScreenBrightnessUp: {icon: 'keyboard:display-brightness-up'},
-  kPrivacyScreenToggle: {icon: 'keyboard:electronic-privacy-screen'},
-  kVolumeMute: {icon: 'keyboard:volume-mute'},
-  kVolumeDown: {icon: 'keyboard:volume-down'},
-  kVolumeUp: {icon: 'keyboard:volume-up'},
-  kKeyboardBacklightDown: {icon: 'keyboard:keyboard-brightness-down'},
-  kKeyboardBacklightUp: {icon: 'keyboard:keyboard-brightness-up'},
-  kNextTrack: {icon: 'keyboard:next-track'},
-  kPreviousTrack: {icon: 'keyboard:last-track'},
-  kPlayPause: {icon: 'keyboard:play-pause'},
-  kScreenMirror: {icon: 'keyboard:screen-mirror'},
+  kBack: {icon: 'keyboard:back', ariaNameI18n: 'keyboardDiagramAriaNameBack'},
+  kForward: {
+    icon: 'keyboard:forward',
+    ariaNameI18n: 'keyboardDiagramAriaNameForward'
+  },
+  kRefresh: {
+    icon: 'keyboard:refresh',
+    ariaNameI18n: 'keyboardDiagramAriaNameRefresh'
+  },
+  kFullscreen: {
+    icon: 'keyboard:fullscreen',
+    ariaNameI18n: 'keyboardDiagramAriaNameFullscreen'
+  },
+  kOverview: {
+    icon: 'keyboard:overview',
+    ariaNameI18n: 'keyboardDiagramAriaNameOverview'
+  },
+  kScreenshot: {
+    icon: 'keyboard:screenshot',
+    ariaNameI18n: 'keyboardDiagramAriaNameScreenshot'
+  },
+  kScreenBrightnessDown: {
+    icon: 'keyboard:display-brightness-down',
+    ariaNameI18n: 'keyboardDiagramAriaNameScreenBrightnessDown'
+  },
+  kScreenBrightnessUp: {
+    icon: 'keyboard:display-brightness-up',
+    ariaNameI18n: 'keyboardDiagramAriaNameScreenBrightnessUp'
+  },
+  kPrivacyScreenToggle: {
+    icon: 'keyboard:electronic-privacy-screen',
+    ariaNameI18n: 'keyboardDiagramAriaNamePrivacyScreenToggle'
+  },
+  kVolumeMute: {
+    icon: 'keyboard:volume-mute',
+    ariaNameI18n: 'keyboardDiagramAriaNameMute'
+  },
+  kVolumeDown: {
+    icon: 'keyboard:volume-down',
+    ariaNameI18n: 'keyboardDiagramAriaNameVolumeDown'
+  },
+  kVolumeUp: {
+    icon: 'keyboard:volume-up',
+    ariaNameI18n: 'keyboardDiagramAriaNameVolumeUp'
+  },
+  kKeyboardBacklightDown: {
+    icon: 'keyboard:keyboard-brightness-down',
+    ariaNameI18n: 'keyboardDiagramAriaNameKeyboardBacklightDown'
+  },
+  kKeyboardBacklightUp: {
+    icon: 'keyboard:keyboard-brightness-up',
+    ariaNameI18n: 'keyboardDiagramAriaNameKeyboardBacklightUp'
+  },
+  kNextTrack: {
+    icon: 'keyboard:next-track',
+    ariaNameI18n: 'keyboardDiagramAriaNameTrackNext'
+  },
+  kPreviousTrack: {
+    icon: 'keyboard:last-track',
+    ariaNameI18n: 'keyboardDiagramAriaNameTrackPrevious'
+  },
+  kPlayPause: {
+    icon: 'keyboard:play-pause',
+    ariaNameI18n: 'keyboardDiagramAriaNamePlayPause'
+  },
+  kScreenMirror: {
+    icon: 'keyboard:screen-mirror',
+    ariaNameI18n: 'keyboardDiagramAriaNameScreenMirror'
+  },
   // TODO(crbug.com/1207678): work out the localization scheme for keys like
   // delete and unknown.
   kDelete: {text: 'delete'},
   kUnknown: {text: 'unknown'},
 };
 
-export class KeyboardDiagramElement extends PolymerElement {
+/**
+ * @constructor
+ * @extends {PolymerElement}
+ * @implements {I18nBehaviorInterface}
+ */
+const KeyboardDiagramElementBase =
+    mixinBehaviors([I18nBehavior], PolymerElement);
+
+/** @polymer */
+export class KeyboardDiagramElement extends KeyboardDiagramElementBase {
   static get is() {
     return 'keyboard-diagram';
   }
@@ -91,6 +154,16 @@ export class KeyboardDiagramElement extends PolymerElement {
        * @type {?PhysicalLayout}
        */
       physicalLayout: String,
+
+      /**
+       * For internal keyboards, the region code of the device, used to
+       * determine the key labels.
+       * @type {?string}
+       */
+      regionCode: {
+        type: String,
+        observer: 'regionCodeChanged_',
+      },
 
       /** Whether to show the Assistant key (between Ctrl and Alt). */
       showAssistantKey: Boolean,
@@ -156,6 +229,62 @@ export class KeyboardDiagramElement extends PolymerElement {
    */
   isEqual_(lhs, rhs) {
     return lhs === rhs;
+  }
+
+  /**
+   * Utility method for the HTML template to retrieve a localized string, that
+   * returns null if the ID is null or undefined.
+   * @param {?string} stringId The ID to retrieve.
+   * @return {?string} The localized string, or null if stringId is null or
+   *     undefined.
+   * @protected
+   */
+  optionalI18n_(stringId) {
+    if (!stringId) {
+      return null;
+    }
+    return this.i18n(stringId);
+  }
+
+  /**
+   * @param {?string} newValue
+   * @param {?string} oldValue
+   * @private
+   */
+  regionCodeChanged_(newValue, oldValue) {
+    const layout = getKeyboardLayoutForRegionCode(newValue);
+    if (!layout) {
+      return;
+    }
+
+    for (const [evdevCode, glyphs] of layout) {
+      // Exclude the lower part of the enter key, which has the data-code
+      // attribute for an enter key but shouldn't be labelled.
+      const keys = this.root.querySelectorAll(
+          `:not(#enterKeyLowerPart)[data-code="${evdevCode}"]`);
+      for (const key of keys) {
+        if (typeof glyphs === 'string') {
+          key.ariaName = null;
+          key.topLeftGlyph = null;
+          key.topRightGlyph = null;
+          key.bottomLeftGlyph = null;
+          key.bottomRightGlyph = null;
+          key.icon = null;
+          key.mainGlyph = glyphs;
+        } else {
+          key.topLeftGlyph = glyphs.topLeft;
+          key.topRightGlyph = glyphs.topRight;
+          key.bottomLeftGlyph = glyphs.bottomLeft;
+          key.bottomRightGlyph = glyphs.bottomRight;
+          key.icon = glyphs.icon;
+          key.mainGlyph = glyphs.main;
+
+          if (glyphs.ariaNameI18n) {
+            key.ariaName = this.i18n(glyphs.ariaNameI18n);
+          }
+        }
+      }
+    }
   }
 
   /** @private */

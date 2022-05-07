@@ -108,6 +108,13 @@ interface DriveFs {
 
   // Returns the total and free space available in the user's Drive.
   GetQuotaUsage() => (FileError error, QuotaUsage quota);
+
+  // Toggle mirror sync capability.
+  ToggleMirroring(bool enabled) => (MirrorSyncStatus status);
+
+  // Toggle syncing for supplied path.
+  ToggleSyncForPath(mojo_base.mojom.FilePath path,
+                    MirrorPathStatus status) => (FileError error);
 };
 
 // Implemented by Chrome, used from DriveFS.
@@ -200,6 +207,24 @@ enum AccessTokenStatus {
 
   // Getting an access token failed due to an auth error.
   kAuthError,
+};
+
+[Extensible]
+enum MirrorSyncStatus {
+  // Successfully turned on mirror sync.
+  kSuccess,
+  // Failed to turn on mirror sync.
+  kFailure,
+  // The mirror sync feature is disabled by feature flag.
+  kFeatureNotEnabled,
+};
+
+[Extensible]
+enum MirrorPathStatus {
+  // Start syncing a particular path.
+  kStart,
+  // Stop syncing a particular path.
+  kStop,
 };
 
 enum DialogResult {

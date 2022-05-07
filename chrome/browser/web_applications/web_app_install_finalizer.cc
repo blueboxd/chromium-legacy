@@ -44,6 +44,7 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -280,7 +281,9 @@ void WebAppInstallFinalizer::UninstallExternalWebAppByUrl(
     LOG(WARNING) << "Couldn't uninstall web app with url " << app_url
                  << "; No corresponding web app for url.";
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), /*uninstalled=*/false));
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       webapps::UninstallResultCode::kNoAppToUninstall));
     return;
   }
 
@@ -349,7 +352,7 @@ void WebAppInstallFinalizer::UninstallWithoutRegistryUpdateFromSync(
     }
     auto uninstall_task = std::make_unique<WebAppUninstallJob>(
         os_integration_manager_, sync_bridge_, icon_manager_, registrar_,
-        install_manager_, this, profile_->GetPrefs());
+        install_manager_, this, translation_manager_, profile_->GetPrefs());
     uninstall_task->Start(
         app_id,
         url::Origin::Create(registrar_->GetAppById(app_id)->start_url()),
@@ -370,7 +373,7 @@ void WebAppInstallFinalizer::RetryIncompleteUninstalls(
       continue;
     auto uninstall_task = std::make_unique<WebAppUninstallJob>(
         os_integration_manager_, sync_bridge_, icon_manager_, registrar_,
-        install_manager_, this, profile_->GetPrefs());
+        install_manager_, this, translation_manager_, profile_->GetPrefs());
     uninstall_task->Start(
         app_id,
         url::Origin::Create(registrar_->GetAppById(app_id)->start_url()),
@@ -480,12 +483,12 @@ void WebAppInstallFinalizer::UninstallWebAppInternal(
     UninstallWebAppCallback callback) {
   if (registrar_->GetAppById(app_id) == nullptr ||
       base::Contains(pending_uninstalls_, app_id)) {
-    std::move(callback).Run(false);
+    std::move(callback).Run(webapps::UninstallResultCode::kNoAppToUninstall);
     return;
   }
   auto uninstall_task = std::make_unique<WebAppUninstallJob>(
       os_integration_manager_, sync_bridge_, icon_manager_, registrar_,
-      install_manager_, this, profile_->GetPrefs());
+      install_manager_, this, translation_manager_, profile_->GetPrefs());
   uninstall_task->Start(
       app_id, url::Origin::Create(registrar_->GetAppById(app_id)->start_url()),
       uninstall_source, WebAppUninstallJob::ModifyAppRegistry::kYes,
@@ -499,14 +502,14 @@ void WebAppInstallFinalizer::OnUninstallComplete(
     AppId app_id,
     webapps::WebappUninstallSource source,
     UninstallWebAppCallback callback,
-    WebAppUninstallJobResult result) {
+    webapps::UninstallResultCode code) {
   DCHECK(base::Contains(pending_uninstalls_, app_id));
   pending_uninstalls_.erase(app_id);
   if (source == webapps::WebappUninstallSource::kSync) {
     base::UmaHistogramBoolean("Webapp.SyncInitiatedUninstallResult",
-                              result == WebAppUninstallJobResult::kSuccess);
+                              code == webapps::UninstallResultCode::kSuccess);
   }
-  std::move(callback).Run(result == WebAppUninstallJobResult::kSuccess);
+  std::move(callback).Run(code);
 }
 
 void WebAppInstallFinalizer::UninstallExternalWebAppOrRemoveSource(
@@ -516,8 +519,9 @@ void WebAppInstallFinalizer::UninstallExternalWebAppOrRemoveSource(
   const WebApp* app = GetWebAppRegistrar().GetAppById(app_id);
   if (!app) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  /*uninstalled=*/false));
+        FROM_HERE,
+        base::BindOnce(std::move(callback),
+                       webapps::UninstallResultCode::kNoAppToUninstall));
     return;
   }
 
@@ -553,7 +557,7 @@ void WebAppInstallFinalizer::OnMaybeRegisterOsUninstall(
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback),
-                                /*uninstalled=*/true));
+                                webapps::UninstallResultCode::kSuccess));
 }
 
 void WebAppInstallFinalizer::SetWebAppManifestFieldsAndWriteData(

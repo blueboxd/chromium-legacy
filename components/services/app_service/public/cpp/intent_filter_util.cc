@@ -21,7 +21,15 @@ bool ConditionValuesHaveOverlap(const apps::mojom::ConditionValuePtr& value1,
     return true;
   }
 
-  if (value1->match_type == apps::mojom::PatternMatchType::kLiteral) {
+  if (value1->match_type == apps::mojom::PatternMatchType::kSuffix &&
+      (value2->match_type == apps::mojom::PatternMatchType::kNone ||
+       value2->match_type == apps::mojom::PatternMatchType::kLiteral ||
+       value2->match_type == apps::mojom::PatternMatchType::kSuffix)) {
+    return base::EndsWith(/*str=*/value2->value,
+                          /*search_for=*/value1->value);
+  }
+
+  else if (value1->match_type == apps::mojom::PatternMatchType::kLiteral) {
     if (value2->match_type == apps::mojom::PatternMatchType::kPrefix) {
       return base::StartsWith(/*str=*/value1->value,
                               /*search_for=*/value2->value);
@@ -105,6 +113,25 @@ void AddSingleValueCondition(apps::mojom::ConditionType condition_type,
   auto condition =
       apps_util::MakeCondition(condition_type, std::move(condition_values));
   intent_filter->conditions.push_back(std::move(condition));
+}
+
+apps::IntentFilterPtr MakeIntentFilterForUrlScope(const GURL& url) {
+  auto intent_filter = std::make_unique<apps::IntentFilter>();
+
+  AddSingleValueCondition(apps::ConditionType::kAction,
+                          apps_util::kIntentActionView,
+                          apps::PatternMatchType::kNone, intent_filter);
+
+  AddSingleValueCondition(apps::ConditionType::kScheme, url.scheme(),
+                          apps::PatternMatchType::kNone, intent_filter);
+
+  AddSingleValueCondition(apps::ConditionType::kHost, url.host(),
+                          apps::PatternMatchType::kNone, intent_filter);
+
+  AddSingleValueCondition(apps::ConditionType::kPattern, url.path(),
+                          apps::PatternMatchType::kPrefix, intent_filter);
+
+  return intent_filter;
 }
 
 apps::mojom::IntentFilterPtr CreateIntentFilterForUrlScope(const GURL& url) {
@@ -238,14 +265,20 @@ std::set<std::string> AppManagementGetSupportedLinks(
       }
     }
 
-    // For host conditions we add each value to the the |hosts| set.
+    // For host conditions we add each value to the |hosts| set.
     if (condition->condition_type == apps::mojom::ConditionType::kHost) {
       for (auto& condition_value : condition->condition_values) {
-        hosts.insert(condition_value->value);
+        // Prepend the wildcard to indicate any subdomain in the hosts
+        std::string host = condition_value->value;
+        if (condition_value->match_type ==
+            apps::mojom::PatternMatchType::kSuffix) {
+          host = "*" + host;
+        }
+        hosts.insert(host);
       }
     }
 
-    // For path conditions we add each value to the the |paths| set.
+    // For path conditions we add each value to the |paths| set.
     if (condition->condition_type == apps::mojom::ConditionType::kPattern) {
       for (auto& condition_value : condition->condition_values) {
         std::string value = condition_value->value;
@@ -339,6 +372,7 @@ namespace apps {
 // activity_name: FooActivity
 // activity_label: Foo
 // conditions:
+// - kHost: *.wikipedia.org
 // - kAction: view
 // - kPattern: /a /b*
 std::ostream& operator<<(std::ostream& out,
@@ -355,6 +389,9 @@ std::ostream& operator<<(std::ostream& out,
   for (const auto& condition : intent_filter->conditions) {
     out << "- " << condition->condition_type << ": ";
     for (const auto& value : condition->condition_values) {
+      if (value->match_type == apps::mojom::PatternMatchType::kSuffix) {
+        out << "*";
+      }
       out << value->value;
       if (value->match_type == apps::mojom::PatternMatchType::kPrefix) {
         out << "*";

@@ -7,9 +7,7 @@
 
 #include "ash/services/secure_channel/nearby_connection_manager.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 class FakeNearbyConnectionManager : public NearbyConnectionManager {
  public:
@@ -32,8 +30,6 @@ class FakeNearbyConnectionManager : public NearbyConnectionManager {
       const DeviceIdPair& device_id_pair) override;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_NEARBY_CONNECTION_MANAGER_H_

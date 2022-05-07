@@ -357,8 +357,6 @@ RestrictedCookieManager::RestrictedCookieManager(
               cookie_partition_key_)),
       first_party_sets_enabled_(first_party_sets_enabled) {
   DCHECK(cookie_store);
-  CHECK(origin_ == isolation_info_.frame_origin().value() ||
-        role_ != mojom::RestrictedCookieManagerRole::SCRIPT);
 }
 
 RestrictedCookieManager::~RestrictedCookieManager() {
@@ -443,8 +441,10 @@ void RestrictedCookieManager::GetAllForUrl(
 
   cookie_store_->GetCookieListWithOptionsAsync(
       url, net_options,
-      PartitionedCookiesAllowed(partitioned_cookies_runtime_feature_enabled,
-                                cookie_partition_key_)
+      // We allow partition keys which have a nonce since the Origin Trial is
+      // only meant to test cookies set with the Partitioned attribute.
+      partitioned_cookies_runtime_feature_enabled ||
+              (cookie_partition_key_ && cookie_partition_key_->nonce())
           ? cookie_partition_key_collection_
           : net::CookiePartitionKeyCollection(),
       base::BindOnce(&RestrictedCookieManager::CookieListToGetAllForUrlCallback,
@@ -783,8 +783,8 @@ void RestrictedCookieManager::SetCookieFromString(
   std::unique_ptr<net::CanonicalCookie> parsed_cookie =
       net::CanonicalCookie::Create(
           url, cookie, base::Time::Now(), absl::nullopt /* server_time */,
-          PartitionedCookiesAllowed(partitioned_cookies_runtime_feature_enabled,
-                                    cookie_partition_key_)
+          partitioned_cookies_runtime_feature_enabled ||
+                  (cookie_partition_key_ && cookie_partition_key_->nonce())
               ? cookie_partition_key_
               : absl::nullopt,
           &status);

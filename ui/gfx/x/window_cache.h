@@ -10,8 +10,12 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/circular_deque.h"
 #include "base/memory/weak_ptr.h"
+#include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/x/connection.h"
+#include "ui/gfx/x/future.h"
 #include "ui/gfx/x/shape.h"
 #include "ui/gfx/x/xproto.h"
 
@@ -40,6 +44,10 @@ class COMPONENT_EXPORT(X11) WindowCache : public EventObserver {
     Window parent = Window::None;
     bool mapped = false;
 
+    // Properties
+    bool has_wm_name = false;
+    gfx::Insets gtk_frame_extents_px;
+
     int16_t x_px = 0;
     int16_t y_px = 0;
     uint16_t width_px = 0;
@@ -65,6 +73,10 @@ class COMPONENT_EXPORT(X11) WindowCache : public EventObserver {
   WindowCache& operator=(const WindowCache&) = delete;
   ~WindowCache() override;
 
+  // Returns the window at the specified point or Window::None if no match could
+  // be found. `point_px` is in coordinates of the parent of `window`.
+  Window GetWindowAtPoint(gfx::Point point_px, Window window);
+
   void SyncForTest();
 
   const std::unordered_map<Window, WindowInfo>& windows() const {
@@ -72,6 +84,14 @@ class COMPONENT_EXPORT(X11) WindowCache : public EventObserver {
   }
 
  private:
+  // This helper reduces boilerplate when adding requests.
+  template <typename Future, typename Callback, typename... Args>
+  void AddRequest(Future&& future, Callback&& callback, Args&&... args) {
+    future.OnResponse(base::BindOnce(callback, weak_factory_.GetWeakPtr(),
+                                     std::forward<Args>(args)...));
+    pending_requests_.push_back(std::move(future));
+  }
+
   // EventObserver:
   void OnEvent(const Event& event) override;
 
@@ -85,6 +105,9 @@ class COMPONENT_EXPORT(X11) WindowCache : public EventObserver {
   // Returns a vector of child windows or nullptr if `window` is not cached.
   std::vector<Window>* GetChildren(Window window);
 
+  // Makes a GetProperty request with a callback to OnGetPropertyResponse().
+  void GetProperty(Window window, Atom property, uint32_t length);
+
   // Common response handler that's called at the beginning of each On*Response.
   // Returns the WindowInfo for `window` or nullptr if `window` is not cached
   // or `has_reply` is false.
@@ -97,6 +120,10 @@ class COMPONENT_EXPORT(X11) WindowCache : public EventObserver {
 
   void OnQueryTreeResponse(Window window, QueryTreeResponse response);
 
+  void OnGetPropertyResponse(Window window,
+                             Atom atom,
+                             GetPropertyResponse response);
+
   void OnGetRectanglesResponse(Window window,
                                Shape::Sk kind,
                                Shape::GetRectanglesResponse response);
@@ -105,11 +132,12 @@ class COMPONENT_EXPORT(X11) WindowCache : public EventObserver {
 
   Connection* const connection_;
   const Window root_;
+  const Atom gtk_frame_extents_;
   std::unique_ptr<XScopedEventSelector> root_events_;
 
   std::unordered_map<Window, WindowInfo> windows_;
 
-  unsigned int pending_requests_ = 0;
+  base::circular_deque<FutureBase> pending_requests_;
 
   // Although only one instance of WindowCache may be created at a time, the
   // instance will be created and destroyed as needed, so WeakPtrs are still

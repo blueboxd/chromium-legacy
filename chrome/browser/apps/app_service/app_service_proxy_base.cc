@@ -17,7 +17,6 @@
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/metrics/app_service_metrics.h"
-#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/web_app_id_constants.h"
 #include "components/services/app_service/app_service_mojom_impl.h"
@@ -33,6 +32,7 @@
 #include "url/url_constants.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/common/chrome_features.h"
 #endif
 
@@ -69,7 +69,7 @@ absl::optional<IconKey> AppServiceProxyBase::InnerIconLoader::GetIconKey(
   absl::optional<IconKey> icon_key;
   host_->app_registry_cache_.ForApp(
       app_id,
-      [&icon_key](const AppUpdate& update) { icon_key = update.GetIconKey(); });
+      [&icon_key](const AppUpdate& update) { icon_key = update.IconKey(); });
   return icon_key;
 }
 
@@ -271,8 +271,9 @@ void AppServiceProxyBase::Launch(const std::string& app_id,
               profile_, update, launch_source,
               apps::mojom::LaunchContainer::kLaunchContainerNone);
 
-          app_service_->Launch(update.AppType(), update.AppId(), event_flags,
-                               launch_source, std::move(window_info));
+          app_service_->Launch(ConvertAppTypeToMojomAppType(update.AppType()),
+                               update.AppId(), event_flags, launch_source,
+                               std::move(window_info));
 
           PerformPostLaunchTasks(launch_source);
         });
@@ -304,9 +305,9 @@ void AppServiceProxyBase::LaunchAppWithFiles(
             RecordAppLaunch(update.AppId(), launch_source);
           }
 
-          app_service_->LaunchAppWithFiles(update.AppType(), update.AppId(),
-                                           event_flags, launch_source,
-                                           std::move(file_paths));
+          app_service_->LaunchAppWithFiles(
+              ConvertAppTypeToMojomAppType(update.AppType()), update.AppId(),
+              event_flags, launch_source, std::move(file_paths));
 
           PerformPostLaunchTasks(launch_source);
         });
@@ -344,8 +345,9 @@ void AppServiceProxyBase::LaunchAppWithIntent(
               apps::mojom::LaunchContainer::kLaunchContainerNone);
 
           app_service_->LaunchAppWithIntent(
-              update.AppType(), update.AppId(), event_flags, std::move(intent),
-              launch_source, std::move(window_info), std::move(callback));
+              ConvertAppTypeToMojomAppType(update.AppType()), update.AppId(),
+              event_flags, std::move(intent), launch_source,
+              std::move(window_info), std::move(callback));
 
           PerformPostLaunchTasks(launch_source);
         });
@@ -407,8 +409,9 @@ void AppServiceProxyBase::SetPermission(const std::string& app_id,
   if (app_service_.is_connected()) {
     app_registry_cache_.ForOneApp(
         app_id, [this, &permission](const apps::AppUpdate& update) {
-          app_service_->SetPermission(update.AppType(), update.AppId(),
-                                      std::move(permission));
+          app_service_->SetPermission(
+              ConvertAppTypeToMojomAppType(update.AppType()), update.AppId(),
+              std::move(permission));
         });
   }
 }
@@ -420,7 +423,8 @@ void AppServiceProxyBase::UninstallSilently(
     apps::mojom::AppType app_type = app_registry_cache_.GetAppType(app_id);
     app_service_->Uninstall(app_type, app_id, uninstall_source,
                             /*clear_site_data=*/false, /*report_abuse=*/false);
-    PerformPostUninstallTasks(app_type, app_id, uninstall_source);
+    PerformPostUninstallTasks(ConvertMojomAppTypToAppType(app_type), app_id,
+                              uninstall_source);
   }
 }
 
@@ -464,7 +468,8 @@ void AppServiceProxyBase::OpenNativeSettings(const std::string& app_id) {
   if (app_service_.is_connected()) {
     app_registry_cache_.ForOneApp(
         app_id, [this](const apps::AppUpdate& update) {
-          app_service_->OpenNativeSettings(update.AppType(), update.AppId());
+          app_service_->OpenNativeSettings(
+              ConvertAppTypeToMojomAppType(update.AppType()), update.AppId());
         });
   }
 }
@@ -506,17 +511,17 @@ std::vector<IntentLaunchInfo> AppServiceProxyBase::GetAppsForIntent(
                                     &exclude_browsers,
                                     &exclude_browser_tab_apps](
                                        const apps::AppUpdate& update) {
-      if (update.Readiness() != apps::mojom::Readiness::kReady &&
-          update.Readiness() != apps::mojom::Readiness::kDisabledByPolicy) {
+      if (update.Readiness() != apps::Readiness::kReady &&
+          update.Readiness() != apps::Readiness::kDisabledByPolicy) {
         // We consider apps disabled by policy to be ready as they cause URL
         // loads to be blocked.
         return;
       }
-      if (update.HandlesIntents() != apps::mojom::OptionalBool::kTrue) {
+      if (!update.HandlesIntents().value_or(false)) {
         return;
       }
       if (exclude_browser_tab_apps &&
-          update.WindowMode() == mojom::WindowMode::kBrowser) {
+          update.WindowMode() == WindowMode::kBrowser) {
         return;
       }
       // |activity_label| -> {index, is_generic}
@@ -731,7 +736,7 @@ void AppServiceProxyBase::RecordAppPlatformMetrics(
     apps::mojom::LaunchContainer container) {}
 
 void AppServiceProxyBase::PerformPostUninstallTasks(
-    apps::mojom::AppType app_type,
+    apps::AppType app_type,
     const std::string& app_id,
     apps::mojom::UninstallSource uninstall_source) {}
 

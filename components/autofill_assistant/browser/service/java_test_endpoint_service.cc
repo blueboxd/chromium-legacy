@@ -118,4 +118,10 @@ void JavaTestEndpointService::GetNextActions(
                                 timing_stats, std::move(callback));
 }
 
+void JavaTestEndpointService::GetUserData(const CollectUserDataOptions& options,
+                                          uint64_t run_id,
+                                          ResponseCallback callback) {
+  service_impl_->GetUserData(options, run_id, std::move(callback));
+}
+
 }  // namespace autofill_assistant

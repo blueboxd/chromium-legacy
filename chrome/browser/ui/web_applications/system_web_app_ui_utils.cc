@@ -15,7 +15,6 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/launch_utils.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -35,6 +34,7 @@
 #include "ui/display/scoped_display_for_new_windows.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #endif
 
@@ -75,7 +75,7 @@ Profile* GetProfileForSystemWebAppLaunch(Profile* profile) {
 namespace web_app {
 
 absl::optional<SystemAppType> GetSystemWebAppTypeForAppId(Profile* profile,
-                                                          AppId app_id) {
+                                                          const AppId& app_id) {
   auto* provider = WebAppProvider::GetForSystemWebApps(profile);
   return provider ? provider->system_web_app_manager().GetSystemAppTypeForAppId(
                         app_id)

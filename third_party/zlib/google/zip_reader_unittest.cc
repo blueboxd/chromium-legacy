@@ -8,12 +8,12 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <iterator>
 #include <string>
 #include <vector>
 
 #include "base/bind.h"
 #include "base/check.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -110,13 +110,13 @@ class MockWriterDelegate : public zip::WriterDelegate {
   MOCK_METHOD2(WriteBytes, bool(const char*, int));
   MOCK_METHOD1(SetTimeModified, void(const base::Time&));
   MOCK_METHOD1(SetPosixFilePermissions, void(int));
+  MOCK_METHOD0(OnError, void());
 };
 
 bool ExtractCurrentEntryToFilePath(zip::ZipReader* reader,
                                    base::FilePath path) {
   zip::FilePathWriterDelegate writer(path);
-  return reader->ExtractCurrentEntry(&writer,
-                                     std::numeric_limits<uint64_t>::max());
+  return reader->ExtractCurrentEntry(&writer);
 }
 
 const zip::ZipReader::Entry* LocateAndOpenEntry(
@@ -426,7 +426,7 @@ TEST_F(ZipReaderTest, EncryptedFile_WrongPassword) {
     EXPECT_FALSE(entry->is_directory);
     EXPECT_FALSE(entry->is_encrypted);
     std::string contents = "dummy";
-    EXPECT_TRUE(reader.ExtractCurrentEntryToString(1000, &contents));
+    EXPECT_TRUE(reader.ExtractCurrentEntryToString(&contents));
     EXPECT_EQ("This is not encrypted.\n", contents);
   }
 
@@ -442,8 +442,7 @@ TEST_F(ZipReaderTest, EncryptedFile_WrongPassword) {
     EXPECT_FALSE(entry->is_directory);
     EXPECT_TRUE(entry->is_encrypted);
     std::string contents = "dummy";
-    EXPECT_FALSE(reader.ExtractCurrentEntryToString(1000, &contents));
-    EXPECT_EQ("", contents);
+    EXPECT_FALSE(reader.ExtractCurrentEntryToString(&contents));
   }
 
   EXPECT_FALSE(reader.Next());
@@ -462,7 +461,7 @@ TEST_F(ZipReaderTest, EncryptedFile_RightPassword) {
     EXPECT_FALSE(entry->is_directory);
     EXPECT_FALSE(entry->is_encrypted);
     std::string contents = "dummy";
-    EXPECT_TRUE(reader.ExtractCurrentEntryToString(1000, &contents));
+    EXPECT_TRUE(reader.ExtractCurrentEntryToString(&contents));
     EXPECT_EQ("This is not encrypted.\n", contents);
   }
 
@@ -478,7 +477,7 @@ TEST_F(ZipReaderTest, EncryptedFile_RightPassword) {
     EXPECT_FALSE(entry->is_directory);
     EXPECT_TRUE(entry->is_encrypted);
     std::string contents = "dummy";
-    EXPECT_FALSE(reader.ExtractCurrentEntryToString(1000, &contents));
+    EXPECT_FALSE(reader.ExtractCurrentEntryToString(&contents));
     EXPECT_EQ("", contents);
   }
 
@@ -490,7 +489,7 @@ TEST_F(ZipReaderTest, EncryptedFile_RightPassword) {
     EXPECT_FALSE(entry->is_directory);
     EXPECT_TRUE(entry->is_encrypted);
     std::string contents = "dummy";
-    EXPECT_TRUE(reader.ExtractCurrentEntryToString(1000, &contents));
+    EXPECT_TRUE(reader.ExtractCurrentEntryToString(&contents));
     EXPECT_EQ("This is encrypted with ZipCrypto.\n", contents);
   }
 
@@ -518,7 +517,7 @@ TEST_F(ZipReaderTest, OpenFromString) {
       "\x50\x75\x78\x0b\x00\x01\x04\x8e\xf0\x00\x00\x04\x88\x13\x00\x00"
       "\x50\x4b\x05\x06\x00\x00\x00\x00\x01\x00\x01\x00\x4e\x00\x00\x00"
       "\x52\x00\x00\x00\x00\x00";
-  std::string data(kTestData, base::size(kTestData));
+  std::string data(kTestData, std::size(kTestData));
   ZipReader reader;
   ASSERT_TRUE(reader.OpenFromString(data));
   base::FilePath target_path(FILE_PATH_LITERAL("test.txt"));
@@ -664,10 +663,7 @@ TEST_F(ZipReaderTest, ExtractToFileAsync_WrongCrc) {
   ASSERT_TRUE(base::ReadFileToString(target_path, &contents));
   EXPECT_EQ("This file has been changed after its CRC was computed.\n",
             contents);
-
-  int64_t file_size = 0;
-  ASSERT_TRUE(base::GetFileSize(target_path, &file_size));
-  EXPECT_EQ(file_size, listener.current_progress());
+  EXPECT_EQ(contents.size(), listener.current_progress());
 }
 
 // Verifies that the asynchronous extraction to a file works.
@@ -729,7 +725,7 @@ TEST_F(ZipReaderTest, ExtractCurrentEntryToString) {
     }
 
     // More than necessary byte read limit: must pass.
-    EXPECT_TRUE(reader.ExtractCurrentEntryToString(16, &contents));
+    EXPECT_TRUE(reader.ExtractCurrentEntryToString(&contents));
     EXPECT_EQ(std::string(base::StringPiece("0123456", i)), contents);
   }
   reader.Close();
@@ -787,7 +783,7 @@ TEST_F(ZipReaderTest, ExtractPosixPermissions) {
   for (auto entry : {"0.txt", "1.txt", "2.txt", "3.txt"}) {
     ASSERT_TRUE(LocateAndOpenEntry(&reader, base::FilePath::FromASCII(entry)));
     FilePathWriterDelegate delegate(temp_dir.GetPath().AppendASCII(entry));
-    ASSERT_TRUE(reader.ExtractCurrentEntry(&delegate, 10000));
+    ASSERT_TRUE(reader.ExtractCurrentEntry(&delegate));
   }
   reader.Close();
 
@@ -830,25 +826,24 @@ TEST_F(ZipReaderTest, ExtractCurrentEntryPrepareFailure) {
 
   ASSERT_TRUE(reader.Open(test_zip_file_));
   ASSERT_TRUE(LocateAndOpenEntry(&reader, target_path));
-  ASSERT_FALSE(reader.ExtractCurrentEntry(
-      &mock_writer, std::numeric_limits<uint64_t>::max()));
+  ASSERT_FALSE(reader.ExtractCurrentEntry(&mock_writer));
 }
 
-// Test that when WriterDelegate::WriteBytes returns false, no other methods on
-// the delegate are called and the extraction fails.
+// Test that when WriterDelegate::WriteBytes returns false, only the OnError
+// method on the delegate is called and the extraction fails.
 TEST_F(ZipReaderTest, ExtractCurrentEntryWriteBytesFailure) {
   testing::StrictMock<MockWriterDelegate> mock_writer;
 
   EXPECT_CALL(mock_writer, PrepareOutput()).WillOnce(Return(true));
   EXPECT_CALL(mock_writer, WriteBytes(_, _)).WillOnce(Return(false));
+  EXPECT_CALL(mock_writer, OnError());
 
   base::FilePath target_path(FILE_PATH_LITERAL("foo/bar/quux.txt"));
   ZipReader reader;
 
   ASSERT_TRUE(reader.Open(test_zip_file_));
   ASSERT_TRUE(LocateAndOpenEntry(&reader, target_path));
-  ASSERT_FALSE(reader.ExtractCurrentEntry(
-      &mock_writer, std::numeric_limits<uint64_t>::max()));
+  ASSERT_FALSE(reader.ExtractCurrentEntry(&mock_writer));
 }
 
 // Test that extraction succeeds when the writer delegate reports all is well.
@@ -865,8 +860,7 @@ TEST_F(ZipReaderTest, ExtractCurrentEntrySuccess) {
 
   ASSERT_TRUE(reader.Open(test_zip_file_));
   ASSERT_TRUE(LocateAndOpenEntry(&reader, target_path));
-  ASSERT_TRUE(reader.ExtractCurrentEntry(&mock_writer,
-                                         std::numeric_limits<uint64_t>::max()));
+  ASSERT_TRUE(reader.ExtractCurrentEntry(&mock_writer));
 }
 
 TEST_F(ZipReaderTest, WrongCrc) {
@@ -876,9 +870,28 @@ TEST_F(ZipReaderTest, WrongCrc) {
   const ZipReader::Entry* const entry =
       LocateAndOpenEntry(&reader, base::FilePath::FromASCII("Corrupted.txt"));
   ASSERT_TRUE(entry);
+
   std::string contents = "dummy";
-  EXPECT_FALSE(reader.ExtractCurrentEntryToString(1000, &contents));
-  EXPECT_EQ("", contents);
+  EXPECT_FALSE(reader.ExtractCurrentEntryToString(&contents));
+  EXPECT_EQ("This file has been changed after its CRC was computed.\n",
+            contents);
+
+  contents = "dummy";
+  EXPECT_FALSE(
+      reader.ExtractCurrentEntryToString(entry->original_size + 1, &contents));
+  EXPECT_EQ("This file has been changed after its CRC was computed.\n",
+            contents);
+
+  contents = "dummy";
+  EXPECT_FALSE(
+      reader.ExtractCurrentEntryToString(entry->original_size, &contents));
+  EXPECT_EQ("This file has been changed after its CRC was computed.\n",
+            contents);
+
+  contents = "dummy";
+  EXPECT_FALSE(
+      reader.ExtractCurrentEntryToString(entry->original_size - 1, &contents));
+  EXPECT_EQ("This file has been changed after its CRC was computed.", contents);
 }
 
 class FileWriterDelegateTest : public ::testing::Test {
@@ -892,34 +905,39 @@ class FileWriterDelegateTest : public ::testing::Test {
     ASSERT_TRUE(file_.IsValid());
   }
 
-  // Writes data to the file, leaving the current position at the end of the
-  // write.
-  void PopulateFile() {
-    static const char kSomeData[] = "this sure is some data.";
-    static const size_t kSomeDataLen = sizeof(kSomeData) - 1;
-    ASSERT_NE(-1LL, file_.Write(0LL, kSomeData, kSomeDataLen));
-  }
-
   base::FilePath temp_file_path_;
   base::File file_;
 };
 
-TEST_F(FileWriterDelegateTest, WriteToStartAndTruncate) {
-  // Write stuff and advance.
-  PopulateFile();
+TEST_F(FileWriterDelegateTest, WriteToEnd) {
+  const std::string payload = "This is the actualy payload data.\n";
 
-  // This should rewind, write, then truncate.
-  static const char kSomeData[] = "short";
-  static const int kSomeDataLen = sizeof(kSomeData) - 1;
   {
     FileWriterDelegate writer(&file_);
+    EXPECT_EQ(0, writer.file_length());
     ASSERT_TRUE(writer.PrepareOutput());
-    ASSERT_TRUE(writer.WriteBytes(kSomeData, kSomeDataLen));
+    ASSERT_TRUE(writer.WriteBytes(payload.data(), payload.size()));
+    EXPECT_EQ(payload.size(), writer.file_length());
   }
-  ASSERT_EQ(kSomeDataLen, file_.GetLength());
-  char buf[kSomeDataLen] = {};
-  ASSERT_EQ(kSomeDataLen, file_.Read(0LL, buf, kSomeDataLen));
-  ASSERT_EQ(std::string(kSomeData), std::string(buf, kSomeDataLen));
+
+  EXPECT_EQ(payload.size(), file_.GetLength());
+}
+
+TEST_F(FileWriterDelegateTest, EmptyOnError) {
+  const std::string payload = "This is the actualy payload data.\n";
+
+  {
+    FileWriterDelegate writer(&file_);
+    EXPECT_EQ(0, writer.file_length());
+    ASSERT_TRUE(writer.PrepareOutput());
+    ASSERT_TRUE(writer.WriteBytes(payload.data(), payload.size()));
+    EXPECT_EQ(payload.size(), writer.file_length());
+    EXPECT_EQ(payload.size(), file_.GetLength());
+    writer.OnError();
+    EXPECT_EQ(0, writer.file_length());
+  }
+
+  EXPECT_EQ(0, file_.GetLength());
 }
 
 }  // namespace zip

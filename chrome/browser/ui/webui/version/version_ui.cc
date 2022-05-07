@@ -14,7 +14,6 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/version/version_handler.h"
-#include "chrome/browser/ui/webui/version/version_util_win.h"
 #include "chrome/browser/ui/webui/webui_util.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/url_constants.h"
@@ -51,6 +50,7 @@
 
 #if BUILDFLAG(IS_WIN)
 #include "chrome/browser/ui/webui/version/version_handler_win.h"
+#include "chrome/browser/ui/webui/version/version_util_win.h"
 #endif
 
 using content::WebUIDataSource;
@@ -177,9 +177,10 @@ void VersionUI::AddVersionDetailStrings(content::WebUIDataSource* html_source) {
   html_source->AddString(version_ui::kVersion,
                          version_info::GetVersionNumber());
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-  // On Lacros, we don't have the concept of channels, in their usual semantics.
-  // Replace the channel string with "Lacros". https://crbug.com/1215734.
-  html_source->AddString(version_ui::kVersionModifier, "Lacros");
+  // On Lacros, add channel string with "Lacros".
+  html_source->AddString(
+      version_ui::kVersionModifier,
+      "Lacros/" + chrome::GetChannelName(chrome::WithExtendedStable(true)));
 #else
   html_source->AddString(
       version_ui::kVersionModifier,

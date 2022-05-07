@@ -33,6 +33,7 @@
 #include "ash/app_list/views/apps_grid_view_test_api.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/expand_arrow_view.h"
+#include "ash/app_list/views/ghost_image_view.h"
 #include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/app_list/views/search_box_view.h"
@@ -504,6 +505,14 @@ class AppsGridViewTest : public AshTestBase {
       ASSERT_NE(items_container->children().cend(), app_iter);
       EXPECT_EQ(view_model->view_at(i), *app_iter);
     }
+  }
+
+  views::View* GetItemsContainer() {
+    return apps_grid_view_->items_container();
+  }
+
+  views::View* GetCurrentGhostImageView() {
+    return apps_grid_view_->current_ghost_view_;
   }
 
   // Calls the private method.
@@ -2818,6 +2827,7 @@ TEST_P(AppsGridViewClamshellAndTabletTest, ControlShiftArrowFoldersItemBasic) {
   AppListItemView* first_item = GetItemViewInTopLevelGrid(0);
   const std::string first_item_id = first_item->item()->id();
   const std::string second_item_id = GetItemViewInTopLevelGrid(1)->item()->id();
+  const gfx::Rect expected_folder_view_bounds = first_item->GetBoundsInScreen();
 
   ui::test::EventGenerator* const event_generator = GetEventGenerator();
   // Press an arrow key to engage keyboard traversal in fullscreen launcher.
@@ -2831,6 +2841,7 @@ TEST_P(AppsGridViewClamshellAndTabletTest, ControlShiftArrowFoldersItemBasic) {
   // Test that the first item in the grid is now a folder with the first and
   // second items.
   AppListItemView* new_folder = GetItemViewInTopLevelGrid(0);
+  EXPECT_EQ(expected_folder_view_bounds, new_folder->GetBoundsInScreen());
   AppListFolderItem* folder_item =
       static_cast<AppListFolderItem*>(new_folder->item());
   EXPECT_TRUE(folder_item->is_folder());
@@ -2856,6 +2867,7 @@ TEST_P(AppsGridViewClamshellAndTabletTest, ControlShiftArrowFoldersItemBasic) {
     event_generator->PressAndReleaseKey(ui::VKEY_UP);
     event_generator->PressAndReleaseKey(ui::VKEY_ESCAPE);
     EXPECT_FALSE(GetAppListTestHelper()->IsInFolderView());
+    EXPECT_EQ(expected_folder_view_bounds, new_folder->GetBoundsInScreen());
   }
   ASSERT_TRUE(new_folder->HasFocus());
   ASSERT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
@@ -2909,6 +2921,64 @@ TEST_P(AppsGridViewClamshellAndTabletTest, ControlShiftArrowFoldersItemBasic) {
   EXPECT_EQ(5u, folder_item->ChildItemCount());
   histogram_tester.ExpectBucketCount(GetItemMoveTypeHistogramName(),
                                      kMoveByKeyboardIntoFolder, 4);
+}
+
+// Tests that control + shift + left arrow puts |selected_item_| creates a
+// folder if one does not exist.
+TEST_P(AppsGridViewClamshellAndTabletTest,
+       ControlShiftLeftArrowFoldersItemBasic) {
+  base::HistogramTester histogram_tester;
+  model_->PopulateApps(3 * apps_grid_view_->cols());
+  UpdateLayout();
+  // Select the first item in the grid, folder it with the item to the right.
+  AppListItemView* first_item = GetItemViewInTopLevelGrid(0);
+  const std::string first_item_id = first_item->item()->id();
+  AppListItemView* second_item = GetItemViewInTopLevelGrid(1);
+  const std::string second_item_id = second_item->item()->id();
+  gfx::Rect expected_folder_view_bounds = first_item->GetBoundsInScreen();
+
+  ui::test::EventGenerator* const event_generator = GetEventGenerator();
+  // Press an arrow key to engage keyboard traversal in fullscreen launcher.
+  event_generator->PressAndReleaseKey(ui::VKEY_DOWN);
+
+  // Focus second item, and folder it.
+  apps_grid_view_->GetFocusManager()->SetFocusedView(second_item);
+  event_generator->PressAndReleaseKey(ui::VKEY_LEFT,
+                                      ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN);
+
+  // Test that the first item in the grid is now a folder with the first and
+  // second items.
+  AppListItemView* new_folder = GetItemViewInTopLevelGrid(0);
+  EXPECT_EQ(expected_folder_view_bounds, new_folder->GetBoundsInScreen());
+  AppListFolderItem* folder_item =
+      static_cast<AppListFolderItem*>(new_folder->item());
+  EXPECT_TRUE(folder_item->is_folder());
+  EXPECT_EQ(2u, folder_item->ChildItemCount());
+  EXPECT_TRUE(folder_item->FindChildItem(first_item_id));
+  EXPECT_TRUE(folder_item->FindChildItem(second_item_id));
+  histogram_tester.ExpectBucketCount(GetItemMoveTypeHistogramName(),
+                                     kMoveByKeyboardIntoFolder, 1);
+
+  // With productivity launcher enabled, the folder is expected to get opened
+  // after creation.
+  EXPECT_EQ(!is_productivity_launcher_enabled_,
+            apps_grid_view_->IsSelectedView(new_folder));
+  EXPECT_EQ(is_productivity_launcher_enabled_,
+            GetAppListTestHelper()->IsInFolderView());
+  if (is_productivity_launcher_enabled_) {
+    EXPECT_EQ(folder_item, app_list_folder_view_->folder_item());
+    EXPECT_TRUE(app_list_folder_view_->folder_header_view()
+                    ->GetFolderNameViewForTest()
+                    ->HasFocus());
+
+    // Close the folder.
+    event_generator->PressAndReleaseKey(ui::VKEY_UP);
+    event_generator->PressAndReleaseKey(ui::VKEY_ESCAPE);
+    EXPECT_FALSE(GetAppListTestHelper()->IsInFolderView());
+    EXPECT_EQ(expected_folder_view_bounds, new_folder->GetBoundsInScreen());
+  }
+  ASSERT_TRUE(new_folder->HasFocus());
+  ASSERT_TRUE(apps_grid_view_->IsSelectedView(new_folder));
 }
 
 // Tests that foldering an item that is on a different page fails.
@@ -2995,11 +3065,14 @@ TEST_P(AppsGridViewClamshellAndTabletTest,
   folder_view->RequestFocus();
   EXPECT_TRUE(apps_grid_view_->GetWidget()->GetWindowBoundsInScreen().Contains(
       folder_view->GetBoundsInScreen()));
+  const gfx::Rect original_folder_view_bounds =
+      folder_view->GetBoundsInScreen();
 
   // Open the folder.
   ui::test::EventGenerator* const event_generator = GetEventGenerator();
   event_generator->PressAndReleaseKey(ui::VKEY_RETURN);
   ASSERT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  EXPECT_EQ(original_folder_view_bounds, folder_view->GetBoundsInScreen());
 
   const AppListItemView* reparented_item_view =
       folder_apps_grid_view()->view_model()->view_at(0);
@@ -3060,11 +3133,14 @@ TEST_P(AppsGridViewClamshellAndTabletTest,
   folder_view->RequestFocus();
   EXPECT_TRUE(apps_grid_view_->GetWidget()->GetWindowBoundsInScreen().Contains(
       folder_view->GetBoundsInScreen()));
+  const gfx::Rect original_folder_view_bounds =
+      folder_view->GetBoundsInScreen();
 
   // Open the folder.
   ui::test::EventGenerator* const event_generator = GetEventGenerator();
   event_generator->PressAndReleaseKey(ui::VKEY_RETURN);
   ASSERT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  EXPECT_EQ(original_folder_view_bounds, folder_view->GetBoundsInScreen());
 
   const AppListItemView* reparented_item_view =
       folder_apps_grid_view()->view_model()->view_at(0);
@@ -3114,11 +3190,14 @@ TEST_P(AppsGridViewTabletTest,
       test_api_->GetViewAtIndex(GridIndex(0, GetTilesPerPage(0) - 2));
   ASSERT_TRUE(folder_view->is_folder());
   folder_view->RequestFocus();
+  const gfx::Rect original_folder_view_bounds =
+      folder_view->GetBoundsInScreen();
 
   // Open the folder.
   ui::test::EventGenerator* const event_generator = GetEventGenerator();
   event_generator->PressAndReleaseKey(ui::VKEY_RETURN);
   ASSERT_TRUE(GetAppListTestHelper()->IsInFolderView());
+  EXPECT_EQ(original_folder_view_bounds, folder_view->GetBoundsInScreen());
 
   const AppListItemView* reparented_item_view =
       folder_apps_grid_view()->view_model()->view_at(0);
@@ -3162,6 +3241,8 @@ TEST_P(AppsGridViewClamshellAndTabletTest,
   const std::string first_item_id = moving_item->item()->id();
   const std::string second_item_id =
       GetItemViewInTopLevelGrid(kNumberOfApps - 1)->item()->id();
+  const gfx::Rect expected_folder_view_bounds =
+      moving_item->GetBoundsInScreen();
 
   ui::test::EventGenerator* const event_generator = GetEventGenerator();
   // Press an arrow key to engage keyboard traversal in fullscreen launcher.
@@ -3174,6 +3255,7 @@ TEST_P(AppsGridViewClamshellAndTabletTest,
   // Test that the first item in the grid is now a folder with the first and
   // second items, and that the folder is the selected view.
   AppListItemView* new_folder = GetItemViewInTopLevelGrid(kNumberOfApps - 2);
+  EXPECT_EQ(expected_folder_view_bounds, new_folder->GetBoundsInScreen());
   AppListFolderItem* folder_item =
       static_cast<AppListFolderItem*>(new_folder->item());
   EXPECT_TRUE(folder_item->is_folder());
@@ -4662,6 +4744,41 @@ TEST_F(AppsGridViewTest, CreateANewPageByAddingAppLogsMetrics) {
   histogram_tester.ExpectBucketCount("Apps.AppList.AppsGridAddPage",
                                      AppListPageCreationType::kSyncOrInstall,
                                      1);
+}
+
+// Test that the background cards remain stacked as the bottom layer during
+// an item drag. The adding of views to the apps grid during a drag (e.g. ghost
+// image view) can cause a reorder of layers.
+TEST_P(AppsGridViewCardifiedStateTest, BackgroundCardLayerOrderedAtBottom) {
+  ASSERT_TRUE(paged_apps_grid_view_);
+
+  // Create only one page with two apps.
+  model_->PopulateApps(2);
+
+  // Start cardified apps grid.
+  InitiateDragForItemAtCurrentPageAt(AppsGridView::TOUCH, 0, 0,
+                                     paged_apps_grid_view_);
+  ASSERT_TRUE(paged_apps_grid_view_->cardified_state_for_testing());
+  EXPECT_EQ(nullptr, GetCurrentGhostImageView());
+
+  if (features::IsProductivityLauncherEnabled()) {
+    test_api_->FireReorderTimerAndWaitForAnimationDone();
+    // Check that the ghost image view was created.
+    EXPECT_NE(nullptr, GetCurrentGhostImageView());
+  } else {
+    test_api_->LayoutToIdealBounds();
+  }
+
+  const int kExpectedBackgroundCardCount =
+      features::IsProductivityLauncherEnabled() ? 1 : 2;
+  ASSERT_EQ(kExpectedBackgroundCardCount,
+            paged_apps_grid_view_->BackgroundCardCountForTesting());
+
+  // Check that the first background card layer is stacked at the bottom.
+  EXPECT_EQ(paged_apps_grid_view_->GetBackgroundCardLayerForTesting(0),
+            GetItemsContainer()
+                ->layer()
+                ->children()[kExpectedBackgroundCardCount - 1]);
 }
 
 TEST_P(AppsGridViewCardifiedStateTest, PeekingCardOnLastPage) {

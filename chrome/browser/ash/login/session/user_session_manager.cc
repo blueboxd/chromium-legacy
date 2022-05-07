@@ -659,9 +659,10 @@ void UserSessionManager::StartSession(const UserContext& user_context,
   if (!has_active_session)
     StartCrosSession();
 
+  user_manager::KnownUser known_user(g_browser_process->local_state());
   if (!user_context.GetDeviceId().empty()) {
-    user_manager::known_user::SetDeviceId(user_context.GetAccountId(),
-                                          user_context.GetDeviceId());
+    known_user.SetDeviceId(user_context.GetAccountId(),
+                           user_context.GetDeviceId());
   }
 
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
@@ -1170,7 +1171,8 @@ void UserSessionManager::StoreUserContextDataBeforeProfileIsCreated() {
         user_manager::User::OAUTH2_TOKEN_STATUS_VALID);
   }
 
-  user_manager::known_user::UpdateId(user_context_.GetAccountId());
+  user_manager::KnownUser known_user(g_browser_process->local_state());
+  known_user.UpdateId(user_context_.GetAccountId());
 }
 
 void UserSessionManager::StartCrosSession() {

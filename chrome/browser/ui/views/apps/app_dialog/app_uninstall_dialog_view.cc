@@ -16,6 +16,7 @@
 #include "chrome/browser/extensions/extension_management.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
@@ -39,8 +40,10 @@
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
+#include "ui/views/view_class_properties.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/borealis/borealis_util.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #endif
 
@@ -61,18 +64,18 @@ bool IsArcShortcutApp(Profile* profile, const std::string& app_id) {
 #endif
 
 std::u16string GetWindowTitleForApp(Profile* profile,
-                                    apps::mojom::AppType app_type,
+                                    apps::AppType app_type,
                                     const std::string& app_id,
                                     const std::string& app_name) {
-  using apps::mojom::AppType;
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // On ChromeOS, all app types exist, but Arc shortcut apps get the regular
   // extension uninstall title.
-  if (app_type == AppType::kArc && IsArcShortcutApp(profile, app_id))
+  if (app_type == apps::AppType::kArc && IsArcShortcutApp(profile, app_id))
     return l10n_util::GetStringUTF16(IDS_EXTENSION_UNINSTALL_PROMPT_TITLE);
 #else
   // On non-ChromeOS, only Chrome app and web app types meaningfully exist.
-  DCHECK(app_type != AppType::kChromeApp && app_type != AppType::kWeb);
+  DCHECK(app_type != apps::AppType::kChromeApp &&
+         app_type != apps::AppType::kWeb);
 #endif
   return l10n_util::GetStringFUTF16(IDS_PROMPT_APP_UNINSTALL_TITLE,
                                     base::UTF8ToUTF16(app_name));
@@ -81,24 +84,25 @@ std::u16string GetWindowTitleForApp(Profile* profile,
 }  // namespace
 
 // static
-void apps::UninstallDialog::UiBase::Create(
+views::Widget* apps::UninstallDialog::UiBase::Create(
     Profile* profile,
-    apps::mojom::AppType app_type,
+    apps::AppType app_type,
     const std::string& app_id,
     const std::string& app_name,
     gfx::ImageSkia image,
     gfx::NativeWindow parent_window,
     apps::UninstallDialog* uninstall_dialog) {
-  constrained_window::CreateBrowserModalDialogViews(
+  views::Widget* widget = constrained_window::CreateBrowserModalDialogViews(
       (new AppUninstallDialogView(profile, app_type, app_id, app_name, image,
                                   uninstall_dialog)),
-      parent_window)
-      ->Show();
+      parent_window);
+  widget->Show();
+  return widget;
 }
 
 AppUninstallDialogView::AppUninstallDialogView(
     Profile* profile,
-    apps::mojom::AppType app_type,
+    apps::AppType app_type,
     const std::string& app_id,
     const std::string& app_name,
     gfx::ImageSkia image,
@@ -133,7 +137,7 @@ AppUninstallDialogView* AppUninstallDialogView::GetActiveViewForTesting() {
 }
 
 void AppUninstallDialogView::InitializeView(Profile* profile,
-                                            apps::mojom::AppType app_type,
+                                            apps::AppType app_type,
                                             const std::string& app_id,
                                             const std::string& app_name) {
   SetButtonLabel(
@@ -146,23 +150,26 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL)));
 
   switch (app_type) {
-    case apps::mojom::AppType::kUnknown:
-    case apps::mojom::AppType::kBuiltIn:
-    case apps::mojom::AppType::kMacOs:
-    case apps::mojom::AppType::kStandaloneBrowser:
-    case apps::mojom::AppType::kRemote:
-    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
-    case apps::mojom::AppType::kExtension:
+    case apps::AppType::kUnknown:
+    case apps::AppType::kBuiltIn:
+    case apps::AppType::kMacOs:
+    case apps::AppType::kStandaloneBrowser:
+    case apps::AppType::kRemote:
+    case apps::AppType::kExtension:
+    case apps::AppType::kStandaloneBrowserExtension:
       NOTREACHED();
       break;
-    case apps::mojom::AppType::kArc:
+    case apps::AppType::kStandaloneBrowserChromeApp:
+      // Do nothing special for kStandaloneBrowserChromeApp.
+      break;
+    case apps::AppType::kArc:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       InitializeViewForArcApp(profile, app_id);
 #else
       NOTREACHED();
 #endif
       break;
-    case apps::mojom::AppType::kPluginVm:
+    case apps::AppType::kPluginVm:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       InitializeViewWithMessage(l10n_util::GetStringFUTF16(
           IDS_PLUGIN_VM_UNINSTALL_PROMPT_BODY, base::UTF8ToUTF16(app_name)));
@@ -170,10 +177,20 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
       NOTREACHED();
 #endif
       break;
-    case apps::mojom::AppType::kBorealis:
-      // TODO(b/178741230): Borealis' uninstaller needs custom text.  For now
-      // just use Crostini's.
-    case apps::mojom::AppType::kCrostini:
+    case apps::AppType::kBorealis:
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+      if (app_id == borealis::kClientAppId) {
+        InitializeViewWithMessage(l10n_util::GetStringUTF16(
+            IDS_BOREALIS_CLIENT_UNINSTALL_CONFIRM_BODY));
+      } else {
+        InitializeViewWithMessage(l10n_util::GetStringUTF16(
+            IDS_BOREALIS_APPLICATION_UNINSTALL_CONFIRM_BODY));
+      }
+#else
+      NOTREACHED();
+#endif
+      break;
+    case apps::AppType::kCrostini:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
       InitializeViewWithMessage(l10n_util::GetStringUTF16(
           IDS_CROSTINI_APPLICATION_UNINSTALL_CONFIRM_BODY));
@@ -182,11 +199,11 @@ void AppUninstallDialogView::InitializeView(Profile* profile,
 #endif
       break;
 
-    case apps::mojom::AppType::kWeb:
-    case apps::mojom::AppType::kSystemWeb:
+    case apps::AppType::kWeb:
+    case apps::AppType::kSystemWeb:
       InitializeViewForWebApp(profile, app_id);
       break;
-    case apps::mojom::AppType::kChromeApp:
+    case apps::AppType::kChromeApp:
       InitializeViewForExtension(profile, app_id);
       break;
   }
@@ -337,4 +354,10 @@ void AppUninstallDialogView::OnDialogAccepted() {
       report_abuse_checkbox_ && report_abuse_checkbox_->GetChecked();
   uninstall_dialog()->OnDialogClosed(true /* uninstall */, clear_site_data,
                                      report_abuse_checkbox);
+}
+
+void AppUninstallDialogView::OnWidgetInitialized() {
+  AppDialogView::OnWidgetInitialized();
+  GetOkButton()->SetProperty(views::kElementIdentifierKey,
+                             kAppUninstallDialogOkButtonId);
 }

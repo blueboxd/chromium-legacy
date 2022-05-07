@@ -5,9 +5,11 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_FONT_ACCESS_FONT_TABLE_MAP_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_FONT_ACCESS_FONT_TABLE_MAP_H_
 
+#include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/renderer/bindings/core/v8/maplike.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 
 namespace blink {
 

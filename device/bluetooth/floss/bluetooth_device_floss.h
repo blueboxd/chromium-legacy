@@ -49,6 +49,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
   uint16_t GetAppearance() const override;
   absl::optional<std::string> GetName() const override;
   bool IsPaired() const override;
+#if BUILDFLAG(IS_CHROMEOS)
+  bool IsBonded() const override;
+#endif  // BUILDFLAG(IS_CHROMEOS)
   bool IsConnected() const override;
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
@@ -105,6 +108,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
   void SetIsConnected(bool is_connected);
   void ConnectAllEnabledProfiles();
   void ResetPairing();
+  // Triggers the pending callback of Connect() method.
+  void TriggerConnectCallback(
+      absl::optional<BluetoothDevice::ConnectErrorCode> error_code);
 
   BluetoothPairingFloss* pairing() const { return pairing_.get(); }
 
@@ -132,6 +138,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceFloss
 
   void OnCancelPairingError(const Error& error);
   void OnForgetError(ErrorCallback error_callback, const Error& error);
+
+  void OnConnectAllEnabledProfiles(const absl::optional<Void>& ret,
+                                   const absl::optional<Error>& error);
+
+  absl::optional<ConnectCallback> pending_callback_on_connect_profiles_ =
+      absl::nullopt;
 
   // Address of this device. Changing this should necessitate creating a new
   // BluetoothDeviceFloss object.

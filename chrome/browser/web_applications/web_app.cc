@@ -19,6 +19,7 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/sync/base/time.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
+#include "third_party/blink/public/common/permissions_policy/policy_helper_public.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "ui/gfx/color_utils.h"
 
@@ -55,8 +56,6 @@ std::string OsIntegrationStateToString(OsIntegrationState state) {
 
 WebApp::WebApp(const AppId& app_id)
     : app_id_(app_id),
-      display_mode_(DisplayMode::kUndefined),
-      user_display_mode_(DisplayMode::kUndefined),
       chromeos_data_(IsChromeOsDataMandatory()
                          ? absl::make_optional<WebAppChromeOsData>()
                          : absl::nullopt) {}
@@ -380,7 +379,7 @@ void WebApp::SetParentAppId(const absl::optional<AppId>& parent_app_id) {
 }
 
 void WebApp::SetPermissionsPolicy(
-    std::vector<PermissionsPolicyDeclaration> permissions_policy) {
+    blink::ParsedPermissionsPolicy permissions_policy) {
   permissions_policy_ = std::move(permissions_policy);
 }
 
@@ -409,6 +408,9 @@ WebApp::SyncFallbackData::~SyncFallbackData() = default;
 
 WebApp::SyncFallbackData::SyncFallbackData(
     const SyncFallbackData& sync_fallback_data) = default;
+
+WebApp::SyncFallbackData::SyncFallbackData(
+    SyncFallbackData&& sync_fallback_data) noexcept = default;
 
 WebApp::SyncFallbackData& WebApp::SyncFallbackData::operator=(
     SyncFallbackData&& sync_fallback_data) = default;
@@ -651,13 +653,21 @@ base::Value WebApp::AsDebugValue() const {
   if (!permissions_policy_.empty()) {
     base::Value& policy_list = *root.SetKey(
         "permissions_policy", base::Value(base::Value::Type::LIST));
+    const auto& feature_to_name_map =
+        blink::GetPermissionsPolicyFeatureToNameMap();
     for (const auto& decl : permissions_policy_) {
       base::Value json_decl(base::Value::Type::DICTIONARY);
-      json_decl.SetStringKey("feature", decl.feature);
-      base::Value& allowlist_json =
-          *json_decl.SetKey("allowlist", base::Value(base::Value::Type::LIST));
-      for (const std::string& origin : decl.allowlist)
-        allowlist_json.Append(origin);
+      const auto& feature_name = feature_to_name_map.find(decl.feature);
+      if (feature_name == feature_to_name_map.end()) {
+        continue;
+      }
+      json_decl.SetStringKey("feature", feature_name->second);
+      base::Value& allowlist_json = *json_decl.SetKey(
+          "allowed_origins", base::Value(base::Value::Type::LIST));
+      for (const auto& origin : decl.allowed_origins)
+        allowlist_json.Append(origin.Serialize().c_str());
+      json_decl.SetBoolKey("matches_all_origins", decl.matches_all_origins);
+      json_decl.SetBoolKey("matches_opaque_src", decl.matches_opaque_src);
       policy_list.Append(std::move(json_decl));
     }
   }
@@ -689,8 +699,7 @@ base::Value WebApp::AsDebugValue() const {
 
   root.SetStringKey("start_url", ConvertToString(start_url_));
 
-  root.SetKey("sync_fallback_data",
-              base::Value(sync_fallback_data_.AsDebugValue()));
+  root.SetKey("sync_fallback_data", sync_fallback_data_.AsDebugValue());
 
   root.SetStringKey("theme_color", ColorToString(theme_color_));
 

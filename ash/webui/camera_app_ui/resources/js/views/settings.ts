@@ -30,8 +30,8 @@ import {LeaveCondition, View} from './view.js';
  * available resolutions for a particular video device.
  */
 interface ResolutionConfig {
-  prefResol: Resolution;
-  resols: ResolutionList;
+  prefResolution: Resolution|null;
+  resolutions: Resolution[];
 }
 
 /**
@@ -69,29 +69,31 @@ export class BaseSettings extends View {
 
     dom.getFrom(this.root, '.menu-header button', HTMLButtonElement)
         .addEventListener('click', () => this.leave());
-    dom.getAllFrom(this.root, '.menu-item', HTMLElement).forEach((element) => {
+    for (const element of dom.getAllFrom(
+             this.root, '.menu-item', HTMLElement)) {
       const handler = itemHandlers[element.id];
       if (handler !== undefined) {
         element.addEventListener('click', handler);
       }
-    });
+    }
 
     this.defaultFocus = dom.getFrom(this.root, '[tabindex]', HTMLElement);
 
     this.focusElement = this.defaultFocus;
   }
 
-  focus(): void {
+  override focus(): void {
     this.focusElement.focus();
   }
 
-  leaving(condition: LeaveCondition): boolean {
+  override leaving(condition: LeaveCondition): boolean {
     this.focusElement = this.defaultFocus;
     return super.leaving(condition);
   }
 
   /**
    * Opens sub-settings.
+   *
    * @param opener The DOM element triggering the open.
    * @param name Name of settings view.
    */
@@ -115,7 +117,9 @@ const helpUrl =
  */
 export class PrimarySettings extends BaseSettings {
   private readonly subViews: BaseSettings[];
+
   private headerClickedCount = 0;
+
   private headerClickedLastTime: number|null = null;
 
   constructor(cameraManager: CameraManager) {
@@ -183,7 +187,7 @@ export class PrimarySettings extends BaseSettings {
     }
   }
 
-  getSubViews(): View[] {
+  override getSubViews(): View[] {
     return this.subViews;
   }
 }
@@ -199,6 +203,7 @@ export class ResolutionSettings extends BaseSettings {
 
   private readonly frontPhotoItem =
       dom.get('#settings-front-photores', HTMLElement);
+
   private readonly frontVideoItem =
       dom.get('#settings-front-videores', HTMLElement);
 
@@ -209,16 +214,23 @@ export class ResolutionSettings extends BaseSettings {
 
   private readonly backPhotoItem =
       dom.get('#settings-back-photores', HTMLElement);
+
   private readonly backVideoItem =
       dom.get('#settings-back-videores', HTMLElement);
+
   readonly photoResolutionSettings =
       new BaseSettings(ViewName.PHOTO_RESOLUTION_SETTINGS);
+
   readonly videoResolutionSettings =
       new BaseSettings(ViewName.VIDEO_RESOLUTION_SETTINGS);
-  private readonly resMenu: HTMLDivElement;
-  private readonly videoResMenu: HTMLDivElement;
-  private readonly photoResMenu: HTMLDivElement;
-  private cameraAvailble = false;
+
+  private readonly resolutionMenu: HTMLDivElement;
+
+  private readonly videoResolutionMenu: HTMLDivElement;
+
+  private readonly photoResolutionMenu: HTMLDivElement;
+
+  private cameraAvailable = false;
 
   /**
    * Device setting of external cameras.
@@ -230,9 +242,7 @@ export class ResolutionSettings extends BaseSettings {
    */
   private openedSettingDeviceId: string|null = null;
 
-  constructor(
-      private readonly cameraManager: CameraManager,
-  ) {
+  constructor(readonly cameraManager: CameraManager) {
     super(
         ViewName.RESOLUTION_SETTINGS,
         // Use an IIFE here since TypeScript doesn't allow any statement
@@ -270,12 +280,12 @@ export class ResolutionSettings extends BaseSettings {
         })(),
     );
 
-    this.resMenu = dom.getFrom(this.root, 'div.menu', HTMLDivElement);
+    this.resolutionMenu = dom.getFrom(this.root, 'div.menu', HTMLDivElement);
 
-    this.videoResMenu = dom.getFrom(
+    this.videoResolutionMenu = dom.getFrom(
         this.videoResolutionSettings.root, 'div.menu', HTMLDivElement);
 
-    this.photoResMenu = dom.getFrom(
+    this.photoResolutionMenu = dom.getFrom(
         this.photoResolutionSettings.root, 'div.menu', HTMLDivElement);
 
     state.addObserver(state.State.TAKING, () => {
@@ -287,41 +297,38 @@ export class ResolutionSettings extends BaseSettings {
         if (state.get(state.State.NO_RESOLUTION_SETTINGS)) {
           return;
         }
-        this.cameraAvailble = false;
+        this.cameraAvailable = false;
         this.updateOptionAvailability();
       },
       onCameraAvailble: () => {
         if (state.get(state.State.NO_RESOLUTION_SETTINGS)) {
           return;
         }
-        this.cameraAvailble = true;
+        this.cameraAvailable = true;
         this.updateOptionAvailability();
       },
       onUpdateCapability: (cameraInfo) => {
         const devices = cameraInfo.camera3DevicesInfo;
         if (devices === null) {
-          state.set(state.State.NO_RESOLUTION_SETTINGS, true);
           return;
         }
-
-        this.frontSetting = this.backSetting = null;
+        state.set(state.State.NO_RESOLUTION_SETTINGS, false);
         this.externalSettings = [];
 
-        devices.forEach(({deviceId, facing, photoResols, videoResols}) => {
-          const /** !DeviceSetting */ deviceSetting = {
+        for (const {deviceId, facing, photoResolutions, videoResolutions} of
+                 devices) {
+          const deviceSetting = {
             deviceId,
             photo: {
-              prefResol: assertInstanceof(
-                  cameraManager.getPrefPhotoResolution(deviceId), Resolution),
-              resols:
-                  /* Filter out resolutions of megapixels < 0.1 i.e. megapixels
-                   * 0.0*/
-                  photoResols.filter((r) => r.area >= 100000),
+              prefResolution: cameraManager.getPrefPhotoResolution(deviceId),
+              resolutions:
+                  /* Filter out resolutions of megapixels < 0.1 i.e.
+                   * megapixels 0.0 */
+                  photoResolutions.filter((r) => r.area >= 100000),
             },
             video: {
-              prefResol: assertInstanceof(
-                  cameraManager.getPrefVideoResolution(deviceId), Resolution),
-              resols: videoResols,
+              prefResolution: cameraManager.getPrefVideoResolution(deviceId),
+              resolutions: videoResolutions,
             },
           };
           switch (facing) {
@@ -339,23 +346,19 @@ export class ResolutionSettings extends BaseSettings {
                   ErrorType.UNKNOWN_FACING, ErrorLevel.ERROR,
                   new Error(`Ignore device of unknown facing: ${facing}`));
           }
-        });
+        }
         this.updateResolutions();
       },
       onUpdateConfig: (config: CameraConfig) => {
         if (state.get(state.State.NO_RESOLUTION_SETTINGS)) {
           return;
         }
-        const deviceId = config.deviceId;
-        if (config.mode === Mode.VIDEO) {
-          const prefResol = cameraManager.getPrefVideoResolution(deviceId);
-          if (prefResol !== null) {
-            this.updateSelectedVideoResolution(deviceId, prefResol);
-          }
-        } else {
-          const prefResol = cameraManager.getPrefPhotoResolution(deviceId);
-          if (prefResol !== null) {
-            this.updateSelectedPhotoResolution(deviceId, prefResol);
+        const prefResolution = cameraManager.getCaptureResolution();
+        if (prefResolution !== null) {
+          if (config.mode === Mode.VIDEO) {
+            this.updateSelectedVideoResolution(config.deviceId, prefResolution);
+          } else {
+            this.updateSelectedPhotoResolution(config.deviceId, prefResolution);
           }
         }
       },
@@ -363,13 +366,13 @@ export class ResolutionSettings extends BaseSettings {
   }
 
   private updateOptionAvailability(): void {
-    dom.getAll('.resolution-option>input', HTMLInputElement).forEach((e) => {
-      e.disabled = !this.cameraAvailble || state.get(state.State.TAKING);
-    });
+    for (const e of dom.getAll('.resolution-option>input', HTMLInputElement)) {
+      e.disabled = !this.cameraAvailable || state.get(state.State.TAKING);
+    }
   }
 
 
-  getSubViews(): View[] {
+  override getSubViews(): View[] {
     return [
       this.photoResolutionSettings,
       this.videoResolutionSettings,
@@ -378,37 +381,50 @@ export class ResolutionSettings extends BaseSettings {
 
   /**
    * Template for generating option text from photo resolution width and height.
-   * @param r Resolution of text to be generated.
+   *
+   * @param resolution Resolution of text to be generated.
    * @param resolutions All available resolutions.
    * @return Text shown on resolution option item.
    */
-  private photoOptTextTempl(r: Resolution, resolutions: ResolutionList):
-      string {
-    const gcd = (a: number, b: number): number => (a === 0 ? b : gcd(b % a, a));
-    const toMegapixel = ({area}: Resolution): number =>
-        area >= 1e6 ? Math.round(area / 1e6) : Math.round(area / 1e5) / 10;
-    const d = gcd(r.width, r.height);
+  private photoOptionTextTemplate(
+      resolution: Resolution|null, resolutions: Resolution[]): string {
+    if (resolution === null) {
+      return '';
+    }
+    function gcd(a: number, b: number): number {
+      return a === 0 ? b : gcd(b % a, a);
+    }
+    function toMegapixel({area}: Resolution): number {
+      return area >= 1e6 ? Math.round(area / 1e6) : Math.round(area / 1e5) / 10;
+    }
+    const d = gcd(resolution.width, resolution.height);
+
     if (resolutions.some(
-            (findR) => !findR.equals(r) && r.aspectRatioEquals(findR) &&
-                toMegapixel(r) === toMegapixel(findR))) {
+            (r) => !r.equals(resolution) && resolution.aspectRatioEquals(r) &&
+                toMegapixel(resolution) === toMegapixel(r))) {
       return loadTimeData.getI18nMessage(
-          I18nString.LABEL_DETAIL_PHOTO_RESOLUTION, r.width / d, r.height / d,
-          r.width, r.height, toMegapixel(r));
+          I18nString.LABEL_DETAIL_PHOTO_RESOLUTION, resolution.width / d,
+          resolution.height / d, resolution.width, resolution.height,
+          toMegapixel(resolution));
     } else {
       return loadTimeData.getI18nMessage(
-          I18nString.LABEL_PHOTO_RESOLUTION, r.width / d, r.height / d,
-          toMegapixel(r));
+          I18nString.LABEL_PHOTO_RESOLUTION, resolution.width / d,
+          resolution.height / d, toMegapixel(resolution));
     }
   }
 
   /**
    * Template for generating option text from video resolution width and height.
-   * @param r Resolution of text to be generated.
+   *
+   * @param resolution Resolution of text to be generated.
    * @return Text shown on resolution option item.
    */
-  private videoOptTextTempl(r: Resolution): string {
+  private videoOptionTextTemplate(resolution: Resolution|null): string {
+    if (resolution === null) {
+      return '';
+    }
     return loadTimeData.getI18nMessage(
-        I18nString.LABEL_VIDEO_RESOLUTION, r.height, r.width);
+        I18nString.LABEL_VIDEO_RESOLUTION, resolution.height, resolution.width);
   }
 
   /**
@@ -421,37 +437,43 @@ export class ResolutionSettings extends BaseSettings {
     if (this.backSetting && this.backSetting.deviceId === deviceId) {
       return this.backSetting;
     }
-    return this.externalSettings.find((e) => e.deviceId === deviceId) || null;
+    return this.externalSettings.find((e) => e.deviceId === deviceId) ?? null;
   }
 
   /**
    * Updates resolution information of front, back camera and external cameras.
    */
   private updateResolutions() {
-    const prepItem =
-        (item: HTMLElement, id: string, {prefResol, resols}: ResolutionConfig,
-         optTextTempl: (prefResol: Resolution, resols: ResolutionList) =>
-             string) => {
-          item.dataset['deviceId'] = id;
-          item.classList.toggle('multi-option', resols.length > 1);
-          dom.getFrom(item, '.description>span', HTMLSpanElement).textContent =
-              optTextTempl(prefResol, resols);
-        };
+    function prepareItem(
+        item: HTMLElement, id: string,
+        {prefResolution, resolutions}: ResolutionConfig,
+        optionTextTemplate:
+            (prefResolutions: Resolution|null, resolutions: Resolution[]) =>
+                string) {
+      item.dataset['deviceId'] = id;
+      item.classList.toggle('multi-option', resolutions.length > 1);
+      dom.getFrom(item, '.description>span', HTMLSpanElement).textContent =
+          optionTextTemplate(prefResolution, resolutions);
+    }
 
     // Update front camera setting
     state.set(state.State.HAS_FRONT_CAMERA, this.frontSetting !== null);
-    if (this.frontSetting) {
+    if (this.frontSetting !== null) {
       const {deviceId, photo, video} = this.frontSetting;
-      prepItem(this.frontPhotoItem, deviceId, photo, this.photoOptTextTempl);
-      prepItem(this.frontVideoItem, deviceId, video, this.videoOptTextTempl);
+      prepareItem(
+          this.frontPhotoItem, deviceId, photo, this.photoOptionTextTemplate);
+      prepareItem(
+          this.frontVideoItem, deviceId, video, this.videoOptionTextTemplate);
     }
 
     // Update back camera setting
     state.set(state.State.HAS_BACK_CAMERA, this.backSetting !== null);
-    if (this.backSetting) {
+    if (this.backSetting !== null) {
       const {deviceId, photo, video} = this.backSetting;
-      prepItem(this.backPhotoItem, deviceId, photo, this.photoOptTextTempl);
-      prepItem(this.backVideoItem, deviceId, video, this.videoOptTextTempl);
+      prepareItem(
+          this.backPhotoItem, deviceId, photo, this.photoOptionTextTemplate);
+      prepareItem(
+          this.backVideoItem, deviceId, video, this.videoOptionTextTemplate);
     }
 
     // Update external camera settings
@@ -459,23 +481,23 @@ export class ResolutionSettings extends BaseSettings {
     // focused item in both previous and current list, pop out all items in
     // previous list except those having same deviceId as focused one and
     // recreate all other items from current list.
-    const prevFocus = this.resMenu.querySelector<HTMLElement>(
+    const prevFocused = this.resolutionMenu.querySelector<HTMLElement>(
         '.menu-item.external-camera:focus');
-    const prevFId = prevFocus && prevFocus.dataset['deviceId'];
-    const focusIdx =
-        this.externalSettings.findIndex(({deviceId}) => deviceId === prevFId);
-    const fTitle = this.resMenu.querySelector<HTMLElement>(
-        `.external-camera.title-item[data-device-id="${prevFId}"]`);
-    const focusedId = focusIdx === -1 ? null : prevFId;
+    const prevFocusedId = prevFocused?.dataset['deviceId'] ?? null;
+    const focusedIdx = this.externalSettings.findIndex(
+        ({deviceId}) => deviceId === prevFocusedId);
+    const prevFocusedTitle = this.resolutionMenu.querySelector<HTMLElement>(
+        `.external-camera.title-item[data-device-id="${prevFocusedId}"]`);
+    const focusedId = focusedIdx === -1 ? null : prevFocusedId;
 
     for (const element of dom.getAllFrom(
-             this.resMenu, '.menu-item.external-camera', HTMLElement)) {
+             this.resolutionMenu, '.menu-item.external-camera', HTMLElement)) {
       if (element.dataset['deviceId'] !== focusedId) {
         assertExists(element.parentNode).removeChild(element);
       }
     }
 
-    this.externalSettings.forEach((config, index) => {
+    for (const [index, config] of this.externalSettings.entries()) {
       const {deviceId} = config;
       let titleItem: HTMLElement;
       let photoItem: HTMLElement;
@@ -502,21 +524,24 @@ export class ResolutionSettings extends BaseSettings {
         videoItem.setAttribute('aria-describedby', `${deviceId}-videores-desc`);
         dom.getFrom(videoItem, '.description', HTMLElement).id =
             `${deviceId}-videores-desc`;
-        if (index < focusIdx) {
-          this.resMenu.insertBefore(extItem, fTitle);
+        if (index < focusedIdx) {
+          this.resolutionMenu.insertBefore(extItem, prevFocusedTitle);
         } else {
-          this.resMenu.appendChild(extItem);
+          this.resolutionMenu.appendChild(extItem);
         }
       } else {
-        assert(fTitle !== null);
-        titleItem = fTitle;
-        photoItem = assertInstanceof(fTitle.nextElementSibling, HTMLElement);
+        assert(prevFocusedTitle !== null);
+        titleItem = prevFocusedTitle;
+        photoItem =
+            assertInstanceof(prevFocusedTitle.nextElementSibling, HTMLElement);
         videoItem = assertInstanceof(photoItem.nextElementSibling, HTMLElement);
       }
       titleItem.dataset['deviceId'] = deviceId;
-      prepItem(photoItem, deviceId, config.photo, this.photoOptTextTempl);
-      prepItem(videoItem, deviceId, config.video, this.videoOptTextTempl);
-    });
+      prepareItem(
+          photoItem, deviceId, config.photo, this.photoOptionTextTemplate);
+      prepareItem(
+          videoItem, deviceId, config.video, this.videoOptionTextTemplate);
+    }
     // Force closing opened setting of unplugged device.
     if ((state.get(ViewName.PHOTO_RESOLUTION_SETTINGS) ||
          state.get(ViewName.VIDEO_RESOLUTION_SETTINGS)) &&
@@ -531,13 +556,14 @@ export class ResolutionSettings extends BaseSettings {
 
   /**
    * Updates current selected photo resolution.
+   *
    * @param deviceId Device id of the selected resolution.
    * @param resolution Selected resolution.
    */
   private updateSelectedPhotoResolution(
       deviceId: string, resolution: Resolution) {
     const {photo} = assertExists(this.getDeviceSetting(deviceId));
-    photo.prefResol = resolution;
+    photo.prefResolution = resolution;
     let photoItem: HTMLElement;
     if (this.frontSetting && this.frontSetting.deviceId === deviceId) {
       photoItem = this.frontPhotoItem;
@@ -545,17 +571,17 @@ export class ResolutionSettings extends BaseSettings {
       photoItem = this.backPhotoItem;
     } else {
       photoItem = dom.getFrom(
-          this.resMenu, `.menu-item.photo-item[data-device-id="${deviceId}"]`,
-          HTMLElement);
+          this.resolutionMenu,
+          `.menu-item.photo-item[data-device-id="${deviceId}"]`, HTMLElement);
     }
     dom.getFrom(photoItem, '.description>span', HTMLSpanElement).textContent =
-        this.photoOptTextTempl(photo.prefResol, photo.resols);
+        this.photoOptionTextTemplate(photo.prefResolution, photo.resolutions);
 
     // Update setting option if it's opened.
     if (state.get(ViewName.PHOTO_RESOLUTION_SETTINGS) &&
         this.openedSettingDeviceId === deviceId) {
       const input = dom.getFrom(
-          this.photoResMenu,
+          this.photoResolutionMenu,
           'input' +
               `[data-width="${resolution.width}"]` +
               `[data-height="${resolution.height}"]`,
@@ -566,13 +592,14 @@ export class ResolutionSettings extends BaseSettings {
 
   /**
    * Updates current selected video resolution.
+   *
    * @param deviceId Device id of the selected resolution.
    * @param resolution Selected resolution.
    */
   private updateSelectedVideoResolution(
       deviceId: string, resolution: Resolution) {
     const {video} = assertExists(this.getDeviceSetting(deviceId));
-    video.prefResol = resolution;
+    video.prefResolution = resolution;
     let videoItem: HTMLElement;
     if (this.frontSetting && this.frontSetting.deviceId === deviceId) {
       videoItem = this.frontVideoItem;
@@ -580,17 +607,17 @@ export class ResolutionSettings extends BaseSettings {
       videoItem = this.backVideoItem;
     } else {
       videoItem = dom.getFrom(
-          this.resMenu, `.menu-item.video-item[data-device-id="${deviceId}"]`,
-          HTMLElement);
+          this.resolutionMenu,
+          `.menu-item.video-item[data-device-id="${deviceId}"]`, HTMLElement);
     }
     dom.getFrom(videoItem, '.description>span', HTMLSpanElement).textContent =
-        this.videoOptTextTempl(video.prefResol);
+        this.videoOptionTextTemplate(video.prefResolution);
 
     // Update setting option if it's opened.
     if (state.get(ViewName.VIDEO_RESOLUTION_SETTINGS) &&
         this.openedSettingDeviceId === deviceId) {
       const input = dom.getFrom(
-          this.videoResMenu,
+          this.videoResolutionMenu,
           'input' +
               `[data-width="${resolution.width}"]` +
               `[data-height="${resolution.height}"]`,
@@ -601,82 +628,87 @@ export class ResolutionSettings extends BaseSettings {
 
   /**
    * Opens photo resolution setting view.
-   * @param Setting of video device to be opened.
-   * @param resolItem Dom element from upper layer menu item showing title of
-   *     the selected resolution.
+   *
+   * @param setting Setting of video device to be opened.
+   * @param resolutionItem Dom element from upper layer menu item showing title
+   *     of the selected resolution.
    */
   private openPhotoResSettings(
-      {deviceId, photo}: DeviceSetting, resolItem: HTMLElement) {
+      setting: DeviceSetting, resolutionItem: HTMLElement) {
+    const {deviceId, photo} = setting;
     this.openedSettingDeviceId = deviceId;
     this.updateMenu(
-        resolItem, this.photoResMenu, this.photoOptTextTempl,
+        resolutionItem, this.photoResolutionMenu, this.photoOptionTextTemplate,
         (r) => this.cameraManager.setPrefPhotoResolution(deviceId, r),
-        photo.resols, photo.prefResol);
-    this.openSubSettings(resolItem, ViewName.PHOTO_RESOLUTION_SETTINGS);
+        photo.resolutions, photo.prefResolution);
+    this.openSubSettings(resolutionItem, ViewName.PHOTO_RESOLUTION_SETTINGS);
   }
 
   /**
    * Opens video resolution setting view.
-   * @param Setting of video device to be opened.
-   * @param resolItem Dom element from upper layer menu item showing title of
-   *     the selected resolution.
+   *
+   * @param setting Setting of video device to be opened.
+   * @param resolutionItem Dom element from upper layer menu item showing title
+   *     of the selected resolution.
    */
   private openVideoResSettings(
-      {deviceId, video}: DeviceSetting, resolItem: HTMLElement) {
+      setting: DeviceSetting, resolutionItem: HTMLElement) {
+    const {deviceId, video} = setting;
     this.openedSettingDeviceId = deviceId;
     this.updateMenu(
-        resolItem, this.videoResMenu, this.videoOptTextTempl,
+        resolutionItem, this.videoResolutionMenu, this.videoOptionTextTemplate,
         (r) => this.cameraManager.setPrefVideoResolution(deviceId, r),
-        video.resols, video.prefResol);
-    this.openSubSettings(resolItem, ViewName.VIDEO_RESOLUTION_SETTINGS);
+        video.resolutions, video.prefResolution);
+    this.openSubSettings(resolutionItem, ViewName.VIDEO_RESOLUTION_SETTINGS);
   }
 
   /**
    * Updates resolution menu with specified resolutions.
-   * @param resolItem DOM element holding selected resolution.
+   *
+   * @param resolutionItem DOM element holding selected resolution.
    * @param menu Menu holding all resolution option elements.
-   * @param optTextTempl Template generating text content for each resolution
-   *     option from its width and height.
+   * @param optionTextTemplate Template generating text content for each
+   *     resolution option from its width and height.
    * @param onChange Called when selected option changed with resolution of
    *     newly selected option.
    * @param resolutions Resolutions of its width and height to be updated with.
-   * @param selectedR Selected resolution.
+   * @param selectedResolution Selected resolution.
    */
   private updateMenu(
-      resolItem: HTMLElement,
+      resolutionItem: HTMLElement,
       menu: HTMLElement,
-      optTextTempl:
+      optionTextTemplate:
           (resolution: Resolution, resolutions: ResolutionList) => string,
       onChange: (resolution: Resolution) => void,
       resolutions: ResolutionList,
-      selectedR: Resolution,
+      selectedResolution: Resolution|null,
   ) {
     const captionText =
-        dom.getFrom(resolItem, '.description>span', HTMLSpanElement);
+        dom.getFrom(resolutionItem, '.description>span', HTMLSpanElement);
     captionText.textContent = '';
     for (const element of dom.getAllFrom(
              menu, '.menu-item', HTMLLabelElement)) {
       assertExists(element.parentNode).removeChild(element);
     }
 
-    for (const r of resolutions) {
+    for (const resolution of resolutions) {
       const item = util.instantiateTemplate('#resolution-item-template');
       const input = dom.getFrom(item, 'input', HTMLInputElement);
       dom.getFrom(item, 'span', HTMLSpanElement).textContent =
-          optTextTempl(r, resolutions);
+          optionTextTemplate(resolution, resolutions);
       input.name = assertExists(menu.dataset[I18nString.NAME]);
-      input.dataset['width'] = r.width.toString();
-      input.dataset['height'] = r.height.toString();
-      if (r.equals(selectedR)) {
-        captionText.textContent = optTextTempl(r, resolutions);
+      input.dataset['width'] = resolution.width.toString();
+      input.dataset['height'] = resolution.height.toString();
+      if (selectedResolution?.equals(resolution)) {
+        captionText.textContent = optionTextTemplate(resolution, resolutions);
         input.checked = true;
       }
       input.disabled = state.get(state.State.CAMERA_CONFIGURING) ||
           state.get(state.State.TAKING);
       input.addEventListener('change', () => {
         if (input.checked) {
-          captionText.textContent = optTextTempl(r, resolutions);
-          onChange(r);
+          captionText.textContent = optionTextTemplate(resolution, resolutions);
+          onChange(resolution);
         }
       });
       menu.appendChild(item);

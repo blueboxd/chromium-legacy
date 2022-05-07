@@ -44,6 +44,7 @@
 <translation id="3344973607274501920">Chromium ei voinut tarkistaa salasanojasi. Tarkista internetyhteytesi.</translation>
 <translation id="3472200483164753384">Ei tueta Chromium Canaryssa</translation>
 <translation id="3639997914391704523">Chromium voi tarkistaa salasanasi, kun kirjaudut sisään Google-tililläsi.</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" /> käytti Chromiumia, ja hänen käyttämiä kirjanmerkkejä, salasanoja ja muita asetuksia jäi laitteelle.</translation>
 <translation id="3805899903892079518">Chromium ei voi käyttää kuviasi tai videoitasi. Anna käyttöoikeus kohdassa iOS-asetukset &gt; Tietosuoja &gt; Kuvat.</translation>
 <translation id="4043291146360695975">Salasanat tallennetaan Salasanojen ylläpitoon vain tällä laitteella.</translation>
 <translation id="4099085513035183040">Ei tueta Chromium Betassa</translation>
@@ -55,6 +56,16 @@
 <translation id="4828317641996116749">Chromium ei voinut tarkistaa kaikkia salasanoja. Yritä myöhemmin uudelleen.</translation>
 <translation id="4985291216379576555">Chromium ei voi tarkistaa, onko päivityksiä saatavilla</translation>
 <translation id="4999538639245140991">Koska kirjaudut ulos verkkotunnuksen <ph name="SIGNOUT_MANAGED_DOMAIN" /> ylläpitämältä tililtä, Chromium-datasi poistetaan tältä laitteelta. Se säilyy edelleen Google-tililläsi.</translation>
+<translation id="5039881550736388123">Kun tietoa lähetetään:
+<ph name="BEGIN_INDENT" />  • Autat tekemään Chromiumista paremman muille, jotka käyttävät sitä samoin kuin sinä<ph name="END_INDENT" />
+
+
+Huomioitavaa:
+<ph name="BEGIN_INDENT" />  • Chromiumin käytöstä lähetetään tietoa Googlelle, mutta sitä ei liitetä sinuun
+
+  • Chromiumin kaatumisesta kerättävät tiedot saattavat sisältää henkilökohtaisia tietoja
+
+  • Jos laitat synkronoinnin päälle, tiedot voivat koskea myös avaamiasi URL-osoitteita<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Kirjaudu Chromiumiin</translation>
 <translation id="5224391634244552924">Ei tallennettuja salasanoja. Chromium voi tarkistaa salasanasi, kun tallennat niitä.</translation>
 <translation id="5308226104666789935">Chromium ei voi tarkistaa, onko päivityksiä saatavilla</translation>
@@ -65,6 +76,7 @@
 <translation id="5777187867430702742">Chromium-sivu</translation>
 <translation id="5862307444128926510">Tervetuloa Chromiumiin</translation>
 <translation id="5945387852661427312">Olet kirjautumassa sisään verkkotunnuksen <ph name="DOMAIN" /> hallitsemalla tilillä ja antamassa sen järjestelmänvalvojalle oikeuden hallita Chromium-tietojasi. Tietosi liitetään pysyvästi tähän tiliin. Chromiumista uloskirjautuminen poistaa tietosi tältä laitteelta, mutta ne säilyvät Google-tililläsi.</translation>
+<translation id="5983312940147103417">Entistä parempi Chromium</translation>
 <translation id="602807004951640891">Käyttämällä Chromiumia hyväksyt <ph name="BEGIN_LINK_TOS" />käyttöehdot<ph name="END_LINK_TOS" />.</translation>
 <translation id="6119647025869519954">Näin teet Chromiumista oletusselaimesi:
 1. Avaa asetukset

@@ -10,16 +10,14 @@
 #include "ash/services/secure_channel/connection_observer.h"
 #include "ash/services/secure_channel/device_to_device_authenticator.h"
 #include "ash/services/secure_channel/file_transfer_update_callback.h"
-#include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
+#include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom-forward.h"
 #include "ash/services/secure_channel/secure_context.h"
 #include "base/callback.h"
 #include "base/containers/queue.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // An authenticated bi-directional channel for exchanging messages with remote
 // devices. |SecureChannel| manages a |Connection| by initializing it and
@@ -176,13 +174,6 @@ class SecureChannel : public ConnectionObserver {
   base::WeakPtrFactory<SecureChannel> weak_ptr_factory_{this};
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash::secure_channel {
-using ::chromeos::secure_channel::SecureChannel;
-}
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_SECURE_CHANNEL_H_

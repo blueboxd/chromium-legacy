@@ -34,6 +34,7 @@
 #include "base/win/scoped_process_information.h"
 #include "base/win/win_util.h"
 #include "base/win/windows_version.h"
+#include "sandbox/features.h"
 #include "sandbox/win/src/app_container_base.h"
 #include "sandbox/win/src/sandbox_factory.h"
 #include "sandbox/win/tests/common/controller.h"
@@ -275,7 +276,7 @@ typedef base::win::GenericScopedHandle<SocketHandleTraits,
 class AppContainerTest : public ::testing::Test {
  public:
   void SetUp() override {
-    if (base::win::GetVersion() < base::win::Version::WIN8)
+    if (!features::IsAppContainerSandboxSupported())
       return;
     package_name_ = GenerateRandomPackageName();
     broker_services_ = GetBroker();
@@ -465,34 +466,24 @@ SBOX_TESTS_COMMAND int AppContainerEvent_Open(int argc, wchar_t** argv) {
   if (event_open.IsValid())
     return SBOX_TEST_SUCCEEDED;
 
-  if (ERROR_ACCESS_DENIED == error_open || ERROR_BAD_PATHNAME == error_open ||
-      ERROR_FILE_NOT_FOUND == error_open) {
+  if (ERROR_ACCESS_DENIED == error_open)
     return SBOX_TEST_DENIED;
-  }
 
   return SBOX_TEST_FAILED;
 }
 
 TEST_F(AppContainerTest, DenyOpenEventForLowBox) {
-  if (base::win::GetVersion() < base::win::Version::WIN8)
+  if (!features::IsAppContainerSandboxSupported())
     return;
 
-  TestRunner runner(JOB_UNPROTECTED, USER_UNPROTECTED, USER_UNPROTECTED);
-
-  EXPECT_EQ(SBOX_ALL_OK, runner.GetPolicy()->SetLowBox(kAppContainerSid));
-  // Run test once, this ensures the app container directory exists, we
-  // ignore the result.
-  runner.RunTest(L"AppContainerEvent_Open test");
-  std::wstring event_name = L"AppContainerNamedObjects\\";
-  event_name += kAppContainerSid;
-  event_name += L"\\test";
-
   base::win::ScopedHandle event(
-      ::CreateEvent(nullptr, false, false, event_name.c_str()));
+      ::CreateEvent(nullptr, false, false, kAppContainerSid));
   ASSERT_TRUE(event.IsValid());
-
-  TestRunner runner2(JOB_UNPROTECTED, USER_UNPROTECTED, USER_UNPROTECTED);
-  EXPECT_EQ(SBOX_TEST_DENIED, runner2.RunTest(L"AppContainerEvent_Open test"));
+  TestRunner runner(JOB_UNPROTECTED, USER_UNPROTECTED, USER_UNPROTECTED);
+  EXPECT_EQ(SBOX_ALL_OK, runner.GetPolicy()->SetLowBox(kAppContainerSid));
+  std::wstring test_str = L"AppContainerEvent_Open ";
+  test_str += kAppContainerSid;
+  EXPECT_EQ(SBOX_TEST_DENIED, runner.RunTest(test_str.c_str()));
 }
 
 TEST_F(AppContainerTest, CheckIncompatibleOptions) {
@@ -614,7 +605,7 @@ TEST_F(AppContainerTest, WithImpersonationCapabilities) {
 }
 
 TEST_F(AppContainerTest, NoCapabilitiesLPAC) {
-  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
+  if (!features::IsAppContainerSandboxSupported())
     return;
 
   container_->SetEnableLowPrivilegeAppContainer(true);
@@ -860,7 +851,7 @@ SBOX_TESTS_COMMAND int Socket_CreateUDP(int argc, wchar_t** argv) {
 }
 
 TEST(AppContainerLaunchTest, CheckLPACACE) {
-  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
+  if (!features::IsAppContainerSandboxSupported())
     return;
   TestRunner runner;
   AddNetworkAppContainerPolicy(runner.GetPolicy());
@@ -871,7 +862,7 @@ TEST(AppContainerLaunchTest, CheckLPACACE) {
 }
 
 TEST(AppContainerLaunchTest, IsAppContainer) {
-  if (base::win::GetVersion() < base::win::Version::WIN10_RS1)
+  if (!features::IsAppContainerSandboxSupported())
     return;
   TestRunner runner;
   AddNetworkAppContainerPolicy(runner.GetPolicy());
@@ -982,7 +973,7 @@ class SocketBrokerTest
 TEST_P(SocketBrokerTest, SocketBrokerTestUDP) {
   // Some APIs, such as named capabilities, needed to create the network service
   // sandbox require Windows 10 RS2.
-  if (base::win::GetVersion() < base::win::Version::WIN10_RS2)
+  if (!features::IsAppContainerSandboxSupported())
     return;
 
   UDPEchoServer server;
@@ -1003,7 +994,7 @@ TEST_P(SocketBrokerTest, SocketBrokerTestUDP) {
 TEST_P(SocketBrokerTest, SocketBrokerTestTCP) {
   // Some APIs, such as named capabilities, needed to create the network service
   // sandbox require Windows 10 RS2.
-  if (base::win::GetVersion() < base::win::Version::WIN10_RS2)
+  if (!features::IsAppContainerSandboxSupported())
     return;
 
   std::wstring hostname = GetTestHostName();

@@ -223,8 +223,8 @@ public class LayoutManagerImpl implements ManagedLayoutManager, LayoutUpdateHost
         }
 
         @Override
-        public void didCloseTab(int tabId, boolean incognito) {
-            tabClosed(tabId, incognito, false);
+        public void didCloseTab(Tab tab) {
+            tabClosed(tab.getId(), tab.isIncognito(), false);
         }
 
         @Override
@@ -1006,7 +1006,7 @@ public class LayoutManagerImpl implements ManagedLayoutManager, LayoutUpdateHost
         getActiveLayout().show(time(), animate);
         mHost.setContentOverlayVisibility(getActiveLayout().shouldDisplayContentOverlay(),
                 getActiveLayout().canHostBeFocusable());
-        mHost.requestRender();
+        requestUpdate();
 
         // TODO(crbug.com/1108496): Remove after migrates to LayoutStateObserver#onStartedShowing.
         // Notify observers about the new scene.

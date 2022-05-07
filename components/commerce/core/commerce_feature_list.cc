@@ -41,10 +41,10 @@ const base::Feature kShoppingList{"ShoppingList",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kShoppingPDPMetrics{"ShoppingPDPMetrics",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kRetailCoupons{"RetailCoupons",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kCommerceDeveloper{"CommerceDeveloper",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
@@ -64,7 +64,7 @@ bool IsCouponDiscountPartnerMerchant(const GURL& url) {
 
 bool IsCouponWithCodeEnabled() {
   return base::GetFieldTrialParamByFeatureAsBool(
-      kRetailCoupons, kRetailCouponsWithCodeParam, false);
+      kRetailCoupons, kRetailCouponsWithCodeParam, true);
 }
 
 }  // namespace commerce

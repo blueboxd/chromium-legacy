@@ -26,6 +26,7 @@ import("//gpu/vulkan/features.gni")
 import("//media/gpu/args.gni")
 import("//media/media_options.gni")
 import("//pdf/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//printing/buildflags/buildflags.gni")
 import("//remoting/remoting_enable.gni")
 import("//third_party/closure_compiler/compile_js.gni")
@@ -142,37 +143,19 @@ group("gn_all") {
       "//gpu/gles2_conform_support:gles2_conform_test",
       "//gpu/khronos_glcts_support:khronos_glcts_test",
       "//net:hpack_example_generator",
-      "//ppapi:ppapi_unittests",
-      "//ppapi/examples/2d",
-      "//ppapi/examples/audio",
-      "//ppapi/examples/audio_input",
-      "//ppapi/examples/crxfs",
-      "//ppapi/examples/file_chooser",
-      "//ppapi/examples/font",
-      "//ppapi/examples/gamepad",
-      "//ppapi/examples/gles2",
-      "//ppapi/examples/gles2_spinning_cube",
-      "//ppapi/examples/ime",
-      "//ppapi/examples/input",
-      "//ppapi/examples/media_stream_audio",
-      "//ppapi/examples/media_stream_video",
-      "//ppapi/examples/mouse_cursor",
-      "//ppapi/examples/mouse_lock",
-      "//ppapi/examples/printing",
-      "//ppapi/examples/scaling",
-      "//ppapi/examples/scripting",
-      "//ppapi/examples/stub",
-      "//ppapi/examples/threading",
-      "//ppapi/examples/url_loader",
-      "//ppapi/examples/video_capture",
-      "//ppapi/examples/video_decode",
-      "//ppapi/examples/video_encode",
       "//third_party/vulkan-deps/spirv-tools/src:SPIRV-Tools",
       "//tools/aggregation_service:aggregation_service_tool",
       "//tools/attribution_reporting:attribution_reporting_simulator",
       "//tools/perf/clear_system_cache",
       "//tools/polymer:polymer_tools_python_unittests",
       "//tools/privacy_budget:privacy_budget_tools",
+    ]
+  }
+
+  if (enable_plugins) {
+    deps += [
+      "//ppapi:ppapi_unittests",
+      "//ppapi/examples",
     ]
   }
 
@@ -569,8 +552,6 @@ group("gn_all") {
         "//net:run_testserver",
         "//net:stress_cache",
         "//net:tld_cleanup",
-        "//ppapi:pepper_hash_for_uma",
-        "//ppapi:ppapi_perftests",
         "//third_party/leveldatabase:env_chromium_unittests",
         "//third_party/libaddressinput:libaddressinput_unittests",
       ]
@@ -596,6 +577,13 @@ group("gn_all") {
     if (media_use_ffmpeg && !is_android) {
       deps += [ "//media:ffmpeg_regression_tests" ]
     }
+  }
+
+  if (enable_plugins) {
+    deps += [
+      "//ppapi:pepper_hash_for_uma",
+      "//ppapi:ppapi_perftests",
+    ]
   }
 
   if (is_fuchsia) {
@@ -840,8 +828,8 @@ group("gn_all") {
       "//third_party/dawn/src/dawn/tests:dawn_end2end_tests",
       "//third_party/dawn/src/dawn/tests:dawn_unittests",
       "//third_party/dawn/src/fuzzers/dawn:dawn_fuzzers",
-      "//third_party/dawn/third_party/tint/fuzzers",
-      "//third_party/dawn/third_party/tint/test:tint_unittests",
+      "//third_party/dawn/third_party/tint/src/tint/fuzzers",
+      "//third_party/dawn/third_party/tint/test/tint:tint_unittests",
     ]
   }
 
@@ -862,8 +850,11 @@ group("gn_all") {
   if (toolchain_has_rust) {
     deps += [
       "//mojo/public/rust",
-      "//mojo/public/rust:tests",
+      "//mojo/public/rust:mojo_rust_tests",
     ]
+  }
+  if (enable_rust) {
+    deps += [ "//testing/rust_gtest_interop:rust_gtest_interop_unittests" ]
   }
 }
 
@@ -1070,6 +1061,7 @@ if (!is_ios) {
       script = "//testing/xvfb.py"
 
       data = [
+        "//build/skia_gold_common/",
         "//chrome/test/chromedriver/chrome_paths.py",
         "//chrome/test/chromedriver/server/server.py",
         "//chrome/test/chromedriver/test/run_webdriver_tests.py",
@@ -1131,6 +1123,7 @@ if (!is_ios) {
       "//third_party/hyphenation-patterns:test_data",
       "//third_party/mesa_headers",
       "//tools/imagediff",
+      "//ui/base:goldctl",
     ]
 
     if (is_android) {
@@ -1170,6 +1163,7 @@ if (!is_ios) {
     }
 
     data = [
+      "//build/skia_gold_common/",
       "//testing/scripts/common.py",
       "//testing/scripts/run_isolated_script_test.py",
       "//testing/xvfb.py",
@@ -1191,6 +1185,10 @@ if (!is_ios) {
         "//third_party/perl/perl/",
       ]
       data_deps += [ "//build/win:copy_cdb_to_output" ]
+    }
+
+    if (is_mac) {
+      data += [ "//third_party/apache-mac/" ]
     }
 
     if (is_android) {
@@ -1469,6 +1467,7 @@ if (!is_ios) {
       "//build/android/",
       "//build/gn_helpers.py",
       "//build/config/gclient_args.gni",
+      "//build/skia_gold_common/",
       "//components/crash/content/tools/generate_breakpad_symbols.py",
       "//testing/unexpected_passes_common/",
       "//third_party/blink/renderer/bindings/scripts/",
@@ -1493,6 +1492,8 @@ if (!is_ios) {
       "//third_party/ply/",
       "//tools/idl_parser/",
     ]
+
+    data_deps = [ "//ui/base:goldctl" ]
   }
 }
 
@@ -1576,7 +1577,7 @@ if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
     }
 
     if (build_dawn_tests) {
-      deps += [ "//third_party/dawn/third_party/tint/fuzzers:fuzzers" ]
+      deps += [ "//third_party/dawn/third_party/tint/src/tint/fuzzers:fuzzers" ]
     }
   }
 }
@@ -1607,7 +1608,7 @@ if (enable_js_type_check) {
       "chrome/test:closure_compile",
       "components/flags_ui/resources:closure_compile",
       "components/neterror/resources:closure_compile",
-      "components/security_interstitials/core/common/resources:closure_compile",
+      "components/security_interstitials:closure_compile",
       "components/sync/driver/resources:closure_compile",
       "components/ukm/debug:closure_compile",
       "content/browser/resources:closure_compile",

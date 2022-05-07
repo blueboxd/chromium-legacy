@@ -19,7 +19,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/hpke.h"
-#include "url/origin.h"
 
 namespace base {
 class Clock;
@@ -57,8 +56,8 @@ testing::AssertionResult SharedInfoEqual(
 
 // Returns an example report request, using the given parameters.
 AggregatableReportRequest CreateExampleRequest(
-    AggregationServicePayloadContents::ProcessingType processing_type =
-        AggregationServicePayloadContents::ProcessingType::kTwoParty);
+    AggregationServicePayloadContents::AggregationMode aggregation_mode =
+        AggregationServicePayloadContents::AggregationMode::kDefault);
 
 AggregatableReportRequest CloneReportRequest(
     const AggregatableReportRequest& request);
@@ -96,13 +95,12 @@ class TestAggregationServiceStorageContext
 // Only used for logging in tests.
 std::ostream& operator<<(
     std::ostream& out,
-    const AggregationServicePayloadContents::Operation& operation);
+    AggregationServicePayloadContents::Operation operation);
 std::ostream& operator<<(
     std::ostream& out,
-    const AggregationServicePayloadContents::ProcessingType& processing_type);
-std::ostream& operator<<(
-    std::ostream& out,
-    const AggregatableReportSharedInfo::DebugMode& debug_mode);
+    AggregationServicePayloadContents::AggregationMode aggregation_mode);
+std::ostream& operator<<(std::ostream& out,
+                         AggregatableReportSharedInfo::DebugMode debug_mode);
 
 bool operator==(const PublicKey& a, const PublicKey& b);
 

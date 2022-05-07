@@ -12,6 +12,7 @@
 
 #include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/allocator/partition_allocator/partition_address_space.h"
+#include "base/bits.h"
 #include "base/check.h"
 #include "base/debug/alias.h"
 #include "base/debug/crash_logging.h"
@@ -32,12 +33,15 @@
 #include "base/system/sys_info.h"
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
-#include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "gin/gin_features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "v8/include/v8-initialization.h"
 #include "v8/include/v8-snapshot.h"
+
+#if BUILDFLAG(IS_WIN)
+#include "base/win/windows_version.h"
+#endif
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if BUILDFLAG(IS_ANDROID)
@@ -240,6 +244,10 @@ void SetFlags(IsolateHolder::ScriptMode mode,
                          "--no-compact-code-space-with-stack");
   SetV8FlagsIfOverridden(features::kV8CompactWithStack, "--compact-with-stack",
                          "--no-compact-with-stack");
+  SetV8FlagsIfOverridden(features::kV8CompactMaps, "--compact-maps",
+                         "--no-compact-maps");
+  SetV8FlagsIfOverridden(features::kV8UseMapSpace, "--use-map-space",
+                         "--no-use-map-space");
   SetV8FlagsIfOverridden(features::kV8OptimizeJavascript, "--opt", "--no-opt");
   SetV8FlagsIfOverridden(features::kV8FlushBytecode, "--flush-bytecode",
                          "--no-flush-bytecode");
@@ -251,8 +259,6 @@ void SetFlags(IsolateHolder::ScriptMode mode,
   SetV8FlagsIfOverridden(features::kV8LazyFeedbackAllocation,
                          "--lazy-feedback-allocation",
                          "--no-lazy-feedback-allocation");
-  SetV8FlagsIfOverridden(features::kV8ConcurrentInlining,
-                         "--concurrent_inlining", "--no-concurrent_inlining");
   SetV8FlagsIfOverridden(features::kV8PerContextMarkingWorklist,
                          "--stress-per-context-marking-worklist",
                          "--no-stress-per-context-marking-worklist");

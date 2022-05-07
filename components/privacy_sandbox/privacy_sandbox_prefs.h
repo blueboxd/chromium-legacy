@@ -37,11 +37,23 @@ extern const char kPrivacySandboxPageViewed[];
 
 // The point in time from which history is eligible to be used when calculating
 // a user's FLoC ID.
+// TODO(crbug.com/1292898): Deprecate this preference once Privacy Sandbox
+// Settings 3 has been launched.
 extern const char kPrivacySandboxFlocDataAccessibleSince[];
+
+// The point in time from which history is eligible to be used when calculating
+// a user's Topics API topics.
+extern const char kPrivacySandboxTopicsDataAccessibleSince[];
 
 // Synced boolean that controls whether FLoC is enabled. Requires that the
 // kPrivacySandboxApisEnabled preference be enabled to take effect.
 extern const char kPrivacySandboxFlocEnabled[];
+
+// List of entries representing Topics API topics which are blocked for
+// the profile. Blocked topics cannot be provided to site, or considered as
+// part of the profile's "top topics". Entries in the list are dictionaries
+// containing the CanonicalTopic and the time the setting was created.
+extern const char kPrivacySandboxBlockedTopics[];
 
 // Dictionary of entries representing top frame origins on which the profile
 // cannot be joined to an interest group. Keys are the blocked origins, and
@@ -59,6 +71,18 @@ extern const char kPrivacySandboxConsentDecisionMade[];
 // Boolean that indicates a Privacy Sandbox confirmation was not shown to the
 // profile because the profile had already disabled the Privacy Sandbox.
 extern const char kPrivacySandboxNoConfirmationSandboxDisabled[];
+
+// Boolean that indicates a Privacy Sandbox confirmation was not shown to the
+// profile because the Privacy Sandbox was being restricted.
+extern const char kPrivacySandboxNoConfirmationSandboxRestricted[];
+
+// Boolean that indicates a Privacy Sandbox confirmation was not shown to the
+// profile because the Privacy Sandbox was being managed.
+extern const char kPrivacySandboxNoConfirmationSandboxManaged[];
+
+// Boolean that indicates a Privacy Sandbox confirmation was not shown to the
+// profile because the third party cookies were being blocked.
+extern const char kPrivacySandboxNoConfirmationThirdPartyCookiesBlocked[];
 
 // Boolean that indicates the user's Privacy Sandbox setting was disabled
 // automatically because they do not have the correct level of confirmation.

@@ -18,7 +18,6 @@
 #include "base/callback_helpers.h"
 #include "base/check_op.h"
 #include "base/containers/cxx20_erase.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
@@ -518,7 +517,7 @@ void GLRenderer::DiscardPixels() {
       output_surface_->capabilities().uses_default_gl_framebuffer;
   GLenum attachments[] = {static_cast<GLenum>(
       using_default_framebuffer ? GL_COLOR_EXT : GL_COLOR_ATTACHMENT0_EXT)};
-  gl_->DiscardFramebufferEXT(GL_FRAMEBUFFER, base::size(attachments),
+  gl_->DiscardFramebufferEXT(GL_FRAMEBUFFER, std::size(attachments),
                              attachments);
 }
 
@@ -2167,10 +2166,10 @@ void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,
 
   // Apply any color matrix that may be present.
   if (HasOutputColorMatrix()) {
-    const skia::Matrix44& output_color_matrix = output_surface_->color_matrix();
-    const skia::Vector4 color_v(color_f.fR, color_f.fG, color_f.fB, color_f.fA);
-    const skia::Vector4 result = output_color_matrix * color_v;
-    std::copy(result.fData, result.fData + 4, color_f.vec());
+    const SkM44& output_color_matrix = output_surface_->color_matrix();
+    const SkV4 color_v{color_f.fR, color_f.fG, color_f.fB, color_f.fA};
+    const SkV4 result = output_color_matrix * color_v;
+    std::copy(result.ptr(), result.ptr() + 4, color_f.vec());
     color = color_f.toSkColor();
   }
 
@@ -3751,7 +3750,7 @@ void GLRenderer::SetUseProgram(const ProgramKey& program_key_no_color,
   if (has_output_color_matrix) {
     DCHECK_NE(current_program_->output_color_matrix_location(), -1);
     float matrix[16];
-    output_surface_->color_matrix().asColMajorf(matrix);
+    output_surface_->color_matrix().getColMajor(matrix);
     gl_->UniformMatrix4fv(current_program_->output_color_matrix_location(), 1,
                           false, matrix);
   }
@@ -3914,7 +3913,7 @@ void GLRenderer::ScheduleCALayers() {
     GLint sorting_context_id =
         ca_layer_overlay.shared_state->sorting_context_id;
     GLfloat transform[16];
-    ca_layer_overlay.shared_state->transform.asColMajorf(transform);
+    ca_layer_overlay.shared_state->transform.matrix().asColMajorf(transform);
     unsigned filter = ca_layer_overlay.filter;
 
     if (ca_layer_overlay.shared_state != shared_state) {
@@ -3955,7 +3954,7 @@ void GLRenderer::ScheduleDCLayers() {
     const gfx::Rect& content_rect = dc_layer_overlay.content_rect;
     const gfx::Rect& quad_rect = dc_layer_overlay.quad_rect;
     DCHECK(dc_layer_overlay.transform.IsFlat());
-    const skia::Matrix44& transform = dc_layer_overlay.transform.matrix();
+    const auto& matrix = dc_layer_overlay.transform.matrix();
     bool is_clipped = dc_layer_overlay.clip_rect.has_value();
     const gfx::Rect& clip_rect =
         dc_layer_overlay.clip_rect.value_or(gfx::Rect());
@@ -3966,10 +3965,10 @@ void GLRenderer::ScheduleDCLayers() {
         texture_ids[0], texture_ids[1], z_order, content_rect.x(),
         content_rect.y(), content_rect.width(), content_rect.height(),
         quad_rect.x(), quad_rect.y(), quad_rect.width(), quad_rect.height(),
-        transform.get(0, 0), transform.get(0, 1), transform.get(1, 0),
-        transform.get(1, 1), transform.get(0, 3), transform.get(1, 3),
-        is_clipped, clip_rect.x(), clip_rect.y(), clip_rect.width(),
-        clip_rect.height(), protected_video_type);
+        matrix.rc(0, 0), matrix.rc(0, 1), matrix.rc(1, 0), matrix.rc(1, 1),
+        matrix.rc(0, 3), matrix.rc(1, 3), is_clipped, clip_rect.x(),
+        clip_rect.y(), clip_rect.width(), clip_rect.height(),
+        protected_video_type);
   }
 }
 #endif  // BUILDFLAG(IS_WIN)
@@ -4271,9 +4270,8 @@ GLRenderer::ScheduleRenderPassDrawQuad(const CALayerOverlay* ca_layer_overlay) {
       ca_layer_overlay->shared_state->rounded_corner_bounds.GetSimpleRadius()};
 
   GLint sorting_context_id = ca_layer_overlay->shared_state->sorting_context_id;
-  skia::Matrix44 transform = ca_layer_overlay->shared_state->transform;
   GLfloat gl_transform[16];
-  transform.asColMajorf(gl_transform);
+  ca_layer_overlay->shared_state->transform.matrix().asColMajorf(gl_transform);
   unsigned filter = ca_layer_overlay->filter;
 
   // The alpha has already been applied when copying the RPDQ to an IOSurface.
@@ -4399,8 +4397,8 @@ ResourceFormat GLRenderer::CurrentRenderPassResourceFormat() const {
 bool GLRenderer::HasOutputColorMatrix() const {
   const bool is_root_render_pass =
       current_frame()->current_render_pass == current_frame()->root_render_pass;
-  const skia::Matrix44& output_color_matrix = output_surface_->color_matrix();
-  return is_root_render_pass && !output_color_matrix.isIdentity();
+  const SkM44& output_color_matrix = output_surface_->color_matrix();
+  return is_root_render_pass && output_color_matrix != SkM44();
 }
 
 bool GLRenderer::CanUseFastSolidColorDraw(

@@ -17,7 +17,7 @@ import {focusWithoutInk} from 'chrome://resources/js/cr/ui/focus_without_ink.m.j
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {afterNextRender, html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserServiceImpl} from './browser_service.js';
 import {UMA_MAX_BUCKET_VALUE, UMA_MAX_SUBSET_BUCKET_VALUE} from './constants.js';
@@ -121,9 +121,9 @@ export class HistoryItemElement extends HistoryItemElementBase {
   isCardStart: boolean;
   isCardEnd: boolean;
   numberOfItems: number;
+  selected: boolean;
 
-  /** @override */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     afterNextRender(this, () => {
@@ -135,8 +135,7 @@ export class HistoryItemElement extends HistoryItemElementBase {
     });
   }
 
-  /** @override */
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     this.eventTracker_.remove(this.$.checkbox, 'keydown');
   }

@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_capture_handle.h"
 #include "third_party/blink/renderer/modules/event_target_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_descriptor.h"
 #include "third_party/blink/renderer/platform/mediastream/media_stream_source.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
@@ -64,8 +65,15 @@ class MODULES_EXPORT MediaStreamTrack
     virtual void TrackChangedState() = 0;
   };
 
+  // Create a MediaStreamTrack of the appropriate type for the display surface
+  // type.
+  static MediaStreamTrack* Create(ExecutionContext* context,
+                                  MediaStreamComponent* component,
+                                  base::OnceClosure callback,
+                                  const String& descriptor_id);
   // TODO(1288839): Implement to recreate MST after transfer
-  static MediaStreamTrack* Create(ExecutionContext* context);
+  static MediaStreamTrack* Create(ExecutionContext* context,
+                                  const base::UnguessableToken& token);
 
   MediaStreamTrack(ExecutionContext*, MediaStreamComponent*);
   MediaStreamTrack(ExecutionContext*,
@@ -126,6 +134,8 @@ class MODULES_EXPORT MediaStreamTrack
       int context_sample_rate);
 
   ImageCapture* GetImageCapture() { return image_capture_; }
+
+  absl::optional<base::UnguessableToken> serializable_session_id() const;
 
 #if !BUILDFLAG(IS_ANDROID)
   // Only relevant for focusable streams (FocusableMediaStreamTrack).

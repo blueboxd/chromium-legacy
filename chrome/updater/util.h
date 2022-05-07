@@ -99,8 +99,19 @@ base::FilePath GetExecutableRelativePath();
 
 // Returns the parsed values from --tag command line argument. The function
 // implementation uses lazy initialization and caching to avoid reparsing
-// the tag.
-absl::optional<tagging::TagArgs> GetTagArgs();
+// the tag. The function returns {} if there was no tag at all. An error is
+// set if the tag fails to parse.
+struct TagParsingResult {
+  TagParsingResult();
+  TagParsingResult(absl::optional<tagging::TagArgs> tag_args,
+                   tagging::ErrorCode error);
+  ~TagParsingResult();
+  TagParsingResult(const TagParsingResult&);
+  TagParsingResult& operator=(const TagParsingResult&);
+  absl::optional<tagging::TagArgs> tag_args;
+  tagging::ErrorCode error = tagging::ErrorCode::kSuccess;
+};
+TagParsingResult GetTagArgs();
 
 // Returns the arguments corresponding to `app_id` from the command line tag.
 absl::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id);
@@ -109,12 +120,13 @@ absl::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id);
 // empty string if no tag or "ap" is specified.
 std::string GetAPFromAppArgs(const std::string& app_id);
 
+std::string GetInstallDataIndexFromAppArgs(const std::string& app_id);
+
 // Returns true if the user running the updater also owns the `path`.
 bool PathOwnedByUser(const base::FilePath& path);
 
 // Initializes logging for an executable.
-void InitLogging(UpdaterScope updater_scope,
-                 const base::FilePath::StringType& filename);
+void InitLogging(UpdaterScope updater_scope);
 
 // Wraps the 'command_line' to be executed in an elevated context.
 // On macOS this is done with 'sudo'.

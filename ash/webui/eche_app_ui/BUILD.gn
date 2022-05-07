@@ -13,6 +13,15 @@ assert(is_chromeos_ash, "Eche App is ash-chrome only")
 preprocess_mojo_manifest = "preprocessed_mojo_manifest.json"
 preprocess_folder = "preprocessed"
 
+static_library("eche_app_ui_pref") {
+  sources = [
+    "pref_names.cc",
+    "pref_names.h",
+  ]
+
+  deps = [ "//base:base" ]
+}
+
 static_library("eche_app_ui") {
   sources = [
     "apps_access_manager.cc",
@@ -28,6 +37,8 @@ static_library("eche_app_ui") {
     "eche_connector.h",
     "eche_connector_impl.cc",
     "eche_connector_impl.h",
+    "eche_display_stream_handler.cc",
+    "eche_display_stream_handler.h",
     "eche_feature_status_provider.cc",
     "eche_feature_status_provider.h",
     "eche_message_receiver.cc",
@@ -52,8 +63,6 @@ static_library("eche_app_ui") {
     "feature_status_provider.h",
     "launch_app_helper.cc",
     "launch_app_helper.h",
-    "pref_names.cc",
-    "pref_names.h",
     "system_info.cc",
     "system_info.h",
     "system_info_provider.cc",
@@ -65,10 +74,14 @@ static_library("eche_app_ui") {
   ]
 
   deps = [
+    ":eche_app_ui_pref",
     "//ash",
     "//ash/components/phonehub",
     "//ash/constants",
     "//ash/public/cpp",
+    "//ash/services/device_sync/public/cpp:cpp",
+    "//ash/services/multidevice_setup/public/cpp:cpp",
+    "//ash/services/multidevice_setup/public/cpp:prefs",
     "//ash/services/secure_channel/public/cpp/client",
     "//ash/services/secure_channel/public/cpp/shared",
     "//ash/webui/eche_app_ui/mojom",
@@ -77,8 +90,6 @@ static_library("eche_app_ui") {
     "//ash/webui/resources:eche_bundle_resources",
     "//chromeos/components/multidevice:multidevice",
     "//chromeos/components/multidevice/logging",
-    "//chromeos/services/device_sync/public/cpp:cpp",
-    "//chromeos/services/multidevice_setup/public/cpp:cpp",
     "//components/prefs",
     "//content/public/browser",
     "//mojo/public/js:resources",
@@ -98,11 +109,16 @@ static_library("test_support") {
     "fake_eche_message_receiver.h",
     "fake_feature_status_provider.cc",
     "fake_feature_status_provider.h",
+    "fake_launch_app_helper.cc",
+    "fake_launch_app_helper.h",
   ]
 
   public_deps = [ ":eche_app_ui" ]
 
-  deps = [ "//base" ]
+  deps = [
+    "//ash/components/phonehub:phonehub",
+    "//base",
+  ]
 }
 
 source_set("unit_tests") {
@@ -112,10 +128,12 @@ source_set("unit_tests") {
     "apps_access_setup_operation_unittest.cc",
     "eche_app_manager_unittest.cc",
     "eche_connector_impl_unittest.cc",
+    "eche_display_stream_handler_unittest.cc",
     "eche_feature_status_provider_unittest.cc",
     "eche_message_receiver_impl_unittest.cc",
     "eche_notification_click_handler_unittest.cc",
     "eche_notification_generator_unittest.cc",
+    "eche_presence_manager_unittest.cc",
     "eche_recent_app_click_handler_unittest.cc",
     "eche_signaler_unittest.cc",
     "eche_uid_provider_unittest.cc",
@@ -124,11 +142,17 @@ source_set("unit_tests") {
   ]
   deps = [
     ":eche_app_ui",
+    ":eche_app_ui_pref",
     ":test_support",
     "//ash:test_support",
     "//ash/components/phonehub",
     "//ash/components/phonehub:debug",
     "//ash/public/cpp",
+    "//ash/services/device_sync/public/cpp",
+    "//ash/services/device_sync/public/cpp:test_support",
+    "//ash/services/multidevice_setup/public/cpp",
+    "//ash/services/multidevice_setup/public/cpp:prefs",
+    "//ash/services/multidevice_setup/public/cpp:test_support",
     "//ash/services/secure_channel/public/cpp/client:client",
     "//ash/services/secure_channel/public/cpp/client:test_support",
     "//ash/services/secure_channel/public/cpp/shared:shared",
@@ -137,10 +161,6 @@ source_set("unit_tests") {
     "//base/test:test_support",
     "//chromeos/components/multidevice",
     "//chromeos/components/multidevice:test_support",
-    "//chromeos/services/device_sync/public/cpp",
-    "//chromeos/services/device_sync/public/cpp:test_support",
-    "//chromeos/services/multidevice_setup/public/cpp",
-    "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//components/prefs:test_support",
     "//components/sync_preferences:test_support",
     "//dbus",

@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/json/json_reader.h"
@@ -16,22 +17,21 @@
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
+#include "base/test/simple_test_clock.h"
 #include "base/threading/thread_restrictions.h"
+#include "base/time/clock.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/extensions/extension_service.h"
-#include "chrome/browser/extensions/install_verifier.h"
-#include "chrome/browser/extensions/test_extension_system.h"
 #include "chrome/browser/policy/profile_policy_connector_builder.h"
 #include "chrome/browser/policy/schema_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "chrome/test/base/ui_test_utils.h"
+#include "chrome/test/base/chrome_test_utils.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/browser/webui/policy_status_provider.h"
+#include "components/policy/core/common/cloud/cloud_policy_refresh_scheduler.h"
 #include "components/policy/core/common/external_data_fetcher.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/core/common/policy_map.h"
@@ -43,19 +43,30 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
-#include "extensions/common/extension_builder.h"
-#include "extensions/common/features/simple_feature.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/shell_dialogs/select_file_dialog.h"
-#include "ui/shell_dialogs/select_file_dialog_factory.h"
-#include "ui/shell_dialogs/select_file_policy.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "chrome/browser/ash/login/test/device_state_mixin.h"
+#include "chrome/browser/ash/login/test/logged_in_user_mixin.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/test/base/mixin_based_in_process_browser_test.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/install_verifier.h"
+#include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/test/base/ui_test_utils.h"
+#include "components/account_id/account_id.h"
+#include "extensions/common/extension_builder.h"
+#include "extensions/common/features/simple_feature.h"
+#include "ui/shell_dialogs/select_file_dialog.h"          // nogncheck
+#include "ui/shell_dialogs/select_file_dialog_factory.h"  // nogncheck
+#include "ui/shell_dialogs/select_file_policy.h"          // nogncheck
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 using testing::_;
 using testing::Return;
@@ -154,6 +165,7 @@ std::vector<std::string> PopulateExpectedPolicy(
   return expected_policy;
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 void SetChromeMetaData(base::DictionaryValue* expected) {
   // Only set the expected keys and types and not the values since
   // these can vary greatly on the platform, OS, architecture
@@ -190,6 +202,7 @@ void SetExpectedPolicy(base::DictionaryValue* expected,
     expected->SetPath({prefix, name.c_str(), "ignored"}, base::Value(ignored));
   expected->SetPath({prefix, name.c_str(), "value"}, value.Clone());
 }
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 // The temporary directory and file paths for policy saving.
 base::ScopedTempDir export_policies_test_dir;
@@ -197,7 +210,7 @@ base::FilePath export_policies_test_file_path;
 
 }  // namespace
 
-class PolicyUITest : public InProcessBrowserTest {
+class PolicyUITest : public PlatformBrowserTest {
  public:
   PolicyUITest();
 
@@ -207,7 +220,7 @@ class PolicyUITest : public InProcessBrowserTest {
   ~PolicyUITest() override;
 
  protected:
-  // InProcessBrowserTest implementation.
+  // PlatformBrowserTest implementation.
   void SetUpInProcessBrowserTestFixture() override;
 
   // Uses the |MockConfiguratonPolicyProvider| installed for testing to publish
@@ -220,10 +233,14 @@ class PolicyUITest : public InProcessBrowserTest {
 
   void VerifyExportingPolicies(const base::DictionaryValue& expected);
 
- protected:
+  content::WebContents* web_contents() {
+    return chrome_test_utils::GetActiveWebContents(this);
+  }
+
   testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
 };
 
+#if !BUILDFLAG(IS_ANDROID)
 // An artificial SelectFileDialog that immediately returns the location of test
 // file instead of showing the UI file picker.
 class TestSelectFileDialog : public ui::SelectFileDialog {
@@ -264,6 +281,7 @@ class TestSelectFileDialogFactory : public ui::SelectFileDialogFactory {
     return new TestSelectFileDialog(listener, std::move(policy));
   }
 };
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 PolicyUITest::PolicyUITest() = default;
 
@@ -293,8 +311,8 @@ void PolicyUITest::UpdateProviderPolicyForNamespace(
 
 void PolicyUITest::VerifyPolicies(
     const std::vector<std::vector<std::string>>& expected_policies) {
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
-                                           GURL(chrome::kChromeUIPolicyURL)));
+  ASSERT_TRUE(
+      content::NavigateToURL(web_contents(), GURL(chrome::kChromeUIPolicyURL)));
 
   // Retrieve the text contents of the policy table cells for all policies.
   const std::string javascript =
@@ -313,11 +331,9 @@ void PolicyUITest::VerifyPolicies(
       "  }"
       "}"
       "domAutomationController.send(JSON.stringify(policies));";
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   std::string json;
-  ASSERT_TRUE(
-      content::ExecuteScriptAndExtractString(contents, javascript, &json));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(web_contents(), javascript,
+                                                     &json));
   absl::optional<base::Value> value_ptr = base::JSONReader::Read(json);
   ASSERT_TRUE(value_ptr);
   ASSERT_TRUE(value_ptr->is_list());
@@ -340,22 +356,20 @@ void PolicyUITest::VerifyPolicies(
   }
 }
 
+#if !BUILDFLAG(IS_ANDROID)
 void PolicyUITest::VerifyExportingPolicies(
     const base::DictionaryValue& expected) {
   // Set SelectFileDialog to use our factory.
   ui::SelectFileDialog::SetFactory(new TestSelectFileDialogFactory());
 
   // Navigate to the about:policy page.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
-                                           GURL(chrome::kChromeUIPolicyURL)));
+  ASSERT_TRUE(
+      content::NavigateToURL(web_contents(), GURL(chrome::kChromeUIPolicyURL)));
 
   // Click on 'save policies' button.
   const std::string javascript =
       "document.getElementById('export-policies').click()";
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::ExecuteScript(contents, javascript));
+  EXPECT_TRUE(content::ExecuteScript(web_contents(), javascript));
 
   base::ThreadPoolInstance::Get()->FlushForTesting();
   // Open the created file.
@@ -495,6 +509,218 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, WritePoliciesToJSONFile) {
   VerifyExportingPolicies(expected_values);
 #endif
 }
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+#if BUILDFLAG(IS_CHROMEOS_ASH)
+class PolicyUIStatusTest : public MixinBasedInProcessBrowserTest {
+ public:
+  void SetUpOnMainThread() override {
+    MixinBasedInProcessBrowserTest::SetUpOnMainThread();
+    logged_in_user_mixin_.LogInUser();
+    // By default DeviceStateMixin sets public key version to 17 whereas policy
+    // test server inside LoggedInUserMixin has only one version. By setting
+    // public_key_version to 1, we make device policy requests succeed and thus
+    // device policy timestamp set.
+    device_state_.RequestDevicePolicyUpdate()
+        ->policy_data()
+        ->set_public_key_version(1);
+  }
+
+  bool ReadStatusFor(const std::string& policy_legend,
+                     base::flat_map<std::string, std::string>* policy_status);
+  bool ReloadPolicies();
+
+ protected:
+  chromeos::DeviceStateMixin device_state_{
+      &mixin_host_,
+      ash::DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+  chromeos::LoggedInUserMixin logged_in_user_mixin_{
+      &mixin_host_,
+      chromeos::LoggedInUserMixin::LogInType::kRegular,
+      embedded_test_server(),
+      this,
+      /*should_launch_browser=*/true,
+      AccountId::FromUserEmailGaiaId(policy::PolicyBuilder::kFakeUsername,
+                                     policy::PolicyBuilder::kFakeGaiaId)};
+};
+
+bool PolicyUIStatusTest::ReadStatusFor(
+    const std::string& policy_legend,
+    base::flat_map<std::string, std::string>* policy_status) {
+  // Retrieve the text contents of the status table with specified legend.
+  const std::string javascript = R"JS(
+    (function() {
+      function readStatus() {
+        // Wait for the status box to appear in case page just loaded.
+        const statusSection = document.getElementById('status-section');
+        if (statusSection.hidden) {
+          window.requestIdleCallback(readStatus);
+          return;
+        }
+
+        const policies = statusSection.querySelectorAll('fieldset');
+        const statuses = {};
+        for (let i = 0; i < policies.length; ++i) {
+          const legend = policies[i].querySelector('legend').textContent;
+          const entries = {};
+          const rows = policies[i]
+            .querySelectorAll('.status-entry div:nth-child(2)');
+          for (let j = 0; j < rows.length; ++j) {
+            entries[rows[j].className] = rows[j].textContent.trim();
+          }
+          statuses[legend.trim()] = entries;
+        }
+        domAutomationController.send(JSON.stringify(statuses));
+      }
+      window.requestIdleCallback(readStatus);
+    })();
+  )JS";
+  content::WebContents* contents =
+      chrome_test_utils::GetActiveWebContents(this);
+  std::string json;
+  if (!content::ExecuteScriptAndExtractString(contents, javascript, &json))
+    return false;
+  absl::optional<base::Value> statuses = base::JSONReader::Read(json);
+  if (!statuses.has_value() || !statuses->is_dict())
+    return false;
+  const base::Value* actual_entries = statuses->FindDictKey(policy_legend);
+  if (!actual_entries || !actual_entries->is_dict())
+    return false;
+  for (const auto entry : actual_entries->DictItems())
+    policy_status->insert_or_assign(entry.first, entry.second.GetString());
+  return true;
+}
+
+bool PolicyUIStatusTest::ReloadPolicies() {
+  const std::string javascript = R"JS(
+    (function() {
+      const reloadPoliciesBtn = document.getElementById('reload-policies');
+      reloadPoliciesBtn.click();
+      // Wait until reload button becomes enabled again, i.e. policies reloaded.
+      function waitForPoliciesToReload() {
+        if (reloadPoliciesBtn.disabled) {
+          window.requestIdleCallback(waitForPoliciesToReload);
+        } else {
+          domAutomationController.send(true);
+        }
+      }
+      window.requestIdleCallback(waitForPoliciesToReload);
+    })();
+  )JS";
+  content::WebContents* contents =
+      chrome_test_utils::GetActiveWebContents(this);
+  bool ignored;
+  return content::ExecuteScriptAndExtractBool(contents, javascript, &ignored);
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyUIStatusTest,
+                       ShowsZeroSecondsSinceRefreshAfterReloadingPolicies) {
+  // Verifies that the time since refresh of a policy set is set to 0 seconds
+  // after "Reload policies" button is pressed and policies are reloaded.
+
+  // Mock time in policy server and classes used by refresh logic.
+  base::Time now = base::Time::Now();
+  logged_in_user_mixin_.GetEmbeddedPolicyTestServerMixin()
+      ->UpdatePolicyTimestamp(now);
+  base::SimpleTestClock status_provider_clock_mock;
+  status_provider_clock_mock.SetNow(now);
+  auto status_provider_clock_mock_closure =
+      policy::PolicyStatusProvider::OverrideClockForTesting(
+          &status_provider_clock_mock);
+  base::SimpleTestClock policy_refresher_clock_mock;
+  policy_refresher_clock_mock.SetNow(now);
+  auto policy_refresher_clock_mock_closure =
+      policy::CloudPolicyRefreshScheduler::OverrideClockForTesting(
+          &policy_refresher_clock_mock);
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(chrome::kChromeUIPolicyURL)));
+  ASSERT_TRUE(ReloadPolicies());
+
+  base::flat_map<std::string, std::string> status;
+  ASSERT_TRUE(ReadStatusFor("User policies", &status));
+  EXPECT_EQ(status["time-since-last-refresh"], "0 secs ago");
+  EXPECT_EQ(status["time-since-last-fetch-attempt"], "0 secs ago");
+  ASSERT_TRUE(ReadStatusFor("Device policies", &status));
+  EXPECT_EQ(status["time-since-last-refresh"], "0 secs ago");
+  EXPECT_EQ(status["time-since-last-fetch-attempt"], "0 secs ago");
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyUIStatusTest, ShowsCorrectTimesSinceRefresh) {
+  // Verifies that the time since refresh of a policy set is correctly computed.
+
+  // Mock time in policy server and classes used by refresh logic.
+  base::Time now = base::Time::Now();
+  logged_in_user_mixin_.GetEmbeddedPolicyTestServerMixin()
+      ->UpdatePolicyTimestamp(now);
+  base::SimpleTestClock status_provider_clock_mock;
+  status_provider_clock_mock.SetNow(now);
+  auto status_provider_clock_mock_closure =
+      policy::PolicyStatusProvider::OverrideClockForTesting(
+          &status_provider_clock_mock);
+  base::SimpleTestClock policy_refresher_clock_mock;
+  policy_refresher_clock_mock.SetNow(now);
+  auto policy_refresher_clock_mock_closure =
+      policy::CloudPolicyRefreshScheduler::OverrideClockForTesting(
+          &policy_refresher_clock_mock);
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(chrome::kChromeUIPolicyURL)));
+  ASSERT_TRUE(ReloadPolicies());
+  status_provider_clock_mock.Advance(base::Hours(1));
+  policy_refresher_clock_mock.Advance(base::Hours(1));
+  // Refresh the page without reloading policies.
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(chrome::kChromeUIPolicyURL)));
+  base::RunLoop().RunUntilIdle();  // Ensure status request has been processed.
+
+  base::flat_map<std::string, std::string> status;
+  ASSERT_TRUE(ReadStatusFor("User policies", &status));
+  EXPECT_EQ(status["time-since-last-refresh"], "1 hour ago");
+  EXPECT_EQ(status["time-since-last-fetch-attempt"], "1 hour ago");
+  ASSERT_TRUE(ReadStatusFor("Device policies", &status));
+  EXPECT_EQ(status["time-since-last-refresh"], "1 hour ago");
+  EXPECT_EQ(status["time-since-last-fetch-attempt"], "1 hour ago");
+}
+
+IN_PROC_BROWSER_TEST_F(PolicyUIStatusTest,
+                       ShowsCorrectRefreshTimesAfterFailedReload) {
+  // Verifies that the time since refresh of a policy set is correctly updated
+  // after a failed attempt to update policies.
+
+  // Mock time in policy server and classes used by refresh logic.
+  base::Time now = base::Time::Now();
+  logged_in_user_mixin_.GetEmbeddedPolicyTestServerMixin()
+      ->UpdatePolicyTimestamp(now);
+  base::SimpleTestClock status_provider_clock_mock;
+  status_provider_clock_mock.SetNow(now);
+  auto status_provider_clock_mock_closure =
+      policy::PolicyStatusProvider::OverrideClockForTesting(
+          &status_provider_clock_mock);
+  base::SimpleTestClock policy_refresher_clock_mock;
+  policy_refresher_clock_mock.SetNow(now);
+  auto policy_refresher_clock_mock_closure =
+      policy::CloudPolicyRefreshScheduler::OverrideClockForTesting(
+          &policy_refresher_clock_mock);
+
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
+                                           GURL(chrome::kChromeUIPolicyURL)));
+  ASSERT_TRUE(ReloadPolicies());
+  logged_in_user_mixin_.GetEmbeddedPolicyTestServerMixin()->SetPolicyFetchError(
+      500);
+  status_provider_clock_mock.Advance(base::Hours(1));
+  policy_refresher_clock_mock.Advance(base::Hours(1));
+  ASSERT_TRUE(ReloadPolicies());
+
+  base::flat_map<std::string, std::string> status;
+  ASSERT_TRUE(ReadStatusFor("User policies", &status));
+  EXPECT_EQ(status["time-since-last-refresh"], "1 hour ago");
+  EXPECT_EQ(status["time-since-last-fetch-attempt"], "0 secs ago");
+  ASSERT_TRUE(ReadStatusFor("Device policies", &status));
+  EXPECT_EQ(status["time-since-last-refresh"], "1 hour ago");
+  EXPECT_EQ(status["time-since-last-fetch-attempt"], "0 secs ago");
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
 IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyNames) {
   // Verifies that the names of known policies are sent to the UI and processed
@@ -535,26 +761,26 @@ IN_PROC_BROWSER_TEST_F(PolicyUITest, SendPolicyValues) {
   std::map<std::string, std::string> expected_values;
 
   // Set the values of four existing policies.
-  base::Value restore_on_startup_urls(base::Value::Type::LIST);
-  restore_on_startup_urls.Append("aaa");
-  restore_on_startup_urls.Append("bbb");
-  restore_on_startup_urls.Append("ccc");
-  values.Set(policy::key::kRestoreOnStartupURLs, policy::POLICY_LEVEL_MANDATORY,
+  base::Value blocked_urls(base::Value::Type::LIST);
+  blocked_urls.Append("site1.com");
+  blocked_urls.Append("site2.com");
+  blocked_urls.Append("site3.com");
+  values.Set(policy::key::kURLBlocklist, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             std::move(restore_on_startup_urls), nullptr);
-  expected_values[policy::key::kRestoreOnStartupURLs] = "aaa,bbb,ccc";
+             std::move(blocked_urls), nullptr);
+  expected_values[policy::key::kURLBlocklist] = "site1.com,site2.com,site3.com";
   values.Set(policy::key::kHomepageLocation, policy::POLICY_LEVEL_MANDATORY,
              policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
              base::Value("http://google.com"), nullptr);
   expected_values[policy::key::kHomepageLocation] = "http://google.com";
-  values.Set(policy::key::kRestoreOnStartup, policy::POLICY_LEVEL_RECOMMENDED,
-             policy::POLICY_SCOPE_USER, policy::POLICY_SOURCE_CLOUD,
-             base::Value(4), nullptr);
-  expected_values[policy::key::kRestoreOnStartup] = "4";
-  values.Set(policy::key::kShowHomeButton, policy::POLICY_LEVEL_RECOMMENDED,
-             policy::POLICY_SCOPE_MACHINE, policy::POLICY_SOURCE_CLOUD,
-             base::Value(true), nullptr);
-  expected_values[policy::key::kShowHomeButton] = "true";
+  values.Set(policy::key::kSafeBrowsingProtectionLevel,
+             policy::POLICY_LEVEL_RECOMMENDED, policy::POLICY_SCOPE_USER,
+             policy::POLICY_SOURCE_CLOUD, base::Value(1), nullptr);
+  expected_values[policy::key::kSafeBrowsingProtectionLevel] = "1";
+  values.Set(policy::key::kPasswordLeakDetectionEnabled,
+             policy::POLICY_LEVEL_RECOMMENDED, policy::POLICY_SCOPE_MACHINE,
+             policy::POLICY_SOURCE_CLOUD, base::Value(true), nullptr);
+  expected_values[policy::key::kPasswordLeakDetectionEnabled] = "true";
   // Set the value of a policy that does not exist.
   const std::string kUnknownPolicy = "NoSuchThing";
   values.Set(kUnknownPolicy, policy::POLICY_LEVEL_MANDATORY,
@@ -686,13 +912,11 @@ IN_PROC_BROWSER_TEST_P(PolicyPrecedenceUITest, PrecedenceOrder) {
   provider_.UpdateChromePolicy(policy_map);
 
   // Retrieve the contents of the policy precedence rows.
-  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(),
-                                           GURL(chrome::kChromeUIPolicyURL)));
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(
+      content::NavigateToURL(web_contents(), GURL(chrome::kChromeUIPolicyURL)));
   std::string precedence_row_value;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(contents, kJavaScript,
-                                                     &precedence_row_value));
+  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+      web_contents(), kJavaScript, &precedence_row_value));
 
   ValidatePrecedenceValue(precedence_row_value);
 }
@@ -704,6 +928,7 @@ INSTANTIATE_TEST_SUITE_P(PolicyPrecedenceUITestInstance,
                                           testing::Values(false, true)));
 #endif  // !BUILDFLAG(IS_CHROMEOS)
 
+#if !BUILDFLAG(IS_ANDROID)
 // TODO(https://crbug.com/1027135) Add tests to verify extension policies are
 // exported correctly.
 class ExtensionPolicyUITest : public PolicyUITest,
@@ -713,13 +938,13 @@ class ExtensionPolicyUITest : public PolicyUITest,
 
   bool UseSigninProfile() const { return GetParam(); }
 
-  Profile* extension_profile() const {
+  Profile* extension_profile() {
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     if (UseSigninProfile()) {
       return ash::ProfileHelper::GetSigninProfile();
     }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-    return browser()->profile();
+    return chrome_test_utils::GetProfile(this);
   }
 };
 
@@ -929,5 +1154,6 @@ INSTANTIATE_TEST_SUITE_P(All,
 #else   // BUILDFLAG(IS_CHROMEOS_ASH)
                          ::testing::Values(false)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 );
+
+#endif  // !BUILDFLAG(IS_ANDROID)

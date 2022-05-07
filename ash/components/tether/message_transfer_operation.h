@@ -10,6 +10,7 @@
 
 #include "ash/components/tether/message_wrapper.h"
 #include "ash/components/tether/proto/tether.pb.h"
+#include "ash/services/device_sync/public/cpp/device_sync_client.h"
 #include "ash/services/secure_channel/public/cpp/client/client_channel.h"
 #include "ash/services/secure_channel/public/cpp/client/connection_attempt.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -18,7 +19,6 @@
 #include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "base/timer/timer.h"
 #include "base/unguessable_token.h"
-#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
@@ -115,8 +115,7 @@ class MessageTransferOperation {
 
     // secure_channel::ConnectionAttempt::Delegate:
     void OnConnectionAttemptFailure(
-        chromeos::secure_channel::mojom::ConnectionAttemptFailureReason reason)
-        override;
+        secure_channel::mojom::ConnectionAttemptFailureReason reason) override;
     void OnConnection(
         std::unique_ptr<secure_channel::ClientChannel> channel) override;
 
@@ -159,7 +158,7 @@ class MessageTransferOperation {
 
   void OnConnectionAttemptFailure(
       multidevice::RemoteDeviceRef remote_device,
-      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason reason);
+      secure_channel::mojom::ConnectionAttemptFailureReason reason);
   void OnConnection(multidevice::RemoteDeviceRef remote_device,
                     std::unique_ptr<secure_channel::ClientChannel> channel);
   void OnDisconnected(multidevice::RemoteDeviceRef remote_device);

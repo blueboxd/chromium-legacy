@@ -38,10 +38,8 @@ class CoreOobeView {
  public:
   virtual ~CoreOobeView() = default;
 
-  virtual void ResetSignInUI(bool force_online) = 0;
   virtual void ReloadContent(const base::DictionaryValue& dictionary) = 0;
   virtual void SetVirtualKeyboardShown(bool shown) = 0;
-  virtual void SetClientAreaSize(int width, int height) = 0;
   virtual void SetShelfHeight(int height) = 0;
   virtual void UpdateKeyboardState() = 0;
   virtual void FocusReturned(bool reverse) = 0;
@@ -103,10 +101,8 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
  private:
   // CoreOobeView implementation:
-  void ResetSignInUI(bool force_online) override;
   void ReloadContent(const base::DictionaryValue& dictionary) override;
   void SetVirtualKeyboardShown(bool displayed) override;
-  void SetClientAreaSize(int width, int height) override;
   void SetShelfHeight(int height) override;
   void FocusReturned(bool reverse) override;
   void SetOrientation(bool is_horizontal) override;

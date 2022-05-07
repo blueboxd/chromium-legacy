@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/fragment_directive/fragment_directive_utils.h"
 
 #include "components/shared_highlighting/core/common/fragment_directives_utils.h"
+#include "third_party/blink/renderer/bindings/core/v8/serialization/serialized_script_value.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/loader/document_loader.h"
@@ -20,9 +21,8 @@ void FragmentDirectiveUtils::RemoveSelectorsFromUrl(LocalFrame* frame) {
   // fragment shown in the URL matches the state of the highlight on the page.
   // This is equivalent to history.replaceState in javascript.
   frame->DomWindow()->document()->Loader()->RunURLAndHistoryUpdateSteps(
-      url, mojom::blink::SameDocumentNavigationType::kFragment,
-      /*data=*/nullptr, WebFrameLoadType::kReplaceCurrentItem,
-      mojom::blink::ScrollRestorationType::kAuto);
+      url, nullptr, mojom::blink::SameDocumentNavigationType::kFragment,
+      /*data=*/nullptr, WebFrameLoadType::kReplaceCurrentItem);
 }
 
 }  // namespace blink

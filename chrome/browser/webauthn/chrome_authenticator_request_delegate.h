@@ -55,6 +55,10 @@ class ChromeWebAuthenticationDelegate
 
 #if !BUILDFLAG(IS_ANDROID)
   // content::WebAuthenticationDelegate:
+  bool OverrideCallerOriginAndRelyingPartyIdValidation(
+      content::BrowserContext* browser_context,
+      const url::Origin& caller_origin,
+      const std::string& relying_party_id) override;
   absl::optional<std::string> MaybeGetRelyingPartyIdOverride(
       const std::string& claimed_relying_party_id,
       const url::Origin& caller_origin) override;
@@ -178,6 +182,9 @@ class ChromeAuthenticatorRequestDelegate
   void OnCancelRequest() override;
   void OnManageDevicesClicked() override;
 
+  // A non-const version of dialog_model().
+  raw_ptr<AuthenticatorRequestDialogModel> GetDialogModelForTesting();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ChromeAuthenticatorRequestDelegateTest,
                            TestTransportPrefType);
@@ -197,7 +204,7 @@ class ChromeAuthenticatorRequestDelegate
   // information that will be broadcast by the device.
   bool ShouldPermitCableExtension(const url::Origin& origin);
 
-  void HandleCablePairingEvent(device::cablev2::PairingEvent pairing);
+  void OnInvalidatedCablePairing(size_t failed_contact_index);
 
   const content::GlobalRenderFrameHostId render_frame_host_id_;
   // Holds ownership of AuthenticatorRequestDialogModel until

@@ -25,7 +25,6 @@
 #include "chrome/browser/web_applications/web_app_prefs_utils.h"
 #include "chrome/browser/web_applications/web_app_proto_utils.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
-#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_sync_install_delegate.h"
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "chrome/common/channel_info.h"
@@ -67,7 +66,7 @@ void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
   app->AddSource(Source::kSync);
 
   // app_id is a hash of start_url. Parse start_url first:
-  GURL start_url(sync_data.start_url());
+  const GURL start_url(sync_data.start_url());
   if (start_url.is_empty() || !start_url.is_valid()) {
     DLOG(ERROR) << "ApplySyncDataToApp: start_url parse error.";
     return;
@@ -91,7 +90,7 @@ void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
   }
 
   if (app->start_url().is_empty()) {
-    app->SetStartUrl(std::move(start_url));
+    app->SetStartUrl(start_url);
   } else if (app->start_url() != start_url) {
     DLOG(ERROR)
         << "ApplySyncDataToApp: existing start_url doesn't match start_url.";
@@ -113,36 +112,34 @@ void ApplySyncDataToApp(const sync_pb::WebAppSpecifics& sync_data,
   app->SetSyncFallbackData(std::move(parsed_sync_fallback_data.value()));
 }
 
-WebAppSyncBridge::WebAppSyncBridge(
-    AbstractWebAppDatabaseFactory* database_factory,
-    WebAppRegistrarMutable* registrar,
-    SyncInstallDelegate* install_delegate)
+WebAppSyncBridge::WebAppSyncBridge(WebAppRegistrarMutable* registrar)
     : WebAppSyncBridge(
-          database_factory,
           registrar,
-          install_delegate,
           std::make_unique<syncer::ClientTagBasedModelTypeProcessor>(
               syncer::WEB_APPS,
               base::BindRepeating(&syncer::ReportUnrecoverableError,
                                   chrome::GetChannel()))) {}
 
 WebAppSyncBridge::WebAppSyncBridge(
-    AbstractWebAppDatabaseFactory* database_factory,
     WebAppRegistrarMutable* registrar,
-    SyncInstallDelegate* install_delegate,
     std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor)
     : syncer::ModelTypeSyncBridge(std::move(change_processor)),
-      registrar_(registrar),
-      install_delegate_(install_delegate) {
-  DCHECK(database_factory);
+      registrar_(registrar) {
   DCHECK(registrar_);
+}
+
+WebAppSyncBridge::~WebAppSyncBridge() = default;
+
+void WebAppSyncBridge::SetSubsystems(
+    AbstractWebAppDatabaseFactory* database_factory,
+    SyncInstallDelegate* install_delegate) {
+  DCHECK(database_factory);
   database_ = std::make_unique<WebAppDatabase>(
       database_factory,
       base::BindRepeating(&WebAppSyncBridge::ReportErrorToChangeProcessor,
                           base::Unretained(this)));
+  install_delegate_ = install_delegate;
 }
-
-WebAppSyncBridge::~WebAppSyncBridge() = default;
 
 std::unique_ptr<WebAppRegistryUpdate> WebAppSyncBridge::BeginUpdate() {
   DCHECK(database_->is_opened());
@@ -322,7 +319,7 @@ void WebAppSyncBridge::SetUserPageOrdinal(const AppId& app_id,
   if (!registrar_->IsInstalled(app_id))
     return;
   if (web_app)
-    web_app->SetUserPageOrdinal(page_ordinal);
+    web_app->SetUserPageOrdinal(std::move(page_ordinal));
 }
 
 void WebAppSyncBridge::SetUserLaunchOrdinal(
@@ -337,7 +334,7 @@ void WebAppSyncBridge::SetUserLaunchOrdinal(
     return;
   WebApp* web_app = update->UpdateApp(app_id);
   if (web_app)
-    web_app->SetUserLaunchOrdinal(launch_ordinal);
+    web_app->SetUserLaunchOrdinal(std::move(launch_ordinal));
 }
 
 void WebAppSyncBridge::AddAllowedLaunchProtocol(

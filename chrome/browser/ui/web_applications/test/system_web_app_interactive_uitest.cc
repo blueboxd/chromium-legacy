@@ -515,7 +515,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppManagerWindowSizeControlsTest,
 class SystemWebAppManagerMultiDesktopLaunchBrowserTest
     : public ash::LoginManagerTest {
  public:
-  SystemWebAppManagerMultiDesktopLaunchBrowserTest() : ash::LoginManagerTest() {
+  SystemWebAppManagerMultiDesktopLaunchBrowserTest() {
     login_mixin_.AppendRegularUsers(2);
     account_id1_ = login_mixin_.users()[0].account_id;
     account_id2_ = login_mixin_.users()[1].account_id;
@@ -860,7 +860,7 @@ class SystemWebAppOpenInAshFromLacrosTests
     url_handler_ = std::make_unique<crosapi::UrlHandlerAsh>();
   }
 
-  ~SystemWebAppOpenInAshFromLacrosTests() {
+  ~SystemWebAppOpenInAshFromLacrosTests() override {
     OsUrlHandlerSystemWebAppDelegate::EnableDelegateForTesting(false);
   }
 
@@ -882,7 +882,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppOpenInAshFromLacrosTests,
   WaitForTestSystemAppInstall();
 
   // There might be an initial browser from the testing framework.
-  int initial_browser_count = BrowserList::GetInstance()->size();
+  size_t initial_browser_count = BrowserList::GetInstance()->size();
 
   // Test that a non descript URL gets rejected.
   GURL url1 = GURL("http://www.foo.bar");
@@ -914,7 +914,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppOpenInAshFromLacrosTests,
   WaitForTestSystemAppInstall();
 
   // There might be an initial browser from the testing framework.
-  int initial_browser_count = BrowserList::GetInstance()->size();
+  size_t initial_browser_count = BrowserList::GetInstance()->size();
 
   // Start an application which uses the OS url handler.
   LaunchAndWaitForActivationChange(GURL(chrome::kOsUICreditsURL));
@@ -939,7 +939,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppOpenInAshFromLacrosTests,
   WaitForTestSystemAppInstall();
 
   // There might be an initial browser from the testing framework.
-  int initial_browser_count = BrowserList::GetInstance()->size();
+  size_t initial_browser_count = BrowserList::GetInstance()->size();
 
   // Start an application using the OS Url handler.
   LaunchAndWaitForActivationChange(GURL(chrome::kOsUICreditsURL));
@@ -947,7 +947,7 @@ IN_PROC_BROWSER_TEST_P(SystemWebAppOpenInAshFromLacrosTests,
   EXPECT_EQ(u"ChromeOS-URLs", ash::window_util::GetActiveWindow()->GetTitle());
 
   // Start another application using the OS Url handler.
-  LaunchAndWaitForActivationChange(GURL(chrome::kOsUIComponentsUrl));
+  LaunchAndWaitForActivationChange(GURL(chrome::kOsUIComponentsURL));
   EXPECT_EQ(initial_browser_count + 2, BrowserList::GetInstance()->size());
   EXPECT_EQ(u"ChromeOS-URLs", ash::window_util::GetActiveWindow()->GetTitle());
 }

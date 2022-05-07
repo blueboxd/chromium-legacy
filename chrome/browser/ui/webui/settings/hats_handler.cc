@@ -55,7 +55,7 @@ void HatsHandler::RegisterMessages() {
 }
 
 void HatsHandler::HandleTrustSafetyInteractionOccurred(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(1U, args.size());

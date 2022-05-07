@@ -38,6 +38,7 @@
 #include "chrome/browser/net/net_error_tab_helper.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/predictors/loading_predictor_config.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -106,12 +107,12 @@
 #include "ash/components/cryptohome/cryptohome_parameters.h"
 #include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/test/shell_test_api.h"
+#include "ash/services/device_sync/device_sync_impl.h"
+#include "ash/services/device_sync/fake_device_sync.h"
 #include "ash/shell.h"
 #include "base/system/sys_info.h"
 #include "chrome/browser/ash/app_restore/full_restore_app_launch_handler.h"
 #include "chrome/browser/ash/input_method/input_method_configuration.h"
-#include "chromeos/services/device_sync/device_sync_impl.h"
-#include "chromeos/services/device_sync/fake_device_sync.h"
 #include "components/user_manager/user_names.h"
 #include "ui/display/display_switches.h"
 #include "ui/events/test/event_generator.h"
@@ -127,7 +128,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/lacros/cert_db_initializer_factory.h"
+#include "chrome/browser/lacros/cert/cert_db_initializer_factory.h"
 #include "components/account_manager_core/chromeos/account_manager.h"
 #include "components/account_manager_core/chromeos/account_manager_facade_factory.h"  // nogncheck
 #include "components/account_manager_core/chromeos/fake_account_manager_ui.h"  // nogncheck
@@ -325,6 +326,10 @@ void InProcessBrowserTest::Initialize() {
   launch_browser_for_testing_ =
       std::make_unique<ash::full_restore::ScopedLaunchBrowserForTesting>();
 #endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  CertDbInitializerFactory::GetInstance()
+      ->SetCreateWithBrowserContextForTesting(/*should_create=*/false);
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 
 InProcessBrowserTest::~InProcessBrowserTest() = default;
@@ -420,11 +425,6 @@ void InProcessBrowserTest::SetUp() {
   ChromeNetworkDelegate::EnableAccessToAllFilesForTesting(true);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
 
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-  CertDbInitializerFactory::GetInstance()
-      ->SetCreateWithBrowserContextForTesting(/*should_create=*/false);
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Device sync (for multidevice "Better Together") is ash specific.
   chromeos::device_sync::DeviceSyncImpl::Factory::SetCustomFactory(
@@ -458,6 +458,11 @@ void InProcessBrowserTest::SetUp() {
   // Auto-redirect to the NTP, which can happen if remote content is enabled on
   // What's New for tests that simulate first run, is unexpected by most tests.
   whats_new::DisableRemoteContentForTests();
+
+  // The Privacy Sandbox service may attempt to show a modal dialog to the
+  // profile on browser start, which is unexpected by mosts tests. Tests which
+  // expect this can allow the dialog as desired.
+  PrivacySandboxService::SetDialogDisabledForTests(true);
 
   BrowserTestBase::SetUp();
 }

@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "ash/app_list/app_list_model_provider.h"
 #include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/app_list_menu_model_adapter.h"
 #include "ash/app_list/views/apps_grid_context_menu.h"
 #include "ash/app_list/views/apps_grid_view.h"
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/accelerators.h"
+#include "ash/public/cpp/app_list/app_list_model_delegate.h"
 #include "ash/public/cpp/test/app_list_test_api.h"
 #include "ash/public/cpp/test/shell_test_api.h"
 #include "ash/shell.h"
@@ -23,6 +25,12 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/test/browser_test.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "third_party/skia/include/core/SkData.h"
+#include "third_party/skia/include/core/SkEncodedImageFormat.h"
+#include "third_party/skia/include/core/SkImage.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/test/test_utils.h"
 #include "ui/events/test/event_generator.h"
@@ -73,13 +81,37 @@ class AppListSortBrowserTest : public extensions::ExtensionBrowserTest {
     kAppListFolderItemMenu
   };
 
+  // Finds an folder item view in the provided apps grid.
+  ash::AppListItemView* FindFolderItemView(ash::AppsGridView* apps_grid_view) {
+    auto* model = apps_grid_view->view_model();
+    for (int index = 0; index < model->view_size(); ++index) {
+      ash::AppListItemView* current_view = model->view_at(index);
+      if (current_view->is_folder())
+        return current_view;
+    }
+
+    return nullptr;
+  }
+
+  // Finds a non-folder item view in the provided apps grid.
+  ash::AppListItemView* FindNonFolderItemView(
+      ash::AppsGridView* apps_grid_view) {
+    auto* model = apps_grid_view->view_model();
+    for (int index = 0; index < model->view_size(); ++index) {
+      ash::AppListItemView* current_view = model->view_at(index);
+      if (!current_view->is_folder())
+        return current_view;
+    }
+
+    return nullptr;
+  }
+
   // Shows the specified root menu that contains sorting menu options. Returns
   // the root menu after showing.
-  views::MenuItemView* ShowRootMenuAndReturn(MenuType menu_type) {
+  views::MenuItemView* ShowRootMenuAndReturn(ash::AppsGridView* apps_grid_view,
+                                             MenuType menu_type) {
     views::MenuItemView* root_menu = nullptr;
 
-    ash::AppsGridView* apps_grid_view =
-        app_list_test_api_.GetTopLevelAppsGridView();
     EXPECT_GT(apps_grid_view->view_model()->view_size(), 0);
 
     switch (menu_type) {
@@ -92,17 +124,11 @@ class AppListSortBrowserTest : public extensions::ExtensionBrowserTest {
         break;
       case MenuType::kAppListNonFolderItemMenu:
       case MenuType::kAppListFolderItemMenu:
-        ash::AppListItemView* item_view = nullptr;
-        auto* model = apps_grid_view->view_model();
         const bool is_folder_item =
             (menu_type == MenuType::kAppListFolderItemMenu);
-        for (int index = 0; index < model->view_size(); ++index) {
-          ash::AppListItemView* current_view = model->view_at(index);
-          if (current_view->is_folder() == is_folder_item) {
-            item_view = current_view;
-            break;
-          }
-        }
+        ash::AppListItemView* item_view =
+            is_folder_item ? FindFolderItemView(apps_grid_view)
+                           : FindNonFolderItemView(apps_grid_view);
         EXPECT_TRUE(item_view);
         event_generator_->MoveMouseTo(
             item_view->GetBoundsInScreen().CenterPoint());
@@ -169,21 +195,30 @@ class AppListSortBrowserTest : public extensions::ExtensionBrowserTest {
     kFadeInAborted,
   };
 
-  // Reorders the app list items through the specified context menu indicated by
-  // `menu_type`. `target_status` is the reorder animation's target status.
   void ReorderByMouseClickAtContextMenu(ash::AppListSortOrder order,
                                         MenuType menu_type,
                                         AnimationTargetStatus target_status) {
+    ReorderByMouseClickAtContextMenuInAppsGrid(
+        app_list_test_api_.GetTopLevelAppsGridView(), order, menu_type,
+        target_status);
+  }
+
+  // Reorders the app list items through the specified context menu indicated by
+  // `menu_type`. `target_status` is the reorder animation's target status.
+  void ReorderByMouseClickAtContextMenuInAppsGrid(
+      ash::AppsGridView* apps_grid_view,
+      ash::AppListSortOrder order,
+      MenuType menu_type,
+      AnimationTargetStatus target_status) {
     // Ensure that the apps grid layout is refreshed before showing the
     // context menu.
-    app_list_test_api_.GetTopLevelAppsGridView()
-        ->GetWidget()
-        ->LayoutRootViewIfNecessary();
+    apps_grid_view->GetWidget()->LayoutRootViewIfNecessary();
 
     // Custom order is not a menu option.
     ASSERT_NE(order, ash::AppListSortOrder::kCustom);
 
-    views::MenuItemView* root_menu = ShowRootMenuAndReturn(menu_type);
+    views::MenuItemView* root_menu =
+        ShowRootMenuAndReturn(apps_grid_view, menu_type);
 
     // Get the "Name" or "Color" option.
     views::MenuItemView* reorder_option = nullptr;
@@ -261,6 +296,44 @@ class AppListSortBrowserTest : public extensions::ExtensionBrowserTest {
         NOTREACHED();
         return 0;
     }
+  }
+
+  // Verifies that app list fade out animation is in progress then runs a
+  // closure to interrupt reorder.
+  void VerifyFadeOutInProgressAndRunInterruptClosure(
+      const std::vector<std::string>& expected_ids_in_order,
+      base::OnceClosure interrupt_closure) {
+    // Verify that there is active reorder animations.
+    EXPECT_TRUE(app_list_test_api_.HasAnyWaitingReorderDoneCallback());
+
+    // The app order does not change because the fade out animation is running.
+    EXPECT_EQ(GetAppIdsInOrdinalOrder(), expected_ids_in_order);
+
+    // Run the closure to interrupt the fade out animation.
+    std::move(interrupt_closure).Run();
+  }
+
+  // Registers a closure that turns on/off the tablet mode at the start of the
+  // fade out animation to interrupt app list reorder. `tablet_mode_enabled` is
+  // true when switching to the tablet mode; `tablet_mode_enabled` is false when
+  // switching to the clamshell mode. The tablet mode changes synchronously on
+  // animation start to avoid the race condition between the fade out animation
+  // completion and the task to change the tablet mode state.
+  // See https://crbug.com/1302924
+  void RegisterModeSwitchClosureOnFadeOutStarted(bool tablet_mode_enabled) {
+    auto switch_mode_closure = base::BindOnce(
+        [](bool tablet_mode_enabled) {
+          ash::ShellTestApi().SetTabletModeEnabledForTest(tablet_mode_enabled);
+        },
+        tablet_mode_enabled);
+
+    // NOTE: When the fade out animation is interrupted, the app order should
+    // not change.
+    app_list_test_api_.AddFadeOutAnimationStartClosure(base::BindOnce(
+        &AppListSortBrowserTest::VerifyFadeOutInProgressAndRunInterruptClosure,
+        weak_factory_.GetWeakPtr(),
+        /*expected_ids_in_order=*/GetAppIdsInOrdinalOrder(),
+        std::move(switch_mode_closure)));
   }
 
   void SetUp() override {
@@ -370,10 +443,28 @@ class AppListSortBrowserTest : public extensions::ExtensionBrowserTest {
     expected_reorder_animation_stats_.push_back(target_status);
   }
 
+  // Verifies that all item views are visible.
+  void VerifyItemsVisibility() {
+    auto* view_model =
+        app_list_test_api_.GetTopLevelAppsGridView()->view_model();
+    std::vector<std::string> invisible_item_names;
+    for (int view_index = 0; view_index < view_model->view_size();
+         ++view_index) {
+      auto* item_view = view_model->view_at(view_index);
+      if (!item_view->GetVisible())
+        invisible_item_names.push_back(item_view->item()->name());
+    }
+
+    // Invisible items should be none.
+    EXPECT_EQ(std::vector<std::string>(), invisible_item_names);
+  }
+
   // Waits until the reorder animation completes.
   void WaitForReorderAnimation() {
     run_loop_ = std::make_unique<base::RunLoop>();
     run_loop_->Run();
+
+    VerifyItemsVisibility();
   }
 
   // Returns a list of app ids following the ordinal increasing order.
@@ -587,6 +678,170 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
             std::vector<std::string>({app2_id_, app3_id_, app1_id_}));
 }
 
+IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
+                       SortUsingContextMenuOnFolderChildViewClamshell) {
+  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  ash::AcceleratorController::Get()->PerformActionIfEnabled(
+      ash::TOGGLE_APP_LIST_FULLSCREEN, {});
+  app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
+
+  // Create an app list folder.
+  app_list_test_api_.CreateFolderWithApps({app1_id_, app2_id_});
+  ash::AppsGridView* top_level_grid =
+      app_list_test_api_.GetTopLevelAppsGridView();
+  top_level_grid->Layout();
+
+  // Click on the folder to open it.
+  base::RunLoop run_loop;
+  app_list_test_api_.SetFolderViewAnimationCallback(run_loop.QuitClosure());
+
+  ash::AppListItemView* folder_item_view = FindFolderItemView(top_level_grid);
+  ASSERT_TRUE(folder_item_view);
+  event_generator_->MoveMouseTo(
+      folder_item_view->GetBoundsInScreen().CenterPoint());
+  event_generator_->ClickLeftButton();
+
+  run_loop.Run();
+
+  ash::AppsGridView* folder_grid = app_list_test_api_.GetFolderAppsGridView();
+  EXPECT_TRUE(folder_grid->IsDrawn());
+  ReorderByMouseClickAtContextMenuInAppsGrid(
+      folder_grid, ash::AppListSortOrder::kNameAlphabetical,
+      MenuType::kAppListNonFolderItemMenu, AnimationTargetStatus::kCompleted);
+  EXPECT_EQ(GetAppIdsInOrdinalOrder(),
+            std::vector<std::string>({app1_id_, app2_id_, app3_id_}));
+  EXPECT_FALSE(app_list_test_api_.GetFolderAppsGridView()->IsDrawn());
+}
+
+IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
+                       FolderNotClosedIfTemporarySortIsCommittedClamshell) {
+  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
+  ash::AcceleratorController::Get()->PerformActionIfEnabled(
+      ash::TOGGLE_APP_LIST_FULLSCREEN, {});
+  app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);
+
+  // Create an app list folder.
+  const std::string folder_id =
+      app_list_test_api_.CreateFolderWithApps({app1_id_, app2_id_});
+  ash::AppsGridView* top_level_grid =
+      app_list_test_api_.GetTopLevelAppsGridView();
+  top_level_grid->Layout();
+
+  // Order apps grid to transition to temporary sort order.
+  ReorderByMouseClickAtContextMenu(ash::AppListSortOrder::kNameAlphabetical,
+                                   MenuType::kAppListFolderItemMenu,
+                                   AnimationTargetStatus::kCompleted);
+  EXPECT_EQ(GetAppIdsInOrdinalOrder(),
+            std::vector<std::string>({app1_id_, app2_id_, app3_id_}));
+
+  // Click on the folder item to open it.
+  base::RunLoop run_loop;
+  app_list_test_api_.SetFolderViewAnimationCallback(run_loop.QuitClosure());
+
+  ash::AppListItemView* folder_item_view = FindFolderItemView(top_level_grid);
+  ASSERT_TRUE(folder_item_view);
+  event_generator_->MoveMouseTo(
+      folder_item_view->GetBoundsInScreen().CenterPoint());
+  event_generator_->ClickLeftButton();
+
+  run_loop.Run();
+
+  ash::AppsGridView* folder_grid = app_list_test_api_.GetFolderAppsGridView();
+  EXPECT_TRUE(folder_grid->IsDrawn());
+  EXPECT_TRUE(app_list_test_api_.GetBubbleReorderUndoToastVisibility());
+
+  // Rename folder to commit the sort order - verify that the folder remained
+  // open.
+  ash::AppListModelProvider::Get()->model()->delegate()->RequestFolderRename(
+      folder_id, "Test folder");
+  EXPECT_EQ(GetAppIdsInOrdinalOrder(),
+            std::vector<std::string>({app1_id_, app2_id_, app3_id_}));
+  EXPECT_TRUE(app_list_test_api_.GetFolderAppsGridView()->IsDrawn());
+  EXPECT_FALSE(app_list_test_api_.GetBubbleReorderUndoToastVisibility());
+}
+
+IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
+                       SortUsingContextMenuOnFolderChildViewTablet) {
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
+  ash::AcceleratorController::Get()->PerformActionIfEnabled(
+      ash::TOGGLE_APP_LIST_FULLSCREEN, {});
+  app_list_test_api_.WaitForAppListShowAnimation(/*is_bubble_window=*/false);
+
+  // Create an app list folder.
+  app_list_test_api_.CreateFolderWithApps({app1_id_, app2_id_});
+  ash::AppsGridView* top_level_grid =
+      app_list_test_api_.GetTopLevelAppsGridView();
+  top_level_grid->Layout();
+
+  // Click on the folder to open it.
+  base::RunLoop run_loop;
+  app_list_test_api_.SetFolderViewAnimationCallback(run_loop.QuitClosure());
+
+  ash::AppListItemView* folder_item_view = FindFolderItemView(top_level_grid);
+  ASSERT_TRUE(folder_item_view);
+  event_generator_->MoveMouseTo(
+      folder_item_view->GetBoundsInScreen().CenterPoint());
+  event_generator_->ClickLeftButton();
+
+  run_loop.Run();
+
+  ash::AppsGridView* folder_grid = app_list_test_api_.GetFolderAppsGridView();
+  EXPECT_TRUE(folder_grid->IsDrawn());
+  ReorderByMouseClickAtContextMenuInAppsGrid(
+      folder_grid, ash::AppListSortOrder::kNameAlphabetical,
+      MenuType::kAppListNonFolderItemMenu, AnimationTargetStatus::kCompleted);
+  EXPECT_EQ(GetAppIdsInOrdinalOrder(),
+            std::vector<std::string>({app1_id_, app2_id_, app3_id_}));
+  EXPECT_FALSE(app_list_test_api_.GetFolderAppsGridView()->IsDrawn());
+}
+
+IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
+                       FolderNotClosedIfTemporarySortIsCommittedTablet) {
+  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
+  ash::AcceleratorController::Get()->PerformActionIfEnabled(
+      ash::TOGGLE_APP_LIST_FULLSCREEN, {});
+  app_list_test_api_.WaitForAppListShowAnimation(/*is_bubble_window=*/false);
+
+  // Create an app list folder.
+  const std::string folder_id =
+      app_list_test_api_.CreateFolderWithApps({app1_id_, app2_id_});
+  ash::AppsGridView* top_level_grid =
+      app_list_test_api_.GetTopLevelAppsGridView();
+  top_level_grid->Layout();
+
+  // Order apps grid to transition to temporary sort order.
+  ReorderByMouseClickAtContextMenu(ash::AppListSortOrder::kNameAlphabetical,
+                                   MenuType::kAppListFolderItemMenu,
+                                   AnimationTargetStatus::kCompleted);
+  EXPECT_EQ(GetAppIdsInOrdinalOrder(),
+            std::vector<std::string>({app1_id_, app2_id_, app3_id_}));
+
+  // Click on the folder item to open it.
+  base::RunLoop run_loop;
+  app_list_test_api_.SetFolderViewAnimationCallback(run_loop.QuitClosure());
+
+  ash::AppListItemView* folder_item_view = FindFolderItemView(top_level_grid);
+  ASSERT_TRUE(folder_item_view);
+  event_generator_->MoveMouseTo(
+      folder_item_view->GetBoundsInScreen().CenterPoint());
+  event_generator_->ClickLeftButton();
+
+  run_loop.Run();
+
+  ash::AppsGridView* folder_grid = app_list_test_api_.GetFolderAppsGridView();
+  EXPECT_TRUE(folder_grid->IsDrawn());
+  EXPECT_TRUE(app_list_test_api_.GetFullscreenReorderUndoToastVisibility());
+
+  // Rename folder to commit the sort order - verify that the folder remained
+  // open.
+  ash::AppListModelProvider::Get()->model()->delegate()->RequestFolderRename(
+      folder_id, "Test folder");
+  EXPECT_EQ(GetAppIdsInOrdinalOrder(),
+            std::vector<std::string>({app1_id_, app2_id_, app3_id_}));
+  EXPECT_TRUE(app_list_test_api_.GetFolderAppsGridView()->IsDrawn());
+  EXPECT_FALSE(app_list_test_api_.GetFullscreenReorderUndoToastVisibility());
+}
+
 // Verify that starting a new reorder before the old animation completes works
 // as expected.
 IN_PROC_BROWSER_TEST_F(
@@ -655,6 +910,8 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
   // Therefore the remaining apps are placed following the alphabetical order.
   EXPECT_TRUE(model_updater->FindItem(app2_id_)->position().GreaterThan(
       model_updater->FindItem(app1_id_)->position()));
+
+  VerifyItemsVisibility();
 }
 
 // Verifies that clicking at the reorder undo toast should revert the temporary
@@ -903,7 +1160,7 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 // Verify that switching to tablet mode when the fade out animation in clamshell
 // mode is running works as expected.
 IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
-                       TransitionToTabletModeDuringFadeOutAnimation) {
+                       DISABLED_TransitionToTabletModeDuringFadeOutAnimation) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(false);
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST_FULLSCREEN, {});
@@ -913,18 +1170,11 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
   EXPECT_EQ(GetAppIdsInOrdinalOrder(),
             std::vector<std::string>({app3_id_, app2_id_, app1_id_}));
 
+  RegisterModeSwitchClosureOnFadeOutStarted(/*tablet_mode_enabled=*/true);
   ReorderByMouseClickAtContextMenu(ash::AppListSortOrder::kNameAlphabetical,
                                    MenuType::kAppListPageMenu,
                                    AnimationTargetStatus::kFadeOutAborted);
 
-  // Verify that there is active reorder animations.
-  EXPECT_TRUE(app_list_test_api_.HasAnyWaitingReorderDoneCallback());
-
-  // The app order does not change because the fade out animation is running.
-  EXPECT_EQ(GetAppIdsInOrdinalOrder(),
-            std::vector<std::string>({app3_id_, app2_id_, app1_id_}));
-
-  ash::ShellTestApi().SetTabletModeEnabledForTest(true);
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST_FULLSCREEN, {});
   app_list_test_api_.WaitForAppListShowAnimation(/*is_bubble_window=*/false);
@@ -947,8 +1197,10 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
 
 // Verify that switching to clamshell mode when the fade out animation in tablet
 // mode is running works as expected.
-IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
-                       TransitionToClamshellModeDuringFadeOutAnimation) {
+// TODO(crbug.com/1302924): Flaky.
+IN_PROC_BROWSER_TEST_F(
+    AppListSortBrowserTest,
+    DISABLED_TransitionToClamshellModeDuringFadeOutAnimation) {
   ash::ShellTestApi().SetTabletModeEnabledForTest(true);
 
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
@@ -959,18 +1211,11 @@ IN_PROC_BROWSER_TEST_F(AppListSortBrowserTest,
   EXPECT_EQ(GetAppIdsInOrdinalOrder(),
             std::vector<std::string>({app3_id_, app2_id_, app1_id_}));
 
+  RegisterModeSwitchClosureOnFadeOutStarted(/*tablet_mode_enabled=*/false);
   ReorderByMouseClickAtContextMenu(ash::AppListSortOrder::kNameAlphabetical,
                                    MenuType::kAppListNonFolderItemMenu,
                                    AnimationTargetStatus::kFadeOutAborted);
 
-  // Verify that there is active reorder animations.
-  EXPECT_TRUE(app_list_test_api_.HasAnyWaitingReorderDoneCallback());
-
-  // The app order does not change because the fade out animation is running.
-  EXPECT_EQ(GetAppIdsInOrdinalOrder(),
-            std::vector<std::string>({app3_id_, app2_id_, app1_id_}));
-
-  ash::ShellTestApi().SetTabletModeEnabledForTest(false);
   ash::AcceleratorController::Get()->PerformActionIfEnabled(
       ash::TOGGLE_APP_LIST_FULLSCREEN, {});
   app_list_test_api_.WaitForBubbleWindow(/*wait_for_opening_animation=*/true);

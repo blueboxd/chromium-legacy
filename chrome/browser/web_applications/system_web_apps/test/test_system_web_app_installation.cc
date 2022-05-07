@@ -59,7 +59,7 @@ std::string GetDataSourceNameFromSystemAppInstallUrl(const GURL& url) {
   DCHECK_EQ("://", spec.substr(p, 3));
   p += 3;
 
-  size_t pos_after_host = spec.find("/", p);
+  size_t pos_after_host = spec.find('/', p);
   DCHECK(pos_after_host != std::string::npos);
 
   return spec.substr(p, pos_after_host - p);
@@ -76,7 +76,7 @@ std::string GetChromeUntrustedDataSourceNameFromInstallUrl(const GURL& url) {
   DCHECK_EQ("://", spec.substr(p, 3));
   p += 3;
 
-  size_t pos_after_host = spec.find("/", p);
+  size_t pos_after_host = spec.find('/', p);
   DCHECK(pos_after_host != std::string::npos);
 
   // The Data Source name must include "/" after the host.
@@ -92,7 +92,7 @@ UnittestingSystemAppDelegate::UnittestingSystemAppDelegate(
     const GURL& url,
     WebAppInstallInfoFactory info_factory)
     : web_app::SystemWebAppDelegate(type, name, url, nullptr),
-      info_factory_(info_factory) {}
+      info_factory_(std::move(info_factory)) {}
 
 UnittestingSystemAppDelegate::~UnittestingSystemAppDelegate() = default;
 
@@ -167,7 +167,7 @@ gfx::Rect UnittestingSystemAppDelegate::GetDefaultBounds(
   return gfx::Rect();
 }
 bool UnittestingSystemAppDelegate::IsAppEnabled() const {
-  return true;
+  return is_app_enabled;
 }
 bool UnittestingSystemAppDelegate::IsUrlInSystemAppScope(
     const GURL& url) const {
@@ -243,6 +243,9 @@ void UnittestingSystemAppDelegate::SetTimerInfo(
 void UnittestingSystemAppDelegate::SetDefaultBounds(
     base::RepeatingCallback<gfx::Rect(Browser*)> lambda) {
   get_default_bounds_ = std::move(lambda);
+}
+void UnittestingSystemAppDelegate::SetIsAppEnabled(bool value) {
+  is_app_enabled = value;
 }
 void UnittestingSystemAppDelegate::SetUrlInSystemAppScope(const GURL& url) {
   url_in_system_app_scope_ = url;
@@ -673,19 +676,19 @@ CreateSystemAppDelegateWithWindowConfig(
 std::unique_ptr<TestSystemWebAppInstallation>
 TestSystemWebAppInstallation::SetUpAppsForContestMenuTest() {
   std::vector<std::unique_ptr<UnittestingSystemAppDelegate>> delegates;
-  delegates.emplace_back(CreateSystemAppDelegateWithWindowConfig(
+  delegates.push_back(CreateSystemAppDelegateWithWindowConfig(
       SystemAppType::SETTINGS, GURL("chrome://single-window/pwa.html"),
       SystemWebAppWindowConfig::SINGLE_WINDOW));
 
-  delegates.emplace_back(CreateSystemAppDelegateWithWindowConfig(
+  delegates.push_back(CreateSystemAppDelegateWithWindowConfig(
       SystemAppType::FILE_MANAGER, GURL("chrome://multi-window/pwa.html"),
       SystemWebAppWindowConfig::MULTI_WINDOW));
 
-  delegates.emplace_back(CreateSystemAppDelegateWithWindowConfig(
+  delegates.push_back(CreateSystemAppDelegateWithWindowConfig(
       SystemAppType::MEDIA, GURL("chrome://single-window-tab-strip/pwa.html"),
       SystemWebAppWindowConfig::SINGLE_WINDOW_TAB_STRIP));
 
-  delegates.emplace_back(CreateSystemAppDelegateWithWindowConfig(
+  delegates.push_back(CreateSystemAppDelegateWithWindowConfig(
       SystemAppType::HELP, GURL("chrome://multi-window-tab-strip/pwa.html"),
       SystemWebAppWindowConfig::MULTI_WINDOW_TAB_STRIP));
   auto* installation =

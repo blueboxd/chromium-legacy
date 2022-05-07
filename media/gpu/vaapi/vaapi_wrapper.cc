@@ -21,13 +21,11 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bits.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/containers/fixed_flat_set.h"
 #include "base/cpu.h"
-#include "base/cxx17_backports.h"
 #include "base/environment.h"
 #include "base/files/scoped_file.h"
 #include "base/logging.h"
@@ -43,16 +41,13 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
-
 #include "media/base/media_switches.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_types.h"
 #include "media/gpu/macros.h"
-#include "media/media_buildflags.h"
-
 // Auto-generated for dlopen libva libraries
 #include "media/gpu/vaapi/va_stubs.h"
-
+#include "media/media_buildflags.h"
 #include "third_party/libva_protected_content/va_protected_content.h"
 #include "third_party/libyuv/include/libyuv.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -815,7 +810,7 @@ std::vector<VAEntrypoint> GetEntryPointsForProfile(const base::Lock* va_lock,
      VAEntrypointEncSliceLP},  // kEncodeConstantQuantizationParameter.
     {VAEntrypointVideoProc}    // kVideoProcess.
   };
-  static_assert(base::size(kAllowedEntryPoints) == VaapiWrapper::kCodecModeMax,
+  static_assert(std::size(kAllowedEntryPoints) == VaapiWrapper::kCodecModeMax,
                 "");
 
   std::vector<VAEntrypoint> entrypoints;
@@ -1050,7 +1045,7 @@ void VASupportedProfiles::FillSupportedProfileInfos(base::Lock* va_lock,
     VaapiWrapper::kEncodeConstantQuantizationParameter,
     VaapiWrapper::kVideoProcess
   };
-  static_assert(base::size(kWrapperModes) == VaapiWrapper::kCodecModeMax, "");
+  static_assert(std::size(kWrapperModes) == VaapiWrapper::kCodecModeMax, "");
 
   for (VaapiWrapper::CodecMode mode : kWrapperModes) {
     std::vector<ProfileInfo> supported_profile_infos;
@@ -2684,8 +2679,17 @@ uint64_t VaapiWrapper::GetEncodedChunkSize(VABufferID buffer_id,
   TRACE_EVENT0("media,gpu", "VaapiWrapper::GetEncodedChunkSize");
   base::AutoLockMaybe auto_lock(va_lock_);
   TRACE_EVENT0("media,gpu", "VaapiWrapper::GetEncodedChunkSizeLocked");
-  VAStatus va_res = vaSyncSurface(va_display_, sync_surface_id);
-  VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVASyncSurface, 0u);
+
+  // vaSyncSurface() is not necessary on Intel platforms as long as there is a
+  // vaMapBuffer() like in ScopedVABufferMapping below.
+  // vaSyncSurface() synchronizes all active workloads (potentially many, e.g.
+  // for k-SVC encoding). On Intel, we'd rather use the more fine-grained
+  // vaMapBuffer() in ScopedVABufferMapping below. see b/184312032.
+  if (VaapiWrapper::GetImplementationType() != VAImplementation::kIntelI965 &&
+      VaapiWrapper::GetImplementationType() != VAImplementation::kIntelIHD) {
+    VAStatus va_res = vaSyncSurface(va_display_, sync_surface_id);
+    VA_SUCCESS_OR_RETURN(va_res, VaapiFunctions::kVASyncSurface, 0u);
+  }
 
   ScopedVABufferMapping mapping(va_lock_, va_display_, buffer_id);
   if (!mapping.IsValid())

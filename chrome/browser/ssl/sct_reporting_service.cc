@@ -121,14 +121,51 @@ GURL& SCTReportingService::GetHashdanceLookupQueryURLInstance() {
 
 // static
 void SCTReportingService::ReconfigureAfterNetworkRestart() {
-  content::GetNetworkService()->ConfigureSCTAuditing(
-      features::kSCTAuditingSamplingRate.Get(),
-      features::kSCTLogExpectedIngestionDelay.Get(),
-      features::kSCTLogMaxIngestionRandomDelay.Get(),
-      SCTReportingService::GetReportURLInstance(),
-      SCTReportingService::GetHashdanceLookupQueryURLInstance(),
-      net::MutableNetworkTrafficAnnotationTag(kSCTAuditReportTrafficAnnotation),
-      net::MutableNetworkTrafficAnnotationTag(kSCTHashdanceTrafficAnnotation));
+  network::mojom::SCTAuditingConfigurationPtr configuration(base::in_place);
+  configuration->sampling_rate = features::kSCTAuditingSamplingRate.Get();
+  configuration->log_expected_ingestion_delay =
+      features::kSCTLogExpectedIngestionDelay.Get();
+  configuration->log_max_ingestion_random_delay =
+      features::kSCTLogMaxIngestionRandomDelay.Get();
+  configuration->report_uri = SCTReportingService::GetReportURLInstance();
+  configuration->hashdance_lookup_uri =
+      SCTReportingService::GetHashdanceLookupQueryURLInstance();
+  configuration->traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(kSCTAuditReportTrafficAnnotation);
+  configuration->hashdance_traffic_annotation =
+      net::MutableNetworkTrafficAnnotationTag(kSCTHashdanceTrafficAnnotation);
+  content::GetNetworkService()->ConfigureSCTAuditing(std::move(configuration));
+}
+
+// static
+bool SCTReportingService::CanSendSCTAuditingReport() {
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state) {
+    // Fail safe by returning `false` if we can't get the pref state.
+    return false;
+  }
+  int report_count =
+      local_state->GetInteger(prefs::kSCTAuditingHashdanceReportCount);
+  return report_count < kSCTAuditingHashdanceMaxReports;
+}
+
+// static
+void SCTReportingService::OnNewSCTAuditingReportSent() {
+  PrefService* local_state = g_browser_process->local_state();
+  if (!local_state) {
+    return;
+  }
+  int report_count =
+      local_state->GetInteger(prefs::kSCTAuditingHashdanceReportCount);
+
+  // We should not ever send more than kSCTAuditingHashdanceMaxReports full
+  // reports. DCHECK to make it very clear in testing if this is not the case.
+  DCHECK_LE(report_count, kSCTAuditingHashdanceMaxReports);
+
+  // Note: Pref updates won't be persisted for Incognito profiles, but SCT
+  // auditing is disabled entirely for Incognito profiles.
+  local_state->SetInteger(prefs::kSCTAuditingHashdanceReportCount,
+                          ++report_count);
 }
 
 // static

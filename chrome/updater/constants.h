@@ -298,6 +298,12 @@ constexpr int kErrorFailedToStartLaunchdWakeJob = 31;
 // internal job.
 constexpr int kErrorFailedAwaitingLaunchdUpdateServiceInternalJob = 32;
 
+constexpr int kErrorTagParsing = 50;
+
+// Metainstaller errors.
+constexpr int kErrorCreatingTempDir = 60;
+constexpr int kErrorUnpackingResource = 61;
+
 // Policy Management constants.
 // The maximum value allowed for policy AutoUpdateCheckPeriodMinutes.
 constexpr int kMaxAutoUpdateCheckPeriodMinutes = 43200;

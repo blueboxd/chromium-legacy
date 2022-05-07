@@ -6,6 +6,7 @@
 
 #include <stdlib.h>
 
+#include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -80,6 +81,13 @@ bool IsDeprecateAltClickEnabled() {
   return base::FeatureList::IsEnabled(kDeprecateAltClick);
 }
 
+const base::Feature kRgbKeyboard = {"RgbKeyboard",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsRgbKeyboardEnabled() {
+  return base::FeatureList::IsEnabled(kRgbKeyboard);
+}
+
 const base::Feature kShortcutCustomizationApp = {
     "ShortcutCustomizationApp", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -88,6 +96,14 @@ bool IsShortcutCustomizationAppEnabled() {
 }
 
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// Share the resource file with ash-chrome. This feature reduces the memory
+// consumption while the disk usage slightly increases.
+// https://crbug.com/1253280.
+const base::Feature kLacrosResourcesFileSharing = {
+    "LacrosResourcesFileSharing", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Update of the virtual keyboard settings UI as described in
 // https://crbug.com/876901.
@@ -98,6 +114,10 @@ const base::Feature kInputMethodSettingsUiUpdate = {
 // scrolls.
 const base::Feature kPercentBasedScrolling = {
     "PercentBasedScrolling", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsPercentBasedScrollingEnabled() {
+  return base::FeatureList::IsEnabled(features::kPercentBasedScrolling);
+}
 
 // Allows requesting unadjusted movement when entering pointerlock.
 const base::Feature kPointerLockOptions = {"PointerLockOptions",
@@ -353,5 +373,18 @@ const base::Feature kUiCompositorReleaseTileResourcesForHiddenLayers{
 
 const base::Feature kUiCompositorRequiredTilesOnly{
     "UiCompositorRequiredTilesOnly", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kEnableVariableRefreshRate = {
+    "EnableVariableRefreshRate", base::FEATURE_DISABLED_BY_DEFAULT};
+bool IsVariableRefreshRateEnabled() {
+  return base::FeatureList::IsEnabled(kEnableVariableRefreshRate);
+}
+
+const base::Feature kWaylandScreenCoordinatesEnabled{
+    "WaylandScreenCoordinatesEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsWaylandScreenCoordinatesEnabled() {
+  return base::FeatureList::IsEnabled(kWaylandScreenCoordinatesEnabled);
+}
 
 }  // namespace features

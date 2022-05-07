@@ -12,13 +12,16 @@
 #include <utility>
 #include <vector>
 
+#include "base/bind.h"
 #include "base/check_op.h"
+#include "base/dcheck_is_on.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/types/pass_key.h"
 #include "sql/database.h"
 #include "sql/recover_module/module.h"
 #include "sql/statement.h"
@@ -89,9 +92,17 @@ Recovery::~Recovery() {
 }
 
 bool Recovery::Init(const base::FilePath& db_path) {
-  // Prevent the possibility of re-entering this code due to errors
-  // which happen while executing this code.
-  DCHECK(!db_->has_error_callback());
+#if DCHECK_IS_ON()
+  // set_error_callback() will DCHECK if the database already has an error
+  // callback. The recovery process is likely to result in SQLite errors, and
+  // those shouldn't get surfaced to any callback.
+  db_->set_error_callback(base::BindRepeating(
+      [](int sqlite_error_code, sql::Statement* statement) {}));
+
+  // Undo the set_error_callback() above. We only used it for its DCHECK
+  // behavior.
+  db_->reset_error_callback();
+#endif  // DCHECK_IS_ON()
 
   // Break any outstanding transactions on the original database to
   // prevent deadlocks reading through the attached version.
@@ -119,7 +130,7 @@ bool Recovery::Init(const base::FilePath& db_path) {
   // possible to fall back to a memory database.  But it probably
   // implies that the SQLite tmpdir logic is busted, which could cause
   // a variety of other random issues in our code.
-  if (!recover_db_.OpenTemporary())
+  if (!recover_db_.OpenTemporary(base::PassKey<Recovery>()))
     return false;
 
   // Enable the recover virtual table for this connection.

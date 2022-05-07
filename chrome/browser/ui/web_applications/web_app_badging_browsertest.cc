@@ -24,15 +24,13 @@
 #include "content/public/test/browser_test.h"
 
 using content::RenderFrameHost;
-using content::WebContents;
 
 namespace web_app {
 
 class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
  public:
   WebAppBadgingBrowserTest()
-      : WebAppControllerBrowserTest(),
-        cross_origin_https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+      : cross_origin_https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     WebAppControllerBrowserTest::SetUpCommandLine(command_line);
@@ -108,7 +106,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     awaiter_ = std::make_unique<base::RunLoop>();
 
     badging::BadgeManager* badge_manager =
-        badging::BadgeManagerFactory::GetInstance()->GetForProfile(profile());
+        badging::BadgeManagerFactory::GetForProfile(profile());
 
     // The delegate is owned by the badge manager. We hold a pointer to it for
     // the test.
@@ -165,7 +163,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 
  protected:
   // Expects a single badge change only.
-  void ExecuteScriptAndWaitForBadgeChange(std::string script,
+  void ExecuteScriptAndWaitForBadgeChange(const std::string& script,
                                           RenderFrameHost* on) {
     ExecuteScriptAndWaitForMultipleBadgeChanges(
         script, on, /*expected_badge_change_count=*/1);
@@ -174,7 +172,7 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
   // Handles badge changes that may affect multiple apps. Useful for testing
   // service workers, which can control many apps.
   void ExecuteScriptAndWaitForMultipleBadgeChanges(
-      std::string script,
+      const std::string& script,
       RenderFrameHost* on,
       size_t expected_badge_change_count) {
     expected_badge_change_count_ = expected_badge_change_count;

@@ -9,15 +9,9 @@
 namespace mojo {
 
 template <typename Interface>
-class InterfacePtr;
-template <typename Interface>
 class InterfacePtrInfo;
 template <typename Interface>
-class InterfaceRequest;
-template <typename Interface>
 class AssociatedInterfacePtrInfo;
-template <typename Interface>
-class AssociatedInterfaceRequest;
 
 }  // namespace mojo
 

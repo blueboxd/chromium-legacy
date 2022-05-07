@@ -4,7 +4,6 @@
 
 #include "services/tracing/public/cpp/perfetto/trace_string_lookup.h"
 
-#include "base/cxx17_backports.h"
 #include "base/strings/pattern.h"
 
 using ::perfetto::protos::pbzero::ChromeProcessDescriptor;
@@ -81,7 +80,7 @@ constexpr ProcessType kProcessTypes[] = {
      ChromeProcessDescriptor::PROCESS_SERVICE_QRCODEGENERATOR},
     {"Service: chrome.mojom.ProfileImport",
      ChromeProcessDescriptor::PROCESS_SERVICE_PROFILEIMPORT},
-    {"Service: chromeos.ime.mojom.ImeService",
+    {"Service: ash.ime.mojom.ImeService",
      ChromeProcessDescriptor::PROCESS_SERVICE_IME},
     {"Service: recording.mojom.RecordingService",
      ChromeProcessDescriptor::PROCESS_SERVICE_RECORDING},
@@ -152,7 +151,7 @@ constexpr ThreadType kThreadTypes[] = {
 };
 
 ChromeProcessDescriptor::ProcessType GetProcessType(const std::string& name) {
-  for (size_t i = 0; i < base::size(kProcessTypes); ++i) {
+  for (size_t i = 0; i < std::size(kProcessTypes); ++i) {
     if (base::MatchPattern(name, kProcessTypes[i].name)) {
       return kProcessTypes[i].type;
     }
@@ -163,7 +162,7 @@ ChromeProcessDescriptor::ProcessType GetProcessType(const std::string& name) {
 
 ChromeThreadDescriptor::ThreadType GetThreadType(
     const char* const thread_name) {
-  for (size_t i = 0; i < base::size(kThreadTypes); ++i) {
+  for (size_t i = 0; i < std::size(kThreadTypes); ++i) {
     if (base::MatchPattern(thread_name, kThreadTypes[i].name)) {
       return kThreadTypes[i].type;
     }

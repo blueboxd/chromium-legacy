@@ -15,6 +15,7 @@
 
 namespace syncer {
 class ProxyModelTypeControllerDelegate;
+class SyncService;
 }  // namespace syncer
 
 namespace password_manager {
@@ -90,31 +91,32 @@ class PasswordStoreInterface : public RefcountedKeyedService {
       const base::RepeatingCallback<bool(const GURL&)>& url_filter,
       base::Time delete_begin,
       base::Time delete_end,
-      base::OnceClosure completion,
+      base::OnceClosure completion = base::NullCallback(),
       base::OnceCallback<void(bool)> sync_completion =
           base::NullCallback()) = 0;
 
-  // Removes all logins created in the given date range. If `completion` is not
-  // null, it will be run after deletions have been completed and notification
-  // have been sent out. If any logins were removed 'true' will be passed to a
-  // completion, 'false' otherwise.
+  // Removes all logins created in the given date range. `completion` is run
+  // after deletions have been completed and notifications have been sent out.
+  // If any logins were removed 'true' will be passed to `completion`, 'false'
+  // otherwise.
   virtual void RemoveLoginsCreatedBetween(
       base::Time delete_begin,
       base::Time delete_end,
-      base::OnceCallback<void(bool)> completion) = 0;
+      base::OnceCallback<void(bool)> completion = base::NullCallback()) = 0;
 
   // Sets the 'skip_zero_click' flag for all credentials that match
   // `origin_filter`. `completion` will be run after these modifications are
   // completed and notifications are sent out.
   virtual void DisableAutoSignInForOrigins(
       const base::RepeatingCallback<bool(const GURL&)>& origin_filter,
-      base::OnceClosure completion) = 0;
+      base::OnceClosure completion = base::NullCallback()) = 0;
 
   // Unblocklists the login with `form_digest` by deleting all the corresponding
   // blocklisted entries. If `completion` is not null, it will be run after
   // deletions have been completed. Should be called on the UI thread.
-  virtual void Unblocklist(const PasswordFormDigest& form_digest,
-                           base::OnceClosure completion) = 0;
+  virtual void Unblocklist(
+      const PasswordFormDigest& form_digest,
+      base::OnceClosure completion = base::NullCallback()) = 0;
 
   // Searches for a matching PasswordForm, and notifies `consumer` on
   // completion.
@@ -156,6 +158,11 @@ class PasswordStoreInterface : public RefcountedKeyedService {
   // interact with PasswordSyncBridge. Must be called from the UI thread.
   virtual std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate() = 0;
+
+  // Propagates successful initialization of SyncService to reolve circular
+  // dependency during PasswordStore creation. |sync_service| may not
+  // have started yet but its preferences can already be queried.
+  virtual void OnSyncServiceInitialized(syncer::SyncService* sync_service) = 0;
 
   // Tests only can retrieve the backend.
   virtual PasswordStoreBackend* GetBackendForTesting() = 0;

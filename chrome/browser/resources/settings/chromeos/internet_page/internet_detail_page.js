@@ -47,7 +47,7 @@ import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer
 
 import {SyncBrowserProxyImpl} from '../../people_page/sync_browser_proxy.js';
 import {Route, Router} from '../../router.js';
-import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
+import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
 import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
 import {OsSyncBrowserProxy, OsSyncBrowserProxyImpl, OsSyncPrefs} from '../os_people_page/os_sync_browser_proxy.m.js';
 import {routes} from '../os_route.m.js';
@@ -1395,6 +1395,12 @@ Polymer({
     if (!this.isCellular_(managedProperties)) {
       return false;
     }
+
+    // Only show the Activate button for unactivated pSIM networks.
+    if (managedProperties.typeProperties.cellular.eid) {
+      return false;
+    }
+
     const activation =
         managedProperties.typeProperties.cellular.activationState;
     return activation ===
@@ -1515,6 +1521,11 @@ Polymer({
     // Show either the 'Activate' or the 'View Account' button (Cellular only).
     if (!this.isCellular_(managedProperties) ||
         this.showActivate_(managedProperties)) {
+      return false;
+    }
+
+    // If the network is eSIM, don't show.
+    if (managedProperties.typeProperties.cellular.eid) {
       return false;
     }
 

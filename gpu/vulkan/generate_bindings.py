@@ -74,6 +74,12 @@ VULKAN_INSTANCE_FUNCTIONS = [
     ]
   },
   {
+    'extension': 'VK_EXT_HEADLESS_SURFACE_EXTENSION_NAME',
+    'functions': [
+      'vkCreateHeadlessSurfaceEXT',
+    ]
+  },
+  {
     'ifdef': 'defined(USE_VULKAN_XCB)',
     'extension': 'VK_KHR_XCB_SURFACE_EXTENSION_NAME',
     'functions': [
@@ -185,7 +191,7 @@ VULKAN_DEVICE_FUNCTIONS = [
   },
   {
     'ifdef':
-    'BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)',
+    'BUILDFLAG(IS_POSIX)',
     'extension': 'VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME',
     'functions': [
       'vkGetSemaphoreFdKHR',
@@ -202,7 +208,7 @@ VULKAN_DEVICE_FUNCTIONS = [
   },
   {
     'ifdef':
-    'BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)',
+    'BUILDFLAG(IS_POSIX)',
     'extension': 'VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME',
     'functions': [
       'vkGetMemoryFdKHR',
@@ -382,6 +388,8 @@ def GenerateHeaderFile(out_file):
 #define GPU_VULKAN_VULKAN_FUNCTION_POINTERS_H_
 
 #include <vulkan/vulkan.h>
+
+#include <memory>
 
 #include "base/compiler_specific.h"
 #include "base/component_export.h"

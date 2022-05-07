@@ -20,6 +20,7 @@
 #include "chrome/browser/accessibility/accessibility_ui.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/devtools/devtools_ui_bindings.h"
+#include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/media/history/media_history_keyed_service.h"
 #include "chrome/browser/media/media_engagement_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
@@ -75,6 +76,8 @@
 #include "components/favicon_base/select_favicon_frames.h"
 #include "components/grit/components_scaled_resources.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history_clusters/history_clusters_internals/webui/history_clusters_internals_ui.h"
+#include "components/history_clusters/history_clusters_internals/webui/url_constants.h"
 #include "components/nacl/common/buildflags.h"
 #include "components/optimization_guide/optimization_guide_internals/webui/optimization_guide_internals_ui.h"
 #include "components/optimization_guide/optimization_guide_internals/webui/url_constants.h"
@@ -163,6 +166,8 @@
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/constants/ash_features.h"
 #include "ash/constants/ash_switches.h"
+#include "ash/services/multidevice_setup/multidevice_setup_service.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "ash/webui/camera_app_ui/camera_app_ui.h"
 #include "ash/webui/camera_app_ui/url_constants.h"
 #include "ash/webui/color_internals/color_internals_ui.h"
@@ -268,8 +273,6 @@
 #include "chrome/browser/ui/webui/nearby_internals/nearby_internals_ui.h"
 #include "chrome/browser/ui/webui/nearby_share/nearby_share_dialog_ui.h"
 #include "chrome/browser/ui/webui/settings/chromeos/os_settings_ui.h"
-#include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"  // nogncheck
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"  // nogncheck
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -301,6 +304,7 @@
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/webui/app_settings/web_app_settings_ui.h"
 #include "chrome/browser/ui/webui/browser_switch/browser_switch_ui.h"
 #include "chrome/browser/ui/webui/welcome/helpers.h"
 #include "chrome/browser/ui/webui/welcome/welcome_ui.h"
@@ -332,11 +336,6 @@
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
     BUILDFLAG(IS_CHROMEOS_ASH)
 #include "chrome/browser/ui/webui/connectors_internals/connectors_internals_ui.h"
-#endif
-
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA)
-#include "chrome/browser/ui/webui/app_settings/web_app_settings_ui.h"
 #endif
 
 #if BUILDFLAG(USE_NSS_CERTS) && defined(USE_AURA)
@@ -446,6 +445,17 @@ WebUIController* NewWebUI<OptimizationGuideInternalsUI>(WebUI* web_ui,
                          kChromeUIOptimizationGuideInternalsHost));
 }
 
+template <>
+WebUIController* NewWebUI<HistoryClustersInternalsUI>(WebUI* web_ui,
+                                                      const GURL& url) {
+  Profile* profile = Profile::FromWebUI(web_ui);
+  return new HistoryClustersInternalsUI(
+      web_ui, HistoryClustersServiceFactory::GetForBrowserContext(profile),
+      base::BindOnce(
+          &SetUpWebUIDataSource, web_ui,
+          history_clusters_internals::kChromeUIHistoryClustersInternalsHost));
+}
+
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 template <>
 WebUIController* NewWebUI<chromeos::OobeUI>(WebUI* web_ui, const GURL& url) {
@@ -521,6 +531,15 @@ void BindEcheNotificationGenerator(
   }
 }
 
+void BindEcheDisplayStreamHandler(
+    ash::eche_app::EcheAppManager* manager,
+    mojo::PendingReceiver<ash::eche_app::mojom::DisplayStreamHandler>
+        receiver) {
+  if (manager) {
+    manager->BindDisplayStreamHandlerInterface(std::move(receiver));
+  }
+}
+
 template <>
 WebUIController* NewWebUI<ash::eche_app::EcheAppUI>(WebUI* web_ui,
                                                     const GURL& url) {
@@ -531,7 +550,8 @@ WebUIController* NewWebUI<ash::eche_app::EcheAppUI>(WebUI* web_ui,
       web_ui, base::BindRepeating(&BindEcheSignalingMessageExchanger, manager),
       base::BindRepeating(&BindSystemInfoProvider, manager),
       base::BindRepeating(&BindEcheUidGenerator, manager),
-      base::BindRepeating(&BindEcheNotificationGenerator, manager));
+      base::BindRepeating(&BindEcheNotificationGenerator, manager),
+      base::BindRepeating(&BindEcheDisplayStreamHandler, manager));
 }
 
 void BindScanService(
@@ -582,10 +602,11 @@ WebUIController* NewWebUI<ash::DiagnosticsDialogUI>(WebUI* web_ui,
 
 void BindMultiDeviceSetup(
     Profile* profile,
-    mojo::PendingReceiver<chromeos::multidevice_setup::mojom::MultiDeviceSetup>
+    mojo::PendingReceiver<ash::multidevice_setup::mojom::MultiDeviceSetup>
         receiver) {
-  chromeos::multidevice_setup::MultiDeviceSetupService* service = chromeos::
-      multidevice_setup::MultiDeviceSetupServiceFactory::GetForProfile(profile);
+  ash::multidevice_setup::MultiDeviceSetupService* service =
+      ash::multidevice_setup::MultiDeviceSetupServiceFactory::GetForProfile(
+          profile);
   if (service)
     service->BindMultiDeviceSetup(std::move(receiver));
 }
@@ -666,6 +687,7 @@ bool IsAboutUI(const GURL& url) {
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
           || url.host_piece() == chrome::kChromeUIOSCreditsHost ||
+          url.host_piece() == chrome::kChromeUIBorealisCreditsHost ||
           url.host_piece() == chrome::kChromeUICrostiniCreditsHost
 #endif
   );  // NOLINT
@@ -767,6 +789,10 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<SyncInternalsUI>;
   if (url.host_piece() == chrome::kChromeUITranslateInternalsHost)
     return &NewWebUI<TranslateInternalsUI>;
+  if (url.host_piece() ==
+      history_clusters_internals::kChromeUIHistoryClustersInternalsHost) {
+    return &NewWebUI<HistoryClustersInternalsUI>;
+  }
   if (url.host_piece() == chrome::kChromeUIUsbInternalsHost)
     return &NewWebUI<UsbInternalsUI>;
   if (url.host_piece() == chrome::kChromeUIUserActionsHost)
@@ -1504,38 +1530,39 @@ std::vector<GURL> ChromeWebUIControllerFactory::GetListOfAcceptableURLs() {
       GURL(chrome::kChromeUIArcPowerControlURL),
       GURL(chrome::kChromeUIAssistantOptInURL),
       GURL(chrome::kChromeUIBluetoothPairingURL),
-      GURL(chrome::kOsUIComponentsUrl), GURL(chrome::kChromeUICrashesUrl),
-      GURL(chrome::kOsUICrashesUrl), GURL(chrome::kOsUICreditsURL),
+      GURL(chrome::kOsUIComponentsURL), GURL(chrome::kChromeUICrashesUrl),
+      GURL(chrome::kOsUICrashesURL), GURL(chrome::kOsUICreditsURL),
+      GURL(chrome::kChromeUIBorealisCreditsURL),
       GURL(chrome::kChromeUICrostiniCreditsURL),
       GURL(chrome::kChromeUICrostiniInstallerUrl),
       GURL(chrome::kChromeUICrostiniUpgraderUrl),
-      GURL(chrome::kChromeUICryptohomeURL), GURL(chrome::kOsUIDeviceLogUrl),
+      GURL(chrome::kChromeUICryptohomeURL), GURL(chrome::kOsUIDeviceLogURL),
       GURL(chrome::kChromeUIDiagnosticsAppURL),
       GURL(chrome::kChromeUIDriveInternalsUrl),
-      GURL(chrome::kOsUIDriveInternalsUrl),
+      GURL(chrome::kOsUIDriveInternalsURL),
       GURL(chrome::kChromeUIEmojiPickerURL), GURL(chrome::kOsUIEmojiPickerURL),
       GURL(ash::file_manager::kChromeUIFileManagerURL),
       GURL(chrome::kChromeUIFlagsURL), GURL(chrome::kOsUIFlagsURL),
       GURL(chrome::kOsUIGpuURL), GURL(chrome::kOsUIHistogramsURL),
       GURL(chrome::kChromeUIIntenetConfigDialogURL),
       GURL(chrome::kChromeUIIntenetDetailDialogURL),
-      GURL(chrome::kOsUIInvalidationsUrl),
+      GURL(chrome::kOsUIInvalidationsURL),
       GURL(chrome::kChromeUILockScreenNetworkURL),
       GURL(chrome::kChromeUILockScreenStartReauthURL),
       GURL(chrome::kChromeUIMultiDeviceSetupUrl),
-      GURL(chrome::kChromeUINetworkUrl), GURL(chrome::kOsUINetworkUrl),
+      GURL(chrome::kChromeUINetworkUrl), GURL(chrome::kOsUINetworkURL),
       GURL(chrome::kChromeUIOSCreditsURL), GURL(chrome::kChromeUIPowerUrl),
       GURL(chrome::kChromeUIPrintManagementUrl),
       GURL(ash::multidevice::kChromeUIProximityAuthURL),
       GURL(chrome::kOsUIRestartURL), GURL(chrome::kChromeUIScanningAppURL),
       GURL(chrome::kOsUIScanningAppURL), GURL(chrome::kChromeUISetTimeURL),
-      GURL(chrome::kChromeUIOSSettingsURL), GURL(chrome::kChromeUISettingsURL),
-      GURL(chrome::kOsUISettingsURL), GURL(chrome::kOsUISignInInternalsUrl),
+      GURL(chrome::kChromeUIOSSettingsURL), GURL(chrome::kOsUISettingsURL),
+      GURL(chrome::kOsUISettingsURL), GURL(chrome::kOsUISignInInternalsURL),
       GURL(chrome::kChromeUISlowURL), GURL(chrome::kChromeUISmbShareURL),
-      GURL(chrome::kOsUISyncInternalsUrl),
-      GURL(chrome::kChromeUISysInternalsUrl), GURL(chrome::kOsUITerms),
-      GURL(chrome::kChromeUIUserImageURL), GURL(chrome::kOsUIVersionURL),
-      GURL(chrome::kChromeUIVmUrl),
+      GURL(chrome::kOsUISyncInternalsURL), GURL(chrome::kOsUISysInternalsUrl),
+      GURL(chrome::kOsUITermsURL), GURL(chrome::kChromeUIUserImageURL),
+      GURL(chrome::kOsUIVersionURL), GURL(chrome::kChromeUIVmUrl),
+      GURL(chrome::kOsUISystemURL),
       // The CL to land this didn't land yet. Once landed they need to be moved
       // to Lacros. However  - as the refactor might precede this, there is no
       // TODO for it.

@@ -10,15 +10,24 @@
 #include "ash/capture_mode/capture_mode_camera_preview_view.h"
 #include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/capture_mode/capture_mode_session.h"
 #include "ash/public/cpp/capture_mode/capture_mode_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
+#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/check.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "media/capture/video/video_capture_device_descriptor.h"
+#include "ui/compositor/layer.h"
+#include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
+#include "ui/gfx/geometry/transform.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_properties.h"
 
 namespace ash {
 
@@ -78,6 +87,8 @@ bool DidDevicesChange(
         found_info.camera_id.model_id_or_display_name() !=
             model_id_or_display_name ||
         found_info.camera_id.number() != cam_number) {
+      // It is unexpected that the supported formats of the same camera device
+      // change, so we ignore comparing them here.
       return true;
     }
   }
@@ -111,10 +122,35 @@ std::unique_ptr<views::Widget> CreateCameraPreviewWidget(
   views::Widget::InitParams params(views::Widget::InitParams::TYPE_POPUP);
   params.parent = CaptureModeController::Get()->GetCameraPreviewParentWindow();
   params.bounds = bounds;
+  // Need to set `params.child` to true here, otherwise camera preview widget
+  // will be added as a transient child to `params.parent`. For more details,
+  // please check `NativeWidgetAura::InitNativeWidget`.
+  params.child = true;
   params.name = "CameraPreviewWidget";
   camera_preview_widget->Init(std::move(params));
   StackingPreviewAtTop(camera_preview_widget.get());
   return camera_preview_widget;
+}
+
+// Called by `ContinueDraggingPreview` to make sure camera preview is not
+// dragged outside of the capture surface.
+void AdjustBoundsWithinConfinedBounds(const gfx::Rect& confined_bounds,
+                                      gfx::Rect& preview_bounds) {
+  const int x = preview_bounds.x();
+  if (int offset = x - confined_bounds.x(); offset < 0) {
+    preview_bounds.set_x(x - offset);
+  } else if (int offset = confined_bounds.right() - preview_bounds.right();
+             offset < 0) {
+    preview_bounds.set_x(x + offset);
+  }
+
+  const int y = preview_bounds.y();
+  if (int offset = y - confined_bounds.y(); offset < 0) {
+    preview_bounds.set_y(y - offset);
+  } else if (int offset = confined_bounds.bottom() - preview_bounds.bottom();
+             offset < 0) {
+    preview_bounds.set_y(y + offset);
+  }
 }
 
 }  // namespace
@@ -145,10 +181,18 @@ std::string CameraId::ToString() const {
 
 CameraInfo::CameraInfo(CameraId camera_id,
                        std::string device_id,
-                       std::string display_name)
+                       std::string display_name,
+                       const media::VideoCaptureFormats& supported_formats)
     : camera_id(std::move(camera_id)),
       device_id(std::move(device_id)),
-      display_name(std::move(display_name)) {}
+      display_name(std::move(display_name)),
+      supported_formats(supported_formats) {}
+
+CameraInfo::CameraInfo(CameraInfo&&) = default;
+
+CameraInfo& CameraInfo::operator=(CameraInfo&&) = default;
+
+CameraInfo::~CameraInfo() = default;
 
 // -----------------------------------------------------------------------------
 // CaptureModeCameraController:
@@ -177,12 +221,25 @@ void CaptureModeCameraController::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
+std::string CaptureModeCameraController::GetDisplayNameOfSelectedCamera()
+    const {
+  if (selected_camera_.is_valid()) {
+    const CameraInfo* camera_info =
+        GetCameraInfoById(selected_camera_, available_cameras_);
+    DCHECK(camera_info);
+    return camera_info->display_name;
+  }
+  return std::string();
+}
+
 void CaptureModeCameraController::SetSelectedCamera(CameraId camera_id) {
   if (selected_camera_ == camera_id)
     return;
 
   selected_camera_ = std::move(camera_id);
   camera_reconnect_timer_.Stop();
+  camera_preview_widget_.reset();
+  camera_preview_view_ = nullptr;
 
   for (auto& observer : observers_)
     observer.OnSelectedCameraChanged(selected_camera_);
@@ -208,8 +265,6 @@ void CaptureModeCameraController::MaybeReparentPreviewWidget() {
     views::Widget::ReparentNativeView(native_window, parent);
     StackingPreviewAtTop(camera_preview_widget_.get());
   }
-  // TODO(minch): Revisit to see whether it is better to separate this from
-  // MaybeReparentPreviewWidget and do the widget bounds updates when needed.
   MaybeUpdatePreviewWidgetBounds();
 }
 
@@ -235,6 +290,62 @@ void CaptureModeCameraController::MaybeUpdatePreviewWidgetBounds() {
   }
 
   camera_preview_widget_->SetBounds(GetPreviewWidgetBounds());
+}
+
+void CaptureModeCameraController::StartDraggingPreview(
+    const gfx::PointF& screen_location) {
+  previous_location_in_screen_ = screen_location;
+
+  is_drag_in_progress_ = true;
+  // Use cursor compositing instead of the platform cursor when dragging to
+  // ensure the cursor is aligned with the camera preview.
+  Shell::Get()->UpdateCursorCompositingEnabled();
+}
+
+void CaptureModeCameraController::ContinueDraggingPreview(
+    const gfx::PointF& screen_location) {
+  gfx::Rect current_bounds = GetCurrentBoundsMatchingConfineBoundsCoordinates();
+
+  current_bounds.Offset(
+      gfx::ToRoundedVector2d(screen_location - previous_location_in_screen_));
+  AdjustBoundsWithinConfinedBounds(
+      CaptureModeController::Get()->GetCameraPreviewConfineBounds(),
+      current_bounds);
+  camera_preview_widget_->SetBounds(current_bounds);
+  previous_location_in_screen_ = screen_location;
+}
+
+void CaptureModeCameraController::EndDraggingPreview(
+    const gfx::PointF& screen_location,
+    bool is_touch) {
+  ContinueDraggingPreview(screen_location);
+  UpdateSnapPostionOnDragEnded();
+
+  const gfx::Rect current_bounds =
+      GetCurrentBoundsMatchingConfineBoundsCoordinates();
+  const gfx::Rect target_bounds = GetPreviewWidgetBounds();
+  camera_preview_widget_->SetBounds(target_bounds);
+  gfx::Transform transform;
+  transform.Translate(current_bounds.CenterPoint() -
+                      target_bounds.CenterPoint());
+  ui::Layer* layer = camera_preview_widget_->GetLayer();
+  layer->SetTransform(transform);
+  views::AnimationBuilder()
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetDuration(base::Milliseconds(120))
+      .SetTransform(layer, gfx::Transform());
+
+  is_drag_in_progress_ = false;
+  // Disable cursor compositing at the end of the drag.
+  Shell::Get()->UpdateCursorCompositingEnabled();
+
+  // Make sure cursor is updated correctly after camera preview is snapped.
+  if (CaptureModeController::Get()->IsActive()) {
+    CaptureModeController::Get()->capture_mode_session()->UpdateCursor(
+        gfx::ToRoundedPoint(screen_location), is_touch);
+  }
 }
 
 void CaptureModeCameraController::OnDevicesChanged(
@@ -292,7 +403,7 @@ void CaptureModeCameraController::OnCameraDevicesReceived(
         GetNextCameraNumber(model_id_or_display_name, &cam_models_map);
     available_cameras_.emplace_back(
         CameraId(model_id_or_display_name, cam_number), descriptor.device_id,
-        descriptor.display_name());
+        descriptor.display_name(), device.supported_formats);
   }
 
   for (auto& observer : observers_)
@@ -335,7 +446,7 @@ void CaptureModeCameraController::RefreshCameraPreview() {
     camera_preview_widget_ =
         CreateCameraPreviewWidget(GetPreviewWidgetBounds());
     camera_preview_view_ = camera_preview_widget_->SetContentsView(
-        std::make_unique<CameraPreviewView>());
+        std::make_unique<CameraPreviewView>(this));
   }
   camera_preview_widget_->Show();
 }
@@ -351,7 +462,6 @@ void CaptureModeCameraController::OnSelectedCameraDisconnected() {
 
 gfx::Rect CaptureModeCameraController::GetPreviewWidgetBounds() const {
   auto* controller = CaptureModeController::Get();
-  DCHECK_EQ(CaptureModeType::kVideo, controller->type());
   DCHECK(controller->IsActive() || controller->is_recording_in_progress());
   const gfx::Rect confine_bounds = controller->GetCameraPreviewConfineBounds();
   const gfx::Size preview_size = camera_preview_view_
@@ -364,21 +474,59 @@ gfx::Rect CaptureModeCameraController::GetPreviewWidgetBounds() const {
   switch (camera_preview_snap_position_) {
     case CameraPreviewSnapPosition::kTopLeft:
       origin = confine_bounds.origin();
+      origin.Offset(capture_mode::kSpaceBetweenCameraPreviewAndEdges,
+                    capture_mode::kSpaceBetweenCameraPreviewAndEdges);
       break;
     case CameraPreviewSnapPosition::kBottomLeft:
-      origin = gfx::Point(confine_bounds.x(),
-                          confine_bounds.bottom() - preview_size.height());
+      origin = gfx::Point(
+          confine_bounds.x() + capture_mode::kSpaceBetweenCameraPreviewAndEdges,
+          confine_bounds.bottom() - preview_size.height() -
+              capture_mode::kSpaceBetweenCameraPreviewAndEdges);
       break;
     case CameraPreviewSnapPosition::kBottomRight:
-      origin = gfx::Point(confine_bounds.right() - preview_size.width(),
-                          confine_bounds.bottom() - preview_size.height());
+      origin = gfx::Point(confine_bounds.right() - preview_size.width() -
+                              capture_mode::kSpaceBetweenCameraPreviewAndEdges,
+                          confine_bounds.bottom() - preview_size.height() -
+                              capture_mode::kSpaceBetweenCameraPreviewAndEdges);
       break;
     case CameraPreviewSnapPosition::kTopRight:
-      origin = gfx::Point(confine_bounds.right() - preview_size.width(),
-                          confine_bounds.y());
+      origin = gfx::Point(confine_bounds.right() - preview_size.width() -
+                              capture_mode::kSpaceBetweenCameraPreviewAndEdges,
+                          confine_bounds.y() +
+                              capture_mode::kSpaceBetweenCameraPreviewAndEdges);
       break;
   }
   return gfx::Rect(origin, preview_size);
+}
+
+void CaptureModeCameraController::UpdateSnapPostionOnDragEnded() {
+  const gfx::Point center_point_of_preview_widget =
+      GetCurrentBoundsMatchingConfineBoundsCoordinates().CenterPoint();
+  const gfx::Point center_point_of_confine_bounds =
+      CaptureModeController::Get()
+          ->GetCameraPreviewConfineBounds()
+          .CenterPoint();
+
+  if (center_point_of_preview_widget.x() < center_point_of_confine_bounds.x()) {
+    if (center_point_of_preview_widget.y() < center_point_of_confine_bounds.y())
+      camera_preview_snap_position_ = CameraPreviewSnapPosition::kTopLeft;
+    else
+      camera_preview_snap_position_ = CameraPreviewSnapPosition::kBottomLeft;
+  } else {
+    if (center_point_of_preview_widget.y() < center_point_of_confine_bounds.y())
+      camera_preview_snap_position_ = CameraPreviewSnapPosition::kTopRight;
+    else
+      camera_preview_snap_position_ = CameraPreviewSnapPosition::kBottomRight;
+  }
+}
+
+gfx::Rect CaptureModeCameraController::
+    GetCurrentBoundsMatchingConfineBoundsCoordinates() {
+  aura::Window* preview_window = camera_preview_widget_->GetNativeWindow();
+  aura::Window* parent = preview_window->parent();
+  if (parent->GetProperty(wm::kUsesScreenCoordinatesKey))
+    return preview_window->GetBoundsInScreen();
+  return preview_window->bounds();
 }
 
 }  // namespace ash

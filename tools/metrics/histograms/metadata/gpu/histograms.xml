@@ -244,7 +244,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.ANGLE.D3D11CreateDeviceError" enum="Hresult"
-    expires_after="2022-06-01">
+    expires_after="2022-08-28">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -370,7 +370,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.ANGLE.SupportsDXGI1_2" enum="BooleanSupported"
-    expires_after="2022-06-01">
+    expires_after="2022-09-11">
   <owner>jonahr@google.com</owner>
   <owner>angle-team@google.com</owner>
   <summary>
@@ -416,7 +416,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.BlocklistFeatureTestResults"
-    enum="GPUBlocklistFeatureTestResults" expires_after="2022-06-26">
+    enum="GPUBlocklistFeatureTestResults" expires_after="2022-08-28">
   <owner>vmiura@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -579,7 +579,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.DirectComposition.DCLayer.YUVOverlayCount"
-    units="overlays" expires_after="2022-06-26">
+    units="overlays" expires_after="2022-08-28">
   <owner>magchen@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -865,7 +865,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.GLImplementation" enum="GLImplementation"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>magchen@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -903,7 +903,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.GPUProcessExitCode" enum="GPUProcessExitCode"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>zmo@chromium.org</owner>
   <owner>graphics-dev@chromium.org</owner>
   <summary>
@@ -942,7 +942,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.GPUProcessTerminationStatus2" enum="GpuTerminationStatus"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>vmiura@chromium.org</owner>
   <summary>
     Counts for each time the GPU Process Host detects the process dies.
@@ -1296,6 +1296,31 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Gpu.Rasterization.Raster.MSAASampleCountLog2" units="count"
+    expires_after="M106">
+  <owner>penghuang@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>
+    log2() of MSAA sample count of a raster task. Value is in [log2(1),log2(64)]
+    or [0,6] range. If log2() of the MSAA sample count is 0 (MSAA sample count
+    is 1), it means MSAA is disabled.
+  </summary>
+</histogram>
+
+<histogram name="Gpu.Rasterization.Raster.NumPaintOps" units="count"
+    expires_after="M106">
+  <owner>penghuang@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>Number of paint ops in a raster task.</summary>
+</histogram>
+
+<histogram name="Gpu.Rasterization.Raster.NumSlowPaths" units="count"
+    expires_after="M106">
+  <owner>penghuang@chromium.org</owner>
+  <owner>graphics-dev@chromium.org</owner>
+  <summary>Number of slow paths in a raster task.</summary>
+</histogram>
+
 <histogram name="GPU.RenderableFormat.{FORMAT_TYPE}" enum="Boolean"
     expires_after="2021-09-15">
   <owner>zmo@chromium.org</owner>
@@ -1327,7 +1352,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.Scheduler.RunTaskTime" units="microseconds"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>kylechar@chromium.org</owner>
   <owner>chrome-gpu-metrics@google.com</owner>
   <summary>
@@ -1415,7 +1440,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.SoftwareRendering" enum="BooleanSoftwareRendering"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>sadrul@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -1555,7 +1580,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="GPU.WatchdogThread.Timeout" enum="GpuWatchdogTimeoutEvent"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
 <!-- Name completed by histogram_suffixes name="GPU.WatchdogStage" -->
 
   <owner>magchen@chromium.org</owner>
@@ -1672,7 +1697,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.DisplayCompositor.OverlayNumProposedCandidates"
-    units="units" expires_after="2022-06-19">
+    units="units" expires_after="2022-08-21">
   <owner>petermcneeley@chromium.org</owner>
   <owner>dcastagna@chromium.org</owner>
   <summary>
@@ -1683,7 +1708,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.DisplayCompositor.OverlayQuadMaterial"
-    enum="OverlayQuadMaterial" expires_after="2022-06-19">
+    enum="OverlayQuadMaterial" expires_after="2022-08-21">
   <owner>petermcneeley@chromium.org</owner>
   <owner>dcastagna@chromium.org</owner>
   <summary>
@@ -1703,7 +1728,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.DisplayCompositor.OverlaySwitchInterval" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>petermcneeley@chromium.org</owner>
   <owner>dcastagna@chromium.org</owner>
   <summary>
@@ -1713,7 +1738,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.DisplayCompositor.RootDamageRect.Overlay"
-    enum="BooleanOverlayDamageRect" expires_after="2022-06-19">
+    enum="BooleanOverlayDamageRect" expires_after="2022-08-21">
   <owner>magchen@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -1722,7 +1747,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.DisplayCompositor.RootDamageRect.Underlay"
-    enum="UnderlayDamageRect" expires_after="2022-04-17">
+    enum="UnderlayDamageRect" expires_after="2023-04-17">
   <owner>magchen@chromium.org</owner>
   <owner>zmo@chromium.org</owner>
   <summary>
@@ -1761,29 +1786,76 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Viz.FrameSinkVideoCapturer.I420.CaptureDuration" units="ms"
-    expires_after="2021-03-07">
-  <owner>samans@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
-  <owner>viz-team-wat@google.com</owner>
+    expires_after="2023-03-01">
+  <owner>bialpio@chromium.org</owner>
+  <owner>media-capture-dev@chromium.org</owner>
   <summary>
     The time it took from when FrameSinkVideoCapturerImpl sent a request for an
     I420 readback until the result comes back and ReadI420Planes successfully
     finishes.
+
+    Warning: this histogram was expired from 2021-03-07 to 2022-03-10; data may
+    be missing.
   </summary>
 </histogram>
 
 <histogram name="Viz.FrameSinkVideoCapturer.I420.CaptureSucceeded"
-    enum="BooleanSuccess" expires_after="2020-12-31">
-  <owner>samans@chromium.org</owner>
-  <owner>sadrul@chromium.org</owner>
-  <owner>viz-team-wat@google.com</owner>
+    enum="BooleanSuccess" expires_after="2023-03-01">
+  <owner>bialpio@chromium.org</owner>
+  <owner>media-capture-dev@chromium.org</owner>
   <summary>
     Whether an I420 readback initiated by FrameSinkVideoCapturerImpl succeeded.
+
+    Warning: this histogram was expired from 2020-12-31 to 2022-03-10; data may
+    be missing.
+  </summary>
+</histogram>
+
+<histogram name="Viz.FrameSinkVideoCapturer.I420.TotalDuration" units="ms"
+    expires_after="2023-03-01">
+  <owner>bialpio@chromium.org</owner>
+  <owner>media-capture-dev@chromium.org</owner>
+  <summary>
+    The time it took from when FrameSinkVideoCapturerImpl decided that a new
+    I420 frame needs to be produced to the moment when it was ready to deliver
+    it. This encompasses the `Viz.FrameSinkVideoCapturer.I420.CaptureDuration`
+    time, but also includes time taken to render video capture overlays.
+  </summary>
+</histogram>
+
+<histogram name="Viz.FrameSinkVideoCapturer.NV12.CaptureDuration" units="ms"
+    expires_after="2023-03-01">
+  <owner>bialpio@chromium.org</owner>
+  <owner>media-capture-dev@chromium.org</owner>
+  <summary>
+    The time it took from when FrameSinkVideoCapturerImpl sent a request for an
+    NV12 copy until the result comes back.
+  </summary>
+</histogram>
+
+<histogram name="Viz.FrameSinkVideoCapturer.NV12.CaptureSucceeded"
+    enum="BooleanSuccess" expires_after="2023-03-01">
+  <owner>bialpio@chromium.org</owner>
+  <owner>media-capture-dev@chromium.org</owner>
+  <summary>
+    Whether an NV12 capture initiated by FrameSinkVideoCapturerImpl succeeded.
+  </summary>
+</histogram>
+
+<histogram name="Viz.FrameSinkVideoCapturer.NV12.TotalDuration" units="ms"
+    expires_after="2023-03-01">
+  <owner>bialpio@chromium.org</owner>
+  <owner>media-capture-dev@chromium.org</owner>
+  <summary>
+    The time it took from when FrameSinkVideoCapturerImpl decided that a new
+    NV12 frame needs to be produced to the moment when it was ready to deliver
+    it. This encompasses the `Viz.FrameSinkVideoCapturer.NV12.CaptureDuration`
+    time.
   </summary>
 </histogram>
 
 <histogram name="Viz.FrameSinkVideoCapturer.RGBA.CaptureDuration" units="ms"
-    expires_after="2022-05-01">
+    expires_after="2022-09-11">
   <owner>samans@chromium.org</owner>
   <owner>sadrul@chromium.org</owner>
   <owner>viz-team-wat@google.com</owner>

@@ -25,8 +25,9 @@ class StreamingSearchPrefetchURLLoader;
 // more easily.
 class StreamingSearchPrefetchRequest : public BaseSearchPrefetchRequest {
  public:
-  StreamingSearchPrefetchRequest(const GURL& prefetch_url,
-                                 base::OnceClosure report_error_callback);
+  StreamingSearchPrefetchRequest(
+      const GURL& prefetch_url,
+      base::OnceCallback<void(bool)> report_error_callback);
   ~StreamingSearchPrefetchRequest() override;
 
   StreamingSearchPrefetchRequest(const StreamingSearchPrefetchRequest&) =
@@ -38,8 +39,8 @@ class StreamingSearchPrefetchRequest : public BaseSearchPrefetchRequest {
   void StartPrefetchRequestInternal(
       Profile* profile,
       std::unique_ptr<network::ResourceRequest> resource_request,
-      const net::NetworkTrafficAnnotationTag& network_traffic_annotation)
-      override;
+      const net::NetworkTrafficAnnotationTag& network_traffic_annotation,
+      base::OnceCallback<void(bool)> report_error_callback) override;
   void StopPrefetch() override;
   std::unique_ptr<SearchPrefetchURLLoader> TakeSearchPrefetchURLLoader()
       override;
@@ -47,8 +48,6 @@ class StreamingSearchPrefetchRequest : public BaseSearchPrefetchRequest {
  private:
   // The ongoing prefetch request. Null before and after the fetch.
   std::unique_ptr<StreamingSearchPrefetchURLLoader> streaming_url_loader_;
-
-  base::WeakPtrFactory<StreamingSearchPrefetchRequest> weak_factory_{this};
 };
 
 #endif  // CHROME_BROWSER_PREFETCH_SEARCH_PREFETCH_STREAMING_SEARCH_PREFETCH_REQUEST_H_

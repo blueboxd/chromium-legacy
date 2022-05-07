@@ -74,9 +74,8 @@ class MultidevicePhoneHubHandler
   void HandleSetFindMyDeviceStatus(const base::ListValue* args);
   void HandleSetTetherStatus(const base::ListValue* args);
   void HandleResetShouldShowOnboardingUi(const base::ListValue* args);
-  void HandleResetHasNotificationSetupUiBeenDismissed(
+  void HandleResetHasMultideviceFeatureSetupUiBeenDismissed(
       const base::ListValue* args);
-  void HandleResetCameraRollOnboardingUiDismissed(const base::ListValue* args);
   void HandleSetFakeCameraRoll(const base::ListValue* args);
 
   void AddObservers();

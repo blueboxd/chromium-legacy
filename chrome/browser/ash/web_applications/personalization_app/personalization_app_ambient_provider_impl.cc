@@ -10,7 +10,9 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/ambient/ambient_animation_theme.h"
 #include "ash/public/cpp/ambient/ambient_client.h"
+#include "ash/public/cpp/ambient/ambient_metrics.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/image_downloader.h"
@@ -24,7 +26,9 @@
 #include "base/notreached.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
+#include "mojo/public/cpp/bindings/message.h"
 #include "net/base/backoff_entry.h"
+#include "personalization_app_ambient_provider_impl.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/gfx/codec/png_codec.h"
@@ -66,7 +70,19 @@ PersonalizationAppAmbientProviderImpl::PersonalizationAppAmbientProviderImpl(
     content::WebUI* web_ui)
     : profile_(Profile::FromWebUI(web_ui)),
       fetch_settings_retry_backoff_(&kRetryBackoffPolicy),
-      update_settings_retry_backoff_(&kRetryBackoffPolicy) {}
+      update_settings_retry_backoff_(&kRetryBackoffPolicy) {
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      ash::ambient::prefs::kAmbientModeEnabled,
+      base::BindRepeating(
+          &PersonalizationAppAmbientProviderImpl::OnAmbientModeEnabledChanged,
+          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      ash::ambient::prefs::kAmbientAnimationTheme,
+      base::BindRepeating(
+          &PersonalizationAppAmbientProviderImpl::OnAnimationThemeChanged,
+          base::Unretained(this)));
+}
 
 PersonalizationAppAmbientProviderImpl::
     ~PersonalizationAppAmbientProviderImpl() = default;
@@ -93,10 +109,11 @@ void PersonalizationAppAmbientProviderImpl::SetAmbientObserver(
   ambient_observer_remote_.reset();
   ambient_observer_remote_.Bind(std::move(observer));
 
-  // Call it once to get the current ambient mode.
-  PrefService* pref_service = profile_->GetPrefs();
-  OnAmbientModeEnabledChanged(
-      pref_service->GetBoolean(ash::ambient::prefs::kAmbientModeEnabled));
+  // Call it once to get the current ambient mode enabled status.
+  OnAmbientModeEnabledChanged();
+
+  // Call it once to get the current animation theme.
+  OnAnimationThemeChanged();
 
   ResetLocalSettings();
   // Will notify WebUI when fetches successfully.
@@ -108,6 +125,14 @@ void PersonalizationAppAmbientProviderImpl::SetAmbientModeEnabled(
   PrefService* pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
   pref_service->SetBoolean(ash::ambient::prefs::kAmbientModeEnabled, enabled);
+}
+
+void PersonalizationAppAmbientProviderImpl::SetAnimationTheme(
+    ash::AmbientAnimationTheme animation_theme) {
+  PrefService* pref_service = profile_->GetPrefs();
+  DCHECK(pref_service);
+  pref_service->SetInteger(ash::ambient::prefs::kAmbientAnimationTheme,
+                           static_cast<int>(animation_theme));
 }
 
 void PersonalizationAppAmbientProviderImpl::SetTopicSource(
@@ -129,14 +154,94 @@ void PersonalizationAppAmbientProviderImpl::SetTopicSource(
   MaybeUpdateTopicSource(ash::AmbientModeTopicSource::kGooglePhotos);
 }
 
-void PersonalizationAppAmbientProviderImpl::OnAmbientModeEnabledChanged(
-    bool ambient_mode_enabled) {
-  DCHECK(ambient_observer_remote_.is_bound());
-  ambient_observer_remote_->OnAmbientModeEnabledChanged(ambient_mode_enabled);
+void PersonalizationAppAmbientProviderImpl::SetTemperatureUnit(
+    ash::AmbientModeTemperatureUnit temperature_unit) {
+  if (settings_->temperature_unit != temperature_unit) {
+    settings_->temperature_unit = temperature_unit;
+    UpdateSettings();
+    OnTemperatureUnitChanged();
+  }
+}
+
+void PersonalizationAppAmbientProviderImpl::SetAlbumSelected(
+    const std::string& id,
+    ash::AmbientModeTopicSource topic_source,
+    bool selected) {
+  switch (topic_source) {
+    case (ash::AmbientModeTopicSource::kGooglePhotos): {
+      ash::PersonalAlbum* personal_album = FindPersonalAlbumById(id);
+      if (!personal_album) {
+        mojo::ReportBadMessage("Invalid album id.");
+        return;
+      }
+      personal_album->selected = selected;
+
+      // For Google Photos, we will populate the |selected_album_ids| with IDs
+      // of selected albums.
+      settings_->selected_album_ids.clear();
+      for (const auto& personal_album : personal_albums_.albums) {
+        if (personal_album.selected) {
+          settings_->selected_album_ids.emplace_back(personal_album.album_id);
+        }
+      }
+
+      // Update topic source based on selections.
+      if (settings_->selected_album_ids.empty()) {
+        settings_->topic_source = ash::AmbientModeTopicSource::kArtGallery;
+      } else {
+        settings_->topic_source = ash::AmbientModeTopicSource::kGooglePhotos;
+      }
+
+      ash::ambient::RecordAmbientModeTotalNumberOfAlbums(
+          personal_albums_.albums.size());
+      ash::ambient::RecordAmbientModeSelectedNumberOfAlbums(
+          settings_->selected_album_ids.size());
+      break;
+    }
+    case (ash::AmbientModeTopicSource::kArtGallery): {
+      // For Art gallery, we set the corresponding setting to be enabled or not
+      // based on the selections.
+      auto* art_setting = FindArtAlbumById(id);
+      if (!art_setting || !art_setting->visible) {
+        mojo::ReportBadMessage("Invalid album id.");
+        return;
+      }
+      art_setting->enabled = selected;
+      break;
+    }
+  }
+
+  UpdateSettings();
+  OnTopicSourceChanged();
+}
+
+void PersonalizationAppAmbientProviderImpl::OnAmbientModeEnabledChanged() {
+  const bool enabled = IsAmbientModeEnabled();
+  if (ambient_observer_remote_.is_bound()) {
+    ambient_observer_remote_->OnAmbientModeEnabledChanged(enabled);
+  }
+
+  // Call |UpdateSettings| when Ambient mode is enabled to make sure that
+  // settings are properly synced to the server even if the user never touches
+  // the other controls. Please see b/177456397.
+  if (settings_ && enabled) {
+    UpdateSettings();
+  }
+}
+
+void PersonalizationAppAmbientProviderImpl::OnAnimationThemeChanged() {
+  if (!ambient_observer_remote_.is_bound())
+    return;
+
+  ambient_observer_remote_->OnAnimationThemeChanged(GetCurrentAnimationTheme());
 }
 
 void PersonalizationAppAmbientProviderImpl::OnTemperatureUnitChanged() {
-  NOTIMPLEMENTED();
+  if (!ambient_observer_remote_.is_bound())
+    return;
+
+  ambient_observer_remote_->OnTemperatureUnitChanged(
+      settings_->temperature_unit);
 }
 
 void PersonalizationAppAmbientProviderImpl::OnTopicSourceChanged() {
@@ -186,12 +291,6 @@ void PersonalizationAppAmbientProviderImpl::OnAlbumsChanged() {
   ambient_observer_remote_->OnAlbumsChanged(std::move(albums));
 }
 
-void PersonalizationAppAmbientProviderImpl::OnAlbumPreviewChanged(
-    const std::string& album_id,
-    std::string&& png_data_url) {
-  NOTIMPLEMENTED();
-}
-
 void PersonalizationAppAmbientProviderImpl::
     OnRecentHighlightsPreviewsChanged() {
   NOTIMPLEMENTED();
@@ -201,6 +300,14 @@ bool PersonalizationAppAmbientProviderImpl::IsAmbientModeEnabled() {
   PrefService* pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
   return pref_service->GetBoolean(ash::ambient::prefs::kAmbientModeEnabled);
+}
+
+ash::AmbientAnimationTheme
+PersonalizationAppAmbientProviderImpl::GetCurrentAnimationTheme() {
+  PrefService* pref_service = profile_->GetPrefs();
+  DCHECK(pref_service);
+  return static_cast<ash::AmbientAnimationTheme>(
+      pref_service->GetInteger(ash::ambient::prefs::kAmbientAnimationTheme));
 }
 
 void PersonalizationAppAmbientProviderImpl::UpdateSettings() {
@@ -346,13 +453,21 @@ void PersonalizationAppAmbientProviderImpl::OnSettingsAndAlbumsFetched(
   OnTopicSourceChanged();
 
   // If weather info is disabled, call `UpdateSettings()` immediately to force
-  // it to true.
+  // it to true. Please see b/177456397.
   if (!settings_->show_weather && IsAmbientModeEnabled()) {
     UpdateSettings();
   }
 }
 
 void PersonalizationAppAmbientProviderImpl::SyncSettingsAndAlbums() {
+  // Clear the `selected` field, which will be populated with new value below.
+  // It is neceessary if `UpdateSettings()` failed and we need to reset the
+  // cached settings.
+  for (auto it = personal_albums_.albums.begin();
+       it != personal_albums_.albums.end(); ++it) {
+    it->selected = false;
+  }
+
   auto it = settings_->selected_album_ids.begin();
   while (it != settings_->selected_album_ids.end()) {
     const std::string& album_id = *it;
@@ -373,11 +488,11 @@ void PersonalizationAppAmbientProviderImpl::SyncSettingsAndAlbums() {
 void PersonalizationAppAmbientProviderImpl::MaybeUpdateTopicSource(
     ash::AmbientModeTopicSource topic_source) {
   // If the setting is the same, no need to update.
-  if (settings_->topic_source == topic_source)
-    return;
+  if (settings_->topic_source != topic_source) {
+    settings_->topic_source = topic_source;
+    UpdateSettings();
+  }
 
-  settings_->topic_source = topic_source;
-  UpdateSettings();
   OnTopicSourceChanged();
 }
 
@@ -422,10 +537,6 @@ void PersonalizationAppAmbientProviderImpl::OnAlbumPreviewImageDownloaded(
   EncodeImage(image, &encoded_image_bytes);
   if (encoded_image_bytes.empty())
     return;
-
-  OnAlbumPreviewChanged(album_id,
-                        webui::GetPngDataUrl(&encoded_image_bytes.front(),
-                                             encoded_image_bytes.size()));
 }
 
 void PersonalizationAppAmbientProviderImpl::

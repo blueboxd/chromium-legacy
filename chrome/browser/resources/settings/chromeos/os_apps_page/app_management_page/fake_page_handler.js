@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {AppType, OptionalBool} from '//resources/cr_components/app_management/constants.js';
+import {AppType, InstallReason, InstallSource, OptionalBool, WindowMode} from '//resources/cr_components/app_management/constants.js';
 import {PermissionType, PermissionValue, TriState} from '//resources/cr_components/app_management/permission_constants.js';
 import {createBoolPermission, createTriStatePermission, getTriStatePermissionValue} from '//resources/cr_components/app_management/permission_util.js';
 import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
@@ -16,7 +16,7 @@ import {AppManagementStore} from './store.js';
 export class FakePageHandler {
   /**
    * @param {Object=} options
-   * @return {!Object<number, Permission>}
+   * @return {!Object<number, appManagement.mojom.Permission>}
    */
   static createWebPermissions(options) {
     const permissionTypes = [
@@ -47,7 +47,7 @@ export class FakePageHandler {
 
   /**
    * @param {Array<number>=} optIds
-   * @return {!Object<number, Permission>}
+   * @return {!Object<number, appManagement.mojom.Permission>}
    */
   static createArcPermissions(optIds) {
     const permissionTypes = optIds || [
@@ -70,8 +70,8 @@ export class FakePageHandler {
   }
 
   /**
-   * @param {apps.mojom.AppType} appType
-   * @return {!Object<number, Permission>}
+   * @param {appManagement.mojom.AppType} appType
+   * @return {!Object<number, appManagement.mojom.Permission>}
    */
   static createPermissions(appType) {
     switch (appType) {
@@ -92,23 +92,25 @@ export class FakePageHandler {
   static createApp(id, optConfig) {
     const app = {
       id: id,
-      type: apps.mojom.AppType.kWeb,
+      type: AppType.kWeb,
       title: 'App Title',
       description: '',
       version: '5.1',
       size: '9.0MB',
-      isPinned: apps.mojom.OptionalBool.kFalse,
-      isPolicyPinned: apps.mojom.OptionalBool.kFalse,
-      installReason: apps.mojom.InstallReason.kUser,
+      isPinned: OptionalBool.kFalse,
+      isPolicyPinned: OptionalBool.kFalse,
+      installReason: InstallReason.kUser,
       permissions: {},
       hideMoreSettings: false,
       hidePinToShelf: false,
       isPreferredApp: false,
-      windowMode: apps.mojom.WindowMode.kWindow,
+      windowMode: WindowMode.kWindow,
       resizeLocked: false,
       hideResizeLocked: true,
       supportedLinks: [],
       runOnOsLogin: null,
+      fileHandlingState: null,
+      installSource: InstallSource.kUnknown,
     };
 
     if (optConfig) {
@@ -220,7 +222,7 @@ export class FakePageHandler {
 
   /**
    * @param {string} appId
-   * @param {apps.mojom.OptionalBool} pinnedValue
+   * @param {appManagement.mojom.OptionalBool} pinnedValue
    */
   setPinned(appId, pinnedValue) {
     const app = AppManagementStore.getInstance().data.apps[appId];
@@ -232,7 +234,7 @@ export class FakePageHandler {
 
   /**
    * @param {string} appId
-   * @param {Permission} permission
+   * @param {appManagement.mojom.Permission} permission
    */
   setPermission(appId, permission) {
     const app = AppManagementStore.getInstance().data.apps[appId];
@@ -299,7 +301,7 @@ export class FakePageHandler {
 
   /**
    * @param {string} appId
-   * @param {apps.mojom.WindowMode} windowMode
+   * @param {appManagement.mojom.WindowMode} windowMode
    */
   setWindowMode(appId, windowMode) {
     assertNotReached();
@@ -307,9 +309,17 @@ export class FakePageHandler {
 
   /**
    * @param {string} appId
-   * @param {apps.mojom.RunOnOsLoginMode} runOnOsLoginMode
+   * @param {appManagement.mojom.RunOnOsLoginMode} runOnOsLoginMode
    */
   setRunOnOsLoginMode(appId, runOnOsLoginMode) {
+    assertNotReached();
+  }
+
+  /**
+   * @param {string} appId
+   * @param {boolean} fileHandlingEnabled
+   */
+  setFileHandlingEnabled(appId, fileHandlingEnabled) {
     assertNotReached();
   }
 

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 
-#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/synchronization/atomic_flag.h"
@@ -16,6 +15,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia_operations.h"
 
 using content::BrowserThread;
@@ -31,7 +31,7 @@ const char* const kWallpaperLayoutArrays[] = {
   "TILE"
 };
 
-const int kWallpaperLayoutCount = base::size(kWallpaperLayoutArrays);
+const int kWallpaperLayoutCount = std::size(kWallpaperLayoutArrays);
 
 base::LazyThreadPoolSequencedTaskRunner g_blocking_task_runner =
     LAZY_THREAD_POOL_SEQUENCED_TASK_RUNNER_INITIALIZER(

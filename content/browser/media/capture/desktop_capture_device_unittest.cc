@@ -276,11 +276,14 @@ TEST_F(DesktopCaptureDeviceTest, Capture) {
           webrtc::DesktopCaptureOptions::CreateDefault()));
 
 #if defined(USE_OZONE)
-#if BUILDFLAG(OZONE_PLATFORM_WAYLAND)
-  // webrtc::DesktopCapturer is not supported by default on Wayland.
+#if !BUILDFLAG(OZONE_PLATFORM_X11)
+  // webrtc::DesktopCapturer is only supported on Ozone X11 by default.
+  // TODO(webrtc/13429): Enable for Wayland.
+  EXPECT_FALSE(capturer);
+  // Check return value to avoid compiler warnings.
   if (!capturer)
     return;
-#endif  // BUILDFLAG(OZONE_PLATFORM_WAYLAND)
+#endif  // !BUILDFLAG(OZONE_PLATFORM_X11)
 #endif  // defined(USE_OZONE)
 
   CreateScreenCaptureDevice(std::move(capturer));

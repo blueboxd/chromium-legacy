@@ -364,49 +364,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Event.Latency.OS" units="microseconds" expires_after="M92">
-  <owner>flackr@chromium.org</owner>
-  <owner>input-dev@chromium.org</owner>
-  <summary>
-    Time between input event received by OS and sent to Chrome, recorded for
-    each event when it is received by Chrome. This is obsoleted by
-    Event.Latency.OS2 and should be removed after they've been run side-by-side
-    for M92.
-
-    Warning: This metric may include reports from clients with low-resolution
-    clocks (i.e. on Windows, ref. |TimeTicks::IsHighResolution()|). Such reports
-    will cause this metric to have an abnormal distribution. When considering
-    revising this histogram, see UMA_HISTOGRAM_CUSTOM_MICROSECONDS_TIMES for the
-    solution.
-  </summary>
-</histogram>
-
 <histogram name="Event.Latency.OS2" units="ms" expires_after="2022-08-14">
   <owner>flackr@chromium.org</owner>
+  <owner>joenotcharles@google.com</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
     Time between input event received by OS and sent to Chrome, recorded for
-    each event when it is received by Chrome.
+    each event when it is received by Chrome. Replaced Event.Latency.OS which
+    was calculated incorrectly on Windows.
 
     Warning: On Windows, the timestamps of most events come from a clock with a
     several msec resolution so will have an abnormal distribution even when
     TimeTicks::IsHighResolution returns true. The exception is touch events
     which usually come from the high-resolution clock when
     TimeTicks::IsHighResolution returns true.
-  </summary>
-</histogram>
-
-<histogram name="Event.Latency.OS_NO_VALIDATION.POSITIVE" units="ms"
-    expires_after="2021-08-09">
-  <owner>sullivan@chromium.org</owner>
-  <owner>input-dev@chromium.org</owner>
-  <summary>
-    For Mac, a version of Event.Latency.OS that has the positive values it would
-    contain if ValidateEventTimeClock() were not called on the timestamps.
-
-    This metric is intended to debug http://crbug.com/1039833 where very high
-    numbers are seen for PageLoad.InputDelay3. The units of this metric are the
-    same as PageLoad.InputDelay3 for consistency while debugging.
   </summary>
 </histogram>
 
@@ -433,7 +404,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Latency.ScrollBegin.Scrollbar.BrowserNotifiedToBeforeGpuSwap2"
-    units="microseconds" expires_after="2022-06-01">
+    units="microseconds" expires_after="2022-08-28">
   <owner>flackr@chromium.org</owner>
   <owner>gerchiko@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -542,7 +513,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Latency.ScrollBegin.Scrollbar.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2022-06-26">
+    units="microseconds" expires_after="2022-08-28">
   <owner>nzolghadr@chromium.org</owner>
   <owner>gerchiko@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -847,7 +818,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollBegin.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2022-07-11">
+    units="microseconds" expires_after="2022-09-11">
   <owner>flackr@chromium.org</owner>
   <summary>
     Time between initial creation of a wheel event and the start of the frame
@@ -981,9 +952,24 @@ chromium-metrics-reviews@google.com.
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
+    IMPORTANT: A new in trial version of this metric exists, please refer to
+    Event.Latency.ScrollJank2.
+
     Tracks janky frames while processing scroll events, which are defined as
     frames taking longer than half of vsync interval compared to previous or
-    next frame.
+    next frame, this is reported from the GPU.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.ScrollJank2" enum="Boolean"
+    expires_after="2023-03-07">
+  <owner>ddrone@google.com</owner>
+  <owner>mekk@google.com</owner>
+  <owner>chrometto-team@google.com</owner>
+  <summary>
+    Tracks janky frames while processing scroll events, which are defined as
+    frames taking longer than half of vsync interval compared to previous or
+    next frame, this is reported from the renderer compositor's EventMetrics.
   </summary>
 </histogram>
 
@@ -992,9 +978,24 @@ chromium-metrics-reviews@google.com.
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
+    IMPORTANT: This metric is deprecated, please refer to
+    Event.Latency.ScrollUpdate.JankyDuration2.
+
     Total duration (wall time in milliseconds of potentially concurrent events)
     of LatencyInfo::GestureScrollUpdate events that are detected as janky during
-    a particular scroll.
+    a particular scroll, this is reported from the GPU.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.ScrollUpdate.JankyDuration2" units="ms"
+    expires_after="2023-03-07">
+  <owner>ddrone@google.com</owner>
+  <owner>mekk@google.com</owner>
+  <owner>chrometto-team@google.com</owner>
+  <summary>
+    Total duration (wall time in milliseconds of potentially concurrent events)
+    of GestureScrollUpdate events that are detected as janky during a particular
+    scroll, this is reported from the renderer compositor's EventMetrics.
   </summary>
 </histogram>
 
@@ -1003,8 +1004,23 @@ chromium-metrics-reviews@google.com.
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
+    IMPORTANT: A new in trial version of this metric exists, please refer to
+    Event.Latency.ScrollUpdate.JankyDurationPercentage2.
+
     Percentage of duration of scroll events that are detected as janky during a
-    particular scroll.
+    particular scroll, this is reported from the GPU.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.ScrollUpdate.JankyDurationPercentage2" units="%"
+    expires_after="2023-03-07">
+  <owner>ddrone@google.com</owner>
+  <owner>mekk@google.com</owner>
+  <owner>chrometto-team@google.com</owner>
+  <summary>
+    Percentage of duration of scroll events that are detected as janky during a
+    particular scroll, this is reported from the renderer compositor's
+    EventMetrics.
   </summary>
 </histogram>
 
@@ -1013,8 +1029,23 @@ chromium-metrics-reviews@google.com.
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
+    IMPORTANT: A new in trial version of this metric exists, please refer to
+    Event.Latency.ScrollUpdate.JankyEvents2.
+
     Count of LatencyInfo::GestureScrollUpdate events that are detected as janky
-    during a particular scroll.
+    during a particular scroll, this is reported from the GPU.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.ScrollUpdate.JankyEvents2" units="counts"
+    expires_after="2023-03-07">
+  <owner>ddrone@google.com</owner>
+  <owner>mekk@google.com</owner>
+  <owner>chrometto-team@google.com</owner>
+  <summary>
+    Count of GestureScrollUpdate events that are detected as janky during a
+    particular scroll, this is reported from the renderer compositor's
+    EventMetrics.
   </summary>
 </histogram>
 
@@ -1151,7 +1182,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.TimeToScrollUpdateSwapBegin2"
-    units="microseconds" expires_after="2022-06-26">
+    units="microseconds" expires_after="2022-08-28">
   <owner>nzolghadr@chromium.org</owner>
   <summary>
     Time between initial creation of a wheel/touch event and start of the frame
@@ -1179,8 +1210,24 @@ chromium-metrics-reviews@google.com.
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
+    IMPORTANT: A new in trial version of this metric exists, please refer to
+    Event.Latency.ScrollUpdate.TotalDuration2.
+
     Total duration (wall time in milliseconds of potentially concurrent events)
-    of LatencyInfo::GestureScrollUpdate events during a particular scroll.
+    of LatencyInfo::GestureScrollUpdate events during a particular scroll, this
+    is reported from the GPU.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.ScrollUpdate.TotalDuration2" units="ms"
+    expires_after="2023-03-07">
+  <owner>ddrone@google.com</owner>
+  <owner>mekk@google.com</owner>
+  <owner>chrometto-team@google.com</owner>
+  <summary>
+    Total duration (wall time in milliseconds of potentially concurrent events)
+    of GestureScrollUpdate events during a particular scroll, this is reported
+    from the renderer compositor's EventMetrics.
   </summary>
 </histogram>
 
@@ -1189,12 +1236,27 @@ chromium-metrics-reviews@google.com.
   <owner>ddrone@google.com</owner>
   <owner>chrometto-team@google.com</owner>
   <summary>
-    Count of LatencyInfo::GestureScrollUpdate events during a particular scroll.
+    IMPORTANT: A new in trial version of this metric exists, please refer to
+    Event.Latency.ScrollUpdate.TotalEvents2.
+
+    Count of LatencyInfo::GestureScrollUpdate events during a particular scroll,
+    this is reported from the GPU.
+  </summary>
+</histogram>
+
+<histogram name="Event.Latency.ScrollUpdate.TotalEvents2" units="counts"
+    expires_after="2023-03-07">
+  <owner>ddrone@google.com</owner>
+  <owner>mekk@google.com</owner>
+  <owner>chrometto-team@google.com</owner>
+  <summary>
+    Count of GestureScrollUpdate events during a particular scroll, this is
+    reported from the renderer compositor's EventMetrics.
   </summary>
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Touch.AverageLagPresentation"
-    units="pixels" expires_after="2022-05-08">
+    units="pixels" expires_after="2022-08-21">
   <owner>flackr@chromium.org</owner>
   <owner>joalmei@microsoft.com</owner>
   <owner>input-dev@chromium.org</owner>
@@ -1315,7 +1377,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Touch.GpuSwap2"
-    units="microseconds" expires_after="2022-06-01">
+    units="microseconds" expires_after="2022-08-21">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -1333,7 +1395,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Touch.HandledToRendererSwap2"
-    units="microseconds" expires_after="2022-06-01">
+    units="microseconds" expires_after="2022-08-21">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -1353,7 +1415,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Event.Latency.ScrollUpdate.Touch.RendererSwapToBrowserNotified2"
-    units="microseconds" expires_after="2022-06-01">
+    units="microseconds" expires_after="2022-08-21">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -1371,7 +1433,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Touch.TimeToHandled2"
-    units="microseconds" expires_after="2022-06-01">
+    units="microseconds" expires_after="2022-08-21">
   <owner>flackr@chromium.org</owner>
   <owner>input-dev@chromium.org</owner>
   <summary>
@@ -1519,7 +1581,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Event.Latency.ScrollUpdate.Wheel.TimeToScrollUpdateSwapBegin4"
-    units="microseconds" expires_after="2022-07-11">
+    units="microseconds" expires_after="2022-09-11">
   <owner>flackr@chromium.org</owner>
   <summary>
     Time between initial creation of a wheel event and start of the frame swap

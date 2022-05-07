@@ -26,7 +26,7 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
     }
 
     // For tests, enable announcement of events we trigger via automation.
-    DesktopAutomationHandler.announceActions = true;
+    BaseAutomationHandler.announceActions = true;
 
     this.originalOutputContextValues_ = {};
     for (const role in OutputRoleInfo) {
@@ -43,6 +43,8 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
     window.doCmd = this.doCmd;
     window.doGesture = this.doGesture;
     window.Gesture = chrome.accessibilityPrivate.Gesture;
+
+    super.setUp();
   }
 
   /** @return {!MockFeedback} */
@@ -85,7 +87,7 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
    */
   doCmd(cmd) {
     return () => {
-      CommandHandler.onCommand(cmd);
+      CommandHandlerInterface.instance.onCommand(cmd);
     };
   }
 
@@ -111,10 +113,20 @@ ChromeVoxNextE2ETest = class extends ChromeVoxE2ETest {
   }
 
   /** @override */
+  async setUpDeferred() {
+    await super.setUpDeferred();
+    await importModule(
+        'CommandHandler', '/chromevox/background/command_handler.js');
+    await importModule(
+        'GestureCommandHandler',
+        '/chromevox/background/gesture_command_handler.js');
+  }
+
+  /** @override */
   runWithLoadedTree(doc, callback, opt_params = {}) {
     callback = this.newCallback(callback);
     const wrappedCallback = (node) => {
-      CommandHandler.onCommand('nextObject');
+      CommandHandlerInterface.instance.onCommand('nextObject');
       callback(node);
     };
 

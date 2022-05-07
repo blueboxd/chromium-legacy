@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -58,7 +57,7 @@ const char kWasmUrl[] = "https://foo.test/helper.wasm";
 // Packs kToyWasm into a std::string.
 std::string ToyWasm() {
   return std::string(reinterpret_cast<const char*>(kToyWasm),
-                     base::size(kToyWasm));
+                     std::size(kToyWasm));
 }
 
 // Creates generateBid() scripts with the specified result value, in raw
@@ -160,6 +159,7 @@ class BidderWorkletTest : public testing::Test {
     top_window_origin_ = url::Origin::Create(GURL("https://top.window.test/"));
     browser_signal_seller_origin_ =
         url::Origin::Create(GURL("https://browser.signal.seller.test/"));
+    browser_signal_top_level_seller_origin_.reset();
     seller_signals_ = "[\"seller_signals\"]";
     browser_signal_render_url_ = GURL("https://render_url.test/");
     browser_signal_bid_ = 1;
@@ -167,7 +167,7 @@ class BidderWorkletTest : public testing::Test {
   }
 
   // Configures `url_loader_factory_` to return a generateBid() script with the
-  // specified return line Then runs the script, expecting the provided result.
+  // specified return line. Then runs the script, expecting the provided result.
   void RunGenerateBidWithReturnValueExpectingResult(
       const std::string& raw_return_value,
       mojom::BidderWorkletBidPtr expected_bid,
@@ -184,7 +184,7 @@ class BidderWorkletTest : public testing::Test {
   }
 
   // Configures `url_loader_factory_` to return a script with the specified
-  // Javascript Then runs the script, expecting the provided result.
+  // Javascript. Then runs the script, expecting the provided result.
   void RunGenerateBidWithJavascriptExpectingResult(
       const std::string& javascript,
       mojom::BidderWorkletBidPtr expected_bid,
@@ -267,8 +267,8 @@ class BidderWorkletTest : public testing::Test {
     bidder_worklet->ReportWin(
         interest_group_name_, auction_signals_, per_buyer_signals_,
         seller_signals_, browser_signal_render_url_, browser_signal_bid_,
-        browser_signal_seller_origin_, data_version_.value_or(0),
-        data_version_.has_value(),
+        browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
+        data_version_.value_or(0), data_version_.has_value(),
         base::BindOnce(
             [](const absl::optional<GURL>& expected_report_url,
                const std::vector<std::string>& expected_errors,
@@ -288,7 +288,7 @@ class BidderWorkletTest : public testing::Test {
       const absl::optional<GURL>& expected_report_url,
       const std::vector<std::string>& expected_errors =
           std::vector<std::string>()) {
-    auto bidder_worklet = CreateWorkletAndGenerateBid();
+    auto bidder_worklet = CreateWorklet();
     ASSERT_TRUE(bidder_worklet);
 
     base::RunLoop run_loop;
@@ -351,7 +351,8 @@ class BidderWorkletTest : public testing::Test {
     bidder_worklet->GenerateBid(
         CreateBidderWorkletNonSharedParams(), auction_signals_,
         per_buyer_signals_, per_buyer_timeout_, browser_signal_seller_origin_,
-        CreateBiddingBrowserSignals(), auction_start_time_,
+        browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
+        auction_start_time_,
         base::BindOnce(&BidderWorkletTest::GenerateBidCallback,
                        base::Unretained(this)));
     bidder_worklet->SendPendingSignalsRequests();
@@ -363,7 +364,8 @@ class BidderWorkletTest : public testing::Test {
     bidder_worklet->GenerateBid(
         CreateBidderWorkletNonSharedParams(), auction_signals_,
         per_buyer_signals_, per_buyer_timeout_, browser_signal_seller_origin_,
-        CreateBiddingBrowserSignals(), auction_start_time_,
+        browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
+        auction_start_time_,
         base::BindOnce([](mojom::BidderWorkletBidPtr bid, uint32_t data_version,
                           bool has_data_version,
                           const absl::optional<GURL>& debug_loss_report_url,
@@ -469,7 +471,10 @@ class BidderWorkletTest : public testing::Test {
   absl::optional<base::TimeDelta> per_buyer_timeout_;
   url::Origin top_window_origin_;
   url::Origin browser_signal_seller_origin_;
+  absl::optional<url::Origin> browser_signal_top_level_seller_origin_;
+
   std::string seller_signals_;
+  // Used for both the output GenerateBid(), and the input of ReportWin().
   absl::optional<uint32_t> data_version_;
   GURL browser_signal_render_url_;
   double browser_signal_bid_;
@@ -1041,6 +1046,7 @@ TEST_F(BidderWorkletTest, GenerateBidParallel) {
           CreateBidderWorkletNonSharedParams(),
           /*auction_signals_json=*/base::NumberToString(bid_value),
           per_buyer_signals_, per_buyer_timeout_, browser_signal_seller_origin_,
+          browser_signal_top_level_seller_origin_,
           CreateBiddingBrowserSignals(), auction_start_time_,
           base::BindLambdaForTesting(
               [&run_loop, &num_generate_bid_calls, bid_value](
@@ -1131,7 +1137,8 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched1) {
     bidder_worklet->GenerateBid(
         std::move(interest_group_fields), auction_signals_, per_buyer_signals_,
         per_buyer_timeout_, browser_signal_seller_origin_,
-        CreateBiddingBrowserSignals(), auction_start_time_,
+        browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
+        auction_start_time_,
         base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
                 mojom::BidderWorkletBidPtr bid, uint32_t data_version,
@@ -1227,7 +1234,8 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched2) {
     bidder_worklet->GenerateBid(
         std::move(interest_group_fields), auction_signals_, per_buyer_signals_,
         per_buyer_timeout_, browser_signal_seller_origin_,
-        CreateBiddingBrowserSignals(), auction_start_time_,
+        browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
+        auction_start_time_,
         base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
                 mojom::BidderWorkletBidPtr bid, uint32_t data_version,
@@ -1329,7 +1337,8 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelBatched3) {
     bidder_worklet->GenerateBid(
         std::move(interest_group_fields), auction_signals_, per_buyer_signals_,
         per_buyer_timeout_, browser_signal_seller_origin_,
-        CreateBiddingBrowserSignals(), auction_start_time_,
+        browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
+        auction_start_time_,
         base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
                 mojom::BidderWorkletBidPtr bid, uint32_t data_version,
@@ -1410,7 +1419,8 @@ TEST_F(BidderWorkletTest, GenerateBidTrustedBiddingSignalsParallelNotBatched) {
     bidder_worklet->GenerateBid(
         std::move(interest_group_fields), auction_signals_, per_buyer_signals_,
         per_buyer_timeout_, browser_signal_seller_origin_,
-        CreateBiddingBrowserSignals(), auction_start_time_,
+        browser_signal_top_level_seller_origin_, CreateBiddingBrowserSignals(),
+        auction_start_time_,
         base::BindLambdaForTesting(
             [&run_loop, &num_generate_bid_calls, i](
                 mojom::BidderWorkletBidPtr bid, uint32_t data_version,
@@ -1586,6 +1596,28 @@ TEST_F(BidderWorkletTest, GenerateBidBrowserSignalSellerOrigin) {
           /*ad_components=*/absl::nullopt, base::TimeDelta()));
 }
 
+TEST_F(BidderWorkletTest, GenerateBidBrowserSignalTopLevelSellerOrigin) {
+  browser_signal_top_level_seller_origin_ = absl::nullopt;
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: "topLevelSeller" in browserSignals,
+          bid:1,
+          render:"https://response.test/"})",
+      mojom::BidderWorkletBid::New("false", 1, GURL("https://response.test/"),
+                                   /*ad_components=*/absl::nullopt,
+                                   base::TimeDelta()));
+
+  // Need to set `allowComponentAuction` to true for a bid to be created when
+  // topLevelSeller is non-null.
+  browser_signal_top_level_seller_origin_ =
+      url::Origin::Create(GURL("https://foo.test"));
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: browserSignals.topLevelSeller, bid:1, render:"https://response.test/",
+          allowComponentAuction: true})",
+      mojom::BidderWorkletBid::New(
+          R"("https://foo.test")", 1, GURL("https://response.test/"),
+          /*ad_components=*/absl::nullopt, base::TimeDelta()));
+}
+
 TEST_F(BidderWorkletTest, GenerateBidBrowserSignalTopWindowOrigin) {
   top_window_origin_ = url::Origin::Create(GURL("https://top.window.test/"));
   RunGenerateBidWithReturnValueExpectingResult(
@@ -1703,6 +1735,73 @@ TEST_F(BidderWorkletTest, GenerateBidAdComponents) {
           base::TimeDelta()));
 }
 
+// Test behavior of the `allowComponentAuction` output field, which can block
+// bids when not set to true and `topLevelSellerOrigin` is non-null.
+TEST_F(BidderWorkletTest, GenerateBidAllowComponentAuction) {
+  // In all success cases, this is the returned bid.
+  const auto kBidOnSuccess = mojom::BidderWorkletBid::New(
+      "null", 1, GURL("https://response.test/"),
+      /*ad_components=*/absl::nullopt, base::TimeDelta());
+
+  // Use a null `topLevelSellerOrigin`. `allowComponentAuction` value should be
+  // ignored.
+  browser_signal_top_level_seller_origin_ = absl::nullopt;
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: null, bid:1, render:"https://response.test/", allowComponentAuction: true})",
+      kBidOnSuccess.Clone());
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: null, bid:1, render:"https://response.test/", allowComponentAuction: false})",
+      kBidOnSuccess.Clone());
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: null, bid:1, render:"https://response.test/"})",
+      kBidOnSuccess.Clone());
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: null, bid:1, render:"https://response.test/", allowComponentAuction: 0})",
+      kBidOnSuccess.Clone());
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: null, bid:1, render:"https://response.test/", allowComponentAuction: 1})",
+      kBidOnSuccess.Clone());
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: null, bid:1, render:"https://response.test/", allowComponentAuction: "OnTuesdays"})",
+      kBidOnSuccess.Clone());
+
+  // Use a non-null `topLevelSellerOrigin`. `allowComponentAuction` value must
+  // be "true" for a bid to be generated. This uses the standard Javascript
+  // behavior for how to convert non-bools to a bool.
+  browser_signal_top_level_seller_origin_ =
+      url::Origin::Create(GURL("https://foo.test"));
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: null, bid:1, render:"https://response.test/", allowComponentAuction: true})",
+      kBidOnSuccess.Clone());
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: null, bid:1, render:"https://response.test/", allowComponentAuction: false})",
+      mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt, /*expected_errors=*/
+      {"https://url.test/ generateBid() return value does not have "
+       "allowComponentAuction set to true. Bid dropped from component "
+       "auction."});
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: null, bid:1, render:"https://response.test/"})",
+      mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt, /*expected_errors=*/
+      {"https://url.test/ generateBid() return value does not have "
+       "allowComponentAuction set to true. Bid dropped from component "
+       "auction."});
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: null, bid:1, render:"https://response.test/", allowComponentAuction: 0})",
+      mojom::BidderWorkletBidPtr(),
+      /*expected_data_version=*/absl::nullopt, /*expected_errors=*/
+      {"https://url.test/ generateBid() return value does not have "
+       "allowComponentAuction set to true. Bid dropped from component "
+       "auction."});
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: null, bid:1, render:"https://response.test/", allowComponentAuction: 1})",
+      kBidOnSuccess.Clone());
+  RunGenerateBidWithReturnValueExpectingResult(
+      R"({ad: null, bid:1, render:"https://response.test/", allowComponentAuction: "OnTuesdays"})",
+      kBidOnSuccess.Clone());
+}
+
 TEST_F(BidderWorkletTest, GenerateBidWasm404) {
   interest_group_wasm_url_ = GURL(kWasmUrl);
   // Have the WASM URL 404.
@@ -1778,8 +1877,8 @@ TEST_F(BidderWorkletTest, WasmReportWin) {
   bidder_worklet->ReportWin(
       interest_group_name_, /*auction_signals_json=*/"0", per_buyer_signals_,
       seller_signals_, browser_signal_render_url_, browser_signal_bid_,
-      browser_signal_seller_origin_, data_version_.value_or(0),
-      data_version_.has_value(),
+      browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
+      data_version_.value_or(0), data_version_.has_value(),
       base::BindLambdaForTesting(
           [&run_loop](const absl::optional<GURL>& report_url,
                       const std::vector<std::string>& errors) {
@@ -2062,8 +2161,10 @@ TEST_F(BidderWorkletTest, GenerateBidTimedOut) {
             v8_helper->set_script_timeout_for_testing(script_timeout);
           },
           v8_helper_, kScriptTimeout));
-  per_buyer_timeout_ = base::Milliseconds(20);
+  // Make sure set_script_timeout_for_testing is called.
+  task_environment_.RunUntilIdle();
 
+  per_buyer_timeout_ = base::Milliseconds(20);
   RunGenerateBidWithJavascriptExpectingResult(
       CreateGenerateBidScript(/*raw_return_value=*/"", R"(while (1))"),
       /*expected_bid=*/mojom::BidderWorkletBidPtr(),
@@ -2136,8 +2237,8 @@ TEST_F(BidderWorkletTest, DeleteBeforeReportWinCallback) {
   bidder_worklet->ReportWin(
       interest_group_name_, auction_signals_, per_buyer_signals_,
       seller_signals_, browser_signal_render_url_, browser_signal_bid_,
-      browser_signal_seller_origin_, data_version_.value_or(0),
-      data_version_.has_value(),
+      browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
+      data_version_.value_or(0), data_version_.has_value(),
       base::BindOnce([](const absl::optional<GURL>& report_url,
                         const std::vector<std::string>& errors) {
         ADD_FAILURE() << "Callback should not be invoked since worklet deleted";
@@ -2174,7 +2275,8 @@ TEST_F(BidderWorkletTest, ReportWinParallel) {
           interest_group_name_,
           /*auction_signals_json=*/base::NumberToString(i), per_buyer_signals_,
           seller_signals_, browser_signal_render_url_, browser_signal_bid_,
-          browser_signal_seller_origin_, data_version_.value_or(0),
+          browser_signal_seller_origin_,
+          browser_signal_top_level_seller_origin_, data_version_.value_or(0),
           data_version_.has_value(),
           base::BindLambdaForTesting(
               [&run_loop, &num_report_win_calls, i](
@@ -2213,8 +2315,8 @@ TEST_F(BidderWorkletTest, ReportWinParallelLoadFails) {
         interest_group_name_,
         /*auction_signals_json=*/base::NumberToString(i), per_buyer_signals_,
         seller_signals_, browser_signal_render_url_, browser_signal_bid_,
-        browser_signal_seller_origin_, data_version_.value_or(0),
-        data_version_.has_value(),
+        browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
+        data_version_.value_or(0), data_version_.has_value(),
         base::BindOnce([](const absl::optional<GURL>& report_url,
                           const std::vector<std::string>& errors) {
           ADD_FAILURE() << "Callback should not be invoked.";
@@ -2245,13 +2347,7 @@ TEST_F(BidderWorkletTest, ReportWinInterestGroupName) {
 }
 
 TEST_F(BidderWorkletTest, ReportWinDataVersion) {
-  interest_group_trusted_bidding_signals_url_ = GURL("https://signals.test/");
-  interest_group_trusted_bidding_signals_keys_.emplace();
-  interest_group_trusted_bidding_signals_keys_->push_back("key1");
-  AddVersionedJsonResponse(
-      &url_loader_factory_,
-      GURL("https://signals.test/?hostname=top.window.test&keys=key1"),
-      R"({"key1":1})", 5u);
+  data_version_ = 5u;
   RunReportWinWithFunctionBodyExpectingResult(
       "sendReportTo('https://dataVersion/'+browserSignals.dataVersion)",
       GURL("https://dataVersion/5"));
@@ -2350,6 +2446,21 @@ TEST_F(BidderWorkletTest, ReportWinBrowserSignalSeller) {
       /*expected_report_url=*/seller_raw_url);
 }
 
+TEST_F(BidderWorkletTest, ReportWinBrowserSignalTopLevelSeller) {
+  browser_signal_top_level_seller_origin_ = absl::nullopt;
+  RunReportWinWithFunctionBodyExpectingResult(
+      R"(if (!("topLevelSeller" in browserSignals))
+            sendReportTo('https://pass.test');)",
+      /*expected_report_url=*/GURL("https://pass.test"));
+
+  GURL top_level_seller_raw_url = GURL("https://top.level.seller.origin.test");
+  browser_signal_top_level_seller_origin_ =
+      url::Origin::Create(top_level_seller_raw_url);
+  RunReportWinWithFunctionBodyExpectingResult(
+      "sendReportTo(browserSignals.topLevelSeller)",
+      /*expected_report_url=*/top_level_seller_raw_url);
+}
+
 // Subsequent runs of the same script should not affect each other. Same is true
 // for different scripts, but it follows from the single script case.
 //
@@ -2394,8 +2505,8 @@ TEST_F(BidderWorkletTest, ScriptIsolation) {
     bidder_worklet->ReportWin(
         interest_group_name_, auction_signals_, per_buyer_signals_,
         seller_signals_, browser_signal_render_url_, browser_signal_bid_,
-        browser_signal_seller_origin_, data_version_.value_or(0),
-        data_version_.has_value(),
+        browser_signal_seller_origin_, browser_signal_top_level_seller_origin_,
+        data_version_.value_or(0), data_version_.has_value(),
         base::BindLambdaForTesting(
             [&run_loop](const absl::optional<GURL>& report_url,
                         const std::vector<std::string>& errors) {

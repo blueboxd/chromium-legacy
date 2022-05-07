@@ -22,7 +22,6 @@ extern const base::FeatureParam<base::TimeDelta>
     kWebViewAppsMaxAllowlistThrottleTimeDelta;
 extern const base::Feature kWebViewBrotliSupport;
 extern const base::Feature kWebViewConnectionlessSafeBrowsing;
-extern const base::Feature kWebViewDarkModeMatchTheme;
 extern const base::Feature kWebViewDisplayCutout;
 extern const base::Feature kWebViewEmptyComponentLoaderPolicy;
 extern const base::Feature kWebViewExtraHeadersSameOriginOnly;
@@ -40,6 +39,8 @@ extern const base::Feature kWebViewUseMetricsUploadService;
 extern const base::Feature kWebViewWideColorGamutSupport;
 extern const base::Feature kWebViewXRequestedWithHeader;
 extern const base::FeatureParam<int> kWebViewXRequestedWithHeaderMode;
+extern const base::Feature
+    kWebViewSynthesizePageLoadOnlyOnInitialMainDocumentAccess;
 
 }  // namespace features
 }  // namespace android_webview

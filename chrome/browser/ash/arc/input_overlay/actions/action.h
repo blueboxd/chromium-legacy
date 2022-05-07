@@ -12,9 +12,12 @@
 
 #include "base/strings/string_piece.h"
 #include "base/values.h"
-#include "chrome/browser/ash/arc/input_overlay/actions/action_label.h"
-#include "chrome/browser/ash/arc/input_overlay/actions/action_view.h"
+#include "chrome/browser/ash/arc/input_overlay/actions/input_element.h"
 #include "chrome/browser/ash/arc/input_overlay/actions/position.h"
+#include "chrome/browser/ash/arc/input_overlay/constants.h"
+#include "chrome/browser/ash/arc/input_overlay/display_overlay_controller.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/action_label.h"
+#include "chrome/browser/ash/arc/input_overlay/ui/action_view.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/gfx/geometry/point_f.h"
@@ -23,7 +26,11 @@
 namespace arc {
 namespace input_overlay {
 
+constexpr char kKeyboard[] = "keyboard";
+constexpr char kMouse[] = "mouse";
+
 class ActionView;
+class DisplayOverlayController;
 
 // Parse position from Json.
 std::unique_ptr<Position> ParsePosition(const base::Value& value);
@@ -63,8 +70,14 @@ class Action {
   // Get the UI location in the content view.
   virtual gfx::PointF GetUICenterPosition(const gfx::RectF& content_bounds) = 0;
   virtual std::unique_ptr<ActionView> CreateView(
+      DisplayOverlayController* display_overlay_controller,
       const gfx::RectF& content_bounds) = 0;
 
+  bool IsNoneBound();
+  bool IsKeyboardBound();
+  bool IsMouseBound();
+
+  InputElement* current_binding() const { return current_binding_.get(); }
   const std::string& name() { return name_; }
   const std::vector<std::unique_ptr<Position>>& locations() const {
     return locations_;
@@ -90,6 +103,11 @@ class Action {
   void OnTouchReleased();
   void OnTouchCancelled();
 
+  // Original input binding.
+  std::unique_ptr<InputElement> original_binding_;
+  // Current input binding.
+  std::unique_ptr<InputElement> current_binding_;
+
   // name_ is basically for debugging and not visible to users.
   std::string name_;
   // Location take turns for each key press if there are more than
@@ -99,7 +117,7 @@ class Action {
   // is locked. Once the mouse is unlocked, the active actions which need mouse
   // lock will be released.
   bool require_mouse_locked_ = false;
-
+  int parsed_input_sources_ = 0;
   aura::Window* target_window_;
   absl::optional<int> touch_id_;
   size_t current_position_index_ = 0;

@@ -618,7 +618,6 @@
 <translation id="5170206230005240598">ബ്രെയ്‌ലി അടിക്കുറിപ്പുകൾ പ്രവർത്തനക്ഷമമാക്കി</translation>
 <translation id="5183440668879371625">മുമ്പത്തെ ബ്രെയ്‌ലി വരി</translation>
 <translation id="5189244881767082992">വരി</translation>
-<translation id="5234747236692380506"><ph name="TEXT" /> ടൈപ്പ് ചെയ്യുക</translation>
 <translation id="5263034204789987535">കോൺസിൽക്ക്</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">അവസാനിപ്പിക്കുക</translation>
@@ -794,6 +793,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{കോളൻ}other{# കോളനുകൾ}}</translation>
 <translation id="6444046323172968959">മുന്നറിയിപ്പ് ഡയലോഗ്</translation>
 <translation id="6452403590345320472">ഉള്ളടക്ക പട്ടിക</translation>
+<translation id="6457542714329819968">ടൈപ്പ് ചെയ്യുക</translation>
 <translation id="6468049171101508116">അടുത്ത ബട്ടൺ</translation>
 <translation id="646954774886932461">സൂചിക</translation>
 <translation id="6475604559827479857">പദ ഹൈലൈറ്റുകളുടെ നിറം:</translation>

@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Help make Chrome better by sending usage statistics and crash reports to Google.</translation>
 <translation id="417201473131094001">Not supported on Chrome Canary</translation>
 <translation id="4214277427269650960">Sign in to this site and Chrome. You can turn on sync later.</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> was using Chrome and left bookmarks, passwords and other settings on this device.</translation>
 <translation id="424864128008805179">Sign out of Chrome?</translation>
 <translation id="4249068189593983585">Chrome tip. For more tab options, touch and hold the Show Tabs button in the toolbar, which is at the bottom or top of your screen.</translation>
 <translation id="4523886039239821078">Some add-ons cause Chrome to crash. Please uninstall:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome couldn't check all passwords. Try again tomorrow or <ph name="BEGIN_LINK" />check passwords in your Google Account.<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">Not supported on Chrome beta</translation>
 <translation id="5030102366287574140">Chrome can help keep you safe from data breaches, unsafe websites and more.</translation>
+<translation id="5108659628347594808">Make Chrome better</translation>
 <translation id="5119391094379141756">Select Chrome</translation>
 <translation id="5162467219239570114">Chrome is out of date. If no update is available in the <ph name="BEGIN_LINK" />app store<ph name="END_LINK" />, it's possible that your device doesn't support new versions of Chrome anymore.</translation>
 <translation id="5389212809648216794">Google Chrome can't use your camera because it's in use by another application</translation>
@@ -81,6 +83,15 @@
 <translation id="6709398533399187136">Your password was exposed in a data breach. Google Password Manager recommends changing it now.</translation>
 <translation id="6822673484890854830">Chrome couldn't check all passwords. Try again later.</translation>
 <translation id="6964931465519938134">You can now use Chrome whenever you tap on links in messages, documents and other apps.</translation>
+<translation id="7046845777663074840">When on:
+<ph name="BEGIN_INDENT" />  • Help make Chrome better for people who use it the way that you do.<ph name="END_INDENT" />
+
+Things to consider:
+<ph name="BEGIN_INDENT" />  • Info is sent to Google about your Chrome usage, but it isn't tied to you.
+
+  • If Chrome crashes, details about the crash may include some personal info.
+
+  • If you turn on sync, metrics may also include info about URLs that you visit.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Make Chrome your own</translation>
 <translation id="7124339256045485976">Keep Chrome up to date</translation>
 <translation id="7161390184744336561">Google Chrome is out of date</translation>

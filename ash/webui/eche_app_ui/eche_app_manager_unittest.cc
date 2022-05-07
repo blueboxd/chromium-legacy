@@ -8,9 +8,12 @@
 
 #include "ash/components/phonehub/fake_phone_hub_manager.h"
 #include "ash/components/phonehub/phone_hub_manager.h"
+#include "ash/services/device_sync/public/cpp/fake_device_sync_client.h"
+#include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "ash/services/secure_channel/public/cpp/client/fake_secure_channel_client.h"
 #include "ash/services/secure_channel/public/cpp/client/presence_monitor_client.h"
 #include "ash/services/secure_channel/public/cpp/client/presence_monitor_client_impl.h"
+#include "ash/webui/eche_app_ui/eche_display_stream_handler.h"
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
 #include "ash/webui/eche_app_ui/system_info.h"
 #include "base/bind.h"
@@ -19,13 +22,12 @@
 #include "base/test/task_environment.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_test_util.h"
-#include "chromeos/services/device_sync/public/cpp/fake_device_sync_client.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
 #include "components/prefs/testing_pref_service.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_debug_manager_client.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/image/image.h"
 
 namespace ash {
 namespace eche_app {
@@ -36,12 +38,15 @@ void CloseEcheAppFunction() {}
 void LaunchEcheAppFunction(const absl::optional<int64_t>& notification_id,
                            const std::string& package_name,
                            const std::u16string& visible_name,
-                           const absl::optional<int64_t>& user_id) {}
+                           const absl::optional<int64_t>& user_id,
+                           const gfx::Image& icon) {}
 
 void LaunchNotificationFunction(
     const absl::optional<std::u16string>& title,
     const absl::optional<std::u16string>& message,
     std::unique_ptr<LaunchAppHelper::NotificationInfo> info) {}
+
+void StreamStatusChangedFunction(const mojom::StreamStatus status) {}
 
 class FakePresenceMonitorClient : public secure_channel::PresenceMonitorClient {
  public:
@@ -51,9 +56,9 @@ class FakePresenceMonitorClient : public secure_channel::PresenceMonitorClient {
  private:
   // secure_channel::PresenceMonitorClient:
   void SetPresenceMonitorCallbacks(
-      chromeos::secure_channel::PresenceMonitor::ReadyCallback ready_callback,
-      chromeos::secure_channel::PresenceMonitor::DeviceSeenCallback
-          device_seen_callback) override {}
+      secure_channel::PresenceMonitor::ReadyCallback ready_callback,
+      secure_channel::PresenceMonitor::DeviceSeenCallback device_seen_callback)
+      override {}
   void StartMonitoring(
       const multidevice::RemoteDeviceRef& remote_device_ref,
       const multidevice::RemoteDeviceRef& local_device_ref) override {}
@@ -98,7 +103,7 @@ class EcheAppManagerTest : public testing::Test {
     fake_multidevice_setup_client_ =
         std::make_unique<multidevice_setup::FakeMultiDeviceSetupClient>();
     fake_secure_channel_client_ =
-        std::make_unique<chromeos::secure_channel::FakeSecureChannelClient>();
+        std::make_unique<secure_channel::FakeSecureChannelClient>();
 
     std::unique_ptr<FakePresenceMonitorClient> fake_presence_monitor_client =
         std::make_unique<FakePresenceMonitorClient>();
@@ -114,7 +119,8 @@ class EcheAppManagerTest : public testing::Test {
         std::move(fake_presence_monitor_client),
         base::BindRepeating(&LaunchEcheAppFunction),
         base::BindRepeating(&CloseEcheAppFunction),
-        base::BindRepeating(&LaunchNotificationFunction));
+        base::BindRepeating(&LaunchNotificationFunction),
+        base::BindRepeating(&StreamStatusChangedFunction));
   }
 
   mojo::Remote<mojom::SignalingMessageExchanger>&
@@ -134,6 +140,10 @@ class EcheAppManagerTest : public testing::Test {
     return notification_generator_remote_;
   }
 
+  mojo::Remote<mojom::DisplayStreamHandler>& display_stream_handler_remote() {
+    return display_stream_handler_remote_;
+  }
+
   void Bind() {
     manager_->BindSignalingMessageExchangerInterface(
         signaling_message_exchanger_remote_.BindNewPipeAndPassReceiver());
@@ -143,6 +153,8 @@ class EcheAppManagerTest : public testing::Test {
         uid_generator_remote_.BindNewPipeAndPassReceiver());
     manager_->BindNotificationGeneratorInterface(
         notification_generator_remote_.BindNewPipeAndPassReceiver());
+    manager_->BindDisplayStreamHandlerInterface(
+        display_stream_handler_remote_.BindNewPipeAndPassReceiver());
   }
 
  private:
@@ -154,7 +166,7 @@ class EcheAppManagerTest : public testing::Test {
   std::unique_ptr<device_sync::FakeDeviceSyncClient> fake_device_sync_client_;
   std::unique_ptr<multidevice_setup::FakeMultiDeviceSetupClient>
       fake_multidevice_setup_client_;
-  std::unique_ptr<chromeos::secure_channel::FakeSecureChannelClient>
+  std::unique_ptr<secure_channel::FakeSecureChannelClient>
       fake_secure_channel_client_;
   std::unique_ptr<EcheAppManager> manager_;
 
@@ -163,6 +175,7 @@ class EcheAppManagerTest : public testing::Test {
   mojo::Remote<mojom::SystemInfoProvider> system_info_provider_remote_;
   mojo::Remote<mojom::UidGenerator> uid_generator_remote_;
   mojo::Remote<mojom::NotificationGenerator> notification_generator_remote_;
+  mojo::Remote<mojom::DisplayStreamHandler> display_stream_handler_remote_;
 };
 
 TEST_F(EcheAppManagerTest, BindCheck) {
@@ -170,6 +183,7 @@ TEST_F(EcheAppManagerTest, BindCheck) {
   EXPECT_FALSE(system_info_provider_remote());
   EXPECT_FALSE(uid_generator_remote());
   EXPECT_FALSE(notification_generator_remote());
+  EXPECT_FALSE(display_stream_handler_remote());
 
   Bind();
 
@@ -177,6 +191,7 @@ TEST_F(EcheAppManagerTest, BindCheck) {
   EXPECT_TRUE(system_info_provider_remote());
   EXPECT_TRUE(uid_generator_remote());
   EXPECT_TRUE(notification_generator_remote());
+  EXPECT_TRUE(display_stream_handler_remote());
 }
 
 }  // namespace eche_app

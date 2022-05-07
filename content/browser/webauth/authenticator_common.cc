@@ -380,25 +380,20 @@ base::flat_set<device::FidoTransportProtocol> GetWebAuthnTransports(
     transports.insert(device::FidoTransportProtocol::kInternal);
   }
 
-  // caBLE devices don't yet support discoverable credentials and so we
-  // shouldn't offer them for such requests unless forced by a feature flag.
-  if (!uses_discoverable_creds ||
-      base::FeatureList::IsEnabled(device::kWebAuthCableDisco)) {
-    if (base::FeatureList::IsEnabled(features::kWebAuthCable)) {
-      transports.insert(
-          device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
-    }
-
-    // kAndroidAccessory doesn't work on Windows because of USB stack issues.
-    // Note: even if this value were inserted it wouldn't take effect on Windows
-    // versions with a native API because FidoRequestHandlerBase filters out
-    // non-kCloudAssistedBluetoothLowEnergy transports in that case.
-#if !BUILDFLAG(IS_WIN)
-    // In order for AOA to be active the |AuthenticatorRequestClientDelegate|
-    // must still configure a |UsbDeviceManager|.
-    transports.insert(device::FidoTransportProtocol::kAndroidAccessory);
-#endif
+  if (base::FeatureList::IsEnabled(features::kWebAuthCable)) {
+    transports.insert(
+        device::FidoTransportProtocol::kCloudAssistedBluetoothLowEnergy);
   }
+
+  // kAndroidAccessory doesn't work on Windows because of USB stack issues.
+  // Note: even if this value were inserted it wouldn't take effect on Windows
+  // versions with a native API because FidoRequestHandlerBase filters out
+  // non-kCloudAssistedBluetoothLowEnergy transports in that case.
+#if !BUILDFLAG(IS_WIN)
+  // In order for AOA to be active the |AuthenticatorRequestClientDelegate|
+  // must still configure a |UsbDeviceManager|.
+  transports.insert(device::FidoTransportProtocol::kAndroidAccessory);
+#endif
 
   return transports;
 }
@@ -658,6 +653,13 @@ void AuthenticatorCommon::MakeCredential(
     return;
   }
 
+  status = security_checker_->ValidateDomainAndRelyingPartyID(
+      caller_origin, options->relying_party.id, request_type);
+  if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+    CompleteMakeCredentialRequest(status);
+    return;
+  }
+
   request_delegate_ = MaybeCreateRequestDelegate();
   if (!request_delegate_) {
     CompleteMakeCredentialRequest(
@@ -665,26 +667,8 @@ void AuthenticatorCommon::MakeCredential(
     return;
   }
 
-  absl::optional<std::string> rp_id =
-      GetWebAuthenticationDelegate()->MaybeGetRelyingPartyIdOverride(
-          options->relying_party.id, caller_origin);
-
-  if (!rp_id) {
-    // If the delegate didn't override RP ID selection then apply standard
-    // rules.
-    rp_id = std::move(options->relying_party.id);
-    status = security_checker_->ValidateDomainAndRelyingPartyID(
-        caller_origin, *rp_id, request_type);
-    if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
-      CompleteMakeCredentialRequest(status);
-      return;
-    }
-  }
-
   caller_origin_ = caller_origin;
-  relying_party_id_ = *rp_id;
-  options->relying_party.id = std::move(*rp_id);
-  request_delegate_->SetRelyingPartyId(relying_party_id_);
+  relying_party_id_ = options->relying_party.id;
 
   // If there is an active webAuthenticationProxy extension, let it handle the
   // request.
@@ -696,6 +680,17 @@ void AuthenticatorCommon::MakeCredential(
                        weak_factory_.GetWeakPtr()));
     return;
   }
+
+  // Let the embedder override the RP ID to use for the request. In practice
+  // this rewrites the RP ID that Chrome extensions use.
+  absl::optional<std::string> rp_id_override =
+      GetWebAuthenticationDelegate()->MaybeGetRelyingPartyIdOverride(
+          options->relying_party.id, caller_origin);
+  if (rp_id_override) {
+    options->relying_party.id = *rp_id_override;
+    relying_party_id_ = *rp_id_override;
+  }
+  request_delegate_->SetRelyingPartyId(relying_party_id_);
 
   device::fido_filter::MaybeInitialize();
   switch (device::fido_filter::Evaluate(
@@ -958,6 +953,13 @@ void AuthenticatorCommon::GetAssertion(
     return;
   }
 
+  status = security_checker_->ValidateDomainAndRelyingPartyID(
+      caller_origin, options->relying_party_id, request_type);
+  if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
+    CompleteGetAssertionRequest(status);
+    return;
+  }
+
   request_delegate_ = MaybeCreateRequestDelegate();
   if (!request_delegate_) {
     CompleteGetAssertionRequest(
@@ -965,28 +967,8 @@ void AuthenticatorCommon::GetAssertion(
     return;
   }
 
-  absl::optional<std::string> rp_id =
-      GetWebAuthenticationDelegate()->MaybeGetRelyingPartyIdOverride(
-          options->relying_party_id, caller_origin);
-
-  if (!rp_id) {
-    // If the delegate didn't override RP ID selection then apply standard
-    // rules.
-    status = security_checker_->ValidateDomainAndRelyingPartyID(
-        caller_origin, options->relying_party_id, request_type);
-    if (status != blink::mojom::AuthenticatorStatus::SUCCESS) {
-      CompleteGetAssertionRequest(status);
-      return;
-    }
-
-    rp_id = std::move(options->relying_party_id);
-  }
-
   caller_origin_ = caller_origin;
-  relying_party_id_ = *rp_id;
-  options->relying_party_id = std::move(*rp_id);
-  request_delegate_->SetRelyingPartyId(relying_party_id_);
-
+  relying_party_id_ = options->relying_party_id;
   WebAuthenticationRequestProxy* proxy = GetWebAuthnRequestProxyIfActive();
   if (proxy) {
     pending_proxied_request_id_ = proxy->SignalGetRequest(
@@ -995,6 +977,17 @@ void AuthenticatorCommon::GetAssertion(
                        weak_factory_.GetWeakPtr()));
     return;
   }
+
+  // Let the embedder override the RP ID to use for the request. In practice
+  // this rewrites the RP ID that Chrome extension use.
+  absl::optional<std::string> rp_id_override =
+      GetWebAuthenticationDelegate()->MaybeGetRelyingPartyIdOverride(
+          options->relying_party_id, caller_origin);
+  if (rp_id_override) {
+    options->relying_party_id = *rp_id_override;
+    relying_party_id_ = *rp_id_override;
+  }
+  request_delegate_->SetRelyingPartyId(relying_party_id_);
 
   const bool origin_is_crypto_token_extension =
       WebAuthRequestSecurityChecker::OriginIsCryptoTokenExtension(

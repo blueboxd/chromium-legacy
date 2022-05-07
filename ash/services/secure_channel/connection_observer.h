@@ -7,9 +7,7 @@
 
 #include "ash/services/secure_channel/connection.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 class WireMessage;
 
@@ -36,13 +34,6 @@ class ConnectionObserver {
                                bool success) {}
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash::secure_channel {
-using ::chromeos::secure_channel::ConnectionObserver;
-}
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_CONNECTION_OBSERVER_H_

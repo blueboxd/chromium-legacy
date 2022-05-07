@@ -7,17 +7,13 @@
 
 #include <memory>
 
-#include "ash/services/secure_channel/foreground_eid_generator.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chromeos/components/multidevice/remote_device_ref.h"
 
-namespace chromeos {
-namespace secure_channel {
-class SecureChannelBluetoothHelperImplTest;
-}
-}  // namespace chromeos
-
 namespace ash::secure_channel {
+
+class ForegroundEidGenerator;
+struct DataWithTimestamp;
 
 // Generates advertisements for the ProximityAuth BLE advertisement scheme.
 class BleAdvertisementGenerator {
@@ -44,7 +40,7 @@ class BleAdvertisementGenerator {
 
  private:
   friend class SecureChannelBleAdvertisementGeneratorTest;
-  friend class chromeos::secure_channel::SecureChannelBluetoothHelperImplTest;
+  friend class SecureChannelBluetoothHelperImplTest;
 
   static BleAdvertisementGenerator* instance_;
 
@@ -58,10 +54,5 @@ class BleAdvertisementGenerator {
 };
 
 }  // namespace ash::secure_channel
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace chromeos::secure_channel {
-using ::ash::secure_channel::BleAdvertisementGenerator;
-}
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_BLE_ADVERTISEMENT_GENERATOR_H_

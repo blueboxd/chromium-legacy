@@ -453,8 +453,8 @@ bool IsNodeRelevantForAccessibility(const Node* node,
   if (!node || !node->isConnected())
     return false;
 
-  if (node->IsDocumentNode())
-    return true;
+  if (const Document* document = DynamicTo<Document>(node))
+    return document->GetFrame();  // Only relevant if the document has a frame.
 
   if (node->ContainingShadowRoot() &&
       !IsShadowContentRelevantForAccessibility(node)) {
@@ -2407,13 +2407,23 @@ void AXObjectCacheImpl::ProcessInvalidatedObjects(Document& document) {
     Node* node = current->GetNode();
     DCHECK(node) << "Refresh() is currently only supported for objects "
                     "with a backing node.";
+    bool is_ax_layout_object = current->GetLayoutObject();
+    bool will_be_ax_layout_object =
+        node->GetLayoutObject() &&
+        IsLayoutObjectRelevantForAccessibility(*node->GetLayoutObject()) &&
+        !IsDisplayLocked(node->GetLayoutObject());
+    if (is_ax_layout_object == will_be_ax_layout_object)
+      return static_cast<AXObject*>(nullptr);  // No change in the AXObject.
+
     AXID retained_axid = current->AXObjectID();
     // Remove from relevant maps, but not from relation cache, as the relations
     // between AXIDs will still be the same.
     node_object_mapping_.erase(node);
-    if (current->GetLayoutObject()) {
+    if (is_ax_layout_object) {
       layout_object_mapping_.erase(current->GetLayoutObject());
-    } else if (node->GetLayoutObject()) {
+    } else {
+      DCHECK(will_be_ax_layout_object);
+      DCHECK(node->GetLayoutObject());
       DCHECK(!layout_object_mapping_.Contains(node->GetLayoutObject()))
           << node << " " << node->GetLayoutObject();
     }
@@ -2702,9 +2712,6 @@ void AXObjectCacheImpl::FireAXEventImmediately(
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(*obj->GetDocument());
 #endif  // DCHECK_IS_ON()
 
-  PostPlatformNotification(obj, event_type, event_from, event_from_action,
-                           event_intents);
-
   if (event_type == ax::mojom::blink::Event::kChildrenChanged &&
       obj->CachedParentObject()) {
     const bool was_ignored = obj->LastKnownIsIgnoredValue();
@@ -2716,6 +2723,9 @@ void AXObjectCacheImpl::FireAXEventImmediately(
     if (is_ignored != was_ignored || was_in_tree != is_in_tree)
       ChildrenChangedWithCleanLayout(obj->CachedParentObject());
   }
+
+  PostPlatformNotification(obj, event_type, event_from, event_from_action,
+                           event_intents);
 }
 
 bool AXObjectCacheImpl::IsAriaOwned(const AXObject* object) const {
@@ -2816,6 +2826,23 @@ void AXObjectCacheImpl::HandleAriaExpandedChangeWithCleanLayout(Node* node) {
   DCHECK(!node->GetDocument().NeedsLayoutTreeUpdateForNode(*node));
   if (AXObject* obj = GetOrCreate(node))
     obj->HandleAriaExpandedChanged();
+}
+
+void AXObjectCacheImpl::HandleAriaPressedChangedWithCleanLayout(
+    Element* element) {
+  AXObject* ax_object = Get(element);
+  if (!ax_object)
+    return;
+
+  ax::mojom::blink::Role previous_role = ax_object->RoleValue();
+  bool was_toggle_button =
+      previous_role == ax::mojom::blink::Role::kToggleButton;
+  bool is_toggle_button = ax_object->HasAttribute(html_names::kAriaPressedAttr);
+
+  if (was_toggle_button != is_toggle_button)
+    HandleRoleChangeWithCleanLayout(element);
+  else
+    PostNotification(element, ax::mojom::blink::Event::kCheckedStateChanged);
 }
 
 void AXObjectCacheImpl::HandleAriaSelectedChangedWithCleanLayout(Node* node) {
@@ -2938,7 +2965,7 @@ void AXObjectCacheImpl::SectionOrRegionRoleMaybeChanged(Element* element) {
   if (ax_object->RoleValue() == ax_object->DetermineAccessibilityRole())
     return;
 
-  Invalidate(element->GetDocument(), ax_object->AXObjectID());
+  HandleRoleChangeWithCleanLayout(element);
 }
 
 // Be as safe as possible about changes that could alter the accessibility role,
@@ -3097,9 +3124,10 @@ void AXObjectCacheImpl::HandleAttributeChangedWithCleanLayout(
   } else if (attr_name == html_names::kAriaDescriptionAttr ||
              attr_name == html_names::kAriaDescribedbyAttr) {
     TextChangedWithCleanLayout(element);
-  } else if (attr_name == html_names::kAriaCheckedAttr ||
-             attr_name == html_names::kAriaPressedAttr) {
+  } else if (attr_name == html_names::kAriaCheckedAttr) {
     PostNotification(element, ax::mojom::blink::Event::kCheckedStateChanged);
+  } else if (attr_name == html_names::kAriaPressedAttr) {
+    HandleAriaPressedChangedWithCleanLayout(element);
   } else if (attr_name == html_names::kAriaSelectedAttr) {
     HandleAriaSelectedChangedWithCleanLayout(element);
   } else if (attr_name == html_names::kAriaExpandedAttr) {
@@ -3492,7 +3520,7 @@ AXObject* AXObjectCacheImpl::GetSerializationTarget(AXObject* obj) {
   }
 
   // Return included in tree object.
-  if (obj->LastKnownIsIncludedInTreeValue())
+  if (obj->AccessibilityIsIncludedInTree())
     return obj;
 
   return obj->ParentObjectIncludedInTree();
@@ -3773,6 +3801,8 @@ void AXObjectCacheImpl::DidHideMenuListPopupWithCleanLayout(Node* menu_list) {
 void AXObjectCacheImpl::HandleLoadStart(Document* document) {
   SCOPED_DISALLOW_LIFECYCLE_TRANSITION(*document);
   MarkAXObjectDirty(Get(document));
+  DeferTreeUpdate(&AXObjectCacheImpl::EnsurePostNotification, document,
+                  ax::mojom::blink::Event::kLoadStart);
 }
 
 void AXObjectCacheImpl::HandleLoadComplete(Document* document) {

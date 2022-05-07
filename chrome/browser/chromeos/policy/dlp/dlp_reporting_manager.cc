@@ -117,10 +117,12 @@ DlpPolicyEvent_UserType GetCurrentUserType() {
   DCHECK(chromeos::LacrosService::Get());
   switch (chromeos::LacrosService::Get()->init_params()->session_type) {
     case crosapi::mojom::SessionType::kRegularSession:
+    case crosapi::mojom::SessionType::kChildSession:
       return DlpPolicyEvent_UserType_REGULAR;
     case crosapi::mojom::SessionType::kPublicSession:
       return DlpPolicyEvent_UserType_MANAGED_GUEST;
     case crosapi::mojom::SessionType::kWebKioskSession:
+    case crosapi::mojom::SessionType::kAppKioskSession:
       return DlpPolicyEvent_UserType_KIOSK;
     case crosapi::mojom::SessionType::kUnknown:
     case crosapi::mojom::SessionType::kGuestSession:
@@ -140,7 +142,9 @@ DlpPolicyEvent CreateDlpPolicyEvent(const std::string& src_pattern,
 
   event.set_restriction(
       DlpRulesManagerRestriction2DlpEventRestriction(restriction));
-  event.set_timestamp_micro(base::Time::Now().ToTimeT());
+  int64_t timestamp_micro =
+      (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
+  event.set_timestamp_micro(timestamp_micro);
   event.set_user_type(GetCurrentUserType());
   event.set_mode(DlpRulesManagerLevel2DlpEventMode(level));
 

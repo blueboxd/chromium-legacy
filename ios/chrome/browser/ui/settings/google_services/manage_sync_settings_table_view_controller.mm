@@ -90,13 +90,13 @@
     viewForFooterInSection:(NSInteger)section {
   UIView* view = [super tableView:tableView viewForFooterInSection:section];
 
-  if (![self.tableViewModel footerForSection:section]) {
+  if (![self.tableViewModel footerForSectionIndex:section]) {
     // Don't set up the footer view when there isn't a footer in the model.
     return view;
   }
 
   NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:section];
+      [self.tableViewModel sectionIdentifierForSectionIndex:section];
 
   if (sectionIdentifier == SignOutSectionIdentifier) {
     TableViewLinkHeaderFooterView* linkView =

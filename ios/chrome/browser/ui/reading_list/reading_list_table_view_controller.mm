@@ -5,7 +5,6 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_table_view_controller.h"
 
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/ios/ios_util.h"
 #include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -355,8 +354,8 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   }
   if (self.editing) {
     // Update the selected item counts and the toolbar buttons.
-    NSInteger sectionID =
-        [self.tableViewModel sectionIdentifierForSection:indexPath.section];
+    NSInteger sectionID = [self.tableViewModel
+        sectionIdentifierForSectionIndex:indexPath.section];
     if (sectionID == SectionIdentifierUnread)
       self.selectedUnreadItemCount++;
     if (sectionID == SectionIdentifierRead)
@@ -373,8 +372,8 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
     didDeselectRowAtIndexPath:(NSIndexPath*)indexPath {
   if (self.editing) {
     // Update the selected item counts and the toolbar buttons.
-    NSInteger sectionID =
-        [self.tableViewModel sectionIdentifierForSection:indexPath.section];
+    NSInteger sectionID = [self.tableViewModel
+        sectionIdentifierForSectionIndex:indexPath.section];
     if (sectionID == SectionIdentifierUnread)
       self.selectedUnreadItemCount--;
     if (sectionID == SectionIdentifierRead)
@@ -757,7 +756,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 
   TableViewModel* model = self.tableViewModel;
   [model addSectionWithIdentifier:sectionID];
-  [model setHeader:[self headerForSection:sectionID]
+  [model setHeader:[self headerForSectionIndex:sectionID]
       forSectionWithIdentifier:sectionID];
   for (TableViewItem<ReadingListListItem>* item in items) {
     item.type = ItemTypeItem;
@@ -768,7 +767,8 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 
 // Returns a TableViewTextItem that displays the title for the section
 // designated by |sectionID|.
-- (TableViewHeaderFooterItem*)headerForSection:(SectionIdentifier)sectionID {
+- (TableViewHeaderFooterItem*)headerForSectionIndex:
+    (SectionIdentifier)sectionID {
   TableViewTextHeaderFooterItem* header =
       [[TableViewTextHeaderFooterItem alloc] initWithType:ItemTypeHeader];
 
@@ -924,7 +924,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   // Move the item in |model|.
   [self deleteItemAtIndexPathFromModel:modelIndex];
   NSInteger toSectionID =
-      [model sectionIdentifierForSection:toIndexPath.section];
+      [model sectionIdentifierForSectionIndex:toIndexPath.section];
   [model insertItem:item
       inSectionWithIdentifier:toSectionID
                       atIndex:toIndexPath.row];
@@ -953,7 +953,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 
   void (^updates)(void) = ^{
     [model insertSectionWithIdentifier:sectionID atIndex:sectionIndex];
-    [model setHeader:[self headerForSection:sectionID]
+    [model setHeader:[self headerForSectionIndex:sectionID]
         forSectionWithIdentifier:sectionID];
     [self.tableView insertSections:[NSIndexSet indexSetWithIndex:sectionIndex]
                   withRowAnimation:UITableViewRowAnimationMiddle];
@@ -1014,7 +1014,8 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
 // Deletes the ListItem corresponding to |indexPath| in the model.
 - (void)deleteItemAtIndexPathFromModel:(NSIndexPath*)indexPath {
   TableViewModel* model = self.tableViewModel;
-  NSInteger sectionID = [model sectionIdentifierForSection:indexPath.section];
+  NSInteger sectionID =
+      [model sectionIdentifierForSectionIndex:indexPath.section];
   NSInteger itemType = [model itemTypeForIndexPath:indexPath];
   NSUInteger index = [model indexInItemTypeForIndexPath:indexPath];
   [model removeItemWithType:itemType
@@ -1083,7 +1084,7 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   void (^updates)(void) = ^{
     SectionIdentifier sections[] = {SectionIdentifierRead,
                                     SectionIdentifierUnread};
-    for (size_t i = 0; i < base::size(sections); ++i) {
+    for (size_t i = 0; i < std::size(sections); ++i) {
       SectionIdentifier section = sections[i];
 
       if ([model hasSectionForSectionIdentifier:section] &&
@@ -1134,32 +1135,6 @@ ReadingListSelectionState GetSelectionStateForSelectedCounts(
   self.tableView.alwaysBounceVertical = NO;
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
   [self.audience readingListHasItems:NO];
-}
-
-#pragma mark - Gesture Helpers
-
-// Shows the context menu for a long press from |recognizer|.
-- (void)handleLongPress:(UILongPressGestureRecognizer*)recognizer {
-  if (self.editing || recognizer.state != UIGestureRecognizerStateBegan)
-    return;
-
-  CGPoint location = [recognizer locationOfTouch:0 inView:self.tableView];
-  NSIndexPath* indexPath = [self.tableView indexPathForRowAtPoint:location];
-  if (!indexPath)
-    return;
-
-  if (![self.tableViewModel hasItemAtIndexPath:indexPath])
-    return;
-
-  TableViewItem<ReadingListListItem>* item =
-      [self.tableViewModel itemAtIndexPath:indexPath];
-  if (item.type != ItemTypeItem) {
-    return;
-  }
-
-  [self.delegate readingListListViewController:self
-                     displayContextMenuForItem:item
-                                       atPoint:location];
 }
 
 #pragma mark - Accessibility

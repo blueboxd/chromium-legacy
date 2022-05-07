@@ -87,7 +87,7 @@ public class TabModelImpl extends TabModelJniBridge {
 
     public TabModelImpl(@NonNull Profile profile, @ActivityType int activityType,
             TabCreator regularTabCreator, TabCreator incognitoTabCreator,
-            TabModelOrderController orderController, TabContentManager tabContentManager,
+            TabModelOrderController orderController, @NonNull TabContentManager tabContentManager,
             NextTabPolicySupplier nextTabPolicySupplier,
             AsyncTabParamsManager asyncTabParamsManager, TabModelDelegate modelDelegate,
             boolean supportUndo) {
@@ -96,6 +96,7 @@ public class TabModelImpl extends TabModelJniBridge {
         mIncognitoTabCreator = incognitoTabCreator;
         mOrderController = orderController;
         mTabContentManager = tabContentManager;
+        assert mTabContentManager != null;
         mNextTabPolicySupplier = nextTabPolicySupplier;
         mAsyncTabParamsManager = asyncTabParamsManager;
         mModelDelegate = modelDelegate;
@@ -651,10 +652,9 @@ public class TabModelImpl extends TabModelJniBridge {
      *     notification.
      */
     private void finalizeTabClosure(Tab tab, boolean notifyTabClosureCommitted) {
-        if (mTabContentManager != null) mTabContentManager.removeTabThumbnail(tab.getId());
+        mTabContentManager.removeTabThumbnail(tab.getId());
 
         for (TabModelObserver obs : mObservers) obs.didCloseTab(tab);
-        for (TabModelObserver obs : mObservers) obs.didCloseTab(tab.getId(), tab.isIncognito());
         if (notifyTabClosureCommitted) {
             for (TabModelObserver obs : mObservers) obs.tabClosureCommitted(tab);
         }
@@ -871,7 +871,7 @@ public class TabModelImpl extends TabModelJniBridge {
 
         // If there are no pending closures in the rewound list,
         // then try to restore the tab from the native tab restore service.
-        mRecentlyClosedBridge.openRecentlyClosedTab();
+        mRecentlyClosedBridge.openMostRecentlyClosedTab(this);
         // If there is only one tab, select it.
         if (getCount() == 1) setIndex(0, TabSelectionType.FROM_NEW, false);
     }

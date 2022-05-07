@@ -5,12 +5,11 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_HOST_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_HOST_H_
 
+#include <stdint.h>
+
 #include <memory>
 
 #include "base/containers/flat_map.h"
-#include "base/gtest_prod_util.h"
-#include "content/browser/attribution_reporting/attribution_manager.h"
-#include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_frame_host_receiver_set.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -20,6 +19,7 @@
 
 namespace content {
 
+class AttributionManagerProvider;
 class AttributionPageMetrics;
 class WebContents;
 
@@ -72,13 +72,12 @@ class CONTENT_EXPORT AttributionHost
     blink::Impression impression;
   };
 
-  AttributionHost(WebContents* web_contents,
-                  std::unique_ptr<AttributionManager::Provider>
-                      attribution_manager_provider);
+  AttributionHost(
+      WebContents* web_contents,
+      std::unique_ptr<AttributionManagerProvider> attribution_manager_provider);
 
   // blink::mojom::ConversionHost:
   void RegisterConversion(blink::mojom::ConversionPtr conversion) override;
-  void RegisterImpression(const blink::Impression& impression) override;
   void RegisterDataHost(mojo::PendingReceiver<blink::mojom::AttributionDataHost>
                             data_host) override;
 
@@ -89,15 +88,6 @@ class CONTENT_EXPORT AttributionHost
   // Notifies an impression.
   void NotifyImpressionInitiatedByPage(const url::Origin& impression_origin,
                                        const blink::Impression& impression);
-
-  // Stores the impression if conversion measurement is allowed for the
-  // impression origin and reporting origin and the impressionorigin, reporting
-  // origin, and conversion destination are potentially trustworthy. Returns
-  // whether the impression was stored.
-  bool VerifyAndStoreImpression(CommonSourceInfo::SourceType source_type,
-                                const url::Origin& impression_origin,
-                                const blink::Impression& impression,
-                                AttributionManager& attribution_manager);
 
   // Map which stores the top-frame origin an impression occurred on for all
   // navigations with an associated impression, keyed by navigation ID.
@@ -116,7 +106,7 @@ class CONTENT_EXPORT AttributionHost
 
   // Gives access to a AttributionManager implementation to forward impressions
   // and conversion registrations to.
-  std::unique_ptr<AttributionManager::Provider> attribution_manager_provider_;
+  std::unique_ptr<AttributionManagerProvider> attribution_manager_provider_;
 
   // Logs metrics per top-level page load. Created for every top level
   // navigation that commits, as long as there is a AttributionManager.

@@ -17,8 +17,17 @@ import {assertNotReached} from '../../js/assert.m.js';
 import {I18nMixin} from '../../js/i18n_mixin.js';
 import {loadTimeData} from '../../js/load_time_data.m.js';
 
-import {CertificateAction, CertificateActionEvent, CertificateActionEventDetail} from './certificate_manager_types.js';
-import {CertificatesBrowserProxy, CertificatesBrowserProxyImpl, CertificatesError, CertificatesImportError, CertificatesOrgGroup, CertificateType, NewCertificateSubNode} from './certificates_browser_proxy.js';
+import {CertificateAction, CertificateActionEvent} from './certificate_manager_types.js';
+import {CertificatesBrowserProxyImpl, CertificatesError, CertificatesImportError, CertificatesOrgGroup, CertificateType, NewCertificateSubNode} from './certificates_browser_proxy.js';
+
+export interface CertificateListElement {
+  $: {
+    import: HTMLElement,
+    // <if expr="chromeos_ash or chromeos_lacros">
+    importAndBind: HTMLElement,
+    // </if>
+  };
+}
 
 const CertificateListElementBase = I18nMixin(PolymerElement);
 
@@ -166,6 +175,12 @@ export class CertificateListElement extends CertificateListElementBase {
     } else {
       assertNotReached();
     }
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'certificate-list': CertificateListElement;
   }
 }
 

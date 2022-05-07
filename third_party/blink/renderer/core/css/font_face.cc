@@ -943,10 +943,13 @@ FontDisplay FontFace::GetFontDisplay() const {
 }
 
 void FontFace::DidBeginImperativeLoad() {
-  if (!DomWindow())
+  if (!DomWindow() ||
+      !DomWindow()->document()->GetRenderBlockingResourceManager())
     return;
-  DomWindow()->document()->GetFontPreloadManager().ImperativeFontLoadingStarted(
-      this);
+  DomWindow()
+      ->document()
+      ->GetRenderBlockingResourceManager()
+      ->ImperativeFontLoadingStarted(this);
 }
 
 FontMetricsOverride FontFace::GetFontMetricsOverride() const {

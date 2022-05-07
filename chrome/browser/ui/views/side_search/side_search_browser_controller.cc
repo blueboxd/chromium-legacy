@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_element_identifiers.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/user_education/feature_promo_controller.h"
@@ -269,18 +270,16 @@ void SideSearchBrowserController::DidFinishNavigation(
   }
 
   // The toggled state of the side panel for this tab contents should be reset
-  // when landing on a page that should not show the side panel in the
-  // state-per-tab mode (e.g. NTP, Google home page etc). This will prevent the
-  // side panel from reopening automatically after the tab next encounters a
-  // page where the side panel can be shown.
-  if (base::FeatureList::IsEnabled(features::kSideSearchStatePerTab)) {
-    auto* tab_contents_helper = SideSearchTabContentsHelper::FromWebContents(
-        navigation_handle->GetWebContents());
-    if (GetSidePanelToggledOpen() &&
-        !tab_contents_helper->CanShowSidePanelForCommittedNavigation()) {
-      CloseSidePanel();
-      return;
-    }
+  // when landing on a page that should not show the side panel (e.g. NTP,
+  // Google home page etc). This will prevent the side panel from reopening
+  // automatically after the tab next encounters a page where the side panel can
+  // be shown.
+  auto* tab_contents_helper = SideSearchTabContentsHelper::FromWebContents(
+      navigation_handle->GetWebContents());
+  if (GetSidePanelToggledOpen() &&
+      !tab_contents_helper->CanShowSidePanelForCommittedNavigation()) {
+    CloseSidePanel();
+    return;
   }
 
   // We need to update the side panel state in response to navigations to catch
@@ -321,8 +320,8 @@ SideSearchBrowserController::CreateToolbarButton() {
   auto toolbar_button = std::make_unique<ToolbarButton>();
   toolbar_button->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
-  toolbar_button->SetTooltipText(
-      l10n_util::GetStringUTF16(IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON));
+  toolbar_button->SetTooltipText(l10n_util::GetStringUTF16(
+      IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
   toolbar_button->SetProperty(views::kElementIdentifierKey,
                               kSideSearchButtonElementId);
 
@@ -332,9 +331,8 @@ SideSearchBrowserController::CreateToolbarButton() {
   toolbar_button->SetVectorIcon(kWebIcon);
 #endif
 
-  toolbar_button->SetCallback(
-      base::BindRepeating(&SideSearchBrowserController::SidePanelButtonPressed,
-                          base::Unretained(this)));
+  toolbar_button->SetCallback(base::BindRepeating(
+      &SideSearchBrowserController::ToggleSidePanel, base::Unretained(this)));
   toolbar_button->SetVisible(false);
   toolbar_button->SetEnabled(true);
 
@@ -342,22 +340,19 @@ SideSearchBrowserController::CreateToolbarButton() {
   return toolbar_button;
 }
 
-bool SideSearchBrowserController::GetSidePanelToggledOpen() const {
-  if (base::FeatureList::IsEnabled(features::kSideSearchStatePerTab)) {
-    auto* active_contents = browser_view_->GetActiveWebContents();
-    return active_contents
-               ? SideSearchTabContentsHelper::FromWebContents(active_contents)
-                     ->toggled_open()
-               : false;
-  }
-  return toggled_open_;
-}
-
-void SideSearchBrowserController::SidePanelButtonPressed() {
+void SideSearchBrowserController::ToggleSidePanel() {
   if (GetSidePanelToggledOpen())
     CloseSidePanel(SideSearchCloseActionType::kTapOnSideSearchToolbarButton);
   else
     OpenSidePanel();
+}
+
+bool SideSearchBrowserController::GetSidePanelToggledOpen() const {
+  auto* active_contents = browser_view_->GetActiveWebContents();
+  return active_contents
+             ? SideSearchTabContentsHelper::FromWebContents(active_contents)
+                   ->toggled_open()
+             : false;
 }
 
 void SideSearchBrowserController::SidePanelCloseButtonPressed() {
@@ -391,25 +386,9 @@ void SideSearchBrowserController::CloseSidePanel(
   SetSidePanelToggledOpen(false);
   UpdateSidePanel();
 
-  if (base::FeatureList::IsEnabled(features::kSideSearchClearCacheWhenClosed)) {
-    // If per tab state is enabled only clear the side contents for the
-    // currently active tab.
-    base::FeatureList::IsEnabled(features::kSideSearchStatePerTab)
-        ? ClearSideContentsCacheForActiveTab()
-        : ClearSideContentsCacheForBrowser();
-  }
-}
-
-void SideSearchBrowserController::ClearSideContentsCacheForBrowser() {
-  web_view_->SetWebContents(nullptr);
-
-  // Notify the tab helpers that their side panel contentes can be cleared away.
-  TabStripModel* tab_strip_model = browser_view_->browser()->tab_strip_model();
-  for (int i = 0; i < tab_strip_model->count(); ++i) {
-    SideSearchTabContentsHelper::FromWebContents(
-        tab_strip_model->GetWebContentsAt(i))
-        ->ClearSidePanelContents();
-  }
+  // Clear the side contents for the currently active tab.
+  if (base::FeatureList::IsEnabled(features::kSideSearchClearCacheWhenClosed))
+    ClearSideContentsCacheForActiveTab();
 }
 
 void SideSearchBrowserController::ClearSideContentsCacheForActiveTab() {
@@ -422,14 +401,10 @@ void SideSearchBrowserController::ClearSideContentsCacheForActiveTab() {
 }
 
 void SideSearchBrowserController::SetSidePanelToggledOpen(bool toggled_open) {
-  if (base::FeatureList::IsEnabled(features::kSideSearchStatePerTab)) {
-    if (auto* active_contents = browser_view_->GetActiveWebContents()) {
-      SideSearchTabContentsHelper::FromWebContents(active_contents)
-          ->set_toggled_open(toggled_open);
-      side_search::MaybeSaveSideSearchTabSessionData(active_contents);
-    }
-  } else {
-    toggled_open_ = toggled_open;
+  if (auto* active_contents = browser_view_->GetActiveWebContents()) {
+    SideSearchTabContentsHelper::FromWebContents(active_contents)
+        ->set_toggled_open(toggled_open);
+    side_search::MaybeSaveSideSearchTabSessionData(active_contents);
   }
 }
 
@@ -460,20 +435,35 @@ void SideSearchBrowserController::UpdateSidePanel() {
                                 ? tab_contents_helper->GetSidePanelContents()
                                 : nullptr);
   side_panel_->SetVisible(will_show_side_panel);
-  toolbar_button_->SetHighlighted(will_show_side_panel);
-  toolbar_button_->SetAccessibleName(l10n_util::GetStringUTF16(
-      will_show_side_panel
-          ? IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED
-          : IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
 
-  // The toolbar button should remain visible in the toolbar as a side panel can
-  // be shown for the active tab.
-  if (toolbar_button_->GetVisible() != can_show_side_panel_for_page) {
-    toolbar_button_->SetVisible(can_show_side_panel_for_page);
+  // Update the side panel entrypoints - either the page action or the toolbar
+  // button.
+  // TODO(tluk): Split the entrypoint implementations out into a separate class.
+  browser_view_->UpdatePageActionIcon(PageActionIconType::kSideSearch);
+
+  if (toolbar_button_) {
+    toolbar_button_->SetHighlighted(will_show_side_panel);
+    toolbar_button_->SetAccessibleName(l10n_util::GetStringUTF16(
+        will_show_side_panel
+            ? IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED
+            : IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
+    toolbar_button_->SetTooltipText(l10n_util::GetStringUTF16(
+        will_show_side_panel
+            ? IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED
+            : IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
+
+    // The toolbar button should remain visible in the toolbar as a side panel
+    // can be shown for the active tab.
+    if (toolbar_button_->GetVisible() != can_show_side_panel_for_page)
+      toolbar_button_->SetVisible(can_show_side_panel_for_page);
+  }
+
+  if (was_side_panel_available_for_page_ != can_show_side_panel_for_page) {
     RecordSideSearchAvailabilityChanged(
         can_show_side_panel_for_page
             ? SideSearchAvailabilityChangeType::kBecomeAvailable
             : SideSearchAvailabilityChangeType::kBecomeUnavailable);
+    was_side_panel_available_for_page_ = can_show_side_panel_for_page;
   }
 
   // Once the anchor element is visible, maybe show promo.

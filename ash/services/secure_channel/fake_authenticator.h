@@ -8,9 +8,7 @@
 #include "ash/services/secure_channel/authenticator.h"
 #include "base/callback.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // A fake implementation of Authenticator to use in tests.
 class FakeAuthenticator : public Authenticator {
@@ -31,8 +29,6 @@ class FakeAuthenticator : public Authenticator {
   AuthenticationCallback last_callback_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_AUTHENTICATOR_H_

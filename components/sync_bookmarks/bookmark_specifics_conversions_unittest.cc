@@ -24,6 +24,7 @@
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/model_type_state.pb.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
+#include "components/sync_bookmarks/synced_bookmark_tracker_entity.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -282,9 +283,9 @@ TEST(BookmarkSpecificsConversionsTest, ShouldCreateFolderFromSpecifics) {
   std::unique_ptr<bookmarks::BookmarkModel> model =
       bookmarks::TestBookmarkClient::CreateModel();
   testing::NiceMock<favicon::MockFaviconService> favicon_service;
-  EXPECT_CALL(favicon_service, AddPageNoVisitForBookmark(_, _)).Times(0);
-  EXPECT_CALL(favicon_service, MergeFavicon(_, _, _, _, _)).Times(0);
-  EXPECT_CALL(favicon_service, DeleteFaviconMappings(_, _)).Times(0);
+  EXPECT_CALL(favicon_service, AddPageNoVisitForBookmark).Times(0);
+  EXPECT_CALL(favicon_service, MergeFavicon).Times(0);
+  EXPECT_CALL(favicon_service, DeleteFaviconMappings).Times(0);
   base::HistogramTester histogram_tester;
   const bookmarks::BookmarkNode* node = CreateBookmarkNodeFromSpecifics(
       bm_specifics,
@@ -914,37 +915,6 @@ TEST(BookmarkSpecificsConversionsTest,
                                        syncer::ClientTagHash::FromHashed("foo"),
                                        /*originator_cache_guid=*/"",
                                        /*originator_client_item_id=*/""));
-}
-
-TEST(BookmarkSpecificsConversionsTest, ShouldFixGuidInSpecificsDueToPastBug) {
-  auto tracker = SyncedBookmarkTracker::CreateEmpty(sync_pb::ModelTypeState());
-
-  const std::string kSyncId = "SYNC_ID";
-  const base::GUID kGuid = base::GUID::GenerateRandomV4();
-
-  sync_pb::EntitySpecifics specifics;
-  *specifics.mutable_bookmark()->mutable_unique_position() =
-      RandomUniquePosition();
-
-  bookmarks::BookmarkNode node(/*id=*/1, kGuid, GURL());
-  const SyncedBookmarkTracker::Entity* entity =
-      tracker->Add(&node, kSyncId, /*server_version=*/0,
-                   /*creation_time=*/base::Time(), specifics);
-  ASSERT_THAT(entity, NotNull());
-
-  // Mimic in incoming update with a client tag hash but not GUID in specifics.
-  syncer::EntityData update_entity;
-  update_entity.id = kSyncId;
-  update_entity.client_tag_hash =
-      SyncedBookmarkTracker::GetClientTagHashFromGUID(kGuid);
-  // Populate at least one field in specifics so it's not considered a
-  // tombstone.
-  update_entity.specifics.mutable_bookmark()->set_creation_time_us(1);
-
-  MaybeFixGuidInSpecificsDueToPastBug(*tracker, &update_entity);
-
-  EXPECT_THAT(update_entity.specifics.bookmark().guid(),
-              Eq(kGuid.AsLowercaseString()));
 }
 
 }  // namespace

@@ -75,8 +75,7 @@ void WebAppsCrosapi::LoadIcon(const std::string& app_id,
   const uint32_t icon_effects = icon_key.icon_effects;
 
   IconType crosapi_icon_type = icon_type;
-  IconKeyPtr crosapi_icon_key = std::make_unique<IconKey>(
-      icon_key.timeline, icon_key.resource_id, icon_key.icon_effects);
+  IconKeyPtr crosapi_icon_key = icon_key.Clone();
   if (crosapi_icon_type == apps::IconType::kCompressed) {
     // The effects are applied here in Ash.
     crosapi_icon_type = apps::IconType::kUncompressed;
@@ -207,23 +206,22 @@ void WebAppsCrosapi::GetMenuModel(const std::string& app_id,
                                   GetMenuModelCallback callback) {
   bool is_system_web_app = false;
   bool can_use_uninstall = false;
-  apps::mojom::WindowMode display_mode = apps::mojom::WindowMode::kUnknown;
+  WindowMode display_mode = WindowMode::kUnknown;
 
   proxy_->AppRegistryCache().ForOneApp(
       app_id, [&is_system_web_app, &can_use_uninstall,
                &display_mode](const apps::AppUpdate& update) {
         is_system_web_app =
-            update.InstallReason() == apps::mojom::InstallReason::kSystem;
-        can_use_uninstall =
-            update.AllowUninstall() == apps::mojom::OptionalBool::kTrue;
+            update.InstallReason() == apps::InstallReason::kSystem;
+        can_use_uninstall = update.AllowUninstall().value_or(false);
         display_mode = update.WindowMode();
       });
 
   apps::mojom::MenuItemsPtr menu_items = apps::mojom::MenuItems::New();
 
-  if (display_mode != apps::mojom::WindowMode::kUnknown && !is_system_web_app) {
+  if (display_mode != WindowMode::kUnknown && !is_system_web_app) {
     apps::CreateOpenNewSubmenu(menu_type,
-                               display_mode == apps::mojom::WindowMode::kBrowser
+                               display_mode == WindowMode::kBrowser
                                    ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
                                    : IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW,
                                &menu_items);

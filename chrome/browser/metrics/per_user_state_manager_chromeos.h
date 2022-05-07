@@ -8,8 +8,10 @@
 #include <string>
 
 #include "base/callback_list.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/task/thread_pool.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/metrics/profile_pref_names.h"
 #include "chrome/browser/profiles/profile.h"
@@ -99,13 +101,6 @@ class PerUserStateManagerChromeOS
   //
   // This call should be used to toggle consent from the UI or during OOBE flow
   // for the current user.
-  //
-  // Initialization must be deferred in some cases since the initial consent
-  // will determine where the logs will be stored. If
-  // ShouldWaitForFirstConsent() is true for the current user, then
-  // initialization will be deferred until this function is called at least
-  // once. For specific cases, refer to documentation in
-  // ShouldWaitForFirstConsent().
   void SetCurrentUserMetricsConsent(bool metrics_consent);
 
   // Returns true if a user log store in the user cryptohome should be used for
@@ -184,21 +179,11 @@ class PerUserStateManagerChromeOS
     // User profile has been created and ready to use.
     USER_PROFILE_READY = 2,
 
-    // Waiting on the first consent to determine if a user log store should be
-    // used or not.
-    //
-    // Guest sessions before device consent is set should use log store if guest
-    // session disables metrics reporting since the temporary cryptohome
-    // partition will be deleted at the end of the guest session.
-    //
-    // This state is skipped for all other users.
-    WAITING_ON_FIRST_CONSENT = 3,
-
     // User log store has been initialized, if applicable. Per-user consent
     // now can be changed if the user has permissions to change consent.
     //
     // Terminal state.
-    USER_LOG_STORE_HANDLED = 4,
+    USER_LOG_STORE_HANDLED = 3,
   };
 
   // UserManager::UserSessionStateObserver:
@@ -210,13 +195,6 @@ class PerUserStateManagerChromeOS
   // Loads appropriate prefs from |current_user_| and creates new log storage
   // using profile prefs.
   void InitializeProfileMetricsState();
-
-  // Called when the metrics consent is set for the first time and
-  // |ShouldWaitForFirstConsent()| returns true.
-  //
-  // Sets the log store if |metrics_consent| is false. If true, then logs should
-  // be written to local state to be persisted.
-  void OnFirstConsent(bool metrics_consent);
 
   // Updates the current user ID to |new_user_id|. Updates both the profile pref
   // as well as local state pref.
@@ -235,18 +213,6 @@ class PerUserStateManagerChromeOS
   // Sets the reporting state for metrics collection. Notifies observers that
   // user metrics consent has changed to |metrics_consent|.
   void SetReportingState(bool metrics_consent);
-
-  // Returns true if log store creation should be deferred until first consent
-  // is set. This will return true if |current_user_| is a guest and the device
-  // has no owner and is not managed.
-  //
-  // Normally, a guest session's metrics consent is determined by the owner's
-  // consent and whether to use the user log store or local state log store can
-  // be immediately determined at the start of a session. However, if no owner
-  // is set, this cannot be determined immediately and initialization of which
-  // log store to use for the session will be deferred until the guest user has
-  // selected metrics consent during OOBE flow.
-  bool ShouldWaitForFirstConsent() const;
 
   // Notifies observers of the per-user state change |metrics_consent|.
   void NotifyObservers(bool metrics_consent);
@@ -285,6 +251,9 @@ class PerUserStateManagerChromeOS
 
   // Current state for |this|.
   State state_ = State::CONSTRUCTED;
+
+  // Task runner. Used to persist state to daemon-store.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_ = nullptr;
 
   base::WeakPtrFactory<PerUserStateManagerChromeOS> weak_ptr_factory_{this};
 };

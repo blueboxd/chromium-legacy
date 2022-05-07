@@ -84,9 +84,6 @@ class DragDropOperation : public DataSourceObserver,
 
   // ExtendedDragSource::Observer:
   void OnExtendedDragSourceDestroying(ExtendedDragSource* source) override;
-
-  // Used by DragDropOperationTest to verify exchange data.
-  ui::OSExchangeData* GetOSExchangeDataForTesting() const;
 #endif
 
  private:

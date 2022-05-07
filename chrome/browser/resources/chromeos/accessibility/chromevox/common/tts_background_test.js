@@ -12,8 +12,10 @@ GEN_INCLUDE(['../testing/chromevox_e2e_test_base.js']);
  */
 ChromeVoxTtsBackgroundTest = class extends ChromeVoxE2ETest {
   /** @override */
-  setUp() {
+  async setUpDeferred() {
+    await importModule('TtsBackground', '/chromevox/common/tts_background.js');
     window.tts = new TtsBackground();
+    await super.setUpDeferred();
   }
 
   expectUtteranceQueueIsLike(expectedObjects) {
@@ -538,7 +540,7 @@ SYNC_TEST_F('ChromeVoxTtsBackgroundTest', 'Mute', function() {
 TEST_F('ChromeVoxTtsBackgroundTest', 'ResetTtsSettingsClearsVoice', function() {
   this.newCallback(async () => {
     ChromeVox.tts.ttsEngines_[0].currentVoice = '';
-    CommandHandler.onCommand('resetTextToSpeechSettings');
+    CommandHandlerInterface.instance.onCommand('resetTextToSpeechSettings');
     await new Promise(r => {
       ChromeVox.tts.speak = textString => {
         if (textString === 'Reset text to speech settings to default values') {

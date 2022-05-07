@@ -5,44 +5,67 @@
 #ifndef IOS_CHROME_BROWSER_DISCOVER_FEED_DISCOVER_FEED_SERVICE_H_
 #define IOS_CHROME_BROWSER_DISCOVER_FEED_DISCOVER_FEED_SERVICE_H_
 
-#include "base/scoped_observation.h"
-#include "components/keyed_service/core/keyed_service.h"
-#include "components/signin/public/identity_manager/identity_manager.h"
+#import <UIKit/UIKit.h>
 
-class AuthenticationService;
+#include "components/keyed_service/core/keyed_service.h"
+#include "ios/chrome/browser/discover_feed/discover_feed_observer.h"
+#include "ios/chrome/browser/discover_feed/discover_feed_view_controller_configuration.h"
+
 @class FeedMetricsRecorder;
-class PrefService;
 
 // A browser-context keyed service that is used to keep the Discover Feed data
 // up to date.
-class DiscoverFeedService : public KeyedService,
-                            public signin::IdentityManager::Observer {
+class DiscoverFeedService : public KeyedService {
  public:
-  // Initializes the service.
-  DiscoverFeedService(PrefService* pref_service,
-                      AuthenticationService* authentication_service,
-                      signin::IdentityManager* identity_manager);
-
-  DiscoverFeedService(const DiscoverFeedService&) = delete;
-  DiscoverFeedService& operator=(const DiscoverFeedService&) = delete;
-
+  DiscoverFeedService();
   ~DiscoverFeedService() override;
 
-  // KeyedService:
-  void Shutdown() override;
+  // Creates models for all enabled feed types.
+  virtual void CreateFeedModels() = 0;
+
+  // Clears all existing feed models.
+  virtual void ClearFeedModels() = 0;
+
+  // Returns the FeedMetricsRecorder to be used by the feed. There only exists a
+  // single instance of the metrics recorder per browser state.
+  virtual FeedMetricsRecorder* GetFeedMetricsRecorder() = 0;
+
+  // Returns the Discover Feed ViewController with a custom
+  // DiscoverFeedViewControllerConfiguration.
+  virtual UIViewController* NewDiscoverFeedViewControllerWithConfiguration(
+      DiscoverFeedViewControllerConfiguration* configuration) = 0;
+
+  // Returns the Following Feed ViewController with a custom
+  // DiscoverFeedViewControllerConfiguration.
+  virtual UIViewController* NewFollowingFeedViewControllerWithConfiguration(
+      DiscoverFeedViewControllerConfiguration* configuration) = 0;
+
+  // Removes the Discover |feed_view_controller|. It should be called whenever
+  // |feed_view_controller| will no longer be used.
+  virtual void RemoveFeedViewController(
+      UIViewController* feed_view_controller) = 0;
+
+  // Updates the feed's theme to match the user's theme (light/dark).
+  virtual void UpdateTheme() = 0;
+
+  // Refreshes the Discover Feed if needed. The provider decides if a refresh is
+  // needed or not.
+  virtual void RefreshFeedIfNeeded() = 0;
+
+  // Refreshes the Discover Feed. Once the Feed model is refreshed it will
+  // update all ViewControllers returned by NewFeedViewController.
+  virtual void RefreshFeed() = 0;
+
+  // Methods to register or remove observers.
+  void AddObserver(DiscoverFeedObserver* observer);
+  void RemoveObserver(DiscoverFeedObserver* observer);
+
+ protected:
+  void NotifyDiscoverFeedModelRecreated();
 
  private:
-  // IdentityManager::Observer.
-  void OnPrimaryAccountChanged(
-      const signin::PrimaryAccountChangeEvent& event) override;
-
-  // Helper to track registration as an signin::IdentityManager::Observer.
-  base::ScopedObservation<signin::IdentityManager,
-                          signin::IdentityManager::Observer>
-      identity_manager_observation_{this};
-
-  // Metrics recorder for the DiscoverFeed.
-  __strong FeedMetricsRecorder* feed_metrics_recorder_ = nil;
+  // List of DiscoverFeedObservers.
+  base::ObserverList<DiscoverFeedObserver, true> observer_list_;
 };
 
 #endif  // IOS_CHROME_BROWSER_DISCOVER_FEED_DISCOVER_FEED_SERVICE_H_

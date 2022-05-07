@@ -25,6 +25,7 @@
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/test/browser_test.h"
 #include "url/gurl.h"
 
@@ -55,7 +56,7 @@ class WebAppUiManagerImplBrowserTest : public InProcessBrowserTest {
 
   Profile* profile() { return browser()->profile(); }
 
-  const AppId InstallWebApp(const GURL& start_url) {
+  AppId InstallWebApp(const GURL& start_url) {
     auto web_app_info = std::make_unique<WebAppInstallInfo>();
     web_app_info->start_url = start_url;
     web_app_info->user_display_mode = DisplayMode::kStandalone;
@@ -128,8 +129,8 @@ IN_PROC_BROWSER_TEST_F(WebAppUiManagerImplBrowserTest,
   DCHECK(provider->install_finalizer().CanUserUninstallWebApp(foo_app_id));
   provider->install_finalizer().UninstallWebApp(
       foo_app_id, webapps::WebappUninstallSource::kAppMenu,
-      base::BindLambdaForTesting([&](bool success) {
-        EXPECT_TRUE(success);
+      base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
+        EXPECT_EQ(code, webapps::UninstallResultCode::kSuccess);
         run_loop.Quit();
       }));
   run_loop.Run();

@@ -7,11 +7,9 @@
 // /third_party/blink/public/common/messaging/message_port_descriptor.h.
 
 #include "third_party/blink/public/common/messaging/message_port_descriptor.h"
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/cxx17_backports.h"
 #include "base/unguessable_token.h"
 #include "content/public/android/content_jni_headers/AppWebMessagePortDescriptor_jni.h"
 #include "mojo/public/cpp/system/message_pipe.h"
@@ -21,7 +19,7 @@ using base::android::ScopedJavaLocalRef;
 
 namespace {
 
-mojo::ScopedMessagePipeHandle WrapNativeHandle(jint native_handle) {
+mojo::ScopedMessagePipeHandle WrapNativeHandle(jlong native_handle) {
   MojoHandle raw_handle = static_cast<MojoHandle>(native_handle);
   DCHECK_NE(MOJO_HANDLE_INVALID, raw_handle);
   return mojo::ScopedMessagePipeHandle(mojo::MessagePipeHandle(raw_handle));
@@ -43,11 +41,11 @@ JNI_AppWebMessagePortDescriptor_CreatePair(JNIEnv* env) {
   uint64_t pointers[2] = {reinterpret_cast<uint64_t>(port0),
                           reinterpret_cast<uint64_t>(port1)};
   return base::android::ToJavaLongArray(
-      env, reinterpret_cast<const int64_t*>(pointers), base::size(pointers));
+      env, reinterpret_cast<const int64_t*>(pointers), std::size(pointers));
 }
 
 JNI_EXPORT jlong JNI_AppWebMessagePortDescriptor_Create(JNIEnv* env,
-                                                        jint native_handle,
+                                                        jlong native_handle,
                                                         jlong id_low,
                                                         jlong id_high,
                                                         jlong sequence_number) {
@@ -63,7 +61,7 @@ JNI_EXPORT jlong JNI_AppWebMessagePortDescriptor_Create(JNIEnv* env,
   return reinterpret_cast<jlong>(port);
 }
 
-JNI_EXPORT jint JNI_AppWebMessagePortDescriptor_TakeHandleToEntangle(
+JNI_EXPORT jlong JNI_AppWebMessagePortDescriptor_TakeHandleToEntangle(
     JNIEnv* env,
     jlong native_message_port_decriptor) {
   blink::MessagePortDescriptor* message_port_descriptor =
@@ -84,7 +82,7 @@ JNI_EXPORT jint JNI_AppWebMessagePortDescriptor_TakeHandleToEntangle(
 JNI_EXPORT void JNI_AppWebMessagePortDescriptor_GiveDisentangledHandle(
     JNIEnv* env,
     jlong native_message_port_decriptor,
-    jint native_handle) {
+    jlong native_handle) {
   blink::MessagePortDescriptor* message_port_descriptor =
       reinterpret_cast<blink::MessagePortDescriptor*>(
           native_message_port_decriptor);
@@ -134,8 +132,7 @@ JNI_AppWebMessagePortDescriptor_PassSerialized(
                             id.GetLowForSerialization(),
                             id.GetHighForSerialization(), sequence_number};
   return base::android::ToJavaLongArray(
-      env, reinterpret_cast<const int64_t*>(serialized),
-      base::size(serialized));
+      env, reinterpret_cast<const int64_t*>(serialized), std::size(serialized));
 }
 
 JNI_EXPORT void JNI_AppWebMessagePortDescriptor_CloseAndDestroy(

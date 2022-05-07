@@ -21,7 +21,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "mojo/public/c/system/thunks.h"
 
-namespace chromeos {
+namespace ash {
 namespace ime {
 
 namespace {
@@ -160,8 +160,8 @@ const char* ImeService::GetImeBundleDir() {
   return kBundledInputMethodsDirPath;
 }
 
-const char* ImeService::GetImeGlobalDir() {
-  return "";
+void ImeService::Unused3() {
+  NOTIMPLEMENTED();
 }
 
 const char* ImeService::GetImeUserHomeDir() {
@@ -270,7 +270,7 @@ void ImeService::SimpleDownloadFinishedV2(SimpleDownloadCallbackV2 callback,
 }
 
 const MojoSystemThunks* ImeService::GetMojoSystemThunks() {
-  return MojoEmbedderGetSystemThunks();
+  return MojoEmbedderGetSystemThunks32();
 }
 
 void ImeService::Unused1() {
@@ -278,4 +278,4 @@ void ImeService::Unused1() {
 }
 
 }  // namespace ime
-}  // namespace chromeos
+}  // namespace ash

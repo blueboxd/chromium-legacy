@@ -12,6 +12,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
+#include "components/privacy_sandbox/canonical_topic.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 class HostContentSettingsMap;
@@ -25,6 +26,8 @@ namespace url {
 class Origin;
 }
 
+namespace privacy_sandbox {
+
 // A service which acts as a intermediary between Privacy Sandbox APIs and the
 // preferences and content settings which define when they are allowed to be
 // accessed. Privacy Sandbox APIs, regardless of where they live (renderer,
@@ -36,41 +39,69 @@ class PrivacySandboxSettings : public KeyedService {
  public:
   class Observer {
    public:
-    virtual void OnFlocDataAccessibleSinceUpdated(bool reset_compute_timer) {}
+    virtual void OnTopicsDataAccessibleSinceUpdated() {}
 
+    // Fired when Trust Token blocking has changed because of a change to the
+    // Privacy Sandbox preference. Does not account for changes to third-party
+    // cookie blocking, which may result in the Privacy Sandbox being disabled.
+    // Trust tokens thus additionally independently consult Cookie settings.
+    // TODO(crbug.com/1304132): Unify this so Trust Tokens only need to consult
+    // a single source of truth.
     virtual void OnTrustTokenBlockingChanged(bool blocked) {}
   };
 
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    // Allows the delegate to restirct access to the Privacy Sandbox. When
+    // the Privacy Sandbox is restricted, all API access is disabled. This is
+    // consulted on every access check, and it is acceptable for this to change
+    // return value over the life of the service.
+    virtual bool IsPrivacySandboxRestricted() = 0;
+  };
+
   PrivacySandboxSettings(
+      std::unique_ptr<Delegate> delegate,
       HostContentSettingsMap* host_content_settings_map,
       scoped_refptr<content_settings::CookieSettings> cookie_settings,
       PrefService* pref_service,
       bool incognito_profile);
   ~PrivacySandboxSettings() override;
 
-  // Returns whether FLoC is allowed at all. If false, FLoC calculations should
-  // not occur. If true, the more specific function, IsFlocAllowedForContext(),
-  // should be consulted for the relevant context.
-  bool IsFlocAllowed() const;
+  // Returns whether the Topics API is allowed at all. If false, Topics API
+  // calculations should not occur. If true, the more specific function,
+  // IsTopicsApiAllowedForContext(), should be consulted for the relevant
+  // context.
+  bool IsTopicsAllowed() const;
 
-  // Determines whether FLoC is allowable in a particular context.
+  // Determines whether the Topics API is allowable in a particular context.
   // |top_frame_origin| is used to check for content settings which could both
   // affect 1P and 3P contexts.
-  bool IsFlocAllowedForContext(
+  bool IsTopicsAllowedForContext(
       const GURL& url,
       const absl::optional<url::Origin>& top_frame_origin) const;
 
-  // Returns the point in time from which history is eligible to be used when
-  // calculating a user's FLoC ID. Reset when a user clears all cookies, or
-  // when the browser restarts with "Clear on exit" enabled. The returned time
-  // will have been fuzzed for local privacy, and so may be in the future, in
-  // which case no history is eligible.
-  base::Time FlocDataAccessibleSince() const;
+  // Returns whether |topic| can be either considered as a top topic for the
+  // current epoch, or provided to a website as a previous / current epochs
+  // site assigned topic.
+  bool IsTopicAllowed(const CanonicalTopic& topic);
 
-  // Sets the time when history is accessible for FLoC calculation to the
-  // current time, optionally resetting the time to the next FLoC id calculation
-  // if |reset_calculate_timer| is true.
-  void SetFlocDataAccessibleFromNow(bool reset_calculate_timer) const;
+  // Sets |topic| to |allowed|. Whether a topic is allowed or not is made
+  // available through IsTopicAllowed().
+  void SetTopicAllowed(const CanonicalTopic& topic, bool allowed);
+
+  // Removes all Topic settings with creation times between |start_time|
+  // and |end_time|. This allows for integration with the existing browsing data
+  // remover, such as the one powering Clear Browser Data.
+  void ClearTopicSettings(base::Time start_time, base::Time end_time);
+
+  // Returns the point in time from which history is eligible to be used when
+  // calculating a user's Topics API topics. Reset when a user clears all
+  // cookies, or when the browser restarts with "Clear on exit" enabled. The
+  // returned time will have been fuzzed for local privacy, and so may be in the
+  // future, in which case no history is eligible.
+  base::Time TopicsDataAccessibleSince() const;
 
   // Determines whether Conversion Measurement is allowable in a particular
   // context. Should be called at both impression & conversion. At each of these
@@ -118,10 +149,11 @@ class PrivacySandboxSettings : public KeyedService {
       const url::Origin& top_frame_origin,
       const std::vector<GURL>& auction_parties);
 
-  // Returns whether the Privacy Sandbox is "generally" available. A return
-  // value of false indicates that the sandbox is completely disabled. A return
-  // value of true *must* be followed up by the appropriate context specific
-  // check.
+  // Returns whether the profile has the Privacy Sandbox enabled. This directly
+  // reflects the state of the main privacy sandbox control, and does not
+  // consider any cookie settings. A return value of false means that no
+  // Privacy Sandbox operations can occur. A return value of true must be
+  // followed up with the appropriate IsXAllowed() call.
   bool IsPrivacySandboxEnabled() const;
 
   // Disables the Privacy Sandbox completely if |enabled| is false, if |enabled|
@@ -133,6 +165,11 @@ class PrivacySandboxSettings : public KeyedService {
   // false is authoritative, while a value of true must be followed by the
   // appropriate context specific check.
   bool IsTrustTokensAllowed();
+
+  // Returns whether the Privacy Sandbox is being restricted by the associated
+  // delegate. Forwards directly to the corresponding delegate function.
+  // Virtual to allow mocking in tests.
+  virtual bool IsPrivacySandboxRestricted();
 
   // Called when there's a broad cookies clearing action. For example, this
   // should be called on "Clear browsing data", but shouldn't be called on the
@@ -146,6 +183,9 @@ class PrivacySandboxSettings : public KeyedService {
   void RemoveObserver(Observer* observer);
 
  protected:
+  // Protected default constructor to allow mocking in tests.
+  PrivacySandboxSettings();
+
   // Determines based on the current features, preferences and provided
   // |cookie_settings| whether Privacy Sandbox APIs are generally allowable for
   // |url| on |top_frame_origin|. Individual APIs may perform additional checks
@@ -156,14 +196,19 @@ class PrivacySandboxSettings : public KeyedService {
       const absl::optional<url::Origin>& top_frame_origin,
       const ContentSettingsForOneType& cookie_settings) const;
 
+  void SetTopicsDataAccessibleFromNow() const;
+
  private:
   base::ObserverList<Observer>::Unchecked observers_;
 
+  std::unique_ptr<Delegate> delegate_;
   raw_ptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   raw_ptr<PrefService> pref_service_;
   PrefChangeRegistrar pref_change_registrar_;
   bool incognito_profile_;
 };
+
+}  // namespace privacy_sandbox
 
 #endif  // COMPONENTS_PRIVACY_SANDBOX_PRIVACY_SANDBOX_SETTINGS_H_

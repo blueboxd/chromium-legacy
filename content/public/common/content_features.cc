@@ -17,13 +17,6 @@ namespace features {
 
 // All features in alphabetical order.
 
-// Enables the allowActivationDelegation attribute on iframes.
-// https://www.chromestatus.com/feature/6025124331388928
-//
-// TODO(mustaq): Deprecated, see kUserActivationPostMessageTransfer.
-const base::Feature kAllowActivationDelegationAttr{
-    "AllowActivationDelegationAttr", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables content-initiated, main frame navigations to data URLs.
 // TODO(meacer): Remove when the deprecation is complete.
 //               https://www.chromestatus.com/feature/5669602927312896
@@ -69,10 +62,25 @@ const base::Feature kAudioServiceSandbox {
 #endif
 };
 
-// When enabled, the browser process will only ask the renderer process to run
-// beforeunload handlers if it knows such handlers are registered.
-const base::Feature kAvoidUnnecessaryBeforeUnloadCheck{
+// The following two features, when enabled, result in the browser process only
+// asking the renderer process to run beforeunload handlers if it knows such
+// handlers are registered. The two slightly differ in what they do and how
+// they behave:
+// . `kAvoidUnnecessaryBeforeUnloadCheckPostTask` in this case content continues
+//   to report a beforeunload handler is present (even though it isn't). When
+//   asked to dispatch the beforeunload handler, a post task is used (rather
+//   than going to the renderer).
+// . `kAvoidUnnecessaryBeforeUnloadCheckSync` in this case content does not
+//   report a beforeunload handler is present. A ramification of this is
+//   navigations that would normally check beforeunload handlers before
+//   continuing will not, and navigation will synchronously continue.
+// Only one should be used (if both are set, the first takes precedence). The
+// second is unsafe for Android webview, as the embedder may trigger
+// reentrancy which can not be changed.
+const base::Feature kAvoidUnnecessaryBeforeUnloadCheckPostTask{
     "AvoidUnnecessaryBeforeUnloadCheck", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAvoidUnnecessaryBeforeUnloadCheckSync{
+    "AvoidUnnecessaryBeforeUnloadCheckSync", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Kill switch for Background Fetch.
 const base::Feature kBackgroundFetch{"BackgroundFetch",
@@ -87,11 +95,10 @@ const base::Feature kBackForwardCache{"BackForwardCache",
 const base::Feature kBackForwardCacheMediaSessionService{
     "BackForwardCacheMediaSessionService", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable same-site back-forward cache for trybots. This is here because of
-// https://crbug.com/1211818 and should only used for trybots. For normal use
-// cases, please set BackForwardCache's enable_same_site param to true.
-const base::Feature kBackForwardCacheSameSiteForBots{
-    "BackForwardCacheSameSiteForBots", base::FEATURE_DISABLED_BY_DEFAULT};
+// Enable back/forward cache for screen reader users. This flag should be
+// removed once the https://crbug.com/1271450 is resolved.
+const base::Feature kEnableBackForwardCacheForScreenReader{
+    "EnableBackForwardCacheForScreenReader", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // BackForwardCache is disabled on low memory devices. The threshold is defined
 // via a field trial param: "memory_threshold_for_back_forward_cache_in_mb"
@@ -163,7 +170,7 @@ const base::Feature kBlockInsecurePrivateNetworkRequestsForNavigations{
 const base::Feature kBrowserUseDisplayThreadPriority {
   "BrowserUseDisplayThreadPriority",
 
-#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -186,7 +193,7 @@ const base::Feature kCacheInlineScriptCode{"CacheInlineScriptCode",
 // enabled.
 const base::Feature kCanvas2DImageChromium {
   "Canvas2DImageChromium",
-#if BUILDFLAG(IS_MAC)
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_LACROS)
       base::FEATURE_ENABLED_BY_DEFAULT
 #else
       base::FEATURE_DISABLED_BY_DEFAULT
@@ -285,11 +292,6 @@ const base::Feature kEmbeddingRequiresOptIn{"EmbeddingRequiresOptIn",
 const base::Feature kEnableCanvas2DLayers{"EnableCanvas2DLayers",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables new canvas 2d api features. Enabled either with either
-// enable-experimental-canvas-features or new-canvas-2d-api runtime flags
-const base::Feature kEnableNewCanvas2DAPI{"EnableNewCanvas2DAPI",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-
 // If this feature is enabled and device permission is not granted by the user,
 // media-device enumeration will provide at most one device per type and the
 // device IDs will not be available.
@@ -327,9 +329,9 @@ const base::Feature kFedCm{"FedCm", base::FEATURE_ENABLED_BY_DEFAULT};
 // sign-in is enabled.
 const char kFedCmAutoSigninFieldTrialParamName[] = "AutoSignin";
 
-// Field trial boolean parameter which indicates whether FedCM HTTP filtering is
-// enabled.
-const char kFedCmInterceptionFieldTrialParamName[] = "Interception";
+// Field trial boolean parameter which indicates whether FedCM IDP sign-out
+// is enabled.
+const char kFedCmIdpSignoutFieldTrialParamName[] = "IdpSignout";
 
 // Enables usage of First Party Sets to determine cookie availability.
 constexpr base::Feature kFirstPartySets{"FirstPartySets",
@@ -535,6 +537,10 @@ const base::Feature kMediaDevicesSystemMonitorCache {
 const base::Feature kMediaLicenseBackend{"MediaLicenseBackend",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allow cross-context transfer of MediaStreamTracks.
+const base::Feature kMediaStreamTrackTransfer{
+    "MediaStreamTrackTransfer", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If enabled Mojo uses a dedicated background thread to listen for incoming
 // IPCs. Otherwise it's configured to use Content's IO thread for that purpose.
 const base::Feature kMojoDedicatedThread{"MojoDedicatedThread",
@@ -659,15 +665,6 @@ const base::Feature kProcessSharingWithStrictSiteInstances{
 const base::Feature kHighPriorityBeforeUnload{
     "HighPriorityBeforeUnload", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the Aggregation Service. See crbug.com/1207974.
-const base::Feature kPrivacySandboxAggregationService = {
-    "PrivacySandboxAggregationService", base::FEATURE_DISABLED_BY_DEFAULT};
-
-const base::FeatureParam<std::string>
-    kPrivacySandboxAggregationServiceTrustedServerOriginParam{
-        &kPrivacySandboxAggregationService, "trusted_server_origin",
-        "https://server.example.com"};
-
 // Enables Private Network Access checks for all types of web workers.
 //
 // This affects initial worker script fetches, fetches initiated by workers
@@ -760,11 +757,6 @@ const base::Feature kRunVideoCaptureServiceInBrowserProcess{
 // Enables saving pages as Web Bundle.
 const base::Feature kSavePageAsWebBundle{"SavePageAsWebBundle",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Enables using Screen AI library to add metadata for accessibility tools.
-#if !BUILDFLAG(IS_ANDROID)
-const base::Feature kScreenAI{"ScreenAI", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif
 
 // Browser-side feature flag for Secure Payment Confirmation (SPC) that also
 // controls the render side feature state. SPC initial launch is intended
@@ -985,6 +977,14 @@ const base::Feature kTouchpadOverscrollHistoryNavigation {
 #endif
 };
 
+// When TreatBootstrapAsDefault is enabled, the browser will execute tasks with
+// the kBootstrap task type on the default task queues (based on priority of
+// the task) rather than a dedicated high-priority task queue. Intended to
+// evaluate the impact of the already-launched prioritization of bootstrap
+// tasks (crbug.com/1258621).
+const base::Feature kTreatBootstrapAsDefault{"TreatBootstrapAsDefault",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the Trusted Types API is available.
 const base::Feature kTrustedDOMTypes{"TrustedDOMTypes",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1068,11 +1068,6 @@ const base::Feature kWebAssemblyTrapHandler {
       base::FEATURE_DISABLED_BY_DEFAULT
 #endif
 };
-
-// Controls whether the WebAuthentication API is enabled:
-// https://w3c.github.io/webauthn
-const base::Feature kWebAuth{"WebAuthentication",
-                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether CTAP2 devices can communicate via the WebAuthentication API
 // using pairingless BLE protocol.

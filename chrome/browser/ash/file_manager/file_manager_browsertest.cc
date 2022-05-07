@@ -74,6 +74,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& ExtractArchive() {
+    options.extract_archive = true;
+    return *this;
+  }
+
   TestCase& Offline() {
     options.offline = true;
     return *this;
@@ -125,6 +130,11 @@ struct TestCase {
     return *this;
   }
 
+  TestCase& EnableFiltersInRecents() {
+    options.enable_filters_in_recents = true;
+    return *this;
+  }
+
   TestCase& EnableTrash() {
     options.enable_trash = true;
     return *this;
@@ -137,6 +147,11 @@ struct TestCase {
 
   TestCase& EnableWebDriveOffice() {
     options.enable_web_drive_office = true;
+    return *this;
+  }
+
+  TestCase& EnableGuestOsFiles() {
+    options.enable_guest_os_files = true;
     return *this;
   }
 
@@ -172,6 +187,9 @@ struct TestCase {
 
     if (options.enable_trash)
       full_name += "_Trash";
+
+    if (options.enable_filters_in_recents)
+      full_name += "_FiltersInRecents";
 
     return full_name;
   }
@@ -464,7 +482,9 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("zipCreateFileDrive"),
         TestCase("zipCreateFileDrive").FilesSwa(),
         TestCase("zipCreateFileUsb"),
-        TestCase("zipCreateFileUsb").FilesSwa()));
+        TestCase("zipCreateFileUsb").FilesSwa(),
+        TestCase("zipExtractShowPanel").ExtractArchive().FilesSwa(),
+        TestCase("zipExtractSelectionMenus").ExtractArchive().FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     CreateNewFolder, /* create_new_folder.js */
@@ -516,21 +536,34 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 // TODO(crbug.com/1236842): Remove flakiness and enable this test.
 #if !defined(ADDRESS_SANITIZER) && defined(NDEBUG)
         TestCase("keyboardFocusOutlineVisible"),
+        TestCase("keyboardFocusOutlineVisible").FilesSwa(),
         TestCase("keyboardFocusOutlineVisible").EnableTrash(),
+        TestCase("keyboardFocusOutlineVisible").EnableTrash().FilesSwa(),
         TestCase("keyboardFocusOutlineVisibleMouse"),
+        TestCase("keyboardFocusOutlineVisibleMouse").FilesSwa(),
         TestCase("keyboardFocusOutlineVisibleMouse").EnableTrash(),
+        TestCase("keyboardFocusOutlineVisibleMouse").EnableTrash().FilesSwa(),
 #endif
         TestCase("keyboardSelectDriveDirectoryTree"),
+        TestCase("keyboardSelectDriveDirectoryTree").FilesSwa(),
         TestCase("keyboardDisableCopyWhenDialogDisplayed"),
+        TestCase("keyboardDisableCopyWhenDialogDisplayed").FilesSwa(),
         TestCase("keyboardOpenNewWindow"),
-        TestCase("keyboardOpenNewWindow").InGuestMode(),
         TestCase("keyboardOpenNewWindow").FilesSwa(),
-        TestCase("renameFileDownloads").InGuestMode(),
+        TestCase("keyboardOpenNewWindow").InGuestMode(),
+        TestCase("keyboardOpenNewWindow").InGuestMode().FilesSwa(),
         TestCase("renameFileDownloads"),
+        TestCase("renameFileDownloads").FilesSwa(),
+        TestCase("renameFileDownloads").InGuestMode(),
+        TestCase("renameFileDownloads").InGuestMode().FilesSwa(),
         TestCase("renameFileDrive"),
-        TestCase("renameNewFolderDownloads").InGuestMode(),
+        TestCase("renameFileDrive").FilesSwa(),
         TestCase("renameNewFolderDownloads"),
-        TestCase("renameRemovableWithKeyboardOnFileList")));
+        TestCase("renameNewFolderDownloads").FilesSwa(),
+        TestCase("renameNewFolderDownloads").InGuestMode(),
+        TestCase("renameNewFolderDownloads").InGuestMode().FilesSwa(),
+        TestCase("renameRemovableWithKeyboardOnFileList"),
+        TestCase("renameRemovableWithKeyboardOnFileList").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     ContextMenu, /* context_menu.js for file list */
@@ -1076,7 +1109,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("transferDragDropActiveLeave").FilesSwa(),
         TestCase("transferDragDropActiveDrop"),
         TestCase("transferDragDropActiveDrop").FilesSwa(),
-        TestCase("transferDragDropTreeItemAccepts"),
+        // TODO(crbug.com/1254578): Remove flakiness and enable.
+        // TestCase("transferDragDropTreeItemAccepts"),
         TestCase("transferDragDropTreeItemAccepts").FilesSwa(),
 // TODO(crbug.com/1236842): Remove flakiness and enable this test.
 #if !defined(ADDRESS_SANITIZER) && defined(NDEBUG)
@@ -1420,74 +1454,164 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FilesTooltip, /* files_tooltip.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("filesTooltipFocus"),
-                      TestCase("filesTooltipMouseOver"),
-                      TestCase("filesTooltipClickHides"),
-                      TestCase("filesTooltipHidesOnWindowResize"),
-                      TestCase("filesCardTooltipClickHides"),
-                      TestCase("filesTooltipHidesOnDeleteDialogClosed")));
+    ::testing::Values(
+        TestCase("filesTooltipFocus"),
+        TestCase("filesTooltipFocus").FilesSwa(),
+        TestCase("filesTooltipLabelChange"),
+        TestCase("filesTooltipLabelChange").FilesSwa(),
+        TestCase("filesTooltipMouseOver"),
+        TestCase("filesTooltipMouseOver").FilesSwa(),
+        TestCase("filesTooltipClickHides"),
+        TestCase("filesTooltipClickHides").FilesSwa(),
+        TestCase("filesTooltipHidesOnWindowResize"),
+        // TODO(b/189173190): Add SWA OnWindowResize test using window.resizeTo.
+        TestCase("filesCardTooltipClickHides"),
+        TestCase("filesCardTooltipClickHides").FilesSwa(),
+        TestCase("filesTooltipHidesOnDeleteDialogClosed"),
+        TestCase("filesTooltipHidesOnDeleteDialogClosed").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FileList, /* file_list.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("fileListAriaAttributes"),
-                      TestCase("fileListFocusFirstItem"),
-                      TestCase("fileListSelectLastFocusedItem"),
-                      TestCase("fileListKeyboardSelectionA11y"),
-                      TestCase("fileListMouseSelectionA11y"),
-                      TestCase("fileListDeleteMultipleFiles"),
-                      TestCase("fileListDeleteMultipleFiles").EnableTrash(),
-                      TestCase("fileListRenameSelectedItem"),
-                      TestCase("fileListRenameFromSelectAll")));
+    ::testing::Values(
+        TestCase("fileListAriaAttributes"),
+        TestCase("fileListAriaAttributes").FilesSwa(),
+        TestCase("fileListFocusFirstItem"),
+        TestCase("fileListFocusFirstItem").FilesSwa(),
+        TestCase("fileListSelectLastFocusedItem"),
+        TestCase("fileListSelectLastFocusedItem").FilesSwa(),
+        TestCase("fileListKeyboardSelectionA11y"),
+        TestCase("fileListKeyboardSelectionA11y").FilesSwa(),
+        TestCase("fileListMouseSelectionA11y"),
+        TestCase("fileListMouseSelectionA11y").FilesSwa(),
+        TestCase("fileListDeleteMultipleFiles"),
+        TestCase("fileListDeleteMultipleFiles").FilesSwa(),
+        TestCase("fileListDeleteMultipleFiles").EnableTrash(),
+        TestCase("fileListDeleteMultipleFiles").EnableTrash().FilesSwa(),
+        TestCase("fileListRenameSelectedItem"),
+        TestCase("fileListRenameSelectedItem").FilesSwa(),
+        TestCase("fileListRenameFromSelectAll"),
+        TestCase("fileListRenameFromSelectAll").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Crostini, /* crostini.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("mountCrostini"),
-                      TestCase("enableDisableCrostini"),
-                      TestCase("sharePathWithCrostini"),
-                      TestCase("pluginVmDirectoryNotSharedErrorDialog"),
-                      TestCase("pluginVmFileOnExternalDriveErrorDialog"),
-                      TestCase("pluginVmFileDropFailErrorDialog")));
+    ::testing::Values(
+        TestCase("mountCrostini"),
+        TestCase("mountCrostini").FilesSwa(),
+        TestCase("enableDisableCrostini"),
+        TestCase("enableDisableCrostini").FilesSwa(),
+        TestCase("sharePathWithCrostini"),
+        TestCase("sharePathWithCrostini").FilesSwa(),
+        TestCase("pluginVmDirectoryNotSharedErrorDialog"),
+        TestCase("pluginVmDirectoryNotSharedErrorDialog").FilesSwa(),
+        TestCase("pluginVmFileOnExternalDriveErrorDialog"),
+        TestCase("pluginVmFileOnExternalDriveErrorDialog").FilesSwa(),
+        TestCase("pluginVmFileDropFailErrorDialog"),
+        TestCase("pluginVmFileDropFailErrorDialog").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     MyFiles, /* my_files.js */
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("directoryTreeRefresh"),
+        TestCase("directoryTreeRefresh").FilesSwa(),
         TestCase("showMyFiles"),
+        TestCase("showMyFiles").FilesSwa(),
         TestCase("showMyFiles").EnableTrash(),
+        TestCase("showMyFiles").EnableTrash().FilesSwa(),
         TestCase("myFilesDisplaysAndOpensEntries"),
+        TestCase("myFilesDisplaysAndOpensEntries").FilesSwa(),
         TestCase("myFilesFolderRename"),
+        TestCase("myFilesFolderRename").FilesSwa(),
         TestCase("myFilesUpdatesWhenAndroidVolumeMounts").DontMountVolumes(),
         TestCase("myFilesUpdatesWhenAndroidVolumeMounts")
             .DontMountVolumes()
             .FilesSwa(),
         TestCase("myFilesUpdatesChildren"),
+        TestCase("myFilesUpdatesChildren").FilesSwa(),
         TestCase("myFilesAutoExpandOnce"),
-        TestCase("myFilesToolbarDelete")));
+        TestCase("myFilesAutoExpandOnce").FilesSwa(),
+        TestCase("myFilesToolbarDelete"),
+        TestCase("myFilesToolbarDelete").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     InstallLinuxPackageDialog, /* install_linux_package_dialog.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("installLinuxPackageDialog")));
+    ::testing::Values(TestCase("installLinuxPackageDialog"),
+                      TestCase("installLinuxPackageDialog").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Recents, /* recents.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("recentsDownloads"),
-                      TestCase("recentsDrive"),
-                      TestCase("recentsCrostiniNotMounted"),
-                      TestCase("recentsCrostiniMounted"),
-                      TestCase("recentsDownloadsAndDrive"),
-                      TestCase("recentsDownloadsAndDriveWithOverlap"),
-                      TestCase("recentsNested"),
-                      TestCase("recentAudioDownloads"),
-                      TestCase("recentAudioDownloadsAndDrive"),
-                      TestCase("recentImagesDownloads"),
-                      TestCase("recentImagesDownloadsAndDrive"),
-                      TestCase("recentVideosDownloads"),
-                      TestCase("recentVideosDownloadsAndDrive")));
+    ::testing::Values(
+        TestCase("recentsDownloads"),
+        TestCase("recentsDownloads").FilesSwa(),
+        TestCase("recentsDownloads").EnableFiltersInRecents(),
+        TestCase("recentsDownloads").EnableFiltersInRecents().FilesSwa(),
+        TestCase("recentsDrive"),
+        TestCase("recentsDrive").FilesSwa(),
+        TestCase("recentsDrive").EnableFiltersInRecents(),
+        TestCase("recentsDrive").EnableFiltersInRecents().FilesSwa(),
+        TestCase("recentsCrostiniNotMounted"),
+        TestCase("recentsCrostiniNotMounted").FilesSwa(),
+        TestCase("recentsCrostiniNotMounted").EnableFiltersInRecents(),
+        TestCase("recentsCrostiniNotMounted")
+            .EnableFiltersInRecents()
+            .FilesSwa(),
+        TestCase("recentsCrostiniMounted"),
+        TestCase("recentsCrostiniMounted").FilesSwa(),
+        TestCase("recentsCrostiniMounted").EnableFiltersInRecents(),
+        TestCase("recentsCrostiniMounted").EnableFiltersInRecents().FilesSwa(),
+        TestCase("recentsDownloadsAndDrive"),
+        TestCase("recentsDownloadsAndDrive").FilesSwa(),
+        TestCase("recentsDownloadsAndDrive").EnableFiltersInRecents(),
+        TestCase("recentsDownloadsAndDrive")
+            .EnableFiltersInRecents()
+            .FilesSwa(),
+        TestCase("recentsDownloadsAndDriveWithOverlap"),
+        TestCase("recentsDownloadsAndDriveWithOverlap").FilesSwa(),
+        TestCase("recentsDownloadsAndDriveWithOverlap")
+            .EnableFiltersInRecents(),
+        TestCase("recentsDownloadsAndDriveWithOverlap")
+            .EnableFiltersInRecents()
+            .FilesSwa(),
+        TestCase("recentsFilterResetToAll").EnableFiltersInRecents(),
+        TestCase("recentsFilterResetToAll").EnableFiltersInRecents().FilesSwa(),
+        TestCase("recentsNested"),
+        TestCase("recentsNested").FilesSwa(),
+        TestCase("recentsNested").EnableFiltersInRecents(),
+        TestCase("recentsNested").EnableFiltersInRecents().FilesSwa(),
+        TestCase("recentAudioDownloads"),
+        TestCase("recentAudioDownloads").FilesSwa(),
+        TestCase("recentAudioDownloads").EnableFiltersInRecents(),
+        TestCase("recentAudioDownloads").EnableFiltersInRecents().FilesSwa(),
+        TestCase("recentAudioDownloadsAndDrive"),
+        TestCase("recentAudioDownloadsAndDrive").FilesSwa(),
+        TestCase("recentAudioDownloadsAndDrive").EnableFiltersInRecents(),
+        TestCase("recentAudioDownloadsAndDrive")
+            .EnableFiltersInRecents()
+            .FilesSwa(),
+        TestCase("recentImagesDownloads"),
+        TestCase("recentImagesDownloads").FilesSwa(),
+        TestCase("recentImagesDownloads").EnableFiltersInRecents(),
+        TestCase("recentImagesDownloads").EnableFiltersInRecents().FilesSwa(),
+        TestCase("recentImagesDownloadsAndDrive"),
+        TestCase("recentImagesDownloadsAndDrive").FilesSwa(),
+        TestCase("recentImagesDownloadsAndDrive").EnableFiltersInRecents(),
+        TestCase("recentImagesDownloadsAndDrive")
+            .EnableFiltersInRecents()
+            .FilesSwa(),
+        TestCase("recentVideosDownloads"),
+        TestCase("recentVideosDownloads").FilesSwa(),
+        TestCase("recentVideosDownloads").EnableFiltersInRecents(),
+        TestCase("recentVideosDownloads").EnableFiltersInRecents().FilesSwa(),
+        TestCase("recentVideosDownloadsAndDrive"),
+        TestCase("recentVideosDownloadsAndDrive").FilesSwa(),
+        TestCase("recentVideosDownloadsAndDrive").EnableFiltersInRecents(),
+        TestCase("recentVideosDownloadsAndDrive")
+            .EnableFiltersInRecents()
+            .FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metadata, /* metadata.js */
@@ -1498,23 +1622,35 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
             .EnableGenericDocumentsProvider()
             .FilesSwa(),
         TestCase("metadataDownloads"),
+        TestCase("metadataDownloads").FilesSwa(),
         TestCase("metadataDrive"),
+        TestCase("metadataDrive").FilesSwa(),
         TestCase("metadataTeamDrives"),
-        TestCase("metadataLargeDrive")));
+        TestCase("metadataTeamDrives").FilesSwa(),
+        TestCase("metadataLargeDrive"),
+        TestCase("metadataLargeDrive").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Search, /* search.js */
     FilesAppBrowserTest,
     ::testing::Values(TestCase("searchDownloadsWithResults"),
+                      TestCase("searchDownloadsWithResults").FilesSwa(),
                       TestCase("searchDownloadsWithNoResults"),
+                      TestCase("searchDownloadsWithNoResults").FilesSwa(),
                       TestCase("searchDownloadsClearSearchKeyDown"),
                       TestCase("searchDownloadsClearSearchKeyDown").FilesSwa(),
                       TestCase("searchDownloadsClearSearch"),
                       TestCase("searchDownloadsClearSearch").FilesSwa(),
                       TestCase("searchHidingViaTab"),
+                      TestCase("searchHidingViaTab").FilesSwa(),
                       TestCase("searchHidingTextEntryField"),
+                      TestCase("searchHidingTextEntryField").FilesSwa(),
                       TestCase("searchButtonToggles"),
-                      TestCase("searchQueryLaunchParam")));
+                      TestCase("searchButtonToggles").FilesSwa(),
+                      TestCase("searchQueryLaunchParam")
+                      // TODO(b/189173190): Enable
+                      // TestCase("searchQueryLaunchParam").FilesSwa()
+                      ));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Metrics, /* metrics.js */
@@ -1527,40 +1663,74 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Breadcrumbs, /* breadcrumbs.js */
     FilesAppBrowserTest,
-    ::testing::Values(TestCase("breadcrumbsNavigate"),
-                      TestCase("breadcrumbsDownloadsTranslation"),
-                      TestCase("breadcrumbsDownloadsTranslation").FilesSwa(),
-                      TestCase("breadcrumbsRenderShortPath"),
-                      TestCase("breadcrumbsEliderButtonHidden"),
-                      TestCase("breadcrumbsRenderLongPath"),
-                      TestCase("breadcrumbsMainButtonClick"),
-                      TestCase("breadcrumbsMainButtonEnterKey"),
-                      TestCase("breadcrumbsEliderButtonClick"),
-                      TestCase("breadcrumbsEliderButtonKeyboard"),
-                      TestCase("breadcrumbsEliderMenuClickOutside"),
-                      TestCase("breadcrumbsEliderMenuItemClick"),
-                      TestCase("breadcrumbsEliderMenuItemTabLeft"),
-                      TestCase("breadcrumbsEliderMenuItemTabRight"),
-                      TestCase("breadcrumbsDontExceedAvailableViewport")));
+    ::testing::Values(
+        TestCase("breadcrumbsNavigate"),
+        TestCase("breadcrumbsNavigate").FilesSwa(),
+        TestCase("breadcrumbsDownloadsTranslation"),
+        TestCase("breadcrumbsDownloadsTranslation").FilesSwa(),
+        TestCase("breadcrumbsRenderShortPath"),
+        TestCase("breadcrumbsRenderShortPath").FilesSwa(),
+        TestCase("breadcrumbsEliderButtonHidden"),
+        TestCase("breadcrumbsEliderButtonHidden").FilesSwa(),
+        TestCase("breadcrumbsRenderLongPath"),
+        TestCase("breadcrumbsRenderLongPath").FilesSwa(),
+        TestCase("breadcrumbsMainButtonClick"),
+        TestCase("breadcrumbsMainButtonClick").FilesSwa(),
+        TestCase("breadcrumbsMainButtonEnterKey"),
+        TestCase("breadcrumbsMainButtonEnterKey").FilesSwa(),
+        TestCase("breadcrumbsEliderButtonClick"),
+        TestCase("breadcrumbsEliderButtonClick").FilesSwa(),
+        TestCase("breadcrumbsEliderButtonKeyboard"),
+        TestCase("breadcrumbsEliderButtonKeyboard").FilesSwa(),
+        TestCase("breadcrumbsEliderMenuClickOutside"),
+        TestCase("breadcrumbsEliderMenuClickOutside").FilesSwa(),
+        TestCase("breadcrumbsEliderMenuItemClick"),
+        TestCase("breadcrumbsEliderMenuItemClick").FilesSwa(),
+        TestCase("breadcrumbsEliderMenuItemTabLeft"),
+        TestCase("breadcrumbsEliderMenuItemTabLeft").FilesSwa(),
+        TestCase("breadcrumbsEliderMenuItemTabRight"),
+        TestCase("breadcrumbsEliderMenuItemTabRight").FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     FormatDialog, /* format_dialog.js */
     FilesAppBrowserTest,
     ::testing::Values(
         TestCase("formatDialog"),
+        TestCase("formatDialog").FilesSwa(),
         TestCase("formatDialogIsModal"),
+        TestCase("formatDialogIsModal").FilesSwa(),
         TestCase("formatDialogEmpty"),
+        TestCase("formatDialogEmpty").FilesSwa(),
         TestCase("formatDialogCancel"),
+        TestCase("formatDialogCancel").FilesSwa(),
         TestCase("formatDialogNameLength"),
+        TestCase("formatDialogNameLength").FilesSwa(),
         TestCase("formatDialogNameInvalid"),
+        TestCase("formatDialogNameInvalid").FilesSwa(),
         TestCase("formatDialogGearMenu"),
+        TestCase("formatDialogGearMenu").FilesSwa(),
         TestCase("formatDialog").EnableSinglePartitionFormat(),
+        TestCase("formatDialog").EnableSinglePartitionFormat().FilesSwa(),
         TestCase("formatDialogIsModal").EnableSinglePartitionFormat(),
+        TestCase("formatDialogIsModal")
+            .EnableSinglePartitionFormat()
+            .FilesSwa(),
         TestCase("formatDialogEmpty").EnableSinglePartitionFormat(),
+        TestCase("formatDialogEmpty").EnableSinglePartitionFormat().FilesSwa(),
         TestCase("formatDialogCancel").EnableSinglePartitionFormat(),
+        TestCase("formatDialogCancel").EnableSinglePartitionFormat().FilesSwa(),
         TestCase("formatDialogNameLength").EnableSinglePartitionFormat(),
+        TestCase("formatDialogNameLength")
+            .EnableSinglePartitionFormat()
+            .FilesSwa(),
         TestCase("formatDialogNameInvalid").EnableSinglePartitionFormat(),
-        TestCase("formatDialogGearMenu").EnableSinglePartitionFormat()));
+        TestCase("formatDialogNameInvalid")
+            .EnableSinglePartitionFormat()
+            .FilesSwa(),
+        TestCase("formatDialogGearMenu").EnableSinglePartitionFormat(),
+        TestCase("formatDialogGearMenu")
+            .EnableSinglePartitionFormat()
+            .FilesSwa()));
 
 WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Trash, /* trash.js */
@@ -1584,11 +1754,41 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
     Office, /* office.js */
     FilesAppBrowserTest,
     ::testing::Values(
-        TestCase("openOfficeFile").EnableWebDriveOffice(),
-        TestCase("openOfficeFile").EnableWebDriveOffice().FilesSwa(),
-        TestCase("openOfficeFromMyFiles").EnableWebDriveOffice(),
-        TestCase("openOfficeFromMyFiles").EnableWebDriveOffice().FilesSwa(),
-        TestCase("openOfficeFromDrive").EnableWebDriveOffice(),
-        TestCase("openOfficeFromDrive").EnableWebDriveOffice().FilesSwa()));
+        TestCase("openOfficeWordFile").EnableWebDriveOffice(),
+        TestCase("openOfficeWordFile").EnableWebDriveOffice().FilesSwa(),
+        TestCase("openOfficeWordFromMyFiles").EnableWebDriveOffice(),
+        TestCase("openOfficeWordFromMyFiles").EnableWebDriveOffice().FilesSwa(),
+        TestCase("openMultipleOfficeWordFromDrive").EnableWebDriveOffice(),
+        TestCase("openMultipleOfficeWordFromDrive")
+            .EnableWebDriveOffice()
+            .FilesSwa(),
+        TestCase("openOfficeWordFromDrive").EnableWebDriveOffice(),
+        TestCase("openOfficeWordFromDrive").EnableWebDriveOffice().FilesSwa(),
+        TestCase("openOfficeExcelFromDrive").EnableWebDriveOffice(),
+        TestCase("openOfficeExcelFromDrive").EnableWebDriveOffice().FilesSwa(),
+        TestCase("openOfficePowerPointFromDrive").EnableWebDriveOffice(),
+        TestCase("openOfficePowerPointFromDrive")
+            .EnableWebDriveOffice()
+            .FilesSwa(),
+        TestCase("openOfficeWordFromDriveNotSynced").EnableWebDriveOffice(),
+        TestCase("openOfficeWordFromDriveNotSynced")
+            .EnableWebDriveOffice()
+            .FilesSwa(),
+        TestCase("openOfficeWordFromDriveOffline")
+            .EnableWebDriveOffice()
+            .Offline(),
+        TestCase("openOfficeWordFromDriveOffline")
+            .EnableWebDriveOffice()
+            .Offline()
+            .FilesSwa()));
+
+WRAPPED_INSTANTIATE_TEST_SUITE_P(
+    GuestOs, /* guest_os.js */
+    FilesAppBrowserTest,
+    ::testing::Values(
+        TestCase("fakesListed").EnableGuestOsFiles(),
+        TestCase("mountGuestError").EnableGuestOsFiles(),
+        TestCase("listUpdatedWhenGuestsChanged").EnableGuestOsFiles(),
+        TestCase("notListedWithoutFlag")));
 
 }  // namespace file_manager

@@ -17,6 +17,17 @@ inline constexpr base::Feature kAllowSilentTrustedVaultDeviceRegistration{
     "AllowSilentTrustedVaultDeviceRegistration",
     base::FEATURE_ENABLED_BY_DEFAULT};
 
+// Causes the device to be a valid send-tab-to-self target and sender,
+// regardless of UserSelectableType::kTabs and SyncRequested.
+inline constexpr base::Feature kDecoupleSendTabToSelfAndSyncSettings{
+    "DecoupleSendTabToSelfAndSyncSettings", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, EntitySpecifics will be cached in EntityMetadata in order to
+// prevent data loss caused by older clients dealing with unknown proto fields
+// (introduced later).
+inline constexpr base::Feature kCacheBaseEntitySpecificsInMetadata{
+    "CacheBaseEntitySpecificsInMetadata", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Causes Sync to ignore updates encrypted with keys that have been missing for
 // too long from this client; Sync will proceed normally as if those updates
 // didn't exist.
@@ -33,6 +44,11 @@ inline constexpr base::Feature
     kSyncAllowWalletDataInTransportModeWithCustomPassphrase{
         "SyncAllowAutofillWalletDataInTransportModeWithCustomPassphrase",
         base::FEATURE_DISABLED_BY_DEFAULT};
+
+#if BUILDFLAG(IS_ANDROID)
+inline constexpr base::Feature kSyncAndroidPromosRevamp{
+    "SyncAndroidPromosRevamp", base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // BUILDFLAG(IS_ANDROID)
 
 // Causes the sync engine to count a quota for commits of data types that can
 // be committed by extension JS API. If the quota is depleted, an extra long
@@ -62,6 +78,10 @@ inline constexpr base::Feature kSyncSendInterestedDataTypes = {
 inline constexpr base::Feature kSyncSettingsShowLacrosSideBySideWarning{
     "SyncSettingsShowLacrosSideBySideWarning",
     base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Whether explicit passphrase sharing between Ash and Lacros is enabled.
+inline constexpr base::Feature kSyncChromeOSExplicitPassphraseSharing{
+    "SyncChromeOSExplicitPassphraseSharing", base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_IOS)

@@ -11,6 +11,9 @@
 
 namespace chrome {
 
+const char kAccessCodeCastLearnMoreURL[] =
+    "https://support.google.com/chrome/a/?p=cast_to_class_teacher";
+
 const char kAccessibilityLabelsLearnMoreURL[] =
     "https://support.google.com/chrome/?p=image_descriptions";
 
@@ -406,6 +409,9 @@ const char kLinuxAppsLearnMoreURL[] =
 const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromebook/?p=simple_scrolling";
 
+const char kHapticFeedbackHelpURL[] =
+    "https://support.google.com/chromebook?p=haptic_feedback_m100";
+
 const char kOemEulaURLPath[] = "oem";
 
 const char kGoogleEulaOnlineURLPath[] =
@@ -481,5 +487,11 @@ const char kOutdatedPluginLearnMoreURL[] =
 // TODO (b/184137843): Use real link to phone hub notifications and apps access.
 const char kPhoneHubPermissionLearnMoreURL[] =
     "https://support.google.com/chromebook/?p=multidevice";
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_FUCHSIA)
+const char kChromeAppsDeprecationLearnMoreURL[] =
+    "https://support.google.com/chrome/?p=chrome_app_deprecation";
+#endif
 
 }  // namespace chrome

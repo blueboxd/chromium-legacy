@@ -11,6 +11,8 @@ import {assertEnumVariant} from '../util.js';
 
 import {EnterOptions, LeaveCondition, View} from './view.js';
 
+// This is used as an enum.
+/* eslint-disable @typescript-eslint/naming-convention */
 /**
  * The type of warning.
  */
@@ -19,7 +21,11 @@ export const WarningType = {
   FILESYSTEM_FAILURE: I18nString.ERROR_MSG_FILE_SYSTEM_FAILED,
   NO_CAMERA: I18nString.ERROR_MSG_NO_CAMERA,
 };
+/* eslint-enable @typescript-eslint/naming-convention */
 
+/**
+ * Asserts that the argument is an I18nString, throws error otherwise.
+ */
 function assertI18nString(value: unknown): I18nString {
   const stringValue = assertString(value);
   return assertEnumVariant(I18nString, stringValue);
@@ -44,7 +50,7 @@ export class Warning extends View {
         loadTimeData.getI18nMessage(message);
   }
 
-  entering(nameOption?: EnterOptions): void {
+  override entering(nameOption?: EnterOptions): void {
     const name = assertI18nString(nameOption);
 
     // Remove the error-name from the stack to avoid duplication. Then make the
@@ -57,7 +63,7 @@ export class Warning extends View {
     this.updateMessage();
   }
 
-  leaving(condition: LeaveCondition): boolean {
+  override leaving(condition: LeaveCondition): boolean {
     assert(condition.kind === 'CLOSED');
 
     // Recovered error-name for leaving the view.

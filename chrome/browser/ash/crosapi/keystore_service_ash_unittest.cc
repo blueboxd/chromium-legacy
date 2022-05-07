@@ -57,12 +57,6 @@ using ::testing::WithArg;
 
 constexpr char kData[] = "\1\2\3\4\5\6\7";
 
-std::string Base64Decode(const char* input) {
-  std::string result;
-  CHECK(base::Base64Decode(input, &result));
-  return result;
-}
-
 std::string GetSubjectPublicKeyInfo(
     const scoped_refptr<net::X509Certificate>& certificate) {
   base::StringPiece spki_der_piece;
@@ -496,7 +490,7 @@ TEST_F(KeystoreServiceAshTest, GetPublicKeySuccess) {
   ASSERT_TRUE(success_result->algorithm_properties->is_pkcs115());
   const mojom::KeystorePKCS115ParamsPtr& params =
       success_result->algorithm_properties->get_pkcs115();
-  EXPECT_EQ(params->modulus_length, 2048);
+  EXPECT_EQ(params->modulus_length, 2048u);
   EXPECT_EQ(params->public_exponent, (std::vector<uint8_t>{1, 0, 1}));
 }
 
@@ -862,7 +856,7 @@ TEST_F(KeystoreServiceAshTest, DeprecatedGetPublicKeySuccess) {
   ASSERT_TRUE(success_result->algorithm_properties->is_pkcs115());
   const mojom::KeystorePKCS115ParamsPtr& params =
       success_result->algorithm_properties->get_pkcs115();
-  EXPECT_EQ(params->modulus_length, 2048);
+  EXPECT_EQ(params->modulus_length, 2048u);
   EXPECT_EQ(params->public_exponent, (std::vector<uint8_t>{1, 0, 1}));
 }
 

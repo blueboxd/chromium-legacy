@@ -11,6 +11,7 @@
 
 #include "base/callback_forward.h"
 #include "base/values.h"
+#include "third_party/abseil-cpp/absl/numeric/int128.h"
 #include "url/origin.h"
 
 class GURL;
@@ -37,26 +38,25 @@ class TestAggregationService {
 
   // This is 1-1 mapping of AggregationServicePayloadContents::Operation.
   enum class Operation {
-    kHistogram = 0,
-    kMaxValue = kHistogram,
+    kHistogram,
   };
 
-  // This is 1-1 mapping of AggregationServicePayloadContent::ProcessingType.
-  enum class ProcessingType {
-    kTwoParty = 0,
-    kSingleServer = 1,
-    kMaxValue = kSingleServer,
+  // This is 1-1 mapping of AggregationServicePayloadContent::AggregationMode.
+  enum class AggregationMode {
+    kTeeBased,
+    kExperimentalPoplar,
+    kDefault = kTeeBased,
   };
 
   // Represents a request to assemble an aggregatable report.
   struct AssembleRequest {
     AssembleRequest(Operation operation,
-                    int bucket,
+                    absl::uint128 bucket,
                     int value,
-                    ProcessingType processing_type,
+                    AggregationMode aggregation_mode,
                     url::Origin reporting_origin,
                     std::string privacy_budget_key,
-                    std::vector<url::Origin> processing_origins,
+                    std::vector<GURL> processing_urls,
                     bool is_debug_mode_enabled);
     AssembleRequest(AssembleRequest&& other);
     AssembleRequest& operator=(AssembleRequest&& other);
@@ -65,17 +65,17 @@ class TestAggregationService {
     // Specifies the operation for the aggregation.
     Operation operation;
     // Specifies the bucket key of the histogram contribution.
-    int bucket;
+    absl::uint128 bucket;
     // Specifies the bucket value of the histogram contribution.
     int value;
-    // Indicates whether the aggregation servers run an MPC protocol or not.
-    ProcessingType processing_type;
+    // Specifies the aggregation mode to use.
+    AggregationMode aggregation_mode;
     // Specifies the endpoint reporting origin.
     url::Origin reporting_origin;
     // Specifies the key for the aggregation servers to do privacy budgeting.
     std::string privacy_budget_key;
-    // Specifies the aggregation server origins.
-    std::vector<url::Origin> processing_origins;
+    // Specifies the aggregation server URLs.
+    std::vector<GURL> processing_urls;
     // Whether debug_mode should be enabled for the report.
     bool is_debug_mode_enabled;
   };
@@ -92,10 +92,10 @@ class TestAggregationService {
   // after serialization.
   virtual void SetDisablePayloadEncryption(bool should_disable) = 0;
 
-  // Parses the keys for `origin` from `json_string`, and saves the set of keys
+  // Parses the keys for `url` from `json_string`, and saves the set of keys
   // to storage. `callback` will be run once completed which takes a boolean
   // value indicating whether the keys were parsed successfully.
-  virtual void SetPublicKeys(const url::Origin& origin,
+  virtual void SetPublicKeys(const GURL& url,
                              const std::string& json_string,
                              base::OnceCallback<void(bool)> callback) = 0;
 

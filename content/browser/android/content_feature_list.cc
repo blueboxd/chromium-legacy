@@ -28,12 +28,12 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kBackgroundMediaRendererHasModerateBinding,
     &features::kBindingManagementWaiveCpu,
     &features::kComputeAXMode,
+    &features::kFedCm,
     &features::kOnDemandAccessibilityEvents,
     &features::kProcessSharingWithStrictSiteInstances,
     &features::kRequestDesktopSiteExceptions,
     &features::kRequestDesktopSiteGlobal,
     &features::kTouchDragAndContextMenu,
-    &features::kWebAuth,
     &features::kWebBluetoothNewPermissionsBackend,
     &features::kWebNfc,
 };

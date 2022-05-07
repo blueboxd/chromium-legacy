@@ -22,6 +22,7 @@ generate_grd("build_grd") {
     "images:build_grdp",
     "js:build_grdp",
     "js/cr/ui:build_grdp",
+    "js/metrics_reporter:build_grdp",
     "//third_party/jstemplate:build_grdp",
   ]
   grdp_files = [
@@ -29,6 +30,7 @@ generate_grd("build_grd") {
     "$target_gen_dir/html/resources.grdp",
     "$target_gen_dir/images/resources.grdp",
     "$target_gen_dir/js/cr/ui/resources.grdp",
+    "$target_gen_dir/js/metrics_reporter/resources.grdp",
     "$target_gen_dir/js/resources.grdp",
     "$target_gen_dir/resources_ts.grdp",
     "$root_gen_dir/third_party/jstemplate/resources.grdp",
@@ -147,8 +149,7 @@ generate_grd("build_ts_grdp") {
 }
 
 checked_in_dts_files = [
-  "cr_components/managed_dialog/managed_dialog.d.ts",
-  "cr_components/managed_footnote/managed_footnote.d.ts",
+  "cr_components/localized_link/localized_link.d.ts",
   "cr_elements/cr_action_menu/cr_action_menu.d.ts",
   "cr_elements/cr_button/cr_button.m.d.ts",
   "cr_elements/cr_checkbox/cr_checkbox.m.d.ts",
@@ -263,6 +264,8 @@ ts_library("library") {
 
   in_files = [
     "cr_components/iph_bubble/iph_bubble.ts",
+    "cr_components/managed_footnote/managed_footnote.ts",
+    "cr_components/managed_dialog/managed_dialog.ts",
     "cr_elements/cr_a11y_announcer/cr_a11y_announcer.ts",
     "cr_elements/cr_container_shadow_mixin.ts",
     "cr_elements/cr_nav_menu_item_style.ts",
@@ -280,7 +283,10 @@ ts_library("library") {
     "js/web_ui_listener_mixin.ts",
   ]
 
-  definitions = [ "//tools/typescript/definitions/settings_private.d.ts" ]
+  definitions = [
+    "//tools/typescript/definitions/settings_private.d.ts",
+    "//tools/typescript/definitions/chrome_send.d.ts",
+  ]
 
   # Checked-in .d.ts files.
   foreach(_file, checked_in_dts_files) {

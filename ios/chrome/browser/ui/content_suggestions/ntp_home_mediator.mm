@@ -17,6 +17,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "ios/chrome/browser/discover_feed/discover_feed_service.h"
+#include "ios/chrome/browser/discover_feed/discover_feed_service_factory.h"
 #import "ios/chrome/browser/metrics/new_tab_page_uma.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/policy/policy_util.h"
@@ -34,10 +36,10 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_mediator.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_metrics.h"
@@ -57,8 +59,6 @@
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #include "ios/chrome/grit/ios_strings.h"
-#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
-#import "ios/public/provider/chrome/browser/discover_feed/discover_feed_provider.h"
 #import "ios/web/public/navigation/navigation_item.h"
 #import "ios/web/public/navigation/navigation_manager.h"
 #include "ios/web/public/navigation/referrer.h"
@@ -198,13 +198,59 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
   [self.consumer locationBarResignsFirstResponder];
 }
 
+- (void)saveContentOffsetForWebState:(web::WebState*)webState {
+  if (!IsSingleNtpEnabled() &&
+      webState->GetLastCommittedURL().DeprecatedGetOriginAsURL() !=
+          kChromeUINewTabURL) {
+    return;
+  }
+  if (IsSingleNtpEnabled() &&
+      (webState->GetLastCommittedURL().DeprecatedGetOriginAsURL() !=
+           kChromeUINewTabURL &&
+       webState->GetVisibleURL().DeprecatedGetOriginAsURL() !=
+           kChromeUINewTabURL)) {
+    // Do nothing if the current page is not the NTP.
+    return;
+  }
+
+  web::NavigationManager* manager = webState->GetNavigationManager();
+  web::NavigationItem* item =
+      webState->GetLastCommittedURL() == kChromeUINewTabURL
+          ? manager->GetLastCommittedItem()
+          : manager->GetVisibleItem();
+  web::PageDisplayState displayState;
+
+  // TODO(crbug.com/1114792): Create a protocol to stop having references to
+  // both of these ViewControllers directly.
+  UICollectionView* collectionView =
+      self.ntpViewController.discoverFeedWrapperViewController
+          .contentCollectionView;
+  UIEdgeInsets contentInset = collectionView.contentInset;
+  CGPoint contentOffset = collectionView.contentOffset;
+  if ([self.suggestionsMediator mostRecentTabStartSurfaceTileIsShowing]) {
+    // Return to Recent tab tile is only shown one time, so subtract it's
+    // vertical space to preserve relative scroll position from top.
+    CGFloat tileSectionHeight =
+        [ContentSuggestionsReturnToRecentTabCell defaultSize].height +
+        content_suggestions::kReturnToRecentTabSectionBottomMargin;
+    if (contentOffset.y >
+        tileSectionHeight +
+            [self.headerCollectionInteractionHandler pinnedOffsetY]) {
+      contentOffset.y -= tileSectionHeight;
+    }
+  }
+
+  contentOffset.y -=
+      self.headerCollectionInteractionHandler.collectionShiftingOffset;
+  displayState.scroll_state() =
+      web::PageScrollState(contentOffset, contentInset);
+  item->SetPageDisplayState(displayState);
+}
+
 #pragma mark - Properties.
 
 - (void)setWebState:(web::WebState*)webState {
   if (_webState && _webStateObserver) {
-    if (IsSingleNtpEnabled()) {
-      [self saveContentOffsetForWebState:_webState];
-    }
     _webState->RemoveObserver(_webStateObserver.get());
   }
   _webState = webState;
@@ -396,15 +442,21 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
     return;
   }
   [self logMostVisitedOpening:item atIndex:index];
-  CGPoint cellCenter = [self cellCenterForItem:item];
+  // This is called in response to accessibility custom actions which don't
+  // need to animate the new tab from the Most Visited Tile.
+  CGPoint cellCenter = IsContentSuggestionsUIViewControllerMigrationEnabled()
+                           ? CGPointZero
+                           : [self cellCenterForItem:item];
   [self openNewTabWithURL:item.URL incognito:incognito originPoint:cellCenter];
 }
 
 - (void)openNewTabWithMostVisitedItem:(ContentSuggestionsMostVisitedItem*)item
                             incognito:(BOOL)incognito {
-  NSInteger index =
-      [self.suggestionsViewController.collectionViewModel indexPathForItem:item]
-          .item;
+  NSInteger index = IsContentSuggestionsUIViewControllerMigrationEnabled()
+                        ? item.index
+                        : [self.suggestionsViewController.collectionViewModel
+                              indexPathForItem:item]
+                              .item;
   [self openNewTabWithMostVisitedItem:item incognito:incognito atIndex:index];
 }
 
@@ -541,57 +593,6 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
   [self.dispatcher showSnackbarMessage:message];
 }
 
-// Save the NTP scroll offset into the last committed navigation item for the
-// before we navigate away.
-- (void)saveContentOffsetForWebState:(web::WebState*)webState {
-  if (!IsSingleNtpEnabled() &&
-      webState->GetLastCommittedURL().DeprecatedGetOriginAsURL() !=
-          kChromeUINewTabURL) {
-    return;
-  }
-  if (IsSingleNtpEnabled() &&
-      (webState->GetLastCommittedURL().DeprecatedGetOriginAsURL() !=
-           kChromeUINewTabURL &&
-       webState->GetVisibleURL().DeprecatedGetOriginAsURL() !=
-           kChromeUINewTabURL)) {
-    // Do nothing if the current page is not the NTP.
-    return;
-  }
-
-  web::NavigationManager* manager = webState->GetNavigationManager();
-  web::NavigationItem* item =
-      webState->GetLastCommittedURL() == kChromeUINewTabURL
-          ? manager->GetLastCommittedItem()
-          : manager->GetVisibleItem();
-  web::PageDisplayState displayState;
-
-  // TODO(crbug.com/1114792): Create a protocol to stop having references to
-  // both of these ViewControllers directly.
-  UICollectionView* collectionView =
-      self.ntpViewController.discoverFeedWrapperViewController
-          .contentCollectionView;
-  UIEdgeInsets contentInset = collectionView.contentInset;
-  CGPoint contentOffset = collectionView.contentOffset;
-  if ([self.suggestionsMediator mostRecentTabStartSurfaceTileIsShowing]) {
-    // Return to Recent tab tile is only shown one time, so subtract it's
-    // vertical space to preserve relative scroll position from top.
-    CGFloat tileSectionHeight =
-        [ContentSuggestionsReturnToRecentTabCell defaultSize].height +
-        content_suggestions::kReturnToRecentTabSectionBottomMargin;
-    if (contentOffset.y >
-        tileSectionHeight +
-            [self.headerCollectionInteractionHandler pinnedOffsetY]) {
-      contentOffset.y -= tileSectionHeight;
-    }
-  }
-
-  contentOffset.y -=
-      self.headerCollectionInteractionHandler.collectionShiftingOffset;
-  displayState.scroll_state() =
-      web::PageScrollState(contentOffset, contentInset);
-  item->SetPageDisplayState(displayState);
-}
-
 // Set the NTP scroll offset for the current navigation item.
 - (void)setContentOffsetForWebState:(web::WebState*)webState {
   if (webState->GetVisibleURL().DeprecatedGetOriginAsURL() !=
@@ -612,9 +613,13 @@ const char kFeedLearnMoreURL[] = "https://support.google.com/chrome/"
     // NTP is opened. Since the same NTP is being shared across tabs, this
     // ensures that new content is being fetched.
     [self.suggestionsMediator refreshMostVisitedTiles];
-    ios::GetChromeBrowserProvider()
-        .GetDiscoverFeedProvider()
-        ->RefreshFeedIfNeeded();
+
+    // Refresh DiscoverFeed unless in off-the-record NTP.
+    if (!self.browser->GetBrowserState()->IsOffTheRecord()) {
+      DiscoverFeedServiceFactory::GetForBrowserState(
+          self.browser->GetBrowserState())
+          ->RefreshFeedIfNeeded();
+    }
   }
 }
 

@@ -51,6 +51,7 @@ enum State {
   kUpdateOs,
   kSelectComponents,
   kChooseDestination,
+  kChooseWipeDevice,
   kChooseWriteProtectDisableMethod,
   kEnterRSUWPDisableCode,
   kWaitForManualWPDisable,
@@ -208,6 +209,13 @@ enum OsUpdateOperation {
   kNeedPermissionToUpdate = 10,
 };
 
+enum UpdateErrorCode {
+  kSuccess = 0,
+  kDownloadError = 1,
+  // Error includes device out of space, unauthorized, and no update available.
+  kOtherError = 2,
+};
+
 // Device components
 // This maps to RmadComponent in
 // //third_party/cros_system_api/dbus/rmad/rmad.proto.
@@ -332,6 +340,18 @@ enum ProvisioningStatus {
   kFailedNonBlocking = 4,
 };
 
+// This must remain in sync with ProvisionStatus::Error in
+// //third_party/cros_system_api/dbus/rmad/rmad.proto.
+// See shimless_rma_mojom_traits.cc\h.
+enum ProvisioningError {
+  kUnknown = 0,
+  kInternal = 1,
+  kWpEnabled = 2,
+  kCannotRead = 3,
+  kCannotWrite = 4,
+  kGenerateSecret = 5,
+};
+
 // This must remain in sync with FinalizeStatus::Status in
 // //third_party/cros_system_api/dbus/rmad/rmad.proto.
 // See shimless_rma_mojom_traits.cc\h.
@@ -340,6 +360,18 @@ enum FinalizationStatus {
   kComplete = 2,
   kFailedBlocking = 3,
   kFailedNonBlocking = 4,
+};
+
+// This must remain in sync with FinalizeStatus::Error in
+// //third_party/cros_system_api/dbus/rmad/rmad.proto.
+// See shimless_rma_mojom_traits.cc\h.
+enum FinalizationError {
+  kUnknown = 0,
+  kInternal = 1,
+  kCannotEnableHardwareWp = 2,
+  kCannotEnableSoftwareWp = 3,
+  kCr50 = 4,
+  kGbb = 5,
 };
 
 // Implemented by clients to receive errors from the rmad service.
@@ -355,7 +387,8 @@ interface ErrorObserver {
 interface OsUpdateObserver {
   // OnOsUpdateProgressUpdated is called when the UpdateEngine sends a update
   // status change signal.
-  OnOsUpdateProgressUpdated(OsUpdateOperation operation, float progress);
+  OnOsUpdateProgressUpdated(OsUpdateOperation operation, float progress,
+      UpdateErrorCode update_error_code);
 };
 
 // Implemented by clients to track the progress of component calibration.
@@ -372,8 +405,9 @@ interface CalibrationObserver {
 // calibration in a 0 - 1 range.
 interface ProvisioningObserver {
   // OnProvisioningUpdated is called whenever there is an update in the progress
-  // of device provisioning.
-  OnProvisioningUpdated(ProvisioningStatus status, float progress);
+  // of device provisioning, including an error when provisioning fails.
+  OnProvisioningUpdated(ProvisioningStatus status, float progress,
+      ProvisioningError error);
 };
 
 // Implemented by clients to track the current state of hardware write
@@ -404,8 +438,10 @@ interface HardwareVerificationStatusObserver {
 
 // Implemented by clients to receive status of finalization progress.
 interface FinalizationObserver {
-  // OnFinalizationUpdated is called to report progress of device finalization.
-  OnFinalizationUpdated(FinalizationStatus status, float progress);
+  // OnFinalizationUpdated is called to report progress of device finalization,
+  // reporting an error when finalization fails.
+  OnFinalizationUpdated(FinalizationStatus status, float progress,
+      FinalizationError error);
 };
 
 // Implemented by clients to receive status of RO firmware update progress.
@@ -476,6 +512,14 @@ interface ShimlessRmaService {
   // Set the RMA state for the device to be given to a different owner.
   // Returns the next state to display and an error code.
   SetDifferentOwner()
+      => (State state, bool can_cancel, bool can_go_back,
+          RmadErrorCode error);
+
+  ///////////////////////////////////////
+  // Method for kChooseWipeDevice state.
+  //
+  // Set the RMA state to wipe or preserve the device data on RMA completion.
+  SetWipeDevice(bool should_wipe_device)
       => (State state, bool can_cancel, bool can_go_back,
           RmadErrorCode error);
 

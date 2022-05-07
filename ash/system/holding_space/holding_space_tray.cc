@@ -206,6 +206,20 @@ std::unique_ptr<views::View> CreateDropTargetOverlay() {
   return drop_target_overlay;
 }
 
+// Returns the `aura::client::DragDropClient` for the given `widget`. Note that
+// this may return `nullptr` if the browser is performing its shutdown sequence.
+aura::client::DragDropClient* GetDragDropClient(views::Widget* widget) {
+  if (widget) {
+    auto* native_window = widget->GetNativeWindow();
+    if (native_window) {
+      auto* root_window = native_window->GetRootWindow();
+      if (root_window)
+        return aura::client::GetDragDropClient(root_window);
+    }
+  }
+  return nullptr;
+}
+
 }  // namespace
 
 // HoldingSpaceTray ------------------------------------------------------------
@@ -393,19 +407,6 @@ int HoldingSpaceTray::OnDragUpdated(const ui::DropTargetEvent& event) {
              : ui::DragDropTypes::DRAG_COPY;
 }
 
-DragOperation HoldingSpaceTray::OnPerformDrop(
-    const ui::DropTargetEvent& event) {
-  std::vector<base::FilePath> unpinned_file_paths(
-      ExtractUnpinnedFilePaths(event.data()));
-  if (unpinned_file_paths.empty())
-    return DragOperation::kNone;
-
-  ui::mojom::DragOperation output_drag_op = DragOperation::kNone;
-  PerformDrop(std::move(unpinned_file_paths), event, output_drag_op);
-
-  return output_drag_op;
-}
-
 views::View::DropCallback HoldingSpaceTray::GetDropCallback(
     const ui::DropTargetEvent& event) {
   std::vector<base::FilePath> unpinned_file_paths(
@@ -457,11 +458,16 @@ void HoldingSpaceTray::VisibilityChanged(views::View* starting_from,
     return;
   }
 
+  // It's possible that the `drag_drop_client` might be `nullptr` if the browser
+  // is performing its shutdown sequence.
+  auto* drag_drop_client = GetDragDropClient(GetWidget());
+  if (!drag_drop_client)
+    return;
+
   // Observe drag/drop events only when visible. Since the observer is owned by
   // `this` view, it's safe to bind to a raw pointer.
   drag_drop_observer_ = std::make_unique<ScopedDragDropObserver>(
-      /*client=*/aura::client::GetDragDropClient(
-          GetWidget()->GetNativeWindow()->GetRootWindow()),
+      drag_drop_client,
       /*event_callback=*/base::BindRepeating(
           &HoldingSpaceTray::UpdateDropTargetState, base::Unretained(this)));
 }

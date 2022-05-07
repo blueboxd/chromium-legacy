@@ -34,6 +34,7 @@
 #include "base/json/string_escape.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -583,7 +584,7 @@ void DownloadItemImpl::StealDangerousDownload(bool delete_file_afterward,
       base::PostTaskAndReplyWithResult(
           GetDownloadTaskRunner().get(), FROM_HERE,
           base::BindOnce(&DownloadFileDetach, std::move(download_file_)),
-          base::BindOnce(std::move(callback)));
+          std::move(callback));
     } else {
       std::move(callback).Run(GetFullPath());
     }
@@ -594,7 +595,7 @@ void DownloadItemImpl::StealDangerousDownload(bool delete_file_afterward,
     base::PostTaskAndReplyWithResult(
         GetDownloadTaskRunner().get(), FROM_HERE,
         base::BindOnce(&MakeCopyOfDownloadFile, download_file_.get()),
-        base::BindOnce(std::move(callback)));
+        std::move(callback));
   } else {
     std::move(callback).Run(GetFullPath());
   }

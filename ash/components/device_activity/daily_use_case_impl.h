@@ -11,6 +11,10 @@
 
 class PrefService;
 
+namespace version_info {
+enum class Channel;
+}  // namespace version_info
+
 namespace ash {
 namespace device_activity {
 
@@ -21,8 +25,9 @@ class ImportDataRequest;
 class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DailyUseCaseImpl
     : public DeviceActiveUseCase {
  public:
-  DailyUseCaseImpl(PrefService* local_state,
-                   const std::string& psm_device_active_secret);
+  DailyUseCaseImpl(const std::string& psm_device_active_secret,
+                   version_info::Channel chromeos_channel,
+                   PrefService* local_state);
   DailyUseCaseImpl(const DailyUseCaseImpl&) = delete;
   DailyUseCaseImpl& operator=(const DailyUseCaseImpl&) = delete;
   ~DailyUseCaseImpl() override;
@@ -30,6 +35,10 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DailyUseCaseImpl
   // Generate the window identifier for the kCrosDaily use case.
   // For example, the daily use case should generate a window identifier
   // formatted: yyyyMMdd.
+  //
+  // It is generated on demand each time the state machine leaves the idle
+  // state. It is reused by several states. It is reset to nullopt. This field
+  // is used apart of PSM Import request.
   std::string GenerateUTCWindowIdentifier(base::Time ts) const override;
 
   // Generate Fresnel PSM import request body.

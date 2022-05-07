@@ -118,7 +118,7 @@
       [indexPaths sortedArrayUsingSelector:@selector(compare:)];
   for (NSIndexPath* indexPath in [sortedIndexPaths reverseObjectEnumerator]) {
     NSInteger sectionIdentifier = [self.collectionViewModel
-        sectionIdentifierForSection:indexPath.section];
+        sectionIdentifierForSectionIndex:indexPath.section];
     NSInteger itemType =
         [self.collectionViewModel itemTypeForIndexPath:indexPath];
     NSUInteger index =
@@ -142,8 +142,8 @@
       [self.collectionViewModel itemAtIndexPath:indexPath];
 
   // Item coordinates.
-  NSInteger sectionIdentifier =
-      [self.collectionViewModel sectionIdentifierForSection:indexPath.section];
+  NSInteger sectionIdentifier = [self.collectionViewModel
+      sectionIdentifierForSectionIndex:indexPath.section];
   NSInteger itemType =
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
   NSUInteger indexInItemType =
@@ -154,7 +154,7 @@
                      fromSectionWithIdentifier:sectionIdentifier
                                        atIndex:indexInItemType];
   NSInteger section = [self.collectionViewModel
-      sectionIdentifierForSection:newIndexPath.section];
+      sectionIdentifierForSectionIndex:newIndexPath.section];
   [self.collectionViewModel insertItem:item
                inSectionWithIdentifier:section
                                atIndex:newIndexPath.item];
@@ -193,10 +193,10 @@
   CollectionViewItem* item = nil;
   UIAccessibilityTraits traits = UIAccessibilityTraitNone;
   if ([kind isEqualToString:UICollectionElementKindSectionHeader]) {
-    item = [self.collectionViewModel headerForSection:indexPath.section];
+    item = [self.collectionViewModel headerForSectionIndex:indexPath.section];
     traits = UIAccessibilityTraitHeader;
   } else if ([kind isEqualToString:UICollectionElementKindSectionFooter]) {
-    item = [self.collectionViewModel footerForSection:indexPath.section];
+    item = [self.collectionViewModel footerForSectionIndex:indexPath.section];
   } else {
     return [super collectionView:collectionView
         viewForSupplementaryElementOfKind:kind
@@ -224,7 +224,7 @@
                                  (UICollectionViewLayout*)collectionViewLayout
     referenceSizeForHeaderInSection:(NSInteger)section {
   CollectionViewItem* item =
-      [self.collectionViewModel headerForSection:section];
+      [self.collectionViewModel headerForSectionIndex:section];
 
   if (item) {
     // TODO(crbug.com/635604): Support arbitrary sized headers.
@@ -238,7 +238,7 @@
                                  (UICollectionViewLayout*)collectionViewLayout
     referenceSizeForFooterInSection:(NSInteger)section {
   CollectionViewItem* item =
-      [self.collectionViewModel footerForSection:section];
+      [self.collectionViewModel footerForSectionIndex:section];
 
   if (item) {
     // TODO(crbug.com/635604): Support arbitrary sized footers.

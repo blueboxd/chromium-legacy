@@ -343,8 +343,9 @@ enum class AppListSearchResultType {
   kDriveSearch,            // Drive file search results.
   kKeyboardShortcut,       // Keyboard shortcut search results.
   kOpenTab,                // Open tab search results.
+  kGames,                  // Game sarch results.
   // Add new values here.
-  kMaxValue = kOpenTab,
+  kMaxValue = kGames,
 };
 
 ASH_PUBLIC_EXPORT bool IsAppListSearchResultAnApp(
@@ -368,7 +369,8 @@ enum class AppListSearchResultCategory {
   kHelp = 6,
   kPlayStore = 7,
   kSearchAndAssistant = 8,
-  kMaxValue = kSearchAndAssistant,
+  kGames = 9,
+  kMaxValue = kGames,
 };
 
 // Which UI container(s) the result should be displayed in.
@@ -529,6 +531,9 @@ class ASH_PUBLIC_EXPORT SearchResultTextItem {
   gfx::ImageSkia GetImage() const;
   SearchResultTextItem& SetImage(gfx::ImageSkia icon);
 
+  bool GetElidable() const;
+  SearchResultTextItem& SetElidable(bool elidable);
+
  private:
   SearchResultTextItemType item_type;
   // used for type SearchResultTextItemType::kString.
@@ -538,6 +543,9 @@ class ASH_PUBLIC_EXPORT SearchResultTextItem {
   absl::optional<IconCode> icon_code;
   // used for type SearchResultTextItemType::kCustomIcon.
   absl::optional<gfx::ImageSkia> raw_image;
+  // Whether parts of this text item can be elided with "...". Only applicable
+  // to SearchResultTextItemType::kString.
+  bool elidable = true;
 };
 
 // A structure holding the common information which is sent from chrome to ash,

@@ -354,6 +354,7 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   // storage::mojom::QuotaInternalsHandler implementation
   void GetDiskAvailability(GetDiskAvailabilityCallback callback) override;
   void GetStatistics(GetStatisticsCallback callback) override;
+  void RetrieveBucketsTable(RetrieveBucketsTableCallback callback) override;
 
   // Called by UI and internal modules.
   void GetPersistentHostQuota(const std::string& host, QuotaCallback callback);
@@ -424,11 +425,30 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
     eviction_disabled_ = disable;
   }
 
-  void SetQuotaDatabaseForTesting(std::unique_ptr<QuotaDatabase> database);
+  // Testing support for handling corruption in the underlying database.
+  //
+  // Runs `corrupter` on the same sequence used to do database I/O,
+  // guaranteeing that no other database operation is performed at the same
+  // time. `corrupter` receives the path to the underlying SQLite database as an
+  // argument. The underlying SQLite database is closed while `corrupter` runs,
+  // and reopened afterwards.
+  //
+  // `callback` is called with QuotaError::kNone if the database was
+  // successfully reopened after `corrupter` was run, or with
+  // QuotaError::kDatabaseError otherwise.
+  void CorruptDatabaseForTesting(
+      base::OnceCallback<void(const base::FilePath&)> corrupter,
+      base::OnceCallback<void(QuotaError)> callback);
 
   void SetBootstrapDisabledForTesting(bool disable) {
     bootstrap_disabled_for_testing_ = disable;
   }
+
+  bool is_bootstrapping_database_for_testing() {
+    return is_bootstrapping_database_;
+  }
+
+  bool is_db_disabled_for_testing() { return db_disabled_; }
 
  protected:
   ~QuotaManagerImpl() override;
@@ -522,6 +542,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
 
   void DumpQuotaTable(DumpQuotaTableCallback callback);
   void DumpBucketTable(DumpBucketTableCallback callback);
+  void DidRetrieveBucketsTable(RetrieveBucketsTableCallback callback,
+                               const BucketTableEntries& entries);
 
   // Runs BucketDataDeleter which calls QuotaClients to clear data for the
   // bucket. Once the task is complete, calls the QuotaDatabase to delete the
@@ -601,7 +623,8 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
   void DidGetStorageCapacity(
       const std::tuple<int64_t, int64_t>& total_and_available);
 
-  void DidDatabaseWork(bool success);
+  void DidDatabaseWork(bool success, bool is_bootstrap_work = false);
+  void DidRazeForReBootstrap(QuotaError raze_and_reopen_result);
   void OnComplete(QuotaError result);
 
   void DidGetBucket(base::OnceCallback<void(QuotaErrorOr<BucketInfo>)> callback,
@@ -659,12 +682,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) QuotaManagerImpl
       GetVolumeInfoFn get_volume_info_fn,
       const base::FilePath& path);
   static std::tuple<int64_t, int64_t> GetVolumeInfo(const base::FilePath& path);
-
-  bool is_bootstrapping_database_for_testing() {
-    return is_bootstrapping_database_;
-  }
-
-  bool is_db_disabled_for_testing() { return db_disabled_; }
 
   const bool is_incognito_;
   const base::FilePath profile_path_;

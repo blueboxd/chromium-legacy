@@ -1594,9 +1594,9 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   ASSERT_TRUE(
       root_rwhv->GetTransformToViewCoordSpace(child_rwhv, &transform_to_child));
   EXPECT_TRUE(transform_to_child.IsScaleOrTranslation());
-  EXPECT_NEAR(2.f / scale_factor, transform_to_child.matrix().getFloat(0, 0),
+  EXPECT_NEAR(2.f / scale_factor, transform_to_child.matrix().rc(0, 0),
               kScaleTolerance);
-  EXPECT_NEAR(2.f / scale_factor, transform_to_child.matrix().getFloat(1, 1),
+  EXPECT_NEAR(2.f / scale_factor, transform_to_child.matrix().rc(1, 1),
               kScaleTolerance);
 
   gfx::PointF child_origin =
@@ -1606,12 +1606,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
   ASSERT_TRUE(child_rwhv->GetTransformToViewCoordSpace(root_rwhv,
                                                        &transform_from_child));
   EXPECT_TRUE(transform_from_child.IsScaleOrTranslation());
-  EXPECT_NEAR(0.5f * scale_factor, transform_from_child.matrix().getFloat(0, 0),
+  EXPECT_NEAR(0.5f * scale_factor, transform_from_child.matrix().rc(0, 0),
               kScaleTolerance);
-  EXPECT_NEAR(0.5f * scale_factor, transform_from_child.matrix().getFloat(1, 1),
+  EXPECT_NEAR(0.5f * scale_factor, transform_from_child.matrix().rc(1, 1),
               kScaleTolerance);
-  EXPECT_EQ(child_origin.x(), transform_from_child.matrix().getFloat(0, 3));
-  EXPECT_EQ(child_origin.y(), transform_from_child.matrix().getFloat(1, 3));
+  EXPECT_EQ(child_origin.x(), transform_from_child.matrix().rc(0, 3));
+  EXPECT_EQ(child_origin.y(), transform_from_child.matrix().rc(1, 3));
 
   gfx::Transform transform_child_to_child =
       transform_from_child * transform_to_child;
@@ -1627,8 +1627,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
     for (int row = 0; row < kDim; ++row) {
       for (int col = 0; col < kDim; ++col) {
         EXPECT_NEAR(row == col ? 1.f : 0.f,
-                    transform_child_to_child.matrix().getFloat(row, col),
-                    kTolerance);
+                    transform_child_to_child.matrix().rc(row, col), kTolerance);
       }
     }
   }
@@ -6167,7 +6166,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
 // On Mac and Android, the reported menu coordinates are relative to the
 // OOPIF, and its screen position is computed later, so this test isn't
 // relevant on those platforms.
-#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC)
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_MAC) && !BUILDFLAG(IS_CHROMECAST)
 IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestBrowserTest,
                        ScrolledNestedPopupMenuTest) {
   GURL main_url(embedded_test_server()->GetURL(
@@ -7001,8 +7000,8 @@ class SitePerProcessHitTestDataGenerationBrowserTest
 
   gfx::QuadF TransformRectToQuadF(
       const viz::AggregatedHitTestRegion& hit_test_region) {
-    return TransformRectToQuadF(hit_test_region.rect,
-                                hit_test_region.transform(), false);
+    return TransformRectToQuadF(hit_test_region.rect, hit_test_region.transform,
+                                false);
   }
 
   bool ApproximatelyEqual(const gfx::PointF& p1, const gfx::PointF& p2) const {
@@ -7019,9 +7018,9 @@ class SitePerProcessHitTestDataGenerationBrowserTest
 
   gfx::Rect AxisAlignedLayoutRectFromHitTest(
       const viz::AggregatedHitTestRegion& hit_test_region) {
-    DCHECK(hit_test_region.transform().Preserves2dAxisAlignment());
+    DCHECK(hit_test_region.transform.Preserves2dAxisAlignment());
     gfx::RectF rect(hit_test_region.rect);
-    hit_test_region.transform().TransformRect(&rect);
+    hit_test_region.transform.TransformRect(&rect);
     return gfx::ToEnclosingRect(rect);
   }
 
@@ -7088,7 +7087,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
       AxisAlignedLayoutRectFromHitTest(hit_test_data[2]),
       base::ClampRound(device_scale_factor) + 2));
   EXPECT_TRUE(
-      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform));
   EXPECT_EQ(expected_flags, hit_test_data[2].flags);
 }
 
@@ -7123,7 +7122,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
   EXPECT_TRUE(expected_region.ApproximatelyEqual(hit_test_data[2].rect,
                                                  1 + device_scale_factor));
   EXPECT_TRUE(
-      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform));
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
 }
 
@@ -7169,12 +7168,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
   // Since iframe is clipped into an octagon, we expect to do slow path hit
   // test on the iframe.
   DCHECK(hit_test_data.size() >= 3);
-    EXPECT_TRUE(expected_region1.ApproximatelyEqual(hit_test_data[2].rect,
-                                                    1 + device_scale_factor) ||
-                expected_region2.ApproximatelyEqual(hit_test_data[2].rect,
-                                                    1 + device_scale_factor));
+  EXPECT_TRUE(expected_region1.ApproximatelyEqual(hit_test_data[2].rect,
+                                                  1 + device_scale_factor) ||
+              expected_region2.ApproximatelyEqual(hit_test_data[2].rect,
+                                                  1 + device_scale_factor));
   EXPECT_TRUE(
-      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform));
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
 }
 
@@ -7201,7 +7200,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
               expected_region2.ApproximatelyEqual(hit_test_data[2].rect,
                                                   1 + device_scale_factor));
   EXPECT_TRUE(
-      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform));
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
 }
 
@@ -7222,11 +7221,11 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
   DCHECK(hit_test_data.size() >= 4);
   EXPECT_EQ(expected_region.ToString(), hit_test_data[3].rect.ToString());
   EXPECT_TRUE(
-      expected_transform1.ApproximatelyEqual(hit_test_data[3].transform()));
+      expected_transform1.ApproximatelyEqual(hit_test_data[3].transform));
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[3].flags);
   EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
   EXPECT_TRUE(
-      expected_transform2.ApproximatelyEqual(hit_test_data[2].transform()));
+      expected_transform2.ApproximatelyEqual(hit_test_data[2].transform));
   EXPECT_EQ(kFastHitTestFlags, hit_test_data[2].flags);
 }
 
@@ -7244,7 +7243,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
   DCHECK(hit_test_data.size() >= 3);
   EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
   EXPECT_TRUE(
-      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform));
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
 }
 
@@ -7262,7 +7261,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
   DCHECK(hit_test_data.size() >= 3);
   EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
   EXPECT_TRUE(
-      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform));
   EXPECT_EQ(kSlowHitTestFlags, hit_test_data[2].flags);
 }
 
@@ -7289,13 +7288,13 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
   DCHECK(hit_test_data.size() == 4);
   EXPECT_EQ(expected_region2.ToString(), hit_test_data[3].rect.ToString());
   EXPECT_TRUE(
-      expected_transform2.ApproximatelyEqual(hit_test_data[3].transform()));
+      expected_transform2.ApproximatelyEqual(hit_test_data[3].transform));
   EXPECT_EQ(flags | viz::HitTestRegionFlags::kHitTestIgnore,
             hit_test_data[3].flags);
 
   EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
   EXPECT_TRUE(
-      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform));
   EXPECT_EQ(flags, hit_test_data[2].flags);
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -7325,12 +7324,12 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessHitTestDataGenerationBrowserTest,
   ASSERT_EQ(4u, hit_test_data.size());
   EXPECT_EQ(expected_region.ToString(), hit_test_data[2].rect.ToString());
   EXPECT_TRUE(
-      expected_transform.ApproximatelyEqual(hit_test_data[2].transform()));
+      expected_transform.ApproximatelyEqual(hit_test_data[2].transform));
   EXPECT_EQ(kFastHitTestFlags, hit_test_data[2].flags);
 
   EXPECT_EQ(expected_region2.ToString(), hit_test_data[3].rect.ToString());
   EXPECT_TRUE(
-      expected_transform2.ApproximatelyEqual(hit_test_data[3].transform()));
+      expected_transform2.ApproximatelyEqual(hit_test_data[3].transform));
   // Hit test region with pointer-events: none is marked as kHitTestIgnore. The
   // JavaScript above sets the element's pointer-events to 'auto' therefore
   // kHitTestIgnore should be removed from the flag.

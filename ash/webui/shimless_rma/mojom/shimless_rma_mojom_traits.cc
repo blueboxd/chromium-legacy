@@ -9,6 +9,7 @@
 #include "base/notreached.h"
 #include "chromeos/dbus/rmad/rmad.pb.h"
 #include "chromeos/dbus/update_engine/update_engine.pb.h"
+#include "chromeos/dbus/update_engine/update_engine_client.h"
 #include "mojo/public/cpp/bindings/enum_traits.h"
 
 namespace mojo {
@@ -22,6 +23,9 @@ using ProtoRmadErrorCode = rmad::RmadErrorCode;
 
 using MojomOsUpdateOperation = ash::shimless_rma::mojom::OsUpdateOperation;
 using ProtoOsUpdateOperation = update_engine::Operation;
+
+using MojomUpdateErrorCode = ash::shimless_rma::mojom::UpdateErrorCode;
+using ProtoOsUpdateErrorCode = update_engine::ErrorCode;
 
 using MojomComponentType = ash::shimless_rma::mojom::ComponentType;
 using ProtoComponentType = rmad::RmadComponent;
@@ -38,6 +42,9 @@ using ProtoWpDisableAction = rmad::WriteProtectDisableCompleteState::Action;
 using MojomProvisioningStatus = ash::shimless_rma::mojom::ProvisioningStatus;
 using ProtoProvisioningStatus = rmad::ProvisionStatus::Status;
 
+using MojomProvisioningError = ash::shimless_rma::mojom::ProvisioningError;
+using ProtoProvisioningError = rmad::ProvisionStatus::Error;
+
 using MojomCalibrationInstruction =
     ash::shimless_rma::mojom::CalibrationSetupInstruction;
 using ProtoCalibrationInstruction = rmad::CalibrationSetupInstruction;
@@ -52,6 +59,9 @@ using ProtoCalibrationStatus =
 
 using MojomFinalizationStatus = ash::shimless_rma::mojom::FinalizationStatus;
 using ProtoFinalizationStatus = rmad::FinalizeStatus_Status;
+
+using MojomFinalizationError = ash::shimless_rma::mojom::FinalizationError;
+using ProtoFinalizationError = rmad::FinalizeStatus::Error;
 
 using MojomUpdateRoFirmwareStatus =
     ash::shimless_rma::mojom::UpdateRoFirmwareStatus;
@@ -73,6 +83,8 @@ MojomRmaState EnumTraits<MojomRmaState, ProtoRmadState>::ToMojom(
       return MojomRmaState::kSelectComponents;
     case ProtoRmadState::kDeviceDestination:
       return MojomRmaState::kChooseDestination;
+    case ProtoRmadState::kWipeSelection:
+      return MojomRmaState::kChooseWipeDevice;
     case ProtoRmadState::kWpDisableMethod:
       return MojomRmaState::kChooseWriteProtectDisableMethod;
     case ProtoRmadState::kWpDisableRsu:
@@ -425,6 +437,39 @@ bool EnumTraits<MojomOsUpdateOperation, ProtoOsUpdateOperation>::FromMojom(
   return false;
 }
 
+MojomUpdateErrorCode
+EnumTraits<MojomUpdateErrorCode, ProtoOsUpdateErrorCode>::ToMojom(
+    ProtoOsUpdateErrorCode operation) {
+  switch (operation) {
+    case ProtoOsUpdateErrorCode::kSuccess:
+      return MojomUpdateErrorCode::kSuccess;
+    case ProtoOsUpdateErrorCode::kDownloadTransferError:
+    case ProtoOsUpdateErrorCode::kOmahaErrorInHTTPResponse:
+      return MojomUpdateErrorCode::kDownloadError;
+    case ProtoOsUpdateErrorCode::kError:
+    case ProtoOsUpdateErrorCode::kOmahaUpdateIgnoredPerPolicy:
+    case ProtoOsUpdateErrorCode::kNoUpdate:
+      return MojomUpdateErrorCode::kOtherError;
+  }
+}
+
+// static
+bool EnumTraits<MojomUpdateErrorCode, ProtoOsUpdateErrorCode>::FromMojom(
+    MojomUpdateErrorCode input,
+    ProtoOsUpdateErrorCode* out) {
+  switch (input) {
+    case MojomUpdateErrorCode::kSuccess:
+      *out = ProtoOsUpdateErrorCode::kSuccess;
+      return true;
+    case MojomUpdateErrorCode::kDownloadError:
+      *out = ProtoOsUpdateErrorCode::kDownloadTransferError;
+      return true;
+    case MojomUpdateErrorCode::kOtherError:
+      *out = ProtoOsUpdateErrorCode::kError;
+      return true;
+  }
+}
+
 // static
 MojomComponentType EnumTraits<MojomComponentType, ProtoComponentType>::ToMojom(
     ProtoComponentType component) {
@@ -724,6 +769,60 @@ bool EnumTraits<MojomProvisioningStatus, ProtoProvisioningStatus>::FromMojom(
   return false;
 }
 
+// static
+MojomProvisioningError
+EnumTraits<MojomProvisioningError, ProtoProvisioningError>::ToMojom(
+    ProtoProvisioningError error) {
+  switch (error) {
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_UNKNOWN:
+      return MojomProvisioningError::kUnknown;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_INTERNAL:
+      return MojomProvisioningError::kInternal;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_WP_ENABLED:
+      return MojomProvisioningError::kWpEnabled;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_CANNOT_READ:
+      return MojomProvisioningError::kCannotRead;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_CANNOT_WRITE:
+      return MojomProvisioningError::kCannotWrite;
+    case rmad::ProvisionStatus::RMAD_PROVISION_ERROR_GENERATE_SECRET:
+      return MojomProvisioningError::kGenerateSecret;
+
+    default:
+      NOTREACHED();
+      return MojomProvisioningError::kUnknown;
+  }
+  NOTREACHED();
+  return MojomProvisioningError::kUnknown;
+}
+
+// static
+bool EnumTraits<MojomProvisioningError, ProtoProvisioningError>::FromMojom(
+    MojomProvisioningError error,
+    ProtoProvisioningError* out) {
+  switch (error) {
+    case MojomProvisioningError::kUnknown:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_UNKNOWN;
+      return true;
+    case MojomProvisioningError::kInternal:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_INTERNAL;
+      return true;
+    case MojomProvisioningError::kWpEnabled:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_WP_ENABLED;
+      return true;
+    case MojomProvisioningError::kCannotRead:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_CANNOT_READ;
+      return true;
+    case MojomProvisioningError::kCannotWrite:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_CANNOT_WRITE;
+      return true;
+    case MojomProvisioningError::kGenerateSecret:
+      *out = rmad::ProvisionStatus::RMAD_PROVISION_ERROR_GENERATE_SECRET;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
 bool StructTraits<ash::shimless_rma::mojom::ComponentDataView,
                   rmad::ComponentsRepairState_ComponentRepairStatus>::
     Read(ash::shimless_rma::mojom::ComponentDataView data,
@@ -933,6 +1032,60 @@ bool EnumTraits<MojomFinalizationStatus, ProtoFinalizationStatus>::FromMojom(
       return true;
     case MojomFinalizationStatus::kFailedNonBlocking:
       *out = rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_FAILED_NON_BLOCKING;
+      return true;
+  }
+  NOTREACHED();
+  return false;
+}
+
+// static
+MojomFinalizationError
+EnumTraits<MojomFinalizationError, ProtoFinalizationError>::ToMojom(
+    ProtoFinalizationError error) {
+  switch (error) {
+    case rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_UNKNOWN:
+      return MojomFinalizationError::kUnknown;
+    case rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_INTERNAL:
+      return MojomFinalizationError::kInternal;
+    case rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CANNOT_ENABLE_HWWP:
+      return MojomFinalizationError::kCannotEnableHardwareWp;
+    case rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CANNOT_ENABLE_SWWP:
+      return MojomFinalizationError::kCannotEnableSoftwareWp;
+    case rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CR50:
+      return MojomFinalizationError::kCr50;
+    case rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_GBB:
+      return MojomFinalizationError::kGbb;
+
+    default:
+      NOTREACHED();
+      return MojomFinalizationError::kUnknown;
+  }
+  NOTREACHED();
+  return MojomFinalizationError::kUnknown;
+}
+
+// static
+bool EnumTraits<MojomFinalizationError, ProtoFinalizationError>::FromMojom(
+    MojomFinalizationError error,
+    ProtoFinalizationError* out) {
+  switch (error) {
+    case MojomFinalizationError::kUnknown:
+      *out = rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_UNKNOWN;
+      return true;
+    case MojomFinalizationError::kInternal:
+      *out = rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_INTERNAL;
+      return true;
+    case MojomFinalizationError::kCannotEnableHardwareWp:
+      *out = rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CANNOT_ENABLE_HWWP;
+      return true;
+    case MojomFinalizationError::kCannotEnableSoftwareWp:
+      *out = rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CANNOT_ENABLE_SWWP;
+      return true;
+    case MojomFinalizationError::kCr50:
+      *out = rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CR50;
+      return true;
+    case MojomFinalizationError::kGbb:
+      *out = rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_GBB;
       return true;
   }
   NOTREACHED();

@@ -4,9 +4,9 @@
 
 #include "ios/web/public/test/fakes/fake_cookie_store.h"
 
-#include "base/task/post_task.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace web {
 
@@ -20,8 +20,8 @@ void FakeCookieStore::SetAllCookies(const net::CookieList& all_cookies) {
 
 void FakeCookieStore::GetAllCookiesAsync(GetAllCookiesCallback callback) {
   DCHECK_CURRENTLY_ON(WebThread::IO);
-  base::PostTask(FROM_HERE, {WebThread::IO},
-                 base::BindOnce(std::move(callback), all_cookies_));
+  GetIOThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), all_cookies_));
 }
 
 void FakeCookieStore::SetCanonicalCookieAsync(
@@ -29,7 +29,7 @@ void FakeCookieStore::SetCanonicalCookieAsync(
     const GURL& source_url,
     const net::CookieOptions& options,
     SetCookiesCallback callback,
-    const net::CookieAccessResult* cookie_access_result) {
+    absl::optional<net::CookieAccessResult> cookie_access_result) {
   NOTIMPLEMENTED() << "Implement this if necessary.";
 }
 

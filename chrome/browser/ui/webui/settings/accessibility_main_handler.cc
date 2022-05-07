@@ -53,13 +53,13 @@ void AccessibilityMainHandler::OnJavascriptDisallowed() {
 }
 
 void AccessibilityMainHandler::HandleA11yPageReady(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   SendScreenReaderStateChanged();
 }
 
 void AccessibilityMainHandler::HandleCheckAccessibilityImageLabels(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   // When the user tries to enable the feature, show the modal dialog. The
   // dialog will disable the feature again if it is not accepted.
   content::WebContents* web_contents = web_ui()->GetWebContents();

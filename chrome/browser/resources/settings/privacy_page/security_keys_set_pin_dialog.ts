@@ -209,7 +209,7 @@ export class SettingsSecurityKeysSetPinDialogElement extends
   private browserProxy_: SecurityKeysPINBrowserProxy =
       SecurityKeysPINBrowserProxyImpl.getInstance();
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.title_ = this.i18n('securityKeysSetPINInitialTitle');
@@ -347,7 +347,7 @@ export class SettingsSecurityKeysSetPinDialogElement extends
     // Therefore, iterate over the string (which does yield codepoints) and
     // check that |minLength| or more were seen.
     let length = 0;
-    for (const codepoint of pin) {
+    for (const _codepoint of pin) {
       length++;
     }
 

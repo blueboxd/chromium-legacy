@@ -160,9 +160,17 @@ absl::optional<base::FilePath> GetVersionedUpdaterFolderPath(
       scope, base::Version(kUpdaterVersion));
 }
 
-absl::optional<tagging::TagArgs> GetTagArgs() {
-  static const absl::optional<tagging::TagArgs> tag_args =
-      []() -> absl::optional<tagging::TagArgs> {
+TagParsingResult::TagParsingResult() = default;
+TagParsingResult::TagParsingResult(absl::optional<tagging::TagArgs> tag_args,
+                                   tagging::ErrorCode error)
+    : tag_args(tag_args), error(error) {}
+TagParsingResult::~TagParsingResult() = default;
+TagParsingResult::TagParsingResult(const TagParsingResult&) = default;
+TagParsingResult& TagParsingResult::operator=(const TagParsingResult&) =
+    default;
+
+TagParsingResult GetTagArgs() {
+  static const TagParsingResult tag_args = []() -> TagParsingResult {
     base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
     std::string tag = command_line->HasSwitch(kTagSwitch)
                           ? command_line->GetSwitchValueASCII(kTagSwitch)
@@ -173,21 +181,20 @@ absl::optional<tagging::TagArgs> GetTagArgs() {
                                          base::ASCIIToWide(kHandoffSwitch));
 #endif
     if (tag.empty())
-      return absl::nullopt;
+      return {};
     tagging::TagArgs tag_args;
     const tagging::ErrorCode error =
         tagging::Parse(tag, absl::nullopt, &tag_args);
     VLOG_IF(1, error != tagging::ErrorCode::kSuccess)
         << "Tag parsing returned " << error << ".";
-    return error == tagging::ErrorCode::kSuccess ? absl::make_optional(tag_args)
-                                                 : absl::nullopt;
+    return {tag_args, error};
   }();
 
   return tag_args;
 }
 
 absl::optional<tagging::AppArgs> GetAppArgs(const std::string& app_id) {
-  const absl::optional<tagging::TagArgs> tag_args = GetTagArgs();
+  const absl::optional<tagging::TagArgs> tag_args = GetTagArgs().tag_args;
   if (!tag_args || tag_args->apps.empty())
     return absl::nullopt;
 
@@ -206,6 +213,11 @@ std::string GetAPFromAppArgs(const std::string& app_id) {
   return app_args ? app_args->ap : std::string();
 }
 
+std::string GetInstallDataIndexFromAppArgs(const std::string& app_id) {
+  const absl::optional<tagging::AppArgs> app_args = GetAppArgs(app_id);
+  return app_args ? app_args->install_data_index : std::string();
+}
+
 base::CommandLine MakeElevated(base::CommandLine command_line) {
 #if BUILDFLAG(IS_MAC)
   command_line.PrependWrapper("/usr/bin/sudo");
@@ -214,8 +226,7 @@ base::CommandLine MakeElevated(base::CommandLine command_line) {
 }
 
 // The log file is created in DIR_LOCAL_APP_DATA or DIR_ROAMING_APP_DATA.
-void InitLogging(UpdaterScope updater_scope,
-                 const base::FilePath::StringType& filename) {
+void InitLogging(UpdaterScope updater_scope) {
   logging::LoggingSettings settings;
   const absl::optional<base::FilePath> log_dir =
       GetBaseDirectory(updater_scope);
@@ -223,7 +234,8 @@ void InitLogging(UpdaterScope updater_scope,
     LOG(ERROR) << "Error getting base dir.";
     return;
   }
-  const base::FilePath log_file = log_dir->Append(filename);
+  const base::FilePath log_file =
+      log_dir->Append(FILE_PATH_LITERAL("updater.log"));
   settings.log_file_path = log_file.value().c_str();
   settings.logging_dest = logging::LOG_TO_ALL;
   logging::InitLogging(settings);

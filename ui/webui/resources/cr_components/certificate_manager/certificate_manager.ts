@@ -25,7 +25,7 @@ import {I18nMixin} from '../../js/i18n_mixin.js';
 import {loadTimeData} from '../../js/load_time_data.m.js';
 import {WebUIListenerMixin} from '../../js/web_ui_listener_mixin.js';
 
-import {CertificateAction, CertificateActionEvent, CertificatesErrorEventDetail} from './certificate_manager_types.js';
+import {CertificateAction, CertificateActionEvent} from './certificate_manager_types.js';
 import {CertificatesBrowserProxyImpl, CertificatesError, CertificatesImportError, CertificatesOrgGroup, CertificateSubnode, CertificateType, NewCertificateSubNode} from './certificates_browser_proxy.js';
 
 const CertificateManagerElementBase =
@@ -159,7 +159,7 @@ export class CertificateManagerElement extends CertificateManagerElementBase {
   private isKiosk_: boolean;
 
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.addWebUIListener('certificates-changed', this.set.bind(this));
     this.addWebUIListener(
@@ -185,7 +185,7 @@ export class CertificateManagerElement extends CertificateManagerElementBase {
     return selectedIndex === tabIndex;
   }
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener(CertificateActionEvent, event => {
       this.dialogModel_ = event.detail.subnode;
@@ -274,6 +274,12 @@ export class CertificateManagerElement extends CertificateManagerElementBase {
 
   static get template() {
     return html`{__html_template__}`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'certificate-manager': CertificateManagerElement;
   }
 }
 

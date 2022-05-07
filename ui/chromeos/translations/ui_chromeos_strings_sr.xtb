@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">Није могуће преименовати датотеку „<ph name="FILE_NAME" />“. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">енглески (САД), са тастатуром Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – хост</translation>
+<translation id="1521655867290435174">Google табеле</translation>
 <translation id="1538729222189715449">Отварају се Linux датотеке…</translation>
 <translation id="1547964879613821194">канадска енглеска</translation>
 <translation id="1556189134700913550">Примени на све</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">Мрежа је одбила сертификат за потврду аутентичности</translation>
 <translation id="2547921442987553570">Додај у <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">међународна америчка</translation>
-<translation id="2562685439590298522">Документи</translation>
 <translation id="2563185590376525700">Жаба</translation>
 <translation id="2578394532502990878">фонетски тамилски</translation>
 <translation id="2579959351793446050">орија</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">проширена америчка</translation>
 <translation id="290843123675549676">марати</translation>
 <translation id="2923240520113693977">естонски</translation>
-<translation id="2925966894897775835">Табеле</translation>
 <translation id="2938685643439809023">монголски</translation>
-<translation id="2943400156390503548">Презентације</translation>
 <translation id="2943503720238418293">Користите краћи назив</translation>
 <translation id="2949781154072577687">Форматира се <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">Медуза</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, управља администратор, детаљи</translation>
 <translation id="4387004326333427325">Сертификат за потврду аутентичности је одбијен даљински</translation>
 <translation id="4394214039309501350">Спољни линк</translation>
+<translation id="4401287888955153199">Издвоји све</translation>
 <translation id="4418686080762064601">Направите пречицу за фајлове</translation>
 <translation id="4425149324548788773">Мој диск</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_INDEX" />. мрежа од <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />%, повежи</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">Учините фајлове доступним офлајн</translation>
 <translation id="4658782175094886150">Особа на снегу</translation>
 <translation id="4669606053856530811">Чланови из „<ph name="SOURCE_NAME" />“ ће изгубити приступ ако се ове ставке не деле са њима.</translation>
+<translation id="467809019005607715">Google презентације</translation>
 <translation id="4690246192099372265">шведски</translation>
 <translation id="4693155481716051732">Суши</translation>
 <translation id="4694604912444486114">Мајмун</translation>
@@ -658,6 +658,7 @@
 <translation id="6732801395666424405">Сертификати нису отпремљени</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">Изабран је 1 директоријум</translation>
+<translation id="6755827872271341378">Chrome OS Flex уређај</translation>
 <translation id="6790428901817661496">Пусти</translation>
 <translation id="6795884519221689054">Панда</translation>
 <translation id="6806699711453372963">Управљајте Linux дељењем</translation>
@@ -735,6 +736,7 @@
 <translation id="7343393116438664539">вијетнамски (Telex)</translation>
 <translation id="7359359531237882347">Копирају се ставке (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="7375951387215729722">Листа датотека је сортирана по опадајућем редоследу по критеријуму <ph name="COLUMN_NAME" />.</translation>
+<translation id="7402503521691663770">Chrome OS Flex уређаји</translation>
 <translation id="7408870451288633753">чешки</translation>
 <translation id="7417453074306512035">Етиопљанска тастатура</translation>
 <translation id="7417705661718309329">Google мапа</translation>
@@ -824,6 +826,7 @@
 <translation id="8042602468072383151">Аудио датотека <ph name="AUDIO_TYPE" /></translation>
 <translation id="8045462269890919536">румунски</translation>
 <translation id="8049184478152619004">Унесите личну шифру за откључавање (PUK)</translation>
+<translation id="807187749540895545">Издваја се <ph name="FILE_NAME" />...</translation>
 <translation id="8079530767338315840">Пусти поново</translation>
 <translation id="8087576439476816834">Преузмите, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Дељено са мном</translation>
@@ -875,6 +878,7 @@
 <translation id="8484284835977497781">Одаберите неку од недавних слика.</translation>
 <translation id="8487700953926739672">Доступно ван мреже</translation>
 <translation id="8492972329130824181">Кућна мрежа није доступна. Пренос података у ромингу мора да буде омогућен ради повезивања.</translation>
+<translation id="8499098729323186194">Издвајају се ставке (<ph name="NUMBER_OF_ITEMS" />)...</translation>
 <translation id="8521441079177373948">УК</translation>
 <translation id="8525306231823319788">Цео екран</translation>
 <translation id="853494022971700746">француски (Француска)</translation>
@@ -950,6 +954,7 @@
 <translation id="9172592259078059678">гуџарати, транслитерација</translation>
 <translation id="9173120999827300720">енглески (САД) са интернационалном тастатуром</translation>
 <translation id="9174050671906956834">Ставке у отпаду се бришу заувек после 30 дана.</translation>
+<translation id="9183302530794969518">Google документи</translation>
 <translation id="9189836632794948435">казашки</translation>
 <translation id="9213073329713032541">Инсталација је започета.</translation>
 <translation id="9219103736887031265">Слике</translation>

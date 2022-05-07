@@ -11,7 +11,6 @@
 #include "chrome/android/chrome_jni_headers/AutofillVirtualCardEnrollmentInfoBar_jni.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/android/resource_mapper.h"
-#include "components/autofill/core/browser/metrics/payments/virtual_card_enrollment_metrics.h"
 #include "components/autofill/core/browser/payments/autofill_virtual_card_enrollment_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/payments/autofill_virtual_card_enrollment_infobar_mobile.h"
 #include "components/autofill/core/browser/payments/legal_message_line.h"
@@ -46,14 +45,11 @@ AutofillVirtualCardEnrollmentInfoBar::AutofillVirtualCardEnrollmentInfoBar(
 AutofillVirtualCardEnrollmentInfoBar::~AutofillVirtualCardEnrollmentInfoBar() =
     default;
 
-void AutofillVirtualCardEnrollmentInfoBar::OnInfobarLinkClicked(
-    JNIEnv* env,
-    jobject obj,
-    jstring url,
-    jint link_type) {
+void AutofillVirtualCardEnrollmentInfoBar::OnInfobarLinkClicked(JNIEnv* env,
+                                                                jobject obj,
+                                                                jstring url) {
   virtual_card_enrollment_delegate_->OnInfobarLinkClicked(
-      GURL(base::android::ConvertJavaStringToUTF16(env, url)),
-      static_cast<autofill::VirtualCardEnrollmentLinkType>(link_type));
+      GURL(base::android::ConvertJavaStringToUTF16(env, url)));
 }
 
 base::android::ScopedJavaLocalRef<jobject>

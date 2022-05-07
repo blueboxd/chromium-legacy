@@ -38,11 +38,6 @@ class PersonalizationAppBrowserTest extends testing.Test {
   }
 
   /** @override */
-  get runAccessibilityChecks() {
-    return false;
-  }
-
-  /** @override */
   get typedefCppFixture() {
     return 'PersonalizationAppBrowserTestFixture';
   }
@@ -172,7 +167,7 @@ TEST_F('WallpaperSubpageBrowserTest', 'HasWallpaperSubpageUrl', () => {
   testDone();
 });
 
-TEST_F('WallpaperSubpageBrowserTest', 'LoadsCollectionsUntrustedIframe', () => {
+TEST_F('WallpaperSubpageBrowserTest', 'LoadsCollectionsGrid', () => {
   const router = document.querySelector('personalization-router');
   assertTrue(!!router, 'personalization-router should be top level element');
 
@@ -188,11 +183,17 @@ TEST_F('WallpaperSubpageBrowserTest', 'LoadsCollectionsUntrustedIframe', () => {
       'wallpaper-collections should be found under wallpaper-subpage');
 
 
-  const iframe = collections.shadowRoot.getElementById('collections-iframe');
-  assertTrue(!!iframe, 'iframe with id collections-iframe should be visible');
+  const collectionsGrid =
+      collections.shadowRoot.getElementById('collectionsGrid');
+  assertTrue(!!collectionsGrid, 'collections-grid should be visible');
 
-  assertEquals(
-      'chrome-untrusted://personalization/untrusted/collections.html',
-      iframe.src);
+  assertFalse(
+      collectionsGrid.parentElement.hidden, 'parent element should be visible');
+  assertGT(
+      collectionsGrid.offsetWidth, 0,
+      'collections grid should have visible width');
+  assertGT(
+      collectionsGrid.offsetHeight, 0,
+      'collections grid should have visible height');
   testDone();
 });

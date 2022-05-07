@@ -7,6 +7,7 @@
 #include "base/check.h"
 #include "base/notreached.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_index_format.h"
+#include "third_party/blink/renderer/bindings/modules/v8/v8_gpu_predefined_color_space.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
@@ -293,11 +294,17 @@ WGPUTextureFormat AsDawnEnum<WGPUTextureFormat>(
   if (webgpu_enum == "depth32float") {
     return WGPUTextureFormat_Depth32Float;
   }
+  if (webgpu_enum == "depth32float-stencil8") {
+    return WGPUTextureFormat_Depth32FloatStencil8;
+  }
   if (webgpu_enum == "depth24plus") {
     return WGPUTextureFormat_Depth24Plus;
   }
   if (webgpu_enum == "depth24plus-stencil8") {
     return WGPUTextureFormat_Depth24PlusStencil8;
+  }
+  if (webgpu_enum == "depth24unorm-stencil8") {
+    return WGPUTextureFormat_Depth24UnormStencil8;
   }
   if (webgpu_enum == "depth16unorm") {
     return WGPUTextureFormat_Depth16Unorm;
@@ -594,6 +601,14 @@ WGPUIndexFormat AsDawnEnum(const V8GPUIndexFormat& webgpu_enum) {
       return WGPUIndexFormat_Uint16;
     case V8GPUIndexFormat::Enum::kUint32:
       return WGPUIndexFormat_Uint32;
+  }
+}
+
+WGPUPredefinedColorSpace AsDawnEnum(
+    const V8GPUPredefinedColorSpace& webgpu_enum) {
+  switch (webgpu_enum.AsEnum()) {
+    case V8GPUPredefinedColorSpace::Enum::kSRGB:
+      return WGPUPredefinedColorSpace_Srgb;
   }
 }
 

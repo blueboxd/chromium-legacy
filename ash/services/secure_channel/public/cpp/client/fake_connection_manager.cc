@@ -7,8 +7,7 @@
 #include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
 #include "base/callback.h"
 
-namespace chromeos {
-namespace secure_channel {
+namespace ash::secure_channel {
 
 FakeConnectionManager::FakeConnectionManager()
     : status_(Status::kDisconnected) {}
@@ -23,8 +22,7 @@ void FakeConnectionManager::SetStatus(Status status) {
   NotifyStatusChanged();
 }
 
-secure_channel::ConnectionManager::Status FakeConnectionManager::GetStatus()
-    const {
+ConnectionManager::Status FakeConnectionManager::GetStatus() const {
   return status_;
 }
 
@@ -62,5 +60,4 @@ void FakeConnectionManager::SendFileTransferUpdate(
   file_transfer_update_callbacks_.at(payload_id).Run(std::move(update));
 }
 
-}  // namespace secure_channel
-}  // namespace chromeos
+}  // namespace ash::secure_channel

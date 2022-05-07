@@ -43,6 +43,7 @@
 #include "chrome/browser/ash/login/existing_user_controller.h"
 #include "chrome/browser/ash/login/helper.h"
 #include "chrome/browser/ash/login/login_wizard.h"
+#include "chrome/browser/ash/login/oobe_screen.h"
 #include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/ui/input_events_blocker.h"
 #include "chrome/browser/ash/login/ui/login_display_host_mojo.h"
@@ -550,7 +551,6 @@ void LoginDisplayHostWebUI::StartWizard(OobeScreenId first_screen) {
   // Keep parameters to restore if renderer crashes.
   restore_path_ = RESTORE_WIZARD;
   first_screen_ = first_screen;
-  is_showing_login_ = WizardController::IsSigninScreen(first_screen);
 
   VLOG(1) << "Login WebUI >> wizard";
 
@@ -589,16 +589,12 @@ void LoginDisplayHostWebUI::OnStartSignInScreen() {
   DisableKeyboardOverscroll();
 
   restore_path_ = RESTORE_SIGN_IN;
-  is_showing_login_ = true;
   finalize_animation_type_ = ANIMATION_WORKSPACE;
 
   VLOG(1) << "Login WebUI >> sign in";
 
   // TODO(crbug.com/784495): Make sure this is ported to views.
   if (!login_window_) {
-    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
-        "ui", "ShowLoginWebUI",
-        TRACE_ID_WITH_SCOPE(kShowLoginWebUIid, TRACE_ID_GLOBAL(1)));
     TRACE_EVENT_NESTABLE_ASYNC_INSTANT0(
         "ui", "StartSignInScreen",
         TRACE_ID_WITH_SCOPE(kShowLoginWebUIid, TRACE_ID_GLOBAL(1)));
@@ -616,7 +612,12 @@ void LoginDisplayHostWebUI::OnStartSignInScreen() {
   existing_user_controller_->Init(user_manager::UserManager::Get()->GetUsers());
 
   CHECK(login_display_);
-  GetOobeUI()->ShowSigninScreen(login_display_.get());
+
+  // Legacy calls, will go away soon.
+  GetOobeUI()->signin_screen_handler()->SetDelegate(login_display_.get());
+  GetOobeUI()->signin_screen_handler()->Show();
+
+  ShowGaiaDialogCommon(EmptyAccountId());
 
   OnStartSignInScreenCommon();
 
@@ -627,11 +628,6 @@ void LoginDisplayHostWebUI::OnStartSignInScreen() {
   // TODO(crbug.com/784495): Make sure this is ported to views.
   BootTimesRecorder::Get()->RecordCurrentStats(
       "login-wait-for-signin-state-initialize");
-}
-
-void LoginDisplayHostWebUI::OnPreferencesChanged() {
-  if (is_showing_login_)
-    login_display_->OnPreferencesChanged();
 }
 
 void LoginDisplayHostWebUI::OnStartAppLaunch() {
@@ -797,6 +793,18 @@ void LoginDisplayHostWebUI::OnUserSwitchAnimationFinished() {
   ShutdownDisplayHost();
 }
 
+void LoginDisplayHostWebUI::OnCurrentScreenChanged(OobeScreenId current_screen,
+                                                   OobeScreenId new_screen) {
+  if (current_screen == OobeScreen::SCREEN_UNKNOWN) {
+    // First screen shown.
+    session_manager::SessionManager::Get()->NotifyLoginOrLockScreenVisible();
+  }
+}
+
+void LoginDisplayHostWebUI::OnDestroyingOobeUI() {
+  GetOobeUI()->RemoveObserver(this);
+}
+
 bool LoginDisplayHostWebUI::IsOobeUIDialogVisible() const {
   return true;
 }
@@ -834,6 +842,8 @@ void LoginDisplayHostWebUI::LoadURL(const GURL& url) {
   // Subscribe to crash events.
   content::WebContentsObserver::Observe(login_view_->GetWebContents());
   login_view_->LoadURL(url);
+  CHECK(GetOobeUI());
+  GetOobeUI()->AddObserver(this);
 }
 
 void LoginDisplayHostWebUI::ShowWebUI() {
@@ -883,8 +893,6 @@ void LoginDisplayHostWebUI::InitLoginWindowAndView() {
   login_view_ = new WebUILoginView(WebUILoginView::WebViewSettings(),
                                    weak_factory_.GetWeakPtr());
   login_view_->Init();
-  if (login_view_->webui_visible())
-    OnLoginPromptVisible();
   if (disable_restrictive_proxy_check_for_test_) {
     DisableRestrictiveProxyCheckForTest();
   }
@@ -948,8 +956,10 @@ void LoginDisplayHostWebUI::ResetLoginView() {
     return;
 
   OobeUI* oobe_ui = login_view_->GetOobeUI();
-  if (oobe_ui)
+  if (oobe_ui) {
     oobe_ui->signin_screen_handler()->SetDelegate(nullptr);
+    oobe_ui->RemoveObserver(this);
+  }
 
   login_view_ = nullptr;
 }

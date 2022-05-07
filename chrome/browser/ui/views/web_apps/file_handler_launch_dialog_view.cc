@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/i18n/message_formatter.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -48,7 +49,31 @@ FileHandlerLaunchDialogView::~FileHandlerLaunchDialogView() = default;
 
 std::unique_ptr<views::View>
 FileHandlerLaunchDialogView::CreateAboveAppInfoView() {
-  return nullptr;
+  // Question label.
+  if (file_paths_.size() > 1) {
+    auto question_label =
+        std::make_unique<views::Label>(l10n_util::GetPluralStringFUTF16(
+            IDS_WEB_APP_FILE_HANDLING_DIALOG_QUESTION_MULTIPLE,
+            file_paths_.size()));
+    question_label->SetMultiLine(true);
+    question_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    return question_label;
+  }
+
+  // Insert and emphasize the file name.
+  auto question_label = std::make_unique<views::StyledLabel>();
+  views::StyledLabel::RangeStyleInfo style;
+  style.custom_font = question_label->GetFontList().Derive(
+      0, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::BOLD);
+  std::vector<size_t> offsets;
+  std::u16string file_name_text = gfx::ElideFilename(
+      file_paths_[0].BaseName(), *style.custom_font, fixed_width() * 2 / 3);
+  question_label->SetText(l10n_util::GetStringFUTF16(
+      IDS_WEB_APP_FILE_HANDLING_DIALOG_QUESTION, {file_name_text}, &offsets));
+  DCHECK_EQ(1u, offsets.size());
+  question_label->AddStyleRange(
+      gfx::Range(offsets[0], offsets[0] + file_name_text.length()), style);
+  return question_label;
 }
 
 std::unique_ptr<views::View>
@@ -128,14 +153,11 @@ FileHandlerLaunchDialogView::CreateBelowAppInfoView() {
 }
 
 std::u16string FileHandlerLaunchDialogView::GetRememberChoiceString() {
-  bool multiple_associations = false;
-  std::u16string associations =
-      GetFileTypeAssociationsHandledByWebAppForDisplay(profile(), app_id(),
-                                                       &multiple_associations);
-  return l10n_util::GetStringFUTF16(
-      multiple_associations
-          ? IDS_WEB_APP_FILE_HANDLING_PERMISSION_STICKY_CHOICE_MULTIPLE
-          : IDS_WEB_APP_FILE_HANDLING_PERMISSION_STICKY_CHOICE,
+  auto [associations, association_count] =
+      GetFileTypeAssociationsHandledByWebAppForDisplay(profile(), app_id());
+  return base::i18n::MessageFormatter::FormatWithNamedArgs(
+      l10n_util::GetStringUTF16(IDS_WEB_APP_FILE_HANDLING_DIALOG_STICKY_CHOICE),
+      "FILE_TYPE_COUNT", static_cast<int>(association_count), "FILE_TYPES",
       associations);
 }
 

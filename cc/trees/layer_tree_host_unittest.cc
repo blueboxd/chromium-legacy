@@ -2770,7 +2770,8 @@ class LayerTreeHostTestDeviceScaleFactorChange : public LayerTreeHostTest {
   scoped_refptr<Layer> child_layer_;
 };
 
-SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorChange);
+// TODO(crbug.com/1295115): Flaky on ChromeOS and Linux.
+// SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestDeviceScaleFactorChange);
 
 class LayerTreeHostTestRasterColorSpaceChange : public LayerTreeHostTest {
  public:
@@ -3505,7 +3506,8 @@ class LayerTreeHostTestSetVisible : public LayerTreeHostTest {
   int num_draws_;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestSetVisible);
+// TODO(crbug.com/1298939): Test is flaky.
+// MULTI_THREAD_TEST_F(LayerTreeHostTestSetVisible);
 
 class LayerTreeHostTestDeviceScaleFactorScalesViewportAndLayers
     : public LayerTreeHostTest {
@@ -7249,7 +7251,7 @@ class LayerTreeHostTestCrispUpAfterPinchEnds : public LayerTreeHostTest {
       float quad_scale =
           quad->tex_coord_rect.width() / static_cast<float>(quad->rect.width());
       float transform_scale = SkScalarToFloat(
-          quad->shared_quad_state->quad_to_target_transform.matrix().get(0, 0));
+          quad->shared_quad_state->quad_to_target_transform.matrix().rc(0, 0));
       float scale = quad_scale / transform_scale;
       if (frame_scale != 0.f && frame_scale != scale)
         return 0.f;
@@ -7549,7 +7551,7 @@ class LayerTreeHostTestContinuousDrawWhenCreatingVisibleTiles
       float quad_scale =
           quad->tex_coord_rect.width() / static_cast<float>(quad->rect.width());
       float transform_scale = SkScalarToFloat(
-          quad->shared_quad_state->quad_to_target_transform.matrix().get(0, 0));
+          quad->shared_quad_state->quad_to_target_transform.matrix().rc(0, 0));
       float scale = quad_scale / transform_scale;
       if (frame_scale != 0.f && frame_scale != scale)
         return 0.f;
@@ -9864,15 +9866,8 @@ class LayerTreeHostTestDocumentTransitionsPropagatedToMetadata
 
   void BeginTest() override {
     layer_tree_host()->AddDocumentTransitionRequest(
-        DocumentTransitionRequest::CreatePrepare(
-            DocumentTransitionRequest::Effect::kExplode,
-            /*document_tag=*/0, DocumentTransitionRequest::TransitionConfig(),
-            /*shared_element_config=*/{},
-            base::BindLambdaForTesting([this]() { CommitLambdaCalled(); }),
-            /*is_renderer_driven_animation=*/false));
-    layer_tree_host()->AddDocumentTransitionRequest(
-        DocumentTransitionRequest::CreateStart(
-            /*document_tag=*/0, /*shared_element_count=*/0,
+        DocumentTransitionRequest::CreateCapture(
+            /*document_tag=*/0, /*shared_element_count=*/0, {},
             base::BindLambdaForTesting([this]() { CommitLambdaCalled(); })));
   }
 
@@ -9880,20 +9875,12 @@ class LayerTreeHostTestDocumentTransitionsPropagatedToMetadata
 
   void DisplayReceivedCompositorFrameOnThread(
       const viz::CompositorFrame& frame) override {
-    ASSERT_EQ(2u, frame.metadata.transition_directives.size());
+    ASSERT_EQ(1u, frame.metadata.transition_directives.size());
     const auto& save = frame.metadata.transition_directives[0];
     submitted_sequence_ids_.push_back(save.sequence_id());
 
     EXPECT_EQ(save.type(),
               viz::CompositorFrameTransitionDirective::Type::kSave);
-    EXPECT_EQ(save.effect(),
-              viz::CompositorFrameTransitionDirective::Effect::kExplode);
-
-    const auto& animate = frame.metadata.transition_directives[1];
-    EXPECT_GT(animate.sequence_id(), save.sequence_id());
-    EXPECT_EQ(animate.type(),
-              viz::CompositorFrameTransitionDirective::Type::kAnimate);
-    submitted_sequence_ids_.push_back(animate.sequence_id());
   }
 
   void DidReceiveCompositorFrameAck() override {
@@ -9902,7 +9889,7 @@ class LayerTreeHostTestDocumentTransitionsPropagatedToMetadata
     EndTest();
   }
 
-  void AfterTest() override { EXPECT_EQ(2, num_lambda_calls_); }
+  void AfterTest() override { EXPECT_EQ(1, num_lambda_calls_); }
 
   std::vector<uint32_t> submitted_sequence_ids_;
   int num_lambda_calls_ = 0;

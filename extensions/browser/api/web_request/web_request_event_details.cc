@@ -60,6 +60,20 @@ WebRequestEventDetails::WebRequestEventDetails(const WebRequestInfo& request,
   dict_.SetIntKey(keys::kTabIdKey, request.frame_data.tab_id);
   dict_.SetIntKey(keys::kFrameIdKey, request.frame_data.frame_id);
   dict_.SetIntKey(keys::kParentFrameIdKey, request.frame_data.parent_frame_id);
+  if (request.frame_data.document_id) {
+    dict_.SetStringKey(keys::kDocumentIdKey,
+                       request.frame_data.document_id.ToString());
+  }
+  if (request.frame_data.parent_document_id) {
+    dict_.SetStringKey(keys::kParentDocumentIdKey,
+                       request.frame_data.parent_document_id.ToString());
+  }
+  if (request.frame_data.frame_id >= 0) {
+    dict_.SetStringKey(keys::kFrameTypeKey,
+                       ToString(request.frame_data.frame_type));
+    dict_.SetStringKey(keys::kDocumentLifecycleKey,
+                       ToString(request.frame_data.document_lifecycle));
+  }
   initiator_ = request.initiator;
   render_process_id_ = request.render_process_id;
 }
@@ -79,7 +93,8 @@ void WebRequestEventDetails::SetRequestHeaders(
 
   base::ListValue* headers = new base::ListValue();
   for (net::HttpRequestHeaders::Iterator it(request_headers); it.GetNext();)
-    headers->Append(helpers::CreateHeaderDictionary(it.name(), it.value()));
+    headers->Append(
+        base::Value(helpers::CreateHeaderDictionary(it.name(), it.value())));
   request_headers_.reset(headers);
 }
 
@@ -120,7 +135,8 @@ void WebRequestEventDetails::SetResponseHeaders(
                                                                  name)) {
           continue;
         }
-        headers->Append(helpers::CreateHeaderDictionary(name, value));
+        headers->Append(
+            base::Value(helpers::CreateHeaderDictionary(name, value)));
       }
     }
     response_headers_.reset(headers);

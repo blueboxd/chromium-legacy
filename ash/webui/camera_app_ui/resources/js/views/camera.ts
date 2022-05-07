@@ -46,6 +46,7 @@ import {
   MimeType,
   Mode,
   PerfEvent,
+  PortraitModeProcessError,
   Resolution,
   Rotation,
   ViewName,
@@ -71,8 +72,10 @@ import {WarningType} from './warning.js';
  */
 export class Camera extends View implements CameraViewUI {
   private readonly cropDocument = new CropDocument();
+
   private readonly docModeDialogView =
       new Dialog(ViewName.DOCUMENT_MODE_DIALOG);
+
   private readonly subViews: View[];
 
   /**
@@ -98,7 +101,9 @@ export class Camera extends View implements CameraViewUI {
   private activeDeviceId: string|null = null;
 
   protected readonly review = new review.Review();
-  protected facing = Facing.NOT_SET;
+
+  protected facing: Facing|null = null;
+
   protected shutterType = metrics.ShutterType.UNKNOWN;
 
   /**
@@ -143,14 +148,14 @@ export class Camera extends View implements CameraViewUI {
     /**
      * Gets type of ways to trigger shutter from click event.
      */
-    const getShutterType = (e: MouseEvent) => {
+    function getShutterType(e: MouseEvent) {
       if (e.clientX === 0 && e.clientY === 0) {
         return metrics.ShutterType.KEYBOARD;
       }
-      return e.sourceCapabilities && e.sourceCapabilities.firesTouchEvents ?
+      return e.sourceCapabilities?.firesTouchEvents ?
           metrics.ShutterType.TOUCH :
           metrics.ShutterType.MOUSE;
-    };
+    }
 
     dom.get('#start-takephoto', HTMLButtonElement)
         .addEventListener('click', (e) => {
@@ -268,6 +273,13 @@ export class Camera extends View implements CameraViewUI {
 
     this.initVideoEncoderOptions();
     await this.initScanMode();
+  }
+
+  /**
+   * Gets current facing after |initialize()|.
+   */
+  protected getFacing(): Facing {
+    return util.assertEnumVariant(Facing, this.facing);
   }
 
   private updateModeUI(mode: Mode) {
@@ -392,19 +404,22 @@ export class Camera extends View implements CameraViewUI {
       if (!state.get(state.State.CAMERA_CONFIGURING) && state.get(Mode.SCAN) &&
           this.scanOptions.isDocumentModeEanbled() &&
           nav.isTopMostView(this.name)) {
-        dom.getAll('button.shutter', HTMLButtonElement)
-            .forEach((btn) => btn.offsetParent && btn.focus());
+        for (const btn of dom.getAll('button.shutter', HTMLButtonElement)) {
+          if (btn.offsetParent !== null) {
+            btn.focus();
+          }
+        }
       }
     };
     state.addObserver(state.State.CAMERA_CONFIGURING, checkRefocus);
     this.scanOptions.onChange = checkRefocus;
   }
 
-  getSubViews(): View[] {
+  override getSubViews(): View[] {
     return this.subViews;
   }
 
-  focus(): void {
+  override focus(): void {
     (async () => {
       await this.cameraReady.wait();
 
@@ -419,13 +434,17 @@ export class Camera extends View implements CameraViewUI {
       }
 
       // Avoid focusing invisible shutters.
-      dom.getAll('button.shutter', HTMLButtonElement)
-          .forEach((btn) => btn.offsetParent && btn.focus());
+      for (const btn of dom.getAll('button.shutter', HTMLButtonElement)) {
+        if (btn.offsetParent !== null) {
+          btn.focus();
+        }
+      }
     })();
   }
 
   /**
    * Begins to take photo or recording with the current options, e.g. timer.
+   *
    * @param shutterType The shutter is triggered by which shutter type.
    * @return Promise resolved when take action completes. Returns null if CCA
    *     can't start take action.
@@ -450,15 +469,14 @@ export class Camera extends View implements CameraViewUI {
             return 0;
           }
           assert(this.activeDeviceId !== null);
-          return await deviceOperator.getCameraFrameRotation(
-              this.activeDeviceId);
+          return deviceOperator.getCameraFrameRotation(this.activeDeviceId);
         })();
         // Translate the camera frame rotation back to the UI rotation, which is
         // what we need to rotate the captured video with.
         this.outputVideoRotation = (360 - cameraFrameRotation) % 360;
         await timertick.start();
-        const captureDone = await this.cameraManager.startCapture();
-        await captureDone();
+        const [captureDone] = await this.cameraManager.startCapture();
+        await captureDone;
       } catch (e) {
         hasError = true;
         if (e instanceof CanceledError) {
@@ -469,7 +487,10 @@ export class Camera extends View implements CameraViewUI {
             assertInstanceof(e, Error));
       } finally {
         this.take = null;
-        state.set(state.State.TAKING, false, {hasError, facing: this.facing});
+        state.set(state.State.TAKING, false, {
+          hasError,
+          facing: this.getFacing(),
+        });
         this.focus();  // Refocus the visible shutter button for ChromeVox.
       }
     })();
@@ -477,7 +498,8 @@ export class Camera extends View implements CameraViewUI {
   }
 
   /**
-   * Ends the current take (or clears scheduled further takes if any.)
+   * Ends the current take (or clears scheduled further takes if any).
+   *
    * @return Promise for the operation.
    */
   private async endTake(): Promise<void> {
@@ -499,7 +521,7 @@ export class Camera extends View implements CameraViewUI {
   async handleVideoSnapshot({resolution, blob, timestamp, metadata}:
                                 PhotoResult): Promise<void> {
     metrics.sendCaptureEvent({
-      facing: this.facing,
+      facing: this.getFacing(),
       resolution,
       shutterType: this.shutterType,
       isVideoSnapshot: true,
@@ -529,7 +551,7 @@ export class Camera extends View implements CameraViewUI {
           await this.checkPhotoResult(pendingPhotoResult);
 
       metrics.sendCaptureEvent({
-        facing: this.facing,
+        facing: this.getFacing(),
         resolution,
         shutterType: this.shutterType,
         isVideoSnapshot: false,
@@ -544,7 +566,7 @@ export class Camera extends View implements CameraViewUI {
       }
       state.set(
           PerfEvent.PHOTO_CAPTURE_POST_PROCESSING, false,
-          {resolution, facing: this.facing});
+          {resolution, facing: this.getFacing()});
     } catch (e) {
       state.set(
           PerfEvent.PHOTO_CAPTURE_POST_PROCESSING, false, {hasError: true});
@@ -554,7 +576,7 @@ export class Camera extends View implements CameraViewUI {
 
   async onPortraitCaptureDone(
       pendingReference: Promise<PhotoResult>,
-      pendingPortrait: Promise<PhotoResult|null>): Promise<void> {
+      pendingPortrait: Promise<PhotoResult>): Promise<void> {
     state.set(PerfEvent.PORTRAIT_MODE_CAPTURE_POST_PROCESSING, true);
     let hasError = false;
     try {
@@ -562,31 +584,38 @@ export class Camera extends View implements CameraViewUI {
           await this.checkPhotoResult(pendingReference);
 
       metrics.sendCaptureEvent({
-        facing: this.facing,
+        facing: this.getFacing(),
         resolution,
         shutterType: this.shutterType,
         isVideoSnapshot: false,
       });
 
+      // Save reference.
+      const filenamer = new Filenamer(timestamp);
+      const name = filenamer.newBurstName(false);
       try {
-        // Save reference.
-        const filenamer = new Filenamer(timestamp);
-        const name = filenamer.newBurstName(false);
         await this.resultSaver.savePhoto(blob, name, metadata);
-
-        const portrait = await pendingPortrait;
-        if (portrait === null) {
-          toast.show(I18nString.ERROR_MSG_TAKE_PORTRAIT_BOKEH_PHOTO_FAILED);
-        } else {
-          // Save portrait.
-          const {blob: portraitBlob, metadata: portraitMetadata} = portrait;
-          const name = filenamer.newBurstName(true);
-          await this.resultSaver.savePhoto(
-              portraitBlob, name, portraitMetadata);
-        }
       } catch (e) {
         toast.show(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
         throw e;
+      }
+
+      try {
+        // Save portrait.
+        const {blob: portraitBlob, metadata: portraitMetadata} =
+            await pendingPortrait;
+        const name = filenamer.newBurstName(true);
+        await this.resultSaver.savePhoto(portraitBlob, name, portraitMetadata);
+      } catch (e) {
+        if (e instanceof PortraitModeProcessError) {
+          // This error might be thrown when no face is detected or the
+          // segmentataion failed for the scene. Since there is not much we can
+          // do for either cases, we tolerate such error.
+          toast.show(I18nString.ERROR_MSG_TAKE_PORTRAIT_BOKEH_PHOTO_FAILED);
+        } else {
+          toast.show(I18nString.ERROR_MSG_SAVE_FILE_FAILED);
+          throw e;
+        }
       }
     } catch (e) {
       hasError = true;
@@ -594,7 +623,7 @@ export class Camera extends View implements CameraViewUI {
     } finally {
       state.set(
           PerfEvent.PORTRAIT_MODE_CAPTURE_POST_PROCESSING, false,
-          {hasError, facing: this.facing});
+          {hasError, facing: this.getFacing()});
     }
   }
 
@@ -662,17 +691,19 @@ export class Camera extends View implements CameraViewUI {
     let result = null;
     try {
       await this.prepareReview(async () => {
-        const doCrop = (blob: Blob, corners: Point[], rotation: number) =>
-            helper.convertToDocument(blob, corners, rotation, MimeType.JPEG);
+        function doCrop(blob: Blob, corners: Point[], rotation: number) {
+          return helper.convertToDocument(
+              blob, corners, rotation, MimeType.JPEG);
+        }
         let corners =
-            refCorners || getDefaultScanCorners(originImage.resolution);
+            refCorners ?? getDefaultScanCorners(originImage.resolution);
         // This is definitely assigned in either the async doRecrop or the else
         // branch doCrop.
         let docBlob!: Blob;
         let fixType = metrics.DocFixType.NONE;
         const sendEvent = (docResult: metrics.DocResultType) => {
           metrics.sendCaptureEvent({
-            facing: this.facing,
+            facing: this.getFacing(),
             resolution: originImage.resolution,
             shutterType: this.shutterType,
             docResult,
@@ -726,7 +757,7 @@ export class Camera extends View implements CameraViewUI {
         }
 
         const positive = new review.OptionGroup({
-          template: review.ButtonGroupTemplate.positive,
+          template: review.ButtonGroupTemplate.POSITIVE,
           options: [
             new review.Option({text: I18nString.LABEL_SAVE_PDF_DOCUMENT}, {
               callback: () => {
@@ -767,7 +798,7 @@ export class Camera extends View implements CameraViewUI {
               }));
         }
         const negative = new review.OptionGroup({
-          template: review.ButtonGroupTemplate.negative,
+          template: review.ButtonGroupTemplate.NEGATIVE,
           options: negOptions,
         });
 
@@ -805,7 +836,7 @@ export class Camera extends View implements CameraViewUI {
     const sendEvent = (gifResult: metrics.GifResultType) => {
       metrics.sendCaptureEvent({
         recordType: metrics.RecordType.GIF,
-        facing: this.facing,
+        facing: this.getFacing(),
         resolution,
         duration,
         shutterType: this.shutterType,
@@ -817,7 +848,7 @@ export class Camera extends View implements CameraViewUI {
     await this.prepareReview(async () => {
       await this.review.setReviewPhoto(blob);
       const positive = new review.OptionGroup({
-        template: review.ButtonGroupTemplate.positive,
+        template: review.ButtonGroupTemplate.POSITIVE,
         options: [
           new review.Option({text: I18nString.LABEL_SAVE}, {exitValue: true}),
           new review.Option({text: I18nString.LABEL_SHARE}, {
@@ -829,7 +860,7 @@ export class Camera extends View implements CameraViewUI {
         ],
       });
       const negative = new review.OptionGroup({
-        template: review.ButtonGroupTemplate.negative,
+        template: review.ButtonGroupTemplate.NEGATIVE,
         options: [new review.Option(
             {text: I18nString.LABEL_RETAKE}, {exitValue: null})],
       });
@@ -850,7 +881,7 @@ export class Camera extends View implements CameraViewUI {
     try {
       metrics.sendCaptureEvent({
         recordType: metrics.RecordType.NORMAL_VIDEO,
-        facing: this.facing,
+        facing: this.getFacing(),
         duration,
         resolution,
         shutterType: this.shutterType,
@@ -859,7 +890,7 @@ export class Camera extends View implements CameraViewUI {
       await this.resultSaver.finishSaveVideo(videoSaver);
       state.set(
           PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, false,
-          {resolution, facing: this.facing});
+          {resolution, facing: this.getFacing()});
     } catch (e) {
       state.set(
           PerfEvent.VIDEO_CAPTURE_POST_PROCESSING, false, {hasError: true});
@@ -867,11 +898,11 @@ export class Camera extends View implements CameraViewUI {
     }
   }
 
-  layout(): void {
+  override layout(): void {
     this.layoutHandler.update();
   }
 
-  handlingKey(key: string): boolean {
+  override handlingKey(key: string): boolean {
     if (key === 'Ctrl-R') {
       toast.showDebugMessage(
           this.cameraManager.getPreviewResolution().toString());
@@ -892,14 +923,15 @@ export class Camera extends View implements CameraViewUI {
   /**
    * Updates |this.activeDeviceId|.
    */
-  private updateActiveCamera(newDeviceId: string) {
+  private updateActiveCamera(newDeviceId: string|null) {
     // Make the different active camera announced by screen reader.
     if (newDeviceId === this.activeDeviceId) {
       return;
     }
     this.activeDeviceId = newDeviceId;
-    const info = this.cameraManager.getCameraInfo().getDeviceInfo(newDeviceId);
-    if (info !== null) {
+    if (newDeviceId !== null) {
+      const info =
+          this.cameraManager.getCameraInfo().getDeviceInfo(newDeviceId);
       speak(I18nString.STATUS_MSG_CAMERA_SWITCHED, info.label);
     }
   }

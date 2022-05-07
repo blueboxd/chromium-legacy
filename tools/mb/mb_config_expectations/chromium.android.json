@@ -48,6 +48,8 @@
       "is_debug": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
+      "system_webview_package_name": "com.google.android.webview.debug",
+      "system_webview_shell_package_name": "org.chromium.my_webview_shell",
       "target_cpu": "x64",
       "target_os": "android",
       "use_rbe": true,
@@ -117,7 +119,8 @@
       "target_cpu": "arm64",
       "target_os": "android",
       "use_errorprone_java_compiler": false,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-11-x86-rel": {
@@ -134,7 +137,27 @@
       "target_cpu": "x86",
       "target_os": "android",
       "use_errorprone_java_compiler": false,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
+    }
+  },
+  "android-12-x64-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "disable_android_lint": true,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
+      "skip_secondary_abi_for_cq": true,
+      "strip_debug_info": true,
+      "symbol_level": 1,
+      "system_webview_package_name": "com.google.android.webview.debug",
+      "target_cpu": "x64",
+      "target_os": "android",
+      "use_errorprone_java_compiler": false,
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-arm64-proguard-rel": {
@@ -149,7 +172,8 @@
       "system_webview_package_name": "com.google.android.webview",
       "target_cpu": "arm64",
       "target_os": "android",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-bfcache-rel": {
@@ -162,7 +186,8 @@
       "strip_debug_info": true,
       "symbol_level": 1,
       "target_os": "android",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-binary-size-generator": {
@@ -173,7 +198,8 @@
       "proprietary_codecs": true,
       "symbol_level": 1,
       "target_os": "android",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-cronet-arm-dbg": {
@@ -347,10 +373,11 @@
       "target_cpu": "arm64",
       "target_os": "android",
       "use_crash_key_stubs": true,
-      "use_goma": true,
       "use_hashed_jni_names": true,
       "use_partition_alloc": false,
       "use_platform_icu_alternatives": true,
+      "use_rbe": true,
+      "use_remoteexec": true,
       "use_thin_lto": false
     }
   },
@@ -411,19 +438,6 @@
       "use_thin_lto": false
     }
   },
-  "android-incremental-dbg": {
-    "gn_args": {
-      "ffmpeg_branding": "Chrome",
-      "incremental_install": true,
-      "is_component_build": true,
-      "is_debug": true,
-      "proprietary_codecs": true,
-      "symbol_level": 1,
-      "target_os": "android",
-      "use_rbe": true,
-      "use_remoteexec": true
-    }
-  },
   "android-marshmallow-arm64-rel": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -457,7 +471,8 @@
       "target_cpu": "x86",
       "target_os": "android",
       "use_errorprone_java_compiler": false,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-marshmallow-x86-rel-non-cq": {
@@ -474,7 +489,8 @@
       "target_cpu": "x86",
       "target_os": "android",
       "use_errorprone_java_compiler": false,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-pie-arm64-coverage-experimental-rel": {
@@ -489,7 +505,8 @@
       "system_webview_package_name": "com.google.android.apps.chrome",
       "target_cpu": "arm64",
       "target_os": "android",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-pie-arm64-rel": {
@@ -504,7 +521,8 @@
       "system_webview_package_name": "com.google.android.apps.chrome",
       "target_cpu": "arm64",
       "target_os": "android",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-pie-x86-rel": {
@@ -521,7 +539,8 @@
       "target_cpu": "x86",
       "target_os": "android",
       "use_errorprone_java_compiler": false,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "android-weblayer-with-aosp-webview-x86-rel": {

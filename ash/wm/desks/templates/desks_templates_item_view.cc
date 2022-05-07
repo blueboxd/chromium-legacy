@@ -15,6 +15,7 @@
 #include "ash/style/close_button.h"
 #include "ash/style/pill_button.h"
 #include "ash/style/style_util.h"
+#include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_textfield.h"
 #include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
 #include "ash/wm/desks/templates/desks_templates_grid_view.h"
@@ -255,6 +256,21 @@ bool DesksTemplatesItemView::IsTemplateNameBeingModified() const {
   return name_view_->HasFocus();
 }
 
+void DesksTemplatesItemView::MaybeRemoveNameNumber() {
+  // When there are existing matched Desk name and Template name (ie.
+  // "Desk 1"), creating a new template from "Desk 1" will get auto generated
+  // template name from backend as "Desk 1 (1)", to prevent template
+  // duplication, we show the template view name to be "Desk 1" by removing name
+  // number, save template under such name will call out template replace
+  // dialog.
+  if (FindOtherTemplateWithName(
+          DesksController::Get()->active_desk()->name())) {
+    // Replace the name number.
+    name_view_->SetTemporaryName(DesksController::Get()->active_desk()->name());
+    name_view_->SetViewName(DesksController::Get()->active_desk()->name());
+  }
+}
+
 void DesksTemplatesItemView::ReplaceTemplate(const std::string& uuid) {
   // Make sure we delete the template we are replacing first, so that we don't
   // get template name collisions.
@@ -266,7 +282,9 @@ void DesksTemplatesItemView::ReplaceTemplate(const std::string& uuid) {
 void DesksTemplatesItemView::RevertTemplateName() {
   views::FocusManager* focus_manager = GetFocusManager();
   focus_manager->SetFocusedView(name_view_);
-  name_view_->SetText(desk_template_->template_name());
+  const auto temporary_name = name_view_->temporary_name();
+  name_view_->SetViewName(
+      temporary_name.value_or(desk_template_->template_name()));
   name_view_->SelectAll(true);
 
   name_view_->OnContentsChanged();
@@ -346,10 +364,6 @@ void DesksTemplatesItemView::OnViewFocused(views::View* observed_view) {
   hover_container_->SetVisible(false);
   icon_container_view_->SetVisible(true);
 
-  // Set the unelided template name so that the full name shows up for the user
-  // to be able to change it.
-  name_view_->SetText(desk_template_->template_name());
-
   // Set the Overview highlight to move focus with the `name_view_`.
   auto* highlight_controller = Shell::Get()
                                    ->overview_controller()
@@ -405,33 +419,35 @@ void DesksTemplatesItemView::OnViewBlurred(views::View* observed_view) {
   }
 
   // Check if template name exist, replace existing template if confirmed by
-  // user.
-  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
-  OverviewGrid* overview_grid = Shell::Get()
-                                    ->overview_controller()
-                                    ->overview_session()
-                                    ->GetGridWithRootWindow(root_window);
-  auto* templates_grid_view = static_cast<DesksTemplatesGridView*>(
-      overview_grid->desks_templates_grid_widget()->GetContentsView());
-  for (DesksTemplatesItemView* template_item :
-       templates_grid_view->grid_items()) {
-    auto new_name = name_view_->GetText();
-    if (template_item != this &&
-        template_item->desk_template_->template_name() == new_name) {
-      // Show replace template dialog.
-      // If accepted, replace old template and commit name change.
-      DesksTemplatesDialogController::Get()->ShowReplaceDialog(
-          root_window, new_name,
-          base::BindOnce(
-              &DesksTemplatesItemView::ReplaceTemplate,
-              weak_ptr_factory_.GetWeakPtr(),
-              template_item->desk_template_->uuid().AsLowercaseString()),
-          base::BindOnce(&DesksTemplatesItemView::RevertTemplateName,
-                         weak_ptr_factory_.GetWeakPtr()));
-      return;
-    }
+  // user. Use a post task to avoid activating a widget while another widget is
+  // still being activated. In this case, we don't want to show the dialog and
+  // activate its associated widget until after the desks bar widget is finished
+  // activating. See https://crbug.com/1301759.
+  auto* template_to_replace = FindOtherTemplateWithName(name_view_->GetText());
+  if (template_to_replace) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&DesksTemplatesItemView::MaybeShowReplaceDialog,
+                       weak_ptr_factory_.GetWeakPtr(), template_to_replace));
+    return;
   }
+
   UpdateTemplateName();
+}
+
+void DesksTemplatesItemView::MaybeShowReplaceDialog(
+    DesksTemplatesItemView* template_to_replace) {
+  // Show replace template dialog. If accepted, replace old template and commit
+  // name change.
+  aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
+  DesksTemplatesDialogController::Get()->ShowReplaceDialog(
+      root_window, name_view_->GetText(),
+      base::BindOnce(
+          &DesksTemplatesItemView::ReplaceTemplate,
+          weak_ptr_factory_.GetWeakPtr(),
+          template_to_replace->desk_template_->uuid().AsLowercaseString()),
+      base::BindOnce(&DesksTemplatesItemView::RevertTemplateName,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 views::Button::KeyClickAction DesksTemplatesItemView::GetKeyClickActionForEvent(
@@ -449,7 +465,8 @@ void DesksTemplatesItemView::UpdateTemplateName() {
   OnTemplateNameChanged(desk_template_->template_name());
 
   DesksTemplatesPresenter::Get()->SaveOrUpdateDeskTemplate(
-      /*is_update=*/true, desk_template_->Clone());
+      /*is_update=*/true, GetWidget()->GetNativeWindow()->GetRootWindow(),
+      desk_template_->Clone());
 }
 
 void DesksTemplatesItemView::ContentsChanged(
@@ -558,6 +575,19 @@ views::View* DesksTemplatesItemView::TargetForRect(views::View* root,
   return views::ViewTargeterDelegate::TargetForRect(root, rect);
 }
 
+DesksTemplatesItemView* DesksTemplatesItemView::FindOtherTemplateWithName(
+    const std::u16string& name) const {
+  const auto templates_grid_view_items =
+      static_cast<const DesksTemplatesGridView*>(parent())->grid_items();
+
+  auto iter = std::find_if(
+      templates_grid_view_items.begin(), templates_grid_view_items.end(),
+      [this, name](const DesksTemplatesItemView* d) {
+        return (d != this && d->desk_template()->template_name() == name);
+      });
+  return iter == templates_grid_view_items.end() ? nullptr : *iter;
+}
+
 void DesksTemplatesItemView::OnDeleteTemplate() {
   DesksTemplatesPresenter::Get()->DeleteEntry(
       desk_template_->uuid().AsLowercaseString());
@@ -604,6 +634,7 @@ void DesksTemplatesItemView::OnTemplateNameChanged(
 
   name_view_->SetText(new_name);
   name_view_->SetAccessibleName(new_name);
+  name_view_->ResetTemporaryName();
   SetAccessibleName(new_name);
 
   Layout();

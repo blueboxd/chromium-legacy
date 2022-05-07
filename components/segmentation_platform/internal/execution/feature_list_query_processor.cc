@@ -10,13 +10,20 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/clock.h"
 #include "components/segmentation_platform/internal/database/metadata_utils.h"
+#include "components/segmentation_platform/internal/database/ukm_types.h"
 #include "components/segmentation_platform/internal/execution/custom_input_processor.h"
 #include "components/segmentation_platform/internal/execution/feature_processor_state.h"
+#include "components/segmentation_platform/internal/execution/sql_feature_processor.h"
 #include "components/segmentation_platform/internal/execution/uma_feature_processor.h"
 #include "components/segmentation_platform/internal/proto/model_metadata.pb.h"
 #include "components/segmentation_platform/internal/stats.h"
 
 namespace segmentation_platform {
+
+namespace {
+// Index not actually used for legacy code in FeatureQueryProcessor.
+const int kIndexNotUsed = 0;
+}  // namespace
 
 FeatureListQueryProcessor::FeatureListQueryProcessor(
     SignalDatabase* signal_database,
@@ -57,8 +64,9 @@ void FeatureListQueryProcessor::ProcessFeatureList(
 
 void FeatureListQueryProcessor::ProcessNextInputFeature(
     std::unique_ptr<FeatureProcessorState> feature_processor_state) {
-  // Finished processing all input features.
-  if (feature_processor_state->IsFeatureListEmpty()) {
+  // Finished processing all input features or an error occurred.
+  if (feature_processor_state->IsFeatureListEmpty() ||
+      feature_processor_state->error()) {
     feature_processor_state->RunCallback();
     return;
   }
@@ -78,7 +86,25 @@ void FeatureListQueryProcessor::ProcessNextInputFeature(
         input_feature.custom_input(), std::move(feature_processor_state),
         base::BindOnce(&FeatureListQueryProcessor::ProcessNextInputFeature,
                        weak_ptr_factory_.GetWeakPtr()));
+  } else if (input_feature.has_sql_feature()) {
+    std::map<SqlFeatureProcessor::FeatureIndex, proto::SqlFeature> queries = {
+        {kIndexNotUsed, input_feature.sql_feature()}};
+    auto sql_feature_processor = std::make_unique<SqlFeatureProcessor>(queries);
+    auto* sql_feature_processor_ptr = sql_feature_processor.get();
+    sql_feature_processor_ptr->Process(
+        std::move(feature_processor_state),
+        base::BindOnce(&FeatureListQueryProcessor::OnSqlQueryProcessed,
+                       weak_ptr_factory_.GetWeakPtr(),
+                       std::move(sql_feature_processor)));
   }
+}
+
+void FeatureListQueryProcessor::OnSqlQueryProcessed(
+    std::unique_ptr<SqlFeatureProcessor> sql_feature_processor,
+    std::unique_ptr<FeatureProcessorState> feature_processor_state,
+    QueryProcessor::IndexedTensors result) {
+  feature_processor_state->AppendInputTensor(result[kIndexNotUsed]);
+  ProcessNextInputFeature(std::move(feature_processor_state));
 }
 
 }  // namespace segmentation_platform

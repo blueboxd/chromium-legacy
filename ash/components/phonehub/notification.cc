@@ -9,7 +9,9 @@
 #include "base/base64.h"
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/strings/utf_string_conversions.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace ash {
 namespace phonehub {
@@ -18,14 +20,22 @@ const char kVisibleAppName[] = "visible_app_name";
 const char kPackageName[] = "package_name";
 const char kUserId[] = "user_id";
 const char kIcon[] = "icon";
+const char kIconColorR[] = "icon_color_r";
+const char kIconColorG[] = "icon_color_g";
+const char kIconColorB[] = "icon_color_b";
+const char kIconIsMonochrome[] = "icon_is_monochrome";
 
 Notification::AppMetadata::AppMetadata(const std::u16string& visible_app_name,
                                        const std::string& package_name,
                                        const gfx::Image& icon,
+                                       const absl::optional<SkColor> icon_color,
+                                       bool icon_is_monochrome,
                                        int64_t user_id)
     : visible_app_name(visible_app_name),
       package_name(package_name),
       icon(icon),
+      icon_color(icon_color),
+      icon_is_monochrome(icon_is_monochrome),
       user_id(user_id) {}
 
 Notification::AppMetadata::AppMetadata(const AppMetadata& other) = default;
@@ -51,6 +61,12 @@ base::Value Notification::AppMetadata::ToValue() const {
   val.SetKey(kPackageName, base::Value(package_name));
   val.SetDoubleKey(kUserId, user_id);
   val.SetKey(kIcon, base::Value(base::Base64Encode(*png_data)));
+  val.SetBoolKey(kIconIsMonochrome, icon_is_monochrome);
+  if (icon_color.has_value()) {
+    val.SetIntKey(kIconColorR, SkColorGetR(*icon_color));
+    val.SetIntKey(kIconColorG, SkColorGetG(*icon_color));
+    val.SetIntKey(kIconColorB, SkColorGetB(*icon_color));
+  }
   return val;
 }
 
@@ -67,6 +83,24 @@ Notification::AppMetadata Notification::AppMetadata::FromValue(
   DCHECK(value.FindKey(kIcon));
   DCHECK(value.FindKey(kIcon)->is_string());
 
+  if (value.FindKey(kIconIsMonochrome)) {
+    DCHECK(value.FindKey(kIconIsMonochrome)->is_bool());
+  }
+  bool icon_is_monochrome =
+      value.FindBoolPath(kIconIsMonochrome).value_or(false);
+
+  absl::optional<SkColor> icon_color = absl::nullopt;
+  if (value.FindKey(kIconColorR)) {
+    DCHECK(value.FindKey(kIconColorR)->is_int());
+    DCHECK(value.FindKey(kIconColorG));
+    DCHECK(value.FindKey(kIconColorG)->is_int());
+    DCHECK(value.FindKey(kIconColorB));
+    DCHECK(value.FindKey(kIconColorB)->is_int());
+    icon_color = SkColorSetRGB(*(value.FindIntPath(kIconColorR)),
+                               *(value.FindIntPath(kIconColorG)),
+                               *(value.FindIntPath(kIconColorB)));
+  }
+
   const base::Value* visible_app_name_value = value.FindPath(kVisibleAppName);
   std::u16string visible_app_name_string_value;
   if (visible_app_name_value->is_string()) {
@@ -79,9 +113,10 @@ Notification::AppMetadata Notification::AppMetadata::FromValue(
   gfx::Image decode_icon = gfx::Image::CreateFrom1xPNGBytes(
       base::RefCountedString::TakeString(&icon_str));
 
-  return Notification::AppMetadata(
-      visible_app_name_string_value, *(value.FindStringPath(kPackageName)),
-      decode_icon, *(value.FindDoublePath(kUserId)));
+  return Notification::AppMetadata(visible_app_name_string_value,
+                                   *(value.FindStringPath(kPackageName)),
+                                   decode_icon, icon_color, icon_is_monochrome,
+                                   *(value.FindDoublePath(kUserId)));
 }
 
 Notification::Notification(

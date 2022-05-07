@@ -40,7 +40,7 @@ LocaleOverrides ConvertTranslationItemToLocaleOverrides(
 }
 
 blink::Manifest::TranslationItem ConvertLocaleOverridesToTranslationItem(
-    LocaleOverrides locale_overrides) {
+    const LocaleOverrides& locale_overrides) {
   blink::Manifest::TranslationItem translation_item;
 
   if (locale_overrides.has_name()) {
@@ -88,6 +88,9 @@ bool WriteProtoBlocking(scoped_refptr<FileUtilsWrapper> utils,
 bool DeleteTranslationsBlocking(scoped_refptr<FileUtilsWrapper> utils,
                                 const base::FilePath& web_apps_directory,
                                 const AppId& app_id) {
+  if (!utils->CreateDirectory(web_apps_directory)) {
+    return false;
+  }
   AllTranslations proto = ReadProtoBlocking(utils, web_apps_directory);
 
   proto.mutable_id_to_translations_map()->erase(app_id);
@@ -126,9 +129,8 @@ bool WriteTranslationsBlocking(
 
 WebAppTranslationManager::WebAppTranslationManager(
     Profile* profile,
-    base::raw_ptr<WebAppInstallManager> install_manager,
     scoped_refptr<FileUtilsWrapper> utils)
-    : install_manager_(install_manager), utils_(std::move(utils)) {
+    : utils_(std::move(utils)) {
   web_apps_directory_ = GetWebAppsRootDirectory(profile);
 }
 
@@ -138,22 +140,7 @@ void WebAppTranslationManager::Start() {
   if (base::FeatureList::IsEnabled(
           blink::features::kWebAppEnableTranslations)) {
     ReadTranslations(base::DoNothing());
-    install_manager_observation_.Observe(install_manager_.get());
   }
-}
-
-// TODO(crbug.com/1259777): Consider adding to cache when writing a translation
-// to avoid reading everything again here.
-void WebAppTranslationManager::OnWebAppInstalled(const AppId& app_id) {
-  ReadTranslations(base::DoNothing());
-}
-
-void WebAppTranslationManager::OnWebAppUninstalled(const AppId& app_id) {
-  DeleteTranslations(app_id, base::DoNothing());
-}
-
-void WebAppTranslationManager::OnWebAppInstallManagerDestroyed() {
-  install_manager_observation_.Reset();
 }
 
 void WebAppTranslationManager::WriteTranslations(
@@ -161,20 +148,36 @@ void WebAppTranslationManager::WriteTranslations(
     const base::flat_map<Locale, blink::Manifest::TranslationItem>&
         translations,
     WriteCallback callback) {
-  if (base::FeatureList::IsEnabled(
+  if (!base::FeatureList::IsEnabled(
           blink::features::kWebAppEnableTranslations)) {
-    base::ThreadPool::PostTaskAndReplyWithResult(
-        FROM_HERE, kTaskTraits,
-        base::BindOnce(WriteTranslationsBlocking, utils_, web_apps_directory_,
-                       std::move(app_id), std::move(translations)),
-        std::move(callback));
-  } else {
     std::move(callback).Run(true);
+    return;
   }
+
+  const std::string& locale = g_browser_process->GetApplicationLocale();
+  // TODO(crbug.com/1259777): Check other matching locales. Eg if no name
+  // defined in en-US, check en.
+  auto it = translations.find(base::UTF8ToUTF16(locale));
+  if (it != translations.end()) {
+    translation_cache_[app_id] = it->second;
+  }
+
+  base::ThreadPool::PostTaskAndReplyWithResult(
+      FROM_HERE, kTaskTraits,
+      base::BindOnce(WriteTranslationsBlocking, utils_, web_apps_directory_,
+                     std::move(app_id), std::move(translations)),
+      std::move(callback));
 }
 
 void WebAppTranslationManager::DeleteTranslations(const AppId& app_id,
                                                   WriteCallback callback) {
+  if (!base::FeatureList::IsEnabled(
+          blink::features::kWebAppEnableTranslations)) {
+    std::move(callback).Run(true);
+    return;
+  }
+
+  translation_cache_.erase(app_id);
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, kTaskTraits,
       base::BindOnce(DeleteTranslationsBlocking, utils_, web_apps_directory_,
@@ -194,7 +197,7 @@ void WebAppTranslationManager::OnTranslationsRead(
     ReadCallback callback,
     const AllTranslations& proto) {
   translation_cache_.clear();
-  std::string locale = g_browser_process->GetApplicationLocale();
+  const std::string& locale = g_browser_process->GetApplicationLocale();
 
   for (const auto& id_to_translations : proto.id_to_translations_map()) {
     const AppId& app_id = id_to_translations.first;
@@ -210,6 +213,23 @@ void WebAppTranslationManager::OnTranslationsRead(
     }
   }
   std::move(callback).Run(translation_cache_);
+}
+
+std::string WebAppTranslationManager::GetTranslatedName(const AppId& app_id) {
+  auto it = translation_cache_.find(app_id);
+  if (it != translation_cache_.end() && it->second.name) {
+    return it->second.name.value();
+  }
+  return std::string();
+}
+
+std::string WebAppTranslationManager::GetTranslatedDescription(
+    const AppId& app_id) {
+  auto it = translation_cache_.find(app_id);
+  if (it != translation_cache_.end() && it->second.description) {
+    return it->second.description.value();
+  }
+  return std::string();
 }
 
 }  // namespace web_app

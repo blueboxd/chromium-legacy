@@ -5,6 +5,7 @@
 #ifndef CONTENT_BROWSER_CLIENT_HINTS_CRITICAL_CLIENT_HINTS_THROTTLE_H_
 #define CONTENT_BROWSER_CLIENT_HINTS_CRITICAL_CLIENT_HINTS_THROTTLE_H_
 
+#include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
@@ -31,10 +32,9 @@ class CriticalClientHintsThrottle : public blink::URLLoaderThrottle {
  public:
   CriticalClientHintsThrottle(
       BrowserContext* context,
-
       ClientHintsControllerDelegate* client_hint_delegate,
       int frame_tree_node_id);
-  ~CriticalClientHintsThrottle() override = default;
+  ~CriticalClientHintsThrottle() override;
 
   // blink::URLLoaderThrottle
   void BeforeWillProcessResponse(
@@ -48,7 +48,7 @@ class CriticalClientHintsThrottle : public blink::URLLoaderThrottle {
   // tree node and so on). If returning true, the new name and values are added
   // to |modified_headers|.
   bool ShouldRestartWithHints(
-      const GURL& url,
+      const url::Origin& origin,
       const std::vector<network::mojom::WebClientHintsType>& hints,
       net::HttpRequestHeaders& modified_headers);
 
@@ -56,8 +56,8 @@ class CriticalClientHintsThrottle : public blink::URLLoaderThrottle {
   raw_ptr<ClientHintsControllerDelegate> client_hint_delegate_;
   int frame_tree_node_id_;
 
-  // Additional headers to add after redirect.
-  net::HttpRequestHeaders additional_client_hints_;
+  // Ensure that there's only one restart per origin
+  base::flat_set<url::Origin> restarted_origins_;
 };
 
 }  // namespace content

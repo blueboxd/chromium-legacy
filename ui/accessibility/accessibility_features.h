@@ -95,14 +95,7 @@ AX_BASE_EXPORT extern const base::Feature kDockedMagnifierResizing;
 // bottom of Docked Magnifier is enabled.
 AX_BASE_EXPORT bool IsDockedMagnifierResizingEnabled();
 
-// Enables dictation to use on-device speech recognition when available.
-AX_BASE_EXPORT extern const base::Feature
-    kExperimentalAccessibilityDictationOffline;
-
-// Returns true if experimental accessibility offline dictation is enabled.
-AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationOfflineEnabled();
-
-AX_BASE_EXPORT bool IsDictationOfflineAvailableAndEnabled();
+AX_BASE_EXPORT bool IsDictationOfflineAvailable();
 
 // Enables text-editing commands in the dictation.
 AX_BASE_EXPORT extern const base::Feature
@@ -125,6 +118,13 @@ AX_BASE_EXPORT extern const base::Feature
 
 // Returns true if experimental accessibility dictation hints is enabled.
 AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationHintsEnabled();
+
+// Enables accessibility Dictation with the pumpkin semantic parser.
+AX_BASE_EXPORT extern const base::Feature
+    kExperimentalAccessibilityDictationWithPumpkin;
+
+// Returns true if dictation with pumpkin is enabled.
+AX_BASE_EXPORT bool IsExperimentalAccessibilityDictationWithPumpkinEnabled();
 
 // Enables high-quality, network-based voices in Select-to-speak.
 AX_BASE_EXPORT extern const base::Feature kEnhancedNetworkVoices;
@@ -181,6 +181,26 @@ AX_BASE_EXPORT extern const base::Feature kReaderModeSidePanel;
 // users websites, such as articles, in a comfortable reading experience in a
 // side panel.
 AX_BASE_EXPORT bool IsReaderModeSidePanelEnabled();
+
+#if !BUILDFLAG(IS_ANDROID)
+// Enables using Screen AI library to add metadata for accessibility tools.
+AX_BASE_EXPORT extern const base::Feature kScreenAI;
+
+// Returns true if Screen AI feature is enabled. This feature uses a local
+// machine intelligence library to process browser screenshots and add metadata
+// to the accessibility tree.
+AX_BASE_EXPORT bool IsScreenAIEnabled();
+
+// Enables a feature whereby inaccessible (i.e. untagged) PDFs are made
+// accessible using an optical character recognition service. Due to the size of
+// the OCR component, this feature targets desktop versions of Chrome for now.
+AX_BASE_EXPORT extern const base::Feature kPdfOcr;
+
+// Returns true if OCR will be performed on inaccessible (i.e. untagged) PDFs
+// and the resulting text, together with its layout information, will be added
+// to the accessibility tree.
+AX_BASE_EXPORT bool IsPdfOcrEnabled();
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace features
 

@@ -21,6 +21,7 @@
 #include "content/common/content_export.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
+#include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
@@ -34,7 +35,23 @@ class InterestGroupManagerImpl;
 // their reporting phases and produces the result via a callback.
 class CONTENT_EXPORT AuctionRunner {
  public:
+  // TODO(behamilton@google.com): Make this struct more broadly available to
+  // the rest of interest group code and adjust them to use it where
+  // appropriate.
+  struct InterestGroupKey {
+    InterestGroupKey(url::Origin o, std::string n) : owner(o), name(n) {}
+    inline bool operator<(const InterestGroupKey& other) const {
+      return owner != other.owner ? owner < other.owner : name < other.name;
+    }
+    inline bool operator==(const InterestGroupKey& other) const {
+      return owner == other.owner && name == other.name;
+    }
+    url::Origin owner;
+    std::string name;
+  };
   // Invoked when a FLEDGE auction is complete.
+  //
+  // `winning_group_id` owner and name of the winning interest group (if any).
   //
   // `render_url` URL of auction winning ad to render. Null if there is no
   //  winner.
@@ -53,14 +70,15 @@ class CONTENT_EXPORT AuctionRunner {
   //
   // `errors` are various error messages to be used for debugging. These are too
   //  sensitive for the renderers to see.
-  using RunAuctionCallback = base::OnceCallback<void(
-      AuctionRunner* auction_runner,
-      absl::optional<GURL> render_url,
-      absl::optional<std::vector<GURL>> ad_component_urls,
-      std::vector<GURL> report_urls,
-      std::vector<GURL> debug_loss_report_urls,
-      std::vector<GURL> debug_win_report_urls,
-      std::vector<std::string> errors)>;
+  using RunAuctionCallback =
+      base::OnceCallback<void(AuctionRunner* auction_runner,
+                              absl::optional<InterestGroupKey> winning_group_id,
+                              absl::optional<GURL> render_url,
+                              std::vector<GURL> ad_component_urls,
+                              std::vector<GURL> report_urls,
+                              std::vector<GURL> debug_loss_report_urls,
+                              std::vector<GURL> debug_win_report_urls,
+                              std::vector<std::string> errors)>;
 
   // Returns true if `origin` is allowed to use the interest group API. Will be
   // called on worklet / interest group origins before using them in any
@@ -157,7 +175,7 @@ class CONTENT_EXPORT AuctionRunner {
   // interest groups bid in an auction. A sets is used to avoid double-counting
   // interest groups that bid in multiple components auctions in a component
   // auction.
-  using InterestGroupSet = std::set<std::pair<url::Origin, std::string>>;
+  using InterestGroupSet = std::set<InterestGroupKey>;
 
   class Auction;
 
@@ -209,7 +227,7 @@ class CONTENT_EXPORT AuctionRunner {
     Bid(std::string ad_metadata,
         double bid,
         GURL render_url,
-        absl::optional<std::vector<GURL>> ad_components,
+        std::vector<GURL> ad_components,
         base::TimeDelta bid_duration,
         absl::optional<uint32_t> bidding_signals_data_version,
         const blink::InterestGroup::Ad* bid_ad,
@@ -225,7 +243,7 @@ class CONTENT_EXPORT AuctionRunner {
     const std::string ad_metadata;
     const double bid;
     const GURL render_url;
-    const absl::optional<std::vector<GURL>> ad_components;
+    const std::vector<GURL> ad_components;
     const base::TimeDelta bid_duration;
     const absl::optional<uint32_t> bidding_signals_data_version;
 
@@ -288,10 +306,10 @@ class CONTENT_EXPORT AuctionRunner {
 
     // All passed in raw pointers must remain valid until the Auction is
     // destroyed. `config` is typically owned by the AuctionRunner's
-    // `owned_auction_config_` field. `is_component_auction` should be true
-    // if the Auction is a component of another auction.
+    // `owned_auction_config_` field. `parent` should be the parent Auction if
+    // this is a component auction, and null, otherwise.
     Auction(blink::mojom::AuctionAdConfig* config,
-            bool is_component_auction,
+            const Auction* parent,
             AuctionWorkletManager* auction_worklet_manager,
             InterestGroupManagerImpl* interest_group_manager,
             base::Time auction_start_time);
@@ -502,6 +520,7 @@ class CONTENT_EXPORT AuctionRunner {
 
     absl::optional<std::string> PerBuyerSignals(const BidState* state);
     absl::optional<base::TimeDelta> PerBuyerTimeout(const BidState* state);
+    absl::optional<base::TimeDelta> SellerTimeout();
 
     // If there are no `outstanding_bids_`, completes the bidding and scoring
     // phase.
@@ -559,6 +578,14 @@ class CONTENT_EXPORT AuctionRunner {
     // Methods not associated with a phase
     // -----------------------------------
 
+    // Creates a ComponentAuctionOtherSeller to pass to SellerWorklets when
+    // dealing with `bid`. If `this` is a component auction, returns an object
+    // with a `top_level_seller`. If this is a top-level auction and `bid` comes
+    // from a component auction, returns an object with a `component_seller` to
+    // `bid's` seller.
+    auction_worklet::mojom::ComponentAuctionOtherSellerPtr GetOtherSellerParam(
+        const Bid& bid) const;
+
     // Requests a WorkletHandle for the interest group identified by
     // `bid_state`, using the provided callbacks. Returns true if a worklet was
     // received synchronously.
@@ -572,7 +599,8 @@ class CONTENT_EXPORT AuctionRunner {
 
     // Configuration of this auction.
     raw_ptr<const blink::mojom::AuctionAdConfig> config_;
-    const bool is_component_auction_;
+    // If this is a component auction, the parent Auction. Null, otherwise.
+    const raw_ptr<const Auction> parent_;
 
     // Component auctions that are part of this auction. This auction manages
     // their state transition, and their bids may participate in this auction as

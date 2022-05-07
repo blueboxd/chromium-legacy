@@ -22,6 +22,7 @@ mojom("mojom") {
     "clipboard_history.mojom",
     "content_protection.mojom",
     "crosapi.mojom",
+    "desk_template.mojom",
     "device_attributes.mojom",
     "device_settings_service.mojom",
     "dlp.mojom",
@@ -67,6 +68,7 @@ mojom("mojom") {
     "tts.mojom",
     "url_handler.mojom",
     "video_capture.mojom",
+    "web_app_service.mojom",
     "web_app_types.mojom",
     "web_page_info.mojom",
   ]
@@ -178,6 +180,10 @@ mojom("mojom") {
         {
           mojom = "crosapi.mojom.WebAppInstallResultCode"
           cpp = "::webapps::InstallResultCode"
+        },
+        {
+          mojom = "crosapi.mojom.WebAppUninstallResultCode"
+          cpp = "::webapps::UninstallResultCode"
         },
       ]
       traits_headers = [

@@ -17,6 +17,7 @@
 #include "base/sequence_checker.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "net/base/schemeful_site.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/cookies/first_party_set_metadata.h"
@@ -93,13 +94,18 @@ class FirstPartySets {
   // Receives the completed First-Party Sets from `sets_loader_` and stores it
   // in the `sets_`.
   void SetCompleteSets(FlattenedSets sets);
-  // Sets the `raw_persisted_sets_`, which is a JSON-encoded
-  // string representation of a map of site -> site.
-  void SetPersistedSets(base::StringPiece persisted_sets);
-  // Sets the `on_site_data_cleared_` callback, which takes input of a
-  // JSON-encoded string representation of a map of site -> site.
-  void SetOnSiteDataCleared(
+
+  // Sets the `raw_persisted_sets_`, which is a JSON-encoded string
+  // representation of a map of site -> site, and saves a callback to be called
+  // once site data has been cleared appropriately. The callback receives a
+  // serialized representation of the current First-Party Sets as an argument,
+  // and must not be null. (In practice, this callback will be used to update
+  // the on-disk persisted sets, so that the next run of Chromium doesn't clear
+  // more data than necessary.)
+  void SetPersistedSetsAndOnSiteDataCleared(
+      base::StringPiece persisted_sets,
       base::OnceCallback<void(const std::string&)> callback);
+
   // Sets the enabled_ attribute for testing.
   void SetEnabledForTesting(bool enabled);
 
@@ -133,9 +139,6 @@ class FirstPartySets {
       base::OnceCallback<void(OwnersResult)> callback);
 
  private:
-  using SingleSet =
-      std::pair<net::SchemefulSite, base::flat_set<net::SchemefulSite>>;
-
   // Same as `ComputeMetadata`, but plumbs the result into the callback. Must
   // only be called once the instance is fully initialized.
   void ComputeMetadataAndInvoke(
@@ -266,6 +269,9 @@ class FirstPartySets {
   // The time when the first async query was enqueued, if any. Used for metrics.
   absl::optional<base::TimeTicks> first_async_query_time_
       GUARDED_BY_CONTEXT(sequence_checker_);
+
+  // Timer starting when the instance is constructed. Used for metrics.
+  base::ElapsedTimer construction_timer_ GUARDED_BY_CONTEXT(sequence_checker_);
 
   SEQUENCE_CHECKER(sequence_checker_);
 

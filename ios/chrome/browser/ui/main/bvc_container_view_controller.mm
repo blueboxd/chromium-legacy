@@ -82,20 +82,22 @@
 - (void)presentViewController:(UIViewController*)viewControllerToPresent
                      animated:(BOOL)flag
                    completion:(void (^)())completion {
-  // Force presentation to go through the current BVC, which does some
-  // associated bookkeeping.
-  DCHECK(self.currentBVC);
-  [self.currentBVC presentViewController:viewControllerToPresent
-                                animated:flag
-                              completion:completion];
+  // Force presentation to go through the current BVC, if possible, which does
+  // some associated bookkeeping.
+  UIViewController* viewController =
+      self.currentBVC ? self.currentBVC : self.fallbackPresenterViewController;
+  [viewController presentViewController:viewControllerToPresent
+                               animated:flag
+                             completion:completion];
 }
 
 - (void)dismissViewControllerAnimated:(BOOL)flag
                            completion:(void (^)())completion {
-  // Force dismissal to go through the current BVC, which does some associated
-  // bookkeeping.
-  DCHECK(self.currentBVC);
-  [self.currentBVC dismissViewControllerAnimated:flag completion:completion];
+  // Force dismissal to go through the current BVC, if possible, which does some
+  // associated bookkeeping.
+  UIViewController* viewController =
+      self.currentBVC ? self.currentBVC : self.fallbackPresenterViewController;
+  [viewController dismissViewControllerAnimated:flag completion:completion];
 }
 
 - (UIViewController*)childViewControllerForStatusBarHidden {
@@ -122,10 +124,6 @@
     // On rotation, reposition the BVC container if the state is currently
     // Revealed.
     if (self.thumbStripPanHandler.currentState == ViewRevealState::Revealed) {
-      self.view.transform = CGAffineTransformMakeTranslation(
-          0, self.thumbStripPanHandler.revealedHeight);
-    } else if (self.thumbStripPanHandler.currentState ==
-               ViewRevealState::Fullscreen) {
       self.view.transform = CGAffineTransformMakeTranslation(
           0, self.thumbStripPanHandler.baseViewHeight);
     }
@@ -186,12 +184,6 @@
           CGAffineTransformMakeTranslation(0, topOffset);
       break;
     case ViewRevealState::Revealed:
-      self.view.transform = CGAffineTransformMakeTranslation(
-          0, self.thumbStripPanHandler.revealedHeight);
-      self.solidBackground.transform =
-          CGAffineTransformMakeTranslation(0, topOffset);
-      break;
-    case ViewRevealState::Fullscreen:
       self.view.transform = CGAffineTransformMakeTranslation(
           0, self.thumbStripPanHandler.baseViewHeight);
       self.solidBackground.transform =

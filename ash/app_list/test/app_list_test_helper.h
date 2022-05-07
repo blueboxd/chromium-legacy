@@ -17,10 +17,6 @@ namespace base {
 class TimeDelta;
 }
 
-namespace ui {
-class Layer;
-}
-
 namespace views {
 class View;
 }
@@ -82,10 +78,6 @@ class AppListTestHelper {
   // until animation finishes.
   void ToggleAndRunLoop(uint64_t display_id, AppListShowSource show_source);
 
-  // Waits for a layer animation to complete and for animation throughput data
-  // to be passed from cc to ui.
-  void WaitForLayerAnimation(ui::Layer* layer);
-
   // Slides a bubble apps page's component using a layer animation.
   void StartSlideAnimationOnBubbleAppsPage(views::View* view,
                                            int vertical_offset,
@@ -103,6 +95,9 @@ class AppListTestHelper {
 
   // Run all pending in message loop to wait for animation to finish.
   void WaitUntilIdle();
+
+  // If a folder view is shown, waits until the folder animations complete.
+  void WaitForFolderAnimation();
 
   // Adds `num_apps` to the app list model.
   void AddAppItems(int num_apps);

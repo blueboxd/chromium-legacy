@@ -37,10 +37,16 @@ class TraceEnabledObserver
   void OnTraceLogEnabled() override {
     JNIEnv* env = base::android::AttachCurrentThread();
     base::android::Java_TraceEvent_setEnabled(env, true);
+    if (base::trace_event::TraceLog::GetInstance()
+            ->GetCurrentTraceConfig()
+            .IsEventPackageNameFilterEnabled()) {
+      base::android::Java_TraceEvent_setEventNameFilteringEnabled(env, true);
+    }
   }
   void OnTraceLogDisabled() override {
     JNIEnv* env = base::android::AttachCurrentThread();
     base::android::Java_TraceEvent_setEnabled(env, false);
+    base::android::Java_TraceEvent_setEventNameFilteringEnabled(env, false);
   }
 };
 
@@ -127,6 +133,9 @@ static void JNI_TraceEvent_AddViewDump(
 // Empty implementations when TraceLog isn't available.
 static void JNI_TraceEvent_RegisterEnabledObserver(JNIEnv* env) {
   base::android::Java_TraceEvent_setEnabled(env, false);
+  // This code should not be reached when base tracing is disabled. Calling
+  // setEventNameFilteringEnabled to avoid "unused function" warning.
+  base::android::Java_TraceEvent_setEventNameFilteringEnabled(env, false);
 }
 static void JNI_TraceEvent_StartATrace(JNIEnv* env,
                                        const JavaParamRef<jstring>&) {}

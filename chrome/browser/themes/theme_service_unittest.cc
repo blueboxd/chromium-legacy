@@ -212,17 +212,10 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
 
     scoped_refptr<extensions::UnpackedInstaller> installer(
         extensions::UnpackedInstaller::Create(service_));
-    if (service_->IsExtensionEnabled(extension_id)) {
-      extensions::TestExtensionRegistryObserver observer(registry_);
-      installer->Load(path);
-      observer.WaitForExtensionLoaded();
-    } else {
-      content::WindowedNotificationObserver observer(
-          extensions::NOTIFICATION_EXTENSION_UPDATE_DISABLED,
-          content::Source<Profile>(profile()));
-      installer->Load(path);
-      observer.Wait();
-    }
+
+    extensions::TestExtensionRegistryObserver observer(registry_);
+    installer->Load(path);
+    observer.WaitForExtensionInstalled();
 
     // Let the ThemeService finish creating the theme pack.
     base::RunLoop().RunUntilIdle();
@@ -233,27 +226,14 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
     theme_service->theme_supplier_ = theme_supplier;
   }
 
-  SkColor GetOmniboxColor(ThemeService* theme_service,
-                          int id,
-                          bool incognito) const {
-    absl::optional<SkColor> color =
-        theme_service->theme_helper_.GetOmniboxColor(
-            id, incognito, theme_service->GetThemeSupplier());
-    EXPECT_TRUE(color);
-    return color.value_or(gfx::kPlaceholderColor);
+  SkColor GetColor(ThemeService* theme_service, int id, bool incognito) const {
+    return theme_service->theme_helper_.GetColor(
+        id, incognito, theme_service->GetThemeSupplier());
   }
 
   bool IsExtensionDisabled(const std::string& id) const {
     return registry_->GetExtensionById(id,
                                        extensions::ExtensionRegistry::DISABLED);
-  }
-
-  // Returns the separator color as the opaque result of blending it atop the
-  // frame color (which is the color we use when calculating the contrast of the
-  // separator with the tab and frame colors).
-  static SkColor GetSeparatorColor(SkColor tab_color, SkColor frame_color) {
-    return color_utils::GetResultingPaintColor(
-        ThemeHelper::GetSeparatorColor(tab_color, frame_color), frame_color);
   }
 
  protected:
@@ -640,23 +620,38 @@ TEST_F(ThemeServiceTest, OmniboxContrast) {
                               &native_theme_)
                         : nullptr);
       constexpr int contrasting_ids[][2] = {
-          {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_BACKGROUND},
-          {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
-          {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_RESULTS_BG},
-          {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
-          {TP::COLOR_OMNIBOX_TEXT_DIMMED, TP::COLOR_OMNIBOX_BACKGROUND},
-          {TP::COLOR_OMNIBOX_SELECTED_KEYWORD, TP::COLOR_OMNIBOX_RESULTS_BG},
-          {TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED,
-           TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
-          {TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED, TP::COLOR_OMNIBOX_RESULTS_BG},
-          {TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED,
-           TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
           {TP::COLOR_OMNIBOX_RESULTS_ICON, TP::COLOR_OMNIBOX_RESULTS_BG},
           {TP::COLOR_OMNIBOX_RESULTS_ICON,
            TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
           {TP::COLOR_OMNIBOX_RESULTS_ICON_SELECTED,
            TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED,
+           TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED, TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED,
+           TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED,
+           TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_NEGATIVE,
+           TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_NEGATIVE,
+           TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_NEGATIVE_SELECTED,
+           TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_POSITIVE,
+           TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_POSITIVE,
+           TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_POSITIVE_SELECTED,
+           TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_SECONDARY,
+           TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_SECONDARY,
+           TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_SECONDARY_SELECTED,
+           TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
           {TP::COLOR_OMNIBOX_RESULTS_URL, TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_RESULTS_URL, TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
           {TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED,
            TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
           {TP::COLOR_OMNIBOX_BUBBLE_OUTLINE, TP::COLOR_OMNIBOX_RESULTS_BG},
@@ -666,30 +661,31 @@ TEST_F(ThemeServiceTest, OmniboxContrast) {
            TP::COLOR_OMNIBOX_BACKGROUND},
           {TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT,
            TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
-          {TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT,
-           TP::COLOR_OMNIBOX_RESULTS_BG},
           {TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
            TP::COLOR_OMNIBOX_BACKGROUND},
           {TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
            TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
-          {TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
-           TP::COLOR_OMNIBOX_RESULTS_BG},
           {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
            TP::COLOR_OMNIBOX_BACKGROUND},
           {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
-           TP::COLOR_OMNIBOX_RESULTS_BG},
+           TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
+          {TP::COLOR_OMNIBOX_SELECTED_KEYWORD, TP::COLOR_OMNIBOX_BACKGROUND},
+          {TP::COLOR_OMNIBOX_SELECTED_KEYWORD,
+           TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
+          {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_BACKGROUND},
+          {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
+          {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          {TP::COLOR_OMNIBOX_TEXT_DIMMED, TP::COLOR_OMNIBOX_BACKGROUND},
           {TP::COLOR_OMNIBOX_TEXT_DIMMED, TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
-          {TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED,
-           TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
-          {TP::COLOR_OMNIBOX_RESULTS_URL, TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
-          {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
-           TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
       };
       auto check_sufficient_contrast = [&](int id1, int id2) {
-        const float contrast = color_utils::GetContrastRatio(
-            GetOmniboxColor(theme_service_, id1, dark),
-            GetOmniboxColor(theme_service_, id2, dark));
-        EXPECT_GE(contrast, color_utils::kMinimumReadableContrastRatio);
+        const float contrast =
+            color_utils::GetContrastRatio(GetColor(theme_service_, id1, dark),
+                                          GetColor(theme_service_, id2, dark));
+        EXPECT_GE(contrast, color_utils::kMinimumReadableContrastRatio)
+            << "Dark: " << dark << " High contrast: " << high_contrast
+            << " ID 1: " << id1 << " ID2: " << id2;
       };
       for (const int* ids : contrasting_ids)
         check_sufficient_contrast(ids[0], ids[1]);
@@ -697,61 +693,6 @@ TEST_F(ThemeServiceTest, OmniboxContrast) {
         check_sufficient_contrast(TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED,
                                   TP::COLOR_OMNIBOX_RESULTS_BG);
     }
-  }
-}
-
-// Ensure nothing DCHECKs if either of COLOR_OMNIBOX_BACKGROUND or
-// COLOR_OMNIBOX_TEXT are translucent (https://crbug.com/1006102).
-TEST_F(ThemeServiceTest, TranslucentOmniboxBackgroundAndText) {
-  using TP = ThemeProperties;
-  class TranslucentOmniboxThemeSupplier : public CustomThemeSupplier {
-   public:
-    TranslucentOmniboxThemeSupplier()
-        : CustomThemeSupplier(ThemeType::EXTENSION) {}
-    bool GetColor(int id, SkColor* color) const override {
-      switch (id) {
-        case TP::COLOR_OMNIBOX_BACKGROUND:
-          *color = SkColorSetARGB(127, 255, 255, 255);
-          return true;
-        case TP::COLOR_OMNIBOX_TEXT:
-          *color = SkColorSetARGB(127, 0, 0, 0);
-          return true;
-      }
-      return CustomThemeSupplier::GetColor(id, color);
-    }
-
-   private:
-    ~TranslucentOmniboxThemeSupplier() override = default;
-  };
-  set_theme_supplier(theme_service_,
-                     base::MakeRefCounted<TranslucentOmniboxThemeSupplier>());
-
-  constexpr int ids[] = {
-      TP::COLOR_OMNIBOX_BACKGROUND,
-      TP::COLOR_OMNIBOX_TEXT,
-      TP::COLOR_OMNIBOX_BACKGROUND_HOVERED,
-      TP::COLOR_OMNIBOX_SELECTED_KEYWORD,
-      TP::COLOR_OMNIBOX_TEXT_DIMMED,
-      TP::COLOR_OMNIBOX_RESULTS_BG,
-      TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED,
-      TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED,
-      TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED,
-      TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED,
-      TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED,
-      TP::COLOR_OMNIBOX_RESULTS_ICON,
-      TP::COLOR_OMNIBOX_RESULTS_ICON_SELECTED,
-      TP::COLOR_OMNIBOX_RESULTS_URL,
-      TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED,
-      TP::COLOR_OMNIBOX_BUBBLE_OUTLINE,
-      TP::COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE,
-      TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT,
-      TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
-      TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
-  };
-
-  for (int id : ids) {
-    GetOmniboxColor(theme_service_, id, false);
-    GetOmniboxColor(theme_service_, id, true);
   }
 }
 
@@ -866,16 +807,22 @@ TEST_F(ThemeServiceTest, PolicyThemeColorSet) {
   EXPECT_TRUE(registry_->GetInstalledExtension(scoper.extension_id()));
 }
 
-// TODO(crbug.com/1056953): Enable on Mac, Ash Chrome and Linux GTK.
-// Flaky on linux-chromeos-rel crbug.com/1273727
-#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(USE_GTK)
+// TODO(crbug.com/1056953): Enable on Linux GTK.
+#if BUILDFLAG(USE_GTK)
 #define MAYBE_GetColor DISABLED_GetColor
 #else
 #define MAYBE_GetColor GetColor
 #endif
 TEST_P(ThemeProviderRedirectedEquivalenceTest, MAYBE_GetColor) {
   static constexpr const auto kTolerances = base::MakeFixedFlatMap<int, int>(
-      {{ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE, 1}});
+      {{ThemeProperties::COLOR_OMNIBOX_RESULTS_TEXT_SECONDARY, 1},
+       {ThemeProperties::COLOR_OMNIBOX_RESULTS_TEXT_SECONDARY_SELECTED, 1},
+       {ThemeProperties::COLOR_STATUS_BUBBLE_INACTIVE, 1},
+       {ThemeProperties::COLOR_TAB_BACKGROUND_INACTIVE_FRAME_INACTIVE, 1},
+       {ThemeProperties::COLOR_TAB_GROUP_BOOKMARK_BAR_ORANGE, 1},
+       {ThemeProperties::COLOR_TAB_STROKE_FRAME_INACTIVE, 1},
+       {ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE, 1},
+       {ThemeProperties::COLOR_WINDOW_CONTROL_BUTTON_BACKGROUND_INACTIVE, 1}});
   auto get_tolerance = [](int id) {
     auto* it = kTolerances.find(id);
     if (it != kTolerances.end())

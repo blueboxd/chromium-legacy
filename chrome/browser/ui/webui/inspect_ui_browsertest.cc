@@ -107,7 +107,13 @@ IN_PROC_BROWSER_TEST_F(InspectUITest, ReloadCrash) {
                                            GURL(chrome::kChromeUIInspectURL)));
 }
 
-IN_PROC_BROWSER_TEST_F(InspectUITest, LaunchUIDevtools) {
+// Disabled due to excessive flakiness. http://crbug.com/1304812
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_LaunchUIDevtools DISABLED_LaunchUIDevtools
+#else
+#define MAYBE_LaunchUIDevtools LaunchUIDevtools
+#endif
+IN_PROC_BROWSER_TEST_F(InspectUITest, MAYBE_LaunchUIDevtools) {
   ASSERT_TRUE(embedded_test_server()->Start());
   TabStripModel* tab_strip_model = browser()->tab_strip_model();
 

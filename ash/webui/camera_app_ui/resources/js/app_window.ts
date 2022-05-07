@@ -17,8 +17,8 @@ const DEFAULT_WINDOW_WIDTH = 764;
 /**
  * Gets default window size which minimizes the letterbox area for given preview
  * aspect ratio.
- * @param {number} aspectRatio Preview aspect ratio.
- * @return {!Resolution}
+ *
+ * @param aspectRatio Preview aspect ratio.
  */
 export function getDefaultWindowSize(aspectRatio: number): Resolution {
   // For the call site from background.js cannot access letterbox space reserved
@@ -47,12 +47,19 @@ export class AppWindow {
    * launched.
    */
   private readonly readyOnCCASide = new WaitableEvent<string>();
+
   private readonly readyOnTastSide = new WaitableEvent();
+
   private readonly onClosed = new WaitableEvent();
+
   private inClosingItself = false;
+
   private readonly errors: ErrorInfo[] = [];
+
   private readonly perfs: PerfEntry[] = [];
-  private launchedTime = performance.now();
+
+  private readonly launchedTime = performance.now();
+
   /**
    * @param fromColdStart Whether this app is launched from a cold start. It is
    *     used for performance measurement.
@@ -61,6 +68,7 @@ export class AppWindow {
 
   /**
    * Waits until the window is bound and returns the URL of the window.
+   *
    * @return The URL of the window.
    */
   waitUntilWindowBound(): Promise<string> {
@@ -132,6 +140,7 @@ export class AppWindow {
 
   /**
    * Reports error and makes it visible on Tast side.
+   *
    * @param errorInfo Information of the error.
    */
   reportError(errorInfo: ErrorInfo): void {
@@ -147,6 +156,7 @@ export class AppWindow {
 
   /**
    * Reports perf information and makes it visible on Tast side.
+   *
    * @param perfEntry Information of the perf event.
    */
   reportPerf(perfEntry: PerfEntry): void {

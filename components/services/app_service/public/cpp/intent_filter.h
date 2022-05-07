@@ -35,6 +35,7 @@ enum class PatternMatchType {
   kMimeType,
   kFileExtension,
   kIsDirectory,
+  kSuffix
 };
 
 // For pattern type of condition, the value match will be based on the pattern
@@ -107,6 +108,9 @@ using IntentFilters = std::vector<IntentFilterPtr>;
 // Creates a deep copy of `intent_filters`.
 COMPONENT_EXPORT(APP_TYPES)
 IntentFilters CloneIntentFilters(const IntentFilters& intent_filters);
+
+COMPONENT_EXPORT(APP_TYPES)
+bool IsEqual(const IntentFilters& source, const IntentFilters& target);
 
 // TODO(crbug.com/1253250): Remove these functions after migrating to non-mojo
 // AppService.

@@ -43,6 +43,7 @@ export class PerfLogger {
 
   /**
    * Removes listener for perf events.
+   *
    * @return Returns true if remove successfully. False otherwise.
    */
   removeListener(listener: PerfEventListener): boolean {
@@ -51,6 +52,7 @@ export class PerfLogger {
 
   /**
    * Starts the measurement for given event.
+   *
    * @param event Target event.
    * @param startTime The start time of the event.
    */
@@ -68,6 +70,7 @@ export class PerfLogger {
 
   /**
    * Stops the measurement for given event and returns the measurement result.
+   *
    * @param event Target event.
    * @param perfInfo Optional information of this event for performance
    *     measurement.
@@ -98,7 +101,9 @@ export class PerfLogger {
 
     const duration = performance.now() - startTime;
     ChromeHelper.getInstance().stopTracing(event);
-    this.listeners.forEach((listener) => listener({event, duration, perfInfo}));
+    for (const listener of this.listeners) {
+      listener({event, duration, perfInfo});
+    }
   }
 
   /**

@@ -912,6 +912,11 @@ const char* DisplayLockContext::ShouldForceUnlock() const {
     return nullptr;
   }
 
+  // Do not force-unlock for deferred elements.
+  if (element_->GetLayoutObject() &&
+      element_->GetLayoutObject()->IsShapingDeferred())
+    return nullptr;
+
   if (element_->HasDisplayContentsStyle())
     return rejection_names::kUnsupportedDisplay;
 

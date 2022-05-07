@@ -29,6 +29,7 @@
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/dxgi_helpers.h"
+#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
@@ -37,12 +38,10 @@
 #include "ui/gfx/color_space_win.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-using media::MediaBufferScopedPointer;
-
 namespace media {
 
 namespace {
-
+const uint32_t kDefaultGOPLength = 3000;
 const uint32_t kDefaultTargetBitrate = 5000000u;
 const size_t kMaxFrameRateNumerator = 30;
 const size_t kMaxFrameRateDenominator = 1;
@@ -201,8 +200,12 @@ struct MediaFoundationVideoEncodeAccelerator::BitstreamBufferRef {
 // attributes are not supported by Windows 7, setting them will return errors.
 // See bug: http://crbug.com/777659.
 MediaFoundationVideoEncodeAccelerator::MediaFoundationVideoEncodeAccelerator(
-    bool compatible_with_win7)
-    : compatible_with_win7_(compatible_with_win7),
+    const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuDriverBugWorkarounds& gpu_workarounds)
+    : compatible_with_win7_(
+          gpu_preferences.enable_media_foundation_vea_on_windows7),
+      disable_dynamic_framerate_update_(
+          gpu_workarounds.disable_dynamic_video_encode_framerate_update),
       frame_rate_(kMaxFrameRateNumerator / kMaxFrameRateDenominator),
       bitrate_(Bitrate::ConstantBitrate(kDefaultTargetBitrate)),
       input_required_(false),
@@ -321,15 +324,18 @@ MediaFoundationVideoEncodeAccelerator::GetSupportedProfilesForCodec(
   return profiles;
 }
 
-bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
-                                                       Client* client) {
+bool MediaFoundationVideoEncodeAccelerator::Initialize(
+    const Config& config,
+    Client* client,
+    std::unique_ptr<MediaLog> media_log) {
   DVLOG(3) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (PIXEL_FORMAT_I420 != config.input_format &&
       PIXEL_FORMAT_NV12 != config.input_format) {
-    DLOG(ERROR) << "Input format not supported= "
-                << VideoPixelFormatToString(config.input_format);
+    MEDIA_LOG(ERROR, media_log.get())
+        << "Input format not supported= "
+        << VideoPixelFormatToString(config.input_format);
     return false;
   }
 
@@ -337,7 +343,8 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
       config.output_profile <= H264PROFILE_MAX) {
     if (GetH264VProfile(config.output_profile, config.is_constrained_h264) ==
         eAVEncH264VProfile_unknown) {
-      DLOG(ERROR) << "Output profile not supported= " << config.output_profile;
+      MEDIA_LOG(ERROR, media_log.get())
+          << "Output profile not supported= " << config.output_profile;
       return false;
     }
     codec_ = VideoCodec::kH264;
@@ -346,19 +353,23 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
   }
 
   if (codec_ == VideoCodec::kUnknown) {
-    DLOG(ERROR) << "Output profile not supported= " << config.output_profile;
+    MEDIA_LOG(ERROR, media_log.get())
+        << "Output profile not supported= " << config.output_profile;
     return false;
   }
 
   IMFActivate** pp_activate = nullptr;
   uint32_t encoder_count = EnumerateHardwareEncoders(codec_, &pp_activate);
   if (!encoder_count) {
-    DLOG(ERROR) << "Failed finding a hardware encoder MFT.";
+    MEDIA_LOG(ERROR, media_log.get())
+        << "Failed finding a hardware encoder MFT.";
     return false;
   }
 
-  if (!ActivateAsyncEncoder(pp_activate, encoder_count)) {
-    DLOG(ERROR) << "Failed activating an async hardware encoder MFT.";
+  if (!ActivateAsyncEncoder(pp_activate, encoder_count,
+                            config.is_constrained_h264)) {
+    MEDIA_LOG(ERROR, media_log.get())
+        << "Failed activating an async hardware encoder MFT.";
 
     if (pp_activate) {
       // Release the enumerated instances if any.
@@ -400,20 +411,21 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
     frame_rate_ = kMaxFrameRateNumerator / kMaxFrameRateDenominator;
   bitrate_ = config.bitrate;
   bitstream_buffer_size_ = config.input_visible_size.GetArea();
-  gop_length_ = config.gop_length;
+  gop_length_ = config.gop_length.value_or(kDefaultGOPLength);
   low_latency_mode_ = config.require_low_delay;
 
   if (config.HasTemporalLayer())
     num_temporal_layers_ = config.spatial_layers.front().num_of_temporal_layers;
 
   if (!SetEncoderModes()) {
-    DLOG(ERROR) << "Failed setting encoder parameters.";
+    MEDIA_LOG(ERROR, media_log.get()) << "Failed setting encoder parameters.";
     return false;
   }
 
   if (!InitializeInputOutputParameters(config.output_profile,
                                        config.is_constrained_h264)) {
-    DLOG(ERROR) << "Failed initializing input-output samples.";
+    MEDIA_LOG(ERROR, media_log.get())
+        << "Failed initializing input-output samples.";
     return false;
   }
 
@@ -421,10 +433,10 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
   RETURN_ON_HR_FAILURE(hr, "Failed to create sample", false);
 
   if (config.input_format == PIXEL_FORMAT_NV12 &&
-      base::FeatureList::IsEnabled(media::kMediaFoundationD3D11VideoCapture)) {
+      base::FeatureList::IsEnabled(kMediaFoundationD3D11VideoCapture)) {
     dxgi_device_manager_ = DXGIDeviceManager::Create();
     if (!dxgi_device_manager_) {
-      DLOG(ERROR) << "Failed to create DXGIDeviceManager";
+      MEDIA_LOG(ERROR, media_log.get()) << "Failed to create DXGIDeviceManager";
       return false;
     }
   }
@@ -464,6 +476,9 @@ bool MediaFoundationVideoEncodeAccelerator::Initialize(const Config& config,
   DCHECK(encoder_info.is_hardware_accelerated);
   DCHECK(encoder_info.supports_native_handle);
   DCHECK(!encoder_info.supports_simulcast);
+  if (vendor_ == DriverVendor::kIntel) {
+    encoder_info.reports_average_qp = false;
+  }
   if (config.HasSpatialLayer() || config.HasTemporalLayer()) {
     DCHECK(!config.spatial_layers.empty());
     for (size_t i = 0; i < config.spatial_layers.size(); ++i) {
@@ -525,7 +540,7 @@ void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBuffer(
 }
 
 void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChange(
-    const media::Bitrate& bitrate,
+    const Bitrate& bitrate,
     uint32_t framerate) {
   DVLOG(3) << __func__ << ": bitrate=" << bitrate.ToString()
            << ": framerate=" << framerate;
@@ -620,7 +635,8 @@ uint32_t MediaFoundationVideoEncodeAccelerator::EnumerateHardwareEncoders(
 
 bool MediaFoundationVideoEncodeAccelerator::ActivateAsyncEncoder(
     IMFActivate** pp_activate,
-    uint32_t encoder_count) {
+    uint32_t encoder_count,
+    bool is_constrained_h264) {
   DVLOG(3) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
@@ -634,6 +650,25 @@ bool MediaFoundationVideoEncodeAccelerator::ActivateAsyncEncoder(
       if (encoder_.Get() != nullptr) {
         DCHECK(SUCCEEDED(hr));
         auto vendor = GetDriverVendor(pp_activate[i]);
+
+        // Skip NVIDIA GPU due to https://crbug.com/1088650 for constrained
+        // baseline profile H.264 encoding, and go to the next instance
+        // according to merit value.
+        if (codec_ == VideoCodec::kH264 && is_constrained_h264) {
+          // Get the vendor id.
+          base::win::ScopedCoMem<WCHAR> vendor_id;
+          UINT32 id_length;
+          pp_activate[i]->GetAllocatedString(
+              MFT_ENUM_HARDWARE_VENDOR_ID_Attribute, &vendor_id, &id_length);
+          if (!_wcsnicmp(vendor_id, L"VEN_10DE", id_length)) {
+            DLOG(WARNING)
+                << "Skipped NVIDIA GPU due to https://crbug.com/1088650";
+            pp_activate[i]->ShutdownObject();
+            encoder_.Reset();
+            hr = E_FAIL;
+            continue;
+          }
+        }
 
         activate_ = pp_activate[i];
         vendor_ = vendor;
@@ -729,7 +764,8 @@ bool MediaFoundationVideoEncodeAccelerator::InitializeInputOutputParameters(
   hr = imf_output_media_type_->SetGUID(MF_MT_SUBTYPE,
                                        VideoCodecToMFSubtype(codec_));
   RETURN_ON_HR_FAILURE(hr, "Couldn't set video format", false);
-  hr = imf_output_media_type_->SetUINT32(MF_MT_AVG_BITRATE, bitrate_.target());
+  hr = imf_output_media_type_->SetUINT32(MF_MT_AVG_BITRATE,
+                                         bitrate_.target_bps());
   RETURN_ON_HR_FAILURE(hr, "Couldn't set bitrate", false);
   hr = MFSetAttributeRatio(imf_output_media_type_.Get(), MF_MT_FRAME_RATE,
                            frame_rate_, 1);
@@ -811,14 +847,14 @@ bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
     }
   }
 
-  var.ulVal = bitrate_.target();
+  var.ulVal = bitrate_.target_bps();
   hr = codec_api_->SetValue(&CODECAPI_AVEncCommonMeanBitRate, &var);
   if (!compatible_with_win7_) {
     RETURN_ON_HR_FAILURE(hr, "Couldn't set bitrate", false);
   }
 
   if (bitrate_.mode() == Bitrate::Mode::kVariable) {
-    var.ulVal = bitrate_.peak();
+    var.ulVal = bitrate_.peak_bps();
     hr = codec_api_->SetValue(&CODECAPI_AVEncCommonMaxBitRate, &var);
     if (!compatible_with_win7_) {
       RETURN_ON_HR_FAILURE(hr, "Couldn't set bitrate", false);
@@ -833,11 +869,9 @@ bool MediaFoundationVideoEncodeAccelerator::SetEncoderModes() {
     }
   }
 
-  if (gop_length_.has_value()) {
-    var.ulVal = gop_length_.value();
-    hr = codec_api_->SetValue(&CODECAPI_AVEncMPVGOPSize, &var);
-    RETURN_ON_HR_FAILURE(hr, "Couldn't set low keyframe interval", false);
-  }
+  var.ulVal = gop_length_;
+  hr = codec_api_->SetValue(&CODECAPI_AVEncMPVGOPSize, &var);
+  RETURN_ON_HR_FAILURE(hr, "Couldn't set keyframe interval", false);
 
   if (S_OK == codec_api_->IsModifiable(&CODECAPI_AVLowLatencyMode)) {
     var.vt = VT_BOOL;
@@ -985,7 +1019,8 @@ HRESULT MediaFoundationVideoEncodeAccelerator::PopulateInputSampleBuffer(
       return MF_E_INVALID_STREAM_DATA;
     }
 
-    if (gmb->GetType() == gfx::GpuMemoryBufferType::DXGI_SHARED_HANDLE) {
+    if (gmb->GetType() == gfx::GpuMemoryBufferType::DXGI_SHARED_HANDLE &&
+        dxgi_device_manager_ != nullptr) {
       return PopulateInputSampleBufferGpu(std::move(frame));
     }
 
@@ -1082,6 +1117,7 @@ HRESULT MediaFoundationVideoEncodeAccelerator::PopulateInputSampleBufferGpu(
   DCHECK(frame->HasGpuMemoryBuffer());
   DCHECK_EQ(frame->GetGpuMemoryBuffer()->GetType(),
             gfx::GpuMemoryBufferType::DXGI_SHARED_HANDLE);
+  DCHECK(dxgi_device_manager_);
 
   gfx::GpuMemoryBufferHandle buffer_handle =
       frame->GetGpuMemoryBuffer()->CloneHandle();
@@ -1252,7 +1288,7 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
   int temporal_id = 0;
   if (!AssignTemporalId(output_buffer, size, &temporal_id, keyframe)) {
     DLOG(ERROR) << "Parse temporalId failed.";
-    NotifyError(media::VideoEncodeAccelerator::Error::kPlatformFailureError);
+    NotifyError(VideoEncodeAccelerator::Error::kPlatformFailureError);
     return;
   }
   DVLOG(3) << "Encoded data with size:" << size << " keyframe " << keyframe;
@@ -1281,6 +1317,11 @@ void MediaFoundationVideoEncodeAccelerator::ProcessOutput() {
 
   {
     MediaBufferScopedPointer scoped_buffer(output_buffer.Get());
+    if (!buffer_ref->mapping.IsValid() || !scoped_buffer.get()) {
+      DLOG(ERROR) << "Failed to copy bitstream media buffer.";
+      return;
+    }
+
     memcpy(buffer_ref->mapping.memory(), scoped_buffer.get(), size);
   }
 
@@ -1402,7 +1443,7 @@ void MediaFoundationVideoEncodeAccelerator::UseOutputBitstreamBufferTask(
 }
 
 void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
-    const media::Bitrate& bitrate,
+    const Bitrate& bitrate,
     uint32_t framerate) {
   DVLOG(3) << __func__;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
@@ -1415,11 +1456,16 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
   framerate = base::clamp(framerate, 1u, uint32_t{kMaxFrameRateNumerator});
 
   if (frame_rate_ != framerate) {
+    // When dynamic framerate update is disabled, fallback from current encoder.
+    if (disable_dynamic_framerate_update_) {
+      DLOG(ERROR) << "Dynamic encode framerate update disabled.";
+      NotifyError(kPlatformFailureError);
+    }
     HRESULT hr = MFSetAttributeRatio(imf_output_media_type_.Get(),
                                      MF_MT_FRAME_RATE, framerate, 1);
     RETURN_ON_HR_FAILURE(hr, "Couldn't set frame rate for output type", );
 
-    imf_output_media_type_->SetUINT32(MF_MT_AVG_BITRATE, bitrate.target());
+    imf_output_media_type_->SetUINT32(MF_MT_AVG_BITRATE, bitrate.target_bps());
     RETURN_ON_HR_FAILURE(hr, "Couldn't set average bitrate for output type", );
 
     hr = MFSetAttributeRatio(imf_input_media_type_.Get(), MF_MT_FRAME_RATE,
@@ -1473,14 +1519,14 @@ void MediaFoundationVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
     bitrate_ = bitrate;
     VARIANT var;
     var.vt = VT_UI4;
-    var.ulVal = bitrate.target();
+    var.ulVal = bitrate.target_bps();
     HRESULT hr = codec_api_->SetValue(&CODECAPI_AVEncCommonMeanBitRate, &var);
     if (!compatible_with_win7_) {
       RETURN_ON_HR_FAILURE(hr, "Couldn't update mean bitrate", );
     }
 
     if (bitrate.mode() == Bitrate::Mode::kVariable) {
-      var.ulVal = bitrate.peak();
+      var.ulVal = bitrate.peak_bps();
       hr = codec_api_->SetValue(&CODECAPI_AVEncCommonMaxBitRate, &var);
       if (!compatible_with_win7_) {
         RETURN_ON_HR_FAILURE(hr, "Couldn't set max bitrate", );
@@ -1582,8 +1628,8 @@ HRESULT MediaFoundationVideoEncodeAccelerator::InitializeD3DVideoProcessing(
                                        &scaled_d3d11_texture);
   RETURN_ON_HR_FAILURE(hr, "Failed to create texture", hr);
 
-  hr = media::SetDebugName(scaled_d3d11_texture.Get(),
-                           "MFVideoEncodeAccelerator_ScaledTexture");
+  hr = SetDebugName(scaled_d3d11_texture.Get(),
+                    "MFVideoEncodeAccelerator_ScaledTexture");
   RETURN_ON_HR_FAILURE(hr, "Failed to set debug name", hr);
 
   D3D11_VIDEO_PROCESSOR_OUTPUT_VIEW_DESC output_desc = {};

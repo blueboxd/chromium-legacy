@@ -59,9 +59,6 @@ constexpr char kAppAllUrl[] = "https://www.google.com/all";
 constexpr char kAppGuestUrl[] = "https://www.google.com/guest";
 constexpr char kAppManagedUrl[] = "https://www.google.com/managed";
 constexpr char kAppUnmanagedUrl[] = "https://www.google.com/unmanaged";
-#endif
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr char kAppChildUrl[] = "https://www.google.com/child";
 #endif
 
@@ -134,7 +131,7 @@ class PreinstalledWebAppManagerTest : public testing::Test {
     base::RunLoop run_loop;
     preinstalled_web_app_manager->LoadForTesting(base::BindLambdaForTesting(
         [&](std::vector<ExternalInstallOptions> install_options_list) {
-          result = install_options_list;
+          result = std::move(install_options_list);
           run_loop.Quit();
         }));
     run_loop.Run();
@@ -494,6 +491,13 @@ TEST_F(PreinstalledWebAppManagerTest, ManagedUser) {
   profile->GetProfilePolicyConnector()->OverrideIsManagedForTesting(true);
   VerifySetOfApps(profile.get(), {GURL(kAppAllUrl), GURL(kAppManagedUrl)});
 }
+
+TEST_F(PreinstalledWebAppManagerTest, ChildUser) {
+  const auto profile = CreateProfileAndLogin();
+  profile->SetIsSupervisedProfile();
+  EXPECT_TRUE(profile->IsChild());
+  VerifySetOfApps(profile.get(), {GURL(kAppAllUrl), GURL(kAppChildUrl)});
+}
 #else
 // No app is expected for non-ChromeOS builds.
 TEST_F(PreinstalledWebAppManagerTest, NoApp) {
@@ -502,13 +506,6 @@ TEST_F(PreinstalledWebAppManagerTest, NoApp) {
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-// TODO(crbug.com/1252273): Enable test for Lacros.
-TEST_F(PreinstalledWebAppManagerTest, ChildUser) {
-  const auto profile = CreateProfileAndLogin();
-  profile->SetIsSupervisedProfile();
-  VerifySetOfApps(profile.get(), {GURL(kAppAllUrl), GURL(kAppChildUrl)});
-}
-
 TEST_F(PreinstalledWebAppManagerTest, NonPrimaryProfile) {
   VerifySetOfApps(CreateProfile().get(),
                   {GURL(kAppAllUrl), GURL(kAppUnmanagedUrl)});

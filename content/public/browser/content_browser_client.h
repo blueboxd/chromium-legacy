@@ -624,10 +624,10 @@ class CONTENT_EXPORT ContentBrowserClient {
       BrowserContext* browser_context,
       const GURL& url);
 
-  // Checks whether Direct Sockets API is allowed by the EnableDirectSockets
-  // policy (chrome-only, the respective override can be found in
-  // ChromeContentBrowserClient). Returns true by default.
-  virtual bool AreDirectSocketsAllowedByPolicy(BrowserContext* context);
+  // Checks whether isolated apps developer mode is allowed by the
+  // AllowIsolatedAppsDeveloperMode policy (chrome-only, the respective override
+  // can be found in ChromeContentBrowserClient). Returns true by default.
+  virtual bool IsIsolatedAppsDeveloperModeAllowed(BrowserContext* context);
 
   // Allow the embedder to control the maximum renderer process count. Only
   // applies if it is set to a non-zero value.  Once this limit is exceeded,
@@ -845,9 +845,7 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Allows the embedder to implement policy for whether an SCT auditing report
   // should be sent.
-  virtual void CanSendSCTAuditingReport(
-      BrowserContext* browser_context,
-      base::OnceCallback<void(bool)> callback);
+  virtual bool CanSendSCTAuditingReport(BrowserContext* browser_context);
 
   // Notification that a new SCT auditing report has been sent.
   virtual void OnNewSCTAuditingReportSent(BrowserContext* browser_context) {}
@@ -1022,6 +1020,9 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Returns the path to the net log default directory.
   virtual base::FilePath GetNetLogDefaultDirectory();
+
+  // Returns the path to the First-Party Sets directory.
+  virtual base::FilePath GetFirstPartySetsDirectory();
 
   // Notification that a pepper plugin has just been spawned. This allows the
   // embedder to add filters onto the host to implement interfaces.
@@ -1717,6 +1718,8 @@ class CONTENT_EXPORT ContentBrowserClient {
   // NavigationStateChanged calls to preserve legacy behavior (not firing extra
   // onPageFinished calls), as initial NavigationEntries used to not exist.
   // See https://crbug.com/1277414.
+  // TODO(https://crbug.com/1293332): Remove this function if the
+  // kWebViewSynthesizePageLoadOnlyOnInitialMainDocumentAccess approach works.
   virtual bool
   ShouldIgnoreInitialNavigationEntryNavigationStateChangedForLegacySupport();
 #endif
@@ -1839,10 +1842,6 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Launches the url for the given tab. Returns true if an attempt to handle
   // the url was made, e.g. by launching an app. Note that this does not
   // guarantee that the app successfully handled it.
-  // If this is a navigation request, then |child_id| will be
-  // ChildProcessHost::kInvalidUniqueID and |navigation_ui| will be valid.
-  // Otherwise |child_id| will be the process id and |navigation_data| will be
-  // nullptr.
   //
   // |initiating_origin| is the origin of the last redirecting server (falling
   // back to the request initiator if there were no redirects / if the request
@@ -1857,10 +1856,10 @@ class CONTENT_EXPORT ContentBrowserClient {
   virtual bool HandleExternalProtocol(
       const GURL& url,
       base::RepeatingCallback<WebContents*()> web_contents_getter,
-      int child_id,
       int frame_tree_node_id,
       NavigationUIData* navigation_data,
-      bool is_main_frame,
+      bool is_primary_main_frame,
+      bool is_in_fenced_frame_tree,
       network::mojom::WebSandboxFlags sandbox_flags,
       ui::PageTransition page_transition,
       bool has_user_gesture,

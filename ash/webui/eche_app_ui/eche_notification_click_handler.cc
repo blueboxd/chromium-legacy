@@ -6,6 +6,9 @@
 
 #include "ash/components/phonehub/phone_hub_manager.h"
 #include "ash/constants/ash_features.h"
+#include "ash/root_window_controller.h"
+#include "ash/shell.h"
+#include "ash/system/eche/eche_tray.h"
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 
@@ -45,7 +48,8 @@ void EcheNotificationClickHandler::HandleNotificationClick(
     case LaunchAppHelper::AppLaunchProhibitedReason::kNotProhibited:
       launch_app_helper_->LaunchEcheApp(
           notification_id, app_metadata.package_name,
-          app_metadata.visible_app_name, app_metadata.user_id);
+          app_metadata.visible_app_name, app_metadata.user_id,
+          app_metadata.icon);
       break;
     case LaunchAppHelper::AppLaunchProhibitedReason::kDisabledByScreenLock:
       launch_app_helper_->ShowNotification(

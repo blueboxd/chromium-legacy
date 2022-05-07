@@ -12,6 +12,7 @@
 #include "base/callback_helpers.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -28,6 +29,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -370,8 +372,15 @@ void WebAppInstallManager::UninstallWithoutRegistryUpdateFromSync(
   if (!started_)
     return;
 
-  finalizer_->UninstallWithoutRegistryUpdateFromSync(std::move(web_apps),
-                                                     std::move(callback));
+  finalizer_->UninstallWithoutRegistryUpdateFromSync(
+      std::move(web_apps),
+      base::BindRepeating(
+          [](RepeatingUninstallCallback callback, const web_app::AppId& app_id,
+             webapps::UninstallResultCode code) {
+            callback.Run(app_id,
+                         code == webapps::UninstallResultCode::kSuccess);
+          },
+          std::move(callback)));
 }
 
 void WebAppInstallManager::RetryIncompleteUninstalls(
@@ -485,9 +494,13 @@ void WebAppInstallManager::TakeTaskErrorLog(WebAppInstallTask* task) {
 }
 
 void WebAppInstallManager::DeleteTask(WebAppInstallTask* task) {
-  DCHECK(tasks_.contains(task));
   TakeTaskErrorLog(task);
-  tasks_.erase(task);
+  // If this happens after/during the call to Shutdown(), then ignore deletion
+  // as `tasks_` is emptied already.
+  if (started_) {
+    DCHECK(tasks_.contains(task));
+    tasks_.erase(task);
+  }
 }
 
 void WebAppInstallManager::OnInstallTaskCompleted(
@@ -688,7 +701,8 @@ void WebAppInstallManager::NotifyWebAppInstalledWithOsHooks(
 
 WebAppInstallManager::PendingTask::PendingTask() = default;
 
-WebAppInstallManager::PendingTask::PendingTask(PendingTask&&) = default;
+WebAppInstallManager::PendingTask::PendingTask(PendingTask&&) noexcept =
+    default;
 
 WebAppInstallManager::PendingTask::~PendingTask() = default;
 

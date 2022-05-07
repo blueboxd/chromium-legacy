@@ -4,7 +4,6 @@
 
 #include "components/autofill_assistant/content/renderer/autofill_assistant_agent.h"
 
-#include "base/time/time.h"
 #include "components/optimization_guide/machine_learning_tflite_buildflags.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -48,21 +47,26 @@ base::WeakPtr<AutofillAssistantAgent> AutofillAssistantAgent::GetWeakPtr() {
 void AutofillAssistantAgent::GetSemanticNodes(
     int32_t role,
     int32_t objective,
+    base::TimeDelta model_timeout,
     GetSemanticNodesCallback callback) {
   blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
   if (!frame) {
-    std::move(callback).Run(false, std::vector<NodeData>());
+    std::move(callback).Run(mojom::NodeDataStatus::kUnexpectedError,
+                            std::vector<NodeData>());
     return;
   }
 
-  GetAnnotateDomModel(base::BindOnce(
-      &AutofillAssistantAgent::OnGetModelFile, weak_ptr_factory_.GetWeakPtr(),
-      base::Time::Now(), frame, role, objective, std::move(callback)));
+  GetAnnotateDomModel(
+      model_timeout,
+      base::BindOnce(&AutofillAssistantAgent::OnGetModelFile,
+                     weak_ptr_factory_.GetWeakPtr(), base::Time::Now(), frame,
+                     role, objective, std::move(callback)));
 }
 
 void AutofillAssistantAgent::GetAnnotateDomModel(
-    base::OnceCallback<void(base::File)> callback) {
-  GetDriver().GetAnnotateDomModel(std::move(callback));
+    base::TimeDelta model_timeout,
+    base::OnceCallback<void(mojom::ModelStatus, base::File)> callback) {
+  GetDriver().GetAnnotateDomModel(model_timeout, std::move(callback));
 }
 
 mojom::AutofillAssistantDriver& AutofillAssistantAgent::GetDriver() {
@@ -77,7 +81,20 @@ void AutofillAssistantAgent::OnGetModelFile(base::Time start_time,
                                             int32_t role,
                                             int32_t objective,
                                             GetSemanticNodesCallback callback,
+                                            mojom::ModelStatus model_status,
                                             base::File model) {
+  std::vector<NodeData> nodes;
+  switch (model_status) {
+    case mojom::ModelStatus::kSuccess:
+      break;
+    case mojom::ModelStatus::kUnexpectedError:
+      std::move(callback).Run(mojom::NodeDataStatus::kModelLoadError, nodes);
+      return;
+    case mojom::ModelStatus::kTimeout:
+      std::move(callback).Run(mojom::NodeDataStatus::kModelLoadTimeout, nodes);
+      return;
+  }
+
   base::Time on_get_model_file = base::Time::Now();
   DVLOG(3) << "AutofillAssistant, loading model file: "
            << (on_get_model_file - start_time).InMilliseconds() << "ms";
@@ -89,12 +106,10 @@ void AutofillAssistantAgent::OnGetModelFile(base::Time start_time,
   DVLOG(3) << "AutofillAssistant, signals extraction: "
            << (on_node_signals - on_get_model_file).InMilliseconds() << "ms";
 
-  std::vector<NodeData> nodes;
-
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
   AutofillAssistantModelExecutor model_executor;
   if (!model_executor.InitializeModelFromFile(std::move(model))) {
-    std::move(callback).Run(false, nodes);
+    std::move(callback).Run(mojom::NodeDataStatus::kInitializationError, nodes);
     return;
   }
 
@@ -102,9 +117,14 @@ void AutofillAssistantAgent::OnGetModelFile(base::Time start_time,
   DVLOG(3) << "AutofillAssistant, executor initialization: "
            << (on_executor_initialized - on_node_signals).InMilliseconds()
            << "ms";
+  DVLOG(3) << "Expected role: " << role << " and objective: " << objective;
 
   for (const auto& node_signal : node_signals) {
     auto result = model_executor.ExecuteModelWithInput(node_signal);
+    DVLOG(3) << "Annotated node with result: role: " << result->first
+             << " and objective: " << result->second;
+    // TODO(mcarlen): Use the objective wildcard here to ignore the second part
+    // of the condition.
     if (result && result->first == role && result->second == objective) {
       NodeData node_data;
       node_data.backend_node_id = node_signal.backend_node_id;
@@ -120,7 +140,7 @@ void AutofillAssistantAgent::OnGetModelFile(base::Time start_time,
       << "ms";
 #endif  // BUILDFLAG(BUILD_WITH_TFLITE_LIB)
 
-  std::move(callback).Run(true, nodes);
+  std::move(callback).Run(mojom::NodeDataStatus::kSuccess, nodes);
 }
 
 }  // namespace autofill_assistant

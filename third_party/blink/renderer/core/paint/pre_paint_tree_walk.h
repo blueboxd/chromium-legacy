@@ -10,6 +10,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/paint/paint_invalidator.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 
@@ -36,6 +37,9 @@ class CORE_EXPORT PrePaintTreeWalk final {
   static bool ObjectRequiresTreeBuilderContext(const LayoutObject&);
 
   struct ContainingFragment {
+    STACK_ALLOCATED();
+
+   public:
     const NGPhysicalBoxFragment* fragment = nullptr;
     wtf_size_t fragmentainer_idx = WTF::kNotFound;
     int fragmentation_nesting_level = 0;
@@ -71,13 +75,6 @@ class CORE_EXPORT PrePaintTreeWalk final {
     // When the blocking wheel event handlers change on an ancestor, the entire
     // subtree may need to update.
     bool blocking_wheel_event_handler_changed = false;
-
-    // True if we're fragment-traversing an object whose fragment wasn't found
-    // and walked when walking the layout object tree. This may happen for
-    // out-of-flow positioned and floated fragments inside block fragmentation,
-    // when an ancestor object doesn't have a fragment representation in a
-    // fragmentainer even if the OOF / float is there.
-    bool is_inside_orphaned_object = false;
 
     // True if we're visiting the parent for the first time, i.e. when we're in
     // the first fragmentainer where the parent occurs (or if we're not
@@ -154,6 +151,9 @@ class CORE_EXPORT PrePaintTreeWalk final {
                                         const PrePaintTreeWalkContext&,
                                         const NGPrePaintInfo&);
 
+  void UpdateContextForOOFContainer(const LayoutObject&,
+                                    PrePaintTreeWalkContext&);
+
   void Walk(LocalFrameView&, const PrePaintTreeWalkContext& parent_context);
 
   // This is to minimize stack frame usage during recursion. Modern compilers
@@ -178,17 +178,24 @@ class CORE_EXPORT PrePaintTreeWalk final {
   bool CollectMissableChildren(PrePaintTreeWalkContext&,
                                const NGPhysicalBoxFragment&);
 
+  // Based on the context established by |ancestor|, modify it to become correct
+  // for |object|, at least as far as OOF containing block info is concerned.
+  void RebuildContextForMissedDescendant(const LayoutObject& ancestor,
+                                         const LayoutObject& object,
+                                         PrePaintTreeWalkContext&);
+
   // Walk any missed children (i.e. those collected by CollectMissableChildren()
   // and not walked by Walk()) after child object traversal.
-  void WalkMissedChildren(const NGPhysicalBoxFragment&,
-                          PrePaintTreeWalkContext&);
+  void WalkMissedChildren(const LayoutObject& ancestor,
+                          const NGPhysicalBoxFragment&,
+                          const PrePaintTreeWalkContext&);
 
   void WalkFragmentationContextRootChildren(const LayoutObject&,
                                             const NGPhysicalBoxFragment&,
-                                            PrePaintTreeWalkContext&);
+                                            const PrePaintTreeWalkContext&);
   void WalkLayoutObjectChildren(const LayoutObject&,
                                 const NGPhysicalBoxFragment*,
-                                PrePaintTreeWalkContext&);
+                                const PrePaintTreeWalkContext&);
   void WalkChildren(const LayoutObject&,
                     const NGPhysicalBoxFragment*,
                     PrePaintTreeWalkContext&,
@@ -220,18 +227,7 @@ class CORE_EXPORT PrePaintTreeWalk final {
 
   // List of fragments that may be missed during LayoutObject walking. See
   // CollectMissableChildren() and WalkMissedChildren().
-  HashSet<const NGPhysicalFragment*> pending_missables_;
-
-  // List of fixedpos objects that may be missed during fragment traversal. This
-  // can happen if a fixedpos is nested in another OOF inside a multicol, and
-  // the OOF parent is a pending missable (see |pending_missables_|). If that
-  // fixedpos' containing block is located outside of the multicol, we can would
-  // miss it during normal fragment traversal.
-  HeapHashSet<Member<const LayoutObject>> pending_fixedpos_missables_;
-
-  // List of fixedpos objects that have already been walked. This helps to avoid
-  // re-walking any fixedpos objects handled by |pending_fixedpos_missables_|.
-  HeapHashSet<Member<const LayoutObject>> walked_fixedpos_;
+  HeapHashSet<Member<const NGPhysicalFragment>> pending_missables_;
 
   bool needs_invalidate_chrome_client_ = false;
 

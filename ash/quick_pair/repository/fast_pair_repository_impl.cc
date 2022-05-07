@@ -13,6 +13,7 @@
 #include "ash/quick_pair/repository/fast_pair/device_metadata_fetcher.h"
 #include "ash/quick_pair/repository/fast_pair/fast_pair_image_decoder_impl.h"
 #include "ash/quick_pair/repository/fast_pair/footprints_fetcher.h"
+#include "ash/quick_pair/repository/fast_pair/footprints_fetcher_impl.h"
 #include "ash/quick_pair/repository/fast_pair/proto_conversions.h"
 #include "ash/quick_pair/repository/fast_pair/saved_device_registry.h"
 #include "ash/services/quick_pair/public/cpp/account_key_filter.h"
@@ -29,12 +30,28 @@ namespace quick_pair {
 FastPairRepositoryImpl::FastPairRepositoryImpl()
     : FastPairRepository(),
       device_metadata_fetcher_(std::make_unique<DeviceMetadataFetcher>()),
-      footprints_fetcher_(std::make_unique<FootprintsFetcher>()),
+      footprints_fetcher_(std::make_unique<FootprintsFetcherImpl>()),
       image_decoder_(std::make_unique<FastPairImageDecoderImpl>()),
       device_id_map_(std::make_unique<DeviceIdMap>()),
       device_image_store_(
           std::make_unique<DeviceImageStore>(image_decoder_.get())),
       saved_device_registry_(std::make_unique<SavedDeviceRegistry>()),
+      footprints_last_updated_(base::Time::UnixEpoch()) {}
+
+FastPairRepositoryImpl::FastPairRepositoryImpl(
+    std::unique_ptr<DeviceMetadataFetcher> device_metadata_fetcher,
+    std::unique_ptr<FootprintsFetcher> footprints_fetcher,
+    std::unique_ptr<FastPairImageDecoder> image_decoder,
+    std::unique_ptr<DeviceIdMap> device_id_map,
+    std::unique_ptr<DeviceImageStore> device_image_store,
+    std::unique_ptr<SavedDeviceRegistry> saved_device_registry)
+    : FastPairRepository(),
+      device_metadata_fetcher_(std::move(device_metadata_fetcher)),
+      footprints_fetcher_(std::move(footprints_fetcher)),
+      image_decoder_(std::move(image_decoder)),
+      device_id_map_(std::move(device_id_map)),
+      device_image_store_(std::move(device_image_store)),
+      saved_device_registry_(std::move(saved_device_registry)),
       footprints_last_updated_(base::Time::UnixEpoch()) {}
 
 FastPairRepositoryImpl::~FastPairRepositoryImpl() = default;
@@ -95,13 +112,6 @@ void FastPairRepositoryImpl::OnImageDecoded(
       std::make_unique<DeviceMetadata>(response, std::move(image));
   std::move(callback).Run(metadata_cache_[normalized_model_id].get(),
                           /*has_retryable_error=*/false);
-}
-
-void FastPairRepositoryImpl::IsValidModelId(
-    const std::string& hex_model_id,
-    base::OnceCallback<void(bool)> callback) {
-  QP_LOG(INFO) << __func__;
-  std::move(callback).Run(false);
 }
 
 void FastPairRepositoryImpl::CheckAccountKeys(
@@ -220,7 +230,7 @@ void FastPairRepositoryImpl::OnAddToFootprintsComplete(
     const std::vector<uint8_t>& account_key,
     bool success) {
   if (!success) {
-    // TODO(jonmann): Handle caching to disk + retries.
+    // TODO(b/221126805): Handle caching to disk + retries.
     return;
   }
 
@@ -238,7 +248,7 @@ bool FastPairRepositoryImpl::DeleteAssociatedDevice(
   QP_LOG(INFO) << __func__ << ": Removing device from Footprints.";
   footprints_fetcher_->DeleteUserDevice(base::HexEncode(*account_key),
                                         base::DoNothing());
-  // TODO(jonmann): Handle saving pending update to disk + retries.
+  // TODO(b/221126805): Handle saving pending update to disk + retries.
   return true;
 }
 
@@ -248,7 +258,12 @@ void FastPairRepositoryImpl::FetchDeviceImages(scoped_refptr<Device> device) {
   // Save a record of the device ID -> model ID for this device so that we can
   // display images for device objects that lack a model ID, such as
   // device::BluetoothDevice.
-  device_id_map_->SaveModelIdForDevice(device);
+  if (!device_id_map_->SaveModelIdForDevice(device)) {
+    QP_LOG(WARNING) << __func__
+                    << ": Unable to save address -> model ID"
+                       " mapping for model ID "
+                    << device->metadata_id;
+  }
 
   GetDeviceMetadata(
       device->metadata_id,
@@ -276,7 +291,12 @@ void FastPairRepositoryImpl::CompleteFetchDeviceImages(
 bool FastPairRepositoryImpl::PersistDeviceImages(scoped_refptr<Device> device) {
   QP_LOG(INFO) << __func__ << ": Persisting device images for model ID "
                << device->metadata_id;
-  device_id_map_->PersistRecordsForDevice(device);
+  if (!device_id_map_->PersistRecordsForDevice(device)) {
+    QP_LOG(WARNING) << __func__
+                    << ": Unable to persist address -> model ID"
+                       " mapping for model ID "
+                    << device->metadata_id;
+  }
   return device_image_store_->PersistDeviceImages(device->metadata_id);
 }
 
@@ -300,8 +320,13 @@ absl::optional<chromeos::bluetooth_config::DeviceImageInfo>
 FastPairRepositoryImpl::GetImagesForDevice(const std::string& device_id) {
   absl::optional<const std::string> hex_model_id =
       device_id_map_->GetModelIdForDeviceId(device_id);
-  if (!hex_model_id)
+  if (!hex_model_id) {
+    QP_LOG(WARNING) << __func__
+                    << ": Could not find a matching model ID for "
+                       "device ID: "
+                    << device_id;
     return absl::nullopt;
+  }
 
   return device_image_store_->GetImagesForDeviceModel(hex_model_id.value());
 }

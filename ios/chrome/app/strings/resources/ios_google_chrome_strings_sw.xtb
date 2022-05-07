@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Saidia kuboresha Chrome kwa kutumia Google takwimu za matumizi na ripoti wakati wowote kivinjari hiki kinapoacha kufanya kazi.</translation>
 <translation id="417201473131094001">Haitumiki kwenye Chrome Canary (toleo la jaribio)</translation>
 <translation id="4214277427269650960">Ingia katika akaunti kwenye tovuti hii na kwenye Chrome. Unaweza kuwasha kipengele cha kusawazisha baadaye.</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> alikuwa akitumia Chrome na akaacha alamisho, manenosiri na mipangilio mingine kwenye kifaa hiki.</translation>
 <translation id="424864128008805179">Ungependa kuondoka kwenye Chrome?</translation>
 <translation id="4249068189593983585">Kidokezo cha Chrome. Ili upate chaguo zaidi za kichupo, bofya na ushikilie kitufe cha 'Onyesha Vichupo' katika upau wa vidhibiti unaopatikana sehemu ya chini au juu ya skrini yako.</translation>
 <translation id="4523886039239821078">Baadhi ya programu jalizi husababisha Chrome iache kufanya kazi. Tafadhali ondoa:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome imeshindwa kukagua manenosiri yote. Jaribu tena kesho au <ph name="BEGIN_LINK" />ukague manenosiri katika Akaunti yako ya Google.<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">Haitumiki kwenye toleo la Beta la Chrome</translation>
 <translation id="5030102366287574140">Chrome inaweza kukusaidia ulinde akaunti yako dhidi ya ufichuzi haramu wa data, tovuti ambazo si salama na zaidi.</translation>
+<translation id="5108659628347594808">Boresha Chrome</translation>
 <translation id="5119391094379141756">Chagua Chrome</translation>
 <translation id="5162467219239570114">Toleo hili la Chrome limepitwa na wakati. Iwapo hakuna sasisho kwenye <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, kuna uwezekano kuwa kifaa chako hakitumii tena matoleo mapya ya Chrome.</translation>
 <translation id="5389212809648216794">Google Chrome imeshindwa kutumia kamera yako kwa sababu inatumiwa na programu nyingine</translation>
@@ -81,6 +83,15 @@
 <translation id="6709398533399187136">Nenosiri lako limefichuliwa katika tukio la ufichuzi haramu wa data. Kidhibiti cha Manenosiri cha Google kinapendekeza ulibadilishe sasa hivi.</translation>
 <translation id="6822673484890854830">Chrome imeshindwa kukagua manenosiri yote. Jaribu tena baadaye.</translation>
 <translation id="6964931465519938134">Sasa unaweza kutumia Chrome wakati wowote unapogusa viungo kwenye ujumbe, hati na programu zingine.</translation>
+<translation id="7046845777663074840">Inapokuwa imewashwa:
+<ph name="BEGIN_INDENT" />  • Saidia kuboresha Chrome kwa ajili ya watumiaji wengine wanaoitumia kama wewe unavyoitumia.<ph name="END_INDENT" />
+
+Mambo ya kuzingatia:
+<ph name="BEGIN_INDENT" />  • Taarifa kuhusu matumizi yako ya Chrome zitatumwa kwenda Google, lakini bila kukupa masharti yoyote.
+
+  • Ikiwa Chrome itaacha kufanya kazi, maelezo kuhusu kutofanya kazi yanaweza kuhusisha taarifa binafsi.
+
+  • Iwapo utawasha usawazishaji, vipimo vinaweza pia kujumuisha taarifa kuhusu URL unazozitembelea.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Weka Mipangilio ya Chrome Upendavyo</translation>
 <translation id="7124339256045485976">Hakikisha Chrome imesasishwa kila wakati</translation>
 <translation id="7161390184744336561">Toleo la Google Chrome limepitwa na wakati</translation>

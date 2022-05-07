@@ -32,7 +32,7 @@ const int kRssiThreshold = -70;
 
 ProximityMonitorImpl::ProximityMonitorImpl(
     chromeos::multidevice::RemoteDeviceRef remote_device,
-    chromeos::secure_channel::ClientChannel* channel)
+    ash::secure_channel::ClientChannel* channel)
     : remote_device_(remote_device),
       channel_(channel),
       remote_device_is_in_proximity_(false),
@@ -129,8 +129,7 @@ void ProximityMonitorImpl::Poll() {
 }
 
 void ProximityMonitorImpl::OnGetConnectionMetadata(
-    chromeos::secure_channel::mojom::ConnectionMetadataPtr
-        connection_metadata) {
+    ash::secure_channel::mojom::ConnectionMetadataPtr connection_metadata) {
   if (connection_metadata->bluetooth_connection_metadata)
     OnGetRssi(connection_metadata->bluetooth_connection_metadata->current_rssi);
   else

@@ -309,6 +309,21 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   friend class DeskRemovalAnimation;
   friend class DesksTemplatesTest;
 
+  // Keeps the state for the asynchronous call for AppLaunchData to the clients.
+  struct Call {
+    Call();
+    Call(Call&&);
+    Call& operator=(Call&&);
+    ~Call();
+
+    std::vector<aura::Window*> unsupported_apps;
+    std::unique_ptr<app_restore::RestoreData> data;
+    // TODO(crbug.com/1268741): maybe replace the couner and callback below with
+    // a BarrierCallback.
+    uint32_t pending_request_count = 0;
+    GetDeskTemplateCallback callback;
+  };
+
   void set_disable_app_id_check_for_desk_templates(
       bool disable_app_id_check_for_desk_templates) {
     disable_app_id_check_for_desk_templates_ =
@@ -339,6 +354,13 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   // reside on |active_desk_| to |new_desk|.
   void MoveVisibleOnAllDesksWindowsFromActiveDeskTo(Desk* new_desk);
 
+  // Checks if the fullscreen state has changed after desks were switched and
+  // notifies shell if needed. For e.g Desk 1 has a window in fullscreen while
+  // Desk 2 does not, this function would notify shell of a fullscreen state
+  // change when switching between Desk 1 and 2 in that case.
+  void NotifyFullScreenStateChangedAcrossDesksIfNeeded(
+      const Desk* previous_active_desk);
+
   // Iterates through the visible on all desks windows on the active desk
   // and restacks them based on their position in the global MRU tracker. This
   // should be called after desk activation.
@@ -358,6 +380,23 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   // to 1, accounting for the current active desk. Also resets the
   // |interacted_with_this_week_| field for each inactive desk in |desks_|.
   void RecordAndResetNumberOfWeeklyActiveDesks();
+
+  // Receives the AppLaunchInfo from the single client and puts it into the
+  // RestoreData record where data from all clients is accumulated.  If all data
+  // is collected, invokes SendAppLaunchData().
+  // TODO(crbug.com/1268741): extract this, together with the `calls_` and the
+  // relevant methods, into a separate class.
+  void OnAppLaunchDataReceived(
+      uint32_t serial,
+      const std::string app_id,
+      const int32_t window_id,
+      std::unique_ptr<app_restore::WindowInfo> window_info,
+      std::unique_ptr<app_restore::AppLaunchInfo> app_launch_info) const;
+
+  // Sends the RestoreData to the consumer after all clients deliver their
+  // AppLaunchInfo.
+  void SendRestoreData(uint32_t serial,
+                       aura::Window* root_window_to_show) const;
 
   std::vector<std::unique_ptr<Desk>> desks_;
 
@@ -403,6 +442,13 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
 
   // Scheduler for reporting the weekly active desks metric.
   base::OneShotTimer weekly_active_desks_scheduler_;
+
+  // Data to put into desk template.  Mutable because it is not part of the
+  // state but it can live between asynchronous calls.
+  // Because gathering the data is asynchronous, we maintain a map of requests
+  // identified by serial number of the request that comes from the UI.
+  mutable uint32_t serial_ = 0;
+  mutable base::flat_map<uint32_t, Call> calls_;
 };
 
 }  // namespace ash

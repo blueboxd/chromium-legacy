@@ -9,7 +9,7 @@ import {
   Resolution,
 } from '../type.js';
 import {
-  VideoProcessorHelperInterface,
+  VideoProcessorHelper,
 } from '../untrusted_video_processor_helper.js';
 import * as util from '../util.js';
 
@@ -25,10 +25,12 @@ import {
 import {createPrivateTempVideoFile} from './file_system.js';
 import {FileAccessEntry} from './file_system_access_entry.js';
 
+// This is used like a class constructor.
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const FFMpegVideoProcessor = (async () => {
   const workerChannel = new MessageChannel();
   const videoProcessorHelper =
-      await util.createUntrustedJSModule<VideoProcessorHelperInterface>(
+      await util.createUntrustedJSModule<VideoProcessorHelper>(
           '/js/untrusted_video_processor_helper.js');
   await videoProcessorHelper.connectToWorker(
       Comlink.transfer(workerChannel.port2, [workerChannel.port2]));
@@ -36,12 +38,18 @@ const FFMpegVideoProcessor = (async () => {
 })();
 
 
+/**
+ * Creates a VideoProcessor instance for recording video.
+ */
 async function createVideoProcessor(output: AsyncWriter, videoRotation: number):
     Promise<Comlink.Remote<VideoProcessor>> {
   return new (await FFMpegVideoProcessor)(
       Comlink.proxy(output), createMp4Args(videoRotation, output.seekable()));
 }
 
+/**
+ * Creates a VideoProcessor instance for recording gif.
+ */
 async function createGifVideoProcessor(
     output: AsyncWriter,
     resolution: Resolution): Promise<Comlink.Remote<VideoProcessor>> {
@@ -49,10 +57,13 @@ async function createGifVideoProcessor(
       Comlink.proxy(output), createGifArgs(resolution));
 }
 
+/**
+ * Creates an AsyncWriter that writes to the given intent.
+ */
 function createWriterForIntent(intent: Intent): AsyncWriter {
-  const write = async (blob: Blob) => {
+  async function write(blob: Blob) {
     await intent.appendData(new Uint8Array(await blob.arrayBuffer()));
-  };
+  }
   // TODO(crbug.com/1140852): Supports seek.
   return new AsyncWriter({write, seek: null, close: null});
 }
@@ -82,6 +93,7 @@ export class VideoSaver {
 
   /**
    * Finishes the write of video data parts and returns result video file.
+   *
    * @return Result video file.
    */
   async endWrite(): Promise<FileAccessEntry> {

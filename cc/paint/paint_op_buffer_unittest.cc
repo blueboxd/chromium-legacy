@@ -7,7 +7,6 @@
 #include <algorithm>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/stringprintf.h"
@@ -23,6 +22,7 @@
 #include "cc/paint/paint_op_writer.h"
 #include "cc/paint/shader_transfer_cache_entry.h"
 #include "cc/paint/skottie_resource_metadata.h"
+#include "cc/paint/skottie_text_property_value.h"
 #include "cc/paint/skottie_wrapper.h"
 #include "cc/paint/transfer_cache_entry.h"
 #include "cc/test/lottie_test_data.h"
@@ -506,7 +506,7 @@ TEST(PaintOpBufferTest, DiscardableImagesTracking_OpWithFlags) {
 
 TEST(PaintOpBufferTest, SlowPaths) {
   auto buffer = sk_make_sp<PaintOpBuffer>();
-  EXPECT_EQ(buffer->numSlowPaths(), 0);
+  EXPECT_EQ(buffer->num_slow_paths(), 0);
 
   // Op without slow paths
   PaintFlags noop_flags;
@@ -522,13 +522,13 @@ TEST(PaintOpBufferTest, SlowPaths) {
   line_effect_slow.setPathEffect(SkDashPathEffect::Make(intervals, 2, 0));
 
   buffer->push<DrawLineOp>(1.f, 2.f, 3.f, 4.f, line_effect_slow);
-  EXPECT_EQ(buffer->numSlowPaths(), 1);
+  EXPECT_EQ(buffer->num_slow_paths(), 1);
 
   // Line effect special case that Skia handles specially.
   PaintFlags line_effect = line_effect_slow;
   line_effect.setStrokeCap(PaintFlags::kButt_Cap);
   buffer->push<DrawLineOp>(1.f, 2.f, 3.f, 4.f, line_effect);
-  EXPECT_EQ(buffer->numSlowPaths(), 1);
+  EXPECT_EQ(buffer->num_slow_paths(), 1);
 
   // Antialiased convex path is not slow.
   SkPath path;
@@ -536,7 +536,7 @@ TEST(PaintOpBufferTest, SlowPaths) {
   EXPECT_TRUE(path.isConvex());
   buffer->push<ClipPathOp>(path, SkClipOp::kIntersect, /*antialias=*/true,
                            UsePaintCache::kDisabled);
-  EXPECT_EQ(buffer->numSlowPaths(), 1);
+  EXPECT_EQ(buffer->num_slow_paths(), 1);
 
   // Concave paths are slow only when antialiased.
   SkPath concave = path;
@@ -544,19 +544,19 @@ TEST(PaintOpBufferTest, SlowPaths) {
   EXPECT_FALSE(concave.isConvex());
   buffer->push<ClipPathOp>(concave, SkClipOp::kIntersect, /*antialias=*/true,
                            UsePaintCache::kDisabled);
-  EXPECT_EQ(buffer->numSlowPaths(), 2);
+  EXPECT_EQ(buffer->num_slow_paths(), 2);
   buffer->push<ClipPathOp>(concave, SkClipOp::kIntersect, /*antialias=*/false,
                            UsePaintCache::kDisabled);
-  EXPECT_EQ(buffer->numSlowPaths(), 2);
+  EXPECT_EQ(buffer->num_slow_paths(), 2);
 
   // Drawing a record with slow paths into another adds the same
   // number of slow paths as the record.
   auto buffer2 = sk_make_sp<PaintOpBuffer>();
-  EXPECT_EQ(0, buffer2->numSlowPaths());
+  EXPECT_EQ(0, buffer2->num_slow_paths());
   buffer2->push<DrawRecordOp>(buffer);
-  EXPECT_EQ(2, buffer2->numSlowPaths());
+  EXPECT_EQ(2, buffer2->num_slow_paths());
   buffer2->push<DrawRecordOp>(buffer);
-  EXPECT_EQ(4, buffer2->numSlowPaths());
+  EXPECT_EQ(4, buffer2->num_slow_paths());
 }
 
 TEST(PaintOpBufferTest, NonAAPaint) {
@@ -1235,30 +1235,8 @@ std::vector<PaintImage> test_images = {
 
 #if BUILDFLAG(SKIA_SUPPORT_SKOTTIE)
 bool kIsSkottieSupported = true;
-
-std::vector<scoped_refptr<SkottieWrapper>> test_skotties = {
-    CreateSkottie(gfx::Size(10, 20), 4), CreateSkottie(gfx::Size(100, 40), 5),
-    CreateSkottie(gfx::Size(80, 70), 6),
-    CreateSkottieFromString(kLottieDataWith2Assets)};
-std::vector<float> test_skottie_floats = {0, 0.1f, 1.f, 0.2f};
-std::vector<SkRect> test_skottie_rects = {
-    SkRect::MakeXYWH(10, 20, 30, 40), SkRect::MakeXYWH(0, 5, 10, 20),
-    SkRect::MakeXYWH(6, 0, 3, 50), SkRect::MakeXYWH(10, 10, 100, 100)};
-std::vector<SkottieColorMap> test_skottie_color_maps = {
-    {SkottieMapColor("green", SK_ColorGREEN),
-     SkottieMapColor("yellow", SK_ColorYELLOW),
-     SkottieMapColor("red", SK_ColorRED),
-     SkottieMapColor("blue", SK_ColorBLUE)},
-    {},
-    {SkottieMapColor("", SK_ColorGREEN)},
-    {SkottieMapColor("", SK_ColorTRANSPARENT)}};
 #else
 bool kIsSkottieSupported = false;
-
-std::vector<scoped_refptr<SkottieWrapper>> test_skotties;
-std::vector<float> test_skottie_floats;
-std::vector<SkRect> test_skottie_rects;
-std::vector<SkottieColorMap> test_skottie_color_maps;
 #endif
 
 // Writes as many ops in |buffer| as can fit in |output_size| to |output|.
@@ -1570,13 +1548,52 @@ SkottieFrameDataMap GetTestImagesForSkottie(SkottieWrapper& skottie,
 }
 
 void PushDrawSkottieOps(PaintOpBuffer* buffer) {
+  std::vector<scoped_refptr<SkottieWrapper>> test_skotties;
+  std::vector<float> test_skottie_floats;
+  std::vector<SkRect> test_skottie_rects;
+  std::vector<SkottieColorMap> test_skottie_color_maps;
+  std::vector<SkottieTextPropertyValueMap> test_skottie_text_maps;
+  if (kIsSkottieSupported) {
+    test_skotties = {
+        CreateSkottie(gfx::Size(10, 20), 4),
+        CreateSkottie(gfx::Size(100, 40), 5),
+        CreateSkottie(gfx::Size(80, 70), 6),
+        CreateSkottieFromString(kLottieDataWith2Assets),
+        CreateSkottieFromTestDataDir(kLottieDataWith2TextFileName)};
+    test_skottie_floats = {0, 0.1f, 1.f, 0.2f, 0.3f};
+    test_skottie_rects = {
+        SkRect::MakeXYWH(10, 20, 30, 40), SkRect::MakeXYWH(0, 5, 10, 20),
+        SkRect::MakeXYWH(6, 0, 3, 50), SkRect::MakeXYWH(10, 10, 100, 100),
+        SkRect::MakeXYWH(5, 5, 50, 50)};
+    test_skottie_color_maps = {
+        {SkottieMapColor("green", SK_ColorGREEN),
+         SkottieMapColor("yellow", SK_ColorYELLOW),
+         SkottieMapColor("red", SK_ColorRED),
+         SkottieMapColor("blue", SK_ColorBLUE)},
+        {},
+        {SkottieMapColor("green", SK_ColorGREEN)},
+        {SkottieMapColor("transparent", SK_ColorTRANSPARENT)},
+        {}};
+    test_skottie_text_maps = {
+        {},
+        {},
+        {},
+        {},
+        {{HashSkottieResourceId(kLottieDataWith2TextNode1),
+          SkottieTextPropertyValue(
+              std::string(kLottieDataWith2TextNode1Text.data()))},
+         {HashSkottieResourceId(kLottieDataWith2TextNode2),
+          SkottieTextPropertyValue(
+              std::string(kLottieDataWith2TextNode2Text.data()))}}};
+  }
+
   size_t len = std::min(test_skotties.size(), test_flags.size());
   for (size_t i = 0; i < len; i++) {
     buffer->push<DrawSkottieOp>(
         test_skotties[i], test_skottie_rects[i], test_skottie_floats[i],
         GetTestImagesForSkottie(*test_skotties[i], test_skottie_rects[i],
                                 PaintFlags::FilterQuality::kHigh, /*t=*/0),
-        test_skottie_color_maps[i]);
+        test_skottie_color_maps[i], test_skottie_text_maps[i]);
   }
   ValidateOps<DrawSkottieOp>(buffer);
 }
@@ -2593,11 +2610,11 @@ TEST(PaintOpBufferTest, ValidateSkBlendMode) {
       static_cast<SkBlendMode>(static_cast<uint8_t>(~0)),
   };
 
-  for (size_t i = 0; i < base::size(bad_modes_for_draw_color); ++i) {
+  for (size_t i = 0; i < std::size(bad_modes_for_draw_color); ++i) {
     buffer.push<DrawColorOp>(SK_ColorMAGENTA, bad_modes_for_draw_color[i]);
   }
 
-  for (size_t i = 0; i < base::size(bad_modes_for_flags); ++i) {
+  for (size_t i = 0; i < std::size(bad_modes_for_flags); ++i) {
     PaintFlags flags = test_flags[i % test_flags.size()];
     flags.setBlendMode(bad_modes_for_flags[i]);
     buffer.push<DrawRectOp>(test_rects[i % test_rects.size()], flags);
@@ -3497,7 +3514,7 @@ TEST(PaintOpBufferTest,
       skottie, input_rect, input_t,
       GetTestImagesForSkottie(*skottie, input_rect,
                               PaintFlags::FilterQuality::kHigh, input_t),
-      SkottieColorMap());
+      SkottieColorMap(), SkottieTextPropertyValueMap());
 
   // Serialize
   TestOptionsProvider options_provider;
@@ -3524,7 +3541,8 @@ TEST(PaintOpBufferTest, DrawSkottieOpRasterWithoutImageAssets) {
       CreateSkottie(gfx::Size(100, 100), /*duration_secs=*/5);
   SkRect skottie_rect = SkRect::MakeWH(100, 100);
   DrawSkottieOp skottie_op(skottie, skottie_rect, /*t=*/0.1,
-                           /*images=*/SkottieFrameDataMap(), SkottieColorMap());
+                           /*images=*/SkottieFrameDataMap(), SkottieColorMap(),
+                           SkottieTextPropertyValueMap());
   PlaybackParams playback_params(/*image_provider=*/nullptr);
   {
     NiceMock<MockCanvas> canvas;
@@ -3541,7 +3559,7 @@ TEST(PaintOpBufferTest, DrawSkottieOpRasterWithoutImageProvider) {
       *skottie, skottie_rect, PaintFlags::FilterQuality::kHigh, /*t=*/0.1f);
   ASSERT_FALSE(images_in.empty());
   DrawSkottieOp skottie_op(skottie, skottie_rect, /*t=*/0.1, images_in,
-                           SkottieColorMap());
+                           SkottieColorMap(), SkottieTextPropertyValueMap());
   PlaybackParams playback_params(/*image_provider=*/nullptr);
   {
     NiceMock<MockCanvas> canvas;
@@ -3573,7 +3591,7 @@ TEST(PaintOpBufferTest, DrawSkottieOpRasterWithImageProvider) {
         *skottie, skottie_rect, PaintFlags::FilterQuality::kHigh, /*t=*/0.25f);
     ASSERT_THAT(images_in, Contains(Key(HashSkottieResourceId("image_0"))));
     DrawSkottieOp skottie_op(skottie, skottie_rect, /*t=*/0.25, images_in,
-                             SkottieColorMap());
+                             SkottieColorMap(), SkottieTextPropertyValueMap());
     NiceMock<MockCanvas> canvas;
     EXPECT_CALL(canvas, onDrawImage2(NotNull(), _, _, _, _)).Times(AtLeast(1));
     DrawSkottieOp::Raster(&skottie_op, &canvas, playback_params);
@@ -3587,7 +3605,7 @@ TEST(PaintOpBufferTest, DrawSkottieOpRasterWithImageProvider) {
         *skottie, skottie_rect, PaintFlags::FilterQuality::kHigh, /*t=*/0.75f);
     ASSERT_THAT(images_in, Contains(Key(HashSkottieResourceId("image_1"))));
     DrawSkottieOp skottie_op(skottie, skottie_rect, /*t=*/0.75, images_in,
-                             SkottieColorMap());
+                             SkottieColorMap(), SkottieTextPropertyValueMap());
     NiceMock<MockCanvas> canvas;
     EXPECT_CALL(canvas, onDrawImage2(NotNull(), _, _, _, _)).Times(AtLeast(1));
     DrawSkottieOp::Raster(&skottie_op, &canvas, playback_params);
@@ -3603,7 +3621,7 @@ TEST(PaintOpBufferTest, DiscardableImagesTrackingSkottieOpNoImages) {
   buffer.push<DrawSkottieOp>(
       CreateSkottie(gfx::Size(100, 100), /*duration_secs=*/1),
       /*dst=*/SkRect::MakeWH(100, 100), /*t=*/0.1f, SkottieFrameDataMap(),
-      SkottieColorMap());
+      SkottieColorMap(), SkottieTextPropertyValueMap());
   EXPECT_FALSE(buffer.HasDiscardableImages());
 }
 
@@ -3616,14 +3634,15 @@ TEST(PaintOpBufferTest, DiscardableImagesTrackingSkottieOpWithImages) {
       *skottie, skottie_rect, PaintFlags::FilterQuality::kHigh, /*t=*/0.1f);
   ASSERT_FALSE(images_in.empty());
   buffer.push<DrawSkottieOp>(skottie, skottie_rect, /*t=*/0.1f, images_in,
-                             SkottieColorMap());
+                             SkottieColorMap(), SkottieTextPropertyValueMap());
   EXPECT_TRUE(buffer.HasDiscardableImages());
 }
 
 TEST(PaintOpBufferTest, OpHasDiscardableImagesSkottieOpNoImages) {
   DrawSkottieOp op(CreateSkottie(gfx::Size(100, 100), /*duration_secs=*/1),
                    /*dst=*/SkRect::MakeWH(100, 100), /*t=*/0.1f,
-                   SkottieFrameDataMap(), SkottieColorMap());
+                   SkottieFrameDataMap(), SkottieColorMap(),
+                   SkottieTextPropertyValueMap());
   EXPECT_FALSE(PaintOp::OpHasDiscardableImages(&op));
 }
 
@@ -3635,7 +3654,7 @@ TEST(PaintOpBufferTest, OpHasDiscardableImagesSkottieOpWithImages) {
       *skottie, skottie_rect, PaintFlags::FilterQuality::kHigh, /*t=*/0.1f);
   ASSERT_FALSE(images_in.empty());
   DrawSkottieOp op(skottie, skottie_rect, /*t=*/0.1f, images_in,
-                   SkottieColorMap());
+                   SkottieColorMap(), SkottieTextPropertyValueMap());
   EXPECT_TRUE(PaintOp::OpHasDiscardableImages(&op));
 }
 #endif  // BUILDFLAG(SKIA_SUPPORT_SKOTTIE)

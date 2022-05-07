@@ -99,14 +99,15 @@ export class DeviceInfoUpdater {
    */
   private async doUpdate() {
     this.devicesInfo = this.pendingDevicesInfo.map((d) => d.v1Info);
-    // Update preferer if device supports HALv3.
     if (await DeviceOperator.isSupported()) {
       this.camera3DevicesInfo =
           this.pendingDevicesInfo.map((d) => assertExists(d.v3Info));
     } else {
       this.camera3DevicesInfo = null;
     }
-    this.deviceChangeListeners.forEach((l) => l(this));
+    for (const listener of this.deviceChangeListeners) {
+      listener(this);
+    }
   }
 
   /**
@@ -121,6 +122,7 @@ export class DeviceInfoUpdater {
    * Requests to lock update of device information. This function is preserved
    * for device information reader to lock the update capability so as to ensure
    * getting consistent data between all information providers.
+   *
    * @param callback Called after update capability is locked. Getting
    *     information from all providers in callback are guaranteed to be
    *     consistent.
@@ -154,17 +156,18 @@ export class DeviceInfoUpdater {
 
   /**
    * Gets MediaDeviceInfo of specific video device.
+   *
    * @param deviceId Device id of video device to get information from.
    */
   getDeviceInfo(deviceId: string): MediaDeviceInfo|null {
     const infos = this.getDevicesInfo();
-    return infos.find((d) => d.deviceId === deviceId) || null;
+    return infos.find((d) => d.deviceId === deviceId) ?? null;
   }
 
   /**
    * Gets Camera3DeviceInfo for all available video devices.
    */
-  getCamera3DevicesInfo(): Array<Camera3DeviceInfo>|null {
+  getCamera3DevicesInfo(): Camera3DeviceInfo[]|null {
     return this.camera3DevicesInfo;
   }
 }

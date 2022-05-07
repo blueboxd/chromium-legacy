@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.tasks.tab_management;
 
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
+import static androidx.test.espresso.action.ViewActions.swipeUp;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.assertThat;
@@ -137,6 +138,8 @@ public class TabSuggestionMessageCardTest {
     private void enteringTabSwitcherAndVerifySuggestionIsShown(String suggestionText) {
         TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         CriteriaHelper.pollUiThread(TabSwitcherCoordinator::hasAppendedMessagesForTesting);
+        onView(allOf(withParent(withId(R.id.compositor_view_holder)), withId(R.id.tab_list_view)))
+                .perform(swipeUp());
         onView(allOf(withParent(withId(R.id.tab_grid_message_item)), withText(suggestionText)))
                 .check(matches(isDisplayed()));
     }

@@ -26,6 +26,7 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
+#include "chrome/browser/extensions/forced_extensions/install_stage_tracker.h"
 #include "chrome/browser/extensions/policy_handlers.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/ash/keyboard/chrome_keyboard_controller_client.h"
@@ -100,6 +101,21 @@ void RecordKioskLaunchUMA(bool is_auto_launch) {
             ? enterprise_user_session_metrics::SignInEventType::AUTOMATIC_KIOSK
             : enterprise_user_session_metrics::SignInEventType::MANUAL_KIOSK);
   }
+}
+
+void RecordKioskExtensionInstallError(
+    extensions::InstallStageTracker::FailureReason reason) {
+  UMA_HISTOGRAM_ENUMERATION(
+      "Kiosk.Extensions.InstallError", reason,
+      extensions::InstallStageTracker::FailureReason::kMaxValue);
+}
+
+void RecordKioskExtensionInstallTimedOut(bool timeout) {
+  UMA_HISTOGRAM_BOOLEAN("Kiosk.Extensions.InstallTimedOut", timeout);
+}
+
+void RecordKioskExtensionInstallDuration(base::TimeDelta time_delta) {
+  UMA_HISTOGRAM_MEDIUM_TIMES("Kiosk.Extensions.InstallDuration", time_delta);
 }
 
 extensions::ForceInstalledTracker* GetForceInstalledTracker(Profile* profile) {
@@ -207,6 +223,16 @@ void KioskLaunchController::Start(const KioskAppId& kiosk_app_id,
   kiosk_profile_loader_ = std::make_unique<KioskProfileLoader>(
       *kiosk_app_id_.account_id, kiosk_app_id_.type, /*delegate=*/this);
   kiosk_profile_loader_->Start();
+}
+
+void KioskLaunchController::AddKioskProfileLoadFailedObserver(
+    KioskProfileLoadFailedObserver* observer) {
+  profile_load_failed_observers_.AddObserver(observer);
+}
+
+void KioskLaunchController::RemoveKioskProfileLoadFailedObserver(
+    KioskProfileLoadFailedObserver* observer) {
+  profile_load_failed_observers_.RemoveObserver(observer);
 }
 
 void KioskLaunchController::OnProfileLoaded(Profile* profile) {
@@ -328,6 +354,8 @@ void KioskLaunchController::CleanUp() {
   network_wait_timer_.Stop();
   splash_wait_timer_.Stop();
 
+  extension_start_time_ = absl::nullopt;
+
   kiosk_profile_loader_.reset();
   // Can be null in tests.
   if (host_)
@@ -378,7 +406,7 @@ void KioskLaunchController::OnAppPrepared() {
 
     splash_screen_view_->ShowErrorMessage(
         KioskAppLaunchError::Error::kExtensionsPolicyInvalid);
-    OnForceInstalledExtensionsReady();
+    FinishForcedExtensionsInstall(/*timeout=*/false);
     return;
   }
 
@@ -403,7 +431,7 @@ void KioskLaunchController::OnAppPrepared() {
     force_installed_observation_for_ash_.Observe(tracker);
     StartTimerToWaitForExtensions();
   } else {
-    OnForceInstalledExtensionsReady();
+    FinishForcedExtensionsInstall(/*timeout=*/false);
   }
 }
 
@@ -446,6 +474,7 @@ void KioskLaunchController::OnNetworkWaitTimedOut() {
 }
 
 void KioskLaunchController::StartTimerToWaitForExtensions() {
+  extension_start_time_ = absl::make_optional(base::Time::Now());
   extension_wait_timer_.Start(FROM_HERE, g_extension_wait_time, this,
                               &KioskLaunchController::OnExtensionWaitTimedOut);
   splash_screen_view_->UpdateAppLaunchState(
@@ -458,7 +487,7 @@ void KioskLaunchController::OnExtensionWaitTimedOut() {
 
   splash_screen_view_->ShowErrorMessage(
       KioskAppLaunchError::Error::kExtensionsLoadTimeout);
-  OnForceInstalledExtensionsReady();
+  FinishForcedExtensionsInstall(/*timeout=*/true);
 }
 
 bool KioskLaunchController::IsNetworkReady() const {
@@ -521,6 +550,30 @@ void KioskLaunchController::HandleWebAppInstallFailed() {
     LaunchApp();
 }
 
+void KioskLaunchController::FinishForcedExtensionsInstall(bool timeout) {
+  app_state_ = AppState::kInstalled;
+
+  // If forced extension install was started, record UMA metrics for extension
+  // install.
+  if (extension_start_time_) {
+    RecordKioskExtensionInstallTimedOut(timeout);
+    RecordKioskExtensionInstallDuration(base::Time::Now() -
+                                        *extension_start_time_);
+  }
+
+  if (crosapi::browser_util::IsLacrosEnabledInWebKioskSession())
+    force_installed_observation_for_lacros_.Reset();
+  else
+    force_installed_observation_for_ash_.Reset();
+
+  splash_screen_view_->UpdateAppLaunchState(
+      AppLaunchSplashScreenView::AppLaunchState::kWaitingAppWindow);
+  splash_screen_view_->Show();
+
+  if (launch_on_install_ || g_skip_splash_wait_for_testing)
+    LaunchApp();
+}
+
 void KioskLaunchController::OnAppLaunched() {
   SYSLOG(INFO) << "Kiosk launch succeeded, wait for app window.";
   app_state_ = AppState::kLaunched;
@@ -549,6 +602,9 @@ void KioskLaunchController::OnAppDataUpdated() {
 
 void KioskLaunchController::OnProfileLoadFailed(
     KioskAppLaunchError::Error error) {
+  for (auto& observer : profile_load_failed_observers_) {
+    observer.OnKioskProfileLoadFailed();
+  }
   OnLaunchFailed(error);
 }
 
@@ -568,19 +624,13 @@ void KioskLaunchController::OnOldEncryptionDetected(
 }
 
 void KioskLaunchController::OnForceInstalledExtensionsReady() {
-  app_state_ = AppState::kInstalled;
+  FinishForcedExtensionsInstall(/*timeout=*/false);
+}
 
-  if (crosapi::browser_util::IsLacrosEnabledInWebKioskSession())
-    force_installed_observation_for_lacros_.Reset();
-  else
-    force_installed_observation_for_ash_.Reset();
-
-  splash_screen_view_->UpdateAppLaunchState(
-      AppLaunchSplashScreenView::AppLaunchState::kWaitingAppWindow);
-  splash_screen_view_->Show();
-
-  if (launch_on_install_ || g_skip_splash_wait_for_testing)
-    LaunchApp();
+void KioskLaunchController::OnForceInstalledExtensionFailed(
+    const extensions::ExtensionId& extension_id,
+    extensions::InstallStageTracker::FailureReason reason) {
+  RecordKioskExtensionInstallError(reason);
 }
 
 void KioskLaunchController::OnOwnerSigninSuccess() {

@@ -8,14 +8,12 @@
 #include <utility>
 #include <vector>
 
-#include "ash/services/secure_channel/client_connection_parameters.h"
 #include "ash/services/secure_channel/pending_connection_request.h"
 #include "base/unguessable_token.h"
 
-namespace chromeos {
+namespace ash::secure_channel {
 
-namespace secure_channel {
-
+class ClientConnectionParameters;
 class PendingConnectionRequestDelegate;
 
 // Fake PendingConnectionRequest implementation.
@@ -70,8 +68,6 @@ class FakePendingConnectionRequest
   std::unique_ptr<ClientConnectionParameters> client_data_for_extraction_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_PENDING_CONNECTION_REQUEST_H_

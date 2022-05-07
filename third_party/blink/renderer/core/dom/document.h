@@ -70,7 +70,9 @@
 #include "third_party/blink/renderer/core/fragment_directive/fragment_directive.h"
 #include "third_party/blink/renderer/core/html/forms/listed_element.h"
 #include "third_party/blink/renderer/core/html/parser/parser_synchronization_policy.h"
-#include "third_party/blink/renderer/core/loader/font_preload_manager.h"
+#include "third_party/blink/renderer/core/loader/render_blocking_resource_manager.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_linked_hash_set.h"
 #include "third_party/blink/renderer/platform/heap_observer_set.h"
 #include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
@@ -81,6 +83,7 @@
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 #include "third_party/blink/renderer/platform/wtf/gc_plugin_ignore.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 
 namespace base {
 class SingleThreadTaskRunner;
@@ -170,6 +173,7 @@ class HttpRefreshScheduler;
 class IdleRequestOptions;
 class IdleTask;
 class IntersectionObserverController;
+class LayoutUpgrade;
 class LayoutView;
 class LazyLoadImageObserver;
 class LiveNodeListBase;
@@ -569,7 +573,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // This is a DOM function.
   StyleSheetList& StyleSheets();
 
-  StyleEngine& GetStyleEngine() {
+  StyleEngine& GetStyleEngine() const {
     DCHECK(style_engine_.Get());
     return *style_engine_.Get();
   }
@@ -604,7 +608,33 @@ class CORE_EXPORT Document : public ContainerNode,
   // Special support for editing
   Text* CreateEditingTextNode(const String&);
 
-  bool NeedsLayoutTreeUpdate() const;
+  enum class StyleAndLayoutTreeUpdate {
+    // Style/layout-tree is not dirty.
+    kNone,
+
+    // Style/layout-tree is dirty, and it's possible to understand whether a
+    // given element will be affected or not by analyzing its ancestor chain.
+    kAnalyzed,
+
+    // Style/layout-tree is dirty, but we cannot decide which specific elements
+    // need to have its style or layout tree updated.
+    kFull,
+  };
+
+  // Looks at various sources that cause style/layout-tree dirtiness,
+  // and returns the severity of the needed update.
+  //
+  // Note that this does not cover "implicit" style/layout-tree dirtiness
+  // via layout/container-queries. That is: this function may return kNone,
+  // and yet a subsequent layout may need to recalc container-query-dependent
+  // styles.
+  StyleAndLayoutTreeUpdate CalculateStyleAndLayoutTreeUpdate() const;
+
+  bool NeedsLayoutTreeUpdate() const {
+    return CalculateStyleAndLayoutTreeUpdate() !=
+           StyleAndLayoutTreeUpdate::kNone;
+  }
+
   // Whether we need layout tree update for this node or not, without
   // considering nodes in display locked subtrees.
   bool NeedsLayoutTreeUpdateForNode(const Node&,
@@ -615,12 +645,22 @@ class CORE_EXPORT Document : public ContainerNode,
       const Node&,
       bool ignore_adjacent_style = false) const;
 
-  // Update ComputedStyles and attach LayoutObjects if necessary, but don't
-  // lay out. This recursively invokes itself for all ancestor LocalFrames,
-  // because style in an ancestor frame can affect style in a child frame.
-  // This method is appropriate for cases where we need to ensure that the
-  // style for a single Document is up-to-date.
+  // Update ComputedStyles and attach LayoutObjects if necessary. This
+  // recursively invokes itself for all ancestor LocalFrames, because style in
+  // an ancestor frame can affect style in a child frame. This method is
+  // appropriate for cases where we need to ensure that the style for a single
+  // Document is up-to-date.
+  //
+  // A call to UpdateStyleAndLayoutTree may be upgraded [1] to also perform
+  // layout. This is because updating the style and layout-tree may depend
+  // on layout when container queries are used.
+  //
+  // Whether or not an upgrade should take place is decide by the
+  // provided LayoutUpgrade object.
+  //
+  // [1] See blink::LayoutUpgrade
   void UpdateStyleAndLayoutTree();
+  void UpdateStyleAndLayoutTree(LayoutUpgrade&);
 
   // Same as UpdateStyleAndLayoutTree, but does not recursively update style in
   // ancestor frames. This method is intended to be used in cases where we can
@@ -952,6 +992,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // Updates for :target (CSS3 selector).
   void SetCSSTarget(Element*);
   Element* CssTarget() const { return css_target_; }
+  void SetSelectorFragmentAnchorCSSTarget(Element*);
 
   void ScheduleLayoutTreeUpdateIfNeeded();
   bool HasPendingForcedStyleRecalc() const;
@@ -1272,7 +1313,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void RemoveAllEventListeners() final;
 
-  const SVGDocumentExtensions* SvgExtensions();
+  const SVGDocumentExtensions* SvgExtensions() const;
   SVGDocumentExtensions& AccessSVGExtensions();
 
   bool AllowInlineEventHandler(Node*,
@@ -1572,7 +1613,7 @@ class CORE_EXPORT Document : public ContainerNode,
 
   SlotAssignmentEngine& GetSlotAssignmentEngine();
 
-  bool IsSlotAssignmentOrLegacyDistributionDirty() const;
+  bool IsSlotAssignmentDirty() const;
 
 #if DCHECK_IS_ON()
   unsigned& SlotAssignmentRecalcForbiddenRecursionDepth() {
@@ -1635,6 +1676,7 @@ class CORE_EXPORT Document : public ContainerNode,
   // Return true if any accessibility contexts have been enabled.
   bool IsAccessibilityEnabled() const { return !ax_contexts_.IsEmpty(); }
 
+  bool HaveRenderBlockingStylesheetsLoaded() const;
   bool HaveRenderBlockingResourcesLoaded() const;
 
   // Sets a beforeunload handler for documents which are embedding plugins. This
@@ -1723,8 +1765,15 @@ class CORE_EXPORT Document : public ContainerNode,
                               const AtomicString& old_value,
                               const AtomicString& new_value);
 
-  FontPreloadManager& GetFontPreloadManager() { return *font_preload_manager_; }
-  void FontPreloadingFinishedOrTimedOut();
+  RenderBlockingResourceManager* GetRenderBlockingResourceManager() {
+    return render_blocking_resource_manager_;
+  }
+
+  // Called when a previously render-blocking resource is no longer render-
+  // blocking, due to it has finished loading or has given up render-blocking.
+  void RenderBlockingResourceUnblocked();
+
+  bool RenderingHasBegun() const { return rendering_has_begun_; }
 
   void IncrementAsyncScriptCount() { async_script_count_++; }
   void RecordAsyncScriptCount();
@@ -1777,6 +1826,8 @@ class CORE_EXPORT Document : public ContainerNode,
   // For more details and explanation, see
   // https://github.com/flackr/reduce-motion/blob/main/explainer.md
   bool ShouldForceReduceMotion() const;
+
+  void WriteIntoTrace(perfetto::TracedValue ctx) const;
 
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
@@ -1853,17 +1904,21 @@ class CORE_EXPORT Document : public ContainerNode,
   bool ShouldScheduleLayoutTreeUpdate() const;
   void ScheduleLayoutTreeUpdate();
 
-  bool NeedsFullLayoutTreeUpdate() const;
-  bool ParentFrameNeedsLayoutTreeUpdate() const;
-
   // See UpdateStyleAndLayoutTreeForThisDocument for an explanation of
   // the "ForThisDocument" suffix.
   //
   // These functions do not take into account dirtiness of parent frames:
   // they are assumed to be clean. If it isn't possible to guarantee
   // clean parent frames, use Needs[Full]LayoutTreeUpdate() instead.
-  bool NeedsLayoutTreeUpdateForThisDocument() const;
-  bool NeedsFullLayoutTreeUpdateForThisDocument() const;
+  bool NeedsLayoutTreeUpdateForThisDocument() const {
+    return CalculateStyleAndLayoutTreeUpdateForThisDocument() !=
+           StyleAndLayoutTreeUpdate::kNone;
+  }
+
+  StyleAndLayoutTreeUpdate CalculateStyleAndLayoutTreeUpdateForThisDocument()
+      const;
+  StyleAndLayoutTreeUpdate CalculateStyleAndLayoutTreeUpdateForParentFrame()
+      const;
 
   void UpdateUseShadowTreesIfNeeded();
   void EvaluateMediaQueryListIfNeeded();
@@ -2128,6 +2183,7 @@ class CORE_EXPORT Document : public ContainerNode,
   bool should_update_selection_after_layout_ = false;
 
   Member<Element> css_target_;
+  bool css_target_is_selector_fragment_ = false;
 
   bool was_discarded_;
 
@@ -2370,7 +2426,9 @@ class CORE_EXPORT Document : public ContainerNode,
   // the site has support for reduced motion.
   bool supports_reduced_motion_ = false;
 
-  Member<FontPreloadManager> font_preload_manager_;
+  Member<RenderBlockingResourceManager> render_blocking_resource_manager_;
+
+  bool rendering_has_begun_ = false;
 
   int async_script_count_ = 0;
 

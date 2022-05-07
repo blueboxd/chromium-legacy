@@ -14,6 +14,7 @@
 #include "third_party/blink/renderer/core/execution_context/execution_context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_piece.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_remote.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -22,6 +23,7 @@ namespace blink {
 
 class ScriptPromiseResolver;
 class ScriptState;
+class USB;
 class USBConfiguration;
 class USBControlTransferParameters;
 
@@ -30,7 +32,8 @@ class USBDevice : public ScriptWrappable,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  explicit USBDevice(device::mojom::blink::UsbDeviceInfoPtr,
+  explicit USBDevice(USB* parent,
+                     device::mojom::blink::UsbDeviceInfoPtr,
                      mojo::PendingRemote<device::mojom::blink::UsbDevice>,
                      ExecutionContext*);
   ~USBDevice() override;
@@ -65,6 +68,7 @@ class USBDevice : public ScriptWrappable,
 
   ScriptPromise open(ScriptState*);
   ScriptPromise close(ScriptState*);
+  ScriptPromise forget(ScriptState*, ExceptionState& exception_state);
   ScriptPromise selectConfiguration(ScriptState*, uint8_t configuration_value);
   ScriptPromise claimInterface(ScriptState*, uint8_t interface_number);
   ScriptPromise releaseInterface(ScriptState*, uint8_t interface_number);
@@ -126,6 +130,7 @@ class USBDevice : public ScriptWrappable,
   void AsyncOpen(ScriptPromiseResolver*,
                  device::mojom::blink::UsbOpenDeviceError);
   void AsyncClose(ScriptPromiseResolver*);
+  void AsyncForget(ScriptPromiseResolver*);
   void OnDeviceOpenedOrClosed(bool);
   void AsyncSelectConfiguration(wtf_size_t configuration_index,
                                 ScriptPromiseResolver*,
@@ -168,9 +173,11 @@ class USBDevice : public ScriptWrappable,
   void OnConnectionError();
   bool MarkRequestComplete(ScriptPromiseResolver*);
 
+  const Member<USB> parent_;
   device::mojom::blink::UsbDeviceInfoPtr device_info_;
   HeapMojoRemote<device::mojom::blink::UsbDevice> device_;
   HeapHashSet<Member<ScriptPromiseResolver>> device_requests_;
+  HeapVector<Member<USBConfiguration>> configurations_;
   bool opened_;
   bool device_state_change_in_progress_;
   wtf_size_t configuration_index_;

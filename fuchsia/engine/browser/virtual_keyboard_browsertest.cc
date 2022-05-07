@@ -11,6 +11,7 @@
 #include "base/fuchsia/koid.h"
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/test_component_context_for_process.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/public/test/browser_test.h"
@@ -109,7 +110,8 @@ class VirtualKeyboardTest : public cr_fuchsia::WebEngineBrowserTest {
 
     absl::optional<base::Value> result = cr_fuchsia::ExecuteJavaScript(
         frame_for_test_.ptr().get(),
-        base::StringPrintf("getPointInsideText('%s')", id.data()));
+        base::StringPrintf("getPointInsideText('%.*s')",
+                           base::saturated_cast<int>(id.length()), id.data()));
     CHECK(result);
 
     // Note that coordinates are floating point and must be retrieved as such
@@ -215,8 +217,8 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardTest, InputModeMappings) {
   testing::InSequence s;
   virtualkeyboard::TextType previous_text_type =
       virtualkeyboard::TextType::ALPHANUMERIC;
-  std::vector<base::RunLoop> set_type_loops(base::size(kInputTypeMappings));
-  for (size_t i = 0; i < base::size(kInputTypeMappings); ++i) {
+  std::vector<base::RunLoop> set_type_loops(std::size(kInputTypeMappings));
+  for (size_t i = 0; i < std::size(kInputTypeMappings); ++i) {
     const auto& field_type_pair = kInputTypeMappings[i];
     DCHECK_NE(field_type_pair.second, previous_text_type);
 
@@ -229,7 +231,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardTest, InputModeMappings) {
 
   controller_->AwaitWatchAndRespondWith(false);
 
-  for (size_t i = 0; i < base::size(kInputTypeMappings); ++i) {
+  for (size_t i = 0; i < std::size(kInputTypeMappings); ++i) {
     content::SimulateTapAt(
         web_contents_, GetCoordinatesOfInputField(kInputTypeMappings[i].first));
 

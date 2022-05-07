@@ -20,11 +20,14 @@ import org.chromium.base.Log;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.app.ChromeActivity;
-import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.directactions.DirectActionHandler;
-import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.autofill_assistant.AssistantFeatures;
+import org.chromium.components.autofill_assistant.AutofillAssistantMetrics;
+import org.chromium.components.autofill_assistant.AutofillAssistantModuleEntryProvider;
+import org.chromium.components.autofill_assistant.TriggerContext;
+import org.chromium.components.autofill_assistant.metrics.DropOutReason;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.external_intents.ExternalNavigationDelegate.IntentToAutofillAllowingAppResult;
 import org.chromium.content_public.browser.WebContents;
@@ -33,17 +36,6 @@ import org.chromium.content_public.browser.WebContents;
 public class AutofillAssistantFacade {
     /** Used for logging. */
     private static final String TAG = "AutofillAssistant";
-
-    /**
-     * Synthetic field trial names and group names should match those specified in
-     * google3/analysis/uma/dashboards/
-     * .../variations/generate_server_hashes.py and
-     * .../website/components/variations_dash/variations_histogram_entry.js.
-     */
-    private static final String TRIGGERED_SYNTHETIC_TRIAL = "AutofillAssistantTriggered";
-    private static final String ENABLED_GROUP = "Enabled";
-
-    private static final String EXPERIMENTS_SYNTHETIC_TRIAL = "AutofillAssistantExperimentsTrial";
 
     /** Returns true if conditions are satisfied to attempt to start Autofill Assistant. */
     private static boolean isConfigured(TriggerContext arguments) {
@@ -93,16 +85,6 @@ public class AutofillAssistantFacade {
         if (!(activity instanceof ChromeActivity)) {
             Log.v(TAG, "Failed to retrieve ChromeActivity.");
             return;
-        }
-        // Register synthetic trial as soon as possible.
-        UmaSessionStats.registerSyntheticFieldTrial(TRIGGERED_SYNTHETIC_TRIAL, ENABLED_GROUP);
-        // Synthetic trial for experiments.
-        String experimentIds = triggerContext.getExperimentIds();
-        if (!experimentIds.isEmpty()) {
-            for (String experimentId : experimentIds.split(",")) {
-                UmaSessionStats.registerSyntheticFieldTrial(
-                        EXPERIMENTS_SYNTHETIC_TRIAL, experimentId);
-            }
         }
 
         String intent = triggerContext.getIntent();

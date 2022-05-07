@@ -9,9 +9,7 @@
 #include "ash/services/secure_channel/nearby_connection_manager.h"
 #include "ash/services/secure_channel/secure_channel.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 class SecureChannelDisconnector;
 
@@ -115,8 +113,6 @@ class NearbyConnectionManagerImpl : public NearbyConnectionManager,
   absl::optional<std::string> notifying_remote_device_id_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_NEARBY_CONNECTION_MANAGER_IMPL_H_

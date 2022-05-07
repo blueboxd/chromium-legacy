@@ -2,6 +2,24 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import '//resources/cr_components/localized_link/localized_link.js';
+import '//resources/cr_elements/cr_button/cr_button.m.js';
+import '//resources/cr_elements/cr_dialog/cr_dialog.m.js';
+import '//resources/cr_elements/shared_style_css.m.js';
+import '//resources/cr_elements/shared_vars_css.m.js';
+import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
+import './multidevice_screen_lock_subpage.js';
+import '../os_icons.js';
+import '../../settings_shared_css.js';
+
+import {I18nBehavior} from '//resources/js/i18n_behavior.m.js';
+import {loadTimeData} from '//resources/js/load_time_data.m.js';
+import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.js';
+import {html, Polymer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+
+import {MultiDeviceBrowserProxy, MultiDeviceBrowserProxyImpl} from './multidevice_browser_proxy.js';
+import {MultiDeviceFeature} from './multidevice_constants.js';
+
 /**
  * @fileoverview
  * This element provides the Phone Hub notification and apps access setup flow
@@ -15,7 +33,7 @@
  * with the exception of CONNECTION_REQUESTED.
  * @enum {number}
  */
-/* #export */ const PermissionsSetupStatus = {
+export const PermissionsSetupStatus = {
   CONNECTION_REQUESTED: 0,
   CONNECTING: 1,
   TIMED_OUT_CONNECTING: 2,
@@ -29,7 +47,7 @@
  * Numerical values the flow of dialog set up progress.
  * @enum {number}
  */
-/* #export */ const SetupFlowStatus = {
+export const SetupFlowStatus = {
   INTRO: 0,
   SET_LOCKSCREEN: 1,
   WAIT_FOR_PHONE_NOTIFICATION: 2,
@@ -37,6 +55,7 @@
 };
 
 Polymer({
+  _template: html`{__html_template__}`,
   is: 'settings-multidevice-permissions-setup-dialog',
 
   behaviors: [
@@ -100,14 +119,6 @@ Polymer({
       computed: 'computeIsNotificationAccessProhibited_(setupState_)',
     },
 
-    /** @private */
-    shouldShowSetupInstructionsSeparately_: {
-      type: Boolean,
-      computed: 'computeShouldShowSetupInstructionsSeparately_(' +
-          'setupState_)',
-      reflectToAttribute: true,
-    },
-
     /**
      * @private {?SetupFlowStatus}
      */
@@ -129,38 +140,45 @@ Polymer({
       notify: true,
     },
 
-    /**
-     * @private {?settings.PhoneHubPermissionsSetupMode}
-     */
-    phonePermissionSetupMode: {
-      type: Number,
-      value: settings.PhoneHubPermissionsSetupMode.INIT_MODE,
-      notify: true,
+    /** Whether this dialog should show Camera Roll info */
+    showCameraRoll: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** Whether this dialog should show Notifications info */
+    showNotifications: {
+      type: Boolean,
+      value: false,
+    },
+
+    /** Whether this dialog should show App Streaming info */
+    showAppStreaming: {
+      type: Boolean,
+      value: false,
     },
 
     /** @private */
-    shouldShowNotificationItem_: {
+    shouldShowLearnMoreButton_: {
       type: Boolean,
-      computed: 'computeShouldShowNotificationItem_(' +
-          'setupState_, phonePermissionSetupMode)',
+      computed: 'computeShouldShowLearnMoreButton_(setupState_, flowState_)',
       reflectToAttribute: true,
     },
 
     /** @private */
-    shouldShowAppsItem_: {
+    shouldShowDisabledDoneButton_: {
       type: Boolean,
-      computed: 'computeShouldShowAppsItem_(' +
-          'setupState_, phonePermissionSetupMode)',
+      computed: 'computeShouldShowDisabledDoneButton_(setupState_)',
       reflectToAttribute: true,
     },
   },
 
-  /** @private {?settings.MultiDeviceBrowserProxy} */
+  /** @private {?MultiDeviceBrowserProxy} */
   browserProxy_: null,
 
   /** @override */
   ready() {
-    this.browserProxy_ = settings.MultiDeviceBrowserProxyImpl.getInstance();
+    this.browserProxy_ = MultiDeviceBrowserProxyImpl.getInstance();
   },
 
   /** @override */
@@ -189,10 +207,9 @@ Polymer({
     }
 
     this.browserProxy_.setFeatureEnabledState(
-        settings.MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS, true);
+        MultiDeviceFeature.PHONE_HUB_NOTIFICATIONS, true);
 
-    if (this.phonePermissionSetupMode ===
-        PhoneHubPermissionsSetupMode.ALL_PERMISSIONS_SETUP_MODE) {
+    if (this.showAppStreaming) {
       this.browserProxy_.attemptAppsSetup();
       this.flowState_ = SetupFlowStatus.WAIT_FOR_PHONE_APPS;
       this.setupState_ = PermissionsSetupStatus.CONNECTION_REQUESTED;
@@ -211,8 +228,7 @@ Polymer({
     this.setupState_ = setupState;
 
     if (this.setupState_ === PermissionsSetupStatus.COMPLETED_SUCCESSFULLY) {
-      this.browserProxy_.setFeatureEnabledState(
-          settings.MultiDeviceFeature.ECHE, true);
+      this.browserProxy_.setFeatureEnabledState(MultiDeviceFeature.ECHE, true);
     }
   },
 
@@ -263,22 +279,10 @@ Polymer({
         PermissionsSetupStatus.NOTIFICATION_ACCESS_PROHIBITED;
   },
 
-  /**
-   * @return {boolean} Whether to show setup instructions in its own section.
-   * @private
-   */
-  computeShouldShowSetupInstructionsSeparately_() {
-    return this.setupState_ === PermissionsSetupStatus.CONNECTION_REQUESTED ||
-        this.setupState_ ===
-        PermissionsSetupStatus.SENT_MESSAGE_TO_PHONE_AND_WAITING_FOR_RESPONSE ||
-        this.setupState_ === PermissionsSetupStatus.CONNECTING;
-  },
-
   /** @private */
   nextPage_() {
-    const isScreenLockRequired = loadTimeData.getBoolean('isEcheAppEnabled') &&
-        loadTimeData.getBoolean('isPhoneScreenLockEnabled') &&
-        !loadTimeData.getBoolean('isChromeosScreenLockEnabled');
+    const isScreenLockRequired =
+        this.isScreenLockRequired_();
     switch (this.flowState_) {
       case SetupFlowStatus.INTRO:
         if (isScreenLockRequired) {
@@ -294,18 +298,19 @@ Polymer({
         break;
     }
 
-    switch (this.phonePermissionSetupMode) {
-      case settings.PhoneHubPermissionsSetupMode.APPS_SETUP_MODE:
-        this.browserProxy_.attemptAppsSetup();
-        this.flowState_ = SetupFlowStatus.WAIT_FOR_PHONE_APPS;
-        this.setupState_ = PermissionsSetupStatus.CONNECTION_REQUESTED;
-        break;
-      case settings.PhoneHubPermissionsSetupMode.NOTIFICATION_SETUP_MODE:
-      case settings.PhoneHubPermissionsSetupMode.ALL_PERMISSIONS_SETUP_MODE:
-        this.browserProxy_.attemptNotificationSetup();
-        this.flowState_ = SetupFlowStatus.WAIT_FOR_PHONE_NOTIFICATION;
-        this.setupState_ = PermissionsSetupStatus.CONNECTION_REQUESTED;
-        break;
+    if (this.showNotifications) {
+      this.browserProxy_.attemptNotificationSetup();
+      this.flowState_ = SetupFlowStatus.WAIT_FOR_PHONE_NOTIFICATION;
+      this.setupState_ = PermissionsSetupStatus.CONNECTION_REQUESTED;
+    } else if (this.showAppStreaming) {
+      this.browserProxy_.attemptAppsSetup();
+      this.flowState_ = SetupFlowStatus.WAIT_FOR_PHONE_APPS;
+      this.setupState_ = PermissionsSetupStatus.CONNECTION_REQUESTED;
+    } else if (this.showCameraRoll) {
+      // Camera Roll setup is not implemented yet
+      // Dialog fails if Camera Roll is only feature needing setup
+      this.flowState_ = SetupFlowStatus.WAIT_FOR_PHONE_NOTIFICATION;
+      this.setupState_ = PermissionsSetupStatus.TIMED_OUT_CONNECTING;
     }
   },
 
@@ -392,13 +397,22 @@ Polymer({
             'multideviceNotificationAccessSetupAccessProhibitedSummary');
       case Status.SENT_MESSAGE_TO_PHONE_AND_WAITING_FOR_RESPONSE:
         return this.i18n('multidevicePermissionsSetupOperationsInstructions');
-
-      // Only setup instructions will be shown.
       case Status.CONNECTION_REQUESTED:
       case Status.CONNECTING:
+        return this.i18n('multideviceNotificationAccessSetupInstructions');
       default:
         return '';
     }
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShouldShowLearnMoreButton_() {
+    return this.flowState_ === SetupFlowStatus.INTRO ||
+        this.setupState_ ===
+        PermissionsSetupStatus.SENT_MESSAGE_TO_PHONE_AND_WAITING_FOR_RESPONSE;
   },
 
   /**
@@ -409,6 +423,15 @@ Polymer({
     return this.setupState_ !== PermissionsSetupStatus.COMPLETED_SUCCESSFULLY &&
         this.setupState_ !==
         PermissionsSetupStatus.NOTIFICATION_ACCESS_PROHIBITED;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  computeShouldShowDisabledDoneButton_() {
+    return this.setupState_ ===
+        PermissionsSetupStatus.SENT_MESSAGE_TO_PHONE_AND_WAITING_FOR_RESPONSE;
   },
 
   /**
@@ -432,31 +455,10 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  shouldShowIntroSubTitle_() {
-    return this.flowState_ === SetupFlowStatus.INTRO;
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computeShouldShowNotificationItem_() {
-    return this.flowState_ === SetupFlowStatus.INTRO &&
-        (this.phonePermissionSetupMode ===
-             PhoneHubPermissionsSetupMode.ALL_PERMISSIONS_SETUP_MODE ||
-         this.phonePermissionSetupMode ===
-             PhoneHubPermissionsSetupMode.NOTIFICATION_SETUP_MODE);
-  },
-
-  /**
-   * @return {boolean}
-   * @private
-   */
-  computeShouldShowAppsItem_() {
-    return this.flowState_ === SetupFlowStatus.INTRO &&
-        (this.phonePermissionSetupMode ===
-             PhoneHubPermissionsSetupMode.ALL_PERMISSIONS_SETUP_MODE ||
-         this.phonePermissionSetupMode ===
-             PhoneHubPermissionsSetupMode.APPS_SETUP_MODE);
+  isScreenLockRequired_() {
+    return loadTimeData.getBoolean('isEcheAppEnabled') &&
+        loadTimeData.getBoolean('isPhoneScreenLockEnabled') &&
+        !loadTimeData.getBoolean('isChromeosScreenLockEnabled') &&
+        this.showAppStreaming;
   },
 });

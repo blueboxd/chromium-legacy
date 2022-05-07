@@ -19,9 +19,11 @@
 #include "content/public/common/child_process_host.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/isolation_info.h"
+#include "net/http/http_request_headers.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
+#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value.h"
 #include "url/gurl.h"
 
@@ -57,6 +59,7 @@ class MockNavigationHandle : public NavigationHandle {
   bool IsPrerenderedPageActivation() override {
     return is_prerendered_page_activation_;
   }
+  bool IsInFencedFrameTree() override { return is_in_fenced_frame_tree_; }
   FrameType GetNavigatingFrameType() const override {
     NOTIMPLEMENTED();
     return FrameType::kPrimaryMainFrame;
@@ -199,6 +202,19 @@ class MockNavigationHandle : public NavigationHandle {
   MOCK_METHOD(PrerenderTriggerType, GetPrerenderTriggerType, ());
   MOCK_METHOD(std::string, GetPrerenderEmbedderHistogramSuffix, ());
 
+#if BUILDFLAG(IS_ANDROID)
+  MOCK_METHOD(const base::android::JavaRef<jobject>&,
+              GetJavaNavigationHandle,
+              ());
+#endif
+
+  base::SafeRef<NavigationHandle> GetSafeRef() override {
+    return weak_factory_.GetSafeRef();
+  }
+
+  CommitDeferringCondition* GetCommitDeferringConditionForTesting() override {
+    return nullptr;
+  }
   void set_url(const GURL& url) { url_ = url; }
   void set_previous_main_frame_url(const GURL& previous_main_frame_url) {
     previous_main_frame_url_ = previous_main_frame_url;
@@ -223,6 +239,9 @@ class MockNavigationHandle : public NavigationHandle {
   }
   void set_is_prerendered_page_activation(bool is_prerendered_page_activation) {
     is_prerendered_page_activation_ = is_prerendered_page_activation;
+  }
+  void set_is_in_fenced_frame_tree(bool is_in_fenced_frame_tree) {
+    is_in_fenced_frame_tree_ = is_in_fenced_frame_tree;
   }
   void set_is_renderer_initiated(bool is_renderer_initiated) {
     is_renderer_initiated_ = is_renderer_initiated;
@@ -287,6 +306,7 @@ class MockNavigationHandle : public NavigationHandle {
   bool is_same_document_ = false;
   bool is_served_from_bfcache_ = false;
   bool is_prerendered_page_activation_ = false;
+  bool is_in_fenced_frame_tree_ = false;
   bool is_renderer_initiated_ = true;
   bool is_in_primary_main_frame_ = true;
   std::vector<GURL> redirect_chain_;
@@ -308,6 +328,8 @@ class MockNavigationHandle : public NavigationHandle {
   absl::optional<blink::LocalFrameToken> initiator_frame_token_;
   int initiator_process_id_ = ChildProcessHost::kInvalidUniqueID;
   bool was_started_from_context_menu_ = false;
+
+  base::WeakPtrFactory<MockNavigationHandle> weak_factory_{this};
 };
 
 }  // namespace content

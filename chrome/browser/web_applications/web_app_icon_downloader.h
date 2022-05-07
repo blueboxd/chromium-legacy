@@ -38,7 +38,7 @@ class WebAppIconDownloader : public content::WebContentsObserver {
   // |extra_favicon_urls| allows callers to provide icon urls that aren't
   // provided by the renderer (e.g touch icons on non-android environments).
   WebAppIconDownloader(content::WebContents* web_contents,
-                       const std::vector<GURL>& extra_favicon_urls,
+                       std::vector<GURL> extra_favicon_urls,
                        WebAppIconDownloaderCallback callback);
   WebAppIconDownloader(const WebAppIconDownloader&) = delete;
   WebAppIconDownloader& operator=(const WebAppIconDownloader&) = delete;
@@ -88,11 +88,11 @@ class WebAppIconDownloader : public content::WebContentsObserver {
                        DownloadedIconsHttpResults icons_http_results);
 
   // Whether we need to fetch favicons from the renderer.
-  bool need_favicon_urls_;
+  bool need_favicon_urls_ = true;
 
   // Whether we consider all requests to have failed if any individual URL fails
   // to load.
-  bool fail_all_if_any_fail_;
+  bool fail_all_if_any_fail_ = false;
 
   // URLs that aren't given by WebContentsObserver::DidUpdateFaviconURL() that
   // should be used for this favicon. This is necessary in order to get touch

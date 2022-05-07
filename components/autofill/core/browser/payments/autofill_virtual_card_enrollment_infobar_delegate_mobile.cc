@@ -79,9 +79,8 @@ AutofillVirtualCardEnrollmentInfoBarDelegateMobile::GetIssuerLegalMessage()
 }
 
 void AutofillVirtualCardEnrollmentInfoBarDelegateMobile::OnInfobarLinkClicked(
-    GURL url,
-    VirtualCardEnrollmentLinkType link_type) {
-  virtual_card_enroll_bubble_controller_->OnLinkClicked(link_type, url);
+    GURL url) {
+  virtual_card_enroll_bubble_controller_->OnLinkClicked(url);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier

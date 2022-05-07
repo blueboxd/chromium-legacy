@@ -12,6 +12,7 @@
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/field_trial.h"
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_restrictions.h"
@@ -227,6 +228,30 @@ SiteEngagementService::GetAllDetailsInBackground(
                            map.get());
 }
 
+// static
+bool SiteEngagementService::IsEngagementAtLeast(
+    double score,
+    blink::mojom::EngagementLevel level) {
+  DCHECK_LT(SiteEngagementScore::GetMediumEngagementBoundary(),
+            SiteEngagementScore::GetHighEngagementBoundary());
+  switch (level) {
+    case blink::mojom::EngagementLevel::NONE:
+      return true;
+    case blink::mojom::EngagementLevel::MINIMAL:
+      return score > 0;
+    case blink::mojom::EngagementLevel::LOW:
+      return score >= 1;
+    case blink::mojom::EngagementLevel::MEDIUM:
+      return score >= SiteEngagementScore::GetMediumEngagementBoundary();
+    case blink::mojom::EngagementLevel::HIGH:
+      return score >= SiteEngagementScore::GetHighEngagementBoundary();
+    case blink::mojom::EngagementLevel::MAX:
+      return score == SiteEngagementScore::kMaxPoints;
+  }
+  NOTREACHED();
+  return false;
+}
+
 SiteEngagementService::SiteEngagementService(content::BrowserContext* context)
     : browser_context_(context), clock_(base::DefaultClock::GetInstance()) {
   content::GetUIThreadTaskRunner({base::TaskPriority::BEST_EFFORT})
@@ -288,30 +313,6 @@ void SiteEngagementService::HandleNotificationInteraction(const GURL& url) {
 bool SiteEngagementService::IsBootstrapped() const {
   return GetTotalEngagementPoints() >=
          SiteEngagementScore::GetBootstrapPoints();
-}
-
-bool SiteEngagementService::IsEngagementAtLeast(
-    const GURL& url,
-    blink::mojom::EngagementLevel level) const {
-  DCHECK_LT(SiteEngagementScore::GetMediumEngagementBoundary(),
-            SiteEngagementScore::GetHighEngagementBoundary());
-  double score = GetScore(url);
-  switch (level) {
-    case blink::mojom::EngagementLevel::NONE:
-      return true;
-    case blink::mojom::EngagementLevel::MINIMAL:
-      return score > 0;
-    case blink::mojom::EngagementLevel::LOW:
-      return score >= 1;
-    case blink::mojom::EngagementLevel::MEDIUM:
-      return score >= SiteEngagementScore::GetMediumEngagementBoundary();
-    case blink::mojom::EngagementLevel::HIGH:
-      return score >= SiteEngagementScore::GetHighEngagementBoundary();
-    case blink::mojom::EngagementLevel::MAX:
-      return score == SiteEngagementScore::kMaxPoints;
-  }
-  NOTREACHED();
-  return false;
 }
 
 void SiteEngagementService::AddObserver(SiteEngagementObserver* observer) {

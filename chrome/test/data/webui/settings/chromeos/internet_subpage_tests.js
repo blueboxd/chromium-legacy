@@ -24,7 +24,7 @@ suite('InternetSubpage', function() {
   /** @type {?chromeos.networkConfig.mojom.CrosNetworkConfigRemote} */
   let mojoApi_ = null;
 
-  /** @type {?chromeos.cellularSetup.mojom.CellularSetupRemote} */
+  /** @type {?ash.cellularSetup.mojom.CellularSetupRemote} */
   let eSimManagerRemote;
 
   suiteSetup(function() {
@@ -594,7 +594,7 @@ suite('InternetSubpage', function() {
                   internetSubpage.$$('#alwaysOnVpnSelector');
               assert(networkAlwaysOnVpn);
               // The list should contain 2 compatible networks.
-              assertEquals(5, networkAlwaysOnVpn.networks.length);
+              assertEquals(2, networkAlwaysOnVpn.networks.length);
             });
       });
     });

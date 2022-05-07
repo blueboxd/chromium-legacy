@@ -5,17 +5,12 @@
 /**
  * @fileoverview ChromeVox braille commands.
  */
+import {DesktopAutomationInterface} from './desktop_automation_interface.js';
 
-goog.provide('BrailleCommandHandler');
-
-goog.require('EventGenerator');
-goog.require('EventSourceState');
-goog.require('DesktopAutomationHandler');
-goog.require('KeyCode');
-
-goog.scope(function() {
 const RoleType = chrome.automation.RoleType;
 const StateType = chrome.automation.StateType;
+
+export const BrailleCommandHandler = {};
 
 /**
  * Global setting for the enabled state of this handler.
@@ -24,6 +19,13 @@ const StateType = chrome.automation.StateType;
 BrailleCommandHandler.setEnabled = function(state) {
   BrailleCommandHandler.enabled_ = state;
 };
+
+chrome.runtime.onMessage.addListener(message => {
+  if (message.target === 'BrailleCommandHandler' &&
+      message.action === 'setEnabled') {
+    BrailleCommandHandler.setEnabled(message.value);
+  }
+});
 
 /**
  * Handles a braille command.
@@ -45,22 +47,22 @@ BrailleCommandHandler.onBrailleKeyEvent = function(evt, content) {
   Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
   switch (evt.command) {
     case BrailleKeyCommand.PAN_LEFT:
-      CommandHandler.onCommand('previousObject');
+      CommandHandlerInterface.instance.onCommand('previousObject');
       break;
     case BrailleKeyCommand.PAN_RIGHT:
-      CommandHandler.onCommand('nextObject');
+      CommandHandlerInterface.instance.onCommand('nextObject');
       break;
     case BrailleKeyCommand.LINE_UP:
-      CommandHandler.onCommand('previousLine');
+      CommandHandlerInterface.instance.onCommand('previousLine');
       break;
     case BrailleKeyCommand.LINE_DOWN:
-      CommandHandler.onCommand('nextLine');
+      CommandHandlerInterface.instance.onCommand('nextLine');
       break;
     case BrailleKeyCommand.TOP:
-      CommandHandler.onCommand('jumpToTop');
+      CommandHandlerInterface.instance.onCommand('jumpToTop');
       break;
     case BrailleKeyCommand.BOTTOM:
-      CommandHandler.onCommand('jumpToBottom');
+      CommandHandlerInterface.instance.onCommand('jumpToBottom');
       break;
     case BrailleKeyCommand.ROUTING:
       BrailleCommandHandler.onRoutingCommand_(
@@ -76,7 +78,7 @@ BrailleCommandHandler.onBrailleKeyEvent = function(evt, content) {
       const command = BrailleCommandData.getCommand(evt.brailleDots);
       if (command) {
         if (BrailleCommandHandler.onEditCommand_(command)) {
-          CommandHandler.onCommand(command);
+          CommandHandlerInterface.instance.onCommand(command);
         }
       }
       break;
@@ -166,7 +168,7 @@ BrailleCommandHandler.onEditCommand_ = function(command) {
     return true;
   }
 
-  const textEditHandler = DesktopAutomationHandler.instance.textEditHandler;
+  const textEditHandler = DesktopAutomationInterface.instance.textEditHandler;
   if (!textEditHandler || current.start.node !== textEditHandler.node) {
     return true;
   }
@@ -222,4 +224,3 @@ BrailleCommandHandler.onEditCommand_ = function(command) {
 
 /** @private {boolean} */
 BrailleCommandHandler.enabled_ = true;
-});  // goog.scope

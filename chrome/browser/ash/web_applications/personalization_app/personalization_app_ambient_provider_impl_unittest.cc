@@ -4,17 +4,20 @@
 
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_ambient_provider_impl.h"
 
+#include <algorithm>
 #include <memory>
 #include <vector>
 
 #include "ash/ambient/test/ambient_ash_test_helper.h"
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/ambient/ambient_animation_theme.h"
 #include "ash/public/cpp/ambient/ambient_prefs.h"
 #include "ash/public/cpp/ambient/common/ambient_settings.h"
 #include "ash/public/cpp/ambient/fake_ambient_backend_controller_impl.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "base/callback_helpers.h"
 #include "base/test/bind.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -38,6 +41,11 @@ class TestAmbientObserver
     ambient_mode_enabled_ = ambient_mode_enabled;
   }
 
+  void OnAnimationThemeChanged(
+      ash::AmbientAnimationTheme animation_theme) override {
+    animation_theme_ = animation_theme;
+  }
+
   void OnTopicSourceChanged(ash::AmbientModeTopicSource topic_source) override {
     topic_source_ = topic_source;
   }
@@ -46,6 +54,11 @@ class TestAmbientObserver
       std::vector<ash::personalization_app::mojom::AmbientModeAlbumPtr> albums)
       override {
     albums_ = std::move(albums);
+  }
+
+  void OnTemperatureUnitChanged(
+      ash::AmbientModeTemperatureUnit temperature_unit) override {
+    temperature_unit_ = temperature_unit;
   }
 
   mojo::PendingRemote<ash::personalization_app::mojom::AmbientObserver>
@@ -62,6 +75,11 @@ class TestAmbientObserver
     return ambient_mode_enabled_;
   }
 
+  ash::AmbientAnimationTheme animation_theme() {
+    ambient_observer_receiver_.FlushForTesting();
+    return animation_theme_;
+  }
+
   ash::AmbientModeTopicSource topic_source() {
     ambient_observer_receiver_.FlushForTesting();
     return topic_source_;
@@ -72,13 +90,22 @@ class TestAmbientObserver
     return std::move(albums_);
   }
 
+  ash::AmbientModeTemperatureUnit temperature_unit() {
+    ambient_observer_receiver_.FlushForTesting();
+    return temperature_unit_;
+  }
+
  private:
   mojo::Receiver<ash::personalization_app::mojom::AmbientObserver>
       ambient_observer_receiver_{this};
 
   bool ambient_mode_enabled_ = false;
+  ash::AmbientAnimationTheme animation_theme_ =
+      ash::AmbientAnimationTheme::kSlideshow;
   ash::AmbientModeTopicSource topic_source_ =
       ash::AmbientModeTopicSource::kArtGallery;
+  ash::AmbientModeTemperatureUnit temperature_unit_ =
+      ash::AmbientModeTemperatureUnit::kFahrenheit;
   std::vector<ash::personalization_app::mojom::AmbientModeAlbumPtr> albums_;
 };
 
@@ -88,8 +115,10 @@ class PersonalizationAppAmbientProviderImplTest : public testing::Test {
  public:
   PersonalizationAppAmbientProviderImplTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()) {
-    scoped_feature_list_.InitAndEnableFeature(
-        ash::features::kPersonalizationHub);
+    scoped_feature_list_.InitWithFeatures(
+        {ash::features::kPersonalizationHub,
+         ash::features::kAmbientModeAnimationFeature},
+        {});
   }
   PersonalizationAppAmbientProviderImplTest(
       const PersonalizationAppAmbientProviderImplTest&) = delete;
@@ -129,6 +158,10 @@ class PersonalizationAppAmbientProviderImplTest : public testing::Test {
 
   content::TestWebUI* web_ui() { return &web_ui_; }
 
+  const base::HistogramTester& histogram_tester() const {
+    return histogram_tester_;
+  }
+
   void SetAmbientObserver() {
     ambient_provider_remote_->SetAmbientObserver(
         test_ambient_observer_.pending_remote());
@@ -137,6 +170,11 @@ class PersonalizationAppAmbientProviderImplTest : public testing::Test {
   bool ObservedAmbientModeEnabled() {
     ambient_provider_remote_.FlushForTesting();
     return test_ambient_observer_.is_ambient_mode_enabled();
+  }
+
+  ash::AmbientAnimationTheme ObservedAnimationTheme() {
+    ambient_provider_remote_.FlushForTesting();
+    return test_ambient_observer_.animation_theme();
   }
 
   ash::AmbientModeTopicSource ObservedTopicSource() {
@@ -150,6 +188,11 @@ class PersonalizationAppAmbientProviderImplTest : public testing::Test {
     return test_ambient_observer_.albums();
   }
 
+  ash::AmbientModeTemperatureUnit ObservedTemperatureUnit() {
+    ambient_provider_remote_.FlushForTesting();
+    return test_ambient_observer_.temperature_unit();
+  }
+
   absl::optional<ash::AmbientSettings>& settings() {
     return ambient_provider_->settings_;
   }
@@ -157,6 +200,10 @@ class PersonalizationAppAmbientProviderImplTest : public testing::Test {
   void SetEnabledPref(bool enabled) {
     profile()->GetPrefs()->SetBoolean(ash::ambient::prefs::kAmbientModeEnabled,
                                       enabled);
+  }
+
+  void SetAnimationTheme(ash::AmbientAnimationTheme animation_theme) {
+    ambient_provider_->SetAnimationTheme(animation_theme);
   }
 
   void FetchSettings() { ambient_provider_->FetchSettingsAndAlbums(); }
@@ -172,12 +219,34 @@ class PersonalizationAppAmbientProviderImplTest : public testing::Test {
     ambient_provider_->SetTopicSource(topic_source);
   }
 
+  void SetAlbumSelected(const std::string& id,
+                        ash::AmbientModeTopicSource topic_source,
+                        bool selected) {
+    ambient_provider_->SetAlbumSelected(id, topic_source, selected);
+  }
+
   ash::AmbientModeTopicSource TopicSource() {
     return ambient_provider_->settings_->topic_source;
   }
 
-  void SetSelectedAlbums(const std::vector<std::string>& ids) {
+  std::vector<std::string> SelectedAlbumIds() {
+    return ambient_provider_->settings_->selected_album_ids;
+  }
+
+  void SetSelectedAlbumIds(const std::vector<std::string>& ids) {
     ambient_provider_->settings_->selected_album_ids = ids;
+  }
+
+  void SetTemperatureUnit(ash::AmbientModeTemperatureUnit temperature_unit) {
+    ambient_provider_->SetTemperatureUnit(temperature_unit);
+  }
+
+  ash::AmbientModeTemperatureUnit TemperatureUnit() {
+    return ambient_provider_->settings_->temperature_unit;
+  }
+
+  std::vector<ash::ArtSetting> ArtSettings() {
+    return ambient_provider_->settings_->art_settings;
   }
 
   bool HasPendingFetchRequestAtProvider() const {
@@ -241,6 +310,7 @@ class PersonalizationAppAmbientProviderImplTest : public testing::Test {
   std::unique_ptr<ash::AmbientAshTestHelper> ambient_ash_test_helper_;
   std::unique_ptr<ash::FakeAmbientBackendControllerImpl>
       fake_backend_controller_;
+  base::HistogramTester histogram_tester_;
 };
 
 TEST_F(PersonalizationAppAmbientProviderImplTest, IsAmbientModeEnabled) {
@@ -300,6 +370,18 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest,
+       ShouldCallOnAnimationThemeChanged) {
+  SetAmbientObserver();
+  ambient_provider_remote().FlushForTesting();
+  SetAnimationTheme(ash::AmbientAnimationTheme::kSlideshow);
+  EXPECT_EQ(ash::AmbientAnimationTheme::kSlideshow, ObservedAnimationTheme());
+
+  SetAnimationTheme(ash::AmbientAnimationTheme::kFeelTheBreeze);
+  EXPECT_EQ(ash::AmbientAnimationTheme::kFeelTheBreeze,
+            ObservedAnimationTheme());
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest,
        ShouldCallOnTopicSourceChanged) {
   // Will fetch settings when observer is set.
   SetAmbientObserver();
@@ -319,7 +401,21 @@ TEST_F(PersonalizationAppAmbientProviderImplTest, ShouldCallOnAlbumsChanged) {
   auto albums = ObservedAlbums();
   // The fake albums are set in FakeAmbientBackendControllerImpl. Hidden setting
   // will be sent to JS side.
-  EXPECT_EQ(4, albums.size());
+  EXPECT_EQ(4u, albums.size());
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest,
+       ShouldCallOnTemperatureUnitChanged) {
+  // Will fetch settings when observer is set.
+  SetAmbientObserver();
+  ambient_provider_remote().FlushForTesting();
+  ReplyFetchSettingsAndAlbums(/*success=*/true);
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius,
+            ObservedTemperatureUnit());
+
+  SetTemperatureUnit(ash::AmbientModeTemperatureUnit::kFahrenheit);
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kFahrenheit,
+            ObservedTemperatureUnit());
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest, SetTopicSource) {
@@ -334,13 +430,25 @@ TEST_F(PersonalizationAppAmbientProviderImplTest, SetTopicSource) {
   EXPECT_EQ(ash::AmbientModeTopicSource::kGooglePhotos, TopicSource());
 
   // If `settings_->selected_album_ids` is empty, will fallback to kArtGallery.
-  SetSelectedAlbums(/*ids=*/{});
+  SetSelectedAlbumIds(/*ids=*/{});
   SetTopicSource(ash::AmbientModeTopicSource::kGooglePhotos);
   EXPECT_EQ(ash::AmbientModeTopicSource::kArtGallery, TopicSource());
 
-  SetSelectedAlbums(/*ids=*/{"1"});
+  SetSelectedAlbumIds(/*ids=*/{"1"});
   SetTopicSource(ash::AmbientModeTopicSource::kGooglePhotos);
   EXPECT_EQ(ash::AmbientModeTopicSource::kGooglePhotos, TopicSource());
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest, SetTemperatureUnit) {
+  FetchSettings();
+  ReplyFetchSettingsAndAlbums(/*success=*/true);
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius, TemperatureUnit());
+
+  SetTemperatureUnit(ash::AmbientModeTemperatureUnit::kFahrenheit);
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kFahrenheit, TemperatureUnit());
+
+  SetTemperatureUnit(ash::AmbientModeTemperatureUnit::kCelsius);
+  EXPECT_EQ(ash::AmbientModeTemperatureUnit::kCelsius, TemperatureUnit());
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest, TestFetchSettings) {
@@ -562,6 +670,112 @@ TEST_F(PersonalizationAppAmbientProviderImplTest,
   FetchSettings();
   EXPECT_TRUE(HasPendingFetchRequestAtProvider());
   EXPECT_FALSE(IsFetchSettingsPendingAtBackend());
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest,
+       TestSetSelectedGooglePhotosAlbum) {
+  FetchSettings();
+  ReplyFetchSettingsAndAlbums(/*success=*/true);
+
+  // The fake data has album '1' as selected.
+  std::vector<std::string> selected_ids = SelectedAlbumIds();
+  auto it = std::find(selected_ids.begin(), selected_ids.end(), "1");
+  EXPECT_NE(it, selected_ids.end());
+
+  ash::personalization_app::mojom::AmbientModeAlbumPtr album =
+      ash::personalization_app::mojom::AmbientModeAlbum::New();
+  album->id = '1';
+  album->topic_source = ash::AmbientModeTopicSource::kGooglePhotos;
+  album->checked = false;
+  SetAlbumSelected(album->id, album->topic_source, album->checked);
+
+  selected_ids = SelectedAlbumIds();
+  EXPECT_TRUE(selected_ids.empty());
+  // Will fallback to Art topic source if no selected Google Photos.
+  EXPECT_EQ(ash::AmbientModeTopicSource::kArtGallery, TopicSource());
+
+  album = ash::personalization_app::mojom::AmbientModeAlbum::New();
+  album->id = '1';
+  album->topic_source = ash::AmbientModeTopicSource::kGooglePhotos;
+  album->checked = true;
+  SetAlbumSelected(album->id, album->topic_source, album->checked);
+
+  selected_ids = SelectedAlbumIds();
+  EXPECT_EQ(1u, selected_ids.size());
+  it = std::find(selected_ids.begin(), selected_ids.end(), "1");
+  EXPECT_NE(it, selected_ids.end());
+  EXPECT_EQ(ash::AmbientModeTopicSource::kGooglePhotos, TopicSource());
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest, TestSetSelectedArtAlbum) {
+  FetchSettings();
+  ReplyFetchSettingsAndAlbums(/*success=*/true);
+
+  // The fake data has art setting '0' as enabled.
+  std::vector<ash::ArtSetting> art_settings = ArtSettings();
+  auto it = std::find_if(art_settings.begin(), art_settings.end(),
+                         [](const auto& setting) { return setting.enabled; });
+  EXPECT_NE(it, art_settings.end());
+  EXPECT_EQ(it->album_id, "0");
+
+  ash::personalization_app::mojom::AmbientModeAlbumPtr album =
+      ash::personalization_app::mojom::AmbientModeAlbum::New();
+  album->id = '0';
+  album->topic_source = ash::AmbientModeTopicSource::kArtGallery;
+  album->checked = false;
+  SetAlbumSelected(album->id, album->topic_source, album->checked);
+
+  art_settings = ArtSettings();
+  it = std::find_if(art_settings.begin(), art_settings.end(),
+                    [](const auto& setting) { return setting.enabled; });
+  EXPECT_EQ(it, art_settings.end());
+
+  album = ash::personalization_app::mojom::AmbientModeAlbum::New();
+  album->id = '1';
+  album->topic_source = ash::AmbientModeTopicSource::kArtGallery;
+  album->checked = true;
+  SetAlbumSelected(album->id, album->topic_source, album->checked);
+
+  art_settings = ArtSettings();
+  it = std::find_if(art_settings.begin(), art_settings.end(),
+                    [](const auto& setting) { return setting.enabled; });
+  EXPECT_NE(it, art_settings.end());
+  EXPECT_EQ(it->album_id, "1");
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest, TestAlbumNumbersAreRecorded) {
+  FetchSettings();
+  ReplyFetchSettingsAndAlbums(/*success=*/true);
+
+  ash::personalization_app::mojom::AmbientModeAlbumPtr album =
+      ash::personalization_app::mojom::AmbientModeAlbum::New();
+  album->id = '0';
+  album->topic_source = ash::AmbientModeTopicSource::kGooglePhotos;
+  SetAlbumSelected(album->id, album->topic_source, album->checked);
+  histogram_tester().ExpectTotalCount("Ash.AmbientMode.TotalNumberOfAlbums",
+                                      /*count=*/1);
+  histogram_tester().ExpectTotalCount("Ash.AmbientMode.SelectedNumberOfAlbums",
+                                      /*count=*/1);
+}
+
+TEST_F(PersonalizationAppAmbientProviderImplTest,
+       TestEnabledPrefChangeUpdatesSettings) {
+  // Simulate initial page request.
+  FetchSettings();
+  ReplyFetchSettingsAndAlbums(/*success=*/true);
+
+  EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
+  EXPECT_FALSE(IsUpdateSettingsPendingAtBackend());
+
+  // Should not trigger |UpdateSettings|.
+  SetEnabledPref(/*enabled=*/false);
+  EXPECT_FALSE(IsUpdateSettingsPendingAtProvider());
+  EXPECT_FALSE(IsUpdateSettingsPendingAtBackend());
+
+  // Settings this to true should trigger |UpdateSettings|.
+  SetEnabledPref(/*enabled=*/true);
+  EXPECT_TRUE(IsUpdateSettingsPendingAtProvider());
+  EXPECT_TRUE(IsUpdateSettingsPendingAtBackend());
 }
 
 TEST_F(PersonalizationAppAmbientProviderImplTest,

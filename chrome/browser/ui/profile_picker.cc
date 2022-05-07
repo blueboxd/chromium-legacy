@@ -17,6 +17,7 @@
 #include "chrome/browser/signin/signin_util.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/webui_url_constants.h"
 #include "components/prefs/pref_service.h"
 
 namespace {
@@ -43,6 +44,103 @@ ProfilePicker::AvailabilityOnStartup GetAvailabilityOnStartup() {
 
 const char ProfilePicker::kTaskManagerUrl[] =
     "chrome://profile-picker/task-manager";
+
+ProfilePicker::Params::~Params() {
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  NotifyAccountSelected(std::string());
+
+  if (first_run_exited_callback_) {
+    std::move(first_run_exited_callback_)
+        .Run(/*finished=*/false, BrowserOpenedCallback());
+  }
+#endif
+}
+
+ProfilePicker::Params::Params(ProfilePicker::Params&&) = default;
+
+ProfilePicker::Params& ProfilePicker::Params::operator=(
+    ProfilePicker::Params&&) = default;
+
+// static
+ProfilePicker::Params ProfilePicker::Params::FromEntryPoint(
+    EntryPoint entry_point) {
+  // Use specialized constructors when available.
+  DCHECK_NE(entry_point, EntryPoint::kBackgroundModeManager);
+  DCHECK_NE(entry_point, EntryPoint::kLacrosSelectAvailableAccount);
+  DCHECK_NE(entry_point, EntryPoint::kLacrosPrimaryProfileFirstRun);
+  return ProfilePicker::Params(entry_point, GetPickerProfilePath());
+}
+
+// static
+ProfilePicker::Params ProfilePicker::Params::ForBackgroundManager(
+    const GURL& on_select_profile_target_url) {
+  Params params(EntryPoint::kBackgroundModeManager, GetPickerProfilePath());
+  params.on_select_profile_target_url_ = on_select_profile_target_url;
+  return params;
+}
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// static
+ProfilePicker::Params ProfilePicker::Params::ForLacrosSelectAvailableAccount(
+    const base::FilePath& profile_path,
+    base::OnceCallback<void(const std::string&)> account_selected_callback) {
+  Params params(EntryPoint::kLacrosSelectAvailableAccount,
+                profile_path.empty() ? GetPickerProfilePath() : profile_path);
+  params.account_selected_callback_ = std::move(account_selected_callback);
+  return params;
+}
+
+// static
+ProfilePicker::Params ProfilePicker::Params::ForLacrosPrimaryProfileFirstRun(
+    FirstRunExitedCallback first_run_finished_callback) {
+  Params params(EntryPoint::kLacrosPrimaryProfileFirstRun,
+                ProfileManager::GetPrimaryUserProfilePath());
+  params.first_run_exited_callback_ = std::move(first_run_finished_callback);
+  return params;
+}
+
+void ProfilePicker::Params::NotifyAccountSelected(const std::string& gaia_id) {
+  if (account_selected_callback_)
+    std::move(account_selected_callback_).Run(gaia_id);
+}
+
+void ProfilePicker::Params::NotifyFirstRunFinished(
+    BrowserOpenedCallback maybe_callback) {
+  if (first_run_exited_callback_)
+    std::move(first_run_exited_callback_)
+        .Run(/*finished=*/true, std::move(maybe_callback));
+}
+#endif
+
+GURL ProfilePicker::Params::GetInitialURL() {
+  GURL base_url = GURL(chrome::kChromeUIProfilePickerUrl);
+  switch (entry_point_) {
+    case ProfilePicker::EntryPoint::kOnStartup: {
+      GURL::Replacements replacements;
+      replacements.SetQueryStr(chrome::kChromeUIProfilePickerStartupQuery);
+      return base_url.ReplaceComponents(replacements);
+    }
+    case ProfilePicker::EntryPoint::kProfileMenuManageProfiles:
+    case ProfilePicker::EntryPoint::kOpenNewWindowAfterProfileDeletion:
+    case ProfilePicker::EntryPoint::kNewSessionOnExistingProcess:
+    case ProfilePicker::EntryPoint::kProfileLocked:
+    case ProfilePicker::EntryPoint::kUnableToCreateBrowser:
+    case ProfilePicker::EntryPoint::kBackgroundModeManager:
+      return base_url;
+    case ProfilePicker::EntryPoint::kProfileMenuAddNewProfile:
+      return base_url.Resolve("new-profile");
+    case ProfilePicker::EntryPoint::kLacrosSelectAvailableAccount:
+      return base_url.Resolve("account-selection-lacros");
+    case ProfilePicker::EntryPoint::kLacrosPrimaryProfileFirstRun:
+      // No web UI should be displayed initially.
+      NOTREACHED();
+      return GURL();
+  }
+}
+
+ProfilePicker::Params::Params(EntryPoint entry_point,
+                              const base::FilePath& profile_path)
+    : entry_point_(entry_point), profile_path_(profile_path) {}
 
 // static
 bool ProfilePicker::Shown() {

@@ -13,6 +13,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/observer_list.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
@@ -1348,7 +1349,8 @@ void ChromePasswordProtectionService::FillReferrerChain(
           profile_);
   SafeBrowsingNavigationObserverManager::AttributionResult result =
       navigation_observer_manager->IdentifyReferrerChainByEventURL(
-          event_url, event_tab_id, kPasswordEventAttributionUserGestureLimit,
+          event_url, event_tab_id, content::GlobalRenderFrameHostId(),
+          kPasswordEventAttributionUserGestureLimit,
           frame->mutable_referrer_chain());
   size_t referrer_chain_length = frame->referrer_chain().size();
   UMA_HISTOGRAM_COUNTS_100(

@@ -1,12 +1,98 @@
-<style></style>
+<style>
+  #mainSettings {
+    display: grid;
+    grid-template-areas:
+      '. . toggles   . .'
+      '. . zeroState . .'
+      '. . spinner   . .'
+      '. . preview   . .'
+      '. . animation . .'
+      '. . sources   . .'
+      '. . weather   . .';
+    grid-template-columns: 1fr 16px minmax(568px, 920px) 16px 1fr;
+    grid-template-rows: auto;
+  }
+  toggle-row {
+    grid-area: toggles;
+    margin: 0 8px;
+  }
+  ambient-zero-state {
+    grid-area: zeroState;
+  }
+  paper-spinner-lite {
+    grid-area: spinner;
+    height: 28px;
+    margin: 100px auto;
+    width: 28px;
+  }
+  ambient-preview {
+    grid-area: preview;
+    margin: 20px 8px 0 8px;
+  }
+  animation-theme-list {
+    grid-area: animation;
+  }
+  topic-source-list {
+    grid-area: sources;
+    margin: 0 8px;
+  }
+  ambient-weather-unit {
+    grid-area: weather;
+    margin: 0 8px;
+  }
+  #albumsSubpage {
+    display: grid;
+    grid-template-areas:
+      '. . albums-subpage . .';
+    grid-template-columns: 1fr 16px minmax(568px, 920px) 16px 1fr;
+    grid-template-rows: auto;
+    position: relative;
+    width: 100%;
+  }
+  albums-subpage {
+    grid-area: albums-subpage;
+  }
+</style>
 <div id="container">
-  <h2>Ambient</h2>
-  <toggle-row checked="[[ambientModeEnabled_]]"
-      on-click="onClickAmbientModeButton_" on-change="onToggleStateChanged_">
-  </toggle-row>
-  <ambient-preview>Image Preview</ambient-preview>
-  <topic-source-list selected-topic-source="[[topicSource_]]"
-      has-google-photos-albums="[[hasGooglePhotosAlbums_]]">
-  </topic-source-list>
-  <ambient-weather-unit></ambient-weather-unit>
+  <template is="dom-if" if="[[shouldShowMainSettings_(path)]]">
+    <div id="mainSettings">
+      <toggle-row checked="[[ambientModeEnabled_]]"
+          on-click="onClickAmbientModeButton_" on-change="onToggleStateChanged_">
+      </toggle-row>
+      <template is="dom-if" if="[[ambientModeEnabled_]]">
+        <template is="dom-if" if="[[loadingSettings_]]">
+          <!-- TODO(b/217311018): Add loading state -->
+          <paper-spinner-lite active></paper-spinner-lite>
+        </template>
+
+        <template is="dom-if" if="[[!loadingSettings_]]">
+          <ambient-preview></ambient-preview>
+          <template is="dom-if" if="[[isAmbientModeAnimationEnabled_()]]">
+            <animation-theme-list selected-animation-theme="[[animationTheme_]]"
+                disabled$="[[disabled_]]">
+            </animation-theme-list>
+          </template>
+          <topic-source-list selected-topic-source="[[topicSource_]]"
+              has-google-photos-albums="[[hasGooglePhotosAlbums_(albums_)]]"
+              disabled="[[disabled_]]">
+          </topic-source-list>
+          <ambient-weather-unit
+              selected-temperature-unit="[[temperatureUnitToString_(temperatureUnit_)]]"
+              disabled="[[disabled_]]">
+          </ambient-weather-unit>
+        </template>
+      </template>
+      <template is="dom-if" if="[[!ambientModeEnabled_]]">
+        <ambient-zero-state id="zeroState"></ambient-zero-state>
+      </template>
+    </div>
+  </template>
+  <template is="dom-if" if="[[shouldShowAlbums_(path, ambientModeEnabled_)]]">
+    <div id="albumsSubpage">
+      <albums-subpage disabled="[[disabled_]]" path="[[path]]"
+          topic-source="[[getTopicSource_(queryParams)]]"
+          albums="[[getAlbums_(albums_, queryParams)]]">
+      </albums-subpage>
+    </div>
+  </template>
 </div>

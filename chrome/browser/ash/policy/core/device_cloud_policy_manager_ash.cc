@@ -27,10 +27,10 @@
 #include "chrome/browser/ash/attestation/enrollment_certificate_uploader_impl.h"
 #include "chrome/browser/ash/attestation/enrollment_id_upload_manager.h"
 #include "chrome/browser/ash/attestation/machine_certificate_uploader_impl.h"
-#include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
 #include "chrome/browser/ash/login/reporting/login_logout_reporter.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_store_ash.h"
 #include "chrome/browser/ash/policy/core/policy_pref_names.h"
+#include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
 #include "chrome/browser/ash/policy/networking/euicc_status_uploader.h"
 #include "chrome/browser/ash/policy/remote_commands/device_commands_factory_ash.h"
 #include "chrome/browser/ash/policy/reporting/metrics_reporting/metric_reporting_manager.h"
@@ -82,7 +82,7 @@ constexpr base::TimeDelta kDeviceStatusUploadFrequency = base::Hours(3);
 
 // Checks whether forced re-enrollment is enabled.
 bool IsForcedReEnrollmentEnabled() {
-  return ash::AutoEnrollmentController::IsFREEnabled();
+  return policy::AutoEnrollmentTypeChecker::IsFREEnabled();
 }
 
 }  // namespace
@@ -244,24 +244,26 @@ void DeviceCloudPolicyManagerAsh::StartConnection(
   // themselves track the current state of the monitoring settings and only
   // perform monitoring if it is active.
   if (install_attributes->IsCloudManaged()) {
-    managed_session_service_ =
-        std::make_unique<policy::ManagedSessionService>();
+    CreateManagedSessionServiceAndReporters();
     CreateStatusUploader(managed_session_service_.get());
     syslog_uploader_ =
         std::make_unique<SystemLogUploader>(nullptr, task_runner_);
     heartbeat_scheduler_ = std::make_unique<HeartbeatScheduler>(
         g_browser_process->gcm_driver(), client(), device_store_.get(),
         install_attributes->GetDeviceId(), task_runner_);
-    login_logout_reporter_ = ash::reporting::LoginLogoutReporter::Create(
-        managed_session_service_.get());
-    user_added_removed_reporter_ =
-        ::reporting::UserAddedRemovedReporter::Create(
-            managed_session_service_.get());
     metric_reporting_manager_ = reporting::MetricReportingManager::Create(
         managed_session_service_.get());
   }
 
   NotifyConnected();
+}
+
+void DeviceCloudPolicyManagerAsh::OnPolicyStoreReady(
+    chromeos::InstallAttributes* install_attributes) {
+  if (!install_attributes->IsCloudManaged()) {
+    return;
+  }
+  CreateManagedSessionServiceAndReporters();
 }
 
 void DeviceCloudPolicyManagerAsh::Unregister(UnregisterCallback callback) {
@@ -337,6 +339,18 @@ void DeviceCloudPolicyManagerAsh::CreateStatusUploader(
   status_uploader_ = std::make_unique<StatusUploader>(
       client(), std::move(collector), task_runner_,
       kDeviceStatusUploadFrequency);
+}
+
+void DeviceCloudPolicyManagerAsh::CreateManagedSessionServiceAndReporters() {
+  if (managed_session_service_) {
+    return;
+  }
+
+  managed_session_service_ = std::make_unique<policy::ManagedSessionService>();
+  login_logout_reporter_ = ash::reporting::LoginLogoutReporter::Create(
+      managed_session_service_.get());
+  user_added_removed_reporter_ = ::reporting::UserAddedRemovedReporter::Create(
+      managed_session_service_.get());
 }
 
 }  // namespace policy

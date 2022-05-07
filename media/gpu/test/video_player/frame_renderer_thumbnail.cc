@@ -122,7 +122,7 @@ void CreateShader(GLuint program, GLenum type, const char* source, int size) {
   glGetShaderiv(shader, GL_COMPILE_STATUS, &result);
   if (!result) {
     char log[4096];
-    glGetShaderInfoLog(shader, base::size(log), nullptr, log);
+    glGetShaderInfoLog(shader, std::size(log), nullptr, log);
     LOG(FATAL) << log;
   }
   glAttachShader(program, shader);
@@ -307,7 +307,7 @@ void FrameRendererThumbnail::Initialize() {
 
   // Initialize GL rendering and create GL context.
   if (!gl_initialized_) {
-    if (!gl::init::InitializeGLOneOff())
+    if (!gl::init::InitializeGLOneOff(/*system_device_id=*/0))
       LOG(FATAL) << "Could not initialize GL";
     gl_initialized_ = true;
   }
@@ -388,9 +388,9 @@ void FrameRendererThumbnail::InitializeThumbnailImageTask() {
 
   program_ = glCreateProgram();
   CreateShader(program_, GL_VERTEX_SHADER, kVertexShader,
-               base::size(kVertexShader));
+               std::size(kVertexShader));
   CreateShader(program_, GL_FRAGMENT_SHADER, kFragmentShader,
-               base::size(kFragmentShader));
+               std::size(kFragmentShader));
   glLinkProgram(program_);
   GLint result = GL_FALSE;
   glGetProgramiv(program_, GL_LINK_STATUS, &result);

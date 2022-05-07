@@ -107,8 +107,8 @@ export class FileTypeFiltersController {
    * @private
    */
   createFilterButton_(label, fileType) {
-    const button =
-        util.createChild(this.container_, 'file-type-filter-button', 'button');
+    const button = util.createChild(
+        this.container_, 'file-type-filter-button', 'cr-button');
     button.textContent = label;
     // Store the "RecentFileType" on the button element so we know the mapping
     // between the DOM element and its corresponding "RecentFileType", which
@@ -148,16 +148,25 @@ export class FileTypeFiltersController {
    */
   onFilterButtonClicked_(event) {
     const target = /** @type {HTMLButtonElement} */ (event.target);
-    // At least one filter button should be selected, so we don't allow user to
-    // unselect a filter button by clicking it, e.g. do nothing if an active
-    // filter button is clicked.
-    if (target.classList.contains('active')) {
+    const isButtonActive = target.classList.contains('active');
+    const buttonFilter =
+        /** @type {!chrome.fileManagerPrivate.RecentFileType} */
+        (target.getAttribute('file-type-filter'));
+    // Do nothing if "All" button is active and being clicked again.
+    if (isButtonActive &&
+        buttonFilter === chrome.fileManagerPrivate.RecentFileType.ALL) {
       return;
     }
-    const newFilter = /** @type {!chrome.fileManagerPrivate.RecentFileType} */
-        (target.getAttribute('file-type-filter'));
+    // Clicking an active button will make it inactive and make "All"
+    // button active.
+    const newFilter = isButtonActive ?
+        chrome.fileManagerPrivate.RecentFileType.ALL :
+        buttonFilter;
     this.recentEntry_.recentFileType = newFilter;
     this.updateButtonActiveStates_();
+    if (isButtonActive) {
+      this.allFilterButton_.focus();
+    }
     // Refresh current directory with the updated Recent setting.
     // We don't need to invalidate the cached metadata for this rescan.
     this.directoryModel_.rescan(false);

@@ -5,9 +5,9 @@
 #ifndef COMPONENTS_AUTOFILL_CORE_BROWSER_METRICS_PAYMENTS_VIRTUAL_CARD_ENROLLMENT_METRICS_H_
 #define COMPONENTS_AUTOFILL_CORE_BROWSER_METRICS_PAYMENTS_VIRTUAL_CARD_ENROLLMENT_METRICS_H_
 
-#include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
-
 #include <string>
+
+#include "components/autofill/core/browser/payments/virtual_card_enrollment_flow.h"
 
 namespace base {
 class TimeDelta;
@@ -54,22 +54,6 @@ enum class VirtualCardEnrollmentBubbleSource {
   kMaxValue = VIRTUAL_CARD_ENROLLMENT_SETTINGS_PAGE_SOURCE,
 };
 
-// Used to determine the type of link that was clicked for logging purposes. A
-// java IntDef@ is generated from this.
-// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.autofill
-enum class VirtualCardEnrollmentLinkType {
-  // These values are persisted to logs. Entries should not be renumbered and
-  // numeric values should never be reused.
-
-  // User selected the Google Payments terms of service link.
-  VIRTUAL_CARD_ENROLLMENT_GOOGLE_PAYMENTS_TOS_LINK = 0,
-  // User selected the issuer terms of service link.
-  VIRTUAL_CARD_ENROLLMENT_ISSUER_TOS_LINK = 1,
-  // User selected the learn more about virtual cards link.
-  VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK = 2,
-  kMaxValue = VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK,
-};
-
 // Bubble shown and closed related metrics.
 void LogVirtualCardEnrollmentBubbleShownMetric(
     VirtualCardEnrollmentBubbleSource source,
@@ -96,31 +80,21 @@ void LogUpdateVirtualCardEnrollmentRequestResult(
     VirtualCardEnrollmentRequestType type,
     bool succeeded);
 
-// Virtual card enrollment bubble link clicked metrics.
-void LogVirtualCardEnrollmentLinkClickedMetric(
-    VirtualCardEnrollmentLinkType link_type,
+// Helper function used to convert VirtualCardEnrollmentBubbleSource enum to
+// name suffix.
+std::string VirtualCardEnrollmentBubbleSourceToMetricSuffix(
     VirtualCardEnrollmentBubbleSource source);
+
+// Helper function used to convert VirtualCardEnrollmentSource enum to
+// name suffix.
+const std::string VirtualCardEnrollmentSourceToMetricSuffix(
+    VirtualCardEnrollmentSource source);
 
 // Latency Since Upstream metrics. Used to determine the time that it takes for
 // the server calls that need to be made between Save Card Bubble accept and
 // when the Virtual Card Enroll Bubble is shown.
 void LogVirtualCardEnrollBubbleLatencySinceUpstream(
     const base::TimeDelta& latency);
-
-// Helper function used to convert VirtualCardEnrollmentBubbleSource enum to
-// name suffix.
-std::string VirtualCardEnrollmentBubbleSourceToMetricSuffix(
-    VirtualCardEnrollmentBubbleSource source);
-
-// Helper function used to convert VirtualCardEnrollmentLinkType enum to
-// name suffix.
-const std::string VirtualCardEnrollmentLinkTypeToMetricSuffix(
-    VirtualCardEnrollmentLinkType link_type);
-
-// Helper function used to convert VirtualCardEnrollmentSource enum to
-// name suffix.
-const std::string VirtualCardEnrollmentSourceToMetricSuffix(
-    VirtualCardEnrollmentSource source);
 
 }  // namespace autofill
 

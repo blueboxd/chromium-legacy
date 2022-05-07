@@ -5,9 +5,54 @@
 module remoting.mojom;
 
 import "mojo/public/mojom/base/byte_string.mojom";
+import "mojo/public/mojom/base/shared_memory.mojom";
 import "remoting/host/mojom/webrtc_types.mojom";
 import "remoting/host/mojom/wrapped_primitives.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
+
+// Contains captured audio data.
+// This struct mirrors the remoting::protocol::AudioPacket protobuf as well as
+// the enums and values.
+struct AudioPacket {
+  // The timestamp at which the data was captured.
+  int32 timestamp;
+
+  // The audio packet data.
+  array<mojo_base.mojom.ByteString> data;
+
+  enum Encoding {
+    kInvalid = -1,
+    kRaw = 0,
+    kOpus = 1,
+  };
+  Encoding encoding = Encoding.kInvalid;
+
+  enum SamplingRate {
+    kInvalid = -1,
+    kRate_44100 = 44100,
+    kRate_48000 = 48000,
+  };
+  SamplingRate sampling_rate = SamplingRate.kInvalid;
+
+  enum BytesPerSample {
+    kInvalid = -1,
+    kBytesPerSample_2 = 2,
+  };
+  BytesPerSample bytes_per_sample = BytesPerSample.kInvalid;
+
+  enum Channels {
+    kInvalid = -1,
+    kMono = 1,
+    kStereo = 2,
+    kSurround = 3,
+    kChannel_4_0 = 4,
+    kChannel_4_1 = 5,
+    kChannel_5_1 = 6,
+    kChannel_6_1 = 7,
+    kChannel_7_1 = 8,
+  };
+  Channels channels = Channels.kInvalid;
+};
 
 // Contains clipboard event data.
 // This struct mirrors the remoting::protocol::ClipboardEvents protobuf struct.
@@ -292,6 +337,13 @@ interface DesktopSessionControl {
   SetUpUrlForwarder();
 };
 
+// |frame| is set and contains valid frame data when a frame is captured
+// successfully, otherwise |error| will contain the reason the capture failed.
+union CaptureResult {
+  DesktopFrame desktop_frame;
+  DesktopCaptureResult capture_error;
+};
+
 // Allows the desktop process to forward events and data to the network process
 // which may process it (e.g. encode a video frame) or forward it to the client
 // (in the case of updated clipboard contents).
@@ -306,6 +358,27 @@ interface DesktopSessionEventHandler {
   // starts to provide the initial state, then it will be called to report state
   // changes caused by calling DesktopSessionControl::SetUpUrlForwarder().
   OnUrlForwarderStateChange(UrlForwarderState state);
+
+  // Forwards an audio packet captured from the desktop session to the client.
+  OnAudioPacket(AudioPacket audio_packet);
+
+  // Notifies the network process that a new shared memory region has been
+  // created to use for passing video frames between processes. |id| refers to
+  // the new shared memory region and is included in each capture result to
+  // indicate which region the frame data resides in.
+  // TODO(joedow): Look into refactoring our shared memory and capture impl
+  // to use a message pipe per shared memory region.
+  OnSharedMemoryRegionCreated(
+      int32 id, mojo_base.mojom.ReadOnlySharedMemoryRegion region, uint32 size);
+
+  // Notifies the network process that a shared memory region has been released
+  // and should no longer be used.
+  OnSharedMemoryRegionReleased(int32 id);
+
+  // Notifies the network process that new frame data is available in the shared
+  // memory region along with the details on how to access it (e.g. stride,
+  // size, etc.), otherwise provides the error reason the capture failed.
+  OnCaptureResult(CaptureResult result);
 };
 
 // This enum mirrors the remoting::protocol::ErrorCode enum.

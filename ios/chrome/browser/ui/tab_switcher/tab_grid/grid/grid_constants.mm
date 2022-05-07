@@ -18,16 +18,19 @@ NSString* const kGridCellCloseButtonIdentifier =
 // Accessibility identifier for the background of the grid.
 NSString* const kGridBackgroundIdentifier = @"GridBackgroundIdentifier";
 
+// Accessibility identifier for the grid section header.
+NSString* const kGridSectionHeaderIdentifier = @"GridSectionHeaderIdentifier";
+
+// Accessibility identifier for the suggested actions cell.
+NSString* const kSuggestedActionsGridCellIdentifier =
+    @"SuggestedActionsGridCellIdentifier";
+
 // Grid styling.
 NSString* const kGridBackgroundColor = @"grid_background_color";
 
 // PlusSignCell styling
 NSString* const kPlusSignCellBackgroundColor =
     @"plus_sign_grid_cell_background_color";
-
-// The height of the BVC that remains visible after transitioning from thumb
-// strip to tab grid.
-const CGFloat kBVCHeightTabGrid = 108.0f;
 
 // Definition of limited width for applicable size classes. The first refers to
 // the horizontal size class; the second to the vertical.

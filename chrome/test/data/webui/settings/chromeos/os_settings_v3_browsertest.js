@@ -281,7 +281,23 @@ var OSSettingsSearchEngineV3Test = class extends OSSettingsV3BrowserTest {
   }
 };
 
-TEST_F('OSSettingsSearchEngineV3Test', 'AllJsTests', () => {
+var OSSettingsAppManagementAppDetailsV3Test =
+    class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/app_details_item_test.m.js';
+  }
+
+  /** @override */
+  get featureList() {
+    return {
+      enabled: super.featureList.enabled.concat(
+          ['features::kAppManagementAppDetails'])
+    };
+  }
+};
+
+TEST_F('OSSettingsAppManagementAppDetailsV3Test', 'AllJsTests', () => {
   mocha.run();
 });
 
@@ -292,6 +308,7 @@ TEST_F('OSSettingsSearchEngineV3Test', 'AllJsTests', () => {
  ['AmbientModePhotosPage', 'ambient_mode_photos_page_test.m.js'],
  ['AppsPage', 'apps_page_test.m.js'],
  ['AppNotificationsSubpage', 'app_notifications_subpage_tests.m.js'],
+ ['AppManagementAppDetailsItem', 'app_details_item_test.m.js'],
  ['AppManagementAppDetailView', 'app_detail_view_test.m.js'],
  ['AppManagementAppItem', 'app_item_test.m.js'],
  ['AppManagementArcDetailView', 'arc_detail_view_test.m.js'],
@@ -344,7 +361,6 @@ TEST_F('OSSettingsSearchEngineV3Test', 'AllJsTests', () => {
  ['KerberosAccounts', 'kerberos_accounts_test.m.js'],
  ['KerberosPage', 'kerberos_page_test.m.js'],
  ['KeyboardShortcutBanner', 'keyboard_shortcut_banner_test.m.js'],
- ['LocalizedLink', 'localized_link_test.m.js'],
  ['LockScreenPage', 'lock_screen_tests.m.js'],
  ['ManageAccessibilityPage', 'manage_accessibility_page_tests.m.js'],
  ['MultideviceCombinedSetupItem', 'multidevice_combined_setup_item_tests.m.js'],

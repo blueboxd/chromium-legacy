@@ -52,8 +52,13 @@
 #include "components/autofill/core/browser/browser_autofill_manager_test_delegate.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/pattern_provider/pattern_configuration_parser.h"
+#include "components/autofill/core/browser/test_autofill_clock.h"
+#include "components/autofill/core/browser/test_autofill_tick_clock.h"
 #include "components/autofill/core/browser/validation.h"
+#include "components/autofill/core/common/autofill_clock.h"
+#include "components/autofill/core/common/autofill_constants.h"
 #include "components/autofill/core/common/autofill_features.h"
+#include "components/autofill/core/common/autofill_tick_clock.h"
 #include "components/autofill/core/common/autofill_util.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -80,6 +85,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/switches.h"
 #include "ui/events/base_event_utils.h"
@@ -373,9 +379,13 @@ struct ShowAutofillPopupParams {
   bool field_was_focused_initially = IsFocusedField(e, rfh);
   for (size_t i = 1; i <= p.max_tries; ++i) {
     a = a << "Iteration " << i << "/" << p.max_tries << ". ";
-    // The translate bubble may overlap with the Autofill popup. This causes
+    // The translate bubble may overlap with the Autofill popup, which causes
     // flakiness. See crbug.com/1175735#c10.
+    // Also, the address-save prompts and others may overlap with the Autofill
+    // popup. So we preemptively close all bubbles, which however is not
+    // reliable on Windows.
     translate::test_utils::CloseCurrentBubble(test->browser());
+    TryToCloseAllPrompts(test->GetWebContents());
     if (i > 1) {
       test->DoNothingAndWaitAndIgnoreEvents(p.timeout);
       if (field_was_focused_initially) {
@@ -533,6 +543,7 @@ struct AutofillFlowParams {
   base::RepeatingClosure after_show = {};
   base::RepeatingClosure after_select = {};
   base::RepeatingClosure after_accept = {};
+  size_t max_show_tries = 5;
   base::TimeDelta timeout = kAutofillFlowDefaultTimeout;
   absl::optional<content::ToRenderFrameHost> execution_target = {};
 };
@@ -556,6 +567,7 @@ struct AutofillFlowParams {
         ShowAutofillPopup(e, test,
                           {.show_method = p.show_method,
                            .num_profile_suggestions = p.num_profile_suggestions,
+                           .max_tries = p.max_show_tries,
                            .timeout = p.timeout,
                            .execution_target = execution_target});
     if (!a)
@@ -638,7 +650,7 @@ const std::vector<FieldValue> kDefaultAddress{
 // matches the `i`th `expected` FieldValue::value.
 // As a sanity check, also requires that the `i`th actual FieldValue::id
 // starts with the `i`th `expected` FieldValue::id.
-auto ValuesAre(const std::vector<FieldValue>& expected) {
+[[nodiscard]] auto ValuesAre(const std::vector<FieldValue>& expected) {
   auto FieldEq = [](const FieldValue& expected) {
     return ::testing::AllOf(
         ::testing::Field(&FieldValue::id, ::testing::StartsWith(expected.id)),
@@ -648,6 +660,176 @@ auto ValuesAre(const std::vector<FieldValue>& expected) {
   for (const FieldValue& field : expected)
     matchers.push_back(FieldEq(field));
   return ::testing::UnorderedElementsAreArray(matchers);
+}
+
+// An object that waits for an observed form-control element to change its value
+// to a non-empty string.
+//
+// See ListenForValueChange() for details.
+class ValueWaiter {
+ public:
+  static constexpr base::TimeDelta kDefaultTimeout = base::Seconds(5);
+
+  ValueWaiter(int waiterId, content::ToRenderFrameHost execution_target)
+      : waiterId_(waiterId), execution_target_(execution_target) {}
+
+  // Returns the non-empty value of the observed form-control element, or
+  // absl::nullopt if no value change is observed before `timeout`.
+  [[nodiscard]] absl::optional<std::string> Wait(
+      base::TimeDelta timeout = kDefaultTimeout) && {
+    const std::string kFunction = R"(
+      // Polls the value of `window[observedValueSlots]` and replies with the
+      // value once its non-`undefined` or `timeoutMillis` have elapsed.
+      //
+      // The value is expected to be populated by listenForValueChange().
+      function pollValue(waiterId, timeoutMillis) {
+        console.log(`pollValue('${waiterId}', ${timeoutMillis})`);
+
+        let interval = undefined;
+        let timeout = undefined;
+
+        function reply(r) {
+          console.log(`pollValue('${waiterId}', ${timeoutMillis}): `+
+                      `replying '${r}'`);
+          window.domAutomationController.send(r);
+          clearTimeout(timeout);
+          clearInterval(interval);
+        }
+
+        function replyIfSet(r) {
+          if (r !== undefined)
+            reply(r);
+        }
+
+        timeout = setTimeout(function() {
+          console.log(`pollValue('${waiterId}', ${timeoutMillis}): timeout`);
+          reply(null);
+        }, timeoutMillis);
+
+        const kPollingIntervalMillis = 100;
+        interval = setInterval(function() {
+          replyIfSet(window.observedValueSlots[waiterId]);
+        }, kPollingIntervalMillis);
+
+        replyIfSet(window.observedValueSlots[waiterId]);
+      }
+    )";
+    std::string call = base::StringPrintf("pollValue(`%d`, %" PRId64 ")",
+                                          waiterId_, timeout.InMilliseconds());
+    content::EvalJsResult r =
+        content::EvalJs(execution_target_, kFunction + call,
+                        content::EXECUTE_SCRIPT_USE_MANUAL_REPLY);
+    return !r.value.is_none() ? absl::make_optional(r.ExtractString())
+                              : absl::nullopt;
+  }
+
+ private:
+  int waiterId_;
+  content::ToRenderFrameHost execution_target_;
+};
+
+// Registers observers for a value change of a field `id`. This listener fires
+// on the first time *any* object whose ID is `id` changes its value to a
+// non-empty string after the global `unblock_variable` has become true.
+//
+// It is particularly useful for detecting refills.
+//
+// For example, consider the following chain JavaScript statements:
+//
+// 1. window.unblock = undefined // or any other value that converts to false;
+// 2. document.body.innerHTML += '<input id="id">';
+// 3. document.getElementById('id').value = "foo";
+// 4. document.getElementById('id').remove();
+// 5. document.body.innerHTML += '<input id="id">';
+// 6. document.getElementById('id').value = "foo";
+// 7. window.unblock = true;
+// 8. document.getElementById('id').value = "";
+// 9. document.getElementById('id').value = "bar";
+//
+// Then `ListenForValueChange("id", "unblock", rfh).Wait(base::Seconds(5)) ==
+// "bar"` the ListenForValueChange() call happens any point before Event 9 and
+// Event 9 happens no later than 5 seconds after that.
+[[nodiscard]] ValueWaiter ListenForValueChange(
+    const std::string& id,
+    const absl::optional<std::string>& unblock_variable,
+    content::ToRenderFrameHost execution_target) {
+  const std::string kFunction = R"(
+    // This function observes the DOM for an attached form-control element `id`.
+    //
+    // On the first `change` event of such an element, it stores that element's
+    // value in an array `window[observedValueSlots]`.
+    //
+    // Returns the index of that value.
+    function listenForValueChange(id, unblockVariable) {
+      console.log(`listenForValueChange('${id}')`);
+
+      if (window.observedValueSlots === undefined)
+        window.observedValueSlots = [];
+
+      const waiterId = window.observedValueSlots.length;
+      window.observedValueSlots.push(undefined);
+
+      let observer = undefined;
+
+      function changeHandler() {
+        console.log(`listenForValueChange('${id}'): changeHandler()`);
+        // Since other handlers may manipulate the fields value or remove it
+        // from the DOM or replace it, we delay its execution.
+        setTimeout(function() {
+          console.log(`listenForValueChange('${id}'): changeHandler() timer`);
+          if (unblockVariable && window[unblockVariable] !== true) {
+            console.log(`listenForValueChange('${id}'): `+
+                        `observed change, blocked by '${unblockVariable}'`);
+            return;
+          }
+          const e = document.getElementById(id);
+          if (e === null) {
+            console.log(`listenForValueChange('${id}'): element not found`);
+            return;
+          }
+          if (e.value === '') {
+            console.log(`listenForValueChange('${id}'): empty value`);
+            return;
+          }
+          console.log(`listenForValueChange('${id}'): storing in slot`);
+          window.observedValueSlots[waiterId] = e.value;
+          e.removeEventListener('change', changeHandler);
+          observer.disconnect();
+        }, 0);
+      }
+
+      // Observes the DOM to see if a new element `id` is added or some element
+      // changes its ID to `id`.
+      observer = new MutationObserver(function(mutations) {
+        const e = document.getElementById(id);
+        if (e !== null) {
+          console.log(`listenForValueChange('${id}'): some element has been `+
+                      `attached or change`);
+          e.addEventListener('change', changeHandler);
+        }
+      });
+      observer.observe(document, {
+        attributes: true,
+        childList: true,
+        characterData: false,
+        subtree: true
+      });
+
+      const e = document.getElementById(id);
+      if (e !== null) {
+        console.log(`listenForValueChange('${id}'): element exists already`);
+        e.addEventListener('change', changeHandler);
+      }
+
+      return waiterId;
+    }
+  )";
+  std::string call =
+      base::StringPrintf("listenForValueChange(`%s`, `%s`)", id.c_str(),
+                         unblock_variable.value_or("").c_str());
+  content::EvalJsResult r = content::EvalJs(execution_target, kFunction + call);
+  int waiterId = r.ExtractInt();
+  return ValueWaiter(waiterId, execution_target);
 }
 
 }  // namespace
@@ -662,7 +844,13 @@ class AutofillInteractiveTestBase : public AutofillUiTest {
  public:
   AutofillInteractiveTestBase()
       : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    feature_list_.InitAndEnableFeature(blink::features::kAutofillShadowDOM);
+    // Disable AutofillPageLanguageDetection because due to the little text in
+    // the HTML files, the detected language is flaky (e.g., it often detects
+    // "fr" instead of "en").
+    feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kAutofillShadowDOM},
+        /*disabled_features=*/{
+            autofill::features::kAutofillPageLanguageDetection});
   }
   ~AutofillInteractiveTestBase() override = default;
 
@@ -1423,6 +1611,9 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest,
                             {.do_select = false,
                              .do_accept = false,
                              .show_method = ShowMethod::ByClick(),
+                             // Since failure is expected, no need to retry
+                             // showing the Autofill popup too often.
+                             .max_show_tries = 2,
                              .execution_target = GetWebContents()}));
 }
 
@@ -2825,21 +3016,43 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveIsolationTest,
   EXPECT_FALSE(IsPopupShown());
 }
 
+// Test fixture for refill behavior.
+//
+// BrowserAutofillManager only executes a refill if it happens within the time
+// delta `kLimitBeforeRefill` of the original refill. On slow bots, this timeout
+// may cause flakiness. Therefore, this fixture mocks test clocks, which shall
+// be advanced when waiting for a refill after AutofillFlow():
+// - advance by a delta less than `kLimitBeforeRefill` to simulate that a
+//   natural delay between fill and refill;
+// - advance by a delta greater than `kLimitBeforeRefill` to simulate that an
+//   event happens too late to actually trigger a refill.
+//
 // The boolean parameter controls whether or not
 // features::kAutofillAcrossIframes is enabled.
+//
+// TODO(https://crbug.com/1304126): Refill tests are flaky on Linux TSan due to
+// a data race in Blink's layouting.
+#if BUILDFLAG(IS_LINUX) && defined(THREAD_SANITIZER)
+#define MAYBE_AutofillInteractiveTestDynamicForm \
+  DISABLED_AutofillInteractiveTestDynamicForm
+class DISABLED_AutofillInteractiveTestDynamicForm
+#else
+#define MAYBE_AutofillInteractiveTestDynamicForm \
+  AutofillInteractiveTestDynamicForm
 class AutofillInteractiveTestDynamicForm
+#endif
     : public AutofillInteractiveTestBase,
       public testing::WithParamInterface<bool> {
  public:
-  AutofillInteractiveTestDynamicForm() {
+  MAYBE_AutofillInteractiveTestDynamicForm() {
     scoped_feature_list_.InitWithFeatureState(features::kAutofillAcrossIframes,
                                               GetParam());
   }
-  AutofillInteractiveTestDynamicForm(
-      const AutofillInteractiveTestDynamicForm&) = delete;
-  AutofillInteractiveTestDynamicForm& operator=(
-      const AutofillInteractiveTestDynamicForm&) = delete;
-  ~AutofillInteractiveTestDynamicForm() override = default;
+  MAYBE_AutofillInteractiveTestDynamicForm(
+      const MAYBE_AutofillInteractiveTestDynamicForm&) = delete;
+  MAYBE_AutofillInteractiveTestDynamicForm& operator=(
+      const MAYBE_AutofillInteractiveTestDynamicForm&) = delete;
+  ~MAYBE_AutofillInteractiveTestDynamicForm() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     AutofillInteractiveTestBase::SetUpCommandLine(command_line);
@@ -2848,31 +3061,40 @@ class AutofillInteractiveTestDynamicForm
     command_line->AppendSwitch(switches::kIgnoreCertificateErrors);
   }
 
-  // Waits for the refill (of the form `id`, if specified) to happen, and
-  // returns true if it did.
-  content::EvalJsResult WaitForRefill(std::string id = "") {
-    if (!id.empty())
-      id = "`" + id + "`";
-    return content::EvalJs(GetWebContents(),
-                           base::StringPrintf("hasRefilled(%s)", id.c_str()),
-                           content::EXECUTE_SCRIPT_USE_MANUAL_REPLY);
+  ValueWaiter ListenForRefill(
+      const std::string& id,
+      absl::optional<std::string> unblock_variable = "refill") {
+    return ListenForValueChange(id, unblock_variable, GetWebContents());
+  }
+
+  // Refills only happen within `kLimitBeforeRefill` second of the initial fill.
+  // Slow bots may exceed this limit and thus cause flakiness.
+  void AdvanceClockBetweenFillAndRefill(
+      base::TimeDelta delta = kLimitBeforeRefill / 10) {
+    clock_.Advance(delta);
+    tick_clock_.Advance(delta);
   }
 
  protected:
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  TestAutofillClock clock_{AutofillClock::Now()};
+  TestAutofillTickClock tick_clock_{AutofillTickClock::NowTicks()};
 };
 
 // Test that we can Autofill dynamically generated forms.
 // TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill) {
   CreateTestProfile();
   GURL url =
       embedded_test_server()->GetURL("a.com", "/autofill/dynamic_form.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("firstname_form1");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname_form1"));
@@ -2885,15 +3107,17 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 }
 
 // TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        TwoDynamicChangingFormsFill) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL("a.com",
                                             "/autofill/two_dynamic_forms.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("firstname_form1");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname_form1"), this));
-  ASSERT_EQ(true, WaitForRefill("firstname_form1"));
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname_form1"));
@@ -2904,8 +3128,10 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
   EXPECT_EQ("red.swingline@initech.com", GetFieldValueById("email_form1"));
   EXPECT_EQ("15125551234", GetFieldValueById("phone_form1"));
 
+  refill = ListenForRefill("firstname_form2");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname_form2"), this));
-  ASSERT_EQ(true, WaitForRefill("firstname_form2"));
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname_form2"));
@@ -2917,17 +3143,18 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
   EXPECT_EQ("15125551234", GetFieldValueById("phone_form2"));
 }
 
-// TODO(https://crbug.com/1290277): Check back if flakiness is fixed now.
 // Test that forms that dynamically change a second time do not get filled.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_SecondChange) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/double_dynamic_form.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("firstname_form2");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(false, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_FALSE(std::move(refill).Wait());
 
   // Make sure the new form was not filled.
   EXPECT_EQ("", GetFieldValueById("firstname_form2"));
@@ -2940,15 +3167,17 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 }
 
 // Test that forms that dynamically change after a second do not get filled.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_AfterDelay) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_after_delay.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("firstname_form1");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(false, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill(kLimitBeforeRefill + base::Milliseconds(1));
+  ASSERT_FALSE(std::move(refill).Wait());
 
   // Make sure that the new form was not filled.
   EXPECT_EQ("", GetFieldValueById("firstname_form1"));
@@ -2961,16 +3190,18 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 }
 
 // Test that only field of a type group that was filled initially get refilled.
-// TODO(https://crbug.com/1290277): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_AddsNewFieldTypeGroups) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_new_field_types.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("firstname_form1");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // The fields present in the initial fill should be filled.
   EXPECT_EQ("Milton", GetFieldValueById("firstname_form1"));
@@ -2990,16 +3221,18 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 
 // Test that we can autofill forms that dynamically change select fields to text
 // fields by changing the visibilities.
-// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicFormFill_SelectToText) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_select_to_text.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  ValueWaiter refill = ListenForRefill("firstname");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname"));
@@ -3013,16 +3246,18 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 
 // Test that we can autofill forms that dynamically change the visibility of a
 // field after it's autofilled.
-// TODO(https://crbug.com/1290277): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicFormFill_VisibilitySwitch) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_visibility_switch.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("firstname");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname"));
@@ -3038,14 +3273,17 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicFormFill_FirstElementDisappears) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_element_invalid.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  ValueWaiter refill = ListenForRefill("address1");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname2"));
@@ -3058,16 +3296,19 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the form has no name.
-// TODO(https://crbug.com/1290277): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicFormFill_FirstElementDisappearsNoNameForm) {
   CreateTestProfile();
 
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_element_invalid_noname_form.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
+
+  ValueWaiter refill = ListenForRefill("address1");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname2"));
@@ -3082,7 +3323,7 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 // has been clicked on, even though there are multiple forms with identical
 // names.
 IN_PROC_BROWSER_TEST_P(
-    AutofillInteractiveTestDynamicForm,
+    MAYBE_AutofillInteractiveTestDynamicForm,
     DynamicFormFill_FirstElementDisappearsMultipleBadNameForms) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
@@ -3090,8 +3331,10 @@ IN_PROC_BROWSER_TEST_P(
       "/autofill/dynamic_form_element_invalid_multiple_badname_forms.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("address1_7");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname_5"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the second form was filled correctly, and the first form was left
   // unfilled.
@@ -3107,16 +3350,17 @@ IN_PROC_BROWSER_TEST_P(
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though there are multiple forms with identical
 // names.
-// TODO(https://crbug.com/1290277): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicFormFill_FirstElementDisappearsBadnameUnowned) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_element_invalid_unowned_badnames.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("address1_7");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname_5"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the second form was filled correctly, and the first form was left
   // unfilled.
@@ -3131,9 +3375,9 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though there are multiple forms with no name.
-// TODO(https://crbug.com/1290277): Check back if flakiness is fixed now.
+// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
 IN_PROC_BROWSER_TEST_P(
-    AutofillInteractiveTestDynamicForm,
+    MAYBE_AutofillInteractiveTestDynamicForm,
     DynamicFormFill_FirstElementDisappearsMultipleNoNameForms) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
@@ -3141,8 +3385,10 @@ IN_PROC_BROWSER_TEST_P(
       "/autofill/dynamic_form_element_invalid_multiple_noname_forms.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("address1_7");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname_5"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the second form was filled correctly, and the first form was left
   // unfilled.
@@ -3157,15 +3403,17 @@ IN_PROC_BROWSER_TEST_P(
 
 // Test that we can autofill forms that dynamically change the element that
 // has been clicked on, even though the elements are unowned.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicFormFill_FirstElementDisappearsUnowned) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_element_invalid_unowned.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("address1");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname2"));
@@ -3177,17 +3425,18 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 }
 
 // Test that credit card fields are re-filled.
-// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_AlsoForCreditCard) {
   CreateTestCreditCart();
   GURL url = https_server()->GetURL("a.com",
                                     "/autofill/dynamic_form_credit_card.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("cc-name");
   ASSERT_TRUE(AutofillFlow(GetElementById("cc-name"), this,
                            {.show_method = ShowMethod::ByChar('M')}));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   EXPECT_EQ("Milton Waddams", GetFieldValueById("cc-name"));
   EXPECT_EQ("4111111111111111", GetFieldValueById("cc-num"));
@@ -3198,16 +3447,17 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed.
-// TODO(https://crbug.com/1290277): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_SelectUpdated) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_select_options_change.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("firstname");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname"));
@@ -3221,22 +3471,26 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed only once.
-// TODO(https://crbug.com/1290277): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_DoubleSelectUpdated) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_double_select_options_change.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill1 = ListenForRefill("address1", "refill1");
+  ValueWaiter refill2 = ListenForRefill("firstname", "refill2");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(false, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill1).Wait());
+  ASSERT_FALSE(std::move(refill2).Wait());
 
-  // The fields that were initially filled and not reset should still be filled.
+  // Upon the first fill, JS resets the address1 field, which triggers a refill.
+  // Upon the refill, JS resets the T
   EXPECT_EQ("", GetFieldValueById(
                     "firstname"));  // That field value was reset dynamically.
   EXPECT_EQ("4120 Freidrich Lane", GetFieldValueById("address1"));
-  EXPECT_EQ("CA", GetFieldValueById("state"));  // Default value.
+  EXPECT_EQ("CA", GetFieldValueById("state"));  // The <select>'s default value.
   EXPECT_EQ("Austin", GetFieldValueById("city"));
   EXPECT_EQ("Initech", GetFieldValueById("company"));
   EXPECT_EQ("red.swingline@initech.com", GetFieldValueById("email"));
@@ -3245,15 +3499,17 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 
 // Test that we can Autofill dynamically generated forms with no name if the
 // NameForAutofill of the first field matches.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_FormWithoutName) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_form_no_name.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("firstname_form1");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname_form1"));
@@ -3268,8 +3524,8 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 // Test that we can Autofill dynamically changing selects that have options
 // added and removed for forms with no names if the NameForAutofill of the first
 // field matches.
-// TODO(https://crbug.com/1290277): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_SelectUpdated_FormWithoutName) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
@@ -3277,8 +3533,10 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
       "/autofill/dynamic_form_with_no_name_select_options_change.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("firstname");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname"));
@@ -3292,16 +3550,18 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 
 // Test that we can Autofill dynamically generated synthetic forms if the
 // NameForAutofill of the first field matches.
-// TODO(https://crbug.com/1290277): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+// TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_SyntheticForm) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_synthetic_form.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("firstname_syntheticform1");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname_syntheticform1"));
@@ -3317,15 +3577,17 @@ IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
 // Test that we can Autofill dynamically synthetic forms when the select options
 // change if the NameForAutofill of the first field matches
 // TODO(https://crbug.com/1297560): Check back if flakiness is fixed now.
-IN_PROC_BROWSER_TEST_P(AutofillInteractiveTestDynamicForm,
+IN_PROC_BROWSER_TEST_P(MAYBE_AutofillInteractiveTestDynamicForm,
                        DynamicChangingFormFill_SelectUpdated_SyntheticForm) {
   CreateTestProfile();
   GURL url = embedded_test_server()->GetURL(
       "a.com", "/autofill/dynamic_synthetic_form_select_options_change.html");
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));
 
+  ValueWaiter refill = ListenForRefill("firstname");
   ASSERT_TRUE(AutofillFlow(GetElementById("firstname"), this));
-  ASSERT_EQ(true, WaitForRefill());
+  AdvanceClockBetweenFillAndRefill();
+  ASSERT_TRUE(std::move(refill).Wait());
 
   // Make sure the new form was filled correctly.
   EXPECT_EQ("Milton", GetFieldValueById("firstname"));
@@ -3357,7 +3619,7 @@ IN_PROC_BROWSER_TEST_F(AutofillInteractiveTest, ShadowDOM) {
 }
 
 INSTANTIATE_TEST_SUITE_P(AutofillInteractiveTest,
-                         AutofillInteractiveTestDynamicForm,
+                         MAYBE_AutofillInteractiveTestDynamicForm,
                          testing::Bool());
 
 // ChromeVox is only available on ChromeOS.
@@ -3404,9 +3666,16 @@ class AutofillInteractiveTestChromeVox : public AutofillInteractiveTestBase {
 
 // Ensure that autofill suggestions are properly read out via ChromeVox.
 // This is a regressions test for crbug.com/1208913.
-// TODO(https://crbug.com/1294266): Check back if flakiness is fixed now.
+// TODO(https://crbug.com/1294266): Flaky on ChromeOS
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_TestNotificationOfAutofillDropdown \
+  DISABLED_TestNotificationOfAutofillDropdown
+#else
+#define MAYBE_TestNotificationOfAutofillDropdown \
+  TestNotificationOfAutofillDropdown
+#endif
 IN_PROC_BROWSER_TEST_F(AutofillInteractiveTestChromeVox,
-                       TestNotificationOfAutofillDropdown) {
+                       MAYBE_TestNotificationOfAutofillDropdown) {
   CreateTestProfile();
   SetTestUrlResponse(kTestShippingFormString);
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GetTestUrl()));

@@ -5,21 +5,23 @@
 #ifndef COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_RUN_ON_OS_LOGIN_TYPES_H_
 #define COMPONENTS_SERVICES_APP_SERVICE_PUBLIC_CPP_RUN_ON_OS_LOGIN_TYPES_H_
 
+#include <utility>
 #include <vector>
 
 #include "base/component_export.h"
+#include "components/services/app_service/public/cpp/macros.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 
 namespace apps {
 
-enum class RunOnOsLoginMode {
-  // kUnknown to be used for app_update.cc.
-  kUnknown,
-  // App won't run on OS Login.
-  kNotRun,
-  // App runs in windowed mode on OS Login.
-  kWindowed,
-};
+ENUM_FOR_COMPONENT(LOGIN_MODE,
+                   RunOnOsLoginMode,
+                   // kUnknown to be used for app_update.cc.
+                   kUnknown,
+                   // App won't run on OS Login.
+                   kNotRun,
+                   // App runs in windowed mode on OS Login.
+                   kWindowed)
 
 struct COMPONENT_EXPORT(LOGIN_MODE) RunOnOsLogin {
   RunOnOsLogin();
@@ -31,6 +33,7 @@ struct COMPONENT_EXPORT(LOGIN_MODE) RunOnOsLogin {
   RunOnOsLogin& operator=(RunOnOsLogin&&) = default;
 
   bool operator==(const RunOnOsLogin& other) const;
+  bool operator!=(const RunOnOsLogin& other) const;
 
   ~RunOnOsLogin();
 
@@ -43,12 +46,14 @@ struct COMPONENT_EXPORT(LOGIN_MODE) RunOnOsLogin {
   bool is_managed;
 };
 
+using RunOnOsLoginPtr = std::unique_ptr<RunOnOsLogin>;
+
 COMPONENT_EXPORT(LOGIN_MODE)
 apps::mojom::RunOnOsLoginPtr ConvertRunOnOsLoginToMojomRunOnOsLogin(
     const RunOnOsLogin& run_on_os_login);
 
 COMPONENT_EXPORT(LOGIN_MODE)
-std::unique_ptr<RunOnOsLogin> ConvertMojomRunOnOsLoginToRunOnOsLogin(
+RunOnOsLoginPtr ConvertMojomRunOnOsLoginToRunOnOsLogin(
     const apps::mojom::RunOnOsLoginPtr& run_on_os_login);
 
 COMPONENT_EXPORT(LOGIN_MODE)

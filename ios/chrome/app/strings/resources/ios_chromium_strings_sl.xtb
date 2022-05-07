@@ -44,6 +44,7 @@
 <translation id="3344973607274501920">Chromiumu ni uspelo preveriti vaših gesel. Poskusite preveriti internetno povezavo.</translation>
 <translation id="3472200483164753384">Ni podprto v Chromiumu Canary</translation>
 <translation id="3639997914391704523">Chromium lahko preveri vaša gesla, ko se prijavite z računom Google.</translation>
+<translation id="3650632991272923014">Uporabnik <ph name="USER_EMAIL1" /> je uporabljal Chromium in pustil zaznamke, gesla in druge nastavitve v tej napravi.</translation>
 <translation id="3805899903892079518">Chromium nima dostopa do fotografij ali videoposnetkov. Omogočite dostop v sistemu iOS: Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4043291146360695975">Gesla so shranjena v upravitelju gesel samo v tej napravi.</translation>
 <translation id="4099085513035183040">Ni podprto v Chromiumu Beta</translation>
@@ -55,6 +56,15 @@
 <translation id="4828317641996116749">Chromiumu ni uspelo preveriti vseh gesel. Poskusite znova pozneje.</translation>
 <translation id="4985291216379576555">Chromium brez povezave ne more preveriti, ali so na voljo posodobitve</translation>
 <translation id="4999538639245140991">Ker se boste odjavili iz računa, ki ga upravlja <ph name="SIGNOUT_MANAGED_DOMAIN" />, boste iz te naprave izbrisali podatke v Chromiumu. Vaši podatki bodo še vedno na voljo v Google Računu.</translation>
+<translation id="5039881550736388123">Če je omogočeno:
+<ph name="BEGIN_INDENT" />  • Pomagate izboljšati Chromium za ljudi, ki ga uporabljajo kot vi.<ph name="END_INDENT" />
+
+Kaj je treba upoštevati:
+<ph name="BEGIN_INDENT" />  • Googlu se pošiljajo podatki o vaši uporabi Chromiuma, vendar niso povezani z vami.
+
+  • Če se Chromium zruši, bodo med podatki o zrušitvi morda nekateri osebni podatki.
+
+  • Če vklopite sinhronizacijo, bodo meritve vključevale tudi podatke o URL-jih, ki jih obiščete.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Prijavite se v Chromium</translation>
 <translation id="5224391634244552924">Ni shranjenih gesel. Chromium lahko preveri gesla, če jih shranite.</translation>
 <translation id="5308226104666789935">Chromium ne more preveriti, ali so na voljo posodobitve</translation>
@@ -65,6 +75,7 @@
 <translation id="5777187867430702742">Stran Chromiuma</translation>
 <translation id="5862307444128926510">Pozdravljeni v Chromiumu</translation>
 <translation id="5945387852661427312">Prijavljate se z računom, ki ga upravlja <ph name="DOMAIN" />, in nadzor nad podatki v Chromiumu predajate skrbniku. Vaši podatki bodo trajno povezani s tem računom. Če se odjavite iz Chromiuma, boste izbrisali podatke iz te naprave, vendar bodo še naprej shranjeni v Google Računu.</translation>
+<translation id="5983312940147103417">Izboljšajte Chromium</translation>
 <translation id="602807004951640891">Če uporabljate Chromium, se strinjate s <ph name="BEGIN_LINK_TOS" />pogoji storitve<ph name="END_LINK_TOS" />.</translation>
 <translation id="6119647025869519954">Chromium nastavite kot privzeti iskalnik tako:
 1. Odprite nastavitve.

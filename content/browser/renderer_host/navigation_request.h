@@ -14,6 +14,7 @@
 #include "base/debug/crash_logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/safe_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
@@ -291,6 +292,7 @@ class CONTENT_EXPORT NavigationRequest
   bool IsInPrimaryMainFrame() const override;
   bool IsInPrerenderedMainFrame() override;
   bool IsPrerenderedPageActivation() override;
+  bool IsInFencedFrameTree() override;
   FrameType GetNavigatingFrameType() const override;
   bool IsRendererInitiated() override;
   bool IsSameOrigin() override;
@@ -335,6 +337,7 @@ class CONTENT_EXPORT NavigationRequest
       std::unique_ptr<NavigationThrottle> navigation_throttle) override;
   bool IsDeferredForTesting() override;
   bool IsCommitDeferringConditionDeferredForTesting() override;
+  CommitDeferringCondition* GetCommitDeferringConditionForTesting() override;
   bool WasStartedFromContextMenu() override;
   const GURL& GetSearchableFormURL() override;
   const std::string& GetSearchableFormEncoding() override;
@@ -374,6 +377,10 @@ class CONTENT_EXPORT NavigationRequest
   bool SetNavigationTimeout(base::TimeDelta timeout) override;
   PrerenderTriggerType GetPrerenderTriggerType() override;
   std::string GetPrerenderEmbedderHistogramSuffix() override;
+#if BUILDFLAG(IS_ANDROID)
+  const base::android::JavaRef<jobject>& GetJavaNavigationHandle() override;
+#endif
+  base::SafeRef<NavigationHandle> GetSafeRef() override;
 
   void RegisterCommitDeferringConditionForTesting(
       std::unique_ptr<CommitDeferringCondition> condition);
@@ -556,14 +563,6 @@ class CONTENT_EXPORT NavigationRequest
     DCHECK(state_ == DID_COMMIT || state_ == DID_COMMIT_ERROR_PAGE);
     return navigation_type_;
   }
-
-#if BUILDFLAG(IS_ANDROID)
-  // Returns a reference to |navigation_handle_| Java counterpart. It is used
-  // by Java WebContentsObservers.
-  base::android::ScopedJavaGlobalRef<jobject> java_navigation_handle() {
-    return navigation_handle_proxy_->java_navigation_handle();
-  }
-#endif
 
   const std::string& post_commit_error_page_html() {
     return post_commit_error_page_html_;
@@ -923,6 +922,16 @@ class CONTENT_EXPORT NavigationRequest
     prerender_embedder_histogram_suffix_ = suffix;
   }
 
+  // Used in tests to indicate this navigation should force a BrowsingInstance
+  // swap.
+  void set_force_new_browsing_instance(bool force_new_browsing_instance) {
+    force_new_browsing_instance_ = force_new_browsing_instance;
+  }
+
+  // When this returns true, it indicates this navigation should force a
+  // BrowsingInstance swap. Used only in tests.
+  bool force_new_browsing_instance() { return force_new_browsing_instance_; }
+
  private:
   friend class NavigationRequestTest;
 
@@ -974,6 +983,7 @@ class CONTENT_EXPORT NavigationRequest
   // resume the deferred navigation.
   void OnFencedFrameURLMappingComplete(
       absl::optional<GURL> mapped_url,
+      absl::optional<AdAuctionData> ad_auction_data,
       absl::optional<FencedFrameURLMapping::PendingAdComponentsMap>
           pending_ad_components_map) override;
 
@@ -1980,6 +1990,10 @@ class CONTENT_EXPORT NavigationRequest
   // Prevents the compositor from requesting main frame updates early in
   // navigation.
   std::unique_ptr<ui::CompositorLock> compositor_lock_;
+
+  // This navigation request should swap browsing instances as part of a test
+  // reset.
+  bool force_new_browsing_instance_ = false;
 
   base::WeakPtrFactory<NavigationRequest> weak_factory_{this};
 };

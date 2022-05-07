@@ -23,7 +23,7 @@ export class TestService extends TestBrowserProxy implements ServiceInterface {
   constructor() {
     super([
       'addRuntimeHostPermission',
-      'addUserSpecifiedSite',
+      'addUserSpecifiedSites',
       'choosePackRootDirectory',
       'choosePrivateKeyPath',
       'deleteActivitiesById',
@@ -37,6 +37,7 @@ export class TestService extends TestBrowserProxy implements ServiceInterface {
       'getFilteredExtensionActivityLog',
       'getProfileConfiguration',
       'getUserSiteSettings',
+      'getUserSiteSettingsChangedTarget',
       'inspectItemView',
       'installDroppedFile',
       'loadUnpacked',
@@ -47,7 +48,7 @@ export class TestService extends TestBrowserProxy implements ServiceInterface {
       'recordUserAction',
       'reloadItem',
       'removeRuntimeHostPermission',
-      'removeUserSpecifiedSite',
+      'removeUserSpecifiedSites',
       'repairItem',
       'requestFileSource',
       'retryLoadUnpacked',
@@ -325,15 +326,15 @@ export class TestService extends TestBrowserProxy implements ServiceInterface {
     return Promise.resolve(this.userSiteSettings!);
   }
 
-  addUserSpecifiedSite(
-      siteSet: chrome.developerPrivate.UserSiteSet, host: string) {
-    this.methodCalled('addUserSpecifiedSite', [siteSet, host]);
+  addUserSpecifiedSites(
+      siteSet: chrome.developerPrivate.UserSiteSet, hosts: string[]) {
+    this.methodCalled('addUserSpecifiedSites', [siteSet, hosts]);
     return Promise.resolve();
   }
 
-  removeUserSpecifiedSite(
-      siteSet: chrome.developerPrivate.UserSiteSet, host: string) {
-    this.methodCalled('removeUserSpecifiedSite', [siteSet, host]);
+  removeUserSpecifiedSites(
+      siteSet: chrome.developerPrivate.UserSiteSet, hosts: string[]) {
+    this.methodCalled('removeUserSpecifiedSites', [siteSet, hosts]);
     return Promise.resolve();
   }
 }

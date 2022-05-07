@@ -12,7 +12,6 @@
 #include "base/atomic_sequence_num.h"
 #include "base/bind.h"
 #include "base/bits.h"
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/process/memory.h"
 #include "base/strings/string_piece.h"
@@ -268,8 +267,6 @@ static absl::optional<VideoFrameLayout> GetDefaultLayout(
     }
 
     default:
-      // TODO(miu): This function should support any pixel format.
-      // http://crbug.com/555909 .
       DLOG(ERROR) << "Unsupported pixel format"
                   << VideoPixelFormatToString(format);
       return absl::nullopt;
@@ -1064,12 +1061,12 @@ int VideoFrame::BytesPerElement(VideoPixelFormat format, size_t plane) {
     case PIXEL_FORMAT_NV12:
     case PIXEL_FORMAT_NV21: {
       static const int bytes_per_element[] = {1, 2};
-      DCHECK_LT(plane, base::size(bytes_per_element));
+      DCHECK_LT(plane, std::size(bytes_per_element));
       return bytes_per_element[plane];
     }
     case PIXEL_FORMAT_P016LE: {
       static const int bytes_per_element[] = {1, 2};
-      DCHECK_LT(plane, base::size(bytes_per_element));
+      DCHECK_LT(plane, std::size(bytes_per_element));
       return bytes_per_element[plane] * 2;
     }
     case PIXEL_FORMAT_YV12:

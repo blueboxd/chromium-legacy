@@ -654,7 +654,7 @@ TEST_F(LocalPrinterAshServiceTest, GetCapabilityElevatedPermissionsSucceeds) {
 
   // Note that printer does not initially show as requiring elevated privileges.
   EXPECT_FALSE(PrintBackendServiceManager::GetInstance()
-                   .PrinterDriverRequiresElevatedPrivilege("printer1"));
+                   .PrinterDriverFoundToRequireElevatedPrivilege("printer1"));
 
   crosapi::mojom::CapabilitiesResponsePtr fetched_caps;
   local_printer_ash()->GetCapability(
@@ -664,7 +664,7 @@ TEST_F(LocalPrinterAshServiceTest, GetCapabilityElevatedPermissionsSucceeds) {
 
   // Verify that this printer now shows up as requiring elevated privileges.
   EXPECT_TRUE(PrintBackendServiceManager::GetInstance()
-                  .PrinterDriverRequiresElevatedPrivilege("printer1"));
+                  .PrinterDriverFoundToRequireElevatedPrivilege("printer1"));
 
   // Getting capabilities should succeed when fallback is supported.
   ASSERT_TRUE(fetched_caps);
@@ -782,7 +782,7 @@ TEST_F(LocalPrinterAshTest, GetPolicies_MaxSheetsAllowed) {
       [&](crosapi::mojom::PoliciesPtr data) { policies = std::move(data); })));
 
   EXPECT_TRUE(policies->max_sheets_allowed_has_value);
-  EXPECT_EQ(5, policies->max_sheets_allowed);
+  EXPECT_EQ(5u, policies->max_sheets_allowed);
 }
 
 // Zero sheets allowed is a valid policy.
@@ -796,7 +796,7 @@ TEST_F(LocalPrinterAshTest, GetPolicies_ZeroSheetsAllowed) {
 
   ASSERT_TRUE(policies);
   EXPECT_TRUE(policies->max_sheets_allowed_has_value);
-  EXPECT_EQ(0, policies->max_sheets_allowed);
+  EXPECT_EQ(0u, policies->max_sheets_allowed);
 }
 
 // Negative sheets allowed is not a valid policy.

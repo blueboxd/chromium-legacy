@@ -49,8 +49,7 @@ void DefaultBrowserHandler::OnJavascriptAllowed() {
   local_state_pref_registrar_.Add(
       prefs::kDefaultBrowserSettingEnabled,
       base::BindRepeating(&DefaultBrowserHandler::RequestDefaultBrowserState,
-                          base::Unretained(this),
-                          base::Value::ConstListView()));
+                          base::Unretained(this), base::Value::List()));
   default_browser_worker_ = new shell_integration::DefaultBrowserWorker();
 }
 
@@ -61,7 +60,7 @@ void DefaultBrowserHandler::OnJavascriptDisallowed() {
 }
 
 void DefaultBrowserHandler::RequestDefaultBrowserState(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(args.size(), 1U);
@@ -72,8 +71,7 @@ void DefaultBrowserHandler::RequestDefaultBrowserState(
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void DefaultBrowserHandler::SetAsDefaultBrowser(
-    base::Value::ConstListView args) {
+void DefaultBrowserHandler::SetAsDefaultBrowser(const base::Value::List& args) {
   CHECK(!DefaultBrowserIsDisabledByPolicy());
   AllowJavascript();
   RecordSetAsDefaultUMA();

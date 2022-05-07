@@ -492,5 +492,24 @@ void LogNotificationsShownInFirstMinute(int count) {
       count);
 }
 
+void LogCountOfNotificationsInOneGroup(int notification_count) {
+  // `notification_count` might be zero if the parent doesn't have any child
+  // notification left after remove.
+  if (notification_count <= 0)
+    return;
+  base::UmaHistogramCounts100("Ash.Notification.CountOfNotificationsInOneGroup",
+                              notification_count);
+}
+
+void LogExpandButtonClickAction(ExpandButtonClickAction action) {
+  base::UmaHistogramEnumeration("Ash.NotificationView.ExpandButton.ClickAction",
+                                action);
+}
+
+void LogGroupNotificationAddedType(GroupNotificationType type) {
+  base::UmaHistogramEnumeration("Ash.Notification.GroupNotificationAdded",
+                                type);
+}
+
 }  // namespace metrics_utils
 }  // namespace ash

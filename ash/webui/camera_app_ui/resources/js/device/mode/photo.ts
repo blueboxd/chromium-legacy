@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from '../../assert.js';
 import * as state from '../../state.js';
 import {
   CanceledError,
@@ -50,23 +51,26 @@ export interface PhotoHandler {
  */
 export class Photo extends ModeBase {
   /**
+   * @param video Preview video.
+   * @param facing Camera facing of current mode.
    * @param captureResolution Capture resolution. May be null on device not
    *     support of setting resolution.
+   * @param handler Handler for photo operations.
    */
   constructor(
       video: PreviewVideo, facing: Facing,
-      protected readonly captureResolution: Resolution,
+      protected readonly captureResolution: Resolution|null,
       protected readonly handler: PhotoHandler) {
     super(video, facing);
   }
 
-  async start(): Promise<() => Promise<void>> {
+  async start(): Promise<[Promise<void>]> {
     const timestamp = Date.now();
     state.set(PerfEvent.PHOTO_CAPTURE_SHUTTER, true);
     const {blob, metadata} = await (async () => {
       let hasError = false;
       try {
-        return this.takePhoto();
+        return await this.takePhoto();
       } catch (e) {
         hasError = true;
         this.handler.onPhotoError();
@@ -84,7 +88,7 @@ export class Photo extends ModeBase {
       return {resolution, blob, timestamp, metadata};
     })();
 
-    return async () => this.handler.onPhotoCaptureDone(pendingPhotoResult);
+    return [this.handler.onPhotoCaptureDone(pendingPhotoResult)];
   }
 
   private async waitPreviewReady(): Promise<void> {
@@ -155,12 +159,14 @@ export class PhotoFactory extends ModeFactory {
    * @param constraints Constraints for preview stream.
    */
   constructor(
-      constraints: StreamConstraints, captureResolution: Resolution,
+      constraints: StreamConstraints, captureResolution: Resolution|null,
       protected readonly handler: PhotoHandler) {
     super(constraints, captureResolution);
   }
 
   produce(): ModeBase {
+    assert(this.previewVideo !== null);
+    assert(this.facing !== null);
     return new Photo(
         this.previewVideo, this.facing, this.captureResolution, this.handler);
   }

@@ -62,7 +62,6 @@
 <translation id="2666092431469916601">Верх</translation>
 <translation id="2701330563083355633">Надіслано з пристрою "<ph name="DEVICE_NAME" />"</translation>
 <translation id="271033894570825754">Новий</translation>
-<translation id="2743387203779672305">Копіювати в буфер</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{1 рік тому}one{# рік тому}few{# роки тому}many{# років тому}other{# року тому}}</translation>
 <translation id="2878511608894704031">Видалити все</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{через 1 дн.}one{через # дн.}few{через # дн.}many{через # дн.}other{через # дн.}}</translation>
@@ -94,10 +93,11 @@
 <translation id="3889424535448813030">Курсор праворуч</translation>
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3909791450649380159">Вирізат&amp;и</translation>
+<translation id="3924145049010392604">Meta</translation>
 <translation id="3990502903496589789">Правий край</translation>
 <translation id="3994749195054421561">Стовпець "<ph name="COLUMN_NAME" />" відсортовано в порядку зростання.</translation>
+<translation id="4031910098617850788">F5</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 непрочитане сповіщення}one{# непрочитане сповіщення}few{# непрочитані сповіщення}many{# непрочитаних сповіщень}other{# непрочитаного сповіщення}}</translation>
-<translation id="4250229828105606438">Знімок екрана</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{1 місяць тому}one{# місяць тому}few{# місяці тому}many{# місяців тому}other{# місяця тому}}</translation>
 <translation id="4289300219472526559">Start Speaking</translation>
 <translation id="4289540628985791613">Огляд</translation>
@@ -204,7 +204,6 @@
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 год}one{# год}few{# год}many{# год}other{# год}}</translation>
 <translation id="8798099450830957504">За умовчанням</translation>
-<translation id="883911313571074303">Додати нотатку до зображення</translation>
 <translation id="8841375032071747811">Кнопка "Назад"</translation>
 <translation id="8867568208303837180">Надсилання...</translation>
 <translation id="8876215549894133151">Формат:</translation>

@@ -140,7 +140,7 @@ base::FilePath ExtractLegacyDrivePath(const base::FilePath& path) {
   if (components[1] != FILE_PATH_LITERAL("special"))
     return base::FilePath();
   static const base::FilePath::CharType kPrefix[] = FILE_PATH_LITERAL("drive");
-  if (components[2].compare(0, base::size(kPrefix) - 1, kPrefix) != 0)
+  if (components[2].compare(0, std::size(kPrefix) - 1, kPrefix) != 0)
     return base::FilePath();
 
   base::FilePath drive_path = drive::util::GetDriveGrandRootPath();
@@ -635,7 +635,7 @@ bool ConvertPathToArcUrl(const base::FilePath& path,
   }
 
   // Convert paths under MyFiles.
-  if (base::FilePath(GetMyFilesFolderForProfile(primary_profile))
+  if (GetMyFilesFolderForProfile(primary_profile)
           .AppendRelativePath(path, &relative_path)) {
     *arc_url_out = GURL(kArcMyFilesContentUrlPrefix)
                        .Resolve(net::EscapePath(relative_path.AsUTF8Unsafe()));

@@ -12,7 +12,8 @@
 #include <set>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/session/session_observer.h"
+#include "ash/system/time/calendar_event_fetch.h"
+#include "ash/system/time/calendar_event_fetch_types.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "google_apis/calendar/calendar_api_response_types.h"
@@ -43,7 +44,7 @@ enum class FetchInternalErrorCode {
 // Controller of the `CalendarView`.
 class ASH_EXPORT CalendarModel : public SessionObserver {
  public:
-  explicit CalendarModel(const std::set<base::Time>& base_months);
+  CalendarModel();
   CalendarModel(const CalendarModel& other) = delete;
   CalendarModel& operator=(const CalendarModel& other) = delete;
   ~CalendarModel() override;
@@ -80,6 +81,9 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
 
   // Requests events that fall in |months|.
   void FetchEvents(const std::set<base::Time>& months);
+
+  // Requests events that fall in |num_months| months surrounding |day|.
+  void FetchEventsSurrounding(int num_months, const base::Time day);
 
   // Same as `FindEvents`, except that return of any events on `day` constitutes
   // "use" in the most-recently-used sense, so the month that includes day will
@@ -159,11 +163,12 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
                        const google_apis::calendar::EventList* events);
 
   // Callback invoked when an event fetch failed with an internal error.
-  void OnEventFetchFailedInternalError(base::Time start_of_month,
-                                       FetchInternalErrorCode error);
+  void OnEventFetchFailedInternalError(
+      base::Time start_of_month,
+      CalendarEventFetchInternalErrorCode error);
 
-  // Internal storage for fetched events, with each fetched month having a
-  // map of days to events.
+  // Internal storage for fetched events, with each fetched month having a map
+  // of days to events.
   MonthToEventsMap event_months_;
 
   // Months whose events we've fetched, that are eligible for pruning, in

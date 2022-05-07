@@ -5,10 +5,10 @@
 #include "ash/services/secure_channel/pending_connection_manager.h"
 
 #include "ash/services/secure_channel/authenticated_channel.h"
+#include "ash/services/secure_channel/client_connection_parameters.h"
+#include "ash/services/secure_channel/connection_details.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 PendingConnectionManager::PendingConnectionManager(Delegate* delegate)
     : delegate_(delegate) {
@@ -25,6 +25,4 @@ void PendingConnectionManager::NotifyOnConnection(
                           connection_details);
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

@@ -9,8 +9,12 @@
     <output filename="chromeos_strings_af.pak" type="data_package" lang="af" />
     <output filename="chromeos_strings_am.pak" type="data_package" lang="am" />
     <output filename="chromeos_strings_ar.pak" type="data_package" lang="ar" />
+    <output filename="chromeos_strings_as.pak" type="data_package" lang="as" />
+    <output filename="chromeos_strings_az.pak" type="data_package" lang="az" />
+    <output filename="chromeos_strings_be.pak" type="data_package" lang="be" />
     <output filename="chromeos_strings_bg.pak" type="data_package" lang="bg" />
     <output filename="chromeos_strings_bn.pak" type="data_package" lang="bn" />
+    <output filename="chromeos_strings_bs.pak" type="data_package" lang="bs" />
     <output filename="chromeos_strings_ca.pak" type="data_package" lang="ca" />
     <output filename="chromeos_strings_cs.pak" type="data_package" lang="cs" />
     <output filename="chromeos_strings_da.pak" type="data_package" lang="da" />
@@ -21,37 +25,55 @@
     <output filename="chromeos_strings_es.pak" type="data_package" lang="es" />
     <output filename="chromeos_strings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="chromeos_strings_et.pak" type="data_package" lang="et" />
+    <output filename="chromeos_strings_eu.pak" type="data_package" lang="eu" />
     <output filename="chromeos_strings_fa.pak" type="data_package" lang="fa" />
     <output filename="chromeos_strings_fi.pak" type="data_package" lang="fi" />
     <output filename="chromeos_strings_fil.pak" type="data_package" lang="fil" />
+    <output filename="chromeos_strings_fr-CA.pak" type="data_package" lang="fr-CA" />
     <output filename="chromeos_strings_fr.pak" type="data_package" lang="fr" />
+    <output filename="chromeos_strings_gl.pak" type="data_package" lang="gl" />
     <output filename="chromeos_strings_gu.pak" type="data_package" lang="gu" />
     <output filename="chromeos_strings_he.pak" type="data_package" lang="he" />
     <output filename="chromeos_strings_hi.pak" type="data_package" lang="hi" />
     <output filename="chromeos_strings_hr.pak" type="data_package" lang="hr" />
     <output filename="chromeos_strings_hu.pak" type="data_package" lang="hu" />
+    <output filename="chromeos_strings_hy.pak" type="data_package" lang="hy" />
     <output filename="chromeos_strings_id.pak" type="data_package" lang="id" />
     <output filename="chromeos_strings_is.pak" type="data_package" lang="is" />
     <output filename="chromeos_strings_it.pak" type="data_package" lang="it" />
     <output filename="chromeos_strings_ja.pak" type="data_package" lang="ja" />
+    <output filename="chromeos_strings_ka.pak" type="data_package" lang="ka" />
+    <output filename="chromeos_strings_kk.pak" type="data_package" lang="kk" />
+    <output filename="chromeos_strings_km.pak" type="data_package" lang="km" />
     <output filename="chromeos_strings_kn.pak" type="data_package" lang="kn" />
     <output filename="chromeos_strings_ko.pak" type="data_package" lang="ko" />
+    <output filename="chromeos_strings_ky.pak" type="data_package" lang="ky" />
+    <output filename="chromeos_strings_lo.pak" type="data_package" lang="lo" />
     <output filename="chromeos_strings_lt.pak" type="data_package" lang="lt" />
     <output filename="chromeos_strings_lv.pak" type="data_package" lang="lv" />
+    <output filename="chromeos_strings_mk.pak" type="data_package" lang="mk" />
     <output filename="chromeos_strings_ml.pak" type="data_package" lang="ml" />
+    <output filename="chromeos_strings_mn.pak" type="data_package" lang="mn" />
     <output filename="chromeos_strings_mr.pak" type="data_package" lang="mr" />
     <output filename="chromeos_strings_ms.pak" type="data_package" lang="ms" />
+    <output filename="chromeos_strings_my.pak" type="data_package" lang="my" />
+    <output filename="chromeos_strings_ne.pak" type="data_package" lang="ne" />
     <output filename="chromeos_strings_nl.pak" type="data_package" lang="nl" />
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->
     <output filename="chromeos_strings_nb.pak" type="data_package" lang="no" />
+    <output filename="chromeos_strings_pa.pak" type="data_package" lang="pa" />
     <output filename="chromeos_strings_pl.pak" type="data_package" lang="pl" />
     <output filename="chromeos_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
     <output filename="chromeos_strings_pt-PT.pak" type="data_package" lang="pt-PT" />
+    <output filename="chromeos_strings_or.pak" type="data_package" lang="or" />
     <output filename="chromeos_strings_ro.pak" type="data_package" lang="ro" />
     <output filename="chromeos_strings_ru.pak" type="data_package" lang="ru" />
+    <output filename="chromeos_strings_si.pak" type="data_package" lang="si" />
     <output filename="chromeos_strings_sk.pak" type="data_package" lang="sk" />
     <output filename="chromeos_strings_sl.pak" type="data_package" lang="sl" />
+    <output filename="chromeos_strings_sq.pak" type="data_package" lang="sq" />
+    <output filename="chromeos_strings_sr-Latn.pak" type="data_package" lang="sr-Latn" />
     <output filename="chromeos_strings_sr.pak" type="data_package" lang="sr" />
     <output filename="chromeos_strings_sv.pak" type="data_package" lang="sv" />
     <output filename="chromeos_strings_sw.pak" type="data_package" lang="sw" />
@@ -60,11 +82,13 @@
     <output filename="chromeos_strings_th.pak" type="data_package" lang="th" />
     <output filename="chromeos_strings_tr.pak" type="data_package" lang="tr" />
     <output filename="chromeos_strings_uk.pak" type="data_package" lang="uk" />
+    <output filename="chromeos_strings_ur.pak" type="data_package" lang="ur" />
+    <output filename="chromeos_strings_uz.pak" type="data_package" lang="uz" />
     <output filename="chromeos_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="chromeos_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
+    <output filename="chromeos_strings_zh-HK.pak" type="data_package" lang="zh-HK" />
     <output filename="chromeos_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
     <output filename="chromeos_strings_zu.pak" type="data_package" lang="zu" />
-
     <!-- Pseudolocales -->
     <output filename="chromeos_strings_ar-XB.pak" type="data_package" lang="ar-XB" />
     <output filename="chromeos_strings_en-XA.pak" type="data_package" lang="en-XA" />
@@ -246,8 +270,8 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ASH_SHELF_SIGNIN_BUTTON" desc="Text shown on sign in button on enrollment screen.">
         Use as personal device
       </message>
-      <message name="IDS_ASH_SHELF_OS_INSTALL_BUTTON" desc="Text shown on install cloudready button on login screen.">
-        Install CloudReady
+      <message name="IDS_ASH_SHELF_OS_INSTALL_BUTTON" desc="Text shown on install ChromeOS Flex button on login screen.">
+        Install ChromeOS Flex
       </message>
 
       <message name="IDS_ASH_SHELF_APP_LIST_LAUNCHER_TITLE" desc="The title used for the Ash Launcher in the Shelf (not mentioning 'Apps' since this is a general launcher).">
@@ -1158,6 +1182,115 @@ Try tapping the mic to ask me anything.
         USB touchscreen
       </message>
 
+      <!-- Ash keyboard diagram ARIA labels -->
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_LABEL_NOT_PRESSED" desc="ARIA label that describes a key that has not yet been pressed, as part of a keyboard testing UI. Key names could be single letters like Q, or a phrase like 'Down arrow'.">
+        <ph name="KEY_NAME">$1<ex>Q</ex></ph> key not pressed
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_LABEL_PRESSED" desc="ARIA label that describes a key that is currently being pressed, as part of a keyboard testing UI. Key names could be single letters like W, or a phrase like 'Down arrow'.">
+        <ph name="KEY_NAME">$1<ex>W</ex></ph> key pressed
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_LABEL_TESTED" desc="ARIA label that describes a key that is not currently being pressed but has been pressed during the current test, as part of a keyboard testing UI. Key names could be single letters like E, or a phrase like 'Down arrow'.">
+        <ph name="KEY_NAME">$1<ex>E</ex></ph> key tested
+      </message>
+
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_ARROW_DOWN" desc="Describes the down arrow key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Down arrow key not pressed', 'Down arrow key pressed', or 'Down arrow key tested').">
+        Down arrow
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_ARROW_LEFT" desc="Describes the left arrow key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Left arrow key not pressed', 'Left arrow key pressed', or 'Left arrow key tested').">
+        Left arrow
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_ARROW_RIGHT" desc="Describes the right arrow key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Right arrow key not pressed', 'Right arrow key pressed', or 'Right arrow key tested').">
+        Right arrow
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_ARROW_UP" desc="Describes the up arrow key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Up arrow key not pressed', 'Up arrow key pressed', or 'Up arrow key tested').">
+        Up arrow
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_ASSISTANT" desc="Describes the key on a keyboard that activates the Google Assistant. Used as part of an ARIA label on a keyboard testing UI (one of 'Assistant key not pressed', 'Assistant key pressed', or 'Assistant key tested').">
+        Assistant
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_BACKSPACE" desc="Describes the Backspace key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Backspace key not pressed', 'Backspace key pressed', or 'Backspace key tested').">
+        Backspace
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_ENTER" desc="Describes the Enter key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Enter key not pressed', 'Enter key pressed', or 'Enter key tested').">
+        Enter
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_JIS_LETTER_SWITCH" desc="Describes the key on a Japanese Chromebook keyboard that switches between entering Kana and alphanumeric characters, labelled 'かな/英数' on the keyboard itself. Used as part of an ARIA label on a keyboard testing UI (one of 'Kana/alphanumeric switch key not pressed', 'Kana/alphanumeric switch key pressed', or 'Kana/alphanumeric switch key tested').">
+        Kana/alphanumeric switch
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_LAUNCHER" desc="Describes the Launcher key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Launcher key not pressed', 'Launcher key pressed', or 'Launcher key tested').">
+        Launcher
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_LAYOUT_SWITCH" desc="Describes the key on a Dell Chromebook keyboard that switches between keyboard layouts. Used as part of an ARIA label on a keyboard testing UI (one of 'Layout switch key not pressed', 'Layout switch key pressed', or 'Layout switch key tested').">
+        Layout switch
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_POWER" desc="Describes the power key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Power key not pressed', 'Power key pressed', or 'Power key tested').">
+        Power
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_SHIFT_LEFT" desc="Describes the left Shift key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Left shift key not pressed', 'Left shift key pressed', or 'Left shift key tested').">
+        Left shift
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_SHIFT_RIGHT" desc="Describes the right Shift key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Right shift key not pressed', 'Right shift key pressed', or 'Right shift key tested').">
+        Right shift
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_TAB" desc="Describes the Tab key on a keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Tab key not pressed', 'Tab key pressed', or 'Tab key tested').">
+        Tab
+      </message>
+
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_BACK" desc="Describes the Back key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Back key not pressed', 'Back key pressed', or 'Back key tested')">
+        Back
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_FORWARD" desc="Describes the Forward key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Forward key not pressed', 'Forward key pressed', or 'Forward key tested')">
+        Forward
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_FULLSCREEN" desc="Describes the Fullscreen key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Fullscreen key not pressed', 'Fullscreen key pressed', or 'Fullscreen key tested')">
+        Fullscreen
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_KEYBOARD_BACKLIGHT_DOWN" desc="Describes the key for decreasing keyboard backlight brightness on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Keyboard brightness up key not pressed', 'Keyboard brightness up key pressed', or 'Keyboard brightness up key tested')">
+        Keyboard brightness down
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_KEYBOARD_BACKLIGHT_UP" desc="Describes the key for increasing keyboard backlight brightness on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Keyboard brightness down key not pressed', 'Keyboard brightness down key pressed', or 'Keyboard brightness down key tested')">
+        Keyboard brightness up
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_MUTE" desc="Describes the Mute key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Mute key not pressed', 'Mute key pressed', or 'Mute key tested')">
+        Mute
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_OVERVIEW" desc="Describes the Overview key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Overview key not pressed', 'Overview key pressed', or 'Overview key tested')">
+        Overview
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_PLAY_PAUSE" desc="Describes the play/pause key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Play/Pause key not pressed', 'Play/Pause key pressed', or 'Play/Pause key tested')">
+        Play/Pause
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_PRIVACY_SCREEN_TOGGLE" desc="Describes the key on the top row of a ChromeOS keyboard that toggles the electronic privacy screen. Used as part of an ARIA label on a keyboard testing UI (one of 'Privacy screen toggle key not pressed', 'Privacy screen toggle key pressed', or 'Privacy screen toggle key tested')">
+        Privacy screen toggle
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_REFRESH" desc="Describes the Refresh key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Refresh key not pressed', 'Refresh key pressed', or 'Refresh key tested')">
+        Refresh
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_SCREENSHOT" desc="Describes the Screenshot key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Screenshot key not pressed', 'Screenshot key pressed', or 'Screenshot key tested')">
+        Screenshot
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_SCREEN_BRIGHTNESS_DOWN" desc="Describes the key for decreasing display brightness on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Display brightness down key not pressed', 'Display brightness down key pressed', or 'Display brightness down key tested')">
+        Display brightness down
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_SCREEN_BRIGHTNESS_UP" desc="Describes the key for increasing display brightness on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Display brightness up key not pressed', 'Display brightness up key pressed', or 'Display brightness up key tested')">
+        Display brightness up
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_SCREEN_MIRROR" desc="Describes the key on the top row of a ChromeOS keyboard that changes the screen mirroring mode. Used as part of an ARIA label on a keyboard testing UI (one of 'Screen mirror key not pressed', 'Screen mirror key pressed', or 'Screen mirror key tested')">
+        Screen mirror
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_TRACK_NEXT" desc="Describes the next track key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Next track key not pressed', 'Next track key pressed', or 'Next track key tested')">
+        Next track
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_TRACK_PREVIOUS" desc="Describes the previous track key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Previous track key not pressed', 'Previous track key pressed', or 'Previous track key tested')">
+        Previous track
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_VOLUME_DOWN" desc="Describes the volume down key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Volume down key not pressed', 'Volume down key pressed', or 'Volume down key tested')">
+        Volume down
+      </message>
+      <message name="IDS_KEYBOARD_DIAGRAM_ARIA_NAME_VOLUME_UP" desc="Describes the volume up key on the top row of a ChromeOS keyboard. Used as part of an ARIA label on a keyboard testing UI (one of 'Volume up key not pressed', 'Volume up key pressed', or 'Volume up key tested')">
+        Volume up
+      </message>
+
       <message name="IDS_ECHE_APP_DEFAULT_DEVICE_NAME" desc="The default device name used to display on Android endpoint of Eche app.">
         <ph name="GIVEN_NAME">$1<ex>Josh</ex></ph>'s <ph name="DEVICE_TYPE">$2<ex>Chromebook</ex></ph>
       </message>
@@ -1299,8 +1432,20 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ONC_VPN_TYPE" desc="ONC Property label for VPN.Type">
         Provider type
       </message>
+      <message name="IDS_ONC_VPN_AUTH_TYPE" desc="ONC Property label for VPN.IPsec.AuthenticationType">
+        Authentication type
+      </message>
+      <message name="IDS_ONC_VPN_AUTH_TYPE_USERNAME" desc="ONC Property label for VPN.IPsec.AuthenticationType.EAP">
+        Username and password
+      </message>
       <message name="IDS_ONC_VPN_IPSEC_GROUP" desc="ONC Property label for VPN.IPSec.Group">
         Group name
+      </message>
+      <message name="IDS_ONC_VPN_IPSEC_LOCAL_IDENTITY" desc="ONC Property label for VPN.IPSec.LocalIdentity">
+        Local identity
+      </message>
+      <message name="IDS_ONC_VPN_IPSEC_REMOTE_IDENTITY" desc="ONC Property label for VPN.IPSec.RemoteIdentity">
+        Remote identity
       </message>
       <message name="IDS_ONC_VPN_THIRD_PARTY_VPN_PROVIDER_NAME" desc="ONC Property label for VPN.ThirdPartyVPN.ProviderName">
         Provider name
@@ -1323,14 +1468,11 @@ Try tapping the mic to ask me anything.
       <message name="IDS_ONC_VPN_OPENVPN_TLS_AUTH_CONTENTS" desc="Settings > Network > OpenVPN Network Detail Page > label for the key used to sign TLS control channel packets.">
         TLS authentication key
       </message>
+      <message name="IDS_ONC_VPN_TYPE_IKEV2" desc="ONC Property label for VPN.Type.IKEv2">
+        IPsec (IKEv2)
+      </message>
       <message name="IDS_ONC_VPN_TYPE_L2TP_IPSEC" desc="ONC Property label for VPN.Type.L2TP-IPSec">
         L2TP/IPsec
-      </message>
-      <message name="IDS_ONC_VPN_TYPE_L2TP_IPSEC_PSK" desc="ONC Property label for configuring VPN.Type.L2TP-IPSec with AuthenticationType = PSK">
-        L2TP/IPsec + pre-shared key
-      </message>
-      <message name="IDS_ONC_VPN_TYPE_L2TP_IPSEC_CERT" desc="ONC Property label for configuring VPN.Type.L2TP-IPSec  with AuthenticationType = Cert">
-        L2TP/IPsec + user certificate
       </message>
       <message name="IDS_ONC_VPN_OPENVPN_EXTRA_HOSTS" desc="ONC Property label for VPN.OpenVPN.ExtraHosts">
         Extra hosts
@@ -2005,6 +2147,18 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PERSONALIZATION_APP_AVATAR_TAKE_PHOTO" desc="Label for the button to take a webcam photo">
         Take a photo
       </message>
+      <message name="IDS_PERSONALIZATION_APP_AVATAR_TAKE_VIDEO" desc="Label for the button to take a short webcam video">
+        Create a looping video
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AVATAR_CONFIRM_PHOTO" desc="Label for the button to confirm webcam photo">
+        Use this photo
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AVATAR_CONFIRM_VIDEO" desc="Label for the button to confirm webcam video">
+        Use this video
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AVATAR_REJECT_PHOTO" desc="Label for the button to reject webcam photo or video">
+        Retake
+      </message>
       <message name="IDS_PERSONALIZATION_APP_SCREENSAVER_LABEL" desc="Label for the Screensaver page in Personalization app.">
         Screensaver
       </message>
@@ -2050,6 +2204,49 @@ Try tapping the mic to ask me anything.
       <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_WEATHER_UNIT_CELSIUS" desc="Label for the radio button group of choose weather unit as Celsius.">
         Celsius
       </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ALBUMS_SUBPAGE_GOOGLE_PHOTOS_TITLE" desc="Label for the subpage to select albums of Google Photos in ambient mode.">
+        Relive your favorite memories. To add or edit albums, go to <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Google Photos<ph name="LINK_END">&lt;/a&gt;</ph>.
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ALBUMS_SUBPAGE_GOOGLE_PHOTOS_NO_ALBUM" desc="Text for the subpage to select albums of Google Photos when there is no album in ambient mode.">
+        No albums. Create an album in <ph name="LINK_BEGIN">&lt;a target="_blank" href="$1<ex>https://google.com/</ex>"&gt;</ph>Google Photos<ph name="LINK_END">&lt;/a&gt;</ph>.
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ALBUMS_SUBPAGE_RECENT_DESC" desc="Description for the Recent highlights album in ambient mode.">
+        Your best photos, selected automatically
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ALBUMS_SUBPAGE_PHOTOS_NUM_PLURAL" desc="Number of photos in an album in ambient mode.">
+        <ph name="NUMBER">$1<ex>100</ex></ph> photos
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ALBUMS_SUBPAGE_PHOTOS_NUM_SINGULAR" desc="1 or 0 photo in an album in ambient mode.">
+        <ph name="NUMBER">$1<ex>1</ex></ph> photo
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ALBUMS_SUBPAGE_ALBUM_SELECTED" desc="A11y label of a selected album in ambient mode.">
+        Album <ph name="TITLE">$1<ex>Recent highlights</ex></ph> <ph name="DESC">$2<ex>Your best auto selected photos</ex></ph> selected
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ALBUMS_SUBPAGE_ALBUM_UNSELECTED" desc="A11y label of an unselected album in ambient mode.">
+        Select album <ph name="TITLE">$1<ex>Recent highlights</ex></ph> <ph name="DESC">$2<ex>Your best auto selected photos</ex></ph>
+      </message>
+      <message name="IDS_PERONSONALIZATION_APP_AMBIENT_MODE_LAST_ART_ALBUM_MESSAGE" desc="A message shown when deselecting the last art album.">
+        A minimum of one Art gallery album needs to be selected
+      </message>
+      <message name="IDS_PERONSONALIZATION_APP_AMBIENT_MODE_ART_ALBUM_DIALOG_CLOSE_BUTTON_LABEL" desc="Label on the close button in the art album dialog.">
+        Got it
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ANIMATION_TITLE" desc="Label for the ambient mode animation section.">
+        Screensaver animation
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ANIMATION_SLIDESHOW_LABEL" desc="Label for the ambient mode slideshow animation.">
+        Slide show
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ANIMATION_FEEL_THE_BREEZE_LABEL" desc="Label for the ambient mode feel the breeze animation.">
+        Feel the breeze
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ANIMATION_FLOAT_ON_BY_LABEL" desc="Label for the ambient mode float on by animation.">
+        Float on by
+      </message>
+      <message name="IDS_PERSONALIZATION_APP_AMBIENT_MODE_ZERO_STATE_MESSAGE" desc="Message shown in the Ambient subpage in the personalization hub when ambient mode is disabled.">
+        Turn on the toggle to select the screensaver options
+      </message>
+
       <!-- Traffic Counters UI -->
       <message name="IDS_TRAFFIC_COUNTERS_UNKNOWN" desc="Traffic counters related to an unknown source">
         Unknown
@@ -2688,10 +2885,26 @@ Try tapping the mic to ask me anything.
       <message name="IDS_SHIMLESS_RMA_CRITICAL_REBOOT_BUTTON" translateable="false" desc="Label for the button that attempts to cancel RMA and reboot the device.">
         Reboot
       </message>
+      <!-- Wipe device page -->
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_TITLE" translateable="false" desc="Title for the page where the user chooses whether to erase the data or keep/preserve the data on the device.">
+        Preserve Device Data
+      </message>
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION" translateable="false" desc="Label for the option to wipe/erase the data on the device.">
+        Wipe device
+      </message>
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_REMOVE_DATA_OPTION_DESCRIPTION" translateable="false" desc="Description for the option to wipe/erase the data on the device.">
+        Remove the data
+      </message>
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION" translateable="false" desc="Label for the option to preserve/save the data on the device.">
+        Don't wipe the device
+      </message>
+      <message name="IDS_SHIMLESS_RMA_WIPE_DEVICE_PRESERVE_DATA_OPTION_DESCRIPTION" translateable="false" desc="Description for the option to preserve/save the data on the device.">
+        Preserve the data
+      </message>
 
       <!-- Peripheral Firmware Update -->
       <message name="IDS_FIRMWARE_TITLE_TEXT" desc="The title of the Firmware update app.">
-        Update peripherals
+        Firmware updates for external devices
       </message>
       <message name="IDS_FIRMWARE_CRITICAL_UPDATE_TEXT" desc="The text shown when an update is deemed critcal.">
         Critical update
@@ -2758,6 +2971,9 @@ Try tapping the mic to ask me anything.
       </message>
       <message name="IDS_FIRMWARE_NUM_AVAILABLE_UPDATES_TEXT" desc="Message annouced in aria-live when we receive a list of available firmware updates.">
         Update firmware for external devices window is open. <ph name="NUM_UPDATES">$1<ex>3</ex></ph> updates available.
+      </message>
+      <message name="IDS_FIRMWARE_PROCEED_UPDATE_CONFIRMATION" desc="Information text to users that to proceed with the firmware update that they need to click on the Next button.">
+        To proceed with the update, click Next.
       </message>
 
       <!-- Quick Answers -->

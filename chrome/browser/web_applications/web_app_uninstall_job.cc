@@ -15,7 +15,9 @@
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
+#include "chrome/browser/web_applications/web_app_translation_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 
 namespace web_app {
 
@@ -26,6 +28,7 @@ WebAppUninstallJob::WebAppUninstallJob(
     WebAppRegistrar* registrar,
     WebAppInstallManager* install_manager,
     WebAppInstallFinalizer* install_finalizer,
+    WebAppTranslationManager* translation_manager,
     PrefService* profile_prefs)
     : os_integration_manager_(os_integration_manager),
       sync_bridge_(sync_bridge),
@@ -33,12 +36,13 @@ WebAppUninstallJob::WebAppUninstallJob(
       registrar_(registrar),
       install_manager_(install_manager),
       install_finalizer_(install_finalizer),
+      translation_manager_(translation_manager),
       profile_prefs_(profile_prefs) {}
 
 WebAppUninstallJob::~WebAppUninstallJob() = default;
 
 void WebAppUninstallJob::Start(const AppId& app_id,
-                               url::Origin app_origin,
+                               const url::Origin& app_origin,
                                webapps::WebappUninstallSource source,
                                ModifyAppRegistry delete_option,
                                UninstallCallback callback) {
@@ -68,7 +72,7 @@ void WebAppUninstallJob::Start(const AppId& app_id,
   // Uninstall any sub-apps the app has.
   std::vector<AppId> sub_app_ids = registrar_->GetAllSubAppIds(app_id_);
   num_pending_sub_app_uninstalls_ = sub_app_ids.size();
-  for (AppId sub_app_id : sub_app_ids) {
+  for (const AppId& sub_app_id : sub_app_ids) {
     if (registrar_->GetAppById(sub_app_id) == nullptr)
       continue;
     install_finalizer_->UninstallExternalWebApp(
@@ -83,14 +87,19 @@ void WebAppUninstallJob::Start(const AppId& app_id,
   icon_manager_->DeleteData(
       app_id, base::BindOnce(&WebAppUninstallJob::OnIconDataDeleted,
                              weak_ptr_factory_.GetWeakPtr()));
+
+  translation_manager_->DeleteTranslations(
+      app_id, base::BindOnce(&WebAppUninstallJob::OnTranslationDataDeleted,
+                             weak_ptr_factory_.GetWeakPtr()));
 }
 
 void WebAppUninstallJob::StopAppRegistryModification() {
   delete_option_ = ModifyAppRegistry::kNo;
 }
 
-void WebAppUninstallJob::OnSubAppUninstalled(bool success) {
-  errors_ = errors_ || !success;
+void WebAppUninstallJob::OnSubAppUninstalled(
+    webapps::UninstallResultCode code) {
+  errors_ = errors_ || (code != webapps::UninstallResultCode::kSuccess);
   num_pending_sub_app_uninstalls_--;
   DCHECK_GE(num_pending_sub_app_uninstalls_, 0u);
   MaybeFinishUninstall();
@@ -117,10 +126,17 @@ void WebAppUninstallJob::OnIconDataDeleted(bool success) {
   MaybeFinishUninstall();
 }
 
+void WebAppUninstallJob::OnTranslationDataDeleted(bool success) {
+  DCHECK(state_ == State::kPendingDataDeletion);
+  translation_data_deleted_ = true;
+  errors_ = errors_ || !success;
+  MaybeFinishUninstall();
+}
+
 void WebAppUninstallJob::MaybeFinishUninstall() {
   DCHECK(state_ == State::kPendingDataDeletion);
   if (!hooks_uninstalled_ || !app_data_deleted_ ||
-      num_pending_sub_app_uninstalls_ > 0) {
+      num_pending_sub_app_uninstalls_ > 0 || !translation_data_deleted_) {
     return;
   }
   DCHECK_EQ(num_pending_sub_app_uninstalls_, 0u);
@@ -141,8 +157,8 @@ void WebAppUninstallJob::MaybeFinishUninstall() {
       break;
   }
   install_manager_->NotifyWebAppUninstalled(app_id_);
-  std::move(callback_).Run(errors_ ? WebAppUninstallJobResult::kError
-                                   : WebAppUninstallJobResult::kSuccess);
+  std::move(callback_).Run(errors_ ? webapps::UninstallResultCode::kError
+                                   : webapps::UninstallResultCode::kSuccess);
 }
 
 }  // namespace web_app

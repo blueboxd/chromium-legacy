@@ -47,6 +47,7 @@ HTMLScriptElement::HTMLScriptElement(Document& document,
                                      const CreateElementFlags flags)
     : HTMLElement(html_names::kScriptTag, document),
       children_changed_by_api_(false),
+      blocking_attribute_(MakeGarbageCollected<BlockingAttribute>(this)),
       loader_(InitializeScriptLoader(flags)) {}
 
 const AttrNameToTrustedType& HTMLScriptElement::GetCheckedAttributeTypes()
@@ -96,13 +97,17 @@ void HTMLScriptElement::ParseAttribute(
     // flag is set has an async content attribute added, the element's
     // |non-blocking| flag must be unset."
     loader_->HandleAsyncAttribute();
-  } else if (params.name == html_names::kImportanceAttr &&
+  } else if (params.name == html_names::kFetchpriorityAttr &&
              RuntimeEnabledFeatures::PriorityHintsEnabled(
                  GetExecutionContext())) {
-    // The only thing we need to do for the the importance attribute/Priority
+    // The only thing we need to do for the the fetchpriority attribute/Priority
     // Hints is count usage upon parsing. Processing the value happens when the
     // element loads.
     UseCounter::Count(GetDocument(), WebFeature::kPriorityHints);
+  } else if (params.name == html_names::kBlockingAttr &&
+             RuntimeEnabledFeatures::BlockingAttributeEnabled()) {
+    blocking_attribute_->DidUpdateAttributeValue(params.old_value,
+                                                 params.new_value);
   } else {
     HTMLElement::ParseAttribute(params);
   }
@@ -127,6 +132,10 @@ Node::InsertionNotificationRequest HTMLScriptElement::InsertedInto(
 void HTMLScriptElement::RemovedFrom(ContainerNode& insertion_point) {
   HTMLElement::RemovedFrom(insertion_point);
   loader_->ReleaseWebBundleResource();
+  if (GetDocument().GetRenderBlockingResourceManager()) {
+    GetDocument().GetRenderBlockingResourceManager()->RemovePendingScript(
+        *this);
+  }
 }
 
 void HTMLScriptElement::DidNotifySubtreeInsertionsToDocument() {
@@ -237,8 +246,8 @@ String HTMLScriptElement::ReferrerPolicyAttributeValue() const {
   return FastGetAttribute(html_names::kReferrerpolicyAttr);
 }
 
-String HTMLScriptElement::ImportanceAttributeValue() const {
-  return FastGetAttribute(html_names::kImportanceAttr);
+String HTMLScriptElement::FetchPriorityAttributeValue() const {
+  return FastGetAttribute(html_names::kFetchpriorityAttr);
 }
 
 String HTMLScriptElement::ChildTextContent() {
@@ -346,6 +355,7 @@ bool HTMLScriptElement::supports(ScriptState* script_state,
 }
 
 void HTMLScriptElement::Trace(Visitor* visitor) const {
+  visitor->Trace(blocking_attribute_);
   visitor->Trace(loader_);
   HTMLElement::Trace(visitor);
   ScriptElementBase::Trace(visitor);

@@ -452,6 +452,88 @@ bool IsAXSetter(SEL selector) {
          !_node->IsInvisibleOrIgnored();
 }
 
+- (id)titleUIElement {
+  // True only if it's a control, if there's a single label, and the label has
+  // nonempty text.
+
+  // VoiceOver ignores TitleUIElement if the element isn't a control.
+  if (!ui::IsControl(_node->GetRole()))
+    return nil;
+
+  if (!_node->HasNameFromOtherElement())
+    return nil;
+
+  std::vector<int32_t> labelledby_ids =
+      _node->GetIntListAttribute(ax::mojom::IntListAttribute::kLabelledbyIds);
+  if (labelledby_ids.size() != 1)
+    return nil;
+
+  ui::AXPlatformNode* label =
+      _node->GetDelegate()->GetFromNodeID(labelledby_ids[0]);
+  if (!label)
+    return nil;
+
+  // No title UI element if the label's name is empty.
+  std::string labelName = label->GetDelegate()->GetName();
+  if (labelName.empty())
+    return nil;
+
+  return label->GetNativeViewAccessible();
+}
+
+- (BOOL)isNameFromLabel {
+  // Image annotations are not visible text, so they should be exposed
+  // as a description and not a title.
+  switch (_node->GetData().GetImageAnnotationStatus()) {
+    case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+      return true;
+
+    case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
+    case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
+      break;
+  }
+
+  // No label for windows.
+  ax::mojom::Role role = _node->GetRole();
+  if (ui::IsWindow(role))
+    return false;
+
+  // VoiceOver computes the wrong description for a link.
+  if (ui::IsLink(role))
+    return true;
+
+  // VoiceOver will not read the label of these roles unless it is
+  // exposed in the description instead of the title.
+  switch (role) {
+    case ax::mojom::Role::kGenericContainer:
+    case ax::mojom::Role::kGroup:
+    case ax::mojom::Role::kRadioGroup:
+      return true;
+    default:
+      break;
+  }
+
+  // On Mac OS X, the accessible name of an object is exposed as its
+  // title if it comes from visible text, and as its description
+  // otherwise, but never both.
+  ax::mojom::NameFrom nameFrom = _node->GetNameFrom();
+  if (nameFrom == ax::mojom::NameFrom::kCaption ||
+      nameFrom == ax::mojom::NameFrom::kContents ||
+      nameFrom == ax::mojom::NameFrom::kRelatedElement ||
+      nameFrom == ax::mojom::NameFrom::kValue) {
+    return false;
+  }
+
+  return true;
+}
+
 + (NSString*)nativeRoleFromAXRole:(ax::mojom::Role)role {
   static const base::NoDestructor<RoleMap> role_map(BuildRoleMap());
   RoleMap::const_iterator it = role_map->find(role);
@@ -671,28 +753,20 @@ bool IsAXSetter(SEL selector) {
 
   // These attributes are required on all accessibility objects.
   NSArray* const kAllRoleAttributes = @[
-    NSAccessibilityBlockQuoteLevelAttribute,
-    NSAccessibilityChildrenAttribute,
-    NSAccessibilityDOMClassList,
-    NSAccessibilityDOMIdentifierAttribute,
-    NSAccessibilityElementBusyAttribute,
-    NSAccessibilityParentAttribute,
-    NSAccessibilityPositionAttribute,
-    NSAccessibilityRoleAttribute,
-    NSAccessibilitySizeAttribute,
+    NSAccessibilityBlockQuoteLevelAttribute, NSAccessibilityChildrenAttribute,
+    NSAccessibilityDOMClassList, NSAccessibilityDOMIdentifierAttribute,
+    NSAccessibilityDescriptionAttribute, NSAccessibilityElementBusyAttribute,
+    NSAccessibilityParentAttribute, NSAccessibilityPositionAttribute,
+    NSAccessibilityRoleAttribute, NSAccessibilitySizeAttribute,
     NSAccessibilitySubroleAttribute,
     // Title is required for most elements. Cocoa asks for the value even if it
     // is omitted here, but won't present it to accessibility APIs without this.
     NSAccessibilityTitleAttribute,
     // Attributes which are not required, but are general to all roles.
-    NSAccessibilityRoleDescriptionAttribute,
-    NSAccessibilityEnabledAttribute,
-    NSAccessibilityFocusedAttribute,
-    NSAccessibilityHelpAttribute,
-    NSAccessibilityTopLevelUIElementAttribute,
-    NSAccessibilityVisitedAttribute,
-    NSAccessibilityWindowAttribute,
-    NSAccessibilityChromeAXNodeIdAttribute
+    NSAccessibilityRoleDescriptionAttribute, NSAccessibilityEnabledAttribute,
+    NSAccessibilityFocusedAttribute, NSAccessibilityHelpAttribute,
+    NSAccessibilityTopLevelUIElementAttribute, NSAccessibilityVisitedAttribute,
+    NSAccessibilityWindowAttribute, NSAccessibilityChromeAXNodeIdAttribute
   ];
   // Attributes required for user-editable controls.
   NSArray* const kValueAttributes = @[ NSAccessibilityValueAttribute ];
@@ -799,6 +873,12 @@ bool IsAXSetter(SEL selector) {
   if (ui::IsSetLike(role))
     [axAttributes addObject:@"AXARIASetSize"];
 
+  if ([[self accessibilityRole] isEqualToString:NSAccessibilityWebAreaRole]) {
+    [axAttributes addObjectsFromArray:@[
+      NSAccessibilityLoadedAttribute, NSAccessibilityLoadingProgressAttribute
+    ]];
+  }
+
   // Caret navigation and text selection attributes.
   if (!ui::IsPlatformDocument(_node->GetRole())) {
     [axAttributes addObject:NSAccessibilityFocusableAncestorAttribute];
@@ -881,8 +961,13 @@ bool IsAXSetter(SEL selector) {
     ]];
   }
 
+  // KeyShortcuts
   if (_node->HasStringAttribute(ax::mojom::StringAttribute::kKeyShortcuts))
     [axAttributes addObject:NSAccessibilityKeyShortcutsValueAttribute];
+
+  // TitleUIElement
+  if ([self titleUIElement])
+    [axAttributes addObject:NSAccessibilityTitleUIElementAttribute];
 
   return axAttributes.autorelease();
 }
@@ -1202,6 +1287,19 @@ bool IsAXSetter(SEL selector) {
   return [self getStringAttribute:ax::mojom::StringAttribute::kKeyShortcuts];
 }
 
+- (NSNumber*)AXLoaded {
+  if (![self instanceActive])
+    return nil;
+  return @(_node->GetDelegate()->GetTreeData().loaded);
+}
+
+- (NSNumber*)AXLoadingProgress {
+  if (![self instanceActive])
+    return nil;
+  double doubleValue = _node->GetDelegate()->GetTreeData().loading_progress;
+  return @(doubleValue);
+}
+
 - (id)AXOwns {
   if (![self instanceActive])
     return nil;
@@ -1380,14 +1478,15 @@ bool IsAXSetter(SEL selector) {
 }
 
 - (NSString*)AXTitle {
-  if (ui::IsNameExposedInAXValueForRole(_node->GetRole()))
-    return @"";
+  return [self accessibilityTitle];
+}
 
-  return [self getName];
+- (id)AXTitleUIElement {
+  return [self accessibilityTitleUIElement];
 }
 
 - (NSString*)AXDescription {
-  return [self AXTitle];
+  return [self accessibilityLabel];
 }
 
 // Misc attributes.
@@ -1540,7 +1639,7 @@ bool IsAXSetter(SEL selector) {
 
 - (NSString*)description {
   return [NSString stringWithFormat:@"%@ - %@ (%@)", [super description],
-                                    [self AXTitle], [self AXRole]];
+                                    [self accessibilityTitle], [self AXRole]];
 }
 
 //
@@ -1569,15 +1668,99 @@ bool IsAXSetter(SEL selector) {
 }
 
 - (NSString*)accessibilityLabel {
-  // accessibilityLabel is "a short description of the accessibility element",
-  // and accessibilityTitle is "the title of the accessibility element"; at
-  // least in Chromium, the title usually is a short description of the element,
-  // so it also functions as a label.
-  return [self AXDescription];
+  if (![self instanceActive])
+    return nil;
+
+  // Mac OS X wants static text exposed in AXValue.
+  if (ui::IsNameExposedInAXValueForRole([self internalRole]))
+    return @"";
+
+  // If we're exposing the title in TitleUIElement, don't also redundantly
+  // expose it in AXDescription.
+  if ([self titleUIElement])
+    return @"";
+
+  if (![self isNameFromLabel])
+    return @"";
+
+  std::string name = _node->GetName();
+  std::string extraText;
+  ax::mojom::ImageAnnotationStatus status =
+      _node->GetData().GetImageAnnotationStatus();
+  switch (status) {
+    case ax::mojom::ImageAnnotationStatus::kEligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationPending:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationEmpty:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationAdult:
+    case ax::mojom::ImageAnnotationStatus::kAnnotationProcessFailed: {
+      extraText = base::UTF16ToUTF8(
+          _node->GetDelegate()->GetLocalizedStringForImageAnnotationStatus(
+              status));
+      break;
+    }
+
+    case ax::mojom::ImageAnnotationStatus::kAnnotationSucceeded:
+      extraText = _node->GetStringAttribute(
+          ax::mojom::StringAttribute::kImageAnnotation);
+      break;
+
+    case ax::mojom::ImageAnnotationStatus::kNone:
+    case ax::mojom::ImageAnnotationStatus::kWillNotAnnotateDueToScheme:
+    case ax::mojom::ImageAnnotationStatus::kIneligibleForAnnotation:
+    case ax::mojom::ImageAnnotationStatus::kSilentlyEligibleForAnnotation:
+      break;
+  }
+
+  if (!extraText.empty()) {
+    if (!name.empty())
+      name += ". ";
+    name += extraText;
+  }
+
+  if (!name.empty())
+    return base::SysUTF8ToNSString(name);
+
+  // Given an image where there's no other title, return the base part
+  // of the filename as the description.
+  if ([[self accessibilityRole] isEqualToString:NSAccessibilityImageRole]) {
+    std::string url;
+    if (_node->GetStringAttribute(ax::mojom::StringAttribute::kUrl, &url)) {
+      // Given a url like http://foo.com/bar/baz.png, just return the
+      // base name, e.g., "baz.png".
+      size_t leftIndex = url.rfind('/');
+      std::string basename =
+          leftIndex != std::string::npos ? url.substr(leftIndex) : url;
+      return base::SysUTF8ToNSString(basename);
+    }
+  }
+
+  return @"";
 }
 
 - (NSString*)accessibilityTitle {
-  return [self AXTitle];
+  if (![self instanceActive])
+    return nil;
+
+  if (ui::IsNameExposedInAXValueForRole(_node->GetRole()))
+    return @"";
+
+  if ([self isNameFromLabel])
+    return @"";
+
+  // If we're exposing the title in TitleUIElement, don't also redundantly
+  // expose it in AXDescription.
+  if ([self titleUIElement])
+    return @"";
+
+  // On macOS cell titles are empty if they came from content.
+  ax::mojom::NameFrom nameFrom = _node->GetNameFrom();
+  if (nameFrom == ax::mojom::NameFrom::kContents) {
+    NSString* role = [self accessibilityRole];
+    if ([role isEqualToString:NSAccessibilityCellRole])
+      return @"";
+  }
+
+  return [self getName];
 }
 
 - (id)accessibilityValue {
@@ -1967,6 +2150,17 @@ bool IsAXSetter(SEL selector) {
       [ret addObject:colheader];
   }
   return [ret count] ? ret : nil;
+}
+
+//
+// NSAccessibility protocol: configuring linkage elements.
+//
+
+- (id)accessibilityTitleUIElement {
+  if (![self instanceActive])
+    return nil;
+
+  return [self titleUIElement];
 }
 
 // MathML attributes.

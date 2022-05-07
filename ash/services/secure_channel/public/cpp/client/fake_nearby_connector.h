@@ -20,8 +20,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace chromeos {
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Fake NearbyConnector implementation. When Connect() is called, parameters are
 // queued up and can be completed using either FailQueuedCallback() or
@@ -136,7 +135,6 @@ class FakeNearbyConnector : public NearbyConnector {
   std::vector<std::unique_ptr<FakeConnection>> fake_connections_;
 };
 
-}  // namespace secure_channel
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_FAKE_NEARBY_CONNECTOR_H_

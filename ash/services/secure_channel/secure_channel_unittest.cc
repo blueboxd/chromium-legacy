@@ -23,9 +23,7 @@
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 namespace {
 
@@ -616,6 +614,4 @@ TEST_F(SecureChannelConnectionTest, GetChannelBindingData) {
   EXPECT_EQ("channel_binding_data", secure_channel_->GetChannelBindingData());
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

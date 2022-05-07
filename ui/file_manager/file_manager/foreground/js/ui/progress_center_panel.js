@@ -69,6 +69,9 @@ export class ProgressCenterPanel {
           if (item.type === ProgressItemType.COPY) {
             return strf('COPY_FILE_NAME', source);
           }
+          if (item.type === ProgressItemType.EXTRACT) {
+            return strf('EXTRACT_FILE_NAME', source);
+          }
           if (item.type === ProgressItemType.MOVE) {
             return strf('MOVE_FILE_NAME', source);
           }
@@ -81,6 +84,9 @@ export class ProgressCenterPanel {
         // Multiple items:
         if (item.type === ProgressItemType.COPY) {
           return strf('COPY_ITEMS_REMAINING', count);
+        }
+        if (item.type === ProgressItemType.EXTRACT) {
+          return strf('EXTRACT_ITEMS_REMAINING', count);
         }
         if (item.type === ProgressItemType.MOVE) {
           return strf('MOVE_ITEMS_REMAINING', count);
@@ -144,6 +150,9 @@ export class ProgressCenterPanel {
                 strf('COPY_FILE_NAME_LONG', source, destination) :
                 strf('FILE_COPIED', source);
           }
+          if (item.type === ProgressItemType.EXTRACT) {
+            return strf('FILE_EXTRACTED', source);
+          }
           if (item.type === ProgressItemType.MOVE) {
             return hasDestination ?
                 strf('MOVE_FILE_NAME_LONG', source, destination) :
@@ -163,6 +172,9 @@ export class ProgressCenterPanel {
           return hasDestination ?
               strf('COPY_ITEMS_REMAINING_LONG', count, destination) :
               strf('FILE_ITEMS_COPIED', source);
+        }
+        if (item.type === ProgressItemType.EXTRACT) {
+          return strf('FILE_ITEMS_EXTRACTED', count);
         }
         if (item.type === ProgressItemType.MOVE) {
           return hasDestination ?
@@ -305,6 +317,7 @@ export class ProgressCenterPanel {
         case ProgressItemState.COMPLETED:
           // Create a completed panel for copies, moves, deletes and formats.
           if (item.type === ProgressItemType.COPY ||
+              item.type === ProgressItemType.EXTRACT ||
               item.type === ProgressItemType.MOVE ||
               item.type === ProgressItemType.FORMAT ||
               item.type === ProgressItemType.ZIP ||

@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback.h"
@@ -19,6 +20,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/mojom/compositing/frame_sink_video_capture.mojom.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/color_transform.h"
@@ -63,9 +65,10 @@ class VIZ_SERVICE_EXPORT VideoCaptureOverlay final
     virtual void InvalidateRect(const gfx::Rect& rect) = 0;
 
     // Notifies the FrameSource that another frame should be captured and have
-    // its VideoCaptureOverlay re-rendered soon to reflect an updated overlay
-    // image and/or position.
-    virtual void RequestRefreshFrame() = 0;
+    // its VideoCaptureOverlay re-rendered to reflect an updated overlay
+    // image and/or position. The overlay image and position may change often,
+    // so this method may be called frequently.
+    virtual void RefreshNow() = 0;
 
     // Notifies the FrameSource that the VideoCaptureOverlay has lost its mojo
     // binding.
@@ -92,6 +95,8 @@ class VIZ_SERVICE_EXPORT VideoCaptureOverlay final
   void SetImageAndBounds(const SkBitmap& image, const gfx::RectF& bounds) final;
   void SetBounds(const gfx::RectF& bounds) final;
 
+  const SkBitmap& bitmap() const { return image_; }
+
   struct CapturedFrameProperties {
     // The entire size of the compositor frame on the surface. This should be
     // the maximum possible capturable surface size.
@@ -109,6 +114,8 @@ class VIZ_SERVICE_EXPORT VideoCaptureOverlay final
 
     // The frame's pixel format.
     media::VideoPixelFormat format;
+
+    std::string ToString() const;
   };
 
   // Returns a OnceCallback that, when run, renders this VideoCaptureOverlay on
@@ -116,6 +123,34 @@ class VIZ_SERVICE_EXPORT VideoCaptureOverlay final
   // given content |region_in_frame|. Returns a null OnceCallback if there is
   // nothing to render at this time.
   OnceRenderer MakeRenderer(const CapturedFrameProperties& properties);
+
+  struct BlendInformation {
+    // Source region that we will blend from, expressed in the coordinate system
+    // of the overlay's |image_|.
+    gfx::Rect source_region;
+
+    // Source region that we will blend from, expressed in the coordinate system
+    // of the **scaled* overlay's |image_|. Scaled overlay's image is computed
+    // by |sprite_|. This should have the same scale as the content (aka
+    // VideoFrame).
+    gfx::Rect source_region_scaled;
+
+    // Destination region that we will blend into, expressed in the coordinate
+    // system of the content (aka VideoFrame). This will be
+    // 4:2:0-format-friendly (i.e. all dimensions and coordinates will be even).
+    // This should be compatible with `CopyOutputResult::rect()`, which is
+    // in turn influenced by `CopyOutputRequest::area()` and
+    // `CopyOutputRequest::result_selection()`.
+    gfx::Rect destination_region_content;
+
+    std::string ToString() const;
+  };
+
+  // Computes information related to blending current overlay over the captured
+  // frame described by |properties|. Returns nullopt if the blend needs to be
+  // skipped (e.g. because it would be a no-op).
+  absl::optional<BlendInformation> CalculateBlendInformation(
+      const CapturedFrameProperties& properties) const;
 
   // Returns a OnceCallback that renders all of the given |overlays| in
   // order. The remaining arguments are the same as in MakeRenderer(). This is a
@@ -144,9 +179,14 @@ class VIZ_SERVICE_EXPORT VideoCaptureOverlay final
     const gfx::Size& size() const { return size_; }
     media::VideoPixelFormat format() const { return format_; }
 
-    void Blit(const gfx::Point& position,
-              const gfx::Rect& blit_rect,
-              media::VideoFrame* frame);
+    // Blends the transformed |image_| over the |frame|. |src_rect| describes
+    // the region from |transformed_image_| (which is computed on-demand by
+    // scaling |image_| to the desired |size_|) that will be blended over the
+    // destination. |blit_rect| describes the region of |frame| that will be
+    // blended over.
+    void Blend(const gfx::Rect& src_rect,
+               const gfx::Rect& blit_rect,
+               media::VideoFrame* frame);
 
    private:
     friend class base::RefCounted<Sprite>;

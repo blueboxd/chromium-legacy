@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">"<ph name="FILE_NAME" />" పేరు మార్చడం సాధ్యపడలేదు. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">డ్వోరక్ కీబోర్డ్‌తో ఇంగ్లీష్ (US)</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - హోస్ట్</translation>
+<translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1538729222189715449">Linux ఫైళ్లను తెరుస్తోంది...</translation>
 <translation id="1547964879613821194">కెనడియన్ ఆంగ్లం</translation>
 <translation id="1556189134700913550">అన్నింటికీ వర్తింపజేయి</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">ప్రామాణీకరణ ప్రమాణపత్రం నెట్‌వర్క్ ద్వారా తిరస్కరించబడింది</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" />కి జోడించండి</translation>
 <translation id="255937426064304553">యుఎస్ అంతర్జాతీయం</translation>
-<translation id="2562685439590298522">Docs</translation>
 <translation id="2563185590376525700">కప్ప</translation>
 <translation id="2578394532502990878">తమిళం ఫొనెటిక్</translation>
 <translation id="2579959351793446050">ఒడియా</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">యుఎస్ విస్తారితం</translation>
 <translation id="290843123675549676">మరాఠీ</translation>
 <translation id="2923240520113693977">ఈస్టోనియన్</translation>
-<translation id="2925966894897775835">Sheets</translation>
 <translation id="2938685643439809023">మంగోలియన్</translation>
-<translation id="2943400156390503548">Slides</translation>
 <translation id="2943503720238418293">కొద్దిగా చిన్న పేరును ఉపయోగించండి</translation>
 <translation id="2949781154072577687"><ph name="DRIVE_NAME" />ను ఫార్మాట్ చేస్తోంది...</translation>
 <translation id="2951236788251446349">జెల్లీఫిష్</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, మీ అడ్మినిస్ట్రేటర్ ద్వారా మేనేజ్ చేయబడుతుంది, వివరాలు</translation>
 <translation id="4387004326333427325">ప్రామాణీకరణ ప్రమాణపత్రం రిమోట్‌లో తిరస్కరించబడింది</translation>
 <translation id="4394214039309501350">బాహ్య లింక్</translation>
+<translation id="4401287888955153199">అన్నింటినీ ఎక్స్‌ట్రాక్ట్ చేయండి</translation>
 <translation id="4418686080762064601">మీ ఫైల్స్ కోసం షార్ట్‌కట్‌ను క్రియేట్ చేయండి</translation>
 <translation id="4425149324548788773">నా డ్రైవ్‌</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_COUNT" />లో <ph name="NETWORK_INDEX" /> నెట్‌వర్క్, <ph name="NETWORK_NAME" />, సిగ్నల్ సామర్థ్యం <ph name="SIGNAL_STRENGTH" />%, కనెక్ట్ చేయండి</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">ఫైళ్లను ఆఫ్‌లైన్‌లో అందుబాటులో ఉంచండి</translation>
 <translation id="4658782175094886150">మంచు ప్రదేశంలో ఉన్న వ్యక్తి</translation>
 <translation id="4669606053856530811">'<ph name="SOURCE_NAME" />' యొక్క సభ్యులతో ఈ అంశాలను షేర్ చేస్తే మినహా వారు యాక్సెస్‌ను కోల్పోతారు.</translation>
+<translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">స్వీడిష్</translation>
 <translation id="4693155481716051732">సుషి</translation>
 <translation id="4694604912444486114">కోతి</translation>
@@ -658,6 +658,7 @@
 <translation id="6732801395666424405">ప్రమాణపత్రాలు లోడ్ కాలేదు</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">1 ఫోల్డర్ ఎంచుకోబడింది</translation>
+<translation id="6755827872271341378">ChromeOS Flex పరికరం</translation>
 <translation id="6790428901817661496">ప్లే చేయి</translation>
 <translation id="6795884519221689054">పాండా</translation>
 <translation id="6806699711453372963">Linux షేరింగ్‌ని నిర్వహించండి</translation>
@@ -735,6 +736,7 @@
 <translation id="7343393116438664539">వియత్నామీస్ టెలెక్స్</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> అంశాలను కాపీ చేస్తోంది...</translation>
 <translation id="7375951387215729722">ఫైల్ లిస్ట్‌ <ph name="COLUMN_NAME" /> ప్రకారం అవరోహణ క్రమంలో వర్గీకరించబడింది.</translation>
+<translation id="7402503521691663770">ChromeOS Flex పరికరాలు</translation>
 <translation id="7408870451288633753">చెక్</translation>
 <translation id="7417453074306512035">ఇథియోపిక్ కీబోర్డ్</translation>
 <translation id="7417705661718309329">Google మ్యాప్</translation>
@@ -824,6 +826,7 @@
 <translation id="8042602468072383151"><ph name="AUDIO_TYPE" /> ఆడియో</translation>
 <translation id="8045462269890919536">రొమేనియన్</translation>
 <translation id="8049184478152619004">వ్యక్తిగత అన్‌బ్లాకింగ్ కీ(PUK)ని ఎంటర్ చేయండి</translation>
+<translation id="807187749540895545"><ph name="FILE_NAME" />ను సంగ్రహిస్తోంది…</translation>
 <translation id="8079530767338315840">పునరావృతం చేయి</translation>
 <translation id="8087576439476816834">డౌన్‌లోడ్ చేయి, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">నాతో షేర్ చేసినవి</translation>
@@ -875,6 +878,7 @@
 <translation id="8484284835977497781">మీ ఇటీవల ఫోటోల నుండి ఎంచుకోండి.</translation>
 <translation id="8487700953926739672">ఆఫ్‌లైన్‌లో అందుబాటు</translation>
 <translation id="8492972329130824181">ఇంటి నెట్‌వర్క్ అందుబాటులో లేదు. కనెక్ట్ చేయడానికి మొబైల్ డేటా రోమింగ్‌ను తప్పనిసరిగా ఎనేబుల్ చేయాలి.</translation>
+<translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" /> ఐటెమ్‌లను సంగ్రహిస్తోంది...</translation>
 <translation id="8521441079177373948">యుకె</translation>
 <translation id="8525306231823319788">ఫుల్-స్క్రీన్‌</translation>
 <translation id="853494022971700746">ఫ్రెంచ్ (ఫ్రాన్స్)</translation>
@@ -950,6 +954,7 @@
 <translation id="9172592259078059678">గుజరాతీ ట్రాన్స్‌లిటరేషన్</translation>
 <translation id="9173120999827300720">అంతర్జాతీయ కీబోర్డ్‌తో ఇంగ్లీష్ (US)</translation>
 <translation id="9174050671906956834">ట్రాష్‌లోని ఐటెమ్‌లు 30 రోజుల తర్వాత శాశ్వతంగా తొలగించబడతాయి.</translation>
+<translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">కజక్</translation>
 <translation id="9213073329713032541">ఇన్‌స్టాలేషన్ విజయవంతంగా ప్రారంభించబడింది.</translation>
 <translation id="9219103736887031265">ఇమేజ్‌లు</translation>

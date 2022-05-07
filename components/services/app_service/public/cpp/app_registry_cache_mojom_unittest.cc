@@ -34,8 +34,11 @@ class AppRegistryCacheMojomTest : public testing::Test,
                                   public apps::AppRegistryCache::Observer {
  protected:
   AppRegistryCacheMojomTest() {
-    scoped_feature_list_.InitAndDisableFeature(
-        apps::kAppServiceOnAppTypeInitializedWithoutMojom);
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{
+            apps::kAppServiceOnAppTypeInitializedWithoutMojom,
+            apps::kAppServiceOnAppUpdateWithoutMojom});
   }
 
   static apps::mojom::AppPtr MakeApp(
@@ -69,7 +72,7 @@ class AppRegistryCacheMojomTest : public testing::Test,
     EXPECT_EQ(account_id_, update.AccountId());
     EXPECT_NE("", update.Name());
     if (update.ReadinessChanged() &&
-        (update.Readiness() == apps::mojom::Readiness::kReady)) {
+        (update.Readiness() == apps::Readiness::kReady)) {
       num_freshly_installed_++;
     }
     updated_ids_.insert(update.AppId());
@@ -381,8 +384,7 @@ TEST_F(AppRegistryCacheMojomTest, Removed) {
   EXPECT_CALL(observer, OnAppUpdate(HasAppId("app")))
       .WillOnce(
           testing::Invoke([&observer, &cache](const apps::AppUpdate& update) {
-            EXPECT_EQ(apps::mojom::Readiness::kUninstalledByUser,
-                      update.Readiness());
+            EXPECT_EQ(apps::Readiness::kUninstalledByUser, update.Readiness());
             // Even though we have queued the removal, checking the cache now
             // shows the app is still present.
             EXPECT_CALL(observer, OnAppUpdate(HasAppId("app")));

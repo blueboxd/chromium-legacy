@@ -17,7 +17,7 @@ import '../settings_shared_css.js';
 import '../settings_vars_css.js';
 
 import {assert} from '//resources/js/assert.m.js';
-import {html, microTask, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {microTask, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {prefToString, stringToPrefValue} from '../prefs/pref_util.js';
 
@@ -104,7 +104,7 @@ export class SettingsDropdownMenuElement extends
   notFoundValue: string;
   label: string;
 
-  focus() {
+  override focus() {
     this.$.dropdownMenu.focus();
   }
 

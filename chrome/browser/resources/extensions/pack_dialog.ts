@@ -12,7 +12,8 @@ import './strings.m.js';
 
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {getTemplate} from './pack_dialog.html.js';
 
 export interface PackDialogDelegate {
   /**
@@ -51,7 +52,7 @@ export class ExtensionsPackDialogElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -73,7 +74,7 @@ export class ExtensionsPackDialogElement extends PolymerElement {
   private keyFile_: string;
   private lastResponse_: chrome.developerPrivate.PackDirectoryResponse|null;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.$.dialog.showModal();
   }

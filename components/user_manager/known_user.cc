@@ -346,15 +346,20 @@ void KnownUser::SetIntegerPref(const AccountId& account_id,
   SetPath(account_id, path, base::Value(in_value));
 }
 
-bool KnownUser::GetPref(const AccountId& account_id,
-                        const std::string& path,
-                        const base::Value** out_value) {
+bool KnownUser::GetPrefForTest(const AccountId& account_id,
+                               const std::string& path,
+                               const base::Value** out_value) {
+  *out_value = FindPath(account_id, path);
+  return *out_value != nullptr;
+}
+
+const base::Value* KnownUser::FindPath(const AccountId& account_id,
+                                       const std::string& path) const {
   const base::Value* user_pref_dict = FindPrefs(account_id);
   if (!user_pref_dict)
-    return false;
+    return nullptr;
 
-  *out_value = user_pref_dict->FindPath(path);
-  return *out_value != nullptr;
+  return user_pref_dict->FindPath(path);
 }
 
 void KnownUser::RemovePref(const AccountId& account_id,
@@ -598,8 +603,8 @@ void KnownUser::SetChallengeResponseKeys(const AccountId& account_id,
 }
 
 base::Value KnownUser::GetChallengeResponseKeys(const AccountId& account_id) {
-  const base::Value* value = nullptr;
-  if (!GetPref(account_id, kChallengeResponseKeys, &value) || !value->is_list())
+  const base::Value* value = FindPath(account_id, kChallengeResponseKeys);
+  if (!value || !value->is_list())
     return base::Value();
   return value->Clone();
 }
@@ -610,8 +615,8 @@ void KnownUser::SetLastOnlineSignin(const AccountId& account_id,
 }
 
 base::Time KnownUser::GetLastOnlineSignin(const AccountId& account_id) {
-  const base::Value* value = nullptr;
-  if (!GetPref(account_id, kLastOnlineSignin, &value))
+  const base::Value* value = FindPath(account_id, kLastOnlineSignin);
+  if (!value)
     return base::Time();
   absl::optional<base::Time> time = base::ValueToTime(value);
   if (!time)
@@ -632,11 +637,7 @@ void KnownUser::SetOfflineSigninLimit(
 
 absl::optional<base::TimeDelta> KnownUser::GetOfflineSigninLimit(
     const AccountId& account_id) {
-  const base::Value* value = nullptr;
-  if (!GetPref(account_id, kOfflineSigninLimit, &value))
-    return absl::nullopt;
-  absl::optional<base::TimeDelta> time_delta = base::ValueToTimeDelta(value);
-  return time_delta;
+  return base::ValueToTimeDelta(FindPath(account_id, kOfflineSigninLimit));
 }
 
 void KnownUser::SetIsEnterpriseManaged(const AccountId& account_id,
@@ -795,68 +796,6 @@ void KnownUser::RegisterPrefs(PrefRegistrySimple* registry) {
 // --- Legacy interface ---
 namespace known_user {
 
-void SetStringPref(const AccountId& account_id,
-                   const std::string& path,
-                   const std::string& in_value) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-  return KnownUser(local_state).SetStringPref(account_id, path, in_value);
-}
-
-void SetBooleanPref(const AccountId& account_id,
-                    const std::string& path,
-                    const bool in_value) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-  return KnownUser(local_state).SetBooleanPref(account_id, path, in_value);
-}
-
-bool GetIntegerPref(const AccountId& account_id,
-                    const std::string& path,
-                    int* out_value) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return false;
-  absl::optional<int> val =
-      KnownUser(local_state).FindIntPath(account_id, path);
-  if (out_value && val.has_value())
-    *out_value = val.value();
-  return val.has_value();
-}
-
-void SetIntegerPref(const AccountId& account_id,
-                    const std::string& path,
-                    const int in_value) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-  return KnownUser(local_state).SetIntegerPref(account_id, path, in_value);
-}
-
-bool GetPref(const AccountId& account_id,
-             const std::string& path,
-             const base::Value** out_value) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return false;
-  return KnownUser(local_state).GetPref(account_id, path, out_value);
-}
-
-void RemovePref(const AccountId& account_id, const std::string& path) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-  return KnownUser(local_state).RemovePref(account_id, path);
-}
-
 AccountId GetAccountId(const std::string& user_email,
                        const std::string& id,
                        const AccountType& account_type) {
@@ -907,30 +846,6 @@ std::vector<AccountId> GetKnownAccountIds() {
   if (!local_state)
     return {};
   return KnownUser(local_state).GetKnownAccountIds();
-}
-
-void UpdateId(const AccountId& account_id) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-  return KnownUser(local_state).UpdateId(account_id);
-}
-
-void SetDeviceId(const AccountId& account_id, const std::string& device_id) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return;
-  return KnownUser(local_state).SetDeviceId(account_id, device_id);
-}
-
-std::string GetDeviceId(const AccountId& account_id) {
-  PrefService* local_state = GetLocalStateLegacy();
-  // Local State may not be initialized in tests.
-  if (!local_state)
-    return std::string();
-  return KnownUser(local_state).GetDeviceId(account_id);
 }
 
 }  // namespace known_user

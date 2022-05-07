@@ -30,30 +30,40 @@ using MigrationFinishedCallback =
 constexpr char kMoveMigrationResumeStepPref[] =
     "ash.browser_data_migrator.move_migration_resume_step";
 
+// Dictionary pref storing user id hash as key and number of resumes in int as
+// value.
+constexpr char kMoveMigrationResumeCountPref[] =
+    "ash.browser_data_migrator.move_migration_resume_count";
+
+// The number of maximum resume tries for `MoveMigrator`. If the limit is
+// reached then move migration is marked as completed without actually
+// completing the migration.
+constexpr int kMoveMigrationResumeCountLimit = 5;
+
 // This class "moves" Lacros data from Ash to Lacros. It migrates user data from
 // `original_profile_dir` (/home/user/<hash>/), denoted as <Ash PDD> from here
 // forward, to the new profile data directory
 // (/<Ash PDD>/lacros/Default/) with the steps described below. The renaming of
 // <kMoveTmpDir> is the last step of the migration so that the existence of
-// <Ash PDD>/lacros/ is equivalent to having completed the migration. Also it
-// ensures that there is no state in which Ash and Lacros have access to the
-// same inode via two hardlinks.
+// <Ash PDD>/lacros/ is equivalent to having completed the migration.
 // 1) Delete any `ItemType::kDeletable` items in <Ash PDD>.
 // 2) Setup <Ash PDD>/<kMoveTmpDir> by copying `ItemType::kNeedCopy`
-// items into it and creating hard links for `ItemType::kLacros` in it.
-// 3) Delete the original hard links for `ItemType::kLacros` in <Ash PDD>. If
-// deletion fails, move them to `<Ash PDD>/<kRemoveDir>` to make them
-// inaccessible by Ash.
-// 4) Rename <Ash PDD>/<kMoveTmpDir>/ as <Ash PDD>/lacros/.
+// items into it.
+// 3) Setup <Ash PDD>/<kSplitTmpDir> by generating split data that will have to
+// remain in Ash.
+// 4) Move `ItemType::kLacros` in <Ash PDD> to <lacros PDD>.
+// 5) Move split items in <Ash PDD>/<kSplitTmpDir> to <Ash PDD>.
+// 6) Rename <Ash PDD>/<kMoveTmpDir>/ as <Ash PDD>/lacros/.
 class MoveMigrator : public BrowserDataMigratorImpl::MigratorDelegate {
  public:
   // Indicate which step the migration should be resumed from if left unfinished
   // in the previous attempt.
   enum class ResumeStep {
     kStart = 0,
-    kRemoveHardLinks = 1,
-    kMoveTmpDir = 2,
-    kCompleted = 3,
+    kMoveLacrosItems = 1,
+    kMoveSplitItems = 2,
+    kMoveTmpDir = 3,
+    kCompleted = 4,
   };
 
   // Return value of `PreMigrationCleanUp()`.
@@ -81,19 +91,41 @@ class MoveMigrator : public BrowserDataMigratorImpl::MigratorDelegate {
   // BrowserDataMigratorImpl::MigratorDelegate override.
   void Migrate() override;
 
+  // Gets the `ResumeStep` for the user stored in `local_state` and checks if
+  // move migration has to be resumed by calling `IsResumeStep()`.
+  static bool ResumeRequired(PrefService* local_state,
+                             const std::string& user_id_hash);
+
+  // Resets the number of resume attempts for the user stored in
+  // `kMoveMigrationResumeCountPref.
+  static void ClearResumeAttemptCountForUser(PrefService* local_state,
+                                             const std::string& user_id_hash);
+
+  // Clears `ResumeStep` for user stored in `kMoveMigrationResumeStepPref`.
+  static void ClearResumeStepForUser(PrefService* local_state,
+                                     const std::string& user_id_hash);
+
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(MoveMigratorTest, ResumeRequired);
   FRIEND_TEST_ALL_PREFIXES(MoveMigratorTest, PreMigrationCleanUp);
   FRIEND_TEST_ALL_PREFIXES(MoveMigratorTest, SetupLacrosDir);
-  FRIEND_TEST_ALL_PREFIXES(MoveMigratorTest,
-                           SetupLacrosDirFailIfNoWritePermForLacrosItem);
-  FRIEND_TEST_ALL_PREFIXES(MoveMigratorTest, RemoveHardLinksFromOriginalDir);
+  FRIEND_TEST_ALL_PREFIXES(MoveMigratorTest, SetupAshSplitDir);
+  FRIEND_TEST_ALL_PREFIXES(
+      MoveMigratorTest,
+      MoveLacrosItemsToNewDirFailIfNoWritePermForLacrosItem);
+  FRIEND_TEST_ALL_PREFIXES(MoveMigratorTest, MoveLacrosItemsToNewDir);
   FRIEND_TEST_ALL_PREFIXES(MoveMigratorMigrateTest,
-                           MigrateResumeFromRemoveHardLinks);
-  FRIEND_TEST_ALL_PREFIXES(MoveMigratorMigrateTest, MigrateResumeFromMove);
+                           MigrateResumeFromMoveLacrosItems);
+  FRIEND_TEST_ALL_PREFIXES(MoveMigratorMigrateTest,
+                           MigrateResumeFromMoveSplitItems);
+  FRIEND_TEST_ALL_PREFIXES(MoveMigratorMigrateTest,
+                           MigrateResumeFromMoveTmpDir);
+  friend class BrowserDataMigratorResumeOnSignInTest;
+  friend class BrowserDataMigratorResumeRestartInSession;
 
-  // Called in `Migrate()` to determine where to start the migration. Returns
+  // Called to determine where to start the migration. Returns
   // `ResumeStep::kStart` unless there is a step recorded in `Local State` from
   // the previous migration i.e. the previous migration did not complete and
   // crashed halfway.
@@ -104,6 +136,17 @@ class MoveMigrator : public BrowserDataMigratorImpl::MigratorDelegate {
   static void SetResumeStep(PrefService* local_state,
                             const std::string& user_id_hash,
                             const ResumeStep step);
+
+  // Returns true if `resume_step` indicates that the migration had been left
+  // unfinished in the previous attempt and that it must be resumed before user
+  // profile is created.
+  static bool IsResumeStep(ResumeStep resume_step);
+
+  //  Increments the resume attempt count stored in
+  // `kMoveMigrationResumeCountPref` by 1 for the user identified by
+  // `user_id_hash`. Returns the updated resume count.
+  int UpdateResumeAttemptCountForUser(PrefService* local_state,
+                                      const std::string& user_id_hash);
 
   // Deletes lacros user directory and `kMoveTmpDir` if they exist. Set
   // `PreMigrationCleanUpResult::success` to true if the deletion of those
@@ -119,28 +162,42 @@ class MoveMigrator : public BrowserDataMigratorImpl::MigratorDelegate {
   // `SetupLacrosRemoveHardLinksFromAshDir()` as the next step.
   void OnPreMigrationCleanUp(PreMigrationCleanUpResult);
 
-  // Set up lacros user directory by copying `ItemType::kNeedCopy` items and
-  // creating hard links for `ItemType::kLacros` into it.
+  // Set up lacros user directory by copying `ItemType::kNeedCopy` items
+  // and also creating `First Run` file in Lacros user data dir.
   static bool SetupLacrosDir(
       const base::FilePath& original_profile_dir,
       std::unique_ptr<MigrationProgressTracker> progress_tracker,
       scoped_refptr<browser_data_migrator_util::CancelFlag> cancel_flag);
 
   // Called as a reply to `SetupLacrosDir()`. Posts
-  // `SetupLacrosRemoveHardLinksFromAshDir()` as the next step.
+  // `SetupAshSplitDir()` as the next step.
   void OnSetupLacrosDir(bool success);
 
-  // Removes hard links for `ItemType::kLacros` in the original profile
-  // directory. Hard links pointing to the same inode should have been created
-  // in `OnSetupLacrosDir()` inside lacros profile directory.
-  static bool RemoveHardLinksFromOriginalDir(
+  // Set up a temporary directory to hold items that need to be split between
+  // ash and lacros. This folder will hold ash's version of the items.
+  static bool SetupAshSplitDir(const base::FilePath& original_profile_dir);
+
+  // Called as a reply to `SetupAshSplitDir()`. Posts `MoveLacrosItemsToNewDir`
+  // as the next step.
+  void OnSetupAshSplitDir(bool success);
+
+  // Move `ItemType::kLacros` in the original profile
+  // directory to the temp dir.
+  static bool MoveLacrosItemsToNewDir(
       const base::FilePath& original_profile_dir);
 
-  // Called as a reply to `RemoveHardLinksFromOriginalDir()`.
-  void OnRemoveHardLinksFromOriginalDir(bool success);
+  // Called as a reply to `MoveLacrosItemsToNewDir()`.
+  void OnMoveLacrosItemsToNewDir(bool success);
 
-  // Moves newly created `kMoveTmpDir` to `kLacrosDir` to complete the
-  // migration.
+  // Moves newly created split items to the original profile directory.
+  static bool MoveSplitItemsToOriginalDir(
+      const base::FilePath& original_profile_dir);
+
+  // Called as a reply to `MoveSplitItemsToOriginalDir`.
+  void OnMoveSplitItemsToOriginalDir(bool success);
+
+  // Moves newly created `kMoveTmpDir` to `kLacrosDir`.
+  // Completes the migration.
   static bool MoveTmpDirToLacrosDir(const base::FilePath& original_profile_dir);
 
   // Called as a reply to `MoveTmpDirToLacrosDir()`.

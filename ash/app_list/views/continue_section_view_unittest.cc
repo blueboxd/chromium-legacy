@@ -42,6 +42,7 @@
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/label_button.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/controls/textfield/textfield.h"
 
 namespace ash {
@@ -227,7 +228,7 @@ class ContinueSectionViewTestBase : public AshTestBase {
   void HideLauncher() { Shell::Get()->app_list_controller()->DismissAppList(); }
 
   void ResetPrivacyNoticePref() {
-    ContinueSectionView::SetPrivacyNoticeAcceptedForTest(false);
+    AppListNudgeController::SetPrivacyNoticeAcceptedForTest(false);
   }
 
   void SimulateRightClickOrLongPressOn(const views::View* view) {
@@ -304,7 +305,7 @@ class ContinueSectionViewClamshellModeTest
 class ContinueSectionViewTabletModeTest : public ContinueSectionViewTestBase {
  public:
   ContinueSectionViewTabletModeTest()
-      : ContinueSectionViewTestBase(/*tablet_mode*/ true) {}
+      : ContinueSectionViewTestBase(/*tablet_mode=*/true) {}
   ~ContinueSectionViewTabletModeTest() override = default;
 };
 
@@ -490,6 +491,141 @@ TEST_F(ContinueSectionViewClamshellModeTest, PressEnterOpensSearchResult) {
   // The item was activated.
   TestAppListClient* client = GetAppListTestHelper()->app_list_client();
   EXPECT_EQ("id1", client->last_opened_search_result());
+}
+
+TEST_F(ContinueSectionViewClamshellModeTest, DownArrowMovesFocusVertically) {
+  AddSearchResult("id0", AppListSearchResultType::kFileChip);
+  AddSearchResult("id1", AppListSearchResultType::kFileChip);
+  AddSearchResult("id2", AppListSearchResultType::kDriveChip);
+  AddSearchResult("id3", AppListSearchResultType::kDriveChip);
+  EnsureLauncherShown();
+  VerifyResultViewsUpdated();
+
+  ContinueTaskView* task0 = GetResultViewAt(0);
+  ContinueTaskView* task1 = GetResultViewAt(1);
+  ContinueTaskView* task2 = GetResultViewAt(2);
+  ContinueTaskView* task3 = GetResultViewAt(3);
+  ASSERT_FALSE(task0->HasFocus());
+  ASSERT_FALSE(task1->HasFocus());
+  ASSERT_FALSE(task2->HasFocus());
+  ASSERT_FALSE(task3->HasFocus());
+
+  // Down arrow from search box moves to first continue task.
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  EXPECT_TRUE(task0->HasFocus());
+  EXPECT_FALSE(task1->HasFocus());
+  EXPECT_FALSE(task2->HasFocus());
+  EXPECT_FALSE(task3->HasFocus());
+
+  // Down arrow from first continue task moves down by one row, focusing
+  // `task2` instead of the next task in tab order (`task1`).
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  EXPECT_FALSE(task0->HasFocus());
+  EXPECT_FALSE(task1->HasFocus());
+  EXPECT_TRUE(task2->HasFocus());
+  EXPECT_FALSE(task3->HasFocus());
+
+  // Down again moves focus out of continue section.
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  EXPECT_FALSE(task0->HasFocus());
+  EXPECT_FALSE(task1->HasFocus());
+  EXPECT_FALSE(task2->HasFocus());
+  EXPECT_FALSE(task3->HasFocus());
+}
+
+TEST_F(ContinueSectionViewClamshellModeTest, UpArrowMovesFocusVertically) {
+  AddSearchResult("id0", AppListSearchResultType::kFileChip);
+  AddSearchResult("id1", AppListSearchResultType::kFileChip);
+  AddSearchResult("id2", AppListSearchResultType::kDriveChip);
+  AddSearchResult("id3", AppListSearchResultType::kDriveChip);
+  EnsureLauncherShown();
+  VerifyResultViewsUpdated();
+
+  ContinueTaskView* task0 = GetResultViewAt(0);
+  ContinueTaskView* task1 = GetResultViewAt(1);
+  ContinueTaskView* task2 = GetResultViewAt(2);
+  ContinueTaskView* task3 = GetResultViewAt(3);
+  ASSERT_FALSE(task0->HasFocus());
+  ASSERT_FALSE(task1->HasFocus());
+  ASSERT_FALSE(task2->HasFocus());
+  ASSERT_FALSE(task3->HasFocus());
+
+  // Focus the last task (in the second row, second column).
+  task3->RequestFocus();
+  EXPECT_FALSE(task0->HasFocus());
+  EXPECT_FALSE(task1->HasFocus());
+  EXPECT_FALSE(task2->HasFocus());
+  EXPECT_TRUE(task3->HasFocus());
+
+  // Up arrow moves up by one row, focusing `task1` instead of the previous
+  // task in tab order (`task2`).
+  PressAndReleaseKey(ui::VKEY_UP);
+  EXPECT_FALSE(task0->HasFocus());
+  EXPECT_TRUE(task1->HasFocus());
+  EXPECT_FALSE(task2->HasFocus());
+  EXPECT_FALSE(task3->HasFocus());
+
+  // Up again moves focus out of continue section.
+  PressAndReleaseKey(ui::VKEY_UP);
+  EXPECT_FALSE(task0->HasFocus());
+  EXPECT_FALSE(task1->HasFocus());
+  EXPECT_FALSE(task2->HasFocus());
+  EXPECT_FALSE(task3->HasFocus());
+}
+
+TEST_F(ContinueSectionViewClamshellModeTest, FocusingChipScrollsToShowLabel) {
+  auto* helper = GetAppListTestHelper();
+  helper->AddContinueSuggestionResults(4);
+  // Add enough apps to allow the apps page to scroll.
+  helper->AddAppItems(50);
+  EnsureLauncherShown();
+  VerifyResultViewsUpdated();
+
+  // Up arrow moves focus to the last row of the apps grid, forcing the apps
+  // page to scroll.
+  PressAndReleaseKey(ui::VKEY_UP);
+  auto* scroll_view = helper->GetBubbleAppsPage()->scroll_view();
+  const int initial_scroll_offset = scroll_view->GetVisibleRect().y();
+  ASSERT_GT(initial_scroll_offset, 0);
+
+  // Down arrow twice moves focus to search box, then to continue section.
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  ASSERT_TRUE(GetResultViewAt(0)->HasFocus());
+
+  // Scroll view has scrolled to the top to reveal the label.
+  const int final_scroll_offset = scroll_view->GetVisibleRect().y();
+  EXPECT_EQ(final_scroll_offset, 0);
+}
+
+TEST_F(ContinueSectionViewClamshellModeTest,
+       FocusingPrivacyNoticeScrollsToShowNotice) {
+  auto* helper = GetAppListTestHelper();
+  helper->AddContinueSuggestionResults(4);
+  // Add enough apps to allow the apps page to scroll.
+  helper->AddAppItems(50);
+  ResetPrivacyNoticePref();
+
+  EnsureLauncherShown();
+  VerifyResultViewsUpdated();
+  ASSERT_TRUE(IsPrivacyNoticeVisible());
+
+  // Up arrow moves focus to the last row of the apps grid, forcing the apps
+  // page to scroll.
+  PressAndReleaseKey(ui::VKEY_UP);
+  auto* scroll_view = helper->GetBubbleAppsPage()->scroll_view();
+  const int initial_scroll_offset = scroll_view->GetVisibleRect().y();
+  ASSERT_GT(initial_scroll_offset, 0);
+
+  // Down arrow twice moves focus to search box, then to privacy notice.
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  PressAndReleaseKey(ui::VKEY_DOWN);
+  auto* privacy_notice = GetContinueSectionView()->GetPrivacyNoticeForTest();
+  ASSERT_TRUE(privacy_notice->toast_button()->HasFocus());
+
+  // Scroll view has scrolled to the top to reveal the whole notice.
+  const int final_scroll_offset = scroll_view->GetVisibleRect().y();
+  EXPECT_EQ(final_scroll_offset, 0);
 }
 
 // Regression test for https://crbug.com/1273170.
@@ -1061,6 +1197,64 @@ TEST_P(ContinueSectionViewWithReorderNudgeTest,
             AppListNudgeController::NudgeType::kPrivacyNotice);
   EXPECT_NE(GetToastContainerView()->current_toast(),
             AppListToastContainerView::ToastType::kReorderNudge);
+}
+
+TEST_P(ContinueSectionViewWithReorderNudgeTest,
+       SearchResultsFetchedAfterLauncherShown) {
+  ResetPrivacyNoticePref();
+  // Open the launcher without any search result added.
+  EnsureLauncherShown();
+
+  // Reorder nudge should be showing and privacy notice should not.
+  EXPECT_FALSE(GetContinueSectionView()->ShouldShowPrivacyNotice());
+  EXPECT_FALSE(GetContinueSectionView()->GetPrivacyNoticeForTest());
+  EXPECT_EQ(GetAppListNudgeController()->current_nudge(),
+            AppListNudgeController::NudgeType::kReorderNudge);
+  EXPECT_EQ(GetToastContainerView()->current_toast(),
+            AppListToastContainerView::ToastType::kReorderNudge);
+
+  // Add some search results while the launcher is open.
+  AddSearchResult("id1", AppListSearchResultType::kFileChip);
+  AddSearchResult("id2", AppListSearchResultType::kDriveChip);
+  AddSearchResult("id3", AppListSearchResultType::kDriveChip);
+  VerifyResultViewsUpdated();
+
+  // Neither the privacy notice nor the search results should show.
+  EXPECT_FALSE(GetContinueSectionView()->ShouldShowPrivacyNotice());
+  EXPECT_FALSE(GetContinueSectionView()->ShouldShowFilesSection());
+  EXPECT_FALSE(GetContinueSectionView()->GetPrivacyNoticeForTest());
+  EXPECT_EQ(GetAppListNudgeController()->current_nudge(),
+            AppListNudgeController::NudgeType::kReorderNudge);
+  EXPECT_EQ(GetToastContainerView()->current_toast(),
+            AppListToastContainerView::ToastType::kReorderNudge);
+
+  // Wait for long enough for the reorder nudge to be considered shown.
+  task_environment()->AdvanceClock(base::Seconds(1));
+  HideLauncher();
+
+  // Open the launcher, wait for the reorder nudge to be shown and close it two
+  // more times. After the reorder nudge has been shown for three times, starts
+  // showing the privacy notice and removes the reorder nudge.
+
+  EnsureLauncherShown();
+  VerifyResultViewsUpdated();
+  // Wait for long enough for the reorder nudge to be considered shown.
+  task_environment()->AdvanceClock(base::Seconds(1));
+  HideLauncher();
+  EnsureLauncherShown();
+  VerifyResultViewsUpdated();
+  // Wait for long enough for the reorder nudge to be considered shown.
+  task_environment()->AdvanceClock(base::Seconds(1));
+  HideLauncher();
+
+  EnsureLauncherShown();
+  VerifyResultViewsUpdated();
+  EXPECT_TRUE(IsPrivacyNoticeVisible());
+  EXPECT_EQ(GetAppListNudgeController()->current_nudge(),
+            AppListNudgeController::NudgeType::kPrivacyNotice);
+  EXPECT_NE(GetToastContainerView()->current_toast(),
+            AppListToastContainerView::ToastType::kReorderNudge);
+  HideLauncher();
 }
 
 TEST_F(ContinueSectionViewTabletModeTest, PrivacyNoticeIsShownInBackground) {
@@ -1764,6 +1958,68 @@ TEST_P(ContinueSectionViewTest, AnimatesWhenNumberOfChipsChanges) {
     EXPECT_EQ(gfx::Transform(), result_view->layer()->transform());
     EXPECT_EQ(1.0f, result_view->layer()->opacity());
   }
+}
+
+TEST_F(ContinueSectionViewClamshellModeTest, AnimatesOutAfterRemovingResults) {
+  ResetPrivacyNoticePref();
+  InitializeForAnimationTest(/*result_count=*/3);
+
+  EXPECT_TRUE(IsPrivacyNoticeVisible());
+  EXPECT_EQ(GetAppListNudgeController()->current_nudge(),
+            AppListNudgeController::NudgeType::kPrivacyNotice);
+
+  views::View* privacy_notice =
+      GetContinueSectionView()->GetPrivacyNoticeForTest();
+
+  RemoveSearchResultAt(1);
+
+  ContinueTaskContainerView* const container_view =
+      GetContinueSectionView()->suggestions_container();
+  container_view->Update();
+
+  EXPECT_EQ(1.0f, privacy_notice->layer()->opacity());
+  EXPECT_EQ(0.0f, privacy_notice->layer()->GetTargetOpacity());
+  EXPECT_TRUE(privacy_notice->layer()->GetAnimator()->is_animating());
+
+  LayerAnimationStoppedWaiter waiter;
+  waiter.Wait(privacy_notice->layer());
+
+  VerifyResultViewsUpdated();
+
+  ASSERT_LE(GetContinueSectionView()->GetTasksSuggestionsCount(), 2u);
+  EXPECT_FALSE(IsPrivacyNoticeVisible());
+
+  EXPECT_FALSE(GetContinueSectionView()->GetVisible());
+}
+
+TEST_F(ContinueSectionViewClamshellModeTest, AnimatesPrivacyNoticeAccept) {
+  ResetPrivacyNoticePref();
+  InitializeForAnimationTest(/*result_count=*/3);
+
+  EXPECT_TRUE(IsPrivacyNoticeVisible());
+  EXPECT_EQ(GetAppListNudgeController()->current_nudge(),
+            AppListNudgeController::NudgeType::kPrivacyNotice);
+
+  AppListToastView* privacy_notice =
+      GetContinueSectionView()->GetPrivacyNoticeForTest();
+
+  GestureTapOn(privacy_notice->toast_button());
+
+  EXPECT_EQ(1.0f, privacy_notice->layer()->opacity());
+  EXPECT_EQ(0.0f, privacy_notice->layer()->GetTargetOpacity());
+  EXPECT_TRUE(privacy_notice->layer()->GetAnimator()->is_animating());
+
+  LayerAnimationStoppedWaiter waiter;
+  waiter.Wait(privacy_notice->layer());
+
+  ContinueTaskContainerView* container_view =
+      GetContinueSectionView()->suggestions_container();
+
+  EXPECT_TRUE(container_view->layer()->GetAnimator()->is_animating());
+  WaitForAllChildrenAnimationsToComplete(container_view);
+  EXPECT_FALSE(IsPrivacyNoticeVisible());
+
+  EXPECT_TRUE(GetContinueSectionView()->GetVisible());
 }
 
 }  // namespace

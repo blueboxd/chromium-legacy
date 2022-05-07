@@ -58,6 +58,7 @@ import org.chromium.components.prefs.PrefService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.components.user_prefs.UserPrefsJni;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.test.util.BlankUiTestActivity;
 import org.chromium.url.GURL;
@@ -105,6 +106,8 @@ public class ChromeProvidedSharingOptionsProviderTest {
     private Tracker mTracker;
     @Mock
     private ShareParams.TargetChosenCallback mTargetChosenCallback;
+    @Mock
+    private WindowAndroid mWindowAndroid;
 
     private Activity mActivity;
     private ChromeProvidedSharingOptionsProvider mChromeProvidedSharingOptionsProvider;
@@ -116,6 +119,7 @@ public class ChromeProvidedSharingOptionsProviderTest {
         mJniMocker.mock(UserPrefsJni.TEST_HOOKS, mUserPrefsNatives);
         Profile.setLastUsedProfileForTesting(mProfile);
         Mockito.when(mUserPrefsNatives.get(mProfile)).thenReturn(mPrefService);
+        Mockito.when(mTabProvider.hasValue()).thenReturn(true);
         Mockito.when(mTabProvider.get()).thenReturn(mTab);
         Mockito.when(mTab.getWebContents()).thenReturn(mWebContents);
         Mockito.when(mTab.getUrl()).thenReturn(new GURL(URL));
@@ -147,6 +151,38 @@ public class ChromeProvidedSharingOptionsProviderTest {
 
         assertTrue("Property models should contain Lightweight Reactions.",
                 propertyModelsContain(propertyModels, R.string.sharing_lightweight_reactions));
+    }
+
+    @Test
+    @MediumTest
+    public void getPropertyModels_longScreenshotEnabledNoTab_excludesLongScreenshot() {
+        Mockito.when(mTabProvider.hasValue()).thenReturn(false);
+        setUpChromeProvidedSharingOptionsProviderTest(/*isIncognito=*/false,
+                /*printingEnabled=*/true, LinkGeneration.MAX);
+        List<PropertyModel> propertyModels =
+                mChromeProvidedSharingOptionsProvider.getPropertyModels(
+                        ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES_FOR_TEST,
+                        DetailedContentType.NOT_SPECIFIED,
+                        /*isMultiWindow=*/false);
+
+        assertFalse("Property models should not contain long screenshots.",
+                propertyModelsContain(propertyModels, R.string.sharing_long_screenshot));
+    }
+
+    @Test
+    @MediumTest
+    public void getPropertyModels_printingEnabledNoTab_excludesPrinting() {
+        Mockito.when(mTabProvider.hasValue()).thenReturn(false);
+        setUpChromeProvidedSharingOptionsProviderTest(/*isIncognito=*/false,
+                /*printingEnabled=*/true, LinkGeneration.MAX);
+        List<PropertyModel> propertyModels =
+                mChromeProvidedSharingOptionsProvider.getPropertyModels(
+                        ShareSheetPropertyModelBuilder.ALL_CONTENT_TYPES_FOR_TEST,
+                        DetailedContentType.NOT_SPECIFIED,
+                        /*isMultiWindow=*/false);
+
+        assertFalse("Property models should not contain printing.",
+                propertyModelsContain(propertyModels, R.string.print_share_activity_title));
     }
 
     @Test
@@ -424,12 +460,11 @@ public class ChromeProvidedSharingOptionsProviderTest {
                                           .setText("")
                                           .build();
         mChromeProvidedSharingOptionsProvider = new ChromeProvidedSharingOptionsProvider(mActivity,
-                mTabProvider, mBottomSheetController,
+                mWindowAndroid, mTabProvider, mBottomSheetController,
                 new ShareSheetBottomSheetContent(mActivity, null, mShareSheetCoordinator,
                         shareParams, /*featureEngagementTracker=*/null),
                 shareParams,
                 /*TabPrinterDelegate=*/null, isIncognito,
-                /*syncState=*/false,
                 /*shareStartTime=*/0, mShareSheetCoordinator,
                 /*imageEditorModuleProvider*/ null, mTracker, URL, linkGenerationStatus,
                 new LinkToggleMetricsDetails(

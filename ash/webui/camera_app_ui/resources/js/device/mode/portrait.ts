@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from '../../assert.js';
 import {I18nString} from '../../i18n_string.js';
 import {TakePhotoResult} from '../../mojo/image_capture.js';
 import {Effect} from '../../mojo/type.js';
@@ -39,13 +40,13 @@ export class Portrait extends Photo {
   constructor(
       video: PreviewVideo,
       facing: Facing,
-      captureResolution: Resolution,
+      captureResolution: Resolution|null,
       private readonly portraitHandler: PortraitHandler,
   ) {
     super(video, facing, captureResolution, portraitHandler);
   }
 
-  async start(): Promise<() => Promise<void>> {
+  override async start(): Promise<[Promise<void>]> {
     const timestamp = Date.now();
     let photoSettings: PhotoSettings;
     if (this.captureResolution) {
@@ -72,32 +73,15 @@ export class Portrait extends Photo {
       throw e;
     }
 
-    const toPhotoResult = async (blob, metadata) => {
+    async function toPhotoResult(pendingResult: TakePhotoResult) {
+      const blob = await pendingResult.pendingBlob;
       const image = await util.blobToImage(blob);
       const resolution = new Resolution(image.width, image.height);
+      const metadata = await pendingResult.pendingMetadata;
       return {blob, timestamp, resolution, metadata};
-    };
-
-    const pendingReference = (async () => {
-      const blob = await reference.pendingBlob;
-      const metadata = await reference.pendingMetadata;
-      return toPhotoResult(blob, metadata);
-    })();
-
-    const pendingPortrait = (async () => {
-      let blob: Blob;
-      try {
-        blob = await portrait.pendingBlob;
-      } catch (e) {
-        // Portrait image may failed due to absence of human faces.
-        // TODO(inker): Log non-intended error.
-        return null;
-      }
-      const metadata = await reference.pendingMetadata;
-      return toPhotoResult(blob, metadata);
-    })();
-    return () => this.portraitHandler.onPortraitCaptureDone(
-               pendingReference, pendingPortrait);
+    }
+    return [this.portraitHandler.onPortraitCaptureDone(
+        toPhotoResult(reference), toPhotoResult(portrait))];
   }
 }
 
@@ -110,13 +94,15 @@ export class PortraitFactory extends PhotoFactory {
    */
   constructor(
       constraints: StreamConstraints,
-      captureResolution: Resolution,
+      captureResolution: Resolution|null,
       protected readonly portraitHandler: PortraitHandler,
   ) {
     super(constraints, captureResolution, portraitHandler);
   }
 
-  produce(): ModeBase {
+  override produce(): ModeBase {
+    assert(this.previewVideo !== null);
+    assert(this.facing !== null);
     return new Portrait(
         this.previewVideo, this.facing, this.captureResolution,
         this.portraitHandler);

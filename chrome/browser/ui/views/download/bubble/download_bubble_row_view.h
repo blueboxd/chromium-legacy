@@ -10,22 +10,41 @@
 #include "chrome/browser/download/download_ui_model.h"
 #include "chrome/browser/ui/views/download/bubble/download_bubble_row_list_view.h"
 #include "ui/base/metadata/metadata_header_macros.h"
+#include "ui/views/context_menu_controller.h"
 #include "ui/views/view.h"
 
 namespace views {
 class ImageView;
+class Label;
+class MdTextButton;
+class ProgressBar;
 }  // namespace views
 
-class DownloadBubbleRowView : public views::View {
+class DownloadShelfContextMenuView;
+
+class DownloadBubbleRowView : public views::View,
+                              public views::ContextMenuController,
+                              public DownloadUIModel::Observer {
  public:
   METADATA_HEADER(DownloadBubbleRowView);
 
-  explicit DownloadBubbleRowView(DownloadUIModel::DownloadUIModelPtr model);
+  explicit DownloadBubbleRowView(DownloadUIModel::DownloadUIModelPtr model,
+                                 DownloadBubbleRowListView* row_list_view);
   DownloadBubbleRowView(const DownloadBubbleRowView&) = delete;
   DownloadBubbleRowView& operator=(const DownloadBubbleRowView&) = delete;
   ~DownloadBubbleRowView() override;
   // Overrides views::View:
   void AddedToWidget() override;
+
+  // Overrides DownloadUIModel::Observer:
+  void OnDownloadUpdated() override;
+  void OnDownloadOpened() override;
+  void OnDownloadDestroyed() override;
+
+  // Overrides views::ContextMenuController:
+  void ShowContextMenuForViewImpl(View* source,
+                                  const gfx::Point& point,
+                                  ui::MenuSourceType source_type) override;
 
  protected:
   // Overrides ui::LayerDelegate:
@@ -39,9 +58,24 @@ class DownloadBubbleRowView : public views::View {
   // Called when icon has been loaded by IconManager::LoadIcon.
   void SetIcon(gfx::Image icon);
 
+  // Called when cancel button is pressed for an in progress download.
+  void OnCancelButtonPressed();
+
   // TODO(bhatiarohit): Add platform-independent icons.
   // The icon for the file. We get platform-specific icons from IconLoader.
   raw_ptr<views::ImageView> icon_ = nullptr;
+
+  // The primary label.
+  raw_ptr<views::Label> primary_label_ = nullptr;
+
+  // The secondary label.
+  raw_ptr<views::Label> secondary_label_ = nullptr;
+
+  // The cancel button for in-progress downloads.
+  raw_ptr<views::MdTextButton> cancel_button_ = nullptr;
+
+  // The progress bar for in-progress downloads.
+  raw_ptr<views::ProgressBar> progress_bar_ = nullptr;
 
   // Device scale factor, used to load icons.
   float current_scale_ = 1.0f;
@@ -51,6 +85,12 @@ class DownloadBubbleRowView : public views::View {
 
   // The model controlling this object's state.
   const DownloadUIModel::DownloadUIModelPtr model_;
+
+  // Reuse the download shelf context menu in the bubble.
+  std::unique_ptr<DownloadShelfContextMenuView> context_menu_;
+
+  // Parent row list view.
+  raw_ptr<DownloadBubbleRowListView> row_list_view_ = nullptr;
 
   base::WeakPtrFactory<DownloadBubbleRowView> weak_factory_{this};
 };

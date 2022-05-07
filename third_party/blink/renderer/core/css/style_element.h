@@ -22,14 +22,16 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_CSS_STYLE_ELEMENT_H_
 
 #include "third_party/blink/renderer/core/css/css_style_sheet.h"
-#include "third_party/blink/renderer/core/css/style_engine_context.h"
+#include "third_party/blink/renderer/core/css/pending_sheet_type.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 
 namespace blink {
 
+class BlockingAttribute;
 class ContainerNode;
 class Document;
 class Element;
+class Node;
 
 class CORE_EXPORT StyleElement : public GarbageCollectedMixin {
  public:
@@ -42,12 +44,18 @@ class CORE_EXPORT StyleElement : public GarbageCollectedMixin {
 
   virtual const AtomicString& type() const = 0;
   virtual const AtomicString& media() const = 0;
+  virtual BlockingAttribute* blocking() const = 0;
+
+  // Returns whether |this| and |node| are the same object. Helps us verify
+  // parameter validity in certain member functions with an Element parameter
+  // which should only be called by a subclass with |this|.
+  virtual bool IsSameObject(const Node& node) const = 0;
 
   CSSStyleSheet* sheet() const { return sheet_.Get(); }
 
   bool IsLoading() const;
   bool SheetLoaded(Document&);
-  void StartLoadingDynamicSheet(Document&);
+  void SetToPendingState(Document&, Element& element);
 
   void RemovedFrom(Element&, ContainerNode& insertion_point);
   ProcessingResult ProcessStyleSheet(Document&, Element&);
@@ -65,7 +73,7 @@ class CORE_EXPORT StyleElement : public GarbageCollectedMixin {
   bool loading_ : 1;
   bool registered_as_candidate_ : 1;
   TextPosition start_position_;
-  StyleEngineContext style_engine_context_;
+  PendingSheetType pending_sheet_type_;
 };
 
 }  // namespace blink

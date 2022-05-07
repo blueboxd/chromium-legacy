@@ -45,9 +45,10 @@ class SpeechRecognitionClientBrowserInterface
           pending_remote) override;
 
   // SodaInstaller::Observer:
-  void OnSodaInstalled() override;
-  void OnSodaProgress(int combined_progress) override {}
-  void OnSodaError() override {}
+  void OnSodaInstalled(speech::LanguageCode language_code) override;
+  void OnSodaProgress(speech::LanguageCode language_code,
+                      int progress) override {}
+  void OnSodaError(speech::LanguageCode language_code) override {}
 
  private:
   void OnSpeechRecognitionAvailabilityChanged();

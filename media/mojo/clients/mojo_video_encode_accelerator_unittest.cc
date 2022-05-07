@@ -10,6 +10,7 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "gpu/config/gpu_info.h"
+#include "media/base/media_util.h"
 #include "media/mojo/clients/mojo_video_encode_accelerator.h"
 #include "media/mojo/mojom/video_encode_accelerator.mojom.h"
 #include "media/video/video_encode_accelerator.h"
@@ -48,6 +49,7 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
   void Initialize(
       const media::VideoEncodeAccelerator::Config& config,
       mojo::PendingAssociatedRemote<mojom::VideoEncodeAcceleratorClient> client,
+      mojo::PendingRemote<mojom::MediaLog> media_log,
       InitializeCallback success_callback) override {
     if (initialization_success_) {
       ASSERT_TRUE(client);
@@ -204,7 +206,8 @@ class MojoVideoEncodeAcceleratorTest : public ::testing::Test {
         PIXEL_FORMAT_I420, kInputVisibleSize, kOutputProfile, kInitialBitrate,
         absl::nullopt, absl::nullopt, absl::nullopt, false, absl::nullopt,
         kContentType);
-    EXPECT_TRUE(mojo_vea()->Initialize(config, mock_vea_client));
+    EXPECT_TRUE(mojo_vea()->Initialize(
+        config, mock_vea_client, std::make_unique<media::NullMediaLog>()));
     base::RunLoop().RunUntilIdle();
   }
 
@@ -332,7 +335,8 @@ TEST_F(MojoVideoEncodeAcceleratorTest, InitializeFailure) {
   const VideoEncodeAccelerator::Config config(
       PIXEL_FORMAT_I420, kInputVisibleSize, VIDEO_CODEC_PROFILE_UNKNOWN,
       kInitialBitrate);
-  EXPECT_FALSE(mojo_vea()->Initialize(config, mock_vea_client.get()));
+  EXPECT_FALSE(mojo_vea()->Initialize(config, mock_vea_client.get(),
+                                      std::make_unique<media::NullMediaLog>()));
   base::RunLoop().RunUntilIdle();
 }
 
@@ -345,7 +349,8 @@ TEST_F(MojoVideoEncodeAcceleratorTest, MojoDisconnect) {
   const VideoEncodeAccelerator::Config config(
       PIXEL_FORMAT_I420, kInputVisibleSize, VIDEO_CODEC_PROFILE_UNKNOWN,
       kInitialBitrate);
-  EXPECT_TRUE(mojo_vea()->Initialize(config, mock_vea_client.get()));
+  EXPECT_TRUE(mojo_vea()->Initialize(config, mock_vea_client.get(),
+                                     std::make_unique<media::NullMediaLog>()));
   mojo_vea_receiver_->Close();
   EXPECT_CALL(
       *mock_vea_client,

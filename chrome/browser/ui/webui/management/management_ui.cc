@@ -72,6 +72,8 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
     {kManagementPrinting, IDS_MANAGEMENT_REPORT_PRINTING},
     {kManagementReportDeviceAudioStatus,
      IDS_MANAGEMENT_REPORT_DEVICE_AUDIO_STATUS},
+    {kManagementReportDevicePeripherals,
+     IDS_MANAGEMENT_REPORT_DEVICE_PERIPHERALS},
     {kManagementReportPrintJobs, IDS_MANAGEMENT_REPORT_PRINT_JOBS},
     {kManagementReportLoginLogout, IDS_MANAGEMENT_REPORT_LOGIN_LOGOUT},
     {kManagementReportCRDSessions, IDS_MANAGEMENT_REPORT_CRD_SESSIONS},
@@ -158,10 +160,6 @@ content::WebUIDataSource* CreateManagementUIHtmlSource(Profile* profile) {
                     l10n_util::GetPluralStringFUTF16(
                         IDS_MANAGEMENT_REPORT_DLP_EVENTS, dlp_events_count));
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-  // TODO(crbug.com/1286649): Remove after CSS has been updated to no longer
-  // need this attribute.
-  source->AddString("enableBrandingUpdateAttribute", "enable-branding-update");
 
   webui::SetupWebUIDataSource(
       source, base::make_span(kManagementResources, kManagementResourcesSize),

@@ -214,6 +214,7 @@ preprocess_if_expr("preprocess_static") {
     "file_manager/foreground/js/file_watcher.js",
     "file_manager/foreground/js/folder_shortcuts_data_model.js",
     "file_manager/foreground/js/gear_menu_controller.js",
+    "file_manager/foreground/js/guest_os_controller.js",
     "file_manager/foreground/js/holding_space_util.js",
     "file_manager/foreground/js/import_controller.js",
     "file_manager/foreground/js/last_modified_controller.js",
@@ -386,10 +387,13 @@ preprocess_if_expr("preprocess_generated") {
 
     "image_loader/image_orientation.js",
     "image_loader/lru_cache.js",
+
+    "file_manager/common/js/file_types_data.js",
   ]
 
   deps = [
     "//ui/file_manager/audio_player/elements:web_components",
+    "//ui/file_manager/base/gn:file_types_data_gen_js",
     "//ui/file_manager/file_manager/foreground/elements:elements",
     "//ui/file_manager/file_manager/foreground/elements:web_components",
     "//ui/file_manager/file_manager/foreground/js/ui:web_components",
@@ -457,6 +461,8 @@ generate_grd("build_grd") {
 
       "image_loader/image_orientation.js",
       "image_loader/lru_cache.js",
+
+      "file_manager/common/js/file_types_data.js",
     ]
 
     resource_path_rewrites += [

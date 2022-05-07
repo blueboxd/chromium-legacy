@@ -34,7 +34,6 @@
 #include "content/browser/renderer_host/render_view_host_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/common/content_switches_internal.h"
-#include "content/common/debug_utils.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/frame/frame_policy.h"
@@ -47,14 +46,14 @@ namespace {
 
 using perfetto::protos::pbzero::ChromeTrackEvent;
 
-// Helper function to collect SiteInstances involved in rendering a single
-// FrameTree (which is a subset of SiteInstances in main frame's proxy_hosts_
-// because of openers).
-std::set<SiteInstance*> CollectSiteInstances(FrameTree* tree) {
-  std::set<SiteInstance*> instances;
+// Helper function to collect SiteInstanceGroups involved in rendering a single
+// FrameTree (which is a subset of SiteInstanceGroups in main frame's
+// proxy_hosts_ because of openers).
+std::set<SiteInstanceGroup*> CollectSiteInstanceGroups(FrameTree* tree) {
+  std::set<SiteInstanceGroup*> groups;
   for (FrameTreeNode* node : tree->Nodes())
-    instances.insert(node->current_frame_host()->GetSiteInstance());
-  return instances;
+    groups.insert(node->current_frame_host()->GetSiteInstance()->group());
+  return groups;
 }
 
 // If |node| is the placeholder FrameTreeNode for an embedded frame tree,
@@ -74,85 +73,6 @@ FrameTreeNode* GetInnerTreeMainFrameNode(FrameTreeNode* node) {
 
   return inner_tree_main_frame ? inner_tree_main_frame->frame_tree_node()
                                : nullptr;
-}
-
-void PrintCrashKeysForBug1250218(FrameTreeNode* ftn,
-                                 SiteInstanceImpl* focused_site_instance,
-                                 SiteInstanceImpl* proxy_site_instance) {
-  // We tried to call SetFocusedFrame on a non-existent RenderFrameProxyHost.
-  // This shouldn't happen but it does. Log crash keys to figure out what's
-  // going on for https://crbug.com/1250218.
-
-  // Log info about the RenderFrameHost that got the focus, and its main frame.
-  RenderFrameHostImpl* rfh = ftn->current_frame_host();
-  SCOPED_CRASH_KEY_BOOL("NoProxy", "focused_is_main_frame", ftn->IsMainFrame());
-  SCOPED_CRASH_KEY_BOOL("NoProxy", "focused_is_render_frame_live",
-                        rfh->IsRenderFrameLive());
-  SCOPED_CRASH_KEY_STRING32(
-      "NoProxy", "focused_lifecycle_state",
-      RenderFrameHostImpl::LifecycleStateImplToString(rfh->lifecycle_state()));
-  SCOPED_CRASH_KEY_BOOL(
-      "NoProxy", "focused_was_bfcache_restored",
-      rfh->was_restored_from_back_forward_cache_for_debugging());
-  SCOPED_CRASH_KEY_STRING32("NoProxy", "main_rfh_lifecycle_state",
-                            RenderFrameHostImpl::LifecycleStateImplToString(
-                                rfh->GetMainFrame()->lifecycle_state()));
-  SCOPED_CRASH_KEY_BOOL(
-      "NoProxy", "main_rfh_was_bfcache_restored",
-      rfh->GetMainFrame()
-          ->was_restored_from_back_forward_cache_for_debugging());
-
-  // Log info about the SiteInstance of the RenderFrameHost that got the focus.
-  SCOPED_CRASH_KEY_NUMBER("NoProxy", "focused_site_instance",
-                          focused_site_instance->GetId().value());
-  SCOPED_CRASH_KEY_NUMBER(
-      "NoProxy", "focused_browsing_instance",
-      focused_site_instance->GetBrowsingInstanceId().value());
-  SCOPED_CRASH_KEY_BOOL("NoProxy", "focused_site_instance_default",
-                        focused_site_instance->IsDefaultSiteInstance());
-  SCOPED_CRASH_KEY_STRING256(
-      "NoProxy", "focused_site_info",
-      focused_site_instance->GetSiteInfo().GetDebugString());
-  SCOPED_CRASH_KEY_BOOL(
-      "NoProxy", "focused_si_has_rvh",
-      !!ftn->frame_tree()->GetRenderViewHost(focused_site_instance));
-
-  // Log info about the problematic proxy's SiteInstance.
-  SCOPED_CRASH_KEY_NUMBER("NoProxy", "proxy_site_instance",
-                          proxy_site_instance->GetId().value());
-  SCOPED_CRASH_KEY_NUMBER("NoProxy", "proxy_browsing_instance",
-                          proxy_site_instance->GetBrowsingInstanceId().value());
-  SCOPED_CRASH_KEY_BOOL("NoProxy", "proxy_site_instance_default",
-                        proxy_site_instance->IsDefaultSiteInstance());
-  SCOPED_CRASH_KEY_STRING256(
-      "NoProxy", "proxy_site_info",
-      proxy_site_instance->GetSiteInfo().GetDebugString());
-  SCOPED_CRASH_KEY_BOOL(
-      "NoProxy", "proxy_si_has_rvh",
-      !!ftn->frame_tree()->GetRenderViewHost(proxy_site_instance));
-
-  // Log info about BFCache's relation wih the focused RenderFrameHost and the
-  // problematic proxy.
-  BackForwardCacheImpl& back_forward_cache =
-      ftn->navigator().controller().GetBackForwardCache();
-  SCOPED_CRASH_KEY_NUMBER("NoProxy", "bfcache_entries_size",
-                          back_forward_cache.GetEntries().size());
-  SCOPED_CRASH_KEY_BOOL(
-      "NoProxy", "focused_bi_in_bfcache",
-      back_forward_cache.IsBrowsingInstanceInBackForwardCacheForDebugging(
-          focused_site_instance->GetBrowsingInstanceId()));
-  SCOPED_CRASH_KEY_BOOL(
-      "NoProxy", "proxy_bi_in_bfcache",
-      back_forward_cache.IsBrowsingInstanceInBackForwardCacheForDebugging(
-          proxy_site_instance->GetBrowsingInstanceId()));
-
-  base::debug::DumpWithoutCrashing();
-
-  TRACE_EVENT_INSTANT("navigation", "FrameTree::PrintCrashKeysForBug1250218",
-                      ChromeTrackEvent::kFrameTreeNodeInfo, *ftn,
-                      ChromeTrackEvent::kSiteInstance, *proxy_site_instance);
-  CaptureTraceForNavigationDebugScenario(
-      DebugScenario::kDebugNoRenderFrameProxyHostOnSetFocusedFrame);
 }
 
 }  // namespace
@@ -276,8 +196,6 @@ FrameTree::FrameTree(
                               // The top-level frame must always be in a
                               // document scope.
                               blink::mojom::TreeScopeType::kDocument,
-                              std::string(),
-                              std::string(),
                               false,
                               base::UnguessableToken::Create(),
                               blink::mojom::FrameOwnerProperties(),
@@ -434,8 +352,8 @@ FrameTreeNode* FrameTree::AddFrame(
   CHECK_EQ(parent->GetProcess()->GetID(), process_id);
 
   std::unique_ptr<FrameTreeNode> new_node = base::WrapUnique(new FrameTreeNode(
-      this, parent, scope, frame_name, frame_unique_name, is_created_by_script,
-      devtools_frame_token, frame_owner_properties, owner_type, frame_policy));
+      this, parent, scope, is_created_by_script, devtools_frame_token,
+      frame_owner_properties, owner_type, frame_policy));
 
   // Set sandbox flags and container policy and make them effective immediately,
   // since initial sandbox flags and permissions policy should apply to the
@@ -451,9 +369,9 @@ FrameTreeNode* FrameTree::AddFrame(
     new_node->set_was_discarded();
 
   // Add the new node to the FrameTree, creating the RenderFrameHost.
-  FrameTreeNode* added_node =
-      parent->AddChild(std::move(new_node), new_routing_id,
-                       std::move(frame_remote), frame_token, frame_policy);
+  FrameTreeNode* added_node = parent->AddChild(
+      std::move(new_node), new_routing_id, std::move(frame_remote), frame_token,
+      frame_policy, frame_name, frame_unique_name);
 
   added_node->SetFencedFrameNonceIfNeeded();
 
@@ -507,17 +425,33 @@ void FrameTree::RemoveFrame(FrameTreeNode* child) {
   parent->RemoveChild(child);
 }
 
-void FrameTree::CreateProxiesForSiteInstance(FrameTreeNode* source,
-                                             SiteInstance* site_instance) {
+void FrameTree::CreateProxiesForSiteInstance(
+    FrameTreeNode* source,
+    SiteInstance* site_instance,
+    const scoped_refptr<BrowsingContextState>&
+        source_new_browsing_context_state) {
+  SiteInstanceGroup* group =
+      static_cast<SiteInstanceImpl*>(site_instance)->group();
   // Create the RenderFrameProxyHost for the new SiteInstance.
   if (!source || !source->IsMainFrame()) {
-    RenderViewHostImpl* render_view_host =
-        GetRenderViewHost(site_instance).get();
+    RenderViewHostImpl* render_view_host = GetRenderViewHost(group).get();
     if (render_view_host) {
       root()->render_manager()->EnsureRenderViewInitialized(render_view_host,
-                                                            site_instance);
+                                                            group);
     } else {
-      root()->render_manager()->CreateRenderFrameProxy(site_instance);
+      // Due to the check above, we are creating either an opener proxy (when
+      // source is null) or a main frame proxy due to a subframe navigation
+      // (when source is not a main frame). In the former case, we should use
+      // root's current BrowsingContextState, while in the latter case we should
+      // use BrowsingContextState from the main RenderFrameHost of the subframe
+      // being navigated. We want to ensure that the RenderView is created in
+      // the right SiteInstance if it doesn't exist, before creating the other
+      // proxies; if the RenderView doesn't exist, the only way to do this is to
+      // also create a proxy for the main frame as well.
+      root()->render_manager()->CreateRenderFrameProxy(
+          site_instance,
+          source ? source->parent()->GetMainFrame()->browsing_context_state()
+                 : root()->current_frame_host()->browsing_context_state());
     }
   }
 
@@ -573,7 +507,15 @@ void FrameTree::CreateProxiesForSiteInstance(FrameTreeNode* source,
       if (!node->IsMainFrame() && is_site_instance_for_outer_delegate)
         continue;
 
-      node->render_manager()->CreateRenderFrameProxy(site_instance);
+      // If |node| is the FrameTreeNode being navigated, we use
+      // |browsing_context_state| (as BrowsingContextState might change for
+      // cross-BrowsingInstance navigations). Otherwise, we should use the
+      // |node|'s current BrowsingContextState.
+      node->render_manager()->CreateRenderFrameProxy(
+          site_instance,
+          node == source
+              ? source_new_browsing_context_state
+              : node->current_frame_host()->browsing_context_state());
     }
   }
 }
@@ -586,30 +528,17 @@ FrameTreeNode* FrameTree::GetFocusedFrame() {
   return FindByID(focused_frame_tree_node_id_);
 }
 
-void FrameTree::SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {
-  TRACE_EVENT("navigation", "FrameTree::SetFocusedFrame",
-              ChromeTrackEvent::kFrameTreeNodeInfo, *node,
-              [&](perfetto::EventContext ctx) {
-                if (!source)
-                  return;
-                auto* event =
-                    ctx.event<perfetto::protos::pbzero::ChromeTrackEvent>();
-                static_cast<SiteInstanceImpl*>(source)->WriteIntoTrace(
-                    ctx.Wrap(event->set_site_instance()));
-              });
+void FrameTree::SetFocusedFrame(FrameTreeNode* node,
+                                SiteInstanceGroup* source) {
   CHECK(node->current_frame_host()->IsActive());
   if (node == GetFocusedFrame())
     return;
 
-  std::set<SiteInstance*> frame_tree_site_instances =
-      CollectSiteInstances(this);
+  std::set<SiteInstanceGroup*> frame_tree_groups =
+      CollectSiteInstanceGroups(this);
 
-  SiteInstance* current_instance =
-      node->current_frame_host()->GetSiteInstance();
-
-  TRACE_EVENT_INSTANT("navigation", "FrameTree::SetFocusedFrame_Current",
-                      ChromeTrackEvent::kSiteInstance,
-                      *static_cast<SiteInstanceImpl*>(current_instance));
+  SiteInstanceGroup* current_group =
+      node->current_frame_host()->GetSiteInstance()->group();
 
   // Update the focused frame in all other SiteInstanceGroups.  If focus changes
   // to a cross-group frame, this allows the old focused frame's renderer
@@ -617,33 +546,27 @@ void FrameTree::SetFocusedFrame(FrameTreeNode* node, SiteInstance* source) {
   // ensures that the latest focused frame is available in all renderers to
   // compute document.activeElement.
   //
-  // We do not notify the |source| SiteInstance because it already knows the
-  // new focused frame (since it initiated the focus change), and we notify the
-  // new focused frame's SiteInstance (if it differs from |source|) separately
-  // below.
-  // TODO(https://crbug.com/1261963, yangsharon): CollectSiteInstances needs to
-  // be updated to CollectSiteInstanceGroups, otherwise in the case multiple
-  // SiteInstances are in the same group, SetFocusedFrame below will be called
-  // multiple times. While SiteInstances and SiteInstanceGroups are 1:1,
-  // CollectSiteInstances and CollectSiteInstanceGroups are equivalent.
-  for (auto* instance : frame_tree_site_instances) {
-    if (instance != source && instance != current_instance) {
-      RenderFrameProxyHost* proxy =
-          node->render_manager()->GetRenderFrameProxyHost(
-              static_cast<SiteInstanceImpl*>(instance)->group());
+  // We do not notify the |source| SiteInstanceGroup because it already knows
+  // the new focused frame (since it initiated the focus change), and we notify
+  // the new focused frame's SiteInstanceGroup (if it differs from |source|)
+  // separately below.
+  for (auto* group : frame_tree_groups) {
+    if (group != source && group != current_group) {
+      RenderFrameProxyHost* proxy = node->current_frame_host()
+                                        ->browsing_context_state()
+                                        ->GetRenderFrameProxyHost(group);
+
       if (proxy) {
         proxy->SetFocusedFrame();
       } else {
-        PrintCrashKeysForBug1250218(
-            node, static_cast<SiteInstanceImpl*>(current_instance),
-            static_cast<SiteInstanceImpl*>(instance));
+        base::debug::DumpWithoutCrashing();
       }
     }
   }
 
-  // If |node| was focused from a cross-process frame (i.e., via
+  // If |node| was focused from a cross-group frame (i.e., via
   // window.focus()), tell its RenderFrame that it should focus.
-  if (current_instance != source)
+  if (current_group != source)
     node->current_frame_host()->SetFocusedFrame();
 
   focused_frame_tree_node_id_ = node->frame_tree_node_id();
@@ -662,20 +585,24 @@ scoped_refptr<RenderViewHostImpl> FrameTree::CreateRenderViewHost(
     SiteInstance* site_instance,
     int32_t main_frame_routing_id,
     bool swapped_out,
-    bool renderer_initiated_creation) {
+    bool renderer_initiated_creation,
+    scoped_refptr<BrowsingContextState> main_browsing_context_state) {
+  if (main_browsing_context_state) {
+    DCHECK(main_browsing_context_state->is_main_frame());
+  }
   RenderViewHostImpl* rvh =
       static_cast<RenderViewHostImpl*>(RenderViewHostFactory::Create(
           this, site_instance, render_view_delegate_, render_widget_delegate_,
-          main_frame_routing_id, swapped_out, renderer_initiated_creation));
+          main_frame_routing_id, swapped_out, renderer_initiated_creation,
+          std::move(main_browsing_context_state)));
   return base::WrapRefCounted(rvh);
 }
 
 scoped_refptr<RenderViewHostImpl> FrameTree::GetRenderViewHost(
-    SiteInstance* site_instance) {
+    SiteInstanceGroup* group) {
   // When called from RenderFrameHostManager::CreateRenderFrameHost, it's
   // possible that a RenderProcessHost hasn't yet been created, which means
-  // `site_instance` won't have gotten a group yet.
-  auto* group = static_cast<SiteInstanceImpl*>(site_instance)->group();
+  // a SiteInstanceGroup won't have been created yet.
   if (!group)
     return nullptr;
 
@@ -716,7 +643,7 @@ void FrameTree::FrameUnloading(FrameTreeNode* frame) {
 
   // Ensure frames that are about to be deleted aren't visible from the other
   // processes anymore.
-  frame->render_manager()->ResetProxyHosts();
+  frame->GetBrowsingContextStateForSubframe()->ResetProxyHosts();
 }
 
 void FrameTree::FrameRemoved(FrameTreeNode* frame) {
@@ -732,7 +659,8 @@ double FrameTree::GetLoadProgress() {
 }
 
 bool FrameTree::IsLoading() const {
-  for (const FrameTreeNode* node : const_cast<FrameTree*>(this)->Nodes()) {
+  for (const FrameTreeNode* node :
+       const_cast<FrameTree*>(this)->CollectNodesForIsLoading()) {
     if (node->IsLoading())
       return true;
   }
@@ -745,33 +673,34 @@ void FrameTree::ReplicatePageFocus(bool is_focused) {
   // other state has already been cleared.
   if (is_being_destroyed_)
     return;
-  std::set<SiteInstance*> frame_tree_site_instances =
-      CollectSiteInstances(this);
+  std::set<SiteInstanceGroup*> frame_tree_site_instance_groups =
+      CollectSiteInstanceGroups(this);
 
-  // Send the focus update to main frame's proxies in all SiteInstances of
+  // Send the focus update to main frame's proxies in all SiteInstanceGroups of
   // other frames in this FrameTree. Note that the main frame might also know
-  // about proxies in SiteInstances for frames in a different FrameTree (e.g.,
-  // for window.open), so we can't just iterate over its proxy_hosts_ in
+  // about proxies in SiteInstanceGroups for frames in a different FrameTree
+  // (e.g., for window.open), so we can't just iterate over its proxy_hosts_ in
   // RenderFrameHostManager.
-  for (auto* instance : frame_tree_site_instances)
-    SetPageFocus(instance, is_focused);
+  for (auto* group : frame_tree_site_instance_groups)
+    SetPageFocus(group, is_focused);
 }
 
 bool FrameTree::IsPortal() {
   return delegate_->IsPortal();
 }
 
-void FrameTree::SetPageFocus(SiteInstance* instance, bool is_focused) {
+void FrameTree::SetPageFocus(SiteInstanceGroup* group, bool is_focused) {
   RenderFrameHostManager* root_manager = root_->render_manager();
 
   // Portal frame tree should not get page focus.
   DCHECK(!IsPortal() || !is_focused);
 
   // This is only used to set page-level focus in cross-process subframes, and
-  // requests to set focus in main frame's SiteInstance are ignored.
-  if (instance != root_manager->current_frame_host()->GetSiteInstance()) {
-    RenderFrameProxyHost* proxy = root_manager->GetRenderFrameProxyHost(
-        static_cast<SiteInstanceImpl*>(instance)->group());
+  // requests to set focus in main frame's SiteInstanceGroup are ignored.
+  if (group != root_manager->current_frame_host()->GetSiteInstance()->group()) {
+    RenderFrameProxyHost* proxy = root_manager->current_frame_host()
+                                      ->browsing_context_state()
+                                      ->GetRenderFrameProxyHost(group);
     proxy->GetAssociatedRemoteFrame()->SetPageFocus(is_focused);
   }
 }
@@ -829,9 +758,9 @@ void FrameTree::Init(SiteInstance* main_frame_site_instance,
   // blink::FrameTree::SetName always keeps |unique_name| empty in case of a
   // main frame - let's do the same thing here.
   std::string unique_name;
-  root_->SetFrameName(main_frame_name, unique_name);
   root_->render_manager()->InitRoot(main_frame_site_instance,
-                                    renderer_initiated_creation, frame_policy);
+                                    renderer_initiated_creation, frame_policy,
+                                    main_frame_name);
   root_->SetFencedFrameNonceIfNeeded();
 
   // The initial empty document should inherit the origin of its opener (the
@@ -902,7 +831,6 @@ void FrameTree::Shutdown() {
     // need to be moved along during activation replace this line with a DCHECK
     // that there are no pending delete instances.
     root_manager->ClearRFHsPendingShutdown();
-    DCHECK_EQ(0u, root_manager->GetProxyCount());
     DCHECK(!root_->navigation_request());
     DCHECK(!root_manager->speculative_frame_host());
     manager_delegate_->OnFrameTreeNodeDestroyed(root_);
@@ -919,7 +847,9 @@ void FrameTree::Shutdown() {
 
   // Destroy all subframes now. This notifies observers.
   root_manager->current_frame_host()->ResetChildren();
-  root_manager->ResetProxyHosts();
+  root_manager->current_frame_host()
+      ->browsing_context_state()
+      ->ResetProxyHosts();
 
   // Manually call the observer methods for the root FrameTreeNode. It is
   // necessary to manually delete all objects tracking navigations

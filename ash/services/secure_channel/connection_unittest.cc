@@ -18,18 +18,16 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-using testing::_;
-using testing::DoAll;
-using testing::NiceMock;
-using testing::Return;
-using testing::SetArgPointee;
-using testing::StrictMock;
-
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 namespace {
+
+using ::testing::_;
+using ::testing::DoAll;
+using ::testing::NiceMock;
+using ::testing::Return;
+using ::testing::SetArgPointee;
+using ::testing::StrictMock;
 
 class MockConnection : public Connection {
  public:
@@ -320,6 +318,4 @@ TEST_F(CryptAuthConnectionTest, GetConnectionRssi) {
   EXPECT_EQ(absl::nullopt, GetRssi(&connection));
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

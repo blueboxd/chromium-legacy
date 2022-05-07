@@ -71,20 +71,20 @@ void GoogleAssistantHandler::RegisterMessages() {
 }
 
 void GoogleAssistantHandler::HandleShowGoogleAssistantSettings(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(0U, args.size());
   ash::AssistantController::Get()->OpenAssistantSettings();
 }
 
 void GoogleAssistantHandler::HandleRetrainVoiceModel(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(0U, args.size());
   chromeos::AssistantOptInDialog::Show(ash::FlowType::kSpeakerIdRetrain,
                                        base::DoNothing());
 }
 
 void GoogleAssistantHandler::HandleSyncVoiceModelStatus(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(0U, args.size());
 
   auto* settings = assistant::AssistantSettings::Get();
@@ -92,8 +92,7 @@ void GoogleAssistantHandler::HandleSyncVoiceModelStatus(
     settings->SyncSpeakerIdEnrollmentStatus();
 }
 
-void GoogleAssistantHandler::HandleInitialized(
-    base::Value::ConstListView args) {
+void GoogleAssistantHandler::HandleInitialized(const base::Value::List& args) {
   CHECK_EQ(0U, args.size());
   AllowJavascript();
 }

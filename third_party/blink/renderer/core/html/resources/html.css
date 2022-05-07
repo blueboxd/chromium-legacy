@@ -50,10 +50,6 @@ div {
     display: block
 }
 
-layer {
-    display: block
-}
-
 article, aside, footer, header, hgroup, main, nav, section {
     display: block
 }
@@ -1158,6 +1154,10 @@ nobr {
 }
 
 /* states */
+
+:-internal-selector-fragment-anchor {
+    outline: Highlight 3px solid;
+}
 
 :-internal-spatial-navigation-interest {
     outline: auto 1px -webkit-focus-ring-color !important;

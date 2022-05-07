@@ -10,9 +10,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Test double implementation of ConnectionAttemptImpl.
 class FakeConnectionAttempt : public ConnectionAttemptImpl {
@@ -47,15 +45,6 @@ class FakeConnectionAttempt : public ConnectionAttemptImpl {
   base::OnceClosure on_connection_callback_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when this file is moved to ash.
-namespace ash {
-namespace secure_channel {
-using ::chromeos::secure_channel::FakeConnectionAttempt;
-}  // namespace secure_channel
-}  // namespace ash
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_FAKE_CONNECTION_ATTEMPT_H_

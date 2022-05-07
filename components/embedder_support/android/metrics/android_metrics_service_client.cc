@@ -37,6 +37,7 @@
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/entropy_state_provider.h"
 #include "components/metrics/file_metrics_provider.h"
+#include "components/metrics/form_factor_metrics_provider.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/metrics/metrics_state_manager.h"
@@ -264,6 +265,10 @@ void AndroidMetricsServiceClient::Initialize(PrefService* pref_service) {
 
   init_finished_ = true;
 
+  synthetic_trial_registry_ =
+      std::make_unique<variations::SyntheticTrialRegistry>(
+          IsExternalExperimentAllowlistEnabled());
+
   // Create the MetricsService immediately so that other code can make use of
   // it. Chrome always creates the MetricsService as well.
   metrics_service_ = std::make_unique<MetricsService>(
@@ -334,6 +339,8 @@ void AndroidMetricsServiceClient::RegisterMetricsProvidersAndInitState() {
       std::make_unique<EntropyStateProvider>(pref_service_));
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<ScreenInfoMetricsProvider>());
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::FormFactorMetricsProvider>());
   metrics_service_->RegisterMetricsProvider(CreateFileMetricsProvider(
       pref_service_, metrics_state_manager_->IsMetricsReportingEnabled()));
   metrics_service_->RegisterMetricsProvider(
@@ -377,7 +384,11 @@ void AndroidMetricsServiceClient::CreateUkmService() {
   ukm_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ScreenInfoMetricsProvider>());
 
-  ukm_service_->RegisterMetricsProvider(ukm::CreateFieldTrialsProviderForUkm());
+  ukm_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::FormFactorMetricsProvider>());
+
+  ukm_service_->RegisterMetricsProvider(
+      ukm::CreateFieldTrialsProviderForUkm(synthetic_trial_registry_.get()));
 
   UpdateUkmService();
 }
@@ -462,6 +473,11 @@ bool AndroidMetricsServiceClient::IsReportingEnabled() const {
 MetricsService* AndroidMetricsServiceClient::GetMetricsServiceIfStarted() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return did_start_metrics_ ? metrics_service_.get() : nullptr;
+}
+
+variations::SyntheticTrialRegistry*
+AndroidMetricsServiceClient::GetSyntheticTrialRegistry() {
+  return synthetic_trial_registry_.get();
 }
 
 MetricsService* AndroidMetricsServiceClient::GetMetricsService() {

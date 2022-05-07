@@ -6,9 +6,9 @@
 
 #include "ash/components/phonehub/fake_recent_apps_interaction_handler.h"
 #include "ash/components/phonehub/notification.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "ash/system/phonehub/phone_hub_recent_app_button.h"
 #include "ash/test/ash_test_base.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/test/button_test_api.h"
 
@@ -20,7 +20,7 @@ const int64_t kUserId = 0;
 
 namespace {
 
-using FeatureState = ::chromeos::multidevice_setup::mojom::FeatureState;
+using FeatureState = multidevice_setup::mojom::FeatureState;
 
 class FakeEvent : public ui::Event {
  public:
@@ -54,8 +54,10 @@ class RecentAppButtonsViewTest : public AshTestBase {
 
   void NotifyRecentAppAddedOrUpdated() {
     fake_recent_apps_interaction_handler_.NotifyRecentAppAddedOrUpdated(
-        phonehub::Notification::AppMetadata(kAppName, kPackageName,
-                                            /*icon=*/gfx::Image(), kUserId),
+        phonehub::Notification::AppMetadata(
+            kAppName, kPackageName,
+            /*icon=*/gfx::Image(), /*icon_color =*/absl::nullopt,
+            /*icon_is_monochrome =*/true, kUserId),
         base::Time::Now());
   }
 

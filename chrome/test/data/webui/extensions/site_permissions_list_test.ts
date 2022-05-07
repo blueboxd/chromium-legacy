@@ -7,7 +7,7 @@ import 'chrome://extensions/extensions.js';
 
 import {ExtensionsSitePermissionsListElement} from 'chrome://extensions/extensions.js';
 import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
+import {assertDeepEquals, assertEquals, assertFalse, assertTrue} from 'chrome://webui-test/chai_assert.js';
 import {isVisible} from 'chrome://webui-test/test_util.js';
 
 import {TestService} from './test_service.js';
@@ -38,7 +38,7 @@ suite('SitePermissionsList', function() {
     flush();
 
     const dialog =
-        element.shadowRoot!.querySelector('site-permissions-add-site-dialog');
+        element.shadowRoot!.querySelector('site-permissions-edit-url-dialog');
     assertTrue(!!dialog);
     assertTrue(dialog.$.dialog.open);
   });
@@ -60,10 +60,73 @@ suite('SitePermissionsList', function() {
     assertTrue(!!remove);
 
     remove.click();
-    const [siteSet, host] =
-        await delegate.whenCalled('removeUserSpecifiedSite');
+    const [siteSet, hosts] =
+        await delegate.whenCalled('removeUserSpecifiedSites');
     assertEquals(chrome.developerPrivate.UserSiteSet.RESTRICTED, siteSet);
-    assertEquals('http://www.example.com', host);
+    assertDeepEquals(['http://www.example.com'], hosts);
     assertFalse(actionMenu.open);
   });
+
+  test(
+      'clicking "edit site url" through action menu opens a dialog',
+      async function() {
+        element.sites = ['https://google.com', 'http://www.example.com'];
+        flush();
+
+        const openEditSites =
+            element!.shadowRoot!.querySelectorAll<HTMLElement>(
+                '.icon-more-vert');
+        assertEquals(2, openEditSites.length);
+        openEditSites[1]!.click();
+
+        const actionMenu = element.$.siteActionMenu;
+        assertTrue(!!actionMenu);
+        assertTrue(actionMenu.open);
+
+        const actionMenuEditUrl =
+            actionMenu.querySelector<HTMLElement>('#edit-site-url');
+        assertTrue(!!actionMenuEditUrl);
+
+        actionMenuEditUrl.click();
+        flush();
+        assertFalse(actionMenu.open);
+
+        const dialog = element.shadowRoot!.querySelector(
+            'site-permissions-edit-url-dialog');
+        assertTrue(!!dialog);
+        assertTrue(dialog.$.dialog.open);
+        assertEquals('http://www.example.com', dialog.siteToEdit);
+      });
+
+  test(
+      'clicking "edit site permissions" through action menu opens a dialog',
+      async function() {
+        element.sites = ['https://google.com', 'http://www.example.com'];
+        flush();
+
+        const openEditSites =
+            element!.shadowRoot!.querySelectorAll<HTMLElement>(
+                '.icon-more-vert');
+        assertEquals(2, openEditSites.length);
+        openEditSites[1]!.click();
+
+        const actionMenu = element.$.siteActionMenu;
+        assertTrue(!!actionMenu);
+        assertTrue(actionMenu.open);
+
+        const actionMenuEditPermissions =
+            actionMenu.querySelector<HTMLElement>('#edit-site-permissions');
+        assertTrue(!!actionMenuEditPermissions);
+
+        actionMenuEditPermissions.click();
+        flush();
+        assertFalse(actionMenu.open);
+
+        const dialog = element.shadowRoot!.querySelector(
+            'site-permissions-edit-permissions-dialog');
+        assertTrue(!!dialog);
+        assertTrue(dialog.$.dialog.open);
+        assertEquals('http://www.example.com', dialog.site);
+        assertEquals(element.siteSet, dialog.originalSiteSet);
+      });
 });

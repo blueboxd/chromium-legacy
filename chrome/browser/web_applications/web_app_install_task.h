@@ -26,6 +26,10 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom-forward.h"
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/arc.mojom-forward.h"
+#endif
+
 class GURL;
 class Profile;
 struct WebAppInstallInfo;
@@ -153,10 +157,8 @@ class WebAppInstallTask : content::WebContentsObserver {
   static std::unique_ptr<content::WebContents> CreateWebContents(
       Profile* profile);
 
-  // Returns the pre-existing web contents the installation was
-  // initiated with.
-  // This is different to web_contents which is created
-  // specifically for the install task.
+  // Returns the pre-existing web contents the installation was initiated with,
+  // or the one created specifically for the install task.
   content::WebContents* GetInstallingWebContents();
 
   base::WeakPtr<WebAppInstallTask> GetWeakPtr();
@@ -235,6 +237,19 @@ class WebAppInstallTask : content::WebContentsObserver {
       const std::string& intent,
       bool should_intent_to_store);
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  // Called when the asynchronous check for whether an intent to the Play Store
+  // should be made returns (Lacros adapter that calls
+  // |OnDidCheckForIntentToPlayStore| based on |result|).
+  void OnDidCheckForIntentToPlayStoreLacros(
+      std::unique_ptr<WebAppInstallInfo> web_app_info,
+      std::vector<GURL> icon_urls,
+      ForInstallableSite for_installable_site,
+      bool skip_page_favicons,
+      const std::string& intent,
+      crosapi::mojom::IsInstallableResult result);
+#endif
+
   void OnIconsRetrieved(
       std::unique_ptr<WebAppInstallInfo> web_app_info,
       WebAppInstallFinalizer::FinalizeOptions finalize_options,
@@ -260,7 +275,7 @@ class WebAppInstallTask : content::WebContentsObserver {
       OsHooksErrors os_hooks_errors);
   void OnOsHooksCreated(DisplayMode user_display_mode,
                         const AppId& app_id,
-                        const OsHooksErrors os_hook_errors);
+                        OsHooksErrors os_hook_errors);
 
   void RecordDownloadedIconsResultAndHttpStatusCodes(
       IconsDownloadedResult result,
@@ -307,7 +322,6 @@ class WebAppInstallTask : content::WebContentsObserver {
   std::unique_ptr<WebAppDataRetriever> data_retriever_;
   std::unique_ptr<WebAppInstallInfo> web_application_info_;
   std::unique_ptr<content::WebContents> web_contents_;
-  content::WebContents* installing_web_contents_ = nullptr;
 
   raw_ptr<WebAppInstallManager> install_manager_;
   raw_ptr<WebAppInstallFinalizer> install_finalizer_;

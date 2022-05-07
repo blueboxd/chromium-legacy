@@ -37,6 +37,7 @@ lucicfg.config(
         "luci/realms.cfg",
         "luci/tricium-prod.cfg",
         "outages.pyl",
+        "sheriff-rotations/*.txt",
         "project.pyl",
     ],
     fail_on_warnings = True,

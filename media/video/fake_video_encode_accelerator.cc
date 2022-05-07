@@ -9,6 +9,7 @@
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/task/sequenced_task_runner.h"
+#include "media/base/media_log.h"
 
 namespace media {
 
@@ -45,8 +46,10 @@ FakeVideoEncodeAccelerator::GetSupportedProfiles() {
   return profiles;
 }
 
-bool FakeVideoEncodeAccelerator::Initialize(const Config& config,
-                                            Client* client) {
+bool FakeVideoEncodeAccelerator::Initialize(
+    const Config& config,
+    Client* client,
+    std::unique_ptr<MediaLog> media_log) {
   if (!will_initialization_succeed_) {
     return false;
   }

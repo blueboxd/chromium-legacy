@@ -247,6 +247,9 @@ class GPU_GLES2_EXPORT SharedImageRepresentationGLTexturePassthrough
   GetTexturePassthrough() = 0;
 
   gpu::TextureBase* GetTextureBase() override;
+
+ protected:
+  friend class SharedImageRepresentationDawnEGLImage;
 };
 
 class GPU_GLES2_EXPORT SharedImageRepresentationSkia
@@ -650,18 +653,22 @@ class GPU_GLES2_EXPORT SharedImageRepresentationRaster
   std::unique_ptr<ScopedReadAccess> BeginScopedReadAccess();
 
   std::unique_ptr<ScopedWriteAccess> BeginScopedWriteAccess(
+      scoped_refptr<SharedContextState> context_state,
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
-      const absl::optional<SkColor>& clear_color);
+      const absl::optional<SkColor>& clear_color,
+      bool visible);
 
  protected:
   virtual cc::PaintOpBuffer* BeginReadAccess(
       absl::optional<SkColor>& clear_color) = 0;
   virtual void EndReadAccess() = 0;
   virtual cc::PaintOpBuffer* BeginWriteAccess(
+      scoped_refptr<SharedContextState> context_state,
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
-      const absl::optional<SkColor>& clear_color) = 0;
+      const absl::optional<SkColor>& clear_color,
+      bool visible) = 0;
   virtual void EndWriteAccess(base::OnceClosure callback) = 0;
 };
 

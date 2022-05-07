@@ -6,14 +6,13 @@
 #define ASH_PUBLIC_CPP_ESIM_MANAGER_H_
 
 #include "ash/public/cpp/ash_public_export.h"
-#include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.h"
+#include "ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace ash {
 
 ASH_PUBLIC_EXPORT void GetESimManager(
-    mojo::PendingReceiver<chromeos::cellular_setup::mojom::ESimManager>
-        receiver);
+    mojo::PendingReceiver<cellular_setup::mojom::ESimManager> receiver);
 
 }  // namespace ash
 

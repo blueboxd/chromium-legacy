@@ -448,8 +448,7 @@ are exported to translation interchange files (e.g. XMB files), etc.
     # Print out any fallback warnings, and missing translation errors, and
     # exit with an error code if there are missing translations in a non-pseudo
     # and non-official build.
-    warnings = (self.res.UberClique().MissingTranslationsReport().
-        encode('ascii', 'replace'))
+    warnings = self.res.UberClique().MissingTranslationsReport()
     if warnings:
       self.VerboseOut(warnings)
     if self.res.UberClique().HasMissingTranslations():
@@ -479,10 +478,6 @@ are exported to translation interchange files (e.g. XMB files), etc.
       ]
       error = '''Asserted file list does not match.
 
-Expected output files:
-%s
-Actual output files:
-%s
 Missing output files:
 %s
 Extra output files:
@@ -490,8 +485,8 @@ Extra output files:
 Duplicate actual output files:
 %s
 '''
-      print(error % ('\n'.join(asserted), '\n'.join(actual), '\n'.join(missing),
-                     '\n'.join(extra), '\n'.join(duplicates)))
+      print(error %
+            ('\n'.join(missing), '\n'.join(extra), '\n'.join(duplicates)))
       return False
     return True
 

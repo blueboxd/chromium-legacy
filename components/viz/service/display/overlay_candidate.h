@@ -66,7 +66,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   static CandidateStatus FromDrawQuad(
       DisplayResourceProvider* resource_provider,
       SurfaceDamageRectList* surface_damage_rect_list,
-      const skia::Matrix44& output_color_matrix,
+      const SkM44& output_color_matrix,
       const DrawQuad* quad,
       const gfx::RectF& primary_rect,
       OverlayCandidate* candidate,
@@ -165,7 +165,7 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   // is an estimate when 'EstimateOccludedDamage' function is used.
   int damage_area_estimate = 0;
 
-  // Rect indicating damage for this candidate's quad.
+  // Damage in buffer space (extents bound by |resource_size_in_pixels|).
   gfx::RectF damage_rect;
 
   static constexpr uint32_t kInvalidDamageIndex = UINT_MAX;
@@ -216,7 +216,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
       ResourceId resource_id,
       bool y_flipped,
       OverlayCandidate* candidate,
-      bool is_delegated_context);
+      bool is_delegated_context,
+      const gfx::RectF& primary_rect);
+
   static CandidateStatus FromTextureQuad(
       DisplayResourceProvider* resource_provider,
       SurfaceDamageRectList* surface_damage_rect_list,
@@ -251,7 +253,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
       SurfaceDamageRectList* surface_damage_rect_list,
       const StreamVideoDrawQuad* quad,
       OverlayCandidate* candidate,
-      bool is_delegated_context);
+      bool is_delegated_context,
+      const gfx::RectF& primary_rect);
+
   static CandidateStatus FromVideoHoleQuad(
       DisplayResourceProvider* resource_provider,
       SurfaceDamageRectList* surface_damage_rect_list,
@@ -262,7 +266,9 @@ class VIZ_SERVICE_EXPORT OverlayCandidate {
   static void AssignDamage(const DrawQuad* quad,
                            SurfaceDamageRectList* surface_damage_rect_list,
                            OverlayCandidate* candidate);
-  static void ApplyClip(OverlayCandidate* candidate);
+
+  static void ApplyClip(OverlayCandidate* candidate,
+                        const gfx::RectF& clip_rect);
 };
 
 using OverlayCandidateList = std::vector<OverlayCandidate>;

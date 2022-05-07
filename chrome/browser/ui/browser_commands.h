@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/devtools/devtools_toggle_action.h"
 #include "chrome/browser/devtools/devtools_window.h"
-#include "chrome/browser/image_editor/screenshot_flow.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
@@ -247,6 +246,14 @@ bool ShouldInterceptChromeURLNavigationInIncognito(Browser* browser,
                                                    const GURL& url);
 void ProcessInterceptedChromeURLNavigationInIncognito(Browser* browser,
                                                       const GURL& url);
+
+// Follows a web feed associated with the main frame of specified web contents.
+void FollowSite(Browser* browser, content::WebContents* web_contents);
+
+#if BUILDFLAG(IS_LINUX)
+// Triggers the Screen AI to be run once on the |browser|.
+void RunScreenAi(Browser* browser);
+#endif  // BUILDFLAG(IS_LINUX)
 
 }  // namespace chrome
 

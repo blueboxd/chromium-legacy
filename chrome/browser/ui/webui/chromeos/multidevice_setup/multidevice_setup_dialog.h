@@ -8,9 +8,9 @@
 #include <string>
 #include <vector>
 
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "base/callback.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
@@ -68,8 +68,8 @@ class MultiDeviceSetupDialogUI : public ui::MojoWebDialogUI {
   // Instantiates implementor of the mojom::MultiDeviceSetup mojo interface
   // passing the pending receiver that will be internally bound.
   void BindInterface(
-      mojo::PendingReceiver<
-          chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver);
+      mojo::PendingReceiver<ash::multidevice_setup::mojom::MultiDeviceSetup>
+          receiver);
 
  private:
   WEB_UI_CONTROLLER_TYPE_DECL();

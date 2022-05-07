@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/cxx17_backports.h"
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/cursor/cursor.h"
@@ -15,6 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/resources/grit/ui_resources.h"
 
 #if BUILDFLAG(IS_WIN)
@@ -272,12 +272,12 @@ const CursorData kLargeCursors[] = {
 };
 
 const CursorSizeData kCursorSizes[] = {
-    {ui::CursorSize::kNormal, kNormalCursors, base::size(kNormalCursors)},
-    {ui::CursorSize::kLarge, kLargeCursors, base::size(kLargeCursors)},
+    {ui::CursorSize::kNormal, kNormalCursors, std::size(kNormalCursors)},
+    {ui::CursorSize::kLarge, kLargeCursors, std::size(kLargeCursors)},
 };
 
 const CursorSizeData* GetCursorSizeByType(ui::CursorSize cursor_size) {
-  for (size_t i = 0; i < base::size(kCursorSizes); ++i) {
+  for (size_t i = 0; i < std::size(kCursorSizes); ++i) {
     if (kCursorSizes[i].id == cursor_size)
       return &kCursorSizes[i];
   }

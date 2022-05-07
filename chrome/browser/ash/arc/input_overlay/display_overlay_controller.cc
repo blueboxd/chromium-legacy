@@ -27,57 +27,10 @@ namespace {
 // UI specs.
 constexpr int kMenuEntrySize = 56;
 constexpr int kMenuEntrySideMargin = 24;
-constexpr SkColor kEditModeBgColor = SkColorSetA(SK_ColorGRAY, 0x99);
 constexpr SkColor kMenuEntryBgColor = SkColorSetA(SK_ColorWHITE, 0x99);
 constexpr int kCornerRadius = 8;
 
 }  // namespace
-
-// TODO(djacobo): Evaluate to move this to its own class for readability.
-class DisplayOverlayController::InputMappingView : public views::View {
- public:
-  explicit InputMappingView(DisplayOverlayController* owner) : owner_(owner) {
-    auto content_bounds = input_overlay::CalculateWindowContentBounds(
-        owner_->touch_injector_->target_window());
-    auto& actions = owner_->touch_injector_->actions();
-    SetBounds(content_bounds.x(), content_bounds.y(), content_bounds.width(),
-              content_bounds.height());
-    for (auto& action : actions) {
-      auto view = action->CreateView(content_bounds);
-      if (view)
-        AddChildView(std::move(view));
-    }
-  }
-  InputMappingView(const InputMappingView&) = delete;
-  InputMappingView& operator=(const InputMappingView&) = delete;
-  ~InputMappingView() override = default;
-
-  void SetDisplayMode(const DisplayMode mode) {
-    if (current_display_mode_ == mode)
-      return;
-    switch (mode) {
-      case DisplayMode::kMenu:
-      case DisplayMode::kView:
-        SetBackground(nullptr);
-        break;
-      case DisplayMode::kEdit:
-        SetBackground(views::CreateSolidBackground(kEditModeBgColor));
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-    for (auto* view : children()) {
-      auto* action_view = static_cast<ActionView*>(view);
-      action_view->SetDisplayMode(mode);
-    }
-    current_display_mode_ = mode;
-  }
-
- private:
-  DisplayOverlayController* const owner_;
-  DisplayMode current_display_mode_ = DisplayMode::kNone;
-};
 
 DisplayOverlayController::DisplayOverlayController(
     TouchInjector* touch_injector)
@@ -135,10 +88,13 @@ void DisplayOverlayController::AddInputMappingView(
   DCHECK(overlay_widget);
   auto input_mapping_view = std::make_unique<InputMappingView>(this);
   input_mapping_view->SetPosition(gfx::Point());
-
   input_mapping_view_ = overlay_widget->GetContentsView()->AddChildView(
       std::move(input_mapping_view));
-  input_mapping_view_->SetPosition(gfx::Point());
+
+  // Set input mapping view visibility according to the saved status.
+  DCHECK(touch_injector_);
+  if (touch_injector_)
+    SetInputMappingVisible(touch_injector_->input_mapping_visible());
 }
 
 void DisplayOverlayController::AddMenuEntryView(views::Widget* overlay_widget) {
@@ -285,6 +241,28 @@ DisplayOverlayController::GetOverlayMenuEntryBounds() {
   return absl::optional<gfx::Rect>(menu_entry_->bounds());
 }
 
+void DisplayOverlayController::AddActionEditMenu(ActionView* anchor) {
+  RemoveActionEditMenu();
+  auto* overlay_widget = GetOverlayWidget();
+  DCHECK(overlay_widget);
+  if (!overlay_widget)
+    return;
+  auto* parent_view = overlay_widget->GetContentsView();
+  DCHECK(parent_view);
+  if (!parent_view)
+    return;
+  auto action_edit_menu = ActionEditMenu::BuildActionTapEditMenu(this, anchor);
+  if (action_edit_menu)
+    action_edit_menu_ = parent_view->AddChildView(std::move(action_edit_menu));
+}
+
+void DisplayOverlayController::RemoveActionEditMenu() {
+  if (!action_edit_menu_)
+    return;
+  action_edit_menu_->parent()->RemoveChildViewT(action_edit_menu_);
+  action_edit_menu_ = nullptr;
+}
+
 bool DisplayOverlayController::HasMenuView() const {
   return input_menu_view_ != nullptr;
 }
@@ -293,12 +271,30 @@ void DisplayOverlayController::SetInputMappingVisible(bool visible) {
   if (!input_mapping_view_)
     return;
   input_mapping_view_->SetVisible(visible);
+  DCHECK(touch_injector_);
+  if (!touch_injector_)
+    return;
+  touch_injector_->store_input_mapping_visible(visible);
 }
 
 bool DisplayOverlayController::GetInputMappingViewVisible() const {
   if (!input_mapping_view_)
     return false;
   return input_mapping_view_->GetVisible();
+}
+
+void DisplayOverlayController::SetTouchInjectorEnable(bool enable) {
+  DCHECK(touch_injector_);
+  if (!touch_injector_)
+    return;
+  touch_injector_->store_touch_injector_enable(enable);
+}
+
+bool DisplayOverlayController::GetTouchInjectorEnable() {
+  DCHECK(touch_injector_);
+  if (!touch_injector_)
+    return false;
+  return touch_injector_->touch_injector_enable();
 }
 
 }  // namespace input_overlay

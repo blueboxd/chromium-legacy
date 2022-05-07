@@ -15,17 +15,20 @@
 #include "base/guid.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/ash/login/enrollment/auto_enrollment_controller.h"
+#include "base/time/time.h"
+#include "chrome/browser/ash/attestation/certificate_util.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/policy/active_directory/active_directory_join_delegate.h"
 #include "chrome/browser/ash/policy/core/device_cloud_policy_store_ash.h"
 #include "chrome/browser/ash/policy/core/dm_token_storage.h"
 #include "chrome/browser/ash/policy/dev_mode/dev_mode_policy_util.h"
+#include "chrome/browser/ash/policy/enrollment/auto_enrollment_type_checker.h"
 #include "chrome/browser/ash/policy/server_backed_state/server_backed_state_keys_broker.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/enrollment_status.h"
@@ -54,6 +57,30 @@ using PsmExecutionResult = em::DeviceRegisterRequest::PsmExecutionResult;
 namespace policy {
 
 namespace {
+
+// This enum is used to define the buckets for an enumerated UMA histogram.
+// Hence,
+//   (a) existing enumerated constants should never be deleted or reordered, and
+//   (b) new constants should only be appended at the end of the enumeration
+//       (update tools/metrics/histograms/enums.xml as well).
+enum class EnrollmentAttestationBasedCertificateStatus {
+  kValid = 0,
+  kExpired = 1,
+  kUnknown = 2,
+
+  kMaxValue = kUnknown,  // Must be the last.
+};
+
+// UMAs for status of the first fetched enrollment certificate for registration
+// during attestation-based enrollment.
+constexpr char
+    kMetricEnrollmentAttestationBasedCertificateStatusInitialAttempt[] =
+        "Enterprise.EnrollmentAttestationBased.EnrollmentCertificateStatus."
+        "InitialAttempt";
+constexpr char
+    kMetricEnrollmentAttestationBasedCertificateStatusSubsequentAttempt[] =
+        "Enterprise.EnrollmentAttestationBased.EnrollmentCertificateStatus."
+        "SubsequentAttempt";
 
 // Retry for InstallAttrs initialization every 500ms.
 const int kLockRetryIntervalMs = 500;
@@ -185,6 +212,20 @@ std::string GetActiveDirectoryDomainJoinConfig(
     return std::string();
   }
   return result;
+}
+
+EnrollmentAttestationBasedCertificateStatus CertificateStatusToMetric(
+    ash::attestation::CertificateExpiryStatus status) {
+  switch (status) {
+    case ash::attestation::CertificateExpiryStatus::kValid:
+      return EnrollmentAttestationBasedCertificateStatus::kValid;
+    case ash::attestation::CertificateExpiryStatus::kExpiringSoon:
+    case ash::attestation::CertificateExpiryStatus::kExpired:
+      return EnrollmentAttestationBasedCertificateStatus::kExpired;
+    case ash::attestation::CertificateExpiryStatus::kInvalidPemChain:
+    case ash::attestation::CertificateExpiryStatus::kInvalidX509:
+      return EnrollmentAttestationBasedCertificateStatus::kUnknown;
+  }
 }
 
 }  // namespace
@@ -420,7 +461,7 @@ void EnrollmentHandler::HandleStateKeysResult(
   DCHECK_EQ(STEP_STATE_KEYS, enrollment_step_);
 
   // Make sure state keys are available if forced re-enrollment is on.
-  if (ash::AutoEnrollmentController::IsFREEnabled()) {
+  if (policy::AutoEnrollmentTypeChecker::IsFREEnabled()) {
     client_->SetStateKeysToUpload(state_keys);
     register_params_->current_state_key =
         state_keys_broker_->current_state_key();
@@ -454,7 +495,9 @@ void EnrollmentHandler::StartRegistration() {
 
   SetStep(STEP_REGISTRATION);
   if (enrollment_config_.is_mode_attestation()) {
-    StartAttestationBasedEnrollmentFlow();
+    // First attempt to register with enrollment certificate. Do not force new
+    // key and fresh enrollment certificate.
+    StartAttestationBasedEnrollmentFlow(/*is_initial_attempt=*/true);
   } else if (enrollment_config_.mode == EnrollmentConfig::MODE_OFFLINE_DEMO) {
     StartOfflineDemoEnrollmentFlow();
   } else {
@@ -462,18 +505,20 @@ void EnrollmentHandler::StartRegistration() {
   }
 }
 
-void EnrollmentHandler::StartAttestationBasedEnrollmentFlow() {
+void EnrollmentHandler::StartAttestationBasedEnrollmentFlow(
+    bool is_initial_attempt) {
+  const bool force_new_key = !is_initial_attempt;
   ash::attestation::AttestationFlow::CertificateCallback callback =
       base::BindOnce(&EnrollmentHandler::HandleRegistrationCertificateResult,
-                     weak_ptr_factory_.GetWeakPtr());
+                     weak_ptr_factory_.GetWeakPtr(), is_initial_attempt);
   attestation_flow_->GetCertificate(
       chromeos::attestation::PROFILE_ENTERPRISE_ENROLLMENT_CERTIFICATE,
-      EmptyAccountId(), std::string() /* request_origin */,
-      false /* force_new_key */, std::string(), /* key_name */
-      std::move(callback));
+      EmptyAccountId(), /*request_origin=*/std::string(), force_new_key,
+      /*=key_name=*/std::string(), std::move(callback));
 }
 
 void EnrollmentHandler::HandleRegistrationCertificateResult(
+    bool is_initial_attempt,
     chromeos::attestation::AttestationStatus status,
     const std::string& pem_certificate_chain) {
   if (status != chromeos::attestation::ATTESTATION_SUCCESS) {
@@ -481,6 +526,52 @@ void EnrollmentHandler::HandleRegistrationCertificateResult(
         EnrollmentStatus::REGISTRATION_CERT_FETCH_FAILED));
     return;
   }
+
+  // Expiry threshold is 0 so no expiring soon certificates. The reason is that
+  // enrollment certificates expire in 1 day so there's no optimal threshold to
+  // catch expiring certificates.
+  const ash::attestation::CertificateExpiryStatus cert_status =
+      ash::attestation::CheckCertificateExpiry(
+          pem_certificate_chain,
+          /*expiry_threshold=*/base::TimeDelta());
+  base::UmaHistogramEnumeration(
+      is_initial_attempt
+          ? kMetricEnrollmentAttestationBasedCertificateStatusInitialAttempt
+          : kMetricEnrollmentAttestationBasedCertificateStatusSubsequentAttempt,
+      CertificateStatusToMetric(cert_status));
+
+  switch (cert_status) {
+    case ash::attestation::CertificateExpiryStatus::kValid:
+      // Valid certificate, proceed with registration.
+      break;
+    case ash::attestation::CertificateExpiryStatus::kExpiringSoon:
+    case ash::attestation::CertificateExpiryStatus::kExpired:
+      if (is_initial_attempt) {
+        // The first certificate request resulted in expired enrollment
+        // certificate. Initiate second attempt with forced new key to fetch
+        // fresh enrollment certificate.
+        LOG(ERROR) << "Existing certificate has expired. Attempt to request "
+                      "fresh certificate.";
+        StartAttestationBasedEnrollmentFlow(/*is_initial_attempt=*/false);
+        return;
+      } else {
+        // Second attempt with forced new key resulted in expired certificate
+        // again. We cannot tell if any following attempt will result in a valid
+        // certificate. Proceed with registration with given certificate.
+        LOG(ERROR) << "Existing certificate has expired. Attempt to register.";
+        break;
+      }
+    case ash::attestation::CertificateExpiryStatus::kInvalidPemChain:
+    case ash::attestation::CertificateExpiryStatus::kInvalidX509:
+      // We cannot tell for sure what caused the certificate to be invalid,
+      // whether it can be accepted by the server, or will we get a valid
+      // certificate on the next attempt. Proceed with the registration to not
+      // to fall into potential infinite loop blocking fallback enrollment.
+      LOG(ERROR) << "Failed to parse certificate, cannot check expiry: "
+                 << CertificateExpiryStatusToString(cert_status);
+      break;
+  }
+
   client_->RegisterWithCertificate(*register_params_, client_id_,
                                    pem_certificate_chain, sub_organization_,
                                    signing_service_.get());

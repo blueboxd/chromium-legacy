@@ -9,12 +9,13 @@ import 'chrome://resources/cr_elements/hidden_style_css.m.js';
 import 'chrome://resources/polymer/v3_0/paper-styles/color.js';
 
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import {html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {KeyboardShortcutDelegate} from './keyboard_shortcut_delegate.js';
+import {getTemplate} from './shortcut_input.html.js';
 import {hasValidModifiers, isValidKeyCode, Key, keystrokeToString} from './shortcut_util.js';
 
 enum ShortcutError {
@@ -42,7 +43,7 @@ export class ExtensionsShortcutInputElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -97,7 +98,7 @@ export class ExtensionsShortcutInputElement extends
   private readonly_: boolean;
   private pendingShortcut_: string;
 
-  ready() {
+  override ready() {
     super.ready();
 
     const node = this.$.input;

@@ -12,10 +12,9 @@
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
 
-namespace chromeos {
-namespace secure_channel {
+namespace ash::secure_channel {
 
-class FakeConnectionManager : public secure_channel::ConnectionManager {
+class FakeConnectionManager : public ConnectionManager {
  public:
   FakeConnectionManager();
   ~FakeConnectionManager() override;
@@ -62,14 +61,6 @@ class FakeConnectionManager : public secure_channel::ConnectionManager {
   size_t num_disconnect_calls_ = 0;
 };
 
-}  // namespace secure_channel
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when it moved to ash.
-namespace ash {
-namespace secure_channel {
-using ::chromeos::secure_channel::FakeConnectionManager;
-}  // namespace secure_channel
-}  // namespace ash
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_FAKE_CONNECTION_MANAGER_H_

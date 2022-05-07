@@ -38,11 +38,14 @@ class SharedImageBackingRawDraw::RepresentationRaster
   ~RepresentationRaster() override = default;
 
   cc::PaintOpBuffer* BeginWriteAccess(
+      scoped_refptr<SharedContextState> context_state,
       int final_msaa_count,
       const SkSurfaceProps& surface_props,
-      const absl::optional<SkColor>& clear_color) override {
+      const absl::optional<SkColor>& clear_color,
+      bool visible) override {
     return raw_draw_backing()->BeginRasterWriteAccess(
-        final_msaa_count, surface_props, clear_color);
+        std::move(context_state), final_msaa_count, surface_props, clear_color,
+        visible);
   }
 
   void EndWriteAccess(base::OnceClosure callback) override {
@@ -198,10 +201,14 @@ void SharedImageBackingRawDraw::ResetPaintOpBuffer() {
     std::move(paint_op_release_callback_).Run();
 }
 
-bool SharedImageBackingRawDraw::CreateBackendTextureAndFlushPaintOps() {
+bool SharedImageBackingRawDraw::CreateBackendTextureAndFlushPaintOps(
+    bool flush) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!backend_texture_.isValid());
   DCHECK(!promise_texture_);
+
+  if (context_state_->context_lost())
+    return false;
 
   auto mipmap = usage() & SHARED_IMAGE_USAGE_MIPMAP ? GrMipMapped::kYes
                                                     : GrMipMapped::kNo;
@@ -221,6 +228,12 @@ bool SharedImageBackingRawDraw::CreateBackendTextureAndFlushPaintOps() {
       context_state_->gr_context(), backend_texture_, surface_origin(),
       final_msaa_count_, sk_color, color_space().ToSkColorSpace(),
       &surface_props_);
+  if (!surface) {
+    DLOG(ERROR) << "SkSurface::MakeFromBackendTexture() failed! SkColorType:"
+                << sk_color;
+    DestroyBackendTexture();
+    return false;
+  }
 
   if (clear_color_)
     surface->getCanvas()->clear(*clear_color_);
@@ -230,10 +243,16 @@ bool SharedImageBackingRawDraw::CreateBackendTextureAndFlushPaintOps() {
     paint_op_buffer_->Playback(surface->getCanvas(), playback_params);
   }
 
-  // Insert resolveMSAA in surface's command stream, so if the surface,
-  // otherwise gr_context->flush() call will not resolve to the wrapped
-  // backend_texture_.
-  surface->resolveMSAA();
+  if (flush) {
+    surface->flush();
+  } else {
+    // For a MSAA SkSurface, if gr_context->flush() is called, all draws on the
+    // SkSurface will be flush into a temp MSAA buffer, but the it will not
+    // resolved the temp MSAA buffer to the wrapped backend texture.
+    // So call resolveMSAA() to insert resolve op in surface's command stream,
+    // and when gr_context->flush() is call, the surface will be resolved.
+    surface->resolveMSAA();
+  }
 
   return true;
 }
@@ -249,9 +268,11 @@ void SharedImageBackingRawDraw::DestroyBackendTexture() {
 }
 
 cc::PaintOpBuffer* SharedImageBackingRawDraw::BeginRasterWriteAccess(
+    scoped_refptr<SharedContextState> context_state,
     int final_msaa_count,
     const SkSurfaceProps& surface_props,
-    const absl::optional<SkColor>& clear_color) {
+    const absl::optional<SkColor>& clear_color,
+    bool visible) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   AutoLock auto_lock(this);
   if (read_count_) {
@@ -273,9 +294,13 @@ cc::PaintOpBuffer* SharedImageBackingRawDraw::BeginRasterWriteAccess(
   if (!paint_op_buffer_)
     paint_op_buffer_ = sk_make_sp<cc::PaintOpBuffer>();
 
+  DCHECK(!context_state_ || context_state_ == context_state);
+  context_state_ = std::move(context_state);
+
   final_msaa_count_ = final_msaa_count;
   surface_props_ = surface_props;
   clear_color_ = clear_color;
+  visible_ = visible;
 
   return paint_op_buffer_.get();
 }
@@ -286,11 +311,26 @@ void SharedImageBackingRawDraw::EndRasterWriteAccess(
   AutoLock auto_lock(this);
   DCHECK_EQ(read_count_, 0);
   DCHECK(is_write_);
+  DCHECK(!paint_op_release_callback_);
 
   is_write_ = false;
 
+  // If |paint_op_buffer_| contains SaveLayerOps, it usually means a SVG image
+  // is drawn. For some complex SVG re-rasterizing is expensive, it causes
+  // janky scrolling for some page which SVG images are heavily used.
+  // Workaround the problem by return nullptr here, and then SkiaRenderer will
+  // fallback to using |backing_texture_|.
+  // TODO(crbug.com/1292068): only cache raster results for the SaveLayerOp
+  // covered area.
+  if (visible_ && paint_op_buffer_->has_save_layer_ops()) {
+    // If the raster task priority is high, we will execute paint ops
+    // immediately.
+    CreateBackendTextureAndFlushPaintOps(/*flush=*/true);
+    if (callback)
+      std::move(callback).Run();
+  }
+
   if (callback) {
-    DCHECK(!paint_op_release_callback_);
     paint_op_release_callback_ = std::move(callback);
   }
 }
@@ -335,7 +375,8 @@ cc::PaintOpBuffer* SharedImageBackingRawDraw::BeginRasterReadAccess(
 sk_sp<SkPromiseImageTexture> SharedImageBackingRawDraw::BeginSkiaReadAccess() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   AutoLock auto_lock(this);
-  if (!backend_texture_.isValid() && !CreateBackendTextureAndFlushPaintOps())
+  if (!backend_texture_.isValid() &&
+      !CreateBackendTextureAndFlushPaintOps(/*flush=*/false))
     return nullptr;
 
   DCHECK(promise_texture_);

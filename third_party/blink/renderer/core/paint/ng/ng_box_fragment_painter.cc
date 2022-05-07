@@ -691,6 +691,9 @@ void NGBoxFragmentPainter::PaintBlockFlowContents(
   const LayoutObject* layout_object = fragment.GetLayoutObject();
   DCHECK(fragment.IsInlineFormattingContext());
 
+  if (layout_object && layout_object->IsShapingDeferred())
+    return;
+
   // When the layout-tree gets into a bad state, we can end up trying to paint
   // a fragment with inline children, without a paint fragment. See:
   // http://crbug.com/1022545
@@ -2306,11 +2309,6 @@ bool NGBoxFragmentPainter::HitTestChildren(
   }
   // Check descendants of this fragment because floats may be in the
   // |NGFragmentItems| of the descendants.
-  if (hit_test.action == kHitTestFloat &&
-      box_fragment_.HasFloatingDescendantsForPaint()) {
-    return HitTestFloatingChildren(hit_test, box_fragment_, accumulated_offset);
-  }
-
   if (hit_test.action == kHitTestFloat) {
     return box_fragment_.HasFloatingDescendantsForPaint() &&
            HitTestFloatingChildren(hit_test, box_fragment_, accumulated_offset);
@@ -2410,7 +2408,7 @@ bool NGBoxFragmentPainter::ShouldHitTestCulledInlineAncestors(
     // inline, e.g. <span>a<div>b</div></span>.
     return false;
   }
-  return !item.IsBlockInInline();
+  return true;
 }
 
 bool NGBoxFragmentPainter::HitTestItemsChildren(

@@ -11,9 +11,7 @@
 #include "ash/services/secure_channel/secure_channel_disconnector.h"
 #include "base/containers/flat_set.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Test SecureChannelDisconnector implementation.
 class FakeSecureChannelDisconnector : public SecureChannelDisconnector {
@@ -40,13 +38,6 @@ class FakeSecureChannelDisconnector : public SecureChannelDisconnector {
   base::flat_set<std::unique_ptr<SecureChannel>> handled_channels_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash::secure_channel {
-using ::chromeos::secure_channel::FakeSecureChannelDisconnector;
-}
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_SECURE_CHANNEL_DISCONNECTOR_H_

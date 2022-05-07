@@ -487,6 +487,11 @@ id<GREYMatcher> TabGridIncognitoTabsPanelButton();
 // the tab grid.
 id<GREYMatcher> TabGridOtherDevicesPanelButton();
 
+// Returns a matcher that matches tab grid normal mode page control - The
+// PageControl panel always exist only on the tab grid normal mode, So this can
+// be used to validate that the tab grid normal mode is active.
+id<GREYMatcher> TabGridNormalModePageControl();
+
 // Returns a matcher for the tab grid background.
 id<GREYMatcher> TabGridBackground();
 
@@ -630,6 +635,20 @@ id<GREYMatcher> TabGridEditSelectAllButton();
 
 // Returns a matcher for the button to share tabs.
 id<GREYMatcher> TabGridEditShareButton();
+
+#pragma mark - Tab Grid Search Mode
+
+// Returns a matcher for the button to enter the tab grid search mode.
+id<GREYMatcher> TabGridSearchTabsButton();
+
+// Returns a matcher for the tab grid search bar text field.
+id<GREYMatcher> TabGridSearchBar();
+
+// Returns a matcher for the tab grid search cancel button.
+id<GREYMatcher> TabGridSearchCancelButton();
+
+// Returns a matcher for the tab grid search mode toolbar.
+id<GREYMatcher> TabGridSearchModeToolbar();
 
 }  // namespace chrome_test_util
 

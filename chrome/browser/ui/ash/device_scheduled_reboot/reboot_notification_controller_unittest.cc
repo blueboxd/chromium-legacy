@@ -27,6 +27,8 @@ constexpr char kKioskEmailId[] = "test-kiosk@example.com";
 constexpr char kKioskGaiaId[] = "6789";
 constexpr char kPendingRebootNotificationId[] =
     "ash.device_scheduled_reboot_pending_notification";
+constexpr char kPostRebootNotificationId[] =
+    "ash.device_scheduled_reboot_post_reboot_notification";
 const base::Time::Exploded kRebootTime2022Feb2At1520 = {
     2022,  // year
     2,     // month
@@ -47,6 +49,13 @@ const base::Time::Exploded kRebootTime2023May15At1115 = {
     0,     // second
     0      // millisecond
 };
+
+class ClickCounter {
+ public:
+  void ButtonClickCallback() { ++clicks; }
+  int clicks = 0;
+  base::WeakPtrFactory<ClickCounter> weak_ptr_factory_{this};
+};
 }  // namespace
 
 class RebootNotificationControllerTest : public testing::Test {
@@ -62,9 +71,13 @@ class RebootNotificationControllerTest : public testing::Test {
   }
 
  protected:
-  absl::optional<Notification> GetNotification() const {
+  absl::optional<Notification> GetPendingRebootNotification() const {
     return display_service_tester_->GetNotification(
         kPendingRebootNotificationId);
+  }
+
+  absl::optional<Notification> GetPostRebootNotification() const {
+    return display_service_tester_->GetNotification(kPostRebootNotificationId);
   }
 
   int GetTransientNotificationCount() const {
@@ -107,6 +120,7 @@ class RebootNotificationControllerTest : public testing::Test {
   ash::FakeChromeUserManager* fake_user_manager_ = nullptr;
   std::unique_ptr<user_manager::ScopedUserManager> scoped_user_manager_;
   std::unique_ptr<NotificationDisplayServiceTester> display_service_tester_;
+  RebootNotificationController notification_controller_;
 };
 
 TEST_F(RebootNotificationControllerTest, UserSessionShowsNotification) {
@@ -116,20 +130,27 @@ TEST_F(RebootNotificationControllerTest, UserSessionShowsNotification) {
   ASSERT_TRUE(
       base::Time::FromLocalExploded(kRebootTime2022Feb2At1520, &reboot_time));
 
-  // User is not logged in. Don't show notification.
-  RebootNotificationController notification_controller;
-  notification_controller.MaybeShowPendingRebootNotification(
+  // User is not logged in. Don't show notifications.
+  notification_controller_.MaybeShowPendingRebootNotification(
       reboot_time, base::NullCallback());
-  EXPECT_EQ(absl::nullopt, GetNotification());
+  EXPECT_EQ(absl::nullopt, GetPendingRebootNotification());
+  notification_controller_.MaybeShowPostRebootNotification();
+  EXPECT_EQ(absl::nullopt, GetPostRebootNotification());
 
-  // Log in user and show notification.
+  // Log in user and show pending reboot notification.
   LoginFakeUser(account_id);
-  notification_controller.MaybeShowPendingRebootNotification(
+  notification_controller_.MaybeShowPendingRebootNotification(
       reboot_time, base::NullCallback());
-  EXPECT_NE(absl::nullopt, GetNotification());
+  EXPECT_NE(absl::nullopt, GetPendingRebootNotification());
   EXPECT_EQ(
-      GetNotification()->message(),
+      GetPendingRebootNotification()->message(),
       u"Your administrator will restart your device at 3:20 PM on Feb 2, 2022");
+
+  // Show post reboot notification.
+  notification_controller_.MaybeShowPostRebootNotification();
+  EXPECT_NE(absl::nullopt, GetPostRebootNotification());
+  EXPECT_EQ(GetPostRebootNotification()->title(),
+            u"Your administrator restarted your device");
 }
 
 TEST_F(RebootNotificationControllerTest, UserSessionNotificationChanged) {
@@ -142,27 +163,26 @@ TEST_F(RebootNotificationControllerTest, UserSessionNotificationChanged) {
       base::Time::FromLocalExploded(kRebootTime2023May15At1115, &reboot_time2));
 
   // User is not logged in. Don't show notification.
-  RebootNotificationController notification_controller;
-  notification_controller.MaybeShowPendingRebootNotification(
+  notification_controller_.MaybeShowPendingRebootNotification(
       reboot_time1, base::NullCallback());
-  EXPECT_EQ(absl::nullopt, GetNotification());
+  EXPECT_EQ(absl::nullopt, GetPendingRebootNotification());
   EXPECT_EQ(GetTransientNotificationCount(), 0);
 
   // Log in user and show notification.
   LoginFakeUser(account_id);
-  notification_controller.MaybeShowPendingRebootNotification(
+  notification_controller_.MaybeShowPendingRebootNotification(
       reboot_time1, base::NullCallback());
-  EXPECT_NE(absl::nullopt, GetNotification());
+  EXPECT_NE(absl::nullopt, GetPendingRebootNotification());
   EXPECT_EQ(
-      GetNotification()->message(),
+      GetPendingRebootNotification()->message(),
       u"Your administrator will restart your device at 3:20 PM on Feb 2, 2022");
   EXPECT_EQ(GetTransientNotificationCount(), 1);
 
   // Change reboot time. Close old notification and show new one.
-  notification_controller.MaybeShowPendingRebootNotification(
+  notification_controller_.MaybeShowPendingRebootNotification(
       reboot_time2, base::NullCallback());
-  EXPECT_NE(absl::nullopt, GetNotification());
-  EXPECT_EQ(GetNotification()->message(),
+  EXPECT_NE(absl::nullopt, GetPendingRebootNotification());
+  EXPECT_EQ(GetPendingRebootNotification()->message(),
             u"Your administrator will restart your device at 11:15 AM on May "
             u"15, 2023");
   EXPECT_EQ(GetTransientNotificationCount(), 1);
@@ -176,19 +196,26 @@ TEST_F(RebootNotificationControllerTest, ManagedGuestSessionShowsNotification) {
       base::Time::FromLocalExploded(kRebootTime2022Feb2At1520, &reboot_time));
 
   // User is not logged in. Don't show notification.
-  RebootNotificationController notification_controller;
-  notification_controller.MaybeShowPendingRebootNotification(
+  notification_controller_.MaybeShowPendingRebootNotification(
       reboot_time, base::NullCallback());
-  EXPECT_EQ(absl::nullopt, GetNotification());
+  EXPECT_EQ(absl::nullopt, GetPendingRebootNotification());
+  notification_controller_.MaybeShowPostRebootNotification();
+  EXPECT_EQ(absl::nullopt, GetPostRebootNotification());
 
   // Log in user and show notification.
   LoginFakeUser(account_id);
-  notification_controller.MaybeShowPendingRebootNotification(
+  notification_controller_.MaybeShowPendingRebootNotification(
       reboot_time, base::NullCallback());
-  EXPECT_NE(absl::nullopt, GetNotification());
+  EXPECT_NE(absl::nullopt, GetPendingRebootNotification());
   EXPECT_EQ(
-      GetNotification()->message(),
+      GetPendingRebootNotification()->message(),
       u"Your administrator will restart your device at 3:20 PM on Feb 2, 2022");
+
+  // Show post reboot notification.
+  notification_controller_.MaybeShowPostRebootNotification();
+  EXPECT_NE(absl::nullopt, GetPostRebootNotification());
+  EXPECT_EQ(GetPostRebootNotification()->title(),
+            u"Your administrator restarted your device");
 }
 
 TEST_F(RebootNotificationControllerTest, KioskSessionDoesNotShowNotification) {
@@ -199,15 +226,60 @@ TEST_F(RebootNotificationControllerTest, KioskSessionDoesNotShowNotification) {
   ASSERT_TRUE(
       base::Time::FromUTCExploded(kRebootTime2022Feb2At1520, &reboot_time));
 
-  // User is not logged in. Don't show notification.
-  RebootNotificationController notification_controller;
-  notification_controller.MaybeShowPendingRebootNotification(
+  // User is not logged in. Don't show notifications.
+  notification_controller_.MaybeShowPendingRebootNotification(
       reboot_time, base::NullCallback());
-  EXPECT_EQ(absl::nullopt, GetNotification());
+  EXPECT_EQ(absl::nullopt, GetPendingRebootNotification());
+  notification_controller_.MaybeShowPostRebootNotification();
+  EXPECT_EQ(absl::nullopt, GetPostRebootNotification());
 
-  // Start kiosk session. Don't show notification.
+  // Start kiosk session. Don't show notifications.
   LoginFakeUser(account_id);
-  notification_controller.MaybeShowPendingRebootNotification(
+  notification_controller_.MaybeShowPendingRebootNotification(
       reboot_time, base::NullCallback());
-  EXPECT_EQ(absl::nullopt, GetNotification());
+  EXPECT_EQ(absl::nullopt, GetPendingRebootNotification());
+  notification_controller_.MaybeShowPostRebootNotification();
+  EXPECT_EQ(absl::nullopt, GetPostRebootNotification());
+}
+
+TEST_F(RebootNotificationControllerTest, CloseNotification) {
+  AccountId account_id = AccountId::FromUserEmailGaiaId(kEmailId, kGaiaId);
+  CreateFakeUser(account_id);
+  base::Time reboot_time;
+  ASSERT_TRUE(
+      base::Time::FromLocalExploded(kRebootTime2022Feb2At1520, &reboot_time));
+
+  // Log in user and show notification.
+  LoginFakeUser(account_id);
+  notification_controller_.MaybeShowPendingRebootNotification(
+      reboot_time, base::NullCallback());
+  EXPECT_NE(absl::nullopt, GetPendingRebootNotification());
+  EXPECT_EQ(GetTransientNotificationCount(), 1);
+
+  // Explicitly close notification.
+  notification_controller_.CloseRebootNotification();
+  EXPECT_EQ(absl::nullopt, GetPendingRebootNotification());
+  EXPECT_EQ(GetTransientNotificationCount(), 0);
+}
+
+TEST_F(RebootNotificationControllerTest, HandleNotificationClick) {
+  AccountId account_id = AccountId::FromUserEmailGaiaId(kEmailId, kGaiaId);
+  CreateFakeUser(account_id);
+  base::Time reboot_time;
+  ASSERT_TRUE(
+      base::Time::FromLocalExploded(kRebootTime2022Feb2At1520, &reboot_time));
+
+  // Log in user and show notification.
+  LoginFakeUser(account_id);
+  ClickCounter counter;
+  notification_controller_.MaybeShowPendingRebootNotification(
+      reboot_time, base::BindRepeating(&ClickCounter::ButtonClickCallback,
+                                       counter.weak_ptr_factory_.GetWeakPtr()));
+  auto notification = GetPendingRebootNotification().value();
+  // Click on notification and do nothing.
+  notification.delegate()->Click(absl::nullopt, absl::nullopt);
+  EXPECT_EQ(counter.clicks, 0);
+  // Click on notification button and run callback.
+  notification.delegate()->Click(0, absl::nullopt);
+  EXPECT_EQ(counter.clicks, 1);
 }

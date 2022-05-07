@@ -4,6 +4,7 @@
 
 #import "ios/chrome/app/application_delegate/metrics_mediator.h"
 
+#include <mach/mach.h>
 #include <sys/sysctl.h>
 
 #include "base/bind.h"
@@ -105,7 +106,7 @@ base::TimeDelta TimeDeltaSinceAppLaunchFromProcess() {
   struct kinfo_proc info;
   size_t length = sizeof(struct kinfo_proc);
   int mib[4] = {CTL_KERN, KERN_PROC, KERN_PROC_PID, (int)getpid()};
-  const int kr = sysctl(mib, base::size(mib), &info, &length, nullptr, 0);
+  const int kr = sysctl(mib, std::size(mib), &info, &length, nullptr, 0);
   DCHECK_EQ(KERN_SUCCESS, kr);
 
   const struct timeval time = info.kp_proc.p_starttime;

@@ -6,8 +6,6 @@
 #define CHROME_BROWSER_ASH_MULTIDEVICE_SETUP_OOBE_COMPLETION_TRACKER_FACTORY_H_
 
 #include "base/memory/singleton.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/services/multidevice_setup/public/cpp/oobe_completion_tracker.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class KeyedService;
@@ -15,6 +13,8 @@ class Profile;
 
 namespace ash {
 namespace multidevice_setup {
+
+class OobeCompletionTracker;
 
 // Owns OobeCompletionTracker instances and associates them with Profiles.
 class OobeCompletionTrackerFactory : public BrowserContextKeyedServiceFactory {

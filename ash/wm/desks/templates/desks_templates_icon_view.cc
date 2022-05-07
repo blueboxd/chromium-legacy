@@ -21,6 +21,7 @@
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "url/gurl.h"
@@ -37,10 +38,15 @@ constexpr int kCountLabelInsetSize = 4;
 // resizing.
 constexpr int kAppIdImageSize = 64;
 
-// Return the formatted string for `count`. If `count` is <=9, the string will
-// be "+<count>". If `count` is >9, the string will be "9+".
-std::u16string GetCountString(int count) {
-  return base::UTF8ToUTF16(count > 9 ? "9+" : base::StringPrintf("+%i", count));
+// Return the formatted string for `count`. If `count` is <=99, the string will
+// be "+<count>". If `count` is >99, the string will be "+99". If `show_plus` is
+// false, the string will be just the count.
+std::u16string GetCountString(int count, bool show_plus) {
+  if (show_plus) {
+    return base::UTF8ToUTF16(count > 99 ? "+99"
+                                        : base::StringPrintf("+%i", count));
+  }
+  return base::NumberToString16(count);
 }
 
 gfx::ImageSkia CreateResizedImageToIconSize(const gfx::ImageSkia& icon) {
@@ -58,15 +64,24 @@ DesksTemplatesIconView::~DesksTemplatesIconView() = default;
 
 void DesksTemplatesIconView::SetIconIdentifierAndCount(
     const std::string& icon_identifier,
-    int count) {
+    const std::string& app_id,
+    int count,
+    bool show_plus) {
   icon_identifier_ = icon_identifier;
   count_ = count;
+
+  // The count to be displayed on the label. If `icon_identifier_` is empty, it
+  // is an overflow icon and should display the number of hidden icons.
+  // Otherwise, it should display `count_` - 1 to avoid overcounting the
+  // displayed icon.
+  const int visible_count =
+      count_ > 1 && !icon_identifier_.empty() ? count_ - 1 : count_;
 
   if (count_ > 1 || icon_identifier_.empty()) {
     DCHECK(!count_label_);
     count_label_ = AddChildView(
         views::Builder<views::Label>()
-            .SetText(GetCountString(count_))
+            .SetText(GetCountString(visible_count, show_plus))
             .SetBorder(views::CreateEmptyBorder(gfx::Insets(
                 kCountLabelInsetSize, kCountLabelInsetSize,
                 kCountLabelInsetSize,
@@ -96,10 +111,22 @@ void DesksTemplatesIconView::SetIconIdentifierAndCount(
       delegate->MaybeRetrieveIconForSpecialIdentifier(
           icon_identifier_, static_cast<DesksTemplatesIconContainer*>(parent())
                                 ->incognito_window_color_provider());
+
+  icon_view_->GetViewAccessibility().OverrideRole(ax::mojom::Role::kImage);
+
+  // PWAs (e.g. Messages) should use icon identifier as they share the same app
+  // id as Chrome and would return short name for app id as "Chromium" (see
+  // https://crbug.com/1281394). This is unlike Chrome browser apps which should
+  // use `app_id` as their icon identifiers have been stripped to avoid
+  // duplicate favicons (see https://crbug.com/1281391).
   if (chrome_icon.has_value()) {
     icon_view_->SetImage(CreateResizedImageToIconSize(chrome_icon.value()));
+    icon_view_->GetViewAccessibility().OverrideName(
+        delegate->GetAppShortName(app_id));
     return;
   }
+  icon_view_->GetViewAccessibility().OverrideName(
+      delegate->GetAppShortName(icon_identifier_));
 
   // It's not a special value so `icon_identifier_` is either a favicon or an
   // app id. If `icon_identifier_` is not a valid url then it's an app id.
@@ -122,11 +149,13 @@ void DesksTemplatesIconView::SetIconIdentifierAndCount(
 void DesksTemplatesIconView::UpdateCount(int count) {
   count_ = count;
   DCHECK(count_label_);
-  count_label_->SetText(GetCountString(count_));
+  count_label_->SetText(GetCountString(count_, /*show_plus=*/true));
 }
 
 gfx::Size DesksTemplatesIconView::CalculatePreferredSize() const {
-  return gfx::Size(count_ > 1 && icon_view_ ? 2 * kIconSize : kIconSize,
+  return gfx::Size(count_ > 1 && icon_view_ && count_label_
+                       ? count_label_->bounds().width() + kIconSize
+                       : kIconSize,
                    kIconSize);
 }
 
@@ -136,7 +165,8 @@ void DesksTemplatesIconView::Layout() {
 
   if (count_label_) {
     count_label_->SetBoundsRect(
-        gfx::Rect(icon_view_ ? kIconSize : 0, 0, kIconSize, kIconSize));
+        gfx::Rect(icon_view_ ? kIconSize : 0, 0,
+                  count_ > 9 ? 1.25 * kIconSize : kIconSize, kIconSize));
   }
 }
 

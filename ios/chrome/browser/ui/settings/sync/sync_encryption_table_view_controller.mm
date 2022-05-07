@@ -156,8 +156,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UIView* footerView = [super tableView:tableView
                  viewForFooterInSection:section];
   if (SectionIdentifierEncryption ==
-          [self.tableViewModel sectionIdentifierForSection:section] &&
-      [self.tableViewModel footerForSection:section]) {
+          [self.tableViewModel sectionIdentifierForSectionIndex:section] &&
+      [self.tableViewModel footerForSectionIndex:section]) {
     TableViewLinkHeaderFooterView* footer =
         base::mac::ObjCCastStrict<TableViewLinkHeaderFooterView>(footerView);
     footer.delegate = self;

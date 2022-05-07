@@ -32,6 +32,7 @@
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/drag_drop/drag_drop_controller.h"
+#include "url/gurl.h"
 #endif
 
 namespace exo {
@@ -40,45 +41,9 @@ namespace {
 using ::testing::_;
 using ::testing::Property;
 
-constexpr char kText[] = "test";
 constexpr char kTextMimeType[] = "text/plain";
 
 }  // namespace
-
-class TestDataSourceDelegate : public DataSourceDelegate {
- public:
-  // DataSourceDelegate:
-  void OnDataSourceDestroying(DataSource* source) override {}
-
-  void OnTarget(const absl::optional<std::string>& mime_type) override {}
-
-  void OnSend(const std::string& mime_type, base::ScopedFD fd) override {
-    if (data_map_.empty()) {
-      base::WriteFileDescriptor(fd.get(), kText);
-    } else {
-      base::WriteFileDescriptor(fd.get(), data_map_[mime_type]);
-    }
-  }
-
-  void OnCancelled() override {}
-
-  void OnDndDropPerformed() override {}
-
-  void OnDndFinished() override {}
-
-  void OnAction(DndAction dnd_action) override {}
-
-  bool CanAcceptDataEventsForSurface(Surface* surface) const override {
-    return true;
-  }
-
-  void SetData(const std::string& mime_type, std::vector<uint8_t> data) {
-    data_map_[mime_type] = std::move(data);
-  }
-
- private:
-  base::flat_map<std::string, std::vector<uint8_t>> data_map_;
-};
 
 class DragDropOperationTest : public test::ExoTestBase,
                               public aura::client::DragDropClientObserver {
@@ -103,8 +68,10 @@ class DragDropOperationTest : public test::ExoTestBase,
   // aura::client::DragDropClientObserver:
   void OnDragStarted() override {
     drag_start_count_++;
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, std::move(drag_blocked_callback_));
+    if (!drag_blocked_callback_.is_null()) {
+      base::SequencedTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE, std::move(drag_blocked_callback_));
+    }
   }
 
   void OnDragCompleted(const ui::DropTargetEvent& event) override {
@@ -348,7 +315,7 @@ TEST_F(DragDropOperationTest, DragDropCheckSourceFromLacros) {
 
   // Encoded source DataTransferEndpoint.
   const std::string kEncodedTestDte =
-      R"({"endpoint_type":"url","url_origin":"https://www.google.com"})";
+      R"({"endpoint_type":"url","url":"https://www.google.com"})";
   const std::string kDteMimeType = "chromium/x-data-transfer-endpoint";
 
   data_source->Offer(kDteMimeType);
@@ -364,15 +331,15 @@ TEST_F(DragDropOperationTest, DragDropCheckSourceFromLacros) {
   auto icon_surface = std::make_unique<Surface>();
   icon_surface->Attach(buffer.get());
 
-  // Expect the encoded endpoint from Lacros to be correctly decoded.
-  EXPECT_CALL(
-      *dlp_controller,
-      DropIfAllowed(
-          Pointee(AllOf(Property(&ui::DataTransferEndpoint::IsUrlType, true),
-                        Property(&ui::DataTransferEndpoint::GetOrigin,
-                                 Pointee(Property(&url::Origin::Serialize,
-                                                  "https://www.google.com"))))),
-          _, _))
+  // Expect the encoded endpoint from Lacros to be correctly parsed.
+  EXPECT_CALL(*dlp_controller,
+              DropIfAllowed(
+                  Pointee(AllOf(
+                      Property(&ui::DataTransferEndpoint::IsUrlType, true),
+                      Property(&ui::DataTransferEndpoint::GetURL,
+                               Pointee(Property(&GURL::spec,
+                                                "https://www.google.com/"))))),
+                  _, _))
       .WillOnce([&](const ui::DataTransferEndpoint* data_src,
                     const ui::DataTransferEndpoint* data_dst,
                     base::OnceClosure drop_cb) { std::move(drop_cb).Run(); });
@@ -415,7 +382,7 @@ TEST_F(DragDropOperationTest, DragDropCheckSourceFromNonLacros) {
 
   // Encoded source DataTransferEndpoint.
   const std::string kEncodedTestDte =
-      R"({"endpoint_type":"url","url_origin":"https://www.google.com"})";
+      R"({"endpoint_type":"url","url":"https://www.google.com"})";
   const std::string kDteMimeType = "chromium/x-data-transfer-endpoint";
 
   data_source->Offer(kDteMimeType);
@@ -465,6 +432,7 @@ TEST_F(DragDropOperationTest, DragDropCheckSourceFromNonLacros) {
 
   ::testing::Mock::VerifyAndClearExpectations(dlp_controller.get());
 }
+
 #endif
 
 }  // namespace exo

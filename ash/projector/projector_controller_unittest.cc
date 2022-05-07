@@ -225,16 +225,17 @@ TEST_F(ProjectorControllerTest, OnSpeechRecognitionAvailabilityChanged) {
   EXPECT_FALSE(controller_->IsEligible());
 }
 
-TEST_F(ProjectorControllerTest, OnLaserPointerPressed) {
-  // Verify that |OnLaserPointerPressed| in |ProjectorUiController| is called.
-  EXPECT_CALL(*mock_ui_controller_, OnLaserPointerPressed());
-  controller_->OnLaserPointerPressed();
-}
-
 TEST_F(ProjectorControllerTest, OnMarkerPressed) {
   // Verify that |OnMarkerPressed| in |ProjectorUiController| is called.
   EXPECT_CALL(*mock_ui_controller_, OnMarkerPressed());
   controller_->OnMarkerPressed();
+}
+
+TEST_F(ProjectorControllerTest, SetAnnotatorTool) {
+  AnnotatorTool tool;
+  // Verify that |SetAnnotatorTool| in |ProjectorUiController| is called.
+  EXPECT_CALL(*mock_ui_controller_, SetAnnotatorTool(tool));
+  controller_->SetAnnotatorTool(tool);
 }
 
 TEST_F(ProjectorControllerTest, RecordingStarted) {
@@ -375,6 +376,18 @@ TEST_F(ProjectorControllerTest, TranscriptsTest) {
                   base::File::FLAG_OPEN | base::File::FLAG_READ);
   EXPECT_GT(file.GetLength(), 400);
   EXPECT_LT(file.GetLength(), 500);
+}
+
+TEST_F(ProjectorControllerTest, OnDriveMountFailed) {
+  ON_CALL(mock_client_, IsDriveFsMountFailed())
+      .WillByDefault(testing::Return(true));
+  ON_CALL(mock_client_, IsDriveFsMounted())
+      .WillByDefault(testing::Return(false));
+
+  EXPECT_EQ(NewScreencastPrecondition(
+                NewScreencastPreconditionState::kDisabled,
+                {NewScreencastPreconditionReason::kDriveFsMountFailed}),
+            controller_->GetNewScreencastPrecondition());
 }
 
 }  // namespace ash

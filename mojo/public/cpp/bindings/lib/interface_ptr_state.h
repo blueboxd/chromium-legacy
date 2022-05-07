@@ -26,7 +26,6 @@
 #include "mojo/public/cpp/bindings/connection_error_callback.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_id.h"
-#include "mojo/public/cpp/bindings/interface_ptr_info.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
 #include "mojo/public/cpp/bindings/lib/pending_remote_state.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
@@ -90,6 +89,7 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
   void Swap(InterfacePtrStateBase* other);
   void Bind(PendingRemoteState* remote_state,
             scoped_refptr<base::SequencedTaskRunner> task_runner);
+  PendingRemoteState Unbind();
 
   ScopedMessagePipeHandle PassMessagePipe() {
     endpoint_client_.reset();
@@ -101,7 +101,9 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) InterfacePtrStateBase {
       bool has_sync_methods,
       bool has_uninterruptable_methods,
       std::unique_ptr<MessageReceiver> payload_validator,
-      const char* interface_name);
+      const char* interface_name,
+      MessageToStableIPCHashCallback ipc_hash_callback,
+      MessageToMethodNameCallback method_name_callback);
 
  private:
   void OnQueryVersion(base::OnceCallback<void(uint32_t)> callback,
@@ -195,9 +197,9 @@ class InterfacePtrState : public InterfacePtrStateBase {
 
   // After this method is called, the object is in an invalid state and
   // shouldn't be reused.
-  InterfacePtrInfo<Interface> PassInterface() {
+  PendingRemoteState Unbind() {
     proxy_.reset();
-    return InterfacePtrInfo<Interface>(PassMessagePipe(), version());
+    return InterfacePtrStateBase::Unbind();
   }
 
   void set_connection_error_handler(base::OnceClosure error_handler) {
@@ -255,7 +257,8 @@ class InterfacePtrState : public InterfacePtrStateBase {
             Interface::PassesAssociatedKinds_, Interface::HasSyncMethods_,
             Interface::HasUninterruptableMethods_,
             std::make_unique<typename Interface::ResponseValidator_>(),
-            Interface::Name_)) {
+            Interface::Name_, Interface::MessageToStableIPCHash_,
+            Interface::MessageToMethodName_)) {
       proxy_ = std::make_unique<Proxy>(endpoint_client());
     }
   }

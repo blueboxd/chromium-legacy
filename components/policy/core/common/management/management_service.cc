@@ -4,15 +4,18 @@
 
 #include "components/policy/core/common/management/management_service.h"
 
-#include "base/containers/flat_map.h"
+#include <tuple>
+
+#include "base/barrier_closure.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/sequenced_task_runner_handle.h"
-#include "base/threading/thread_restrictions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/features.h"
+#include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/persistent_pref_store.h"
+#include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
 namespace policy {
@@ -30,11 +33,13 @@ EnterpriseManagementAuthority ManagementStatusProvider::GetAuthority() {
     return EnterpriseManagementAuthority::NONE;
 
   if (absl::holds_alternative<PrefService*>(cache_) &&
+      absl::get<PrefService*>(cache_) &&
       absl::get<PrefService*>(cache_)->HasPrefPath(cache_pref_name_))
     return static_cast<EnterpriseManagementAuthority>(
         absl::get<PrefService*>(cache_)->GetInteger(cache_pref_name_));
 
-  if (absl::holds_alternative<scoped_refptr<PersistentPrefStore>>(cache_)) {
+  if (absl::holds_alternative<scoped_refptr<PersistentPrefStore>>(cache_) &&
+      absl::holds_alternative<scoped_refptr<PersistentPrefStore>>(cache_)) {
     const base::Value* value = nullptr;
     if (absl::get<scoped_refptr<PersistentPrefStore>>(cache_)->GetValue(
             cache_pref_name_, &value) &&
@@ -48,14 +53,12 @@ bool ManagementStatusProvider::RequiresCache() const {
   return !cache_pref_name_.empty();
 }
 
-void ManagementStatusProvider::RefreshCache() {
+void ManagementStatusProvider::UpdateCache(
+    EnterpriseManagementAuthority authority) {
   DCHECK(absl::holds_alternative<PrefService*>(cache_))
       << "A PrefService is required to refresh the management "
          "status provider cache.";
-  if (!base::FeatureList::IsEnabled(features::kEnableCachedManagementStatus))
-    return;
-  absl::get<PrefService*>(cache_)->SetInteger(cache_pref_name_,
-                                              FetchAuthority());
+  absl::get<PrefService*>(cache_)->SetInteger(cache_pref_name_, authority);
 }
 
 void ManagementStatusProvider::UsePrefStoreAsCache(
@@ -75,9 +78,12 @@ ManagementService::ManagementService(
     std::vector<std::unique_ptr<ManagementStatusProvider>> providers)
     : management_status_providers_(std::move(providers)) {}
 
-ManagementService::~ManagementService() = default;
+ManagementService::~ManagementService() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
 
 void ManagementService::UsePrefServiceAsCache(PrefService* prefs) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (const auto& provider : management_status_providers_) {
     if (provider->RequiresCache())
       provider->UsePrefServiceAsCache(prefs);
@@ -86,6 +92,7 @@ void ManagementService::UsePrefServiceAsCache(PrefService* prefs) {
 
 void ManagementService::UsePrefStoreAsCache(
     scoped_refptr<PersistentPrefStore> pref_store) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (const auto& provider : management_status_providers_) {
     if (provider->RequiresCache())
       provider->UsePrefStoreAsCache(pref_store);
@@ -93,39 +100,35 @@ void ManagementService::UsePrefStoreAsCache(
 }
 
 void ManagementService::RefreshCache(CacheRefreshCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!base::FeatureList::IsEnabled(features::kEnableCachedManagementStatus))
     return;
 
-  base::SequencedTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&ManagementService::RefreshCacheImpl,
-                     weak_ptr_factory.GetWeakPtr(), std::move(callback)));
-}
-
-void ManagementService::RefreshCacheImpl(CacheRefreshCallback callback) {
   ManagementAuthorityTrustworthiness previous =
       GetManagementAuthorityTrustworthiness();
   for (const auto& provider : management_status_providers_) {
     if (provider->RequiresCache())
-      provider->RefreshCache();
-  }
+      provider->UpdateCache(provider->FetchAuthority());
 
   ManagementAuthorityTrustworthiness next =
       GetManagementAuthorityTrustworthiness();
   base::UmaHistogramBoolean(
-      "Enterprise.ManagementAuthorityThrustworthyness.Cache.ValueChange",
+      "Enterprise.ManagementAuthorityTrustworthiness.Cache.ValueChange",
       previous != next);
   if (callback)
     std::move(callback).Run(previous, next);
+  }
 }
 
 bool ManagementService::HasManagementAuthority(
     EnterpriseManagementAuthority authority) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetManagementAuthorities() & authority;
 }
 
 ManagementAuthorityTrustworthiness
 ManagementService::GetManagementAuthorityTrustworthiness() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (HasManagementAuthority(EnterpriseManagementAuthority::CLOUD_DOMAIN))
     return ManagementAuthorityTrustworthiness::FULLY_TRUSTED;
   if (HasManagementAuthority(EnterpriseManagementAuthority::CLOUD))
@@ -138,6 +141,7 @@ ManagementService::GetManagementAuthorityTrustworthiness() {
 }
 
 int ManagementService::GetManagementAuthorities() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (management_authorities_for_testing_)
     return management_authorities_for_testing_.value();
 
@@ -149,25 +153,40 @@ int ManagementService::GetManagementAuthorities() {
 
 void ManagementService::SetManagementStatusProviderForTesting(
     std::vector<std::unique_ptr<ManagementStatusProvider>> providers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   SetManagementStatusProvider(std::move(providers));
 }
 
 void ManagementService::SetManagementAuthoritiesForTesting(
     int management_authorities) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   management_authorities_for_testing_ = management_authorities;
 }
 
 void ManagementService::ClearManagementAuthoritiesForTesting() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   management_authorities_for_testing_.reset();
 }
 
+// static
+void ManagementService::RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
+#if BUILDFLAG(IS_WIN)
+  registry->RegisterIntegerPref(policy_prefs::kAzureActiveDirectoryManagement,
+                                NONE);
+#elif BUILDFLAG(IS_MAC)
+  registry->RegisterIntegerPref(policy_prefs::kEnterpriseMDMManagementMac, 0);
+#endif
+}
+
 bool ManagementService::IsManaged() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return GetManagementAuthorityTrustworthiness() >
          ManagementAuthorityTrustworthiness::NONE;
 }
 
 void ManagementService::SetManagementStatusProvider(
     std::vector<std::unique_ptr<ManagementStatusProvider>> providers) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   management_status_providers_ = std::move(providers);
 }
 

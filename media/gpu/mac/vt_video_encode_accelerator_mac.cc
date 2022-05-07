@@ -16,11 +16,12 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "media/base/bitrate.h"
 #include "media/base/mac/video_frame_mac.h"
+#include "media/base/media_log.h"
 
 // This is a min version of macOS where we want to support SVC encoding via
 // EnableLowLatencyRateControl flag. The flag is actually supported since 11.3,
 // but there we see frame drops even with ample bitrate budget. Excessive frame
-// drops were fixed in 12.1.
+// drops were fixed in 12.0.1.
 #define LOW_LATENCY_FLAG_AVAILABLE_VER 12.0.1
 
 namespace media {
@@ -157,7 +158,8 @@ VTVideoEncodeAccelerator::GetSupportedProfiles() {
 }
 
 bool VTVideoEncodeAccelerator::Initialize(const Config& config,
-                                          Client* client) {
+                                          Client* client,
+                                          std::unique_ptr<MediaLog> media_log) {
   DVLOG(3) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DCHECK(client);
@@ -167,14 +169,15 @@ bool VTVideoEncodeAccelerator::Initialize(const Config& config,
 
   if (config.input_format != PIXEL_FORMAT_I420 &&
       config.input_format != PIXEL_FORMAT_NV12) {
-    DLOG(ERROR) << "Input format not supported= "
-                << VideoPixelFormatToString(config.input_format);
+    MEDIA_LOG(ERROR, media_log.get())
+        << "Input format not supported= "
+        << VideoPixelFormatToString(config.input_format);
     return false;
   }
   if (std::find(std::begin(kSupportedProfiles), std::end(kSupportedProfiles),
                 config.output_profile) == std::end(kSupportedProfiles)) {
-    DLOG(ERROR) << "Output profile not supported= "
-                << GetProfileName(config.output_profile);
+    MEDIA_LOG(ERROR, media_log.get()) << "Output profile not supported= "
+                                      << GetProfileName(config.output_profile);
     return false;
   }
   h264_profile_ = config.output_profile;
@@ -194,12 +197,13 @@ bool VTVideoEncodeAccelerator::Initialize(const Config& config,
     num_temporal_layers_ = config.spatial_layers.front().num_of_temporal_layers;
 
   if (num_temporal_layers_ > 2) {
-    DLOG(ERROR) << "Unsupported number of SVC temporal layers.";
+    MEDIA_LOG(ERROR, media_log.get())
+        << "Unsupported number of SVC temporal layers.";
     return false;
   }
 
   if (!ResetCompressionSession()) {
-    DLOG(ERROR) << "Failed creating compression session.";
+    MEDIA_LOG(ERROR, media_log.get()) << "Failed creating compression session.";
     return false;
   }
 
@@ -371,8 +375,8 @@ void VTVideoEncodeAccelerator::RequestEncodingParametersChangeTask(
 
   switch (bitrate.mode()) {
     case Bitrate::Mode::kConstant:
-      if (bitrate.target() != static_cast<uint32_t>(target_bitrate_)) {
-        target_bitrate_ = bitrate.target();
+      if (bitrate.target_bps() != static_cast<uint32_t>(target_bitrate_)) {
+        target_bitrate_ = bitrate.target_bps();
         bitrate_adjuster_.SetTargetBitrateBps(target_bitrate_);
         SetAdjustedConstantBitrate(bitrate_adjuster_.GetAdjustedBitrateBps());
       }
@@ -413,10 +417,11 @@ void VTVideoEncodeAccelerator::SetVariableBitrate(const Bitrate& bitrate) {
       compression_session_);
   [[maybe_unused]] bool rv =
       session_property_setter.Set(kVTCompressionPropertyKey_AverageBitRate,
-                                  static_cast<int32_t>(bitrate.target()));
-  rv &= session_property_setter.Set(kVTCompressionPropertyKey_DataRateLimits,
-                                    video_toolbox::ArrayWithIntegerAndFloat(
-                                        bitrate.peak() / kBitsPerByte, 1.0f));
+                                  static_cast<int32_t>(bitrate.target_bps()));
+  rv &=
+      session_property_setter.Set(kVTCompressionPropertyKey_DataRateLimits,
+                                  video_toolbox::ArrayWithIntegerAndFloat(
+                                      bitrate.peak_bps() / kBitsPerByte, 1.0f));
   DLOG_IF(ERROR, !rv)
       << "Couldn't change bitrate parameters of encode session.";
 }

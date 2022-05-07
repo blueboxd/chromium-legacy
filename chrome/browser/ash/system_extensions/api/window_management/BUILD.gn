@@ -2,16 +2,22 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/config/chromeos/ui_mode.gni")
+
+assert(is_chromeos_ash)
+
 source_set("window_management") {
   sources = [
     "window_management_impl.cc",
     "window_management_impl.h",
   ]
   deps = [
+    "//ash",
     "//chrome/browser/profiles:profile",
     "//components/services/app_service/public/cpp:instance_update",
     "//components/services/app_service/public/mojom",
     "//third_party/blink/public/mojom:mojom_platform",
+    "//ui/aura",
     "//ui/views",
     "//ui/webui",
   ]

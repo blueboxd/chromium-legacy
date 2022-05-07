@@ -82,6 +82,13 @@ def fyi_mac_builder(*, name, **kwargs):
     kwargs.setdefault("os", os.MAC_DEFAULT)
     return ci.builder(name = name, **kwargs)
 
+def _fyi_gpu_windows_builder(*, name, **kwargs):
+    kwargs.setdefault("execution_timeout", ci.DEFAULT_EXECUTION_TIMEOUT)
+    kwargs.setdefault("builderless", True)
+    kwargs.setdefault("cores", 8)
+    kwargs.setdefault("os", os.WINDOWS_ANY)
+    return ci.builder(name = name, **kwargs)
+
 ci.builder(
     name = "Linux Viz",
     console_view_entry = consoles.console_view_entry(
@@ -127,6 +134,9 @@ ci.builder(
     ),
     notifies = ["chrome-memory-safety"],
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -138,6 +148,9 @@ ci.builder(
     ),
     notifies = ["chrome-memory-safety"],
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -243,6 +256,38 @@ ci.builder(
 )
 
 ci.builder(
+    name = "fuchsia-fyi-x64-reviver",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = ["fuchsia_x64"],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = "fuchsia",
+        ),
+        build_gs_bucket = "chromium-fuchsia-archive",
+    ),
+    console_view_entry = [
+        consoles.console_view_entry(
+            category = "fuchsia|x64",
+            short_name = "rev",
+        ),
+        consoles.console_view_entry(
+            branch_selector = branches.MAIN,
+            console_view = "sheriff.fuchsia",
+            category = "fyi",
+            short_name = "rev",
+        ),
+    ],
+    notifies = ["cr-fuchsia"],
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.builder(
     name = "fuchsia-fyi-x64-wst",
     console_view_entry = [
         consoles.console_view_entry(
@@ -270,6 +315,15 @@ ci.builder(
 )
 
 ci.builder(
+    name = "lacros-amd64-generic-rel-skylab-fyi",
+    console_view_entry = consoles.console_view_entry(
+        category = "lacros",
+        short_name = "lsf",
+    ),
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.builder(
     name = "linux-annotator-rel",
     console_view_entry = consoles.console_view_entry(
         category = "network|traffic|annotations",
@@ -280,6 +334,19 @@ ci.builder(
     goma_backend = None,
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
+)
+
+ci.builder(
+    name = "linux-chromeos-annotator-rel",
+    builderless = True,
+    branch_selector = branches.STANDARD_MILESTONE,
+    console_view_entry = consoles.console_view_entry(
+        category = "release",
+        short_name = "rel",
+    ),
+    execution_timeout = 3 * time.hour,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_enable_ats = True,
 )
 
 ci.builder(
@@ -341,15 +408,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "linux-blink-heap-concurrent-marking-tsan-rel",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|blink",
-        short_name = "CM",
-    ),
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.builder(
     name = "linux-blink-heap-verification",
     console_view_entry = consoles.console_view_entry(
         category = "linux|blink",
@@ -363,16 +421,6 @@ ci.builder(
 )
 
 ci.builder(
-    name = "linux-blink-v8-oilpan",
-    console_view_entry = consoles.console_view_entry(
-        category = "linux|blink",
-        short_name = "VO",
-    ),
-    notifies = ["linux-blink-fyi-bots"],
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
-)
-
-ci.builder(
     name = "linux-blink-v8-sandbox-future-dbg",
     console_view_entry = consoles.console_view_entry(
         category = "linux|blink",
@@ -380,6 +428,9 @@ ci.builder(
     ),
     notifies = ["v8-sandbox-fyi-bots"],
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -390,6 +441,9 @@ ci.builder(
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     schedule = "with 12h interval",
     triggered_by = [],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -398,6 +452,27 @@ ci.builder(
         category = "linux",
     ),
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.builder(
+    name = "mac-fieldtrial-rel",
+    builderless = False,
+    console_view_entry = consoles.console_view_entry(
+        category = "mac",
+    ),
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+    ),
+    cores = None,
+    os = os.MAC_DEFAULT,
 )
 
 ci.builder(
@@ -443,6 +518,9 @@ ci.builder(
     ),
     notifies = ["chrome-memory-safety"],
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -451,6 +529,9 @@ ci.builder(
         category = "linux",
     ),
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -459,8 +540,10 @@ ci.builder(
         category = "linux",
     ),
     experimental = True,
-    goma_backend = goma.backend.RBE_PROD,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -469,8 +552,10 @@ ci.builder(
         category = "linux",
     ),
     experimental = True,
-    goma_backend = goma.backend.RBE_PROD,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -479,8 +564,10 @@ ci.builder(
         category = "linux",
     ),
     experimental = True,
-    goma_backend = goma.backend.RBE_PROD,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 # This is launching & collecting entirely isolated tests.
@@ -524,6 +611,9 @@ ci.builder(
     ),
     notifies = ["headless-owners"],
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -596,6 +686,9 @@ ci.builder(
         short_name = "lnx",
     ),
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -624,6 +717,21 @@ ci.builder(
 )
 
 ci.builder(
+    name = "Comparison Android (reclient)",
+    console_view_entry = consoles.console_view_entry(
+        category = "android",
+        short_name = "cmp",
+    ),
+    goma_jobs = 250,
+    executable = "recipe:reclient_goma_comparison",
+    execution_timeout = 10 * time.hour,
+    reclient_cache_silo = "Comparison Android - cache siloed",
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = 250,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.builder(
     name = "Comparison Linux (reclient)",
     console_view_entry = consoles.console_view_entry(
         category = "linux",
@@ -636,6 +744,22 @@ ci.builder(
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = 250,
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+)
+
+ci.builder(
+    name = "Comparison Windows (8 cores) (reclient)",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win",
+        short_name = "re",
+    ),
+    cores = 8,
+    goma_jobs = 80,
+    executable = "recipe:reclient_goma_comparison",
+    reclient_cache_silo = "Comparison Windows 8 cores - cache siloed",
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = 80,
+    os = os.WINDOWS_DEFAULT,
 )
 
 ci.builder(
@@ -653,6 +777,22 @@ ci.builder(
     reclient_instance = rbe_instance.DEFAULT,
     reclient_jobs = 250,
     os = os.WINDOWS_DEFAULT,
+)
+
+ci.builder(
+    name = "Comparison Simple Chrome (reclient)",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "cros x64",
+        short_name = "cmp",
+    ),
+    goma_jobs = 250,
+    executable = "recipe:reclient_goma_comparison",
+    execution_timeout = 10 * time.hour,
+    reclient_cache_silo = "Comparison Simple Chrome - cache siloed",
+    reclient_instance = rbe_instance.DEFAULT,
+    reclient_jobs = 250,
+    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
 )
 
 ci.builder(
@@ -687,6 +827,299 @@ ci.builder(
     reclient_instance = rbe_instance.DEFAULT,
 )
 # End - Reclient migration, phase 2, block 1 shadow builders
+
+_fyi_gpu_windows_builder(
+    name = "GPU FYI Win x64 Builder (reclient shadow)",
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chrome_internal",
+                "no_kaleidoscope",
+                "enable_reclient",
+            ],
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Windows|Builder|Release",
+        short_name = "x64",
+    ),
+)
+
+_fyi_gpu_windows_builder(
+    name = "GPU FYI Win x64 Builder (dbg) (reclient shadow)",
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chrome_internal",
+                "no_kaleidoscope",
+                "enable_reclient",
+            ],
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Windows|Builder|Debug",
+        short_name = "x64",
+    ),
+)
+
+_fyi_gpu_windows_builder(
+    name = "GPU FYI XR Win x64 Builder (reclient shadow)",
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chrome_internal",
+                "no_kaleidoscope",
+                "enable_reclient",
+            ],
+        ),
+        # This causes the builder to upload isolates to a location where
+        # Pinpoint can access them in addition to the usual isolate
+        # server. This is necessary because "Win10 FYI x64 Release XR
+        # perf (NVIDIA)", which is a child of this builder, uploads perf
+        # results, and Pinpoint may trigger additional builds on this
+        # builder during a bisect.
+        perf_isolate_upload = True,
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Windows|Builder|XR",
+        short_name = "x64",
+    ),
+)
+
+_fyi_gpu_windows_builder(
+    name = "GPU FYI Win x64 DX12 Vulkan Builder (reclient shadow)",
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chrome_internal",
+                "no_kaleidoscope",
+                "enable_reclient",
+            ],
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Windows|Builder|dx12vk",
+        short_name = "rel",
+    ),
+)
+
+_fyi_gpu_windows_builder(
+    name = "GPU FYI Win x64 DX12 Vulkan Builder (dbg) (reclient shadow)",
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chrome_internal",
+                "no_kaleidoscope",
+                "enable_reclient",
+            ],
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Windows|Builder|dx12vk",
+        short_name = "dbg",
+    ),
+)
+
+_fyi_gpu_windows_builder(
+    name = "GPU Win x64 Builder (dbg) (reclient shadow)",
+    builder_spec = builder_config.builder_spec(
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = ["mb"],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+        ),
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "enable_reclient",
+            ],
+        ),
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "Windows",
+    ),
+)
+
+ci.builder(
+    name = "Win ASan Release (reclient shadow)",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win asan",
+        short_name = "rel",
+    ),
+    os = os.WINDOWS_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = 80,
+    reclient_instance = rbe_instance.DEFAULT,
+)
+
+ci.builder(
+    name = "Win ASan Release Media (reclient shadow)",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win asan",
+        short_name = "med",
+    ),
+    os = os.WINDOWS_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = 80,
+    reclient_instance = rbe_instance.DEFAULT,
+)
+
+ci.builder(
+    name = "Win x64 Builder (dbg) (goma cache silo)",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "goma_enable_cache_silo",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+        ),
+    ),
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|builder",
+        short_name = "64",
+    ),
+    cores = 32,
+    os = os.WINDOWS_ANY,
+)
+
+ci.builder(
+    name = "Win x64 Builder (dbg) (reclient shadow)",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "debug|builder",
+        short_name = "64",
+    ),
+    cores = 32,
+    os = os.WINDOWS_ANY,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
+)
+
+ci.builder(
+    name = "win-archive-dbg (goma cache silo)",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "goma_enable_cache_silo",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+        ),
+    ),
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win|dbg",
+        short_name = "64",
+    ),
+    cores = 32,
+    os = os.WINDOWS_DEFAULT,
+)
+
+ci.builder(
+    name = "win-archive-dbg (reclient shadow)",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win|dbg",
+        short_name = "64",
+    ),
+    cores = 32,
+    os = os.WINDOWS_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
+)
+
+ci.builder(
+    name = "win-archive-rel (goma cache silo)",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "goma_enable_cache_silo",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win|rel",
+        short_name = "64",
+    ),
+    cores = 32,
+    os = os.WINDOWS_DEFAULT,
+)
+
+ci.builder(
+    name = "win-archive-rel (reclient shadow)",
+    builderless = True,
+    console_view_entry = consoles.console_view_entry(
+        category = "win|rel",
+        short_name = "64",
+    ),
+    cores = 32,
+    os = os.WINDOWS_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.DEFAULT,
+    reclient_instance = rbe_instance.DEFAULT,
+)
 
 ci.builder(
     name = "Win x64 Builder (reclient)",
@@ -891,6 +1324,9 @@ fyi_coverage_builder(
     schedule = "triggered",
     triggered_by = [],
     use_java_coverage = True,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 fyi_coverage_builder(
@@ -902,6 +1338,9 @@ fyi_coverage_builder(
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 fyi_coverage_builder(
@@ -973,6 +1412,7 @@ fyi_coverage_builder(
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
+    export_coverage_to_zoss = True,
     triggered_by = [],
 )
 

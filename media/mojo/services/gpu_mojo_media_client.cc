@@ -10,10 +10,10 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/task/thread_pool.h"
+#include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/audio/audio_features.h"
-#include "media/audio/audio_opus_encoder.h"
 #include "media/base/audio_decoder.h"
 #include "media/base/cdm_factory.h"
 #include "media/base/media_switches.h"
@@ -25,6 +25,9 @@
 #include "media/gpu/gpu_video_decode_accelerator_helpers.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "media/gpu/ipc/service/vda_video_decoder.h"
+#if BUILDFLAG(IS_WIN)
+#include "media/gpu/windows/mf_audio_encoder.h"
+#endif  // IS_WIN
 #include "media/mojo/mojom/video_decoder.mojom.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -117,16 +120,18 @@ std::unique_ptr<AudioDecoder> GpuMojoMediaClient::CreateAudioDecoder(
 
 std::unique_ptr<AudioEncoder> GpuMojoMediaClient::CreateAudioEncoder(
     scoped_refptr<base::SequencedTaskRunner> task_runner) {
+#if BUILDFLAG(IS_WIN)
   if (!base::FeatureList::IsEnabled(features::kPlatformAudioEncoder))
     return nullptr;
-  // TODO(crbug.com/1259883) Right now Opus encoder is all we have, later on
-  // we'll create a real platform encoder here.
-  auto opus_encoder = std::make_unique<AudioOpusEncoder>();
-  auto encoding_runner = base::ThreadPool::CreateSequencedTaskRunner(
-      {base::TaskPriority::USER_BLOCKING});
-  return std::make_unique<OffloadingAudioEncoder>(std::move(opus_encoder),
+
+  auto encoding_runner = base::ThreadPool::CreateCOMSTATaskRunner({});
+  auto mf_encoder = std::make_unique<MFAudioEncoder>(encoding_runner);
+  return std::make_unique<OffloadingAudioEncoder>(std::move(mf_encoder),
                                                   std::move(encoding_runner),
                                                   std::move(task_runner));
+#else
+  return nullptr;
+#endif  // IS_WIN
 }
 
 VideoDecoderType GpuMojoMediaClient::GetDecoderImplementationType() {

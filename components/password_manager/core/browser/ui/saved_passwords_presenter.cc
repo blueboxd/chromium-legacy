@@ -11,6 +11,7 @@
 
 #include "base/check.h"
 #include "base/containers/cxx20_erase.h"
+#include "base/observer_list.h"
 #include "base/ranges/algorithm.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_list_sorter.h"
@@ -20,7 +21,9 @@
 
 namespace {
 using password_manager::metrics_util::IsPasswordChanged;
+using password_manager::metrics_util::IsPasswordNoteChanged;
 using password_manager::metrics_util::IsUsernameChanged;
+using PasswordNote = password_manager::PasswordNote;
 using Store = password_manager::PasswordForm::Store;
 using SavedPasswordsView =
     password_manager::SavedPasswordsPresenter::SavedPasswordsView;
@@ -48,7 +51,6 @@ constexpr bool ShareSameStore(const password_manager::PasswordForm& lhs,
                               const password_manager::PasswordForm& rhs) {
   return (lhs.in_store & rhs.in_store) != Store::kNotSet;
 }
-
 }  // namespace
 
 namespace password_manager {
@@ -112,9 +114,9 @@ bool SavedPasswordsPresenter::AddPassword(const PasswordForm& form) {
   // exist, the unblocklist operation is no-op.
   auto form_digest = PasswordFormDigest(PasswordForm::Scheme::kHtml,
                                         form.signon_realm, form.url);
-  profile_store_->Unblocklist(form_digest, /*completion=*/base::DoNothing());
+  profile_store_->Unblocklist(form_digest);
   if (account_store_)
-    account_store_->Unblocklist(form_digest, /*completion=*/base::DoNothing());
+    account_store_->Unblocklist(form_digest);
 
   GetStoreFor(form).AddLogin(form);
   metrics_util::LogUserInteractionsWhenAddingCredentialFromSettings(
@@ -162,11 +164,14 @@ bool SavedPasswordsPresenter::EditSavedPasswords(
 bool SavedPasswordsPresenter::EditSavedPasswords(
     const SavedPasswordsView forms,
     const std::u16string& new_username,
-    const std::u16string& new_password) {
+    const std::u16string& new_password,
+    const std::u16string& new_note) {
   if (forms.empty())
     return false;
   IsUsernameChanged username_changed(new_username != forms[0].username_value);
   IsPasswordChanged password_changed(new_password != forms[0].password_value);
+  IsPasswordNoteChanged note_changed =
+      IsPasswordNoteChanged(forms[0].note.value != new_note);
 
   if (new_password.empty())
     return false;
@@ -177,7 +182,7 @@ bool SavedPasswordsPresenter::EditSavedPasswords(
   // An updated username implies a change in the primary key, thus we need to
   // make sure to call the right API. Update every entry in the equivalence
   // class.
-  if (username_changed || password_changed) {
+  if (username_changed || password_changed || note_changed) {
     for (const auto& old_form : forms) {
       PasswordStoreInterface& store = GetStoreFor(old_form);
       PasswordForm new_form = old_form;
@@ -187,6 +192,14 @@ bool SavedPasswordsPresenter::EditSavedPasswords(
 
       if (password_changed)
         new_form.date_password_modified = base::Time::Now();
+
+      if (note_changed) {
+        // if the old note is empty, the note is just created.
+        if (old_form.note.value.empty()) {
+          new_form.note.date_created = base::Time::Now();
+        }
+        new_form.note.value = new_note;
+      }
 
       if (username_changed) {
         // Changing username requires deleting old form and adding new one. So

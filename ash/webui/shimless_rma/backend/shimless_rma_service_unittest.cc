@@ -6,15 +6,19 @@
 
 #include <map>
 #include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
 #include "ash/webui/shimless_rma/backend/shimless_rma_delegate.h"
+#include "ash/webui/shimless_rma/mojom/shimless_rma.mojom.h"
+#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/rmad/fake_rmad_client.h"
 #include "chromeos/dbus/rmad/rmad_client.h"
+#include "chromeos/dbus/update_engine/update_engine.pb.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_state_test_helper.h"
 #include "chromeos/services/network_config/public/cpp/cros_network_config_test_helper.h"
@@ -26,8 +30,11 @@ namespace ash {
 namespace shimless_rma {
 
 namespace {
+
 using chromeos::DBusMethodCallback;
 using chromeos::FakeRmadClient;
+
+constexpr char kDefaultWifiGuid[] = "WiFi";
 
 class FakeRmadClientForTest : public FakeRmadClient {
  public:
@@ -121,6 +128,9 @@ class ShimlessRmaServiceTest : public testing::Test {
         state->set_allocated_device_destination(
             new rmad::DeviceDestinationState());
         break;
+      case rmad::RmadState::kWipeSelection:
+        state->set_allocated_wipe_selection(new rmad::WipeSelectionState());
+        break;
       case rmad::RmadState::kWpDisableMethod:
         state->set_allocated_wp_disable_method(
             new rmad::WriteProtectDisableMethodState());
@@ -195,10 +205,12 @@ class ShimlessRmaServiceTest : public testing::Test {
     return google::protobuf::down_cast<FakeRmadClientForTest*>(rmad_client_);
   }
 
-  void SetupWiFiNetwork() {
+  void SetupWiFiNetwork(const std::string& guid) {
     network_state_helper().ConfigureService(
-        R"({"GUID": "wifi1_guid", "Type": "wifi", "State": "online",
-            "Strength": 50, "AutoConnect": true, "WiFi.HiddenSSID": false})");
+        base::StringPrintf(R"({"GUID": "%s", "Type": "wifi", "State": "online",
+            "Strength": 50, "AutoConnect": true, "WiFi.HiddenSSID": false,
+            "Profile": "user_profile_path",})",
+                           guid.c_str()));
 
     base::RunLoop().RunUntilIdle();
   }
@@ -223,7 +235,7 @@ class ShimlessRmaServiceTest : public testing::Test {
 };
 
 TEST_F(ShimlessRmaServiceTest, AbortAndGoBackStatePassedCorrectly) {
-  SetupWiFiNetwork();
+  SetupWiFiNetwork(kDefaultWifiGuid);
   const std::vector<rmad::GetStateReply> fake_states = {
       CreateStateReply(rmad::RmadState::kDeviceDestination, rmad::RMAD_ERROR_OK,
                        /*can_abort*/ true, /*can_go_back*/ false),
@@ -269,7 +281,7 @@ TEST_F(ShimlessRmaServiceTest, AbortAndGoBackStatePassedCorrectly) {
 }
 
 TEST_F(ShimlessRmaServiceTest, WelcomeHasNetworkConnection) {
-  SetupWiFiNetwork();
+  SetupWiFiNetwork(kDefaultWifiGuid);
   const std::vector<rmad::GetStateReply> fake_states = {
       CreateStateReply(rmad::RmadState::kWelcome, rmad::RMAD_ERROR_OK),
       CreateStateReply(rmad::RmadState::kComponentsRepair,
@@ -356,7 +368,7 @@ TEST_F(ShimlessRmaServiceTest, ChooseNetworkHasNetworkConnection) {
         EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
       }));
   run_loop.RunUntilIdle();
-  SetupWiFiNetwork();
+  SetupWiFiNetwork(kDefaultWifiGuid);
 
   // With a WiFi network it should redirect to kUpdateOs
   shimless_rma_provider_->NetworkSelectionComplete(base::BindLambdaForTesting(
@@ -622,6 +634,39 @@ TEST_F(ShimlessRmaServiceTest, SetDifferentOwner) {
       [&](mojom::State state, bool can_cancel, bool can_go_back,
           rmad::RmadErrorCode error) {
         EXPECT_EQ(state, mojom::State::kRestock);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+        run_loop.Quit();
+      }));
+  run_loop.Run();
+}
+
+TEST_F(ShimlessRmaServiceTest, SetWipeDevice) {
+  const std::vector<rmad::GetStateReply> fake_states = {
+      CreateStateReply(rmad::RmadState::kWipeSelection, rmad::RMAD_ERROR_OK),
+      CreateStateReply(rmad::RmadState::kDeviceDestination,
+                       rmad::RMAD_ERROR_OK)};
+  fake_rmad_client_()->SetFakeStateReplies(std::move(fake_states));
+  fake_rmad_client_()->check_state_callback =
+      base::BindRepeating([](const rmad::RmadState& state) {
+        EXPECT_EQ(state.state_case(), rmad::RmadState::kWipeSelection);
+        EXPECT_TRUE(state.wipe_selection().wipe_device());
+      });
+  base::RunLoop run_loop;
+  shimless_rma_provider_->GetCurrentState(base::BindLambdaForTesting(
+      [&](mojom::State state, bool can_cancel, bool can_go_back,
+          rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::State::kChooseWipeDevice);
+        EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
+      }));
+  run_loop.RunUntilIdle();
+
+  const bool expected_wipe_device = true;
+  shimless_rma_provider_->SetWipeDevice(
+      expected_wipe_device,
+      base::BindLambdaForTesting([&](mojom::State state, bool can_cancel,
+                                     bool can_go_back,
+                                     rmad::RmadErrorCode error) {
+        EXPECT_EQ(state, mojom::State::kChooseDestination);
         EXPECT_EQ(error, rmad::RmadErrorCode::RMAD_ERROR_OK);
         run_loop.Quit();
       }));
@@ -2891,13 +2936,23 @@ TEST_F(ShimlessRmaServiceTest, ObserveOverallCalibrationAfterSignal) {
 
 class FakeProvisioningObserver : public mojom::ProvisioningObserver {
  public:
-  void OnProvisioningUpdated(rmad::ProvisionStatus::Status step,
-                             float progress) override {
-    observations.push_back(
-        std::pair<rmad::ProvisionStatus_Status, float>(step, progress));
+  struct Observation {
+    rmad::ProvisionStatus::Status status;
+    float progress;
+    rmad::ProvisionStatus::Error error;
+  };
+
+  void OnProvisioningUpdated(rmad::ProvisionStatus::Status status,
+                             float progress,
+                             rmad::ProvisionStatus::Error error) override {
+    Observation observation;
+    observation.status = status;
+    observation.progress = progress;
+    observation.error = error;
+    observations.push_back(observation);
   }
 
-  std::vector<std::pair<rmad::ProvisionStatus_Status, float>> observations;
+  std::vector<Observation> observations;
   mojo::Receiver<mojom::ProvisioningObserver> receiver{this};
 };
 
@@ -2906,21 +2961,39 @@ TEST_F(ShimlessRmaServiceTest, ObserveProvisioning) {
   shimless_rma_provider_->ObserveProvisioningProgress(
       fake_observer.receiver.BindNewPipeAndPassRemote());
   base::RunLoop run_loop;
+
+  const rmad::ProvisionStatus::Status expected_status =
+      rmad::ProvisionStatus::RMAD_PROVISION_STATUS_IN_PROGRESS;
+  const float expected_progress = 0.75;
+  const rmad::ProvisionStatus::Error expected_error =
+      rmad::ProvisionStatus::RMAD_PROVISION_ERROR_GENERATE_SECRET;
   fake_rmad_client_()->TriggerProvisioningProgressObservation(
-      rmad::ProvisionStatus::RMAD_PROVISION_STATUS_IN_PROGRESS, 0.75);
+      expected_status, expected_progress, expected_error);
   run_loop.RunUntilIdle();
   EXPECT_EQ(fake_observer.observations.size(), 1UL);
+  EXPECT_EQ(fake_observer.observations[0].status, expected_status);
+  EXPECT_EQ(fake_observer.observations[0].progress, expected_progress);
+  EXPECT_EQ(fake_observer.observations[0].error, expected_error);
 }
 
 TEST_F(ShimlessRmaServiceTest, ObserveProvisioningAfterSignal) {
-  fake_rmad_client_()->TriggerProvisioningProgressObservation(
-      rmad::ProvisionStatus::RMAD_PROVISION_STATUS_IN_PROGRESS, 0.75);
   FakeProvisioningObserver fake_observer;
   shimless_rma_provider_->ObserveProvisioningProgress(
       fake_observer.receiver.BindNewPipeAndPassRemote());
   base::RunLoop run_loop;
+
+  const rmad::ProvisionStatus::Status expected_status =
+      rmad::ProvisionStatus::RMAD_PROVISION_STATUS_IN_PROGRESS;
+  const float expected_progress = 0.75;
+  const rmad::ProvisionStatus::Error expected_error =
+      rmad::ProvisionStatus::RMAD_PROVISION_ERROR_WP_ENABLED;
+  fake_rmad_client_()->TriggerProvisioningProgressObservation(
+      expected_status, expected_progress, expected_error);
   run_loop.RunUntilIdle();
   EXPECT_EQ(fake_observer.observations.size(), 1UL);
+  EXPECT_EQ(fake_observer.observations[0].status, expected_status);
+  EXPECT_EQ(fake_observer.observations[0].progress, expected_progress);
+  EXPECT_EQ(fake_observer.observations[0].error, expected_error);
 }
 
 class FakeHardwareWriteProtectionStateObserver
@@ -3034,13 +3107,16 @@ class FakeFinalizationObserver : public mojom::FinalizationObserver {
   struct Observation {
     rmad::FinalizeStatus::Status status;
     float progress;
+    rmad::FinalizeStatus::Error error;
   };
 
   void OnFinalizationUpdated(rmad::FinalizeStatus::Status status,
-                             float progress) override {
+                             float progress,
+                             rmad::FinalizeStatus::Error error) override {
     Observation observation;
     observation.status = status;
     observation.progress = progress;
+    observation.error = error;
     observations.push_back(observation);
   }
 
@@ -3053,27 +3129,39 @@ TEST_F(ShimlessRmaServiceTest, ObserveFinalization) {
   shimless_rma_provider_->ObserveFinalizationStatus(
       fake_observer.receiver.BindNewPipeAndPassRemote());
   base::RunLoop run_loop;
+
+  const rmad::FinalizeStatus::Status expected_status =
+      rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_IN_PROGRESS;
+  const float expected_progress = 0.5;
+  const rmad::FinalizeStatus::Error expected_error =
+      rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CANNOT_ENABLE_HWWP;
   fake_rmad_client_()->TriggerFinalizationProgressObservation(
-      rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_IN_PROGRESS, 0.5);
+      expected_status, expected_progress, expected_error);
   run_loop.RunUntilIdle();
   EXPECT_EQ(fake_observer.observations.size(), 1UL);
-  EXPECT_EQ(fake_observer.observations[0].status,
-            rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_IN_PROGRESS);
-  EXPECT_EQ(fake_observer.observations[0].progress, 0.5f);
+  EXPECT_EQ(fake_observer.observations[0].status, expected_status);
+  EXPECT_EQ(fake_observer.observations[0].progress, expected_progress);
+  EXPECT_EQ(fake_observer.observations[0].error, expected_error);
 }
 
 TEST_F(ShimlessRmaServiceTest, ObserveFinalizationAfterSignal) {
-  fake_rmad_client_()->TriggerFinalizationProgressObservation(
-      rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_FAILED_BLOCKING, 0.75);
   FakeFinalizationObserver fake_observer;
   shimless_rma_provider_->ObserveFinalizationStatus(
       fake_observer.receiver.BindNewPipeAndPassRemote());
   base::RunLoop run_loop;
+
+  const rmad::FinalizeStatus::Status expected_status =
+      rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_FAILED_BLOCKING;
+  const float expected_progress = 0.75;
+  const rmad::FinalizeStatus::Error expected_error =
+      rmad::FinalizeStatus::RMAD_FINALIZE_ERROR_CR50;
+  fake_rmad_client_()->TriggerFinalizationProgressObservation(
+      expected_status, expected_progress, expected_error);
   run_loop.RunUntilIdle();
   EXPECT_EQ(fake_observer.observations.size(), 1UL);
-  EXPECT_EQ(fake_observer.observations[0].status,
-            rmad::FinalizeStatus::RMAD_FINALIZE_STATUS_FAILED_BLOCKING);
-  EXPECT_EQ(fake_observer.observations[0].progress, 0.75f);
+  EXPECT_EQ(fake_observer.observations[0].status, expected_status);
+  EXPECT_EQ(fake_observer.observations[0].progress, expected_progress);
+  EXPECT_EQ(fake_observer.observations[0].error, expected_error);
 }
 
 TEST_F(ShimlessRmaServiceTest, GetWriteProtectManuallyDisabledInstructions) {
@@ -3115,6 +3203,46 @@ TEST_F(ShimlessRmaServiceTest, GetWriteProtectManuallyDisabledInstructions) {
             EXPECT_EQ(qrcode->data.size(), expected_qrcode_data.size());
             EXPECT_EQ(qrcode->data, expected_qrcode_data);
           }));
+}
+
+class FakeOsUpdateObserver : public mojom::OsUpdateObserver {
+ public:
+  struct Observation {
+    update_engine::Operation operation;
+    float progress;
+    update_engine::ErrorCode error_code;
+  };
+
+  void OnOsUpdateProgressUpdated(update_engine::Operation operation,
+                                 float progress,
+                                 update_engine::ErrorCode error_code) override {
+    Observation observation;
+    observation.operation = operation;
+    observation.progress = progress;
+    observation.error_code = error_code;
+    observations.push_back(observation);
+  }
+
+  std::vector<Observation> observations;
+  mojo::Receiver<mojom::OsUpdateObserver> receiver{this};
+};
+
+TEST_F(ShimlessRmaServiceTest, OsUpdateProgress) {
+  FakeOsUpdateObserver fake_os_update_observer;
+  const update_engine::Operation operation =
+      update_engine::Operation::DOWNLOADING;
+  const double progress = 50.0;
+  const update_engine::ErrorCode error_code =
+      update_engine::ErrorCode::kSuccess;
+
+  shimless_rma_provider_->ObserveOsUpdateProgress(
+      fake_os_update_observer.receiver.BindNewPipeAndPassRemote());
+  shimless_rma_provider_->OsUpdateProgress(operation, progress, error_code);
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+  EXPECT_EQ(operation, fake_os_update_observer.observations[0].operation);
+  EXPECT_EQ(progress, fake_os_update_observer.observations[0].progress);
+  EXPECT_EQ(error_code, fake_os_update_observer.observations[0].error_code);
 }
 
 }  // namespace shimless_rma

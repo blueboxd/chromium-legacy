@@ -51,6 +51,7 @@
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
+#include "third_party/blink/renderer/core/page/scrolling/fragment_anchor.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 
 namespace blink {
@@ -64,15 +65,15 @@ unsigned AdjustLinkMatchType(EInsideLink inside_link,
   return link_match_type;
 }
 
-ContainerQueryEvaluator* FindContainerQueryEvaluator(
-    const ContainerSelector& selector,
-    const StyleRecalcContext& style_recalc_context) {
-  if (auto* element = ContainerQueryEvaluator::FindContainer(
-          style_recalc_context, selector)) {
-    return element->GetContainerQueryEvaluator();
+unsigned LinkMatchTypeFromInsideLink(EInsideLink inside_link) {
+  switch (inside_link) {
+    case EInsideLink::kNotInsideLink:
+      return CSSSelector::kMatchAll;
+    case EInsideLink::kInsideVisitedLink:
+      return CSSSelector::kMatchVisited;
+    case EInsideLink::kInsideUnvisitedLink:
+      return CSSSelector::kMatchLink;
   }
-
-  return nullptr;
 }
 
 bool EvaluateAndAddContainerQueries(
@@ -81,11 +82,10 @@ bool EvaluateAndAddContainerQueries(
     MatchResult& result) {
   for (const ContainerQuery* current = &container_query; current;
        current = current->Parent()) {
-    auto* evaluator =
-        FindContainerQueryEvaluator(current->Selector(), style_recalc_context);
-
-    if (!evaluator || !evaluator->EvalAndAdd(*current, result))
+    if (!ContainerQueryEvaluator::EvalAndAdd(style_recalc_context, *current,
+                                             result)) {
       return false;
+    }
   }
 
   return true;
@@ -309,6 +309,8 @@ void ElementRuleCollector::CollectMatchingRulesForList(
       continue;
     }
     if (auto* container_query = rule_data->GetContainerQuery()) {
+      result_.SetDependsOnContainerQueries();
+
       // If we are matching pseudo elements like a ::before rule when computing
       // the styles of the originating element, we don't know whether the
       // container will be the originating element or not. There is not enough
@@ -318,8 +320,6 @@ void ElementRuleCollector::CollectMatchingRulesForList(
       // elements when they depend on the originating element.
       if (pseudo_style_request_.pseudo_id != kPseudoIdNone ||
           result.dynamic_pseudo == kPseudoIdNone) {
-        result_.SetDependsOnContainerQueries();
-
         if (!EvaluateAndAddContainerQueries(*container_query,
                                             style_recalc_context_, result_)) {
           rejected++;
@@ -480,6 +480,11 @@ void ElementRuleCollector::CollectMatchingRules(
     CollectMatchingRulesForList(match_request.rule_set->FocusPseudoClassRules(),
                                 match_request, checker);
   }
+  if (SelectorChecker::MatchesSelectorFragmentAnchorPseudoClass(element)) {
+    CollectMatchingRulesForList(
+        match_request.rule_set->SelectorFragmentAnchorRules(), match_request,
+        checker);
+  }
   if (SelectorChecker::MatchesFocusVisiblePseudoClass(element)) {
     CollectMatchingRulesForList(
         match_request.rule_set->FocusVisiblePseudoClassRules(), match_request,
@@ -557,6 +562,15 @@ void ElementRuleCollector::AppendCSSOMWrapperForRule(
   // Agent. In this case, it is safe to create CSSOM wrappers without
   // parentStyleSheets as they will be used only by inspector which will not try
   // to edit them.
+
+  // For :visited/:link rules, the question of whether or not a selector
+  // matches is delayed until cascade-time (see CascadeExpansion), hence such
+  // rules may appear to match from ElementRuleCollector's output. This behavior
+  // is not correct for Inspector purposes, hence we explicitly filter out
+  // rules that don't match the current link state here.
+  if (!(rule_data->LinkMatchType() & LinkMatchTypeFromInsideLink(inside_link_)))
+    return;
+
   CSSRule* css_rule = nullptr;
   StyleRule* rule = rule_data->Rule();
   if (parent_style_sheet)

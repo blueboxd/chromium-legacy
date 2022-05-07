@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
@@ -106,7 +105,7 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
       spdy::Http2HeaderBlock headers,
       bool fin,
       const spdy::SpdyStreamPrecedence& precedence,
-      quic::QuicReferenceCountedPointer<quic::QuicAckListenerInterface>
+      quiche::QuicheReferenceCountedPointer<quic::QuicAckListenerInterface>
           ack_listener) override {
     return WriteHeadersOnHeadersStreamMock(id, headers, fin, precedence,
                                            std::move(ack_listener));
@@ -116,7 +115,7 @@ class MockQuicClientSessionBase : public quic::QuicSpdyClientSessionBase {
                       const spdy::Http2HeaderBlock& headers,
                       bool fin,
                       const spdy::SpdyStreamPrecedence& precedence,
-                      const quic::QuicReferenceCountedPointer<
+                      const quiche::QuicheReferenceCountedPointer<
                           quic::QuicAckListenerInterface>& ack_listener));
   MOCK_METHOD1(OnHeadersHeadOfLineBlocking, void(quic::QuicTime::Delta delta));
 
@@ -283,8 +282,8 @@ class QuicChromiumClientStreamTest
     if (!version_.HasIetfQuicFrames()) {
       return "";
     }
-    quic::QuicBuffer buffer = quic::HttpEncoder::SerializeDataFrameHeader(
-        body_len, quic::SimpleBufferAllocator::Get());
+    quiche::QuicheBuffer buffer = quic::HttpEncoder::SerializeDataFrameHeader(
+        body_len, quiche::SimpleBufferAllocator::Get());
     return std::string(buffer.data(), buffer.size());
   }
 
@@ -334,7 +333,7 @@ TEST_P(QuicChromiumClientStreamTest, Handle) {
   handle_->OnFinRead();
 
   const char kData1[] = "hello world";
-  const size_t kDataLen = base::size(kData1);
+  const size_t kDataLen = std::size(kData1);
 
   // All data written.
   std::string header = ConstructDataHeader(kDataLen);
@@ -750,7 +749,7 @@ TEST_P(QuicChromiumClientStreamTest, ReadAfterTrailersReceivedButNotDelivered) {
 TEST_P(QuicChromiumClientStreamTest, WriteStreamData) {
   testing::InSequence seq;
   const char kData1[] = "hello world";
-  const size_t kDataLen = base::size(kData1);
+  const size_t kDataLen = std::size(kData1);
 
   // All data written.
   if (version_.HasIetfQuicFrames()) {
@@ -770,7 +769,7 @@ TEST_P(QuicChromiumClientStreamTest, WriteStreamData) {
 TEST_P(QuicChromiumClientStreamTest, WriteStreamDataAsync) {
   testing::InSequence seq;
   const char kData1[] = "hello world";
-  const size_t kDataLen = base::size(kData1);
+  const size_t kDataLen = std::size(kData1);
 
   // No data written.
   EXPECT_CALL(session_,
@@ -942,7 +941,7 @@ TEST_P(QuicChromiumClientStreamTest, HeadersAndDataBeforeHandle) {
   base::RunLoop().RunUntilIdle();
 
   // Now explicitly read the data.
-  int data_len = base::size(data) - 1;
+  int data_len = std::size(data) - 1;
   scoped_refptr<IOBuffer> buffer = base::MakeRefCounted<IOBuffer>(data_len + 1);
   ASSERT_EQ(data_len, stream2->Read(buffer.get(), data_len + 1));
   EXPECT_EQ(absl::string_view(data),

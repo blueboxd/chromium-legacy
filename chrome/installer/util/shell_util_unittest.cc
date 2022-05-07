@@ -14,7 +14,6 @@
 #include "base/base_paths.h"
 #include "base/base_paths_win.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -297,6 +296,28 @@ TEST_F(ShellUtilShortcutTest, MoveExistingShortcut) {
                          test_properties_);
   ASSERT_FALSE(base::PathExists(old_shortcut_path));
   ASSERT_FALSE(base::PathExists(old_shortcut_path.DirName()));
+}
+
+// Test the basic mechanism of TranslateShortcutCreationOrUpdateInfo.
+// Other tests that call ShellUtil::CreateOrUpdateShortcut exercise its
+// complete functionality.
+TEST_F(ShellUtilShortcutTest, TranslateShortcutCreateOrUpdateInfo) {
+  ShellUtil::ShortcutLocation location = ShellUtil::SHORTCUT_LOCATION_DESKTOP;
+  test_properties_.set_target(chrome_exe_);
+  ShellUtil::ShortcutOperation operation =
+      ShellUtil::SHELL_SHORTCUT_CREATE_ALWAYS;
+  base::win::ShortcutOperation base_operation;
+  base::win::ShortcutProperties base_properties;
+  base::FilePath base_shortcut_path;
+  bool should_install_shortcut = false;
+  EXPECT_TRUE(ShellUtil::TranslateShortcutCreationOrUpdateInfo(
+      location, test_properties_, operation, base_operation, base_properties,
+      should_install_shortcut, base_shortcut_path));
+  EXPECT_EQ(base_operation, base::win::ShortcutOperation::kCreateAlways);
+  EXPECT_EQ(base_properties.target, chrome_exe_);
+  EXPECT_TRUE(should_install_shortcut);
+  EXPECT_EQ(base_shortcut_path,
+            GetExpectedShortcutPath(location, test_properties_));
 }
 
 TEST_F(ShellUtilShortcutTest, CreateChromeExeShortcutWithDefaultProperties) {
@@ -1096,7 +1117,7 @@ class ShellUtilRegistryTest : public testing::Test {
 
   static const std::set<std::wstring> FileExtensions() {
     std::set<std::wstring> file_extensions;
-    for (size_t i = 0; i < base::size(kTestFileExtensions); ++i)
+    for (size_t i = 0; i < std::size(kTestFileExtensions); ++i)
       file_extensions.insert(kTestFileExtensions[i]);
     return file_extensions;
   }
@@ -1523,7 +1544,7 @@ TEST(ShellUtilTest, GetOldUserSpecificRegistrySuffix) {
   ASSERT_TRUE(base::StartsWith(suffix, L".", base::CompareCase::SENSITIVE));
 
   wchar_t user_name[256];
-  DWORD size = base::size(user_name);
+  DWORD size = std::size(user_name);
   ASSERT_NE(0, ::GetUserName(user_name, &size));
   ASSERT_GE(size, 1U);
   ASSERT_STREQ(user_name, suffix.substr(1).c_str());

@@ -5,12 +5,10 @@
 #ifndef ASH_PUBLIC_CPP_TEST_TEST_DESKS_TEMPLATES_DELEGATE_H_
 #define ASH_PUBLIC_CPP_TEST_TEST_DESKS_TEMPLATES_DELEGATE_H_
 
+#include <vector>
+
 #include "ash/public/cpp/ash_public_export.h"
 #include "ash/public/cpp/desks_templates_delegate.h"
-
-namespace app_restore {
-struct AppLaunchInfo;
-}
 
 namespace aura {
 class Window;
@@ -40,9 +38,15 @@ class ASH_PUBLIC_EXPORT TestDesksTemplatesDelegate
     desk_model_ = desk_model;
   }
 
+  void set_unavailable_apps(
+      const std::vector<std::string>& unavailable_app_ids) {
+    unavailable_app_ids_ = unavailable_app_ids;
+  }
+
   // DesksTemplatesDelegate:
-  std::unique_ptr<app_restore::AppLaunchInfo> GetAppLaunchDataForDeskTemplate(
-      aura::Window* window) const override;
+  void GetAppLaunchDataForDeskTemplate(
+      aura::Window* window,
+      GetAppLaunchDataCallback callback) const override;
   desks_storage::DeskModel* GetDeskModel() override;
   bool IsIncognitoWindow(aura::Window* window) const override;
   absl::optional<gfx::ImageSkia> MaybeRetrieveIconForSpecialIdentifier(
@@ -57,12 +61,16 @@ class ASH_PUBLIC_EXPORT TestDesksTemplatesDelegate
       int desired_icon_size,
       base::OnceCallback<void(const gfx::ImageSkia&)> callback) const override;
   void LaunchAppsFromTemplate(std::unique_ptr<DeskTemplate> desk_template,
+                              base::Time time_launch_started,
                               base::TimeDelta delay) override;
   bool IsWindowSupportedForDeskTemplate(aura::Window* window) const override;
   void OpenFeedbackDialog(const std::string& extra_diagnostics) override;
+  std::string GetAppShortName(const std::string& app_id) override;
+  bool IsAppAvailable(const std::string& app_id) const override;
 
  private:
   desks_storage::DeskModel* desk_model_ = nullptr;
+  std::vector<std::string> unavailable_app_ids_;
 };
 
 }  // namespace ash

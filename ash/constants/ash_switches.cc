@@ -362,10 +362,6 @@ const char kDisableMachineCertRequest[] = "disable-machine-cert-request";
 const char kDisableOOBEChromeVoxHintTimerForTesting[] =
     "disable-oobe-chromevox-hint-timer-for-testing";
 
-// Disables network screen skip check which is based on ethernet connection.
-const char kDisableOOBENetworkScreenSkippingForTesting[] =
-    "disable-oobe-network-screen-skipping-for-testing";
-
 // Disables per-user timezone.
 const char kDisablePerUserTimezone[] = "disable-per-user-timezone";
 
@@ -527,6 +523,10 @@ const char kFingerprintSensorLocation[] = "fingerprint-sensor-location";
 // Passed to Chrome the first time that it's run after the system boots.
 // Not passed on restart after sign out.
 const char kFirstExecAfterBoot[] = "first-exec-after-boot";
+
+// Forces fetching tokens for Cryptohome Recovery.
+const char kForceCryptohomeRecoveryForTesting[] =
+    "force-cryptohome-recovery-for-testing";
 
 // Forces developer tools availability, no matter what values the enterprise
 // policies DeveloperToolsDisabled and DeveloperToolsAvailability are set to.
@@ -935,11 +935,6 @@ bool IsAueReachedForUpdateRequiredForTest() {
 bool IsOOBEChromeVoxHintTimerDisabledForTesting() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       kDisableOOBEChromeVoxHintTimerForTesting);
-}
-
-bool IsOOBENetworkScreenSkippingDisabledForTesting() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      kDisableOOBENetworkScreenSkippingForTesting);
 }
 
 bool IsOOBEChromeVoxHintEnabledForDevMode() {

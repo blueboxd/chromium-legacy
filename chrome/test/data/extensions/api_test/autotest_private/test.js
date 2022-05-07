@@ -1119,6 +1119,30 @@ var defaultTests = [
     });
   },
 
+  function collectLoginEventRecorderData() {
+    chrome.autotestPrivate.startLoginEventRecorderDataCollection(function() {
+      chrome.test.assertNoLastError();
+
+      // Add new event to the login events log and check result.
+      chrome.autotestPrivate.addLoginEventForTesting(function() {
+        chrome.test.assertNoLastError();
+        chrome.autotestPrivate.getLoginEventRecorderLoginEvents(
+            function(data){
+          chrome.test.assertNoLastError();
+          chrome.test.assertTrue(data.length >= 0);
+          chrome.test.succeed();
+        });
+      });
+    });
+  },
+
+  function isLacrosPrimaryBrowser() {
+    chrome.autotestPrivate.isLacrosPrimaryBrowser(
+        chrome.test.callbackPass(function(primary) {
+          chrome.test.assertTrue(typeof primary === 'boolean');
+        }));
+  },
+
   // KEEP |lockScreen()| TESTS AT THE BOTTOM OF THE defaultTests AS IT WILL
   // CHANGE THE SESSION STATE TO LOCKED STATE.
   function lockScreen() {

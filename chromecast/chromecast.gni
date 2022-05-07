@@ -96,11 +96,8 @@ declare_args() {
   # within cast_shell.
   enable_external_mojo_services = is_linux || is_chromeos
 
-  # Support Perfetto tracing of processes that depend on entry points in
-  # //chromecast/external_mojo/external_service_support
-  #
-  # Note: This flag will be deprecated in favor of enable_perfetto_tracing.
-  enable_external_mojo_tracing = false
+  # Support using system perfetto tracing
+  enable_perfetto_tracing = false
 
   # Support using system perfetto tracing
   enable_perfetto_tracing = false
@@ -141,10 +138,6 @@ declare_args() {
 declare_args() {
   # Use Playready CDMs for internal non-desktop builds.
   enable_playready = !is_cast_desktop_build && chromecast_branding != "public"
-
-  assert(!(enable_external_mojo_tracing && enable_perfetto_tracing),
-         "Only one of enable_external_mojo_tracing or " +
-             "enable_perfetto_tracing can be enabled")
 }
 
 # This is the release version, which takes the form <major>.<minor>. Internal
@@ -168,7 +161,14 @@ cast_locales = locales_without_pseudolocales
 # If Cast will also the android files update this and the Cast grd files.
 if (is_android) {
   # Subtract out additional Android locales
-  cast_locales -= android_bundle_only_locales
+  cast_locales -= extended_locales
+}
+if (!(is_ios || is_chromeos_ash || is_chromeos_lacros)) {
+  # Subtract out the additional desktop locales
+  cast_locales -= [
+    "af",
+    "ur",
+  ]
 }
 
 declare_args() {

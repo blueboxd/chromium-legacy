@@ -69,7 +69,7 @@ const char* const kNonPositionalLayouts[] = {
     "us(dvorak)", "us(dvp)",    "us(workman)", "us(workman-intl)",
 };
 
-const size_t kNonPositionalLayoutsLength = base::size(kNonPositionalLayouts);
+const size_t kNonPositionalLayoutsLength = std::size(kNonPositionalLayouts);
 
 enum InputMethodCategory {
   INPUT_METHOD_CATEGORY_UNKNOWN = 0,
@@ -1169,7 +1169,7 @@ void InputMethodManagerImpl::ActivateInputMethodMenuItem(
 }
 
 void InputMethodManagerImpl::ConnectInputEngineManager(
-    mojo::PendingReceiver<chromeos::ime::mojom::InputEngineManager> receiver) {
+    mojo::PendingReceiver<ime::mojom::InputEngineManager> receiver) {
   DCHECK(state_);
   ImeServiceConnectorMap::iterator iter =
       ime_service_connectors_.find(state_->GetProfile());

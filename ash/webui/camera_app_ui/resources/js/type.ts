@@ -8,7 +8,16 @@ import {assertExists, assertInstanceof} from './assert.js';
  * Photo or video resolution.
  */
 export class Resolution {
-  constructor(readonly width: number, readonly height: number) {}
+  readonly width: number;
+
+  readonly height: number;
+
+  constructor();
+  constructor(width: number, height: number);
+  constructor(width?: number, height?: number) {
+    this.width = width ?? 0;
+    this.height = height ?? -1;
+  }
 
   /**
    * @return Total pixel number.
@@ -28,6 +37,7 @@ export class Resolution {
 
   /**
    * Compares width/height of resolutions, see if they are equal or not.
+   *
    * @param resolution Resolution to be compared with.
    * @return Whether width/height of resolutions are equal.
    */
@@ -37,6 +47,7 @@ export class Resolution {
 
   /**
    * Compares aspect ratio of resolutions, see if they are equal or not.
+   *
    * @param resolution Resolution to be compared with.
    * @return Whether aspect ratio of resolutions are equal.
    */
@@ -91,7 +102,7 @@ export enum Facing {
   VIRTUAL_USER = 'virtual_user',
   VIRTUAL_ENV = 'virtual_environment',
   VIRTUAL_EXT = 'virtual_external',
-  NOT_SET = '(not set)',
+  UNKNOWN = 'unknown',
 }
 
 export enum ViewName {
@@ -199,6 +210,12 @@ export interface VideoTrackSettings {
   frameRate: number;
 }
 
+/**
+ * Gets video track settings from a video track.
+ *
+ * This asserts that all property that should exists on video track settings
+ * (.width, .height, .deviceId, .frameRate) all exists and narrow the type.
+ */
 export function getVideoTrackSettings(videoTrack: MediaStreamTrack):
     VideoTrackSettings {
   // TODO(pihsun): The type from TypeScript lib.dom.d.ts is wrong on Chrome and
@@ -357,6 +374,16 @@ export class EmptyThumbnailError extends Error {
  */
 export class NoChunkError extends Error {
   constructor(message = 'No chunk is received during recording session') {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+/**
+ * Throws when the portrait mode fails to detect a human face.
+ */
+export class PortraitModeProcessError extends Error {
+  constructor(message = 'No human face detected in the scene') {
     super(message);
     this.name = this.constructor.name;
   }

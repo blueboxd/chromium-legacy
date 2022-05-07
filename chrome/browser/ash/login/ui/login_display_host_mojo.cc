@@ -36,6 +36,7 @@
 #include "chrome/browser/ash/login/user_board_view_mojo.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
+#include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/login_screen_client_impl.h"
@@ -77,13 +78,6 @@ bool AllAllowlistedUsersPresent() {
   cros_settings->GetBoolean(kAccountsPrefAllowNewUser, &allow_new_user);
   if (allow_new_user)
     return false;
-  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
-  const user_manager::UserList& users = user_manager->GetUsers();
-
-  // Max number of users to show.
-  const size_t kMaxUsers = 18;
-  if (users.size() > kMaxUsers)
-    return false;
 
   bool allow_family_link = false;
   cros_settings->GetBoolean(kAccountsPrefFamilyLinkAccountsAllowed,
@@ -97,7 +91,7 @@ bool AllAllowlistedUsersPresent() {
   for (const base::Value& i : allowlist->GetListDeprecated()) {
     const std::string* allowlisted_user = i.GetIfString();
     // NB: Wildcards in the allowlist are also detected as not present here.
-    if (!allowlisted_user || !user_manager->IsKnownUser(
+    if (!allowlisted_user || !user_manager::UserManager::Get()->IsKnownUser(
                                  AccountId::FromUserEmail(*allowlisted_user))) {
       return false;
     }
@@ -151,6 +145,11 @@ LoginDisplayHostMojo::LoginDisplayHostMojo(DisplayedScreen displayed_screen)
           std::make_unique<ChromeUserSelectionScreen>(displayed_screen)),
       system_info_updater_(std::make_unique<MojoSystemInfoDispatcher>()) {
   user_selection_screen_->SetView(user_board_view_mojo_.get());
+
+  allow_new_user_subscription_ = CrosSettings::Get()->AddSettingsObserver(
+      kAccountsPrefAllowNewUser,
+      base::BindRepeating(&LoginDisplayHostMojo::OnDeviceSettingsChanged,
+                          base::Unretained(this)));
 
   // Do not load WebUI before it is needed if policy and feature permit.
   // Force load WebUI if feature is not enabled.
@@ -214,13 +213,6 @@ void LoginDisplayHostMojo::ShowPasswordChangedDialog(
 void LoginDisplayHostMojo::StartBrowserDataMigration() {
   DCHECK(GetOobeUI());
   wizard_controller_->AdvanceToScreen(LacrosDataMigrationScreenView::kScreenId);
-}
-
-void LoginDisplayHostMojo::ShowAllowlistCheckFailedError() {
-  EnsureOobeDialogLoaded();
-  DCHECK(GetOobeUI());
-  GetOobeUI()->signin_screen_handler()->ShowAllowlistCheckFailedError();
-  ShowDialog();
 }
 
 void LoginDisplayHostMojo::HandleDisplayCaptivePortal() {
@@ -368,10 +360,6 @@ void LoginDisplayHostMojo::OnStartSignInScreen() {
   OnStartSignInScreenCommon();
 
   login::SecurityTokenSessionController::MaybeDisplayLoginScreenNotification();
-}
-
-void LoginDisplayHostMojo::OnPreferencesChanged() {
-  NOTIMPLEMENTED();
 }
 
 void LoginDisplayHostMojo::OnStartAppLaunch() {
@@ -846,6 +834,18 @@ void LoginDisplayHostMojo::MaybeUpdateOfflineLoginLinkVisibility(
 void LoginDisplayHostMojo::OnUserActivity(const ui::Event* event) {
   scoped_activity_observation_.Reset();
   ShowGaiaDialog(EmptyAccountId());
+}
+
+void LoginDisplayHostMojo::OnDeviceSettingsChanged() {
+  // Update status of add user button in the shelf.
+  UpdateAddUserButtonStatus();
+
+  if (!dialog_)
+    return;
+
+  // Reload Gaia.
+  GaiaScreen* gaia_screen = GetWizardController()->GetScreen<GaiaScreen>();
+  gaia_screen->LoadOnline(EmptyAccountId());
 }
 
 }  // namespace ash

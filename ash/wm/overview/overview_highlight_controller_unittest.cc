@@ -149,7 +149,7 @@ TEST_P(OverviewHighlightControllerTest, BasicArrowKeyNavigation) {
       {9, 8, 7, 6, 5, 4, 3, 2, 1, 9}   // Up (same as Left)
   };
 
-  for (size_t key_index = 0; key_index < base::size(arrow_keys); ++key_index) {
+  for (size_t key_index = 0; key_index < std::size(arrow_keys); ++key_index) {
     ToggleOverview();
     const std::vector<std::unique_ptr<OverviewItem>>& overview_windows =
         GetOverviewItemsForRoot(0);
@@ -889,6 +889,33 @@ TEST_P(DesksOverviewHighlightControllerTest, ActivateHighlightOnViewFocused) {
   // Verify that focus has moved to the clicked desk item.
   EXPECT_EQ(desk_name_view_1, GetHighlightedView());
   EXPECT_TRUE(desk_name_view_1->HasFocus());
+}
+
+// Tests that there is no crash when tabbing after we switch to the zero state
+// desks bar. Regression test for https://crbug.com/1301134.
+TEST_P(DesksOverviewHighlightControllerTest, SwitchingToZeroStateWhileTabbing) {
+  ToggleOverview();
+  auto* desks_bar_view = GetDesksBarViewForRoot(Shell::GetPrimaryRootWindow());
+  ASSERT_FALSE(desks_bar_view->IsZeroState());
+  ASSERT_EQ(2u, desks_bar_view->mini_views().size());
+
+  // Tab to first mini desk view.
+  SendKey(ui::VKEY_TAB);
+  ASSERT_EQ(desks_bar_view->mini_views()[0], GetHighlightedView());
+
+  // Remove one desk to enter zero state desks bar.
+  auto* event_generator = GetEventGenerator();
+  auto* mini_view = desks_bar_view->mini_views()[1];
+  event_generator->MoveMouseTo(mini_view->GetBoundsInScreen().CenterPoint());
+  ASSERT_TRUE(mini_view->close_desk_button()->GetVisible());
+  event_generator->MoveMouseTo(
+      mini_view->close_desk_button()->GetBoundsInScreen().CenterPoint());
+  event_generator->ClickLeftButton();
+  ASSERT_TRUE(desks_bar_view->IsZeroState());
+
+  // Try tabbing after removing the second desk triggers us to transition to
+  // zero state desks bar. There should not be a crash.
+  SendKey(ui::VKEY_TAB);
 }
 
 INSTANTIATE_TEST_SUITE_P(All, OverviewHighlightControllerTest, testing::Bool());

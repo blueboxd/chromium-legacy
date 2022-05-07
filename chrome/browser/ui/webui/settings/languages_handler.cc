@@ -44,7 +44,7 @@ void LanguagesHandler::RegisterMessages() {
 }
 
 void LanguagesHandler::HandleGetProspectiveUILanguage(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   const base::Value& callback_id = args[0];
 
   AllowJavascript();
@@ -64,7 +64,7 @@ void LanguagesHandler::HandleGetProspectiveUILanguage(
 }
 
 void LanguagesHandler::HandleSetProspectiveUILanguage(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   CHECK_EQ(1U, args.size());
 

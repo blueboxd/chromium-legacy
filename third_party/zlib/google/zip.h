@@ -99,7 +99,7 @@ struct ZipParams {
   // Either dest_file or dest_fd should be set, but not both.
   base::FilePath dest_file;
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
   // Destination file passed a file descriptor.
   // Either dest_file or dest_fd should be set, but not both.
   int dest_fd = base::kInvalidPlatformFile;
@@ -159,7 +159,7 @@ bool Zip(const base::FilePath& src_dir,
          const base::FilePath& dest_file,
          bool include_hidden_files);
 
-#if defined(OS_POSIX)
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
 // Zips files listed in |src_relative_paths| to destination specified by file
 // descriptor |dest_fd|, without taking ownership of |dest_fd|. The paths listed
 // in |src_relative_paths| are relative to the |src_dir| and will be used as the
@@ -168,20 +168,20 @@ bool Zip(const base::FilePath& src_dir,
 bool ZipFiles(const base::FilePath& src_dir,
               Paths src_relative_paths,
               int dest_fd);
-#endif  // defined(OS_POSIX)
+#endif  // defined(OS_POSIX) || defined(OS_FUCHSIA)
 
 // Options of the Unzip function, with valid default values.
 struct UnzipOptions {
-  // Only extract the entries for which |filter_cb| returns true. If no filter
-  // is provided, everything gets extracted.
+  // Encoding of entry paths in the ZIP archive. By default, paths are assumed
+  // to be in UTF-8.
+  std::string encoding;
+
+  // Only extract the entries for which |filter_cb| returns true. By default,
+  // everything gets extracted.
   FilterCallback filter;
 
   // Password to decrypt the encrypted files.
   std::string password;
-
-  // If |log_skipped_files| is true, files skipped during extraction are printed
-  // to debug log.
-  bool log_skipped_files = true;
 };
 
 typedef base::RepeatingCallback<std::unique_ptr<WriterDelegate>(

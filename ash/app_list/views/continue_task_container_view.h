@@ -17,6 +17,7 @@
 #include "base/scoped_observation.h"
 #include "base/timer/timer.h"
 #include "ui/base/models/list_model_observer.h"
+#include "ui/compositor/layer_animator.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -59,6 +60,7 @@ class ASH_EXPORT ContinueTaskContainerView : public ui::ListModelObserver,
 
   // views::View:
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
+  bool OnKeyPressed(const ui::KeyEvent& event) override;
 
   void Update();
   size_t num_results() const { return num_results_; }
@@ -67,6 +69,14 @@ class ASH_EXPORT ContinueTaskContainerView : public ui::ListModelObserver,
 
   // See AppsGridView::DisableFocusForShowingActiveFolder().
   void DisableFocusForShowingActiveFolder(bool disabled);
+
+  // Start the animation for showing the suggestions in the continue section.
+  // Suggestion views will slide in from an evenly distributed amount of
+  // `available_space` into their final positions.
+  // This animation must only be used in clamshell mode.
+  void AnimateSlideInSuggestions(int available_space,
+                                 base::TimeDelta duration,
+                                 gfx::Tween::Type tween);
 
   base::OneShotTimer* animations_timer_for_test() { return &animations_timer_; }
 
@@ -138,6 +148,16 @@ class ASH_EXPORT ContinueTaskContainerView : public ui::ListModelObserver,
   // Removes all child views that have been kept around just for container
   // update animation.
   void ClearAnimatingViews();
+
+  // Moves focus up by one row, or up-and-out of the section.
+  void MoveFocusUp();
+
+  // Moves focus down by one row, or down-and-out of the section.
+  void MoveFocusDown();
+
+  // Returns the index in `suggestion_tasks_views_` of the currently focused
+  // task view, or -1 if no task view is focused.
+  int GetIndexOfFocusedTaskView() const;
 
   AppListViewDelegate* const view_delegate_;
 

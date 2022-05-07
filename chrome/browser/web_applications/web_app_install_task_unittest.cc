@@ -100,14 +100,15 @@ class WebAppInstallTaskTest : public WebAppTest {
     install_manager_ = std::make_unique<WebAppInstallManager>(profile());
 
     file_utils_ = base::MakeRefCounted<TestFileUtils>();
-    icon_manager_ = std::make_unique<WebAppIconManager>(
-        profile(), registrar(), install_manager(), file_utils_);
+    icon_manager_ = std::make_unique<WebAppIconManager>(profile(), file_utils_);
 
     policy_manager_ = std::make_unique<WebAppPolicyManager>(profile());
 
     ui_manager_ = std::make_unique<FakeWebAppUiManager>();
 
     install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(profile());
+
+    icon_manager_->SetSubsystems(&registrar(), &install_manager());
 
     install_finalizer_->SetSubsystems(
         &install_manager(), &registrar(), ui_manager_.get(),
@@ -166,8 +167,8 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
   void CreateRendererAppInfo(const GURL& url,
-                             const std::string name,
-                             const std::string description,
+                             const std::string& name,
+                             const std::string& description,
                              const GURL& scope,
                              absl::optional<SkColor> theme_color,
                              DisplayMode user_display_mode) {
@@ -184,8 +185,8 @@ class WebAppInstallTaskTest : public WebAppTest {
   }
 
   void CreateRendererAppInfo(const GURL& url,
-                             const std::string name,
-                             const std::string description) {
+                             const std::string& name,
+                             const std::string& description) {
     CreateRendererAppInfo(url, name, description, GURL(), absl::nullopt,
                           /*user_display_mode=*/DisplayMode::kStandalone);
   }
@@ -403,8 +404,8 @@ class WebAppInstallTaskWithRunOnOsLoginTest : public WebAppInstallTaskTest {
   ~WebAppInstallTaskWithRunOnOsLoginTest() override = default;
 
   void CreateRendererAppInfo(const GURL& url,
-                             const std::string name,
-                             const std::string description,
+                             const std::string& name,
+                             const std::string& description,
                              const GURL& scope,
                              absl::optional<SkColor> theme_color,
                              DisplayMode user_display_mode) {
@@ -1496,37 +1497,40 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
   // Installs the app and validates |final_web_app_info| matches the args passed
   // in.
   InstallResult InstallWebAppWithShortcutsMenuValidateAndGetResults(
-      GURL start_url,
+      const GURL& start_url,
       SkColor theme_color,
-      std::string shortcut_name,
-      GURL shortcut_url,
+      const std::string& shortcut_name,
+      const GURL& shortcut_url,
       SquareSizePx icon_size,
-      GURL icon_src) {
-    InstallResult result;
-    auto manifest = blink::mojom::Manifest::New();
-    manifest->start_url = start_url;
-    manifest->has_theme_color = true;
-    manifest->theme_color = theme_color;
-    manifest->name = u"Manifest Name";
+      const GURL& icon_src) {
+    {
+      auto manifest = blink::mojom::Manifest::New();
+      manifest->start_url = start_url;
+      manifest->has_theme_color = true;
+      manifest->theme_color = theme_color;
+      manifest->name = u"Manifest Name";
 
-    // Add shortcuts to manifest.
-    blink::Manifest::ShortcutItem shortcut_item;
-    shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
-    shortcut_item.url = shortcut_url;
-    blink::Manifest::ImageResource icon;
-    icon.src = icon_src;
-    icon.sizes.emplace_back(gfx::Size(icon_size, icon_size));
-    icon.purpose.emplace_back(IconPurpose::ANY);
-    shortcut_item.icons.emplace_back(icon);
-    manifest->shortcuts.emplace_back(shortcut_item);
+      // Add shortcuts to manifest.
+      blink::Manifest::ShortcutItem shortcut_item;
+      shortcut_item.name = base::UTF8ToUTF16(shortcut_name);
+      shortcut_item.url = shortcut_url;
+      blink::Manifest::ImageResource icon;
+      icon.src = icon_src;
+      icon.sizes.emplace_back(icon_size, icon_size);
+      icon.purpose.push_back(IconPurpose::ANY);
+      shortcut_item.icons.push_back(std::move(icon));
+      manifest->shortcuts.push_back(std::move(shortcut_item));
 
-    data_retriever_->SetManifest(std::move(manifest), /*is_installable=*/true);
+      data_retriever_->SetManifest(std::move(manifest),
+                                   /*is_installable=*/true);
+    }
 
     base::RunLoop run_loop;
     bool callback_called = false;
 
     SetInstallFinalizerForTesting();
 
+    InstallResult result;
     install_task_->InstallWebAppFromManifest(
         web_contents(), /*bypass_service_worker_check=*/false,
         webapps::WebappInstallSource::MENU_BROWSER_TAB,
@@ -1573,12 +1577,12 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
   // Updates the app and validates |final_web_app_info| matches the args passed
   // in.
   InstallResult UpdateWebAppWithShortcutsMenuValidateAndGetResults(
-      GURL url,
+      const GURL& url,
       SkColor theme_color,
-      std::string shortcut_name,
-      GURL shortcut_url,
+      const std::string& shortcut_name,
+      const GURL& shortcut_url,
       SquareSizePx icon_size,
-      GURL icon_src) {
+      const GURL& icon_src) {
     InstallResult result;
     const AppId app_id = GenerateAppId(/*manifest_id=*/absl::nullopt, url);
 
@@ -1597,8 +1601,7 @@ class WebAppInstallTaskTestWithShortcutsMenu : public WebAppInstallTaskTest {
     icon.square_size_px = icon_size;
     shortcut_item.SetShortcutIconInfosForPurpose(IconPurpose::MASKABLE,
                                                  {std::move(icon)});
-    web_app_info->shortcuts_menu_item_infos.emplace_back(
-        std::move(shortcut_item));
+    web_app_info->shortcuts_menu_item_infos.push_back(std::move(shortcut_item));
 
     base::RunLoop run_loop;
     bool callback_called = false;

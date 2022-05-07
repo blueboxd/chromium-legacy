@@ -10,12 +10,15 @@ import 'chrome://resources/cr_elements/cr_radio_button/cr_radio_button_style_css
 import 'chrome://resources/cr_elements/cr_icon_button/cr_icon_button.m.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
+import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
 
 import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {isSelectionEvent} from '../../common/utils.js';
 import {TopicSource} from '../personalization_app.mojom-webui.js';
+import {PersonalizationRouter} from '../personalization_router_element.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
+import {getTopicSourceName} from '../utils.js';
 
 import {setTopicSource} from './ambient_controller.js';
 import {getAmbientProvider} from './ambient_interface_provider.js';
@@ -43,7 +46,10 @@ export class TopicSourceItem extends WithPersonalizationStore {
 
       topicSource: TopicSource,
 
-      hasGooglePhotosAlbums: Boolean,
+      hasGooglePhotosAlbums: {
+        type: Boolean,
+        value: null,
+      },
 
       ariaLabel: {
         type: String,
@@ -55,10 +61,10 @@ export class TopicSourceItem extends WithPersonalizationStore {
 
   checked: boolean;
   topicSource: TopicSource;
-  hasGooglePhotosAlbums: boolean;
-  ariaLabel: string;
+  hasGooglePhotosAlbums: boolean|null;
+  override ariaLabel: string;
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.addEventListener('click', this.onItemSelected_.bind(this));
@@ -73,20 +79,18 @@ export class TopicSourceItem extends WithPersonalizationStore {
     event.preventDefault();
     event.stopPropagation();
     setTopicSource(this.topicSource, getAmbientProvider(), this.getStore());
+    PersonalizationRouter.instance().selectAmbientAlbums(this.topicSource);
   }
 
   private getItemName_(): string {
-    if (this.topicSource === TopicSource.kGooglePhotos) {
-      return this.i18n('ambientModeTopicSourceGooglePhotos');
-    } else if (this.topicSource === TopicSource.kArtGallery) {
-      return this.i18n('ambientModeTopicSourceArtGallery');
-    } else {
-      return '';
-    }
+    return getTopicSourceName(this.topicSource);
   }
 
   private getItemDescription_(): string {
     if (this.topicSource === TopicSource.kGooglePhotos) {
+      if (!this.hasGooglePhotosAlbums) {
+        return '';
+      }
       if (this.hasGooglePhotosAlbums) {
         return this.i18n('ambientModeTopicSourceGooglePhotosDescription');
       } else {

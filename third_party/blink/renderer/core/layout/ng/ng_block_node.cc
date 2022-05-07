@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_row_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_scripts_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_space_layout_algorithm.h"
+#include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_token_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/mathml/ng_math_under_over_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
@@ -76,6 +77,7 @@
 #include "third_party/blink/renderer/core/mathml/mathml_radical_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_scripts_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_space_element.h"
+#include "third_party/blink/renderer/core/mathml/mathml_token_element.h"
 #include "third_party/blink/renderer/core/mathml/mathml_under_over_element.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -143,10 +145,11 @@ NOINLINE void DetermineMathMLAlgorithmAndRun(
     } else if (IsA<MathMLPaddedElement>(element)) {
       CreateAlgorithmAndRun<NGMathPaddedLayoutAlgorithm>(params, callback);
       return;
-    } else if (IsA<MathMLElement>(element) &&
-               To<MathMLElement>(*element).IsTokenElement()) {
+    } else if (IsA<MathMLTokenElement>(element)) {
       if (IsOperatorWithSpecialShaping(params.node))
         CreateAlgorithmAndRun<NGMathOperatorLayoutAlgorithm>(params, callback);
+      else if (IsTextOnlyToken(params.node))
+        CreateAlgorithmAndRun<NGMathTokenLayoutAlgorithm>(params, callback);
       else
         CreateAlgorithmAndRun<NGBlockLayoutAlgorithm>(params, callback);
       return;
@@ -417,11 +420,6 @@ const NGLayoutResult* NGBlockNode::Layout(
   const NGLayoutResult* layout_result =
       box_->CachedLayoutResult(constraint_space, break_token, early_break,
                                &fragment_geometry, &cache_status);
-  if (UNLIKELY(DevtoolsReadonlyLayoutScope::InDevtoolsLayout())) {
-    DCHECK_EQ(cache_status, NGLayoutCacheStatus::kHit);
-    DCHECK(!box_->NeedsLayoutOverflowRecalc());
-    return layout_result;
-  }
   if (cache_status == NGLayoutCacheStatus::kHit) {
     DCHECK(layout_result);
 
@@ -462,7 +460,7 @@ const NGLayoutResult* NGBlockNode::Layout(
 
   if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled() &&
       // Only consider the size of the first container fragment.
-      !IsResumingLayout(break_token) && IsContainerForContainerQueries()) {
+      !IsResumingLayout(break_token) && CanMatchSizeContainerQueries()) {
     if (auto* element = DynamicTo<Element>(GetDOMNode())) {
       LogicalSize available_size = CalculateChildAvailableSize(
           constraint_space, *this, fragment_geometry->border_box_size,
@@ -790,7 +788,8 @@ void NGBlockNode::FinishLayout(LayoutBlockFlow* block_flow,
     bool has_inline_children = items || HasInlineChildren(block_flow);
 
     // Don't consider display-locked objects as having any children.
-    if (has_inline_children && box_->ChildLayoutBlockedByDisplayLock()) {
+    if (has_inline_children && !block_flow->IsShapingDeferred() &&
+        box_->ChildLayoutBlockedByDisplayLock()) {
       has_inline_children = false;
       // It could be the case that our children are already clean at the time
       // the lock was acquired. This means that |box_| self dirty bits might be
@@ -1761,13 +1760,6 @@ const NGLayoutResult* NGBlockNode::RunLegacyLayout(
   if (constraint_space.CacheSlot() == NGCacheSlot::kLayout && !layout_result)
     layout_result = old_measure_result;
 
-  if (UNLIKELY(DevtoolsReadonlyLayoutScope::InDevtoolsLayout())) {
-    DCHECK(layout_result);
-    DCHECK(!box_->NeedsLayout());
-    DCHECK(MaySkipLegacyLayout(*this, *layout_result, constraint_space));
-    return layout_result;
-  }
-
   // We need to force a layout on the child if the constraint space given will
   // change the layout.
   bool needs_force_relayout =
@@ -2010,6 +2002,13 @@ void NGBlockNode::StoreMargins(const NGConstraintSpace& constraint_space,
 
 void NGBlockNode::StoreMargins(const NGPhysicalBoxStrut& physical_margins) {
   box_->SetMargin(physical_margins);
+}
+
+void NGBlockNode::StoreColumnInlineSize(LayoutUnit inline_size) {
+  LayoutMultiColumnFlowThread* flow_thread =
+      To<LayoutBlockFlow>(box_.Get())->MultiColumnFlowThread();
+  flow_thread->SetLogicalWidth(inline_size);
+  flow_thread->ClearNeedsLayout();
 }
 
 static bool g_devtools_layout = false;

@@ -15,7 +15,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/build_config.h"
-#include "chrome/browser/prefs/browser_prefs.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/web_applications/app_registrar_observer.h"
 #include "chrome/browser/web_applications/external_install_options.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
@@ -49,8 +49,6 @@
 #include "chrome/browser/policy/system_features_disable_list_policy_handler.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #endif  // BUILDFLAG(IS_CHROMEOS)
-
-using sync_preferences::TestingPrefServiceSyncable;
 
 namespace web_app {
 
@@ -243,7 +241,7 @@ base::Value GetCustomAppNameItem(std::string name) {
   item.SetKey(kUrlKey, base::Value(kWindowedUrl));
   item.SetKey(kDefaultLaunchContainerKey,
               base::Value(kDefaultLaunchContainerWindowValue));
-  item.SetKey(kCustomNameKey, base::Value(name));
+  item.SetKey(kCustomNameKey, base::Value(std::move(name)));
   return item;
 }
 
@@ -256,7 +254,7 @@ ExternalInstallOptions GetCustomAppNameInstallOptions(std::string name) {
   options.install_placeholder = true;
   options.reinstall_placeholder = true;
   options.wait_for_windows_closed = true;
-  options.override_name = name;
+  options.override_name = std::move(name);
   return options;
 }
 
@@ -312,7 +310,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
       scoped_feature_list_.InitAndEnableFeature(features::kWebAppsCrosapi);
     } else if (GetParam() == TestParam::kLacrosDisabled) {
       scoped_feature_list_.InitWithFeatures(
-          {}, {features::kWebAppsCrosapi, chromeos::features::kLacrosPrimary});
+          {}, {features::kWebAppsCrosapi, ash::features::kLacrosPrimary});
     }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
     ChromeRenderViewHostTestHarness::SetUp();
@@ -330,7 +328,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
     controller().SetUp(profile());
 
     externally_managed_app_manager().SetSubsystems(&app_registrar(), nullptr,
-                                                   nullptr, nullptr);
+                                                   nullptr, nullptr, nullptr);
     externally_managed_app_manager().SetHandleInstallRequestCallback(
         base::BindLambdaForTesting(
             [this](const ExternalInstallOptions& install_options) {
@@ -386,7 +384,7 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  void SimulatePreviouslyInstalledApp(GURL url,
+  void SimulatePreviouslyInstalledApp(const GURL& url,
                                       ExternalInstallSource install_source) {
     auto web_app = test::CreateWebApp(
         url, ConvertExternalInstallSourceToSourceType(install_source));

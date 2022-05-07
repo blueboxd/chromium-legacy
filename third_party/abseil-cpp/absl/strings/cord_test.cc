@@ -56,6 +56,7 @@ using absl::cord_internal::CordRepCrc;
 using absl::cord_internal::CordRepExternal;
 using absl::cord_internal::CordRepFlat;
 using absl::cord_internal::CordRepSubstring;
+using absl::cord_internal::CordzUpdateTracker;
 using absl::cord_internal::kFlatOverhead;
 using absl::cord_internal::kMaxFlatLength;
 
@@ -212,14 +213,9 @@ class CordTestPeer {
     ABSL_RAW_CHECK(src.ExpectedChecksum() == absl::nullopt,
                    "Can not be hardened");
     Cord cord;
-    auto* rep = new cord_internal::CordRepSubstring;
-    rep->tag = cord_internal::SUBSTRING;
-    rep->child = cord_internal::CordRep::Ref(
-        cord_internal::SkipCrcNode(src.contents_.tree()));
-    rep->start = offset;
-    rep->length = length;
-    cord.contents_.EmplaceTree(rep,
-                               cord_internal::CordzUpdateTracker::kSubCord);
+    auto* tree = cord_internal::SkipCrcNode(src.contents_.tree());
+    auto* rep = CordRepSubstring::Create(CordRep::Ref(tree), offset, length);
+    cord.contents_.EmplaceTree(rep, CordzUpdateTracker::kSubCord);
     return cord;
   }
 };
@@ -643,15 +639,6 @@ TEST_P(CordTest, TryFlatSubstrExternal) {
   absl::Cord sub = absl::CordTestPeer::MakeSubstring(c, 1, c.size() - 1);
   MaybeHarden(sub);
   EXPECT_EQ(sub.TryFlat(), "ell");
-}
-
-TEST_P(CordTest, TryFlatSubstrConcat) {
-  absl::Cord c = absl::MakeFragmentedCord({"hello", " world"});
-  absl::Cord sub = absl::CordTestPeer::MakeSubstring(c, 1, c.size() - 1);
-  MaybeHarden(sub);
-  EXPECT_EQ(sub.TryFlat(), absl::nullopt);
-  c.RemovePrefix(1);
-  EXPECT_EQ(c.TryFlat(), absl::nullopt);
 }
 
 TEST_P(CordTest, TryFlatCommonlyAssumedInvariants) {
@@ -1864,6 +1851,78 @@ TEST_P(CordTest, CordChunkIteratorOperations) {
   absl::Cord subcords;
   for (int i = 0; i < 128; ++i) subcords.Prepend(flat_cord.Subcord(i, 128));
   VerifyChunkIterator(subcords, 128);
+}
+
+
+TEST_P(CordTest, AdvanceAndReadOnDataEdge) {
+  RandomEngine rng(GTEST_FLAG_GET(random_seed));
+  const std::string data = RandomLowercaseString(&rng, 2000);
+  for (bool as_flat : {true, false}) {
+    SCOPED_TRACE(as_flat ? "Flat" : "External");
+
+    absl::Cord cord =
+        as_flat ? absl::Cord(data)
+                : absl::MakeCordFromExternal(data, [](absl::string_view) {});
+    auto it = cord.Chars().begin();
+#if !defined(NDEBUG) || ABSL_OPTION_HARDENED
+    EXPECT_DEATH_IF_SUPPORTED(cord.AdvanceAndRead(&it, 2001), ".*");
+#endif
+
+    it = cord.Chars().begin();
+    absl::Cord frag = cord.AdvanceAndRead(&it, 2000);
+    EXPECT_EQ(frag, data);
+    EXPECT_TRUE(it == cord.Chars().end());
+
+    it = cord.Chars().begin();
+    frag = cord.AdvanceAndRead(&it, 200);
+    EXPECT_EQ(frag, data.substr(0, 200));
+    EXPECT_FALSE(it == cord.Chars().end());
+
+    frag = cord.AdvanceAndRead(&it, 1500);
+    EXPECT_EQ(frag, data.substr(200, 1500));
+    EXPECT_FALSE(it == cord.Chars().end());
+
+    frag = cord.AdvanceAndRead(&it, 300);
+    EXPECT_EQ(frag, data.substr(1700, 300));
+    EXPECT_TRUE(it == cord.Chars().end());
+  }
+}
+
+TEST_P(CordTest, AdvanceAndReadOnSubstringDataEdge) {
+  RandomEngine rng(GTEST_FLAG_GET(random_seed));
+  const std::string data = RandomLowercaseString(&rng, 2500);
+  for (bool as_flat : {true, false}) {
+    SCOPED_TRACE(as_flat ? "Flat" : "External");
+
+    absl::Cord cord =
+        as_flat ? absl::Cord(data)
+                : absl::MakeCordFromExternal(data, [](absl::string_view) {});
+    cord = cord.Subcord(200, 2000);
+    const std::string substr = data.substr(200, 2000);
+
+    auto it = cord.Chars().begin();
+#if !defined(NDEBUG) || ABSL_OPTION_HARDENED
+    EXPECT_DEATH_IF_SUPPORTED(cord.AdvanceAndRead(&it, 2001), ".*");
+#endif
+
+    it = cord.Chars().begin();
+    absl::Cord frag = cord.AdvanceAndRead(&it, 2000);
+    EXPECT_EQ(frag, substr);
+    EXPECT_TRUE(it == cord.Chars().end());
+
+    it = cord.Chars().begin();
+    frag = cord.AdvanceAndRead(&it, 200);
+    EXPECT_EQ(frag, substr.substr(0, 200));
+    EXPECT_FALSE(it == cord.Chars().end());
+
+    frag = cord.AdvanceAndRead(&it, 1500);
+    EXPECT_EQ(frag, substr.substr(200, 1500));
+    EXPECT_FALSE(it == cord.Chars().end());
+
+    frag = cord.AdvanceAndRead(&it, 300);
+    EXPECT_EQ(frag, substr.substr(1700, 300));
+    EXPECT_TRUE(it == cord.Chars().end());
+  }
 }
 
 TEST_P(CordTest, CharIteratorTraits) {

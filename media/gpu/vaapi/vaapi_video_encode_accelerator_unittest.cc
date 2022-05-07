@@ -12,6 +12,7 @@
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
 #include "base/test/task_environment.h"
+#include "media/base/media_util.h"
 #include "media/gpu/gpu_video_encode_accelerator_helpers.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
 #include "media/gpu/vaapi/vaapi_wrapper.h"
@@ -299,7 +300,8 @@ class VaapiVideoEncodeAcceleratorTest
     vaapi_encoder->supported_profiles_for_testing_.push_back(profile);
     if (config.input_visible_size.IsEmpty())
       return false;
-    return encoder_->Initialize(config, &client_);
+    return encoder_->Initialize(config, &client_,
+                                std::make_unique<media::NullMediaLog>());
   }
 
   void InitializeSequenceForVP9(const VideoEncodeAccelerator::Config& config)
@@ -477,8 +479,8 @@ class VaapiVideoEncodeAcceleratorTest
   void EncodeSequenceForVP9MultipleSpatialLayers(size_t num_spatial_layers) {
     constexpr int32_t kBitstreamIds[] = {12, 13, 14};
     constexpr uint64_t kEncodedChunkSizes[] = {1234, 1235, 1236};
-    ASSERT_LE(num_spatial_layers, base::size(kBitstreamIds));
-    ASSERT_LE(num_spatial_layers, base::size(kEncodedChunkSizes));
+    ASSERT_LE(num_spatial_layers, std::size(kBitstreamIds));
+    ASSERT_LE(num_spatial_layers, std::size(kEncodedChunkSizes));
     base::RunLoop run_loop;
     // BitstreamBufferReady() is called in |child_task_runner_|, which is the
     // different thread of executing other mock calls. Therefore, guaranteeing
@@ -602,7 +604,6 @@ class VaapiVideoEncodeAcceleratorTest
     }
 
     for (size_t i = 0; i < num_spatial_layers; ++i) {
-      const VABufferID kCodedBufferId = kCodedBufferIds[i];
       EXPECT_CALL(*mock_encoder_, PrepareEncodeJob(_))
           .WillOnce(WithArgs<0>([encoder = encoder_.get()](
                                     VaapiVideoEncoderDelegate::EncodeJob& job) {
@@ -614,7 +615,10 @@ class VaapiVideoEncodeAcceleratorTest
           }));
       EXPECT_CALL(*mock_vaapi_wrapper_, ExecuteAndDestroyPendingBuffers(_))
           .WillOnce(Return(true));
+    }
 
+    for (size_t i = 0; i < num_spatial_layers; ++i) {
+      const VABufferID kCodedBufferId = kCodedBufferIds[i];
       const uint64_t kEncodedChunkSize = kEncodedChunkSizes[i];
       ASSERT_LE(kEncodedChunkSize, output_buffer_size_);
       EXPECT_CALL(*mock_vaapi_wrapper_, GetEncodedChunkSize(kCodedBufferId, _))

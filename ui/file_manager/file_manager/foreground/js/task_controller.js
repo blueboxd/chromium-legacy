@@ -236,7 +236,7 @@ export class TaskController {
         })
         .catch(error => {
           if (error) {
-            console.error(error.stack || error);
+            console.warn(error.stack || error);
           }
         });
   }
@@ -267,7 +267,7 @@ export class TaskController {
                 })
                 .catch(error => {
                   if (error) {
-                    console.error(error.stack || error);
+                    console.warn(error.stack || error);
                   }
                 });
           }
@@ -303,7 +303,7 @@ export class TaskController {
         })
         .catch(error => {
           if (error) {
-            console.error(error.stack || error);
+            console.warn(error.stack || error);
           }
         });
   }
@@ -340,6 +340,9 @@ export class TaskController {
    * @private
    */
   onSelectionChanged_() {
+    if (window.IN_TEST) {
+      this.ui_.taskMenuButton.removeAttribute('get-tasks-completed');
+    }
     const selection = this.selectionHandler_.selection;
     // Caller of update context menu task items.
     // FileSelectionHandler.EventType.CHANGE
@@ -369,14 +372,21 @@ export class TaskController {
           .then(tasks => {
             tasks.display(this.ui_.taskMenuButton);
             this.updateContextMenuTaskItems_(tasks.getOpenTaskItems());
+            if (window.IN_TEST) {
+              this.ui_.taskMenuButton.toggleAttribute(
+                  'get-tasks-completed', true);
+            }
           })
           .catch(error => {
             if (error) {
-              console.error(error.stack || error);
+              console.warn(error.stack || error);
             }
           });
     } else {
       this.ui_.taskMenuButton.hidden = true;
+      if (window.IN_TEST) {
+        this.ui_.taskMenuButton.toggleAttribute('get-tasks-completed', true);
+      }
     }
   }
 

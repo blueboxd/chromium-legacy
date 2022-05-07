@@ -7,26 +7,27 @@
 #include <cstring>
 #include <memory>
 
+#include "ash/services/device_sync/proto/cryptauth_api.pb.h"
 #include "ash/services/secure_channel/raw_eid_generator.h"
 #include "ash/services/secure_channel/raw_eid_generator_impl.h"
 #include "base/memory/ptr_util.h"
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
+#include "base/time/clock.h"
 #include "base/time/default_clock.h"
 #include "base/time/time.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 namespace {
+
 constexpr int64_t kNoTimestamp = 0;
 constexpr int64_t kMaxPositiveInt64TValue = 0x7FFFFFFF;
 constexpr base::TimeDelta kEidPeriod = base::Hours(8);
 constexpr base::TimeDelta kBeginningOfEidPeriod = base::Hours(2);
+
 }  // namespace
 
 const int8_t ForegroundEidGenerator::kBluetooth4Flag = 0x01;
@@ -398,6 +399,4 @@ bool ForegroundEidGenerator::IsCurrentTimeAtStartOfEidPeriod(
          start_of_period_timestamp_ms + kBeginningOfEidPeriod.InMilliseconds();
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

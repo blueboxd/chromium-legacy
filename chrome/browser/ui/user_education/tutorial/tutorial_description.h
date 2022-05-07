@@ -113,8 +113,8 @@ struct TutorialDescription {
 
   struct Step {
     Step();
-    Step(absl::optional<std::u16string> title_text_,
-         std::u16string body_text_,
+    Step(int title_text_id_,
+         int body_text_id_,
          ui::InteractionSequence::StepType step_type_,
          ui::ElementIdentifier element_id_,
          std::string element_name_,
@@ -127,10 +127,11 @@ struct TutorialDescription {
     Step& operator=(const Step& other);
     ~Step();
 
-    absl::optional<std::u16string> title_text;
+    // The title text to be populated in the bubble.
+    int title_text_id = 0;
 
-    // The text to to populated in the bubble.
-    std::u16string body_text;
+    // The body text to be populated in the bubble.
+    int body_text_id = 0;
 
     // The step type for InteractionSequence::Step.
     ui::InteractionSequence::StepType step_type;
@@ -181,6 +182,12 @@ struct TutorialDescription {
   // The histogram data to use. Use MakeTutorialHistograms() above to create a
   // value to use, if you want to record specific histograms for this tutorial.
   std::unique_ptr<TutorialHistograms> histograms;
+
+  // The ability for the tutorial to be restarted. In some cases tutorials can
+  // leave the UI in a state where it can not re-run the tutorial. In these
+  // cases this flag should be set to false so that the restart tutorial button
+  // is not displayed.
+  bool can_be_restarted = false;
 };
 
 #endif  // CHROME_BROWSER_UI_USER_EDUCATION_TUTORIAL_TUTORIAL_DESCRIPTION_H_

@@ -9,6 +9,7 @@
     <title>$i18n{FILEMANAGER_APP_NAME}</title>
 
     <meta name="google" value="notranslate">
+    <meta name="color-scheme" content="light dark">
 
     <link rel="stylesheet" href="chrome://resources/css/action_link.css">
     <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
@@ -127,6 +128,8 @@
                label="$i18n{GO_TO_FILE_LOCATION_BUTTON_LABEL}">
       <command id="zip-selection"
                label="$i18n{ZIP_SELECTION_BUTTON_LABEL}">
+      <command id="extract-all"
+               label="$i18n{EXTRACT_ALL_BUTTON_LABEL}">
       <command id="set-wallpaper"
                label="$i18n{SET_WALLPAPER_BUTTON_LABEL}">
 
@@ -190,6 +193,7 @@
         <cr-menu-item command="#delete" class="hide-on-toolbar">$i18n{DELETE_BUTTON_LABEL}</cr-menu-item>
         <cr-menu-item command="#restore-from-trash"></cr-menu-item>
         <cr-menu-item command="#zip-selection"></cr-menu-item>
+        <cr-menu-item command="#extract-all"></cr-menu-item>
         <cr-menu-item command="#toggle-holding-space" visibleif="full-page">
             </cr-menu-item>
         <cr-menu-item command="#share-with-linux"></cr-menu-item>
@@ -421,7 +425,7 @@
                 <div class="icon"></div>
               </cr-button>
               <div id="search-box">
-                <cr-input type="search" tabindex="0" disabled
+                <cr-input type="search" disabled
                     aria-label="$i18n{SEARCH_TEXT_LABEL}" placeholder="$i18n{SEARCH_TEXT_LABEL}">
                   <cr-button class="clear" slot="suffix" tabindex="0"
                     aria-label="$i18n{SEARCH_CLEAR_LABEL}" has-tooltip>
@@ -538,7 +542,7 @@
           <div class="options" id="file-type-options" role="listbox"></div>
         </div>
         <div id="filename-input-box" visibleif="saveas-file">
-          <cr-input id="filename-input-textbox" tabindex="0" class="entry-name"
+          <cr-input id="filename-input-textbox" class="entry-name"
               type="text" spellcheck="false"
               placeholder="$i18n{FILENAME_LABEL}"></cr-input>
         </div>

@@ -22,7 +22,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kBackForwardCacheDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature
     kBlockingDownloadsInAdFrameWithoutUserActivation;
-BLINK_COMMON_EXPORT extern const base::Feature kCOLRV1Fonts;
 BLINK_COMMON_EXPORT extern const base::Feature kCSSContainerQueries;
 BLINK_COMMON_EXPORT extern const base::Feature kConversionMeasurement;
 BLINK_COMMON_EXPORT extern const base::Feature kExcludeLowEntropyImagesFromLCP;
@@ -48,10 +47,12 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kDisplayLocking;
 BLINK_COMMON_EXPORT extern const base::Feature kJSONModules;
 BLINK_COMMON_EXPORT extern const base::Feature kForceSynchronousHTMLParsing;
+BLINK_COMMON_EXPORT extern const base::Feature kDeferredFontShaping;
 BLINK_COMMON_EXPORT extern const base::Feature kEditingNG;
 BLINK_COMMON_EXPORT extern const base::Feature kLayoutNG;
 BLINK_COMMON_EXPORT extern const base::Feature kMixedContentAutoupgrade;
 BLINK_COMMON_EXPORT extern const base::Feature kNavigationPredictor;
+BLINK_COMMON_EXPORT extern const base::Feature kAnchorElementInteraction;
 BLINK_COMMON_EXPORT extern const base::Feature kPlzDedicatedWorker;
 BLINK_COMMON_EXPORT extern const base::Feature kPortals;
 BLINK_COMMON_EXPORT extern const base::Feature kPortalsCrossOrigin;
@@ -63,6 +64,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kPrefersColorSchemeClientHintHeader;
 BLINK_COMMON_EXPORT extern const base::Feature kViewportHeightClientHintHeader;
 BLINK_COMMON_EXPORT extern const base::Feature kFullUserAgent;
+BLINK_COMMON_EXPORT extern const base::Feature kPath2DPaintCache;
 
 enum class FencedFramesImplementationType {
   kShadowDOM,
@@ -136,6 +138,7 @@ BLINK_COMMON_EXPORT bool IsPrerender2Enabled();
 // Fenced Frames:
 BLINK_COMMON_EXPORT bool IsFencedFramesEnabled();
 BLINK_COMMON_EXPORT bool IsFencedFramesMPArchBased();
+BLINK_COMMON_EXPORT bool IsFencedFramesShadowDOMBased();
 
 // Whether we will create initial NavigationEntry or not on FrameTree creation,
 // which also impacts the session history replacement decisions made in the
@@ -383,8 +386,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableTranslations;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableUrlHandlers;
 
-BLINK_COMMON_EXPORT extern const base::Feature kWebAppEnableProtocolHandlers;
-
 BLINK_COMMON_EXPORT extern const base::Feature kLoadingTasksUnfreezable;
 
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -416,6 +417,7 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<std::string>
     kBackgroundTracingPerformanceMark_AllowList;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSanitizerAPI;
+BLINK_COMMON_EXPORT extern const base::Feature kSanitizerAPINamespaces;
 BLINK_COMMON_EXPORT extern const base::Feature kManagedConfiguration;
 
 // Kill switch for the blocking of the navigation of top from a cross origin
@@ -463,6 +465,18 @@ BLINK_COMMON_EXPORT extern const base::Feature kAllowURNsInIframes;
 // Returns true when Prerender2 feature is enabled.
 BLINK_COMMON_EXPORT bool IsAllowURNsInIframeEnabled();
 
+BLINK_COMMON_EXPORT extern const base::Feature kBrowsingTopics;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsNumberOfEpochsToExpose;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsNumberOfTopTopicsPerEpoch;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsUseRandomTopicProbabilityPercent;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsMaxNumberOfApiUsageContextEntriesToLoadPerEpoch;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsConfigVersion;
+
 // Control switch for minimizing processing in the WebRTC APM when all audio
 // tracks are disabled.
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -485,9 +499,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kClipboardCustomFormats;
 // Uses page viewport instead of frame viewport in the Largest Contentful Paint
 // heuristic where images occupying the full viewport are ignored.
 BLINK_COMMON_EXPORT extern const base::Feature kUsePageViewportInLCP;
-
-// Send all user interaction latency data from renderer to the browser process.
-BLINK_COMMON_EXPORT extern const base::Feature kSendAllUserInteractionLatencies;
 
 // Enable "Sec-CH-UA-Platform" client hint and request header for all requests
 BLINK_COMMON_EXPORT extern const base::Feature kUACHPlatformEnabledByDefault;
@@ -554,8 +565,6 @@ BLINK_COMMON_EXPORT extern const base::Feature kClientHintsDPR;
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsResourceWidth;
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsViewportWidth;
 BLINK_COMMON_EXPORT extern const base::Feature
-    kWebSQLInThirdPartyContextEnabled;
-BLINK_COMMON_EXPORT extern const base::Feature
     kClientHintsDeviceMemory_DEPRECATED;
 BLINK_COMMON_EXPORT extern const base::Feature kClientHintsDPR_DEPRECATED;
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -569,15 +578,19 @@ BLINK_COMMON_EXPORT extern const base::Feature kCSSCascadeLayers;
 BLINK_COMMON_EXPORT extern const base::Feature kSetTimeoutWithoutClamp;
 BLINK_COMMON_EXPORT bool IsSetTimeoutWithoutClampEnabled();
 
+BLINK_COMMON_EXPORT extern const base::Feature
+    kMaxUnthrottledTimeoutNestingLevel;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kMaxUnthrottledTimeoutNestingLevelParam;
+BLINK_COMMON_EXPORT bool IsMaxUnthrottledTimeoutNestingLevelEnabled();
+BLINK_COMMON_EXPORT int GetMaxUnthrottledTimeoutNestingLevel();
+
 // If enabled, ContentToVisibleTimeReporter logs
 // Browser.Tabs.TotalSwitchDuration2.* instead of
 // Browser.Tabs.TotalSwitchDuration.*.
 BLINK_COMMON_EXPORT extern const base::Feature kTabSwitchMetrics2;
 
 BLINK_COMMON_EXPORT extern const base::Feature kLCPAnimatedImagesReporting;
-
-BLINK_COMMON_EXPORT extern const base::Feature
-    kWebSQLInThirdPartyContextThrowsWhenDisabled;
 
 // https://blog.whatwg.org/newline-normalizations-in-form-submission
 BLINK_COMMON_EXPORT extern const base::Feature kLateFormNewlineNormalization;
@@ -650,6 +663,24 @@ BLINK_COMMON_EXPORT extern const base::Feature
 
 // Enables the WindowPlacement RuntimeEnabledFeature.
 BLINK_COMMON_EXPORT extern const base::Feature kWindowPlacement;
+
+// Gates the non-standard API Event.path to help its deprecation and removal.
+BLINK_COMMON_EXPORT extern const base::Feature kEventPath;
+
+// If enabled, the minor version of the User-Agent string will be reduced.
+BLINK_COMMON_EXPORT extern const base::Feature kReduceUserAgentMinorVersion;
+
+BLINK_COMMON_EXPORT extern const base::Feature kSecureContextFixForWorkers;
+
+// If enabled, the `getDisplayMedia()` family of APIs will ask for NV12 frames,
+// which should trigger a zero-copy path in the tab capture code.
+BLINK_COMMON_EXPORT extern const base::Feature kZeroCopyTabCapture;
+
+// Experiment for measuring how often an overridden User-Agent string is made by
+// appending or prepending to the original User-Agent string.
+BLINK_COMMON_EXPORT extern const base::Feature kUserAgentOverrideExperiment;
+
+BLINK_COMMON_EXPORT extern const base::Feature kWebSQLAccess;
 
 }  // namespace features
 }  // namespace blink

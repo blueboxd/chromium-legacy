@@ -25,32 +25,25 @@
 namespace {
 
 // Salt for Symmetric key derivation.
-const char kSalt[] = "saltysalt";
+constexpr char kSalt[] = "saltysalt";
 
 // Key size required for 128 bit AES.
-const size_t kDerivedKeySizeInBits = 128;
+constexpr size_t kDerivedKeySizeInBits = 128;
 
-// Constant for Symmetic key derivation.
-const size_t kEncryptionIterations = 1;
+// Constant for Symmetric key derivation.
+constexpr size_t kEncryptionIterations = 1;
 
 // Size of initialization vector for AES 128-bit.
-const size_t kIVBlockSizeAES128 = 16;
+constexpr size_t kIVBlockSizeAES128 = 16;
 
-// Password version. V10 means that the hardcoded password will be used.
-// V11 means that a password is/will be stored using an OS-level library (e.g
-// Libsecret). V11 will not be used if such a library is not available.
-// Used for array indexing.
-enum Version {
-  V10 = 0,
-  V11 = 1,
-};
-
-// Prefix for cipher text returned by obfuscation version.  We prefix the
+// Prefixes for cypher text returned by obfuscation version.  We prefix the
 // ciphertext with this string so that future data migration can detect
-// this and migrate to full encryption without data loss.
-const char kObfuscationPrefix[][4] = {
-    "v10", "v11",
-};
+// this and migrate to full encryption without data loss. kObfuscationPrefixV10
+// means that the hardcoded password will be used. kObfuscationPrefixV11 means
+// that a password is/will be stored using an OS-level library (e.g Libsecret).
+// V11 will not be used if such a library is not available.
+constexpr char kObfuscationPrefixV10[] = "v10";
+constexpr char kObfuscationPrefixV11[] = "v11";
 
 // Everything in Cache may be leaked on shutdown.
 struct Cache {
@@ -88,7 +81,7 @@ std::unique_ptr<KeyStorageLinux> (*g_key_storage_provider)() =
 // generation error occurs.
 std::unique_ptr<crypto::SymmetricKey> GenerateEncryptionKey(
     const std::string& password) {
-  std::string salt(kSalt);
+  const std::string salt(kSalt);
 
   // Create an encryption key from our password and salt.
   std::unique_ptr<crypto::SymmetricKey> encryption_key(
@@ -126,23 +119,53 @@ crypto::SymmetricKey* GetPasswordV11() {
   return g_cache.Get().password_v11_cache.get();
 }
 
-// Pointers to functions that return a password for deriving the encryption key.
-// One function for each supported password version (see Version enum).
-crypto::SymmetricKey* (*g_get_password[])() = {
-    &GetPasswordV10,
-    &GetPasswordV11,
-};
-
 }  // namespace
 
+namespace OSCrypt {
+void SetConfig(std::unique_ptr<os_crypt::Config> config) {
+  OSCryptImpl::SetConfig(std::move(config));
+}
+bool EncryptString16(const std::u16string& plaintext, std::string* ciphertext) {
+  return OSCryptImpl::EncryptString16(plaintext, ciphertext);
+}
+bool DecryptString16(const std::string& ciphertext, std::u16string* plaintext) {
+  return OSCryptImpl::DecryptString16(ciphertext, plaintext);
+}
+bool EncryptString(const std::string& plaintext, std::string* ciphertext) {
+  return OSCryptImpl::EncryptString(plaintext, ciphertext);
+}
+bool DecryptString(const std::string& ciphertext, std::string* plaintext) {
+  return OSCryptImpl::DecryptString(ciphertext, plaintext);
+}
+std::string GetRawEncryptionKey() {
+  return OSCryptImpl::GetRawEncryptionKey();
+}
+void SetRawEncryptionKey(const std::string& key) {
+  OSCryptImpl::SetRawEncryptionKey(key);
+}
+bool IsEncryptionAvailable() {
+  return OSCryptImpl::IsEncryptionAvailable();
+}
+void UseMockKeyStorageForTesting(
+    std::unique_ptr<KeyStorageLinux> (*get_key_storage_mock)()) {
+  OSCryptImpl::UseMockKeyStorageForTesting(std::move(get_key_storage_mock));
+}
+void ClearCacheForTesting() {
+  OSCryptImpl::ClearCacheForTesting();
+}
+void SetEncryptionPasswordForTesting(const std::string& password) {
+  OSCryptImpl::SetEncryptionPasswordForTesting(password);
+}
+}  // namespace OSCrypt
+
 // static
-bool OSCrypt::EncryptString16(const std::u16string& plaintext,
+bool OSCryptImpl::EncryptString16(const std::u16string& plaintext,
                               std::string* ciphertext) {
   return EncryptString(base::UTF16ToUTF8(plaintext), ciphertext);
 }
 
 // static
-bool OSCrypt::DecryptString16(const std::string& ciphertext,
+bool OSCryptImpl::DecryptString16(const std::string& ciphertext,
                               std::u16string* plaintext) {
   std::string utf8;
   if (!DecryptString(ciphertext, &utf8))
@@ -153,7 +176,7 @@ bool OSCrypt::DecryptString16(const std::string& ciphertext,
 }
 
 // static
-bool OSCrypt::EncryptString(const std::string& plaintext,
+bool OSCryptImpl::EncryptString(const std::string& plaintext,
                             std::string* ciphertext) {
   if (plaintext.empty()) {
     ciphertext->clear();
@@ -162,17 +185,17 @@ bool OSCrypt::EncryptString(const std::string& plaintext,
 
   // If we are able to create a V11 key (i.e. a KeyStorage was available), then
   // we'll use it. If not, we'll use V10.
-  Version version = Version::V11;
-  crypto::SymmetricKey* encryption_key = g_get_password[version]();
+  crypto::SymmetricKey* encryption_key = GetPasswordV11();
+  std::string obfuscation_prefix = kObfuscationPrefixV11;
   if (!encryption_key) {
-    version = Version::V10;
-    encryption_key = g_get_password[version]();
+    encryption_key = GetPasswordV10();
+    obfuscation_prefix = kObfuscationPrefixV10;
   }
 
   if (!encryption_key)
     return false;
 
-  std::string iv(kIVBlockSizeAES128, ' ');
+  const std::string iv(kIVBlockSizeAES128, ' ');
   crypto::Encryptor encryptor;
   if (!encryptor.Init(encryption_key, crypto::Encryptor::CBC, iv))
     return false;
@@ -181,12 +204,12 @@ bool OSCrypt::EncryptString(const std::string& plaintext,
     return false;
 
   // Prefix the cipher text with version information.
-  ciphertext->insert(0, kObfuscationPrefix[version]);
+  ciphertext->insert(0, obfuscation_prefix);
   return true;
 }
 
 // static
-bool OSCrypt::DecryptString(const std::string& ciphertext,
+bool OSCryptImpl::DecryptString(const std::string& ciphertext,
                             std::string* plaintext) {
   if (ciphertext.empty()) {
     plaintext->clear();
@@ -196,13 +219,16 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
   // Check that the incoming ciphertext was encrypted and with what version.
   // Credit card numbers are current legacy unencrypted data, so false match
   // with prefix won't happen.
-  Version version;
-  if (base::StartsWith(ciphertext, kObfuscationPrefix[Version::V10],
+  crypto::SymmetricKey* encryption_key = nullptr;
+  std::string obfuscation_prefix;
+  if (base::StartsWith(ciphertext, kObfuscationPrefixV10,
                        base::CompareCase::SENSITIVE)) {
-    version = Version::V10;
-  } else if (base::StartsWith(ciphertext, kObfuscationPrefix[Version::V11],
+    encryption_key = GetPasswordV10();
+    obfuscation_prefix = kObfuscationPrefixV10;
+  } else if (base::StartsWith(ciphertext, kObfuscationPrefixV11,
                               base::CompareCase::SENSITIVE)) {
-    version = Version::V11;
+    encryption_key = GetPasswordV11();
+    obfuscation_prefix = kObfuscationPrefixV11;
   } else {
     // If the prefix is not found then we'll assume we're dealing with
     // old data saved as clear text and we'll return it directly.
@@ -210,20 +236,19 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
     return true;
   }
 
-  crypto::SymmetricKey* encryption_key(g_get_password[version]());
   if (!encryption_key) {
     VLOG(1) << "Decryption failed: could not get the key";
     return false;
   }
 
-  std::string iv(kIVBlockSizeAES128, ' ');
+  const std::string iv(kIVBlockSizeAES128, ' ');
   crypto::Encryptor encryptor;
   if (!encryptor.Init(encryption_key, crypto::Encryptor::CBC, iv))
     return false;
 
   // Strip off the versioning prefix before decrypting.
-  std::string raw_ciphertext =
-      ciphertext.substr(strlen(kObfuscationPrefix[version]));
+  const std::string raw_ciphertext =
+      ciphertext.substr(obfuscation_prefix.length());
 
   if (!encryptor.Decrypt(raw_ciphertext, plaintext)) {
     VLOG(1) << "Decryption failed";
@@ -234,19 +259,19 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
 }
 
 // static
-void OSCrypt::SetConfig(std::unique_ptr<os_crypt::Config> config) {
+void OSCryptImpl::SetConfig(std::unique_ptr<os_crypt::Config> config) {
   // Setting initialisation parameters makes no sense after initializing.
   DCHECK(!g_cache.Get().is_password_v11_cached);
   g_cache.Get().config = std::move(config);
 }
 
 // static
-bool OSCrypt::IsEncryptionAvailable() {
-  return g_get_password[Version::V11]();
+bool OSCryptImpl::IsEncryptionAvailable() {
+  return GetPasswordV11();
 }
 
 // static
-void OSCrypt::SetRawEncryptionKey(const std::string& raw_key) {
+void OSCryptImpl::SetRawEncryptionKey(const std::string& raw_key) {
   base::AutoLock auto_lock(g_cache.Get().lock);
   // Check if the v11 password is already cached. If it is, then data encrypted
   // with the old password might not be decryptable.
@@ -266,15 +291,14 @@ void OSCrypt::SetRawEncryptionKey(const std::string& raw_key) {
 }
 
 // static
-std::string OSCrypt::GetRawEncryptionKey() {
-  crypto::SymmetricKey* key = g_get_password[Version::V11]();
-  if (!key)
-    return std::string();
-  return key->key();
+std::string OSCryptImpl::GetRawEncryptionKey() {
+  if (crypto::SymmetricKey* key = GetPasswordV11())
+    return key->key();
+  return std::string();
 }
 
 // static
-void OSCrypt::ClearCacheForTesting() {
+void OSCryptImpl::ClearCacheForTesting() {
   g_cache.Get().password_v10_cache.reset();
   g_cache.Get().password_v11_cache.reset();
   g_cache.Get().is_password_v11_cached = false;
@@ -282,7 +306,7 @@ void OSCrypt::ClearCacheForTesting() {
 }
 
 // static
-void OSCrypt::UseMockKeyStorageForTesting(
+void OSCryptImpl::UseMockKeyStorageForTesting(
     std::unique_ptr<KeyStorageLinux> (*get_key_storage_mock)()) {
   if (get_key_storage_mock)
     g_key_storage_provider = get_key_storage_mock;
@@ -291,7 +315,7 @@ void OSCrypt::UseMockKeyStorageForTesting(
 }
 
 // static
-void OSCrypt::SetEncryptionPasswordForTesting(const std::string& password) {
+void OSCryptImpl::SetEncryptionPasswordForTesting(const std::string& password) {
   ClearCacheForTesting();  // IN-TEST
   g_cache.Get().password_v11_cache = GenerateEncryptionKey(password);
   g_cache.Get().is_password_v11_cached = true;

@@ -1,0 +1,32 @@
+<style include="trusted-style common-style">
+  :host {
+    overflow: hidden
+  }
+
+  paper-spinner-lite {
+    display: block;
+    height: 28px;
+    margin: 150px auto;
+    width: 28px;
+  }
+
+  iron-list {
+    height: 100%;
+    width: 100%;
+  }
+</style>
+
+<iron-list id="grid" items="[[albums]]" as="album" grid>
+  <template>
+    <wallpaper-grid-item
+      class="album"
+      image-src="[[album.url.url]]"
+      on-click="onAlbumSelected_"
+      on-keypress="onAlbumSelected_"
+      primary-text="[[album.title]]"
+      secondary-text="[[getSecondaryText_(album, topicSource)]]"
+      selected$="[[isAlbumSelected_(album, albums)]]"
+      tabindex$="[[tabIndex]]">
+    </wallpaper-grid-item>
+  </template>
+</iron-list>

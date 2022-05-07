@@ -181,8 +181,6 @@ ProtoEnum::BackForwardCacheNotRestoredReason NotRestoredReasonToTraceEnum(
       return ProtoEnum::CACHE_CONTROL_NO_STORE_HTTP_ONLY_COOKIE_MODIFIED;
     case Reason::kNoResponseHead:
       return ProtoEnum::NO_RESPONSE_HEAD;
-    case Reason::kActivationNavigationsDisallowedForBug1234857:
-      return ProtoEnum::ACTIVATION_NAVIGATION_DISALLOWED_FOR_BUG_1234857;
     case Reason::kErrorDocument:
       return ProtoEnum::ERROR_DOCUMENT;
     case Reason::kBlocklistedFeatures:
@@ -240,8 +238,9 @@ std::string DisabledReasonsToString(
     const std::set<BackForwardCache::DisabledReason>& reasons) {
   std::vector<std::string> descriptions;
   for (const auto& reason : reasons) {
-    descriptions.push_back(base::StringPrintf(
-        "%d:%d:%s", reason.source, reason.id, reason.description.c_str()));
+    descriptions.push_back(
+        base::StringPrintf("%d:%d:%s:%s", reason.source, reason.id,
+                           reason.description.c_str(), reason.context.c_str()));
   }
   return base::JoinString(descriptions, ", ");
 }
@@ -392,10 +391,6 @@ std::string BackForwardCacheCanStoreDocumentResult::NotRestoredReasonToString(
     case Reason::kNoResponseHead:
       return "main RenderFrameHost doesn't have response headers set, probably "
              "due not having successfully committed a navigation.";
-    case Reason::kActivationNavigationsDisallowedForBug1234857:
-      return "Activation navigations are disallowed to avoid bypassing "
-             "PasswordProtectionService as a workaround for "
-             "https://crbug.com/1234857.";
     case Reason::kErrorDocument:
       return "Error documents cannot be stored in bfcache";
   }
@@ -474,9 +469,8 @@ void BackForwardCacheCanStoreDocumentResult::AddReasonsFrom(
 BackForwardCacheCanStoreDocumentResult::
     BackForwardCacheCanStoreDocumentResult() = default;
 BackForwardCacheCanStoreDocumentResult::BackForwardCacheCanStoreDocumentResult(
-    BackForwardCacheCanStoreDocumentResult&&) = default;
-BackForwardCacheCanStoreDocumentResult&
-BackForwardCacheCanStoreDocumentResult::operator=(
+    BackForwardCacheCanStoreDocumentResult&) = default;
+BackForwardCacheCanStoreDocumentResult::BackForwardCacheCanStoreDocumentResult(
     BackForwardCacheCanStoreDocumentResult&&) = default;
 BackForwardCacheCanStoreDocumentResult::
     ~BackForwardCacheCanStoreDocumentResult() = default;

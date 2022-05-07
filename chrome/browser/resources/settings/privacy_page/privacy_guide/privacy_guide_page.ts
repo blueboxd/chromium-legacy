@@ -143,7 +143,7 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
         this.computePrivacyGuideStepToComponentsMap_();
   }
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.addWebUIListener(
@@ -160,7 +160,7 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
   }
 
   /** RouteObserverBehavior */
-  currentRouteChanged(newRoute: Route) {
+  override currentRouteChanged(newRoute: Route) {
     if (newRoute !== routes.PRIVACY_GUIDE || this.exitIfNecessary()) {
       return;
     }
@@ -191,13 +191,6 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
       [
         PrivacyGuideStep.COMPLETION,
         {
-          onForwardNavigation: () => {
-            this.metricsBrowserProxy_.recordPrivacyGuideNextNavigationHistogram(
-                PrivacyGuideInteractions.COMPLETION_NEXT_BUTTON);
-            this.metricsBrowserProxy_.recordAction(
-                'Settings.PrivacyGuide.NextClickCompletion');
-            Router.getInstance().navigateToPreviousRoute();
-          },
           onBackwardNavigation: () => {
             this.metricsBrowserProxy_.recordAction(
                 'Settings.PrivacyGuide.BackClickCompletion');
@@ -330,7 +323,7 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
              .isAvailable()) {
       // This card is currently shown but is no longer available. Navigate to
       // the next card in the flow.
-      this.navigateForward_(true);
+      this.navigateForward_();
     }
   }
 
@@ -350,35 +343,33 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
   }
 
   private onNextButtonClick_() {
-    this.navigateForward_(true);
+    this.navigateForward_();
   }
 
-  private navigateForward_(playAnimation: boolean) {
+  private navigateForward_() {
     const components =
         this.privacyGuideStepToComponentsMap_.get(this.privacyGuideStep_)!;
-    assert(components.onForwardNavigation || components.nextStep);
     if (components.onForwardNavigation) {
       components.onForwardNavigation();
     }
     if (components.nextStep) {
-      this.navigateToCard_(components.nextStep, false, playAnimation);
+      this.navigateToCard_(components.nextStep, false, true);
     }
   }
 
   private onBackButtonClick_() {
-    this.navigateBackward_(true);
+    this.navigateBackward_();
   }
 
-  private navigateBackward_(playAnimation: boolean) {
+  private navigateBackward_() {
     const components =
         this.privacyGuideStepToComponentsMap_.get(this.privacyGuideStep_)!;
     if (components.onBackwardNavigation) {
       components.onBackwardNavigation();
     }
-    this.navigateToCard_(
-        this.privacyGuideStepToComponentsMap_.get(this.privacyGuideStep_)!
-            .previousStep!,
-        true, playAnimation);
+    if (components.previousStep) {
+      this.navigateToCard_(components.previousStep, true, true);
+    }
   }
 
   private navigateToCard_(
@@ -392,9 +383,9 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
       // This card is currently not available. Navigate to the next one, or
       // the previous one if this was a back navigation.
       if (isBackwardNavigation) {
-        this.navigateBackward_(playAnimation);
+        this.navigateBackward_();
       } else {
-        this.navigateForward_(playAnimation);
+        this.navigateForward_();
       }
     } else {
       if (this.animationsEnabled_ && playAnimation) {
@@ -483,6 +474,18 @@ export class SettingsPrivacyGuidePageElement extends PrivacyGuideBase {
         assert((event.target! as HTMLElement)
                    .shadowRoot!.querySelector<HTMLElement>('[focus-element]'));
     afterNextRender(this, () => elementToFocus!.focus());
+  }
+
+  private onKeyDown_(event: KeyboardEvent) {
+    const isLtr = loadTimeData.getString('textdirection') === 'ltr';
+    switch (event.key) {
+      case 'ArrowLeft':
+        isLtr ? this.navigateBackward_() : this.navigateForward_();
+        break;
+      case 'ArrowRight':
+        isLtr ? this.navigateForward_() : this.navigateBackward_();
+        break;
+    }
   }
 }
 

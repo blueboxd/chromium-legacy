@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_WEBUI_CHROMEOS_IN_SESSION_PASSWORD_CHANGE_LOCK_SCREEN_REAUTH_HANDLER_H_
 #define CHROME_BROWSER_UI_WEBUI_CHROMEOS_IN_SESSION_PASSWORD_CHANGE_LOCK_SCREEN_REAUTH_HANDLER_H_
 
+#include <memory>
 #include "base/memory/weak_ptr.h"
 #include "base/values.h"
 // TODO(https://crbug.com/1164001): move to forward declaration.
@@ -25,10 +26,10 @@ class LockScreenReauthHandler : public content::WebUIMessageHandler {
   void ShowPasswordChangedScreen();
 
   // WebUI message handlers.
-  void HandleInitialize(base::Value::ConstListView);
-  void HandleCompleteAuthentication(base::Value::ConstListView);
-  void HandleAuthenticatorLoaded(base::Value::ConstListView);
-  void HandleUpdateUserPassword(base::Value::ConstListView);
+  void HandleInitialize(const base::Value::List&);
+  void HandleCompleteAuthentication(const base::Value::List&);
+  void HandleAuthenticatorLoaded(const base::Value::List&);
+  void HandleUpdateUserPassword(const base::Value::List&);
 
   bool IsAuthenticatorLoaded(base::OnceClosure callback);
 
@@ -61,7 +62,7 @@ class LockScreenReauthHandler : public content::WebUIMessageHandler {
 
   void OnReauthDialogReadyForTesting();
 
-  void CheckCredentials(const UserContext& user_context);
+  void CheckCredentials(std::unique_ptr<UserContext> user_context);
 
   void UpdateOrientationAndWidth();
 

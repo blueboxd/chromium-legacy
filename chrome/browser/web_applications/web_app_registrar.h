@@ -23,6 +23,7 @@
 #include "components/services/app_service/public/cpp/protocol_handler_info.h"
 #include "components/services/app_service/public/cpp/url_handler_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace apps {
@@ -38,6 +39,7 @@ namespace web_app {
 class AppRegistrarObserver;
 class WebApp;
 class WebAppPolicyManager;
+class WebAppTranslationManager;
 
 using Registry = std::map<AppId, std::unique_ptr<WebApp>>;
 
@@ -67,7 +69,8 @@ class WebAppRegistrar : public ProfileManagerObserver {
   void Start();
   void Shutdown();
 
-  void SetSubsystems(WebAppPolicyManager* policy_manager);
+  void SetSubsystems(WebAppPolicyManager* policy_manager,
+                     WebAppTranslationManager* translation_manager);
 
   // Returns whether the app with |app_id| is currently listed in the registry.
   // ie. we have data for web app manifest and icons, and this |app_id| can be
@@ -91,7 +94,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // the app with |app_id|. This permissions policy is not yet parsed by the
   // PermissionsPolicyParser, and thus may contain invalid permissions and/or
   // origin allowlists.
-  std::vector<PermissionsPolicyDeclaration> GetPermissionsPolicy(
+  blink::ParsedPermissionsPolicy GetPermissionsPolicy(
       const AppId& app_id) const;
 
   // Returns true if the app was preinstalled and NOT installed via any other
@@ -132,12 +135,12 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // Returns true if the web app with the |app_id| contains |protocol_scheme|
   // as one of its allowed launch protocols.
   bool IsAllowedLaunchProtocol(const AppId& app_id,
-                               std::string protocol_scheme) const;
+                               const std::string& protocol_scheme) const;
 
   // Returns true if the web app with the |app_id| contains |protocol_scheme|
   // as one of its disallowed launch protocols.
   bool IsDisallowedLaunchProtocol(const AppId& app_id,
-                                  std::string protocol_scheme) const;
+                                  const std::string& protocol_scheme) const;
 
   // Gets all allowed launch protocols from all installed apps.
   base::flat_set<std::string> GetAllAllowedLaunchProtocols() const;
@@ -338,7 +341,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
             filter_(filter) {
         FilterAndSkipApps();
       }
-      Iter(Iter&&) = default;
+      Iter(Iter&&) noexcept = default;
       Iter(const Iter&) = delete;
       Iter& operator=(const Iter&) = delete;
       ~Iter() = default;
@@ -347,7 +350,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
         ++internal_iter_;
         FilterAndSkipApps();
       }
-      WebAppType& operator*() const { return *internal_iter_->second.get(); }
+      WebAppType& operator*() const { return *internal_iter_->second; }
       bool operator!=(const Iter& iter) const {
         return internal_iter_ != iter.internal_iter_;
       }
@@ -390,11 +393,11 @@ class WebAppRegistrar : public ProfileManagerObserver {
   };
 
   // Returns all apps in the registry (a superset) including stubs.
-  const AppSet GetAppsIncludingStubs() const;
+  AppSet GetAppsIncludingStubs() const;
   // Returns all apps excluding stubs for apps in sync install. Apps in sync
   // install are being installed and should be hidden for most subsystems. This
   // is a subset of GetAppsIncludingStubs().
-  const AppSet GetApps() const;
+  AppSet GetApps() const;
 
  protected:
   Profile* profile() const { return profile_; }
@@ -404,7 +407,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
   Registry& registry() { return registry_; }
   void SetRegistry(Registry&& registry);
 
-  const AppSet FilterApps(Filter filter) const;
+  AppSet FilterApps(Filter filter) const;
 
   void CountMutation();
 
@@ -416,6 +419,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
  private:
   const raw_ptr<Profile> profile_;
   raw_ptr<WebAppPolicyManager> policy_manager_ = nullptr;
+  raw_ptr<WebAppTranslationManager> translation_manager_ = nullptr;
 
   base::ObserverList<AppRegistrarObserver, /*check_empty=*/true> observers_;
 

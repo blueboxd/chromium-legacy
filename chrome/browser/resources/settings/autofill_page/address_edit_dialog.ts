@@ -21,7 +21,7 @@ import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialo
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
 import {assertNotReached} from 'chrome://resources/js/assert.m.js';
 import {I18nMixin} from 'chrome://resources/js/i18n_mixin.js';
-import {flush, html, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {flush, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {loadTimeData} from '../i18n_setup.js';
 
@@ -94,7 +94,7 @@ export class SettingsAddressEditDialogElement extends
   private countryInfo_: CountryDetailManager =
       CountryDetailManagerImpl.getInstance();
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.countryInfo_.getCountryList().then(countryList => {
@@ -148,6 +148,7 @@ export class SettingsAddressEditDialogElement extends
     // Default to the last country used if no country code is provided.
     const countryCode = this.countryCode_ || this.countries_[0].countryCode;
     this.countryInfo_.getAddressFormat(countryCode as string).then(format => {
+      this.address.languageCode = format.languageCode;
       this.addressWrapper_ = format.components.flatMap(component => {
         // If this is the name field, add a honorific title row before the
         // name.

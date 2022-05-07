@@ -5,6 +5,8 @@
 #ifndef ASH_AMBIENT_UTIL_AMBIENT_UTIL_H_
 #define ASH_AMBIENT_UTIL_AMBIENT_UTIL_H_
 
+#include <string>
+
 #include "ash/ash_export.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/public/cpp/ambient/ambient_backend_controller.h"
@@ -23,12 +25,18 @@ namespace ash {
 namespace ambient {
 namespace util {
 
+inline constexpr int kDefaultTextShadowElevation = 2;
+
 // Returns true if Ash is showing lock screen.
 ASH_EXPORT bool IsShowing(LockScreen::ScreenType type);
 
 // Ambient mode uses non-standard colors for some text and the media icon, so
 // provides a wrapper for |AshColorProvider::GetContentLayerColor|. This is
 // currently only supported for primary and secondary text and icons.
+ASH_EXPORT SkColor
+GetContentLayerColor(AshColorProvider::ContentLayerType content_layer_type,
+                     bool dark_mode_enable);
+// Version of the above that uses AshColorProvider::IsDarkModeEnabled().
 ASH_EXPORT SkColor
 GetContentLayerColor(AshColorProvider::ContentLayerType content_layer_type);
 
@@ -39,20 +47,50 @@ ASH_EXPORT const gfx::FontList& GetDefaultFontlist();
 // nullptr if the ShadowValues returned are only used to calculate margins, in
 // which kPlaceholderColor will be used for the shadow color.
 ASH_EXPORT gfx::ShadowValues GetTextShadowValues(
-    const ui::ColorProvider* color_provider);
+    const ui::ColorProvider* color_provider,
+    int elevation = kDefaultTextShadowElevation);
 
 ASH_EXPORT bool IsAmbientModeTopicTypeAllowed(::ambient::TopicType topic);
 
-// A "dynamic" asset is a spot in an ambient Lottie animation where a photo of
-// interest goes (ex: from a user’s google photos album) and is changed each
-// time a new animation cycle starts. This contrasts with a "static" asset,
-// which is a fixed image in the animation that does not change between
-// animation cycles.
+// A "dynamic" asset is a placeholder in an ambient Lottie animation where a
+// photo of interest goes (ex: from a user’s google photos album). This
+// contrasts with a "static" asset, which is a fixed image in the animation that
+// does not change between animation cycles.
 //
-// Note this function is specific to ash/ambient mode animations and not a
-// generic Lottie file standard; i.e. do not use this function for
-// non-ash/ambient Lottie files.
-ASH_EXPORT bool IsDynamicLottieAsset(base::StringPiece asset_id);
+// The dynamic asset ids for ambient mode take the following format:
+// "_CrOS_Photo_Position<position_id>_<idx>".
+//
+// A "position" represents a physical location on the screen where a photo
+// appears. Its identifier is arbitrary and opaque. But there may be multiple
+// assets assigned to a given position. For example, if an animation has a
+// cross-fade transition from image 1 to image 2, there may be 2 image assets
+// in the animation that share the same position id. However, their indices
+// (the last element of the identifier) will be different. Example:
+// "_CrOS_Photo_PositionA_1"
+// "_CrOS_Photo_PositionA_2"
+// ...
+//
+// The only requirement for the index is that it must reflect the order in which
+// that asset appears at its position. The absolute index values do not matter.
+//
+// Note this naming convention is agreed upon with the animation designer, so
+// any changes to the logic must be confirmed with them.
+//
+// Returns false and leaves the output argument untouched if the |asset_id|
+// does not match the naming convention above.
+struct ASH_EXPORT ParsedDynamicAssetId {
+  // Orders by index first, then by position if indices match:
+  // "_CrOS_Photo_PositionA_1"
+  // "_CrOS_Photo_PositionB_1"
+  // "_CrOS_Photo_PositionA_2"
+  // "_CrOS_Photo_PositionB_2"
+  bool operator<(const ParsedDynamicAssetId& other) const;
+
+  std::string position_id;
+  int idx;
+};
+ASH_EXPORT bool ParseDynamicLottieAssetId(base::StringPiece asset_id,
+                                          ParsedDynamicAssetId& parsed_output);
 
 }  // namespace util
 }  // namespace ambient

@@ -25,7 +25,6 @@ import androidx.annotation.IdRes;
 import androidx.annotation.StringRes;
 import androidx.appcompat.widget.SwitchCompat;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.flags.CachedFeatureFlags;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -164,8 +163,7 @@ public class LegacyIncognitoDescriptionView
 
         view.setText(SpanApplier.applySpans(text,
                 new SpanApplier.SpanInfo("<em>", "</em>",
-                        new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                                getContext().getResources(), R.color.incognito_emphasis))),
+                        new ForegroundColorSpan(getContext().getColor(R.color.incognito_emphasis))),
                 new SpanApplier.SpanInfo("<li1>", "</li1>", new ChromeBulletSpan(getContext())),
                 new SpanApplier.SpanInfo("<li2>", "</li2>", new ChromeBulletSpan(getContext())),
                 new SpanApplier.SpanInfo("<li3>", "</li3>", new ChromeBulletSpan(getContext()))));
@@ -310,7 +308,7 @@ public class LegacyIncognitoDescriptionView
         SpannableString textWithLearnMoreLink = new SpannableString(concatenatedText.toString());
 
         NoUnderlineClickableSpan span = new NoUnderlineClickableSpan(
-                getResources(), R.color.modern_blue_300, (view) -> mLearnMore.callOnClick());
+                getContext(), R.color.modern_blue_300, (view) -> mLearnMore.callOnClick());
         textWithLearnMoreLink.setSpan(
                 span, subtitleText.length() + 1, textWithLearnMoreLink.length(), 0 /* flags */);
         mSubtitle.setText(textWithLearnMoreLink);

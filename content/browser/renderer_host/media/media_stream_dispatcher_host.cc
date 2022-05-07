@@ -271,7 +271,7 @@ void MediaStreamDispatcherHost::OnDeviceCaptureHandleChange(
     const std::string& label,
     const blink::MediaStreamDevice& device) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(device.display_media_info.has_value());
+  DCHECK(device.display_media_info);
 
   GetMediaStreamDeviceObserver()->OnDeviceCaptureHandleChange(label, device);
 }
@@ -564,6 +564,32 @@ void MediaStreamDispatcherHost::OnCropValidationComplete(
       device_id, crop_id, crop_version, std::move(callback));
 }
 #endif
+
+void MediaStreamDispatcherHost::GetOpenDevice(
+    const base::UnguessableToken& session_id,
+    GetOpenDeviceCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!base::FeatureList::IsEnabled(features::kMediaStreamTrackTransfer)) {
+    ReceivedBadMessage(render_process_id_,
+                       bad_message::MSDH_GET_OPEN_DEVICE_USE_WITHOUT_FEATURE);
+
+    std::move(callback).Run(
+        blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED, nullptr);
+    return;
+  }
+  // TODO(https://crbug.com/1288839): Implement GetOpenDevice in
+  // MediaStreamManager and call that.
+
+  // TODO(https://crbug.com/1288839): Decide whether we need to have another
+  // mojo method, called by the first renderer to say "I'm going to be
+  // transferring this track, allow the receiving renderer to call GetOpenDevice
+  // on it", and whether we can/need to specific the destination renderer/frame
+  // in this case.
+
+  std::move(callback).Run(blink::mojom::MediaStreamRequestResult::NOT_SUPPORTED,
+                          nullptr);
+}
 
 void MediaStreamDispatcherHost::ReceivedBadMessage(
     int render_process_id,

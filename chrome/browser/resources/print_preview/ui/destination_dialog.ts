@@ -25,13 +25,14 @@ import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialo
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {ListPropertyUpdateMixin} from 'chrome://resources/js/list_property_update_mixin.js';
-import {beforeNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {beforeNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Destination} from '../data/destination.js';
 import {DestinationStore, DestinationStoreEventType} from '../data/destination_store.js';
 import {DestinationSearchBucket, MetricsContext} from '../metrics.js';
 import {NativeLayerImpl} from '../native_layer.js';
 
+import {getTemplate} from './destination_dialog.html.js';
 import {PrintPreviewDestinationListItemElement} from './destination_list_item.js';
 import {PrintPreviewSearchBoxElement} from './print_preview_search_box.js';
 
@@ -52,7 +53,7 @@ export class PrintPreviewDestinationDialogElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -102,12 +103,12 @@ export class PrintPreviewDestinationDialogElement extends
   private tracker_: EventTracker = new EventTracker();
   private initialized_: boolean = false;
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener('keydown', (e: KeyboardEvent) => this.onKeydown_(e));
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
 
     this.tracker_.removeAll();

@@ -88,6 +88,8 @@ Polymer({
         return 'nearbysharetype68:address';
       case nearbyShare.mojom.ShareType.kPhone:
         return 'nearbysharetype68:phone';
+      case nearbyShare.mojom.ShareType.kWifiCredentials:
+        return 'nearbysharetype68:wifi-credentials';
       default:
         assertNotReached(
             'No icon defined for share type ' + this.payloadPreview.shareType);

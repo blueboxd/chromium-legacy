@@ -9,6 +9,18 @@
 namespace policy {
 namespace policy_prefs {
 
+#if BUILDFLAG(IS_WIN)
+// Boolean pref that stores if the OS is actively managed by
+// Azure Active Directory. This will be used to cache the management status so
+// that it is loaded faster at sartup.
+const char kAzureActiveDirectoryManagement[] =
+    "management.platform.azure_active_directory";
+#elif BUILDFLAG(IS_MAC)
+// Integer pref that stores the Mac enterprise MDM management authority.
+const char kEnterpriseMDMManagementMac[] =
+    "management.platform.enterprise_mdm_mac";
+#endif
+
 // 64-bit serialization of the time last policy usage statistics were collected
 // by UMA_HISTOGRAM_ENUMERATION.
 const char kLastPolicyStatisticsUpdate[] = "policy.last_statistics_update";
@@ -72,19 +84,17 @@ const char kTargetBlankImpliesNoOpener[] =
 const char kBackForwardCacheEnabled[] = "policy.back_forward_cache_enabled";
 #endif  // BUILDFLAG(IS_ANDROID)
 
-// Boolean policy to force enable WebSQL in third-party contexts.
-const char kWebSQLInThirdPartyContextEnabled[] =
-    "policy.web_sql_in_third_party_context_enabled";
-
 // Boolean policy preference to disable the User-Agent Client Hints
 // updated GREASE algorithm feature.
 const char kUserAgentClientHintsGREASEUpdateEnabled[] =
     "policy.user_agent_client_hints_grease_update_enabled";
 
-// Boolean policy to enable/disable Direct Sockets API.
-// If true, the default API behavior is observed (secure context / cli flags
-// required). If false, the API gets blocked unconditionally.
-const char kEnableDirectSockets[] = "policy.enable_direct_sockets";
+// Boolean policy to allow isolated apps developer mode.
+const char kIsolatedAppsDeveloperModeAllowed[] =
+    "policy.isolated_apps_developer_mode_allowed";
+
+// Boolean policy to force WebSQL to be enabled.
+const char kWebSQLAccess[] = "policy.web_sql_access";
 
 }  // namespace policy_prefs
 }  // namespace policy

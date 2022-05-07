@@ -133,9 +133,9 @@ int AwBrowserMainParts::PreCreateThreads() {
 void AwBrowserMainParts::RegisterSyntheticTrials() {
   metrics::MetricsService* metrics =
       AwMetricsServiceClient::GetInstance()->GetMetricsService();
-  metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
+  metrics->GetSyntheticTrialRegistry()->AddSyntheticTrialObserver(
       variations::VariationsIdsProvider::GetInstance());
-  metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
+  metrics->GetSyntheticTrialRegistry()->AddSyntheticTrialObserver(
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
 
   static constexpr char kWebViewApkTypeTrial[] = "WebViewApkType";
@@ -178,7 +178,7 @@ void AwBrowserMainParts::PostCreateThreads() {
   if (mode != heap_profiling::Mode::kNone)
     heap_profiling::Supervisor::GetInstance()->Start(base::NullCallback());
 
-  SetupBackgroundTracingFieldTrial();
+  MaybeSetupSystemTracing();
 }
 
 }  // namespace android_webview

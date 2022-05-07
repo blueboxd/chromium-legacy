@@ -4,7 +4,7 @@
 
 #include "content/browser/site_instance_group.h"
 
-#include "content/browser/renderer_host/render_process_host_impl.h"
+#include "content/public/browser/render_process_host.h"
 
 namespace content {
 
@@ -12,8 +12,10 @@ namespace {
 SiteInstanceGroupId::Generator site_instance_group_id_generator;
 }  // namespace
 
-SiteInstanceGroup::SiteInstanceGroup(RenderProcessHost* process)
-    : id_(site_instance_group_id_generator.GenerateNextId()) {
+SiteInstanceGroup::SiteInstanceGroup(BrowsingInstanceId browsing_instance_id,
+                                     RenderProcessHost* process)
+    : id_(site_instance_group_id_generator.GenerateNextId()),
+      browsing_instance_id_(browsing_instance_id) {
   SetProcessAndAgentSchedulingGroup(process);
 }
 
@@ -28,7 +30,7 @@ SiteInstanceGroup::~SiteInstanceGroup() {
   process_->Cleanup();
 }
 
-SiteInstanceGroupId SiteInstanceGroup::GetId() {
+SiteInstanceGroupId SiteInstanceGroup::GetId() const {
   return id_;
 }
 
@@ -81,6 +83,24 @@ void SiteInstanceGroup::RenderProcessExited(
     const ChildProcessTerminationInfo& info) {
   for (auto& observer : observers_)
     observer.RenderProcessGone(this, info);
+}
+
+void SiteInstanceGroup::WriteIntoTrace(perfetto::TracedValue context) const {
+  auto dict = std::move(context).WriteDictionary();
+  dict.Add("id", GetId().value());
+  dict.Add("active_frame_count", active_frame_count_);
+  dict.Add("process_id", process()->GetID());
+}
+
+void SiteInstanceGroup::WriteIntoTrace(
+    perfetto::TracedProto<perfetto::protos::pbzero::SiteInstanceGroup> proto)
+    const {
+  proto->set_site_instance_group_id(GetId().value());
+  proto->set_active_frame_count(active_frame_count());
+  if (process()) {
+    process()->WriteIntoTrace(proto.WriteNestedMessage(
+        perfetto::protos::pbzero::SiteInstanceGroup::kProcess));
+  }
 }
 
 }  // namespace content

@@ -52,6 +52,19 @@ enum OnlineImageType {
   kDark = 2,
 };
 
+// Values for the user-level setting indicating access to Google Photos data.
+enum GooglePhotosEnablementState {
+  // Setting could not be retrieved due to a network or server error, or the
+  // server returned an unknown setting state.
+  kError = 0,
+
+  // An enterprise setting prevents this user from accessing Google Photos data.
+  kDisabled = 1,
+
+  // This user can access Google Photos data.
+  kEnabled = 2,
+};
+
 // WallpaperCollection contains a list of |WallpaperImage| objects.
 struct WallpaperCollection {
     // This ID is used as the argument to |FetchImagesForCollection|.
@@ -197,6 +210,9 @@ interface WallpaperProvider {
     // will be -1 on failure.
     FetchGooglePhotosCount() => (int32 count);
 
+    // Fetch whether the user is allowed to access Google Photos data.
+    FetchGooglePhotosEnabled() => (GooglePhotosEnablementState state);
+
     // Fetch photo(s) the user has stored in Google Photos. If provided,
     // |item_id| specifies one photo to fetch. If provided, |album_id| specifies
     // an album whose photos are fetched. At most one of |item_id| or |album_id|
@@ -231,10 +247,11 @@ interface WallpaperProvider {
         bool preview_mode) => (bool success);
 
     // Sets the Google Photos photo with the given id as the wallpaper.
-    SelectGooglePhotosPhoto(string id) => (bool success);
+    SelectGooglePhotosPhoto(string id, WallpaperLayout layout) =>
+        (bool success);
 
-    // Sets the custom layout for current wallpaper
-    SetCustomWallpaperLayout(WallpaperLayout layout);
+    // Sets the layout for current wallpaper.
+    SetCurrentWallpaperLayout(WallpaperLayout layout);
 
     // Set and enable daily refresh for the given |collection_id|.
     SetDailyRefreshCollectionId(string collection_id);
@@ -284,20 +301,6 @@ struct UserInfo {
   string name;
 };
 
-// Receives necessary information to display and change user image for the
-// current user.
-interface UserImageObserver {
-  // Triggered by |UserManager::Observer::OnUserImageChanged|.
-  OnUserImageChanged(url.mojom.Url image);
-
-  // Triggered by |UserManager::Observer::OnUserProfileImageUpdated|.
-  OnUserProfileImageUpdated(url.mojom.Url profile_image);
-
-  // Triggered by
-  // |ash::CameraPresenceNotifier::Observer::OnCameraPresenceCheckDone|.
-  OnCameraPresenceCheckDone(bool is_camera_present);
-};
-
 // A default user image stored on the device that can be set as the user's
 // device avatar image.
 struct DefaultUserImage {
@@ -309,6 +312,43 @@ struct DefaultUserImage {
 
   // A url to display the image. Typically |chrome://theme/IDR_LOGIN_DEFAULT_X|.
   url.mojom.Url url;
+};
+
+// An empty struct that is just used to indicate the presence of a profile
+// image.
+struct ProfileImage {};
+
+// An empty struct that is used to signify the user does not have a valid image.
+struct InvalidImage {};
+
+// The current image that the user has selected as device avatar.
+union UserImage {
+  // Set if the user has selected a default (built-in) avatar image.
+  DefaultUserImage default_image;
+
+  // Set if the user has selected an external image, usually from file or from
+  // webcam capture.
+  mojo_base.mojom.BigBuffer external_image;
+
+  // Set if the user has selected their gaia account profile image.
+  ProfileImage profile_image;
+
+  // Set if the user does not have a valid image selected or there was an error.
+  InvalidImage invalid_image;
+};
+
+// Receives necessary information to display and change user image for the
+// current user.
+interface UserImageObserver {
+  // Triggered by |UserManager::Observer::OnUserImageChanged|.
+  OnUserImageChanged(UserImage user_image);
+
+  // Triggered by |UserManager::Observer::OnUserProfileImageUpdated|.
+  OnUserProfileImageUpdated(url.mojom.Url profile_image);
+
+  // Triggered by
+  // |ash::CameraPresenceNotifier::Observer::OnCameraPresenceCheckDone|.
+  OnCameraPresenceCheckDone(bool is_camera_present);
 };
 
 // Provides APIs to view information about the current user. This API is exposed
@@ -337,6 +377,19 @@ interface UserProvider {
   // Select one of the available images on disk as user's device image.
   // This opens a file dialog box from which the user can select a file.
   SelectImageFromDisk();
+
+  // When the user has selected camera image or external file image, allow user
+  // to quickly reselect that option so it is not lost if they look at images of
+  // other types.
+  SelectLastExternalUserImage();
+};
+
+// The animation theme for screen saver. Should be kept in sync with
+// |ash::AmbientAnimationTheme|.
+enum AnimationTheme {
+  kSlideshow = 0,
+  kFeelTheBreeze = 1,
+  kFloatOnBy = 2,
 };
 
 // The source of the screensaver images come from.
@@ -350,8 +403,8 @@ enum TopicSource {
 
 // Temperature unit for screensaver weather section.
 enum TemperatureUnit {
-  kFahrenheit = 1,
-  kCelsius = 2,
+  kFahrenheit = 0,
+  kCelsius = 1,
 };
 
 // Album metadaba to display. Contains necessary data for both topic sources.
@@ -382,8 +435,14 @@ interface AmbientObserver {
   // Retrieves information whether ambient mode is enabled.
   OnAmbientModeEnabledChanged(bool ambient_mode_enabled);
 
+  // Notifies the JS side the current state of AnimationTheme.
+  OnAnimationThemeChanged(AnimationTheme animation_theme);
+
   // Notifies the JS side about the current state of TopicSource.
   OnTopicSourceChanged(TopicSource topic_source);
+
+  // Notifies the JS side about the current state of TemperatureUnit.
+  OnTemperatureUnitChanged(TemperatureUnit temperature_unit);
 
   // Notifies the JS side about the current albums.
   OnAlbumsChanged(array<AmbientModeAlbum> albums);
@@ -401,6 +460,15 @@ interface AmbientProvider {
   // Binds a listener to start receiving updates on ambient mode pref changes.
   SetAmbientObserver(pending_remote<AmbientObserver> observer);
 
+  // Sets the ambient animation theme.
+  SetAnimationTheme(AnimationTheme animation_theme);
+
   // Sets the ambient mode topic source.
   SetTopicSource(TopicSource topic_source);
+
+  // Sets the ambient mode temperature unit.
+  SetTemperatureUnit(TemperatureUnit temperature_unit);
+
+  // Sets one album as selected or not.
+  SetAlbumSelected(string id, TopicSource topic_source, bool selected);
 };

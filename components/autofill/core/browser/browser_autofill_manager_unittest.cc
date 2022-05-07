@@ -15,7 +15,6 @@
 
 #include "base/base64.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/hash/hash.h"
 #include "base/memory/raw_ptr.h"
@@ -323,7 +322,7 @@ class MockAutofillDriver : public TestAutofillDriver {
   MockAutofillDriver& operator=(const MockAutofillDriver&) = delete;
 
   // Mock methods to enable testability.
-  MOCK_METHOD((base::flat_map<FieldGlobalId, ServerFieldType>),
+  MOCK_METHOD((std::vector<FieldGlobalId>),
               FillOrPreviewForm,
               (int query_id,
                mojom::RendererFormDataAction action,
@@ -530,9 +529,9 @@ class BrowserAutofillManagerTest : public testing::Test {
                                           int* response_query_id,
                                           FormData* response_data) {
     EXPECT_CALL(*autofill_driver_, FillOrPreviewForm(_, _, _, _, _))
-        .WillOnce((DoAll(testing::SaveArg<0>(response_query_id),
-                         testing::SaveArg<2>(response_data),
-                         testing::ReturnArg<4>())));
+        .WillOnce(DoAll(testing::SaveArg<0>(response_query_id),
+                        testing::SaveArg<2>(response_data),
+                        testing::Return(std::vector<FieldGlobalId>{})));
     FillAutofillFormData(input_query_id, input_form, input_field, unique_id);
   }
 
@@ -547,7 +546,7 @@ class BrowserAutofillManagerTest : public testing::Test {
     EXPECT_CALL(*autofill_driver_, FillOrPreviewForm(_, _, _, _, _))
         .WillOnce((DoAll(testing::SaveArg<0>(response_query_id),
                          testing::SaveArg<2>(response_data),
-                         testing::ReturnArg<4>())));
+                         testing::Return(std::vector<FieldGlobalId>{}))));
     browser_autofill_manager_->FillOrPreviewVirtualCardInformation(
         action, guid, input_query_id, input_form, input_field);
   }
@@ -2659,7 +2658,7 @@ TEST_F(BrowserAutofillManagerTest, DoNotFillIfFormFieldChanged) {
   EXPECT_CALL(*autofill_driver_, FillOrPreviewForm(_, _, _, _, _))
       .WillOnce((DoAll(testing::SaveArg<0>(&response_query_id),
                        testing::SaveArg<2>(&response_data),
-                       testing::ReturnArg<4>())));
+                       testing::Return(std::vector<FieldGlobalId>{}))));
   browser_autofill_manager_->FillOrPreviewDataModelForm(
       mojom::RendererFormDataAction::kFill, kDefaultPageID, form,
       form.fields.front(), profile, nullptr, form_structure, autofill_field);
@@ -4305,41 +4304,6 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
                     response_data.fields[3]);
   ExpectFilledField("Expiration Year", "ccyear", "", "text",
                     response_data.fields[4]);
-}
-
-TEST_P(BrowserAutofillManagerStructuredProfileTest,
-       FillCreditCardForm_VirtualCard) {
-  personal_data_.ClearCreditCards();
-  CreditCard masked_server_card;
-  test::SetCreditCardInfo(&masked_server_card, "Lorem Ipsum",
-                          "5555555555554444",  // Mastercard
-                          "10", test::NextYear().c_str(), "1");
-  masked_server_card.set_guid("00000000-0000-0000-0000-000000000007");
-  masked_server_card.set_record_type(
-      CreditCard::RecordType::MASKED_SERVER_CARD);
-  masked_server_card.SetNetworkForMaskedCard(kMasterCard);
-  personal_data_.AddServerCreditCard(masked_server_card);
-  // Set up our form data.
-  FormData form;
-  CreateTestCreditCardFormData(&form, true, false);
-  std::vector<FormData> forms(1, form);
-  FormsSeen(forms);
-
-  browser_autofill_manager_->FillOrPreviewVirtualCardInformation(
-      mojom::RendererFormDataAction::kFill, masked_server_card.guid(),
-      kDefaultPageID, form, form.fields[1]);
-
-  CardUnmaskDelegate::UserProvidedUnmaskDetails details;
-  details.cvc = u"123";
-  details.exp_month = u"10";
-  details.exp_year = u"2998";
-  full_card_unmask_delegate()->OnUnmaskPromptAccepted(details);
-
-  const payments::PaymentsClient::UnmaskRequestDetails* request_details =
-      payments_client_->unmask_request();
-  EXPECT_EQ(request_details->card.number(), u"5555555555554444");
-  EXPECT_EQ(request_details->last_committed_url_origin.value(),
-            GURL("https://example.test/"));
 }
 
 TEST_P(BrowserAutofillManagerStructuredProfileTest,
@@ -7542,8 +7506,8 @@ TEST_P(BrowserAutofillManagerStructuredProfileTest,
   FormSubmitted(form);
 
   EXPECT_EQ(form.fields.size(), form_seen_by_ahm.fields.size());
-  ASSERT_EQ(base::size(test_fields), form_seen_by_ahm.fields.size());
-  for (size_t i = 0; i < base::size(test_fields); ++i) {
+  ASSERT_EQ(std::size(test_fields), form_seen_by_ahm.fields.size());
+  for (size_t i = 0; i < std::size(test_fields); ++i) {
     EXPECT_EQ(
         form_seen_by_ahm.fields[i].should_autocomplete,
         test_fields[i].expected_field_type != CREDIT_CARD_VERIFICATION_CODE);

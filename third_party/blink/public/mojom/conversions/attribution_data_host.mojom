@@ -11,6 +11,40 @@ struct AttributionDebugKey {
   uint64 value;
 };
 
+// Filter data for selectively matching attribution sources and triggers.
+// See https://github.com/WICG/conversion-measurement-api/blob/main/EVENT.md#optional-attribution-filters
+// for details.
+struct AttributionFilterData {
+  // Map of filter name to a possibly empty set of values.
+  map<string, array<string>> filter_values;
+};
+
+// The aggregatable key is a 128-bit unsigned integer.
+struct AttributionAggregatableKey {
+  uint64 high_bits;
+  uint64 low_bits;
+};
+
+// Defines a list of named histogram contributions.
+struct AttributionAggregatableSource {
+  // Map of key id to the key.
+  map<string, AttributionAggregatableKey> keys;
+};
+
+// Struct containing the trigger-side aggregatable data.
+struct AttributionAggregatableTriggerData {
+  AttributionAggregatableKey key;
+  array<string> source_keys;
+  AttributionFilterData filters;
+  AttributionFilterData not_filters;
+};
+
+// Struct containing all the aggregatable trigger data and values.
+struct AttributionAggregatableTrigger {
+  array<AttributionAggregatableTriggerData> trigger_data;
+  map<string, uint32> values;
+};
+
 struct AttributionSourceData {
   // Target site where this source will be triggered.
   //
@@ -34,6 +68,69 @@ struct AttributionSourceData {
   // A key that is propagated through the Attribution Reporting API for
   // debugging purposes.
   AttributionDebugKey? debug_key;
+
+  AttributionFilterData filter_data;
+
+  // Contains source-side aggregatable key pieces.
+  AttributionAggregatableSource aggregatable_source;
+};
+
+// Deduplication key set by a reporting origin which prevents duplicate triggers
+// from generating multiple attribution reports for a given source.
+struct AttributionTriggerDedupKey {
+  // Arbitrary value for deduplication set by the reporting origin.
+  uint64 value;
+};
+
+// Mojo representation of the trigger configuration provided by a reporting
+// origin. This data is provided arbitrarily by certain subresources on a
+// page which invoke Attribution Reporting.
+struct EventTriggerData {
+  // Value which identifies this trigger in attribution reports, determined by
+  // reporting origin.
+  uint64 data = 0;
+
+  // Priority of this trigger relative to other attributed triggers for a
+  // source. Reports created with high priority triggers will be reported over
+  // lower priority ones.
+  int64 priority = 0;
+
+  // Key which allows deduplication against existing attributions for the same
+  // source.
+  AttributionTriggerDedupKey? dedup_key;
+
+  // If non-empty, this trigger will be ignored unless the attributed source's
+  // filter data matches.
+  AttributionFilterData filters;
+
+  // If non-empty, this trigger will be ignored unless the attributed source's
+  // filter data does *NOT* match.
+  AttributionFilterData not_filters;
+};
+
+// Represents a request from a reporting origin to trigger attribution on a
+// given site. See:
+// https://github.com/WICG/conversion-measurement-api/blob/main/EVENT.md#triggering-attribution
+struct AttributionTriggerData {
+  // Origin that registered this trigger, used to determine which source this
+  // trigger is associated with.
+  url.mojom.Origin reporting_origin;
+
+  // List of all event trigger data objects declared by the event trigger
+  // header. This data is arbitrarily set by the reporting_origin.
+  array<EventTriggerData> event_triggers;
+
+  // If non-empty, this trigger will be ignored unless the attributed source's
+  // filter data matches.
+  AttributionFilterData filters;
+
+  // Contains a list of trigger data that generates trigger-side aggregatable
+  // key pieces and the values.
+  AttributionAggregatableTrigger aggregatable_trigger;
+
+  // A key that is propagated through the Attribution Reporting API for
+  // debugging purposes.
+  AttributionDebugKey? debug_key;
 };
 
 // Browser-process interface responsible for processing attribution
@@ -43,4 +140,8 @@ interface AttributionDataHost {
   // Called when data from the renderer is available for a given attributionsrc
   // request.
   SourceDataAvailable(AttributionSourceData data);
+
+  // Called when trigger data from the renderer is available for a given
+  // attributionsrc request.
+  TriggerDataAvailable(AttributionTriggerData data);
 };

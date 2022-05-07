@@ -18,7 +18,7 @@ const base::Feature kMessagesForAndroidInfrastructure{
     "MessagesForAndroidInfrastructure", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidInstantApps{
-    "MessagesForAndroidInstantApps", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidInstantApps", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidNearOomReduction{
     "MessagesForAndroidNearOomReduction", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -35,7 +35,7 @@ constexpr base::FeatureParam<int>
         "save_password_message_dismiss_duration_ms", 0};
 
 const base::Feature kMessagesForAndroidPermissionUpdate{
-    "MessagesForAndroidPermissionUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MessagesForAndroidPermissionUpdate", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kMessagesForAndroidPopupBlocked{
     "MessagesForAndroidPopupBlocked", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -56,6 +56,9 @@ constexpr base::FeatureParam<bool>
 
 constexpr base::FeatureParam<bool> kMessagesForAndroidSaveCard_UseGPayIcon{
     &kMessagesForAndroidSaveCard, "save_card_message_use_gpay_icon", true};
+
+constexpr base::FeatureParam<bool> kMessagesForAndroidSaveCard_UseDialogV2{
+    &kMessagesForAndroidSaveCard, "save_card_dialog_v2_enabled", false};
 
 const base::Feature kMessagesForAndroidSyncError{
     "MessagesForAndroidSyncError", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -134,6 +137,10 @@ bool UseFollowupButtonTextForSaveCardMessage() {
 
 bool UseGPayIconForSaveCardMessage() {
   return kMessagesForAndroidSaveCard_UseGPayIcon.Get();
+}
+
+bool UseDialogV2ForSaveCardMessage() {
+  return kMessagesForAndroidSaveCard_UseDialogV2.Get();
 }
 
 }  // namespace messages

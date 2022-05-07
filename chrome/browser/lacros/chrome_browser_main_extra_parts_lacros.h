@@ -12,6 +12,7 @@
 class ArcIconCache;
 class AutomationManagerLacros;
 class BrowserServiceLacros;
+class DeskTemplateClientLacros;
 class DriveFsCache;
 class DownloadControllerClientLacros;
 class ForceInstalledTrackerLacros;
@@ -21,6 +22,7 @@ class LacrosExtensionAppsPublisher;
 class KioskSessionServiceLacros;
 class FieldTrialObserver;
 class StandaloneBrowserTestController;
+class SyncExplicitPassphraseClientLacros;
 
 namespace arc {
 class ArcIconCacheDelegateProvider;
@@ -29,6 +31,7 @@ class ArcIconCacheDelegateProvider;
 namespace crosapi {
 class SearchControllerLacros;
 class TaskManagerLacros;
+class WebAppProviderBridgeLacros;
 class WebPageInfoProviderLacros;
 }  // namespace crosapi
 
@@ -49,6 +52,7 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
  private:
   // ChromeBrowserMainExtraParts:
   void PostBrowserStart() override;
+  void PostProfileInit(Profile* profile, bool is_initial_profile) override;
 
   // Receiver and cache of arc icon info updates.
   std::unique_ptr<ArcIconCache> arc_icon_cache_;
@@ -57,6 +61,9 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
 
   // Handles browser action requests from ash-chrome.
   std::unique_ptr<BrowserServiceLacros> browser_service_;
+
+  // Handles requests for desk template data from ash-chrome.
+  std::unique_ptr<DeskTemplateClientLacros> desk_template_client_;
 
   // Handles search queries from ash-chrome.
   std::unique_ptr<crosapi::SearchControllerLacros> search_controller_;
@@ -84,6 +91,9 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
   // Handles tab property requests from ash.
   std::unique_ptr<crosapi::WebPageInfoProviderLacros> web_page_info_provider_;
 
+  // Receives web app control commands from ash.
+  std::unique_ptr<crosapi::WebAppProviderBridgeLacros> web_app_provider_bridge_;
+
   // Receives extension app events from ash.
   std::unique_ptr<LacrosExtensionAppsController> extension_apps_controller_;
 
@@ -107,6 +117,10 @@ class ChromeBrowserMainExtraPartsLacros : public ChromeBrowserMainExtraParts {
   // Receives orientation lock data.
   std::unique_ptr<content::ScreenOrientationDelegate>
       screen_orientation_delegate_;
+
+  // Responsible for sharing sync explicit passphrase between Ash and Lacros.
+  std::unique_ptr<SyncExplicitPassphraseClientLacros>
+      sync_explicit_passphrase_client_;
 };
 
 #endif  // CHROME_BROWSER_LACROS_CHROME_BROWSER_MAIN_EXTRA_PARTS_LACROS_H_

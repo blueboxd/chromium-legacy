@@ -18,7 +18,7 @@ import {assert} from 'chrome://resources/js/assert_ts.js';
 import {FocusGrid} from 'chrome://resources/js/cr/ui/focus_grid.js';
 import {FocusRow} from 'chrome://resources/js/cr/ui/focus_row.m.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {Debouncer, html, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {Debouncer, microTask, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BrowserServiceImpl} from './browser_service.js';
 import {SYNCED_TABS_HISTOGRAM_NAME, SyncedTabsHistogram} from './constants.js';
@@ -46,6 +46,8 @@ declare global {
 export interface HistorySyncedDeviceManagerElement {
   $: {
     'menu': CrLazyRenderElement<CrActionMenuElement>,
+    'no-synced-tabs': HTMLElement,
+    'sign-in-guide': HTMLElement,
   };
 }
 
@@ -100,19 +102,18 @@ export class HistorySyncedDeviceManagerElement extends PolymerElement {
   private guestSession_: boolean = loadTimeData.getBoolean('isGuestSession');
   private signInAllowed_: boolean = loadTimeData.getBoolean('isSignInAllowed');
   private debouncer_: Debouncer|null = null;
-  private signInState: boolean;
 
+  signInState: boolean;
   searchTerm: string;
   sessionList: Array<ForeignSession>;
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener('synced-device-card-open-menu', this.onOpenMenu_);
     this.addEventListener('update-focus-grid', this.updateFocusGrid_);
   }
 
-  /** @override */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.focusGrid_ = new FocusGrid();
 
@@ -123,14 +124,22 @@ export class HistorySyncedDeviceManagerElement extends PolymerElement {
         SyncedTabsHistogram.LIMIT);
   }
 
-  /** @override */
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     this.focusGrid_!.destroy();
   }
 
-  /** @return {HTMLElement} */
-  getContentScrollTarget() {
+  configureSignInForTest(data: {
+    signInState: boolean,
+    signInAllowed: boolean,
+    guestSession: boolean
+  }) {
+    this.signInState = data.signInState;
+    this.signInAllowed_ = data.signInAllowed;
+    this.guestSession_ = data.guestSession;
+  }
+
+  getContentScrollTarget(): HTMLElement {
     return this;
   }
 
@@ -237,6 +246,10 @@ export class HistorySyncedDeviceManagerElement extends PolymerElement {
     browserService.deleteForeignSession(this.actionMenuModel_);
     this.actionMenuModel_ = null;
     menu.close();
+  }
+
+  clearSyncedDevicesForTest() {
+    this.clearDisplayedSyncedDevices_();
   }
 
   private clearDisplayedSyncedDevices_() {

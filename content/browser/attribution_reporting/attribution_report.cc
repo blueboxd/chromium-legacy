@@ -4,13 +4,21 @@
 
 #include "content/browser/attribution_reporting/attribution_report.h"
 
+#include <string>
 #include <utility>
 
+#include "base/base64.h"
 #include "base/check.h"
+#include "base/check_op.h"
+#include "base/memory/raw_ptr.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "content/browser/attribution_reporting/attribution_utils.h"
+#include "components/cbor/values.h"
+#include "components/cbor/writer.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
+#include "crypto/sha2.h"
 #include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
@@ -18,10 +26,18 @@
 
 namespace content {
 
-AttributionReport::EventLevelData::EventLevelData(uint64_t trigger_data,
-                                                  int64_t priority,
-                                                  absl::optional<Id> id)
-    : trigger_data(trigger_data), priority(priority), id(id) {}
+AttributionReport::EventLevelData::EventLevelData(
+    uint64_t trigger_data,
+    int64_t priority,
+    double randomized_trigger_rate,
+    absl::optional<Id> id)
+    : trigger_data(trigger_data),
+      priority(priority),
+      randomized_trigger_rate(randomized_trigger_rate),
+      id(id) {
+  DCHECK_GE(randomized_trigger_rate, 0);
+  DCHECK_LE(randomized_trigger_rate, 1);
+}
 
 AttributionReport::EventLevelData::EventLevelData(const EventLevelData& other) =
     default;
@@ -37,33 +53,42 @@ AttributionReport::EventLevelData& AttributionReport::EventLevelData::operator=(
 
 AttributionReport::EventLevelData::~EventLevelData() = default;
 
-AttributionReport::AggregatableContributionData::AggregatableContributionData(
-    HistogramContribution contribution,
+AttributionReport::AggregatableAttributionData::AggregatableAttributionData(
+    std::vector<AggregatableHistogramContribution> contributions,
     absl::optional<Id> id)
-    : contribution(std::move(contribution)), id(id) {}
+    : contributions(std::move(contributions)), id(id) {}
 
-AttributionReport::AggregatableContributionData::AggregatableContributionData(
-    const AggregatableContributionData& other) = default;
+AttributionReport::AggregatableAttributionData::AggregatableAttributionData(
+    const AggregatableAttributionData&) = default;
 
-AttributionReport::AggregatableContributionData&
-AttributionReport::AggregatableContributionData::operator=(
-    const AggregatableContributionData& other) = default;
+AttributionReport::AggregatableAttributionData&
+AttributionReport::AggregatableAttributionData::operator=(
+    const AggregatableAttributionData&) = default;
 
-AttributionReport::AggregatableContributionData::AggregatableContributionData(
-    AggregatableContributionData&& other) = default;
+AttributionReport::AggregatableAttributionData::AggregatableAttributionData(
+    AggregatableAttributionData&&) = default;
 
-AttributionReport::AggregatableContributionData&
-AttributionReport::AggregatableContributionData::operator=(
-    AggregatableContributionData&& other) = default;
+AttributionReport::AggregatableAttributionData&
+AttributionReport::AggregatableAttributionData::operator=(
+    AggregatableAttributionData&&) = default;
 
-AttributionReport::AggregatableContributionData::
-    ~AggregatableContributionData() = default;
+AttributionReport::AggregatableAttributionData::~AggregatableAttributionData() =
+    default;
+
+base::CheckedNumeric<int64_t>
+AttributionReport::AggregatableAttributionData::BudgetRequired() const {
+  base::CheckedNumeric<int64_t> budget_required = 0;
+  for (const AggregatableHistogramContribution& contribution : contributions) {
+    budget_required += contribution.value();
+  }
+  return budget_required;
+}
 
 AttributionReport::AttributionReport(
     AttributionInfo attribution_info,
     base::Time report_time,
     base::GUID external_report_id,
-    absl::variant<EventLevelData, AggregatableContributionData> data)
+    absl::variant<EventLevelData, AggregatableAttributionData> data)
     : attribution_info_(std::move(attribution_info)),
       report_time_(report_time),
       external_report_id_(std::move(external_report_id)),
@@ -83,24 +108,30 @@ AttributionReport& AttributionReport::operator=(AttributionReport&& other) =
 
 AttributionReport::~AttributionReport() = default;
 
-GURL AttributionReport::ReportURL() const {
+GURL AttributionReport::ReportURL(bool debug) const {
+  static constexpr char kBasePath[] = "/.well-known/attribution-reporting/";
+  static constexpr char kDebugPath[] = "debug/";
+
   struct Visitor {
     const char* operator()(const EventLevelData&) {
-      static constexpr char kEventEndpointPath[] =
-          "/.well-known/attribution-reporting/report-attribution";
+      static constexpr char kEventEndpointPath[] = "report-event-attribution";
       return kEventEndpointPath;
     }
 
-    const char* operator()(const AggregatableContributionData&) {
+    const char* operator()(const AggregatableAttributionData&) {
       static constexpr char kAggregateEndpointPath[] =
-          "/.well-known/attribution-reporting/report-aggregate-attribution";
+          "report-aggregate-attribution";
       return kAggregateEndpointPath;
     }
   };
 
-  const char* path = absl::visit(Visitor{}, data_);
-  url::Replacements<char> replacements;
-  replacements.SetPath(path, url::Component(0, strlen(path)));
+  const char* endpoint_path = absl::visit(Visitor{}, data_);
+
+  std::string path =
+      base::StrCat({kBasePath, debug ? kDebugPath : "", endpoint_path});
+
+  GURL::Replacements replacements;
+  replacements.SetPathStr(path);
   return attribution_info_.source.common_info()
       .reporting_origin()
       .GetURL()
@@ -108,63 +139,112 @@ GURL AttributionReport::ReportURL() const {
 }
 
 base::Value AttributionReport::ReportBody() const {
-  const auto* event_data = absl::get_if<EventLevelData>(&data_);
-  DCHECK(event_data);
+  struct Visitor {
+    raw_ptr<const AttributionReport> report;
 
-  base::Value dict(base::Value::Type::DICTIONARY);
+    base::Value operator()(const EventLevelData& data) {
+      base::Value dict(base::Value::Type::DICTIONARY);
 
-  const CommonSourceInfo& common_source_info =
-      attribution_info_.source.common_info();
+      const CommonSourceInfo& common_source_info =
+          report->attribution_info().source.common_info();
 
-  dict.SetStringKey("attribution_destination",
-                    common_source_info.ConversionDestination().Serialize());
+      dict.SetStringKey("attribution_destination",
+                        common_source_info.ConversionDestination().Serialize());
 
-  // The API denotes these values as strings; a `uint64_t` cannot be put in
-  // a dict as an integer in order to be opaque to various API configurations.
-  dict.SetStringKey("source_event_id",
-                    base::NumberToString(common_source_info.source_event_id()));
+      // The API denotes these values as strings; a `uint64_t` cannot be put in
+      // a dict as an integer in order to be opaque to various API
+      // configurations.
+      dict.SetStringKey(
+          "source_event_id",
+          base::NumberToString(common_source_info.source_event_id()));
 
-  dict.SetStringKey("trigger_data",
-                    base::NumberToString(event_data->trigger_data));
+      dict.SetStringKey("trigger_data",
+                        base::NumberToString(data.trigger_data));
 
-  const char* source_type = nullptr;
-  switch (common_source_info.source_type()) {
-    case CommonSourceInfo::SourceType::kNavigation:
-      source_type = "navigation";
-      break;
-    case CommonSourceInfo::SourceType::kEvent:
-      source_type = "event";
-      break;
-  }
-  dict.SetStringKey("source_type", source_type);
+      dict.SetStringKey("source_type", AttributionSourceTypeToString(
+                                           common_source_info.source_type()));
 
-  dict.SetStringKey("report_id", external_report_id_.AsLowercaseString());
+      dict.SetStringKey("report_id",
+                        report->external_report_id().AsLowercaseString());
 
-  // TODO(apaseltiner): When the values returned by
-  // `RandomizedTriggerRate()` are changed for the first time, we must
-  // remove the call to that function here and instead associate each newly
-  // stored source and report with the current configuration. One way to do that
-  // is to permanently store the configuration history in the binary with each
-  // version having a unique ID, and storing that ID in a new column in the
-  // impressions and conversions DB tables. This code would then look up the
-  // values for the particular IDs. Because such an approach would entail
-  // complicating the DB schema, we hardcode the values for now and will wait
-  // for the first time the values are changed before complicating the codebase.
-  dict.SetDoubleKey("randomized_trigger_rate",
-                    RandomizedTriggerRate(common_source_info.source_type()));
+      dict.SetDoubleKey("randomized_trigger_rate",
+                        data.randomized_trigger_rate);
 
-  if (absl::optional<uint64_t> debug_key = common_source_info.debug_key())
-    dict.SetStringKey("source_debug_key", base::NumberToString(*debug_key));
+      if (absl::optional<uint64_t> debug_key = common_source_info.debug_key()) {
+        dict.SetStringKey("source_debug_key", base::NumberToString(*debug_key));
+      }
 
-  if (absl::optional<uint64_t> debug_key = attribution_info_.debug_key)
-    dict.SetStringKey("trigger_debug_key", base::NumberToString(*debug_key));
+      if (absl::optional<uint64_t> debug_key =
+              report->attribution_info().debug_key) {
+        dict.SetStringKey("trigger_debug_key",
+                          base::NumberToString(*debug_key));
+      }
 
-  return dict;
+      return dict;
+    }
+
+    base::Value operator()(const AggregatableAttributionData& data) {
+      DCHECK(data.assembled_report.has_value());
+
+      const CommonSourceInfo& common_info =
+          report->attribution_info().source.common_info();
+
+      base::Value::DictStorage dict = data.assembled_report->GetAsJson();
+      dict.emplace("source_site", common_info.ImpressionSite().Serialize());
+      dict.emplace("attribution_destination",
+                   common_info.ConversionDestination().Serialize());
+
+      // source_registration_time is rounded to the nearest whole day and in
+      // seconds.
+      dict.emplace("source_registration_time",
+                   base::NumberToString(
+                       (common_info.impression_time() - base::Time::UnixEpoch())
+                           .RoundToMultiple(base::Days(1))
+                           .InSeconds()));
+
+      if (absl::optional<uint64_t> debug_key = common_info.debug_key())
+        dict.emplace("source_debug_key", base::NumberToString(*debug_key));
+
+      if (absl::optional<uint64_t> debug_key =
+              report->attribution_info().debug_key) {
+        dict.emplace("trigger_debug_key", base::NumberToString(*debug_key));
+      }
+
+      return base::Value(std::move(dict));
+    }
+  };
+
+  return absl::visit(Visitor{.report = this}, data_);
 }
 
 absl::optional<AttributionReport::Id> AttributionReport::ReportId() const {
   return absl::visit([](const auto& v) { return absl::optional<Id>(v.id); },
                      data_);
+}
+
+std::string AttributionReport::PrivacyBudgetKey() const {
+  DCHECK(absl::holds_alternative<AggregatableAttributionData>(data_));
+
+  const CommonSourceInfo& common_source_info =
+      attribution_info_.source.common_info();
+
+  // Use CBOR to be deterministic.
+  cbor::Value::MapValue value;
+  value.emplace("reporting_origin",
+                common_source_info.reporting_origin().Serialize());
+  value.emplace("source_site", common_source_info.ImpressionSite().Serialize());
+  value.emplace("destination",
+                common_source_info.ConversionDestination().Serialize());
+
+  // TODO(linnan): Replace with a real version once a version string is decided.
+  static constexpr char kVersion[] = "";
+  value.emplace("version", kVersion);
+
+  absl::optional<std::vector<uint8_t>> bytes =
+      cbor::Writer::Write(cbor::Value(std::move(value)));
+  DCHECK(bytes.has_value());
+
+  return base::Base64Encode(crypto::SHA256Hash(*bytes));
 }
 
 void AttributionReport::set_report_time(base::Time report_time) {

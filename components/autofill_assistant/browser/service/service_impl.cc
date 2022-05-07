@@ -28,6 +28,20 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
 namespace autofill_assistant {
+namespace {
+
+bool AuthEnabled() {
+  return "false" != base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+                        switches::kAutofillAssistantAuth);
+}
+
+ServiceRequestSender::AuthMode GetDefaultAuthMode() {
+  return AuthEnabled()
+             ? ServiceRequestSender::AuthMode::OAUTH_WITH_API_KEY_FALLBACK
+             : ServiceRequestSender::AuthMode::API_KEY;
+}
+
+}  // namespace
 
 // static
 std::unique_ptr<ServiceImpl> ServiceImpl::Create(
@@ -47,16 +61,12 @@ std::unique_ptr<ServiceImpl> ServiceImpl::Create(
       context, client->GetAccessTokenFetcher(),
       std::make_unique<cup::CUPImplFactory>(),
       std::make_unique<NativeURLLoaderFactory>(),
-      ApiKeyFetcher().GetAPIKey(client->GetChannel()),
-      /* auth_enabled = */ "false" !=
-          base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-              switches::kAutofillAssistantAuth),
-      /* disable_auth_if_no_access_token = */ true);
+      ApiKeyFetcher().GetAPIKey(client->GetChannel()));
 
   return std::make_unique<ServiceImpl>(
       client, std::move(request_sender),
       url_fetcher.GetSupportsScriptEndpoint(),
-      url_fetcher.GetNextActionsEndpoint(),
+      url_fetcher.GetNextActionsEndpoint(), url_fetcher.GetUserDataEndpoint(),
       std::make_unique<ClientContextImpl>(client));
 }
 
@@ -64,14 +74,17 @@ ServiceImpl::ServiceImpl(Client* client,
                          std::unique_ptr<ServiceRequestSender> request_sender,
                          const GURL& script_server_url,
                          const GURL& action_server_url,
+                         const GURL& user_data_url,
                          std::unique_ptr<ClientContext> client_context)
     : client_(client),
       request_sender_(std::move(request_sender)),
       script_server_url_(script_server_url),
       script_action_server_url_(action_server_url),
+      user_data_url_(user_data_url),
       client_context_(std::move(client_context)) {
   DCHECK(script_server_url.is_valid());
   DCHECK(action_server_url.is_valid());
+  DCHECK(user_data_url_.is_valid());
 }
 
 ServiceImpl::~ServiceImpl() {}
@@ -90,7 +103,8 @@ void ServiceImpl::GetScriptsForUrl(const GURL& url,
                                ProtocolUtils::CreateGetScriptsRequest(
                                    url, client_context_->AsProto(),
                                    trigger_context.GetScriptParameters()),
-                               std::move(callback), RpcType::SUPPORTS_SCRIPT);
+                               GetDefaultAuthMode(), std::move(callback),
+                               RpcType::SUPPORTS_SCRIPT);
 }
 
 void ServiceImpl::GetActions(const std::string& script_path,
@@ -101,47 +115,13 @@ void ServiceImpl::GetActions(const std::string& script_path,
                              ResponseCallback callback) {
   DCHECK(!script_path.empty());
   client_context_->Update(trigger_context);
-  if (client_context_->AsProto().payments_client_token().empty() &&
-      base::FeatureList::IsEnabled(
-          features::kAutofillAssistantGetPaymentsClientToken)) {
-    client_->FetchPaymentsClientToken(base::BindOnce(
-        &ServiceImpl::OnFetchPaymentsClientToken,
-        weak_ptr_factory_.GetWeakPtr(), script_path, url,
-        std::make_unique<TriggerContext>(
-            std::vector<const TriggerContext*>{&trigger_context}),
-        global_payload, script_payload, std::move(callback)));
-  } else {
-    SendGetActions(script_path, url, trigger_context, global_payload,
-                   script_payload, std::move(callback));
-  }
-}
-
-void ServiceImpl::OnFetchPaymentsClientToken(
-    const std::string& script_path,
-    const GURL& url,
-    std::unique_ptr<TriggerContext> trigger_context,
-    const std::string& global_payload,
-    const std::string& script_payload,
-    ResponseCallback callback,
-    const std::string& client_token) {
-  client_context_->SetPaymentsClientToken(client_token);
-  SendGetActions(script_path, url, *trigger_context, global_payload,
-                 script_payload, std::move(callback));
-}
-
-void ServiceImpl::SendGetActions(const std::string& script_path,
-                                 const GURL& url,
-                                 const TriggerContext& trigger_context,
-                                 const std::string& global_payload,
-                                 const std::string& script_payload,
-                                 ResponseCallback callback) {
   request_sender_->SendRequest(
       script_action_server_url_,
       ProtocolUtils::CreateInitialScriptActionsRequest(
           script_path, url, global_payload, script_payload,
           client_context_->AsProto(), trigger_context.GetScriptParameters(),
           script_store_config_),
-      std::move(callback), RpcType::GET_ACTIONS);
+      GetDefaultAuthMode(), std::move(callback), RpcType::GET_ACTIONS);
 }
 
 void ServiceImpl::GetNextActions(
@@ -157,7 +137,49 @@ void ServiceImpl::GetNextActions(
       ProtocolUtils::CreateNextScriptActionsRequest(
           previous_global_payload, previous_script_payload, processed_actions,
           timing_stats, client_context_->AsProto()),
-      std::move(callback), RpcType::GET_ACTIONS);
+      GetDefaultAuthMode(), std::move(callback), RpcType::GET_ACTIONS);
+}
+
+void ServiceImpl::GetUserData(const CollectUserDataOptions& options,
+                              uint64_t run_id,
+                              ResponseCallback callback) {
+  if (options.request_payment_method) {
+    // We do not cache the payments client token. It could go stale (in practice
+    // it currently doesn't). Getting the token is little overhead.
+    client_->FetchPaymentsClientToken(base::BindOnce(
+        &ServiceImpl::SendUserDataRequest, weak_ptr_factory_.GetWeakPtr(),
+        run_id, options.request_payer_name, options.request_payer_email,
+        options.request_payer_phone || options.request_phone_number_separately,
+        options.request_shipping, options.request_payment_method,
+        options.supported_basic_card_networks, std::move(callback)));
+    return;
+  }
+
+  SendUserDataRequest(
+      run_id, options.request_payer_name, options.request_payer_email,
+      options.request_payer_phone || options.request_phone_number_separately,
+      options.request_shipping, options.request_payment_method,
+      options.supported_basic_card_networks, std::move(callback),
+      std::string());
+}
+
+void ServiceImpl::SendUserDataRequest(
+    uint64_t run_id,
+    bool request_name,
+    bool request_email,
+    bool request_phone,
+    bool request_shipping,
+    bool request_payment_methods,
+    const std::vector<std::string>& supported_card_networks,
+    ResponseCallback callback,
+    const std::string& client_token) {
+  request_sender_->SendRequest(
+      user_data_url_,
+      ProtocolUtils::CreateGetUserDataRequest(
+          run_id, request_name, request_email, request_phone, request_shipping,
+          request_payment_methods, supported_card_networks, client_token),
+      ServiceRequestSender::AuthMode::OAUTH_STRICT, std::move(callback),
+      RpcType::GET_USER_DATA);
 }
 
 }  // namespace autofill_assistant

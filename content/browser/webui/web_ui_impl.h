@@ -128,6 +128,8 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   std::map<std::string, MessageCallback> message_callbacks_;
 
   // A map of message name -> message handling callback.
+  // TODO(crbug.com/1243386): Remove once RegisterDeprecatedMessageCallback()
+  // instances are migrated to RegisterMessageCallback().
   std::map<std::string, DeprecatedMessageCallback>
       deprecated_message_callbacks_;
 

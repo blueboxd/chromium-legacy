@@ -5,16 +5,18 @@
 #include "chrome/browser/ui/ash/projector/projector_client_impl.h"
 
 #include "ash/constants/ash_features.h"
+#include "ash/public/cpp/projector/annotator_tool.h"
 #include "ash/public/cpp/projector/projector_controller.h"
+#include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/webui/projector_app/annotator_message_handler.h"
 #include "ash/webui/projector_app/projector_app_client.h"
 #include "ash/webui/projector_app/public/cpp/projector_app_constants.h"
-#include "chrome/browser/ash/drive/drive_integration_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/download_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/speech/on_device_speech_recognizer.h"
+#include "chrome/browser/ui/ash/projector/projector_utils.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
@@ -24,7 +26,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "media/base/media_switches.h"
-#include "projector_client_impl.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -44,15 +45,19 @@ void ProjectorClientImpl::InitForProjectorAnnotator(views::WebView* web_view) {
   if (!ash::features::IsProjectorAnnotatorEnabled())
     return;
   web_view->LoadInitialURL(GURL(ash::kChromeUIAnnotatorUrl));
-
-  content::WebContents* web_contents = web_view->GetWebContents();
-  content::WebUI* web_ui = web_contents->GetWebUI();
-  web_ui->AddMessageHandler(std::make_unique<ash::AnnotatorMessageHandler>());
 }
 
 ProjectorClientImpl::ProjectorClientImpl(ash::ProjectorController* controller)
     : controller_(controller) {
   controller_->SetClient(this);
+  session_manager::SessionManager* session_manager =
+      session_manager::SessionManager::Get();
+  if (session_manager)
+    session_observation_.Observe(session_manager);
+
+  user_manager::UserManager* user_manager = user_manager::UserManager::Get();
+  if (user_manager)
+    session_state_observation_.Observe(user_manager);
 }
 
 ProjectorClientImpl::ProjectorClientImpl()
@@ -93,6 +98,72 @@ bool ProjectorClientImpl::IsSelfieCamVisible() const {
   return selfie_cam_bubble_manager_.IsVisible();
 }
 
+bool ProjectorClientImpl::GetDriveFsMountPointPath(
+    base::FilePath* result) const {
+  if (!IsDriveFsMounted())
+    return false;
+
+  if (ash::ProjectorController::AreExtendedProjectorFeaturesDisabled()) {
+    auto* profile = ProfileManager::GetActiveUserProfile();
+    DCHECK(profile);
+
+    DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
+        ProfileManager::GetActiveUserProfile());
+    *result = download_prefs->GetDefaultDownloadDirectoryForProfile();
+    return true;
+  }
+
+  drive::DriveIntegrationService* integration_service =
+      GetDriveIntegrationServiceForActiveProfile();
+  *result = integration_service->GetMountPointPath();
+  return true;
+}
+
+bool ProjectorClientImpl::IsDriveFsMounted() const {
+  if (!chromeos::LoginState::Get()->IsUserLoggedIn())
+    return false;
+
+  if (ash::ProjectorController::AreExtendedProjectorFeaturesDisabled()) {
+    // Return true when extended projector features are disabled. Use download
+    // folder for Projector storage.
+    return true;
+  }
+
+  drive::DriveIntegrationService* integration_service =
+      GetDriveIntegrationServiceForActiveProfile();
+  return integration_service && integration_service->IsMounted();
+}
+
+bool ProjectorClientImpl::IsDriveFsMountFailed() const {
+  drive::DriveIntegrationService* integration_service =
+      GetDriveIntegrationServiceForActiveProfile();
+  return integration_service && integration_service->mount_failed();
+}
+
+void ProjectorClientImpl::OpenProjectorApp() const {
+  auto* profile = ProfileManager::GetActiveUserProfile();
+  web_app::LaunchSystemWebAppAsync(profile, web_app::SystemAppType::PROJECTOR);
+}
+
+void ProjectorClientImpl::MinimizeProjectorApp() const {
+  auto* profile = ProfileManager::GetActiveUserProfile();
+  auto* browser =
+      FindSystemWebAppBrowser(profile, web_app::SystemAppType::PROJECTOR);
+  if (browser)
+    browser->window()->Minimize();
+}
+
+void ProjectorClientImpl::OnNewScreencastPreconditionChanged(
+    const ash::NewScreencastPrecondition& precondition) const {
+  ash::ProjectorAppClient::Get()->OnNewScreencastPreconditionChanged(
+      precondition);
+}
+
+void ProjectorClientImpl::SetAnnotatorMessageHandler(
+    ash::AnnotatorMessageHandler* handler) {
+  message_handler_ = handler;
+}
+
 void ProjectorClientImpl::OnSpeechResult(
     const std::u16string& text,
     bool is_final,
@@ -124,59 +195,56 @@ void ProjectorClientImpl::OnSpeechRecognitionStopped() {
   controller_->OnSpeechRecognitionStopped();
 }
 
-bool ProjectorClientImpl::GetDriveFsMountPointPath(
-    base::FilePath* result) const {
-  if (!IsDriveFsMounted())
-    return false;
-
-  if (ash::ProjectorController::AreExtendedProjectorFeaturesDisabled()) {
-    auto* profile = ProfileManager::GetActiveUserProfile();
-    DCHECK(profile);
-
-    DownloadPrefs* download_prefs = DownloadPrefs::FromBrowserContext(
-        ProfileManager::GetActiveUserProfile());
-    *result = download_prefs->GetDefaultDownloadDirectoryForProfile();
-    return true;
-  }
-
-  drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::FindForProfile(
-          ProfileManager::GetActiveUserProfile());
-  *result = integration_service->GetMountPointPath();
-  return true;
+void ProjectorClientImpl::SetTool(const ash::AnnotatorTool& tool) {
+  message_handler_->SetTool(tool);
 }
 
-bool ProjectorClientImpl::IsDriveFsMounted() const {
-  if (!chromeos::LoginState::Get()->IsUserLoggedIn())
-    return false;
+// TODO(b/220202359): Implement undo.
+void ProjectorClientImpl::Undo() {}
 
-  if (ash::ProjectorController::AreExtendedProjectorFeaturesDisabled()) {
-    // Return true when extended projector features are disabled. Use download
-    // folder for Projector storage.
-    return true;
-  }
+// TODO(b/220202359): Implement redo.
+void ProjectorClientImpl::Redo() {}
 
+void ProjectorClientImpl::Clear() {
+  message_handler_->Clear();
+}
+
+void ProjectorClientImpl::OnFileSystemMounted() {
+  OnNewScreencastPreconditionChanged(
+      controller_->GetNewScreencastPrecondition());
+}
+
+void ProjectorClientImpl::OnFileSystemBeingUnmounted() {
+  OnNewScreencastPreconditionChanged(
+      controller_->GetNewScreencastPrecondition());
+}
+
+void ProjectorClientImpl::OnFileSystemMountFailed() {
+  OnNewScreencastPreconditionChanged(
+      controller_->GetNewScreencastPrecondition());
+}
+
+void ProjectorClientImpl::OnUserProfileLoaded(const AccountId& account_id) {
+  MaybeSwitchDriveIntegrationServiceObservation();
+}
+
+void ProjectorClientImpl::ActiveUserChanged(user_manager::User* active_user) {
+  // After user login, the first ActiveUserChanged() might be called before
+  // profile is loaded.
+  if (active_user->is_profile_created())
+    MaybeSwitchDriveIntegrationServiceObservation();
+}
+
+void ProjectorClientImpl::MaybeSwitchDriveIntegrationServiceObservation() {
   auto* profile = ProfileManager::GetActiveUserProfile();
-  drive::DriveIntegrationService* integration_service =
-      drive::DriveIntegrationServiceFactory::FindForProfile(profile);
-  return integration_service && integration_service->IsMounted();
-}
+  if (!IsProjectorAllowedForProfile(profile))
+    return;
 
-void ProjectorClientImpl::OpenProjectorApp() const {
-  auto* profile = ProfileManager::GetActiveUserProfile();
-  web_app::LaunchSystemWebAppAsync(profile, web_app::SystemAppType::PROJECTOR);
-}
+  drive::DriveIntegrationService* drive_service =
+      GetDriveIntegrationServiceForActiveProfile();
+  if (!drive_service || drive_observation_.IsObservingSource(drive_service))
+    return;
 
-void ProjectorClientImpl::MinimizeProjectorApp() const {
-  auto* profile = ProfileManager::GetActiveUserProfile();
-  auto* browser =
-      FindSystemWebAppBrowser(profile, web_app::SystemAppType::PROJECTOR);
-  if (browser)
-    browser->window()->Minimize();
-}
-
-void ProjectorClientImpl::OnNewScreencastPreconditionChanged(
-    const ash::NewScreencastPrecondition& precondition) const {
-  ash::ProjectorAppClient::Get()->OnNewScreencastPreconditionChanged(
-      precondition);
+  drive_observation_.Reset();
+  drive_observation_.Observe(drive_service);
 }

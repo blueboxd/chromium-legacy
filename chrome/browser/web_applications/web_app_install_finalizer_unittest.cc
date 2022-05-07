@@ -18,7 +18,6 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_manager.h"
-#include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_manager_observer.h"
@@ -86,12 +85,12 @@ class WebAppInstallFinalizerUnitTest : public WebAppTest {
         std::make_unique<TestInstallManagerObserver>(install_manager_.get());
     fake_registry_controller_->SetUp(profile());
     icon_manager_ = std::make_unique<WebAppIconManager>(
-        profile(), registrar(), install_manager(),
-        base::MakeRefCounted<FileUtilsWrapper>());
+        profile(), base::MakeRefCounted<FileUtilsWrapper>());
     policy_manager_ = std::make_unique<WebAppPolicyManager>(profile());
     ui_manager_ = std::make_unique<FakeWebAppUiManager>();
     finalizer_ = std::make_unique<WebAppInstallFinalizer>(profile());
 
+    icon_manager_->SetSubsystems(&registrar(), &install_manager());
     finalizer_->SetSubsystems(
         &install_manager(), &registrar(), ui_manager_.get(),
         &fake_registry_controller_->sync_bridge(),
@@ -115,8 +114,8 @@ class WebAppInstallFinalizerUnitTest : public WebAppTest {
 
   // Synchronous version of FinalizeInstall.
   FinalizeInstallResult AwaitFinalizeInstall(
-      WebAppInstallInfo info,
-      WebAppInstallFinalizer::FinalizeOptions options) {
+      const WebAppInstallInfo& info,
+      const WebAppInstallFinalizer::FinalizeOptions& options) {
     FinalizeInstallResult result{};
     base::RunLoop run_loop;
     finalizer().FinalizeInstall(
@@ -142,7 +141,7 @@ class WebAppInstallFinalizerUnitTest : public WebAppTest {
     file_handlers->push_back(std::move(file_handler));
   }
 
-  WebAppInstallFinalizer& finalizer() { return *finalizer_.get(); }
+  WebAppInstallFinalizer& finalizer() { return *finalizer_; }
   WebAppRegistrar& registrar() {
     return fake_registry_controller_->registrar();
   }

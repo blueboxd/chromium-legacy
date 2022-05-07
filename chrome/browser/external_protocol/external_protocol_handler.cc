@@ -120,6 +120,7 @@ void RunExternalProtocolDialogWithDelegate(
     content::WebContents* web_contents,
     ui::PageTransition page_transition,
     bool has_user_gesture,
+    bool is_in_fenced_frame_tree,
     const absl::optional<url::Origin>& initiating_origin,
     content::WeakDocumentPtr initiator_document,
     ExternalProtocolHandler::Delegate* delegate) {
@@ -143,7 +144,8 @@ void RunExternalProtocolDialogWithDelegate(
 #endif
 
   ExternalProtocolHandler::RunExternalProtocolDialog(
-      url, web_contents, page_transition, has_user_gesture, initiating_origin,
+      url, web_contents, page_transition, has_user_gesture,
+      is_in_fenced_frame_tree, initiating_origin,
       std::move(initiator_document));
 }
 
@@ -193,6 +195,7 @@ void OnDefaultProtocolClientWorkerFinished(
     bool prompt_user,
     ui::PageTransition page_transition,
     bool has_user_gesture,
+    bool is_in_fenced_frame_tree,
     const absl::optional<url::Origin>& initiating_origin,
     content::WeakDocumentPtr initiator_document,
     ExternalProtocolHandler::Delegate* delegate,
@@ -241,7 +244,8 @@ void OnDefaultProtocolClientWorkerFinished(
     // protocol.
     RunExternalProtocolDialogWithDelegate(
         escaped_url, web_contents, page_transition, has_user_gesture,
-        initiating_origin, std::move(initiator_document), delegate);
+        is_in_fenced_frame_tree, initiating_origin,
+        std::move(initiator_document), delegate);
     return;
   }
 
@@ -320,13 +324,13 @@ ExternalProtocolHandler::BlockState ExternalProtocolHandler::GetBlockState(
   }
 
   // Always block the hard-coded denied schemes.
-  for (size_t i = 0; i < base::size(kDeniedSchemes); ++i) {
+  for (size_t i = 0; i < std::size(kDeniedSchemes); ++i) {
     if (kDeniedSchemes[i] == scheme)
       return BLOCK;
   }
 
   // Always allow the hard-coded allowed schemes.
-  for (size_t i = 0; i < base::size(kAllowedSchemes); ++i) {
+  for (size_t i = 0; i < std::size(kAllowedSchemes); ++i) {
     if (kAllowedSchemes[i] == scheme)
       return DONT_BLOCK;
   }
@@ -409,6 +413,7 @@ void ExternalProtocolHandler::LaunchUrl(
     content::WebContents::Getter web_contents_getter,
     ui::PageTransition page_transition,
     bool has_user_gesture,
+    bool is_in_fenced_frame_tree,
     const absl::optional<url::Origin>& initiating_origin,
     content::WeakDocumentPtr initiator_document) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -470,7 +475,7 @@ void ExternalProtocolHandler::LaunchUrl(
   shell_integration::DefaultWebClientWorkerCallback callback = base::BindOnce(
       &OnDefaultProtocolClientWorkerFinished, escaped_url,
       std::move(web_contents_getter), block_state == UNKNOWN, page_transition,
-      has_user_gesture, initiating_origin_or_precursor,
+      has_user_gesture, is_in_fenced_frame_tree, initiating_origin_or_precursor,
       std::move(initiator_document), g_external_protocol_handler_delegate);
 
   // Start the check process running. This will send tasks to a worker task

@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_macros_local.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/default_tick_clock.h"
 #include "base/timer/timer.h"
@@ -79,14 +80,13 @@ void MaybeRecordVisibilityUKM(
 }
 #endif /* BUILDFLAG(BUILD_WITH_TFLITE_LIB) */
 
-const char kDummyTextBlob[] =
-    "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod "
-    "tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim "
-    "veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea "
-    "commodo consequat. Duis aute irure dolor in reprehenderit in voluptate "
-    "velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint "
-    "occaecat cupidatat non proident, sunt in culpa qui officia deserunt "
-    "mollit anim id est laborum";
+const char* kRandomWords[] = {
+    "interesting", "chunky",    "maniacal", "tickle",   "lettuce",
+    "obsequious",  "stir",      "bless",    "colossal", "squealing",
+    "elegant",     "ambitious", "eight",    "frighten", "descriptive",
+    "pretty",      "curly",     "regular",  "uneven",   "heap",
+};
+const size_t kCountRandomWords = 20;
 
 }  // namespace
 
@@ -117,6 +117,13 @@ PageContentAnnotationsService::PageContentAnnotationsService(
   }
 
   if (features::BatchAnnotationsValidationEnabled()) {
+    // Normally the caller would do this, but we are our own caller.
+    RequestAndNotifyWhenModelAvailable(
+        features::BatchAnnotationsValidationUsePageTopics()
+            ? AnnotationType::kPageTopics
+            : AnnotationType::kContentVisibility,
+        base::DoNothing());
+
     validation_timer_ = std::make_unique<base::OneShotTimer>(
         base::DefaultTickClock::GetInstance());
     validation_timer_->Start(
@@ -157,6 +164,11 @@ void PageContentAnnotationsService::Annotate(const HistoryVisit& visit) {
         "OptimizationGuide.PageContentAnnotations.AnnotateVisitResultCached",
         true);
     return;
+  }
+  if (switches::ShouldLogPageContentAnnotationsInput()) {
+    LOG(ERROR) << "Adding annotation job: \n"
+               << "URL: " << visit.url << "\n"
+               << "Text: " << visit.text_to_annotate.value_or(std::string());
   }
   visits_to_annotate_.emplace_back(visit);
   base::UmaHistogramBoolean(
@@ -226,10 +238,47 @@ void PageContentAnnotationsService::OverridePageContentAnnotatorForTesting(
   annotator_ = annotator;
 }
 
+// static
+std::string PageContentAnnotationsService::StringInputForPageTopicsDomain(
+    const GURL& url) {
+  std::string domain = base::ToLowerASCII(url.host());
+
+  // Strip the 'www.' if it exists.
+  if (base::StartsWith(domain, "www.")) {
+    domain = domain.substr(4);
+  }
+
+  for (char c : std::vector<char>{'-', '_', '.', '+'}) {
+    std::replace(domain.begin(), domain.end(), c, ' ');
+  }
+
+  return domain;
+}
+
+void PageContentAnnotationsService::BatchAnnotatePageTopics(
+    BatchAnnotationCallback callback,
+    const std::vector<GURL>& inputs) {
+  std::vector<std::string> domains;
+  for (const GURL& url : inputs) {
+    domains.emplace_back(StringInputForPageTopicsDomain(url));
+  }
+
+  if (!annotator_) {
+    std::move(callback).Run(CreateEmptyBatchAnnotationResults(domains));
+    return;
+  }
+
+  annotator_->Annotate(std::move(callback), domains,
+                       AnnotationType::kPageTopics);
+}
+
 void PageContentAnnotationsService::BatchAnnotate(
     BatchAnnotationCallback callback,
     const std::vector<std::string>& inputs,
     AnnotationType annotation_type) {
+  DCHECK_NE(annotation_type, AnnotationType::kPageTopics)
+      << "Please use |BatchAnnotatePageTopics| instead";
+
   if (!annotator_) {
     std::move(callback).Run(CreateEmptyBatchAnnotationResults(inputs));
     return;
@@ -418,20 +467,26 @@ void PageContentAnnotationsService::RunBatchAnnotationValidation() {
   std::vector<std::string> dummy_inputs;
   dummy_inputs.reserve(features::BatchAnnotationsValidationBatchSize());
   for (size_t i = 0; i < features::BatchAnnotationsValidationBatchSize(); i++) {
-    // Pick a random substring of the dummy blob so that we can't do any caching
-    // or deduping.
-    size_t half_length = std::strlen(kDummyTextBlob) / 2;
-    size_t rand_start = base::RandInt(0, half_length - 1);
-    dummy_inputs.emplace_back(
-        std::string(kDummyTextBlob + rand_start, half_length));
+    const char* word1 = kRandomWords[base::RandGenerator(kCountRandomWords)];
+    const char* word2 = kRandomWords[base::RandGenerator(kCountRandomWords)];
+    dummy_inputs.emplace_back(base::StringPrintf("%s-%s.com", word1, word2));
   }
 
   LOCAL_HISTOGRAM_COUNTS_100(
       "OptimizationGuide.PageContentAnnotationsService.ValidationRun",
       dummy_inputs.size());
 
-  BatchAnnotate(base::DoNothing(), dummy_inputs,
-                AnnotationType::kContentVisibility);
+  if (!features::BatchAnnotationsValidationUsePageTopics()) {
+    BatchAnnotate(base::DoNothing(), dummy_inputs,
+                  AnnotationType::kContentVisibility);
+    return;
+  }
+
+  std::vector<GURL> urls;
+  for (const std::string& domain : dummy_inputs) {
+    urls.emplace_back(GURL("https://" + domain));
+  }
+  BatchAnnotatePageTopics(base::DoNothing(), urls);
 }
 
 // static

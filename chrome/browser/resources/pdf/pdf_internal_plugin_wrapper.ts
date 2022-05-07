@@ -4,7 +4,7 @@
 
 import {Point} from './constants.js';
 import {GestureDetector, PinchEventDetail} from './gesture_detector.js';
-import {ViewportScroller} from './viewport_scroller.js';
+import {ViewportInterface, ViewportScroller} from './viewport_scroller.js';
 
 interface InProcessPdfPluginElement extends HTMLEmbedElement {
   postMessage(message: any): void;
@@ -26,7 +26,7 @@ if (parentOrigin === 'chrome-untrusted://print') {
  * {@link Viewport}-compatible wrapper around the window's scroll position
  * operations.
  */
-class SimulatedViewport {
+class SimulatedViewport implements ViewportInterface {
   get position(): Point {
     return {x: window.scrollX, y: window.scrollY};
   }
@@ -90,10 +90,10 @@ channel.port1.onmessage = e => {
       break;
 
     case 'syncScrollToRemote':
+      // TODO(crbug.com/1306236): Implement smooth scrolling correctly.
       window.scrollTo({
         left: e.data.x,
         top: e.data.y,
-        behavior: e.data.isSmooth ? 'smooth' : 'auto',
       });
       channel.port1.postMessage({
         type: 'ackScrollToRemote',
@@ -174,8 +174,9 @@ document.addEventListener('keydown', e => {
       // Prevent PageDown/PageUp when there are no modifier keys.
       if (!hasKeyModifiers(e)) {
         e.preventDefault();
+        break;
       }
-      break;
+      return;
 
     case 'ArrowDown':
     case 'ArrowLeft':
@@ -184,8 +185,9 @@ document.addEventListener('keydown', e => {
       // Don't prevent arrow navigation in form fields, or if modified.
       if (!isFormFieldFocused && !hasKeyModifiers(e)) {
         e.preventDefault();
+        break;
       }
-      break;
+      return;
 
     case 'Escape':
     case 'Tab':

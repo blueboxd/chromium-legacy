@@ -17,6 +17,7 @@
 #include "base/system/system_monitor.h"
 #include "base/timer/timer.h"
 #include "media/capture/video/video_capture_device_info.h"
+#include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/video_capture/public/mojom/video_source_provider.mojom.h"
 #include "ui/views/widget/unique_widget_ptr.h"
@@ -72,9 +73,11 @@ class ASH_EXPORT CameraId {
 struct CameraInfo {
   CameraInfo(CameraId camera_id,
              std::string device_id,
-             std::string display_name);
-  CameraInfo(CameraInfo&&) = default;
-  CameraInfo& operator=(CameraInfo&&) = default;
+             std::string display_name,
+             const media::VideoCaptureFormats& supported_formats);
+  CameraInfo(CameraInfo&&);
+  CameraInfo& operator=(CameraInfo&&);
+  ~CameraInfo();
 
   // The ID used to identify the camera device internally to the capture mode
   // code, which should be more stable than the below `device_id` which may
@@ -91,6 +94,11 @@ struct CameraInfo {
   // The name of the camera device as shown to the end user (e.g. "Integrated
   // Webcam").
   std::string display_name;
+
+  // A list of supported capture formats by this camera. This list is sorted
+  // (See `media::VideoCaptureSystemImpl::DevicesInfoReady()`) by the frame size
+  // area, then by frame width, then by the *largest* frame rate.
+  media::VideoCaptureFormats supported_formats;
 };
 
 using CameraInfoList = std::vector<CameraInfo>;
@@ -132,9 +140,14 @@ class ASH_EXPORT CaptureModeCameraController
   CameraPreviewSnapPosition camera_preview_snap_position() const {
     return camera_preview_snap_position_;
   }
+  bool is_drag_in_progress() const { return is_drag_in_progress_; }
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Returns the display name of `selected_camera_`. Returns an empty string if
+  // the selected camera is not set.
+  std::string GetDisplayNameOfSelectedCamera() const;
 
   // Sets the currently selected camera to the whose ID is the given
   // `camera_id`. If `camera_id` is invalid (see CameraId::is_valid()), this
@@ -156,6 +169,11 @@ class ASH_EXPORT CaptureModeCameraController
   // Updates the bounds of `camera_preview_widget_` to current
   // GetPreviewWidgetBounds() when necessary.
   void MaybeUpdatePreviewWidgetBounds();
+
+  // Handles drag events forwarded from `camera_preview_view_`.
+  void StartDraggingPreview(const gfx::PointF& screen_location);
+  void ContinueDraggingPreview(const gfx::PointF& screen_location);
+  void EndDraggingPreview(const gfx::PointF& screen_location, bool is_touch);
 
   // base::SystemMonitor::DevicesChangedObserver:
   void OnDevicesChanged(base::SystemMonitor::DeviceType device_type) override;
@@ -201,6 +219,14 @@ class ASH_EXPORT CaptureModeCameraController
   // bounds depend on the surface being recorded and current preview snap
   // position.
   gfx::Rect GetPreviewWidgetBounds() const;
+
+  // Called by `EndDraggingPreview`, updating `camera_preview_snap_position_`
+  // according to the current position of the `camera_preview_view_`.
+  void UpdateSnapPostionOnDragEnded();
+
+  // Returns the current bounds of camemra preview widget that match the
+  // coordinate system of the confine bounds.
+  gfx::Rect GetCurrentBoundsMatchingConfineBoundsCoordinates();
 
   // Owned by CaptureModeController and guaranteed to be not null and to outlive
   // `this`.
@@ -254,6 +280,12 @@ class ASH_EXPORT CaptureModeCameraController
 
   CameraPreviewSnapPosition camera_preview_snap_position_ =
       CameraPreviewSnapPosition::kBottomRight;
+
+  // The location of the previous drag event in screen coordinate.
+  gfx::PointF previous_location_in_screen_;
+
+  // True when the dragging for `camera_preview_view_` is in progress.
+  bool is_drag_in_progress_ = false;
 
   base::WeakPtrFactory<CaptureModeCameraController> weak_ptr_factory_{this};
 };

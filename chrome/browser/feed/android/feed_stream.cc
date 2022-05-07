@@ -13,9 +13,9 @@
 #include "base/android/jni_string.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/feed/android/feed_reliability_logging_bridge.h"
-#include "chrome/browser/feed/android/feed_service_factory.h"
 #include "chrome/browser/feed/android/jni_headers/FeedStream_jni.h"
 #include "chrome/browser/feed/android/jni_translation.h"
+#include "chrome/browser/feed/feed_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "components/feed/core/proto/v2/ui.pb.h"
@@ -184,6 +184,19 @@ void FeedStream::ReportOpenAction(JNIEnv* env,
   feed_stream_api_->ReportOpenAction(
       url ? *url : GURL(), GetStreamType(),
       base::android::ConvertJavaStringToUTF8(env, slice_id));
+}
+
+void FeedStream::UpdateUserProfileOnLinkClick(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_url,
+    const base::android::JavaParamRef<jlongArray>& entity_mids) {
+  if (!feed_stream_api_)
+    return;
+  std::unique_ptr<GURL> url = url::GURLAndroid::ToNativeGURL(env, j_url);
+  std::vector<int64_t> entities_mids_vector;
+  base::android::JavaLongArrayToInt64Vector(env, entity_mids,
+                                            &entities_mids_vector);
+  feed_stream_api_->UpdateUserProfileOnLinkClick(*url, entities_mids_vector);
 }
 
 void FeedStream::ReportOpenInNewTabAction(

@@ -7,6 +7,8 @@
 
 #import <Foundation/Foundation.h>
 
+#include "base/scoped_observation.h"
+#include "base/timer/timer.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "ios/web/public/web_state_observer.h"
@@ -42,6 +44,7 @@ class PermissionsOverlayTabHelper
 
   // infobars::InfoBarManager::Observer implementation.
   void OnInfoBarRemoved(infobars::InfoBar* infobar, bool animate) override;
+  void OnManagerShuttingDown(infobars::InfoBarManager* manager) override;
 
  private:
   friend class web::WebStateUserData<PermissionsOverlayTabHelper>;
@@ -68,6 +71,11 @@ class PermissionsOverlayTabHelper
 
   // A mapping of current permissions to their states used to detect changes.
   NSMutableDictionary<NSNumber*, NSNumber*>* permissions_to_state_;
+
+  // Scoped observer that facilitates observing the infobar manager.
+  base::ScopedObservation<infobars::InfoBarManager,
+                          infobars::InfoBarManager::Observer>
+      infobar_manager_scoped_observation_{this};
 
   // Banner queue for the TabHelper's WebState;
   OverlayRequestQueue* banner_queue_ = nullptr;

@@ -83,6 +83,14 @@ class HeapProfilerControllerTest : public ::testing::Test {
         base::DoNothing());
   }
 
+#if BUILDFLAG(IS_POSIX) && !BUILDFLAG(IS_APPLE) && defined(ARCH_CPU_ARM64)
+  void SetUp() override {
+    // TODO(crbug.com/1297724): The heap profiler is never started on these
+    // platforms so there is nothing to test.
+    GTEST_SKIP();
+  }
+#endif
+
   void StartHeapProfiling(
       version_info::Channel channel,
       base::RepeatingCallback<void(base::TimeTicks, metrics::SampledProfile)>
@@ -259,7 +267,13 @@ TEST_P(HeapProfilerControllerFeatureTest, StableChannel) {
   EXPECT_EQ(sample_received_, GetParam().expect_stable_sample);
 }
 
-TEST_P(HeapProfilerControllerFeatureTest, CanaryChannel) {
+// TODO(crbug.com/1302007): This test hangs on iPad device.
+#if BUILDFLAG(IS_IOS)
+#define MAYBE_CanaryChannel DISABLED_CanaryChannel
+#else
+#define MAYBE_CanaryChannel CanaryChannel
+#endif
+TEST_P(HeapProfilerControllerFeatureTest, MAYBE_CanaryChannel) {
   StartHeapProfiling(
       version_info::Channel::CANARY,
       base::BindRepeating(&HeapProfilerControllerTest::RecordSampleReceived,

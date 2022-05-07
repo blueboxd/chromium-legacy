@@ -853,9 +853,18 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // report those histograms to UMA.
   void CreateSharedRendererHistogramAllocator();
 
+  // Retrieves the details of the terminating child process.
+  //
+  // If the process is no longer running, this will also reset the process
+  // handle and (where applicable) reap the zombie process.
+  //
+  // |already_dead| should be set to true if we already know the process is
+  // dead. See `ChildProcessLauncher::GetChildTerminationInfo()` for more info
+  // on this flag.
+  ChildProcessTerminationInfo GetChildTerminationInfo(bool already_dead);
+
   // Handle termination of our process.
-  void ProcessDied(bool already_dead,
-                   ChildProcessTerminationInfo* known_details);
+  void ProcessDied(const ChildProcessTerminationInfo& termination_info);
 
   // Destroy all objects that can cause methods to be invoked on this object or
   // any other that hang off it.
@@ -890,7 +899,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
       SiteInstanceImpl* site_instance);
 
   void NotifyRendererOfLockedStateUpdate();
+
+#if BUILDFLAG(IS_ANDROID)
+  // Populates the ChildProcessTerminationInfo fields that are strictly related
+  // to renderer (This struct is also used for other child processes).
   void PopulateTerminationInfoRendererFields(ChildProcessTerminationInfo* info);
+#endif  // BUILDFLAG(IS_ANDROID)
 
   static void OnMojoError(int render_process_id, const std::string& error);
 

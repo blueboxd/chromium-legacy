@@ -15,6 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/mojom/client_security_state.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -91,11 +92,10 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
     ~Endpoints();
     Endpoints(const Endpoints&);
 
-    std::string idp;
     std::string token;
     std::string accounts;
     std::string client_metadata;
-    std::string revoke;
+    std::string revocation;
   };
 
   struct ClientMetadata {
@@ -126,7 +126,8 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   IdpNetworkRequestManager(
       const GURL& provider,
       const url::Origin& relying_party,
-      scoped_refptr<network::SharedURLLoaderFactory> loader_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+      network::mojom::ClientSecurityStatePtr client_security_state);
 
   virtual ~IdpNetworkRequestManager();
 
@@ -161,11 +162,13 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   // Send a revoke token request to the IDP.
   virtual void SendRevokeRequest(const GURL& revoke_url,
                                  const std::string& client_id,
-                                 const std::string& account_id,
+                                 const std::string& hint,
                                  RevokeCallback callback);
 
   // Send logout request to a single target.
   virtual void SendLogout(const GURL& logout_url, LogoutCallback);
+
+  virtual bool IsMockIdpNetworkRequestManager() const;
 
  private:
   void OnManifestLoaded(absl::optional<int> idp_brand_icon_ideal_size,
@@ -212,6 +215,7 @@ class CONTENT_EXPORT IdpNetworkRequestManager {
   LogoutCallback logout_callback_;
 
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
+  network::mojom::ClientSecurityStatePtr client_security_state_;
 
   base::WeakPtrFactory<IdpNetworkRequestManager> weak_ptr_factory_{this};
 };

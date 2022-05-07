@@ -13,8 +13,12 @@ This file contains the strings for ash.
     <output filename="ash_strings_af.pak" type="data_package" lang="af" />
     <output filename="ash_strings_am.pak" type="data_package" lang="am" />
     <output filename="ash_strings_ar.pak" type="data_package" lang="ar" />
+    <output filename="ash_strings_as.pak" type="data_package" lang="as" />
+    <output filename="ash_strings_az.pak" type="data_package" lang="az" />
+    <output filename="ash_strings_be.pak" type="data_package" lang="be" />
     <output filename="ash_strings_bg.pak" type="data_package" lang="bg" />
     <output filename="ash_strings_bn.pak" type="data_package" lang="bn" />
+    <output filename="ash_strings_bs.pak" type="data_package" lang="bs" />
     <output filename="ash_strings_ca.pak" type="data_package" lang="ca" />
     <output filename="ash_strings_cs.pak" type="data_package" lang="cs" />
     <output filename="ash_strings_da.pak" type="data_package" lang="da" />
@@ -25,37 +29,55 @@ This file contains the strings for ash.
     <output filename="ash_strings_es.pak" type="data_package" lang="es" />
     <output filename="ash_strings_es-419.pak" type="data_package" lang="es-419" />
     <output filename="ash_strings_et.pak" type="data_package" lang="et" />
+    <output filename="ash_strings_eu.pak" type="data_package" lang="eu" />
     <output filename="ash_strings_fa.pak" type="data_package" lang="fa" />
     <output filename="ash_strings_fi.pak" type="data_package" lang="fi" />
     <output filename="ash_strings_fil.pak" type="data_package" lang="fil" />
+    <output filename="ash_strings_fr-CA.pak" type="data_package" lang="fr-CA" />
     <output filename="ash_strings_fr.pak" type="data_package" lang="fr" />
+    <output filename="ash_strings_gl.pak" type="data_package" lang="gl" />
     <output filename="ash_strings_gu.pak" type="data_package" lang="gu" />
     <output filename="ash_strings_he.pak" type="data_package" lang="he" />
     <output filename="ash_strings_hi.pak" type="data_package" lang="hi" />
     <output filename="ash_strings_hr.pak" type="data_package" lang="hr" />
     <output filename="ash_strings_hu.pak" type="data_package" lang="hu" />
+    <output filename="ash_strings_hy.pak" type="data_package" lang="hy" />
     <output filename="ash_strings_id.pak" type="data_package" lang="id" />
     <output filename="ash_strings_is.pak" type="data_package" lang="is" />
     <output filename="ash_strings_it.pak" type="data_package" lang="it" />
     <output filename="ash_strings_ja.pak" type="data_package" lang="ja" />
+    <output filename="ash_strings_ka.pak" type="data_package" lang="ka" />
+    <output filename="ash_strings_kk.pak" type="data_package" lang="kk" />
+    <output filename="ash_strings_km.pak" type="data_package" lang="km" />
     <output filename="ash_strings_kn.pak" type="data_package" lang="kn" />
     <output filename="ash_strings_ko.pak" type="data_package" lang="ko" />
+    <output filename="ash_strings_ky.pak" type="data_package" lang="ky" />
+    <output filename="ash_strings_lo.pak" type="data_package" lang="lo" />
     <output filename="ash_strings_lt.pak" type="data_package" lang="lt" />
     <output filename="ash_strings_lv.pak" type="data_package" lang="lv" />
+    <output filename="ash_strings_mk.pak" type="data_package" lang="mk" />
     <output filename="ash_strings_ml.pak" type="data_package" lang="ml" />
+    <output filename="ash_strings_mn.pak" type="data_package" lang="mn" />
     <output filename="ash_strings_mr.pak" type="data_package" lang="mr" />
     <output filename="ash_strings_ms.pak" type="data_package" lang="ms" />
+    <output filename="ash_strings_my.pak" type="data_package" lang="my" />
+    <output filename="ash_strings_ne.pak" type="data_package" lang="ne" />
     <output filename="ash_strings_nl.pak" type="data_package" lang="nl" />
     <!-- The translation console uses 'no' for Norwegian Bokmål. It should
          be 'nb'. -->
     <output filename="ash_strings_nb.pak" type="data_package" lang="no" />
+    <output filename="ash_strings_pa.pak" type="data_package" lang="pa" />
     <output filename="ash_strings_pl.pak" type="data_package" lang="pl" />
     <output filename="ash_strings_pt-BR.pak" type="data_package" lang="pt-BR" />
     <output filename="ash_strings_pt-PT.pak" type="data_package" lang="pt-PT" />
+    <output filename="ash_strings_or.pak" type="data_package" lang="or" />
     <output filename="ash_strings_ro.pak" type="data_package" lang="ro" />
     <output filename="ash_strings_ru.pak" type="data_package" lang="ru" />
+    <output filename="ash_strings_si.pak" type="data_package" lang="si" />
     <output filename="ash_strings_sk.pak" type="data_package" lang="sk" />
     <output filename="ash_strings_sl.pak" type="data_package" lang="sl" />
+    <output filename="ash_strings_sq.pak" type="data_package" lang="sq" />
+    <output filename="ash_strings_sr-Latn.pak" type="data_package" lang="sr-Latn" />
     <output filename="ash_strings_sr.pak" type="data_package" lang="sr" />
     <output filename="ash_strings_sv.pak" type="data_package" lang="sv" />
     <output filename="ash_strings_sw.pak" type="data_package" lang="sw" />
@@ -64,11 +86,13 @@ This file contains the strings for ash.
     <output filename="ash_strings_th.pak" type="data_package" lang="th" />
     <output filename="ash_strings_tr.pak" type="data_package" lang="tr" />
     <output filename="ash_strings_uk.pak" type="data_package" lang="uk" />
+    <output filename="ash_strings_ur.pak" type="data_package" lang="ur" />
+    <output filename="ash_strings_uz.pak" type="data_package" lang="uz" />
     <output filename="ash_strings_vi.pak" type="data_package" lang="vi" />
     <output filename="ash_strings_zh-CN.pak" type="data_package" lang="zh-CN" />
+    <output filename="ash_strings_zh-HK.pak" type="data_package" lang="zh-HK" />
     <output filename="ash_strings_zh-TW.pak" type="data_package" lang="zh-TW" />
     <output filename="ash_strings_zu.pak" type="data_package" lang="zu" />
-
     <!-- Pseudolocales -->
     <output filename="ash_strings_ar-XB.pak" type="data_package" lang="ar-XB" />
     <output filename="ash_strings_en-XA.pak" type="data_package" lang="en-XA" />
@@ -1589,20 +1613,26 @@ This file contains the strings for ash.
       <message name="IDS_ASH_PHONE_HUB_SUB_FEATURE_OPT_IN_DISMISS_BUTTON" desc="Label for the dismiss the dialog that allows the user to opt in to a sub feature of Phone Hub.">
         Dismiss
       </message>
-      <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_DESCRIPTION" desc="Description for the camera roll opt in view.">
-        View recent photos from your phone‘s camera roll on <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
-      </message>
-      <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_TURN_ON_BUTTON" desc="Label for button to turn on the setting to show recent photo from the phone.">
-        Turn on
-      </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_INLINE_REPLY_BUTTON" desc="Label for the inline reply button inside a PhoneHub notification.">
         Reply
       </message>
-      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
-        Get notifications from your phone on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
-      </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_SET_UP_BUTTON" desc="Label for the set up button to start the opt in flow to show notifications from the phone.">
         Set up
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_APPS_OPT_IN_DESCRIPTION" desc="Description for the notification and apps opt in view.">
+        View your phone's recent photos, media, notifications, and messaging apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
+        View your phone's notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_AND_CAMERA_ROLL_OPT_IN_DESCRIPTION" desc="Description for the notification opt in view.">
+        View your phone's recent photos, media, and notifications on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_APPS_OPT_IN_DESCRIPTION" desc="Description for the apps opt in view.">
+        Access your phone's messaging apps on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
+      </message>
+      <message name="IDS_ASH_PHONE_HUB_CAMERA_ROLL_OPT_IN_DESCRIPTION" desc="Description for the camera roll opt in view.">
+        View your phone's recent photos and media on your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
       </message>
       <message name="IDS_ASH_PHONE_HUB_NOTIFICATION_HOTSPOT_FAILED_TITLE" desc="Title inside a PhoneHub notification when enable hotspot failed to find a connection.">
         Hotspot connection failed
@@ -1770,6 +1800,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_SEARCH_AND_ASSISTANT" desc="Category title for the list of suggestions from the search provider and Google Assistant shown in launcher search that are relevant to but not the best match for the query in the search box.">
         Search and Assistant
+      </message>
+      <message name="IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_GAMES" desc="Category title for the list of video game search results shown in launcher search that are relevant to but not the best match for the query in the search box.">
+        Games
       </message>
       <message name="IDS_ASH_SEARCH_RESULT_SEPARATOR" desc="Separator between the title and details text in ash search result view.">
         ''' - '''
@@ -1942,6 +1975,18 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DESKS_DESK_NAME_COMMIT" desc="Alert when the desk name is committed">
         Desk name was changed to <ph name="DESK_NAME">$1</ph>
       </message>
+      <message name="IDS_ASH_DESKS_COMBINE_DESKS_DESCRIPTION" desc="The tooltip and context menu text that describes the action of closing a desk and moving its windows to another desk.">
+        Combine with <ph name="DESK_NAME">$1</ph>
+      </message>
+      <message name="IDS_ASH_DESKS_CLOSE_ALL_DESCRIPTION" desc="The tooltip and context menu text that describes the action of closing a desk and all of its windows.">
+        Close desk and windows
+      </message>
+      <message name="IDS_ASH_DESKS_CLOSE_ALL_TOAST_TEXT" desc="Text provided in toast that notifies user that they have closed a desk and all of its windows.">
+        Desk and windows have been closed
+      </message>
+      <message name="IDS_ASH_DESKS_CLOSE_ALL_UNDO_TEXT" desc="Label for the undo button in the close-all toast.">
+        Undo
+      </message>
 
       <!-- Status tray charging strings. -->
       <message name="IDS_ASH_STATUS_TRAY_LOW_POWER_CHARGER_TITLE" desc="The title of a notification indicating that a low-current USB charger has been connected.">
@@ -2066,6 +2111,12 @@ This file contains the strings for ash.
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_ACTIVATE" desc="The label used in quick settings to indicate an unactivated cellular network that can be clicked to launch activation through setup flow. [CHAR_LIMIT=29]">
         Click to activate
       </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_UNAVAILABLE_SIM_NETWORK" desc="Label used in quick settings to indicate a SIM network that is not available to be setup. [CHAR_LIMIT=29]">
+        Not activated. Contact your carrier.
+      </message>
+      <message name="IDS_ASH_STATUS_TRAY_NETWORK_A11Y_UNAVAILABLE_SIM_NETWORK" desc="Accessibility label used in quick settings to indicate for a SIM network that is not available to be setup. [CHAR_LIMIT=29]">
+       <ph name="NETWORK_NAME">$1<ex>Verizon</ex></ph> is not activated.
+      </message>
       <message name="IDS_ASH_STATUS_TRAY_NETWORK_STATUS_CLICK_TO_UNLOCK" desc="The label used in quick settings to indicate a cellular network is locked and clicking on it will open unlock dialog in chrome OS settings. [CHAR_LIMIT=29]">
         Click to unlock
       </message>
@@ -2112,7 +2163,7 @@ This file contains the strings for ash.
         "<ph name="NAME">$1<ex>Chromebook</ex></ph>" visible to Bluetooth devices.
       </message>
       <message name="IDS_ASH_NETWORK_AUTOCONNECT" desc="Text used for the toast shown when a network has been auto-connected (e.g., when an enterprise policy is applied which initiates a connection to a corporate network like Google-A).">
-        Your connection switched to a more secure network
+        We've switched you to a better network
       </message>
       <message name="IDS_ASH_NETWORK_CELLULAR_SETUP_NOTIFICATION_TITLE" desc="Title used for the system notification shown post-OOBE if a user has no activated mobile networks.">
         Finish setting up your mobile network
@@ -3162,6 +3213,18 @@ This file contains the strings for ash.
       <message name="IDS_FAST_PAIR_SETTINGS_BUTTON" desc="Button title shown to direct users to settings when there is an error connecting with Fast Pair">
         Settings
       </message>
+      <message name="IDS_FAST_PAIR_DOWNLOAD_NOTIFICATION_APP_TITLE" desc="Notification title shown to direct users to download companion app on Fast Pair device">
+        Download the app for <ph name="NAME">$1<ex>JBLTools</ex></ph> on Google play to see all availible features
+      </message>
+      <message name="IDS_FAST_PAIR_DOWNLOAD_APP_BUTTON" desc="Button title shown to direct users to app store to download companion app on Fast Pair device">
+        Download
+      </message>
+      <message name="IDS_FAST_PAIR_SETUP_APP_NOTIFICATION_TITLE" desc="Notification title shown to direct users to setup their Fast Pair device with the companion app">
+        Open <ph name="NAME">$1<ex>JBLTools</ex></ph> to setup your device
+      </message>
+      <message name="IDS_FAST_PAIR_SETUP_APP_BUTTON" desc="Button title shown to direct users to setup their Fast Pair device with the companion app">
+        Setup
+      </message>
       <message name="IDS_FAST_PAIR_CONNECT_BUTTON" desc="Message on button to tell users to connect bluetooth device with Fast Pair.">
         Connect
       </message>
@@ -3435,7 +3498,7 @@ This file contains the strings for ash.
       <message name="IDS_ASH_CALENDAR_BUBBLE_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar bubble and the information in it.">
         Calendar, <ph name="current_month_year">$1<ex>August 2021</ex></ph>
       </message>
-      
+
       <message name="IDS_ASH_CALENDAR_ENTRY_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar entry button.">
        <ph name="current_time">$1<ex>Aug 2021 11:25AM</ex></ph>, Press enter key to open Calendar view
       </message>
@@ -4081,6 +4144,9 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SCREEN_CAPTURE_ALERT_OPEN" desc="Alert spoken by screen readers on entering capture mode.">
         Capture Mode, default is <ph name="SOURCE">$1<ex>partial</ex></ph> <ph name="TYPE">$2<ex>screenshot</ex></ph>. Press tab for keyboard navigation.
       </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_ALERT_OPEN_WITH_CAMERA" desc="Alert spoken by screen readers on entering capture mode with camera preview shown.">
+        Capture Mode, default is <ph name="SOURCE">$1<ex>partial</ex></ph> <ph name="TYPE">$2<ex>screenshot</ex></ph>. Camera input set to <ph name="CAMERA_NAME">$3</ph>, preview on. Press tab for keyboard navigation.
+      </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_SOURCE_FULLSCREEN" desc="Spoken by screen readers for the open alert with the source as full screen.">
         full screen
       </message>
@@ -4647,7 +4713,7 @@ New install
         Delete this search from your history?
       </message>
       <message name="IDS_REMOVE_ZERO_STATE_SUGGESTION_DETAILS" desc="Detailed explanation message for removing removing an omnibox search result from launcher search results UI. This is a text in the dialog shown to the user when they try to remove a suggested omnibox search result from list of results shown in the launcher search - the omnibox search result may appear if the search query in launcher search matches a previous user search. The dialog asks the user to confirm the result removal.">
-        You searched for this query before. Deleting this search from your history will permanently remove it from your Google Account across all of your devices. 
+        You searched for this query before. Deleting this search from your history will permanently remove it from your Google Account across all of your devices.
       </message>
       <message name="IDS_REMOVE_SUGGESTION_BUTTON_LABEL" desc="Remove suggestion button label">
         Delete
@@ -4690,6 +4756,9 @@ New install
       </message>
       <message name="IDS_APP_LIST_CONTINUE_OPENED_YESTERDAY" desc="Text displayed under a file suggestion in the launcher, describing why it is being shown.">
         Opened yesterday
+      </message>
+      <message name="IDS_APP_LIST_OPEN_TAB_HINT" desc="Shown alongside launcher search results which will take the user to an open tab when clicked.">
+        Go to this tab
       </message>
       <message name="IDS_APP_LIST_START_ASSISTANT" desc="Tooltip for the button that starts Google Assistant from the search box in the app list.">
         Google Assistant
@@ -4740,6 +4809,15 @@ New install
       <!-- WM -->
       <message name="IDS_ENTER_PIP_A11Y_NOTIFICATION" is_accessibility_with_no_ui="true" desc="Accessibility text read by chromevox when a window starts picture-in-picture mode.">
         Picture-in-picture started, Alt+Shift+V to focus
+      </message>
+      <message name="IDS_WM_SNAP_WINDOW_TO_LEFT_ON_SHORTCUT" desc="Accessibility text read by chromevox when snap a window to left through shortcut alt+[.">
+        Active window docked on left.
+      </message>
+      <message name="IDS_WM_SNAP_WINDOW_TO_RIGHT_ON_SHORTCUT" desc="Accessibility text read by chromevox when snap a window to right through shortcut alt+].">
+        Active window docked on right.
+      </message>
+      <message name="IDS_WM_RESTORE_SNAPPED_WINDOW_ON_SHORTCUT" desc="Accessibility text read by chromevox when restore a snapped window through shortcut alt+[ or alt+].">
+        Active window undocked.
       </message>
 
       <!-- Shelf Party -->
@@ -4810,11 +4888,33 @@ New install
       <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_MESSAGE_3_PLUS" desc="Notification message explaining that a popup from three or more applications have been blocked.">
         <ph name="APP_1_TITLE">$1<ex>Google Chat</ex></ph>, <ph name="APP_2_TITLE">$2<ex>Chrome</ex></ph> and other notifications are hidden because viewing protection is on
       </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_SYSTEM_TITLE" desc="Title used for the OS when listing blocked notification sources.">
+        System
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_APP_TITLE" desc="Title used for a generic application when listing blocked notification sources.">
+        App
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_ARC_TITLE" desc="Title used for an Android application when listing blocked notification sources.">
+        Android
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_CROSTINI_TITLE" desc="Title used for a Linux application when listing blocked notification sources.">
+        Linux
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_WEB_TITLE" desc="Title used for the web browser when listing blocked notification sources.">
+        Web
+      </message>
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_PHONE_HUB_TITLE" desc="Title used for the Phone Hub feature when listing blocked notification sources.">
+        Phone Hub
+      </message>
       <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_SHOW_BUTTON_TEXT" desc="Text in notification button to show previously-blocked notifications.">
         Show
       </message>
       <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_SETTINGS_BUTTON_TEXT" desc="Text in notification button to launch smart privacy settings.">
         Privacy settings
+      </message>
+
+      <message name="IDS_ASH_SMART_PRIVACY_SNOOPING_NOTIFICATION_SYSTEM_TRAY_TOOLTIP_TEXT" desc="Tooltip text explaining the smart privacy icon at the system tray.">
+        Someone is looking at your screen
       </message>
 
       <!-- USB-C cable notifications - version 2 -->
@@ -4825,7 +4925,7 @@ New install
         Cable may not support displays
       </message>
       <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_DISPLAY_BODY" desc="Notification body text for when a user connects a display to a Chromebook's USB-C port with a cable that cannot support driving display signals.">
-        Your USB-C cable may not connect to diplays properly
+        Your USB-C cable may not connect to displays properly
       </message>
       <message name="IDS_ASH_USB_NOTIFICATION_V2_CABLE_WARNING_PERFORMANCE_TITLE" desc="Notification title text for when a user connects something to the USB-C port on their Chromebook and performance is in some way limited by the cable.">
         Cable may impact performance

@@ -86,17 +86,17 @@ void AccessibilityHandler::RegisterMessages() {
 }
 
 void AccessibilityHandler::HandleShowChromeVoxSettings(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   OpenExtensionOptionsPage(extension_misc::kChromeVoxExtensionId);
 }
 
 void AccessibilityHandler::HandleShowSelectToSpeakSettings(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   OpenExtensionOptionsPage(extension_misc::kSelectToSpeakExtensionId);
 }
 
 void AccessibilityHandler::HandleSetStartupSoundEnabled(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_EQ(1U, args.size());
   bool enabled = false;
   if (args[0].is_bool())
@@ -105,7 +105,7 @@ void AccessibilityHandler::HandleSetStartupSoundEnabled(
 }
 
 void AccessibilityHandler::HandleRecordSelectedShowShelfNavigationButtonsValue(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_EQ(1U, args.size());
   bool enabled = false;
   if (args[0].is_bool())
@@ -117,7 +117,7 @@ void AccessibilityHandler::HandleRecordSelectedShowShelfNavigationButtonsValue(
 }
 
 void AccessibilityHandler::HandleManageA11yPageReady(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 }
 
@@ -130,12 +130,12 @@ void AccessibilityHandler::OnJavascriptAllowed() {
 }
 
 void AccessibilityHandler::OnJavascriptDisallowed() {
-  if (features::IsDictationOfflineAvailableAndEnabled())
+  if (features::IsDictationOfflineAvailable())
     soda_observation_.Reset();
 }
 
 void AccessibilityHandler::HandleShowChromeVoxTutorial(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AccessibilityManager::Get()->ShowChromeVoxTutorial();
 }
 
@@ -151,7 +151,7 @@ void AccessibilityHandler::OpenExtensionOptionsPage(const char extension_id[]) {
 }
 
 void AccessibilityHandler::MaybeAddSodaInstallerObserver() {
-  if (!features::IsDictationOfflineAvailableAndEnabled())
+  if (!features::IsDictationOfflineAvailable())
     return;
 
   speech::SodaInstaller* soda_installer = speech::SodaInstaller::GetInstance();
@@ -162,11 +162,10 @@ void AccessibilityHandler::MaybeAddSodaInstallerObserver() {
   }
 }
 
-void AccessibilityHandler::OnSodaInstallSucceeded() {
-  if (!speech::SodaInstaller::GetInstance()->IsSodaInstalled(
-          GetDictationLocale())) {
+// SodaInstaller::Observer:
+void AccessibilityHandler::OnSodaInstalled(speech::LanguageCode language_code) {
+  if (language_code != GetDictationLocale())
     return;
-  }
 
   // Only show the success message if both the SODA binary and the language pack
   // matching the Dictation locale have been downloaded.
@@ -177,16 +176,15 @@ void AccessibilityHandler::OnSodaInstallSucceeded() {
           GetDictationLocaleDisplayName())));
 }
 
-void AccessibilityHandler::OnSodaInstallProgress(
-    int progress,
-    speech::LanguageCode language_code) {
-  // TODO(https://crbug.com/1266491): Ensure we use combined progress instead
-  // of just the language pack progress.
-  if (language_code != GetDictationLocale())
+void AccessibilityHandler::OnSodaProgress(speech::LanguageCode language_code,
+                                          int progress) {
+  if (language_code != speech::LanguageCode::kNone &&
+      language_code != GetDictationLocale()) {
     return;
+  }
 
-  // Only show the progress message if this applies to the language pack
-  // matching the Dictation locale.
+  // Only show the progress message if either the Dictation locale or the SODA
+  // binary has progress (encoded by LanguageCode::kNone).
   FireWebUIListener(
       "dictation-locale-menu-subtitle-changed",
       base::Value(l10n_util::GetStringFUTF16Int(
@@ -194,49 +192,22 @@ void AccessibilityHandler::OnSodaInstallProgress(
           progress)));
 }
 
-void AccessibilityHandler::OnSodaInstallFailed(
-    speech::LanguageCode language_code) {
-  if (language_code == speech::LanguageCode::kNone ||
-      language_code == GetDictationLocale()) {
-    // Show the failed message if either the Dictation locale failed or the SODA
-    // binary failed (encoded by LanguageCode::kNone).
-    FireWebUIListener(
-        "dictation-locale-menu-subtitle-changed",
-        base::Value(l10n_util::GetStringFUTF16(
-            IDS_SETTINGS_ACCESSIBILITY_DICTATION_SUBTITLE_SODA_DOWNLOAD_ERROR,
-            GetDictationLocaleDisplayName())));
+void AccessibilityHandler::OnSodaError(speech::LanguageCode language_code) {
+  if (language_code != speech::LanguageCode::kNone &&
+      language_code != GetDictationLocale()) {
+    return;
   }
-}
 
-// SodaInstaller::Observer:
-void AccessibilityHandler::OnSodaInstalled() {
-  OnSodaInstallSucceeded();
-}
-
-void AccessibilityHandler::OnSodaLanguagePackInstalled(
-    speech::LanguageCode language_code) {
-  OnSodaInstallSucceeded();
-}
-
-void AccessibilityHandler::OnSodaLanguagePackProgress(
-    int language_progress,
-    speech::LanguageCode language_code) {
-  OnSodaInstallProgress(language_progress, language_code);
-}
-
-void AccessibilityHandler::OnSodaError() {
-  OnSodaInstallFailed(speech::LanguageCode::kNone);
-}
-
-void AccessibilityHandler::OnSodaLanguagePackError(
-    speech::LanguageCode language_code) {
-  OnSodaInstallFailed(language_code);
+  // Show the failed message if either the Dictation locale failed or the SODA
+  // binary failed (encoded by LanguageCode::kNone).
+  FireWebUIListener(
+      "dictation-locale-menu-subtitle-changed",
+      base::Value(l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_ACCESSIBILITY_DICTATION_SUBTITLE_SODA_DOWNLOAD_ERROR,
+          GetDictationLocaleDisplayName())));
 }
 
 void AccessibilityHandler::MaybeAddDictationLocales() {
-  if (!features::IsExperimentalAccessibilityDictationOfflineEnabled())
-    return;
-
   base::flat_map<std::string, ash::Dictation::LocaleData> locales =
       ash::Dictation::GetAllSupportedLocales();
 

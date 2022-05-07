@@ -5,7 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_AUTOCOMPLETE_RESULT_CONSUMER_H_
 #define IOS_CHROME_BROWSER_UI_OMNIBOX_POPUP_AUTOCOMPLETE_RESULT_CONSUMER_H_
 
-#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
+#import <UIKit/UIKit.h>
+
+@protocol AutocompleteSuggestionGroup;
 
 @protocol AutocompleteResultConsumer;
 
@@ -15,17 +17,21 @@
 // Tells the delegate when a row containing a suggestion is highlighted (i.e.
 // with arrow keys).
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
-                   didHighlightRow:(NSUInteger)row;
+                   didHighlightRow:(NSUInteger)row
+                         inSection:(NSUInteger)section;
 // Tells the delegate when a row containing a suggestion is clicked.
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
-                      didSelectRow:(NSUInteger)row;
+                      didSelectRow:(NSUInteger)row
+                         inSection:(NSUInteger)section;
 // Tells the delegate when a suggestion in|row| was chosen for appending to
 // omnibox.
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
-        didTapTrailingButtonForRow:(NSUInteger)row;
+        didTapTrailingButtonForRow:(NSUInteger)row
+                         inSection:(NSUInteger)section;
 // Tells the delegate when a suggestion in |row| was removed.
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
-           didSelectRowForDeletion:(NSUInteger)row;
+           didSelectRowForDeletion:(NSUInteger)row
+                         inSection:(NSUInteger)section;
 // Tells the delegate on scroll.
 - (void)autocompleteResultConsumerDidScroll:
     (id<AutocompleteResultConsumer>)sender;
@@ -36,7 +42,7 @@
 @protocol AutocompleteResultConsumer <NSObject>
 // Updates the current data and forces a redraw. If animation is YES, adds
 // CALayer animations to fade the OmniboxPopupRows in.
-- (void)updateMatches:(NSArray<id<AutocompleteSuggestion>>*)result
+- (void)updateMatches:(NSArray<id<AutocompleteSuggestionGroup>>*)result
         withAnimation:(BOOL)animation;
 // Sets the text alignment of the popup content.
 - (void)setTextAlignment:(NSTextAlignment)alignment;

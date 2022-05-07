@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Poboljšajte Chrome slanjem statistike korišćenja i izveštaja o otkazivanju Google-u.</translation>
 <translation id="417201473131094001">Nije podržano u verziji Chrome Canary</translation>
 <translation id="4214277427269650960">Prijavite se na ovaj sajt i u Chrome. Sinhronizaciju možete da uključite kasnije.</translation>
+<translation id="4233521129555661685">Korisnik <ph name="USER_EMAIL1" /> je koristio Chrome i ostavio obeleživače, lozinke i druga podešavanja na ovom uređaju.</translation>
 <translation id="424864128008805179">Želite li da se odjavite iz Chrome-a?</translation>
 <translation id="4249068189593983585">Savet za Chrome. Ako želite više opcija za kartice, dodirnite i zadržite dugme Prikaži kartice na traci s alatkama, koja se nalazi u dnu ili vrhu ekrana.</translation>
 <translation id="4523886039239821078">Neki programski dodaci izazivaju otkazivanje Chrome-a. Deinstalirajte:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome nije uspeo da proveri sve lozinke. Probajte ponovo sutra ili <ph name="BEGIN_LINK" />proverite lozinke na Google nalogu.<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">Nije podržano u verziji Chrome beta</translation>
 <translation id="5030102366287574140">Chrome može da vas štiti od upada u podatke, nebezbednih veb-sajtova i drugih stvari.</translation>
+<translation id="5108659628347594808">Poboljšajte Chrome</translation>
 <translation id="5119391094379141756">Izaberite Chrome</translation>
 <translation id="5162467219239570114">Chrome je zastareo. Ako ažuriranje nije dostupno u <ph name="BEGIN_LINK" />App Store-u<ph name="END_LINK" />, uređaj možda ne podržava nove verzije Chrome-a.</translation>
 <translation id="5389212809648216794">Google Chrome ne može da koristi kameru zato što je već koristi druga aplikacija</translation>
@@ -81,6 +83,13 @@
 <translation id="6709398533399187136">Vaša lozinka je otkrivena pri upadu u podatke. Google menadžer lozinki preporučuje da je odmah promenite.</translation>
 <translation id="6822673484890854830">Chrome nije uspeo da proveri sve lozinke. Probajte ponovo kasnije.</translation>
 <translation id="6964931465519938134">Sada možete da koristite Chrome svaki put kada dodirnete linkove u porukama, dokumentima i drugim aplikacijama.</translation>
+<translation id="7046845777663074840">Kada je ovo uključeno:
+<ph name="BEGIN_INDENT" />  • Pomozite da poboljšamo Chrome za ljude koji ga koriste kao vi.<ph name="END_INDENT" />
+
+Šta treba da imate na umu:
+<ph name="BEGIN_INDENT" />  • Informacije o vašem korišćenju Chrome-a se šalju Google-u, ali nisu povezane sa vama.
+  • Ako Chrome otkaže, detalji o otkazivanju mogu da sadrže neke lične podatke.
+  • Ako uključite sinhronizaciju, pokazatelji mogu da obuhvataju informacije o URL-ovima koje posećujete.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Prilagodite Chrome sebi</translation>
 <translation id="7124339256045485976">Redovno ažuriraju Chrome</translation>
 <translation id="7161390184744336561">Google Chrome je zastareo</translation>

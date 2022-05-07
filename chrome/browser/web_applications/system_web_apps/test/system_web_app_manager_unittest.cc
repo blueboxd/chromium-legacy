@@ -145,8 +145,7 @@ class SystemWebAppManagerTest : public WebAppTest {
     externally_installed_app_prefs_ =
         std::make_unique<ExternallyInstalledWebAppPrefs>(profile()->GetPrefs());
     icon_manager_ = std::make_unique<WebAppIconManager>(
-        profile(), controller().registrar(), install_manager(),
-        base::MakeRefCounted<TestFileUtils>());
+        profile(), base::MakeRefCounted<TestFileUtils>());
     web_app_policy_manager_ = std::make_unique<WebAppPolicyManager>(profile());
     install_finalizer_ = std::make_unique<WebAppInstallFinalizer>(profile());
     fake_externally_managed_app_manager_impl_ =
@@ -165,9 +164,11 @@ class SystemWebAppManagerTest : public WebAppTest {
                                     &controller().os_integration_manager(),
                                     &install_finalizer());
 
+    icon_manager().SetSubsystems(&controller().registrar(), &install_manager());
+
     externally_managed_app_manager().SetSubsystems(
         &controller().registrar(), &ui_manager(), &install_finalizer(),
-        &install_manager());
+        &install_manager(), &controller().sync_bridge());
 
     web_app_policy_manager().SetSubsystems(
         &externally_managed_app_manager(), &controller().registrar(),
@@ -241,7 +242,7 @@ class SystemWebAppManagerTest : public WebAppTest {
   }
 
   void InitRegistrarWithSystemApps(
-      std::vector<SystemAppData> system_app_data_list) {
+      const std::vector<SystemAppData>& system_app_data_list) {
     DCHECK(controller().registrar().is_empty());
     DCHECK(!system_app_data_list.empty());
 
@@ -1052,7 +1053,7 @@ class TimerSystemAppDelegate : public UnittestingSystemAppDelegate {
                          WebAppInstallInfoFactory info_factory,
                          absl::optional<base::TimeDelta> period,
                          bool open_immediately)
-      : UnittestingSystemAppDelegate(type, name, url, info_factory),
+      : UnittestingSystemAppDelegate(type, name, url, std::move(info_factory)),
         period_(period),
         open_immediately_(open_immediately) {}
   absl::optional<SystemAppBackgroundTaskInfo> GetTimerInfo() const override;
@@ -1087,6 +1088,44 @@ class SystemWebAppManagerTimerTest : public SystemWebAppManagerTest {
     system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
   }
 };
+
+TEST_F(SystemWebAppManagerTimerTest, BackgroundTaskDisabled) {
+  InitEmptyRegistrar();
+
+  // 1) Disabled app should not push to background tasks.
+  {
+    std::unique_ptr<TimerSystemAppDelegate> sys_app_delegate =
+        std::make_unique<TimerSystemAppDelegate>(
+            SystemAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
+            GetApp1WebAppInfoFactory(), base::Seconds(60), false);
+
+    sys_app_delegate->SetIsAppEnabled(false);
+
+    SystemAppMapType system_apps;
+    system_apps.emplace(SystemAppType::SETTINGS, std::move(sys_app_delegate));
+    system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
+    StartAndWaitForAppsToSynchronize();
+
+    EXPECT_EQ(0u,
+              system_web_app_manager().GetBackgroundTasksForTesting().size());
+  }
+
+  // 2) Enabled app should push to background tasks.
+  {
+    std::unique_ptr<TimerSystemAppDelegate> sys_app_delegate =
+        std::make_unique<TimerSystemAppDelegate>(
+            SystemAppType::SETTINGS, kSettingsAppInternalName, AppUrl1(),
+            GetApp1WebAppInfoFactory(), base::Seconds(60), false);
+
+    SystemAppMapType system_apps;
+    system_apps.emplace(SystemAppType::SETTINGS, std::move(sys_app_delegate));
+    system_web_app_manager().SetSystemAppsForTesting(std::move(system_apps));
+    StartAndWaitForAppsToSynchronize();
+
+    EXPECT_EQ(1u,
+              system_web_app_manager().GetBackgroundTasksForTesting().size());
+  }
+}
 
 TEST_F(SystemWebAppManagerTimerTest, TestTimer) {
   ui::ScopedSetIdleState idle(ui::IDLE_STATE_IDLE);

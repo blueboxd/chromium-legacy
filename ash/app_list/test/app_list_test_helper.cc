@@ -4,7 +4,6 @@
 
 #include "ash/app_list/test/app_list_test_helper.h"
 
-#include <tuple>
 #include <utility>
 
 #include "ash/app_list/app_list_bubble_presenter.h"
@@ -17,6 +16,7 @@
 #include "ash/app_list/views/app_list_bubble_apps_page.h"
 #include "ash/app_list/views/app_list_bubble_search_page.h"
 #include "ash/app_list/views/app_list_bubble_view.h"
+#include "ash/app_list/views/app_list_folder_view.h"
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/app_list_toast_container_view.h"
 #include "ash/app_list/views/app_list_view.h"
@@ -31,8 +31,6 @@
 #include "base/guid.h"
 #include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/compositor/layer.h"
-#include "ui/compositor/test/test_utils.h"
 
 namespace ash {
 
@@ -48,7 +46,7 @@ AppListTestHelper::AppListTestHelper() {
                                        &search_model_);
   // Disable app list nudge as default.
   DisableAppListNudge(true);
-  ContinueSectionView::SetPrivacyNoticeAcceptedForTest(true);
+  AppListNudgeController::SetPrivacyNoticeAcceptedForTest(true);
 }
 
 AppListTestHelper::~AppListTestHelper() {
@@ -58,6 +56,22 @@ AppListTestHelper::~AppListTestHelper() {
 
 void AppListTestHelper::WaitUntilIdle() {
   base::RunLoop().RunUntilIdle();
+}
+
+void AppListTestHelper::WaitForFolderAnimation() {
+  AppListFolderView* folder_view = nullptr;
+  if (!Shell::Get()->IsInTabletMode() &&
+      features::IsProductivityLauncherEnabled()) {
+    folder_view = GetBubbleFolderView();
+  } else {
+    folder_view = GetFullscreenFolderView();
+  }
+  if (!folder_view || !folder_view->IsAnimationRunning())
+    return;
+
+  base::RunLoop run_loop;
+  folder_view->SetAnimationDoneTestCallback(run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 void AppListTestHelper::ShowAppList() {
@@ -96,18 +110,6 @@ void AppListTestHelper::ToggleAndRunLoop(uint64_t display_id,
   app_list_controller_->ToggleAppList(display_id, show_source,
                                       base::TimeTicks());
   WaitUntilIdle();
-}
-
-void AppListTestHelper::WaitForLayerAnimation(ui::Layer* layer) {
-  auto* compositor = layer->GetCompositor();
-  while (layer->GetAnimator()->is_animating()) {
-    EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
-  }
-
-  // Ensure there is one more frame presented after animation finishes
-  // to allow animation throughput data is passed from cc to ui.
-  std::ignore =
-      ui::WaitForNextFrameToBePresented(compositor, base::Milliseconds(200));
 }
 
 void AppListTestHelper::StartSlideAnimationOnBubbleAppsPage(
@@ -176,7 +178,7 @@ bool AppListTestHelper::IsInFolderView() {
 }
 
 void AppListTestHelper::DisableAppListNudge(bool disable) {
-  AppListNudgeController::SetNudgeDisabledForTest(disable);
+  AppListNudgeController::SetReorderNudgeDisabledForTest(disable);
 }
 
 AppListView* AppListTestHelper::GetAppListView() {
@@ -211,7 +213,7 @@ PagedAppsGridView* AppListTestHelper::GetRootPagedAppsGridView() {
 }
 
 views::View* AppListTestHelper::GetFullscreenLauncherAppsSeparatorView() {
-  return GetAppsContainerView()->GetSeparatorView();
+  return GetAppsContainerView()->separator();
 }
 
 SearchResultPageView* AppListTestHelper::GetFullscreenSearchResultPageView() {

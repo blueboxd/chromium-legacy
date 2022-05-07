@@ -52,7 +52,7 @@ void MetricsConsentHandler::OnJavascriptAllowed() {}
 void MetricsConsentHandler::OnJavascriptDisallowed() {}
 
 void MetricsConsentHandler::HandleGetMetricsConsentState(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   CHECK_EQ(1U, args.size());
 
@@ -73,7 +73,7 @@ void MetricsConsentHandler::HandleGetMetricsConsentState(
 }
 
 void MetricsConsentHandler::HandleUpdateMetricsConsent(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   CHECK_EQ(2U, args.size());
   CHECK_EQ(args[1].type(), base::Value::Type::DICTIONARY);

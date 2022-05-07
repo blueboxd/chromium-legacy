@@ -55,6 +55,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/embedder_support/user_agent_utils.h"
 #include "components/keep_alive_registry/keep_alive_types.h"
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_handle.h"
@@ -72,12 +73,14 @@
 #include "components/ukm/test_ukm_recorder.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_paths.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/referrer.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/download_test_observer.h"
@@ -93,6 +96,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
 #include "ui/gfx/geometry/size.h"
@@ -140,7 +144,8 @@ class PageLoadMetricsBrowserTest : public InProcessBrowserTest {
   PageLoadMetricsBrowserTest() {
     scoped_feature_list_.InitWithFeatures(
         {ukm::kUkmFeature, blink::features::kPortals,
-         blink::features::kPortalsCrossOrigin},
+         blink::features::kPortalsCrossOrigin,
+         blink::features::kUserAgentOverrideExperiment},
         {});
   }
 
@@ -2013,6 +2018,107 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, LoadingMetrics) {
   waiter->Wait();
 }
 
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterUserAgentOverride) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  std::string original_ua = embedder_support::GetUserAgent();
+  std::string ua_no_substring = "foo";
+  std::string ua_prefix = "foo" + original_ua;
+  std::string ua_suffix = original_ua + "foo";
+
+  {
+    base::HistogramTester histogram;
+    web_contents->SetUserAgentOverride(
+        blink::UserAgentOverride::UserAgentOnly(ua_no_substring), false);
+    web_contents->GetController()
+        .GetLastCommittedEntry()
+        ->SetIsOverridingUserAgent(true);
+    auto waiter = CreatePageLoadMetricsTestWaiter();
+    waiter->AddUseCounterFeatureExpectation({
+        blink::mojom::UseCounterFeatureType::kUserAgentOverride,
+        blink::UserAgentOverride::UserAgentOverriden,
+    });
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/empty.html")));
+    content::EvalJsResult result = EvalJs(web_contents, "navigator.userAgent;");
+    waiter->Wait();
+    NavigateToUntrackedUrl();
+    content::FetchHistogramsFromChildProcesses();
+    // Expect 2; one in the navigation stack and one in the renderer
+    histogram.ExpectBucketCount(
+        blink::UserAgentOverride::kUserAgentOverrideHistogram,
+        blink::UserAgentOverride::UserAgentOverriden, 2);
+    histogram.ExpectBucketCount(
+        blink::UserAgentOverride::kUserAgentOverrideHistogram,
+        blink::UserAgentOverride::UserAgentOverrideSubstring, 0);
+    histogram.ExpectBucketCount(
+        blink::UserAgentOverride::kUserAgentOverrideHistogram,
+        blink::UserAgentOverride::UserAgentOverrideSuffix, 0);
+  }
+
+  {
+    base::HistogramTester histogram;
+    web_contents->SetUserAgentOverride(
+        blink::UserAgentOverride::UserAgentOnly(ua_prefix), false);
+    web_contents->GetController()
+        .GetLastCommittedEntry()
+        ->SetIsOverridingUserAgent(true);
+    auto waiter = CreatePageLoadMetricsTestWaiter();
+    waiter->AddUseCounterFeatureExpectation({
+        blink::mojom::UseCounterFeatureType::kUserAgentOverride,
+        blink::UserAgentOverride::UserAgentOverrideSubstring,
+    });
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/empty.html")));
+    content::EvalJsResult result = EvalJs(web_contents, "navigator.userAgent;");
+    waiter->Wait();
+    NavigateToUntrackedUrl();
+    content::FetchHistogramsFromChildProcesses();
+    // Expect 2; one in the navigation stack and one in the renderer
+    histogram.ExpectBucketCount(
+        blink::UserAgentOverride::kUserAgentOverrideHistogram,
+        blink::UserAgentOverride::UserAgentOverriden, 0);
+    histogram.ExpectBucketCount(
+        blink::UserAgentOverride::kUserAgentOverrideHistogram,
+        blink::UserAgentOverride::UserAgentOverrideSubstring, 2);
+    histogram.ExpectBucketCount(
+        blink::UserAgentOverride::kUserAgentOverrideHistogram,
+        blink::UserAgentOverride::UserAgentOverrideSuffix, 0);
+  }
+  {
+    base::HistogramTester histogram;
+    web_contents->SetUserAgentOverride(
+        blink::UserAgentOverride::UserAgentOnly(ua_suffix), false);
+    web_contents->GetController()
+        .GetLastCommittedEntry()
+        ->SetIsOverridingUserAgent(true);
+    auto waiter = CreatePageLoadMetricsTestWaiter();
+    waiter->AddUseCounterFeatureExpectation({
+        blink::mojom::UseCounterFeatureType::kUserAgentOverride,
+        blink::UserAgentOverride::UserAgentOverrideSuffix,
+    });
+    ASSERT_TRUE(ui_test_utils::NavigateToURL(
+        browser(), embedded_test_server()->GetURL("/empty.html")));
+    content::EvalJsResult result = EvalJs(web_contents, "navigator.userAgent;");
+    waiter->Wait();
+    NavigateToUntrackedUrl();
+    content::FetchHistogramsFromChildProcesses();
+    // Expect 2; one in the navigation stack and one in the renderer
+    histogram.ExpectBucketCount(
+        blink::UserAgentOverride::kUserAgentOverrideHistogram,
+        blink::UserAgentOverride::UserAgentOverriden, 0);
+    histogram.ExpectBucketCount(
+        blink::UserAgentOverride::kUserAgentOverrideHistogram,
+        blink::UserAgentOverride::UserAgentOverrideSubstring, 0);
+    histogram.ExpectBucketCount(
+        blink::UserAgentOverride::kUserAgentOverrideHistogram,
+        blink::UserAgentOverride::UserAgentOverrideSuffix, 2);
+  }
+}
+
 class SessionRestorePageLoadMetricsBrowserTest
     : public PageLoadMetricsBrowserTest {
  public:
@@ -3113,15 +3219,29 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAnimatedLCPFlag,
 
 // Tests that an animated image's reported LCP values are larger than its load
 // times, when only the feature flag for animated image web exposure is enabled.
+// TODO(crbug.com/1306758): Flaky on Mac/Linux/Lacros.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_PageLCPAnimatedImageOnlyRuntimeFlag \
+  DISABLED_PageLCPAnimatedImageOnlyRuntimeFlag
+#else
+#define MAYBE_PageLCPAnimatedImageOnlyRuntimeFlag \
+  PageLCPAnimatedImageOnlyRuntimeFlag
+#endif
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithRuntimeAnimatedLCPFlag,
-                       PageLCPAnimatedImageOnlyRuntimeFlag) {
+                       MAYBE_PageLCPAnimatedImageOnlyRuntimeFlag) {
   test_animated_image_lcp(/*smaller=*/false, /*animated=*/true);
 }
 
 // Tests that a non-animated image's reported LCP values are larger than its
 // load times, when the feature flag for animated image reporting is enabled.
+// TODO(crbug.com/1306713): Flaky on Mac/Linux/Lacros.
+#if BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS_LACROS)
+#define MAYBE_PageLCPNonAnimatedImage DISABLED_PageLCPNonAnimatedImage
+#else
+#define MAYBE_PageLCPNonAnimatedImage PageLCPNonAnimatedImage
+#endif
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTestWithAnimatedLCPFlag,
-                       PageLCPNonAnimatedImage) {
+                       MAYBE_PageLCPNonAnimatedImage) {
   test_animated_image_lcp(/*smaller=*/false, /*animated=*/false);
 }
 
@@ -3240,21 +3360,8 @@ class PageLoadMetricsBrowserTestWithBackForwardCache
   void SetUpCommandLine(base::CommandLine* command_line) override {
     PageLoadMetricsBrowserTest::SetUpCommandLine(command_line);
     feature_list.InitWithFeaturesAndParameters(
-        {{features::kBackForwardCache,
-          // Set a very long TTL before expiration (longer than the test
-          // timeout) so tests that are expecting deletion don't pass when they
-          // shouldn't.
-          //
-          // TODO(hajimehoshi): This value is used in various places. Define a
-          // constant and use it.
-          //
-          // Some features like the outstanding network requests are expected to
-          // appear in almost any output. Filter them out to make the tests
-          // simpler.
-          {{"TimeToLiveInBackForwardCacheInSeconds", "3600"},
-           {"ignore_outstanding_network_request_for_testing", "true"}}}},
-        // Allow BackForwardCache for all devices regardless of their memory.
-        {features::kBackForwardCacheMemoryControls});
+        content::DefaultEnabledBackForwardCacheParametersForTests(),
+        content::DefaultDisabledBackForwardCacheParametersForTests());
   }
 
  private:

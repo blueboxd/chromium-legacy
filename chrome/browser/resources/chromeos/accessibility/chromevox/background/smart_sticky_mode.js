@@ -7,15 +7,10 @@
  * when the current range is over an editable; restores sticky mode when not on
  * an editable.
  */
-
-goog.provide('SmartStickyMode');
-
-goog.require('AutomationUtil');
-goog.require('ChromeVox');
-goog.require('ChromeVoxState');
+import {ChromeVoxBackground} from './classic_background.js';
 
 /** @implements {ChromeVoxStateObserver} */
-SmartStickyMode = class {
+export class SmartStickyMode {
   constructor() {
     /** @private {boolean} */
     this.ignoreRangeChanges_ = false;
@@ -32,10 +27,14 @@ SmartStickyMode = class {
     ChromeVoxState.addObserver(this);
   }
 
-  /** @override */
-  onCurrentRangeChanged(newRange) {
+  /**
+   * @param {?cursors.Range} newRange
+   * @param {boolean=} opt_fromEditing
+   * @override
+   */
+  onCurrentRangeChanged(newRange, opt_fromEditing) {
     if (!newRange || this.ignoreRangeChanges_ ||
-        ChromeVoxState.isReadingContinuously ||
+        ChromeVoxState.isReadingContinuously || opt_fromEditing ||
         localStorage['smartStickyMode'] !== 'true') {
       return;
     }
@@ -188,4 +187,4 @@ SmartStickyMode = class {
 
     return null;
   }
-};
+}

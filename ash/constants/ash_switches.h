@@ -118,8 +118,6 @@ COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableLoginLacrosOpening[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableMachineCertRequest[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kDisableOOBEChromeVoxHintTimerForTesting[];
-COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kDisableOOBENetworkScreenSkippingForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisablePerUserTimezone[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kDisableRollbackOption[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -177,6 +175,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kFakeDriveFsLauncherSocketPath[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFingerprintSensorLocation[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFirstExecAfterBoot[];
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kForceCryptohomeRecoveryForTesting[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceDevToolsAvailable[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kForceFirstRunUI[];
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -340,11 +340,6 @@ bool IsAueReachedForUpdateRequiredForTest();
 // testing.
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsOOBEChromeVoxHintTimerDisabledForTesting();
-
-// Returns true if the OOBE Network screen skipping check based on ethernet
-// connection is disabled for testing.
-COMPONENT_EXPORT(ASH_CONSTANTS)
-bool IsOOBENetworkScreenSkippingDisabledForTesting();
 
 // Returns true if the OOBE ChromeVox hint is enabled for dev mode.
 COMPONENT_EXPORT(ASH_CONSTANTS)

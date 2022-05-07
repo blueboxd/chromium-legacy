@@ -10,6 +10,7 @@
 #include "ash/shelf/shelf_bubble.h"
 #include "ash/style/default_colors.h"
 #include "base/callback_forward.h"
+#include "base/time/time.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/image_view.h"
@@ -26,10 +27,20 @@ namespace ash {
 // The implementation of tooltip bubbles for the shelf.
 class ASH_EXPORT ShelfShutdownConfirmationBubble : public ShelfBubble {
  public:
-  enum ButtonId {
+  enum class ButtonId {
     // We start from 1 because 0 is the default view ID.
     kShutdown = 1,  // Shut down the device.
     kCancel,        // Cancel shutdown.
+  };
+  // Enum used for UMA. Do NOT reorder or remove entry. Don't forget to
+  // update ShutdownConfirmationBubbleAction enum in enums.xml when adding new
+  // entries.
+  enum BubbleAction {
+    kOpened = 0,
+    kCancelled = 1,
+    kConfirmed = 2,
+    kDismissed = 3,
+    kMaxValue
   };
 
   ShelfShutdownConfirmationBubble(views::View* anchor,
@@ -59,13 +70,25 @@ class ASH_EXPORT ShelfShutdownConfirmationBubble : public ShelfBubble {
   // Callback functions of cancel and confirm buttons
   void OnCancelled();
   void OnConfirmed();
+  void OnClosed();
   base::OnceClosure confirm_callback_;
   base::OnceClosure cancel_callback_;
+
+  // Report bubble action metrics
+  void ReportBubbleAction(BubbleAction action);
 
   views::ImageView* icon_ = nullptr;
   views::Label* title_ = nullptr;
   views::LabelButton* cancel_ = nullptr;
   views::LabelButton* confirm_ = nullptr;
+
+  enum class DialogResult { kNone, kCancelled, kConfirmed };
+
+  // A simple state machine to keep track of the dialog result.
+  DialogResult dialog_result_{DialogResult::kNone};
+
+  // Track time delta between bubble opened to an action taken
+  base::TimeTicks bubble_opened_timestamp_;
 };
 
 }  // namespace ash

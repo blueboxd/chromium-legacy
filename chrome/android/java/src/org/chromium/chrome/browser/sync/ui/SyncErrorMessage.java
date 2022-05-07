@@ -26,6 +26,7 @@ import org.chromium.components.messages.MessageBannerProperties;
 import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.messages.MessageDispatcherProvider;
 import org.chromium.components.messages.MessageIdentifier;
+import org.chromium.components.messages.PrimaryActionClickBehavior;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -94,7 +95,7 @@ public class SyncErrorMessage implements SyncStateChangedListener, UnownedUserDa
                                  ApiCompatibilityUtils.getDrawable(
                                          resources, R.drawable.ic_sync_error_legacy_24dp))
                          .with(MessageBannerProperties.ICON_TINT_COLOR,
-                                 ApiCompatibilityUtils.getColor(resources, R.color.default_red))
+                                 context.getColor(R.color.default_red))
                          .with(MessageBannerProperties.ON_PRIMARY_ACTION, this::onAccepted)
                          .with(MessageBannerProperties.ON_DISMISSED, this::onDismissed)
                          .build();
@@ -117,9 +118,10 @@ public class SyncErrorMessage implements SyncStateChangedListener, UnownedUserDa
         }
     }
 
-    private void onAccepted() {
+    private @PrimaryActionClickBehavior int onAccepted() {
         SyncErrorPromptUtils.onUserAccepted(mType);
         recordHistogram(SyncErrorPromptAction.BUTTON_CLICKED);
+        return PrimaryActionClickBehavior.DISMISS_IMMEDIATELY;
     }
 
     private void onDismissed(@DismissReason int reason) {

@@ -6,9 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 FakeSecureChannel::FakeSecureChannel() = default;
 
@@ -34,6 +32,4 @@ void FakeSecureChannel::InitiateConnectionToDevice(
   delegate_from_last_initiate_call_.Bind(std::move(delegate));
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

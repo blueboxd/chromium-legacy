@@ -52,6 +52,8 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   void SetSameOwner(SetSameOwnerCallback callback) override;
   void SetDifferentOwner(SetDifferentOwnerCallback callback) override;
 
+  void SetWipeDevice(bool wipe_device, SetWipeDeviceCallback) override;
+
   void ChooseManuallyDisableWriteProtect(
       ChooseManuallyDisableWriteProtectCallback callback) override;
   void ChooseRsuDisableWriteProtect(
@@ -175,7 +177,9 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
   void FinalizationProgress(const rmad::FinalizeStatus& status) override;
   void RoFirmwareUpdateProgress(rmad::UpdateRoFirmwareStatus status) override;
 
-  void OsUpdateProgress(update_engine::Operation operation, double progress);
+  void OsUpdateProgress(update_engine::Operation operation,
+                        double progress,
+                        update_engine::ErrorCode error_code);
 
  private:
   using TransitionStateCallback =
@@ -197,7 +201,8 @@ class ShimlessRmaService : public mojom::ShimlessRmaService,
                                 bool rollback,
                                 bool powerwash,
                                 const std::string& version,
-                                int64_t update_size);
+                                int64_t update_size,
+                                update_engine::ErrorCode error_code);
 
   void OsUpdateOrNextRmadStateCallback(TransitionStateCallback callback,
                                        const std::string& version);

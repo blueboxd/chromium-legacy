@@ -1274,7 +1274,7 @@ public class AwSettings {
     }
 
     public void setRequestedWithHeaderMode(@RequestedWithHeaderMode int mode) {
-        if (TRACE) Log.i(TAG, "setRequestedWithHeaderMode=" + mode);
+        AwWebContentsMetricsRecorder.recordRequestedWithHeaderModeAPIUsage(mode);
         synchronized (mAwSettingsLock) {
             mRequestedWithHeaderMode = mode;
         }
@@ -1739,7 +1739,7 @@ public class AwSettings {
     }
 
     public void setForceDarkMode(@ForceDarkMode int forceDarkMode) {
-        DarkModeHistogramRecorder.recordForceDarkModeAPIUsage(mContext, forceDarkMode);
+        AwWebContentsMetricsRecorder.recordForceDarkModeAPIUsage(mContext, forceDarkMode);
         synchronized (mAwSettingsLock) {
             if (mForceDarkMode != forceDarkMode) {
                 mForceDarkMode = forceDarkMode;
@@ -1769,10 +1769,10 @@ public class AwSettings {
         }
     }
 
-    public boolean isDarkMode() {
+    public boolean isForceDarkApplied() {
         synchronized (mAwSettingsLock) {
             assert mNativeAwSettings != 0;
-            return AwSettingsJni.get().isDarkMode(mNativeAwSettings, AwSettings.this);
+            return AwSettingsJni.get().isForceDarkApplied(mNativeAwSettings, AwSettings.this);
         }
     }
 
@@ -1791,7 +1791,7 @@ public class AwSettings {
     }
 
     public void setForceDarkBehavior(@ForceDarkBehavior int forceDarkBehavior) {
-        DarkModeHistogramRecorder.recordForceDarkBehaviorAPIUsage(forceDarkBehavior);
+        AwWebContentsMetricsRecorder.recordForceDarkBehaviorAPIUsage(forceDarkBehavior);
         synchronized (mAwSettingsLock) {
             if (mForceDarkBehavior != forceDarkBehavior) {
                 mForceDarkBehavior = forceDarkBehavior;
@@ -1983,6 +1983,6 @@ public class AwSettings {
         void updateWillSuppressErrorStateLocked(long nativeAwSettings, AwSettings caller);
         void updateCookiePolicyLocked(long nativeAwSettings, AwSettings caller);
         void updateAllowFileAccessLocked(long nativeAwSettings, AwSettings caller);
-        boolean isDarkMode(long nativeAwSettings, AwSettings caller);
+        boolean isForceDarkApplied(long nativeAwSettings, AwSettings caller);
     }
 }

@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "components/prefs/testing_pref_service.h"
+#include "components/version_info/channel.h"
 #include "testing/gmock/include/gmock/gmock-matchers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
@@ -22,6 +23,9 @@ namespace {
 
 // Initialize fake values used by the |DailyUseCaseImpl|.
 constexpr char kFakePsmDeviceActiveSecret[] = "FAKE_PSM_DEVICE_ACTIVE_SECRET";
+
+const version_info::Channel kFakeChromeOSChannel =
+    version_info::Channel::STABLE;
 
 }  // namespace
 
@@ -37,7 +41,7 @@ class DailyUseCaseImplTest : public testing::Test {
   void SetUp() override {
     DeviceActivityController::RegisterPrefs(local_state_.registry());
     daily_use_case_impl_ = std::make_unique<DailyUseCaseImpl>(
-        &local_state_, kFakePsmDeviceActiveSecret);
+        kFakePsmDeviceActiveSecret, kFakeChromeOSChannel, &local_state_);
   }
 
   void TearDown() override { daily_use_case_impl_.reset(); }
@@ -117,11 +121,12 @@ TEST_F(DailyUseCaseImplTest, PingRequiredInNonOverlappingUTCWindows) {
 
   EXPECT_TRUE(
       base::Time::FromString("01 Jan 2022 00:00:00 GMT", &last_daily_ts));
+  daily_use_case_impl_->SetLastKnownPingTimestamp(last_daily_ts);
+
   EXPECT_TRUE(
       base::Time::FromString("05 Jan 2022 00:00:00 GMT", &current_daily_ts));
 
-  EXPECT_TRUE(daily_use_case_impl_->IsDevicePingRequired(last_daily_ts,
-                                                         current_daily_ts));
+  EXPECT_TRUE(daily_use_case_impl_->IsDevicePingRequired(current_daily_ts));
 }
 
 TEST_F(DailyUseCaseImplTest, PingNotRequiredInOverlappingUTCWindows) {
@@ -130,11 +135,12 @@ TEST_F(DailyUseCaseImplTest, PingNotRequiredInOverlappingUTCWindows) {
 
   EXPECT_TRUE(
       base::Time::FromString("01 Jan 2022 12:59:59 GMT", &last_daily_ts));
+  daily_use_case_impl_->SetLastKnownPingTimestamp(last_daily_ts);
+
   EXPECT_TRUE(
       base::Time::FromString("01 Jan 2022 15:59:59 GMT", &current_daily_ts));
 
-  EXPECT_FALSE(daily_use_case_impl_->IsDevicePingRequired(last_daily_ts,
-                                                          current_daily_ts));
+  EXPECT_FALSE(daily_use_case_impl_->IsDevicePingRequired(current_daily_ts));
 }
 
 TEST_F(DailyUseCaseImplTest, CheckIfPingRequiredInUTCBoundaryCases) {
@@ -143,22 +149,24 @@ TEST_F(DailyUseCaseImplTest, CheckIfPingRequiredInUTCBoundaryCases) {
 
   EXPECT_TRUE(
       base::Time::FromString("01 Jan 2022 23:59:59 GMT", &last_daily_ts));
+  daily_use_case_impl_->SetLastKnownPingTimestamp(last_daily_ts);
+
   EXPECT_TRUE(
       base::Time::FromString("02 Jan 2022 00:00:00 GMT", &current_daily_ts));
 
-  EXPECT_TRUE(daily_use_case_impl_->IsDevicePingRequired(last_daily_ts,
-                                                         current_daily_ts));
+  EXPECT_TRUE(daily_use_case_impl_->IsDevicePingRequired(current_daily_ts));
 
   // Set last_daily_ts as a date after current_daily_ts.
   EXPECT_TRUE(
       base::Time::FromString("02 Jan 2022 00:00:00 GMT", &last_daily_ts));
+  daily_use_case_impl_->SetLastKnownPingTimestamp(last_daily_ts);
+
   EXPECT_TRUE(
       base::Time::FromString("01 Jan 2022 23:59:59 GMT", &current_daily_ts));
 
   // Since the current_daily_ts is prior to the last_daily_ts, the function
   // should return false.
-  EXPECT_FALSE(daily_use_case_impl_->IsDevicePingRequired(last_daily_ts,
-                                                          current_daily_ts));
+  EXPECT_FALSE(daily_use_case_impl_->IsDevicePingRequired(current_daily_ts));
 }
 
 TEST_F(DailyUseCaseImplTest, SameDayTimestampsHaveSameWindowId) {

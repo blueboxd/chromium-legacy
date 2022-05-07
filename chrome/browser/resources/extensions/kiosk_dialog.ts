@@ -14,11 +14,12 @@ import {CrButtonElement} from 'chrome://resources/cr_elements/cr_button/cr_butto
 import {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.m.js';
 import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import {CrInputElement} from 'chrome://resources/cr_elements/cr_input/cr_input.m.js';
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {DomRepeatEvent, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {KioskApp, KioskAppSettings, KioskBrowserProxy, KioskBrowserProxyImpl} from './kiosk_browser_proxy.js';
+import {getTemplate} from './kiosk_dialog.html.js';
 
 export interface ExtensionsKioskDialogElement {
   $: {
@@ -39,7 +40,7 @@ export class ExtensionsKioskDialogElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -67,7 +68,7 @@ export class ExtensionsKioskDialogElement extends
   private canEditBailout_: boolean;
   private errorAppId_: string|null;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.kioskBrowserProxy_.initializeKioskAppSettings()
@@ -107,7 +108,7 @@ export class ExtensionsKioskDialogElement extends
 
   private onAddAppTap_() {
     assert(this.addAppInput_);
-    this.kioskBrowserProxy_.addKioskApp(this.addAppInput_!);
+    this.kioskBrowserProxy_.addKioskApp(this.addAppInput_);
     this.addAppInput_ = null;
   }
 

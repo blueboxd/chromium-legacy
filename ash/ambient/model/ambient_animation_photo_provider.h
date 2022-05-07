@@ -5,17 +5,24 @@
 #ifndef ASH_AMBIENT_MODEL_AMBIENT_ANIMATION_PHOTO_PROVIDER_H_
 #define ASH_AMBIENT_MODEL_AMBIENT_ANIMATION_PHOTO_PROVIDER_H_
 
+#include <functional>
+#include <string>
 #include <vector>
 
+#include "ash/ambient/model/ambient_backend_model.h"
+#include "ash/ambient/util/ambient_util.h"
 #include "ash/ash_export.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/flat_set.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/observer_list.h"
+#include "base/observer_list_types.h"
 #include "cc/paint/skottie_frame_data_provider.h"
 
 namespace ash {
 
 class AmbientAnimationStaticResources;
-class AmbientBackendModel;
 
 // The |SkottieFrameDataProvider| implementation for ambient mode animations is
 // tied to a single animation instance for its lifetime. It has 2 purposes:
@@ -29,6 +36,24 @@ class AmbientBackendModel;
 class ASH_EXPORT AmbientAnimationPhotoProvider
     : public cc::SkottieFrameDataProvider {
  public:
+  class Observer : public base::CheckedObserver {
+   public:
+    // Invoked whenever the dynamic assets in the animation are assigned a new
+    // set of photos (reflected in |new_topics|). There shall be one entry in
+    // |new_topics| for each dynamic asset in the animation, where the entry's
+    // value is the topic that the asset was just assigned.
+    //
+    // Note in the event that the same topic is assigned to multiple dynamic
+    // assets, that topic will appear multiple times in |new_topics|.
+    virtual void OnDynamicImageAssetsRefreshed(
+        const base::flat_map<ambient::util::ParsedDynamicAssetId,
+                             std::reference_wrapper<const PhotoWithDetails>>&
+            new_topics) = 0;
+
+   protected:
+    ~Observer() override = default;
+  };
+
   AmbientAnimationPhotoProvider(
       const AmbientAnimationStaticResources* static_resources,
       const AmbientBackendModel* backend_model);
@@ -39,16 +64,41 @@ class ASH_EXPORT AmbientAnimationPhotoProvider
       const base::FilePath& resource_path,
       const absl::optional<gfx::Size>& size) override;
 
+  void AddObserver(Observer* obs);
+  void RemoveObserver(Observer* obs);
+
  private:
   class DynamicImageAssetImpl;
 
-  void RefreshDynamicImageAssets();
+  struct OrderDynamicAssetsByIdx {
+    bool operator()(const scoped_refptr<DynamicImageAssetImpl>& asset_l,
+                    const scoped_refptr<DynamicImageAssetImpl>& asset_r) const;
+  };
+
+  using DynamicAssetSet = base::flat_set<scoped_refptr<DynamicImageAssetImpl>,
+                                         OrderDynamicAssetsByIdx>;
+
+  PhotoWithDetails GenerateNextTopicForDynamicAsset(
+      const DynamicImageAssetImpl& asset);
+  PhotoWithDetails ExtractPendingTopicForDynamicAsset(
+      const DynamicImageAssetImpl& asset);
+  void RotateDynamicAssetTopics();
+
+  std::vector<std::reference_wrapper<const PhotoWithDetails>>
+  GetTopicsToChooseFrom() const;
+
+  void NotifyObserverOfNewTopics();
 
   // Unowned pointers. Must outlive the |AmbientAnimationPhotoProvider|.
   const AmbientAnimationStaticResources* const static_resources_;
   const AmbientBackendModel* const backend_model_;
 
-  std::vector<scoped_refptr<DynamicImageAssetImpl>> dynamic_assets_;
+  base::flat_map</*position_id*/ std::string, DynamicAssetSet>
+      dynamic_assets_per_position_;
+  size_t total_num_dynamic_assets_ = 0;
+  base::flat_map<const DynamicImageAssetImpl*, PhotoWithDetails>
+      pending_dynamic_asset_topics_;
+  base::ObserverList<Observer> observers_;
   base::WeakPtrFactory<AmbientAnimationPhotoProvider> weak_factory_;
 };
 

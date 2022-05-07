@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/observer_list.h"
 #include "components/global_media_controls/public/constants.h"
 #include "components/global_media_controls/public/media_item_manager.h"
 #include "components/global_media_controls/public/media_item_ui_observer.h"
@@ -136,7 +137,7 @@ MediaItemUIView::MediaItemUIView(
     view =
         std::make_unique<media_message_center::MediaNotificationViewModernImpl>(
             this, std::move(item), std::move(dismiss_button_placeholder),
-            std::move(footer_view), kModernUIWidth);
+            std::move(footer_view), kModernUIWidth, theme);
     SetPreferredSize(kModernUISize);
   } else {
     view = std::make_unique<media_message_center::MediaNotificationViewImpl>(

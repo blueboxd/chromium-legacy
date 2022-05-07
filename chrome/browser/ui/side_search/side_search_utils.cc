@@ -8,6 +8,9 @@
 #include <utility>
 
 #include "base/containers/contains.h"
+#include "build/build_config.h"
+#include "build/buildflag.h"
+#include "build/chromeos_buildflags.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_factory.h"
@@ -20,6 +23,7 @@
 #include "components/sessions/content/session_tab_helper.h"
 #include "components/sessions/core/session_id.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/buildflags.h"
 
 #include "chrome/browser/ui/side_search/side_search_window_data.pb.h"
 
@@ -49,16 +53,7 @@ void MaybeAddSideSearchTabRestoreData(
 
 void MaybeAddSideSearchWindowRestoreData(
     bool toggled_open,
-    std::map<std::string, std::string>& extra_data) {
-  if (base::FeatureList::IsEnabled(features::kSideSearchStatePerTab))
-    return;
-
-  SideSearchWindowData side_search_window_data;
-  side_search_window_data.set_toggled_open(toggled_open);
-
-  extra_data[kSideSearchExtraDataKey] =
-      side_search_window_data.SerializeAsString();
-}
+    std::map<std::string, std::string>& extra_data) {}
 
 absl::optional<std::pair<std::string, std::string>>
 MaybeGetSideSearchTabRestoreData(content::WebContents* web_contents) {
@@ -74,37 +69,11 @@ MaybeGetSideSearchTabRestoreData(content::WebContents* web_contents) {
 
 void MaybeRestoreSideSearchWindowState(
     SideSearchTabContentsHelper::Delegate* delegate,
-    const std::map<std::string, std::string>& extra_data) {
-  if (base::FeatureList::IsEnabled(features::kSideSearchStatePerTab))
-    return;
-
-  if (base::Contains(extra_data, kSideSearchExtraDataKey)) {
-    SideSearchWindowData side_search_window_data;
-    side_search_window_data.ParseFromString(
-        extra_data.at(kSideSearchExtraDataKey));
-
-    if (side_search_window_data.toggled_open())
-      delegate->OpenSidePanel();
-  }
-}
+    const std::map<std::string, std::string>& extra_data) {}
 
 void MaybeSaveSideSearchWindowSessionData(Profile* profile,
                                           SessionID window_id,
-                                          bool toggled_open) {
-  if (base::FeatureList::IsEnabled(features::kSideSearchStatePerTab))
-    return;
-
-  SessionService* session_service =
-      SessionServiceFactory::GetForProfileIfExisting(profile);
-  if (session_service) {
-    SideSearchWindowData side_search_window_data;
-    side_search_window_data.set_toggled_open(toggled_open);
-
-    session_service->AddWindowExtraData(
-        window_id, kSideSearchExtraDataKey,
-        side_search_window_data.SerializeAsString());
-  }
-}
+                                          bool toggled_open) {}
 
 void MaybeSaveSideSearchTabSessionData(content::WebContents* web_contents) {
   Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
@@ -153,6 +122,11 @@ void SetSideSearchTabStateFromRestoreData(
 
 bool IsSidePanelWebContents(content::WebContents* web_contents) {
   return !!SideSearchSideContentsHelper::FromWebContents(web_contents);
+}
+
+bool IsDSESupportEnabled(const Profile* profile) {
+  return base::FeatureList::IsEnabled(features::kSideSearchDSESupport) &&
+         IsSideSearchEnabled(profile);
 }
 
 }  // namespace side_search

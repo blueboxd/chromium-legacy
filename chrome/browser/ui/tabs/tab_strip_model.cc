@@ -341,7 +341,6 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate,
 }
 
 TabStripModel::~TabStripModel() {
-  std::vector<TabStripModelObserver*> observers;
   for (auto& observer : observers_)
     observer.ModelDestroyed(TabStripModelObserver::ModelPasskey(), this);
 
@@ -1270,7 +1269,7 @@ void TabStripModel::CreateTabGroup(const tab_groups::TabGroupId& group) {
   if (!group_model_)
     return;
 
-  TabGroupChange change(group, TabGroupChange::kCreated);
+  TabGroupChange change(this, group, TabGroupChange::kCreated);
   for (auto& observer : observers_)
     observer.OnTabGroupChanged(change);
 }
@@ -1279,7 +1278,7 @@ void TabStripModel::OpenTabGroupEditor(const tab_groups::TabGroupId& group) {
   if (!group_model_)
     return;
 
-  TabGroupChange change(group, TabGroupChange::kEditorOpened);
+  TabGroupChange change(this, group, TabGroupChange::kEditorOpened);
   for (auto& observer : observers_)
     observer.OnTabGroupChanged(change);
 }
@@ -1289,7 +1288,7 @@ void TabStripModel::ChangeTabGroupContents(
   if (!group_model_)
     return;
 
-  TabGroupChange change(group, TabGroupChange::kContentsChanged);
+  TabGroupChange change(this, group, TabGroupChange::kContentsChanged);
   for (auto& observer : observers_)
     observer.OnTabGroupChanged(change);
 }
@@ -1300,7 +1299,7 @@ void TabStripModel::ChangeTabGroupVisuals(
   if (!group_model_)
     return;
 
-  TabGroupChange change(group, visuals);
+  TabGroupChange change(this, group, visuals);
   for (auto& observer : observers_)
     observer.OnTabGroupChanged(change);
 }
@@ -1309,7 +1308,7 @@ void TabStripModel::MoveTabGroup(const tab_groups::TabGroupId& group) {
   if (!group_model_)
     return;
 
-  TabGroupChange change(group, TabGroupChange::kMoved);
+  TabGroupChange change(this, group, TabGroupChange::kMoved);
   for (auto& observer : observers_)
     observer.OnTabGroupChanged(change);
 }
@@ -1318,9 +1317,15 @@ void TabStripModel::CloseTabGroup(const tab_groups::TabGroupId& group) {
   if (!group_model_)
     return;
 
-  TabGroupChange change(group, TabGroupChange::kClosed);
+  TabGroupChange change(this, group, TabGroupChange::kClosed);
   for (auto& observer : observers_)
     observer.OnTabGroupChanged(change);
+}
+
+void TabStripModel::FollowSites(const std::vector<int>& indices) {
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
+  for (int index : indices)
+    delegate_->FollowSite(GetWebContentsAt(index));
 }
 
 int TabStripModel::GetTabCount() const {
@@ -1353,8 +1358,14 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       return false;
     }
 
-    case CommandToggleSiteMuted:
-      return true;
+    case CommandToggleSiteMuted: {
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      for (int index : indices) {
+        if (!GetWebContentsAt(index)->GetLastCommittedURL().is_empty())
+          return true;
+      }
+      return false;
+    }
 
     case CommandTogglePinned:
       return true;
@@ -1389,6 +1400,16 @@ bool TabStripModel::IsContextMenuCommandEnabled(
           static_cast<int>(indices.size()) == count();
       return !would_leave_strip_empty &&
              delegate()->CanMoveTabsToWindow(indices);
+    }
+
+    case CommandFollowSite: {
+      std::vector<int> indices = GetIndicesForCommand(context_index);
+      // Since all tabs should belong to same profile, it is enough to do the
+      // check based on the first tab.
+      content::WebContents* web_contents = GetWebContentsAt(indices[0]);
+      Profile* profile =
+          Profile::FromBrowserContext(web_contents->GetBrowserContext());
+      return !profile->IsIncognitoProfile();
     }
 
     default:
@@ -1572,6 +1593,12 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
       base::RecordAction(
           UserMetricsAction("TabContextMenu_MoveTabToNewWindow"));
       delegate()->MoveTabsToNewWindow(GetIndicesForCommand(context_index));
+      break;
+    }
+
+    case CommandFollowSite: {
+      base::RecordAction(UserMetricsAction("DesktopFeed.FollowSite"));
+      FollowSites(GetIndicesForCommand(context_index));
       break;
     }
 
@@ -2325,13 +2352,30 @@ void TabStripModel::MoveAndSetGroup(
       }
     }
 
-    GroupTab(index, new_group.value());
+    absl::optional<tab_groups::TabGroupId> old_group = GetTabGroupForTab(index);
+    if (old_group.has_value()) {
+      // TODO (1302144): We don't maintain group contiguity in this case. If
+      // |index| is in the middle of |old_group|, GroupTab will notify observers
+      // while |old_group| is split in twain. Simply reordering the move and
+      // group actions won't do it; we'd need to move, ungroup, move, and then
+      // group.
+      GroupTab(index, new_group.value());
+      if (index != new_index)
+        MoveWebContentsAtImpl(index, new_index, false);
+    } else {
+      // Move the tab now so that group contiguity is preserved.
+      // When grouping, this will move the tab next to |new_group|.
+      if (index != new_index)
+        MoveWebContentsAtImpl(index, new_index, false);
+      GroupTab(new_index, new_group.value());
+    }
   } else {
-    UngroupTab(index);
+    // Move the tab now so that group contiguity is preserved.
+    // When ungrouping, this will move the tab to the edge of |old_group|.
+    if (index != new_index)
+      MoveWebContentsAtImpl(index, new_index, false);
+    UngroupTab(new_index);
   }
-
-  if (index != new_index)
-    MoveWebContentsAtImpl(index, new_index, false);
 }
 
 void TabStripModel::AddToReadLaterImpl(const std::vector<int>& indices) {
@@ -2443,6 +2487,12 @@ void TabStripModel::SetSitesMuted(const std::vector<int>& indices,
   for (int tab_index : indices) {
     content::WebContents* web_contents = GetWebContentsAt(tab_index);
     GURL url = web_contents->GetLastCommittedURL();
+
+    // `GetLastCommittedURL` could return an empty URL if no navigation has
+    // occurred yet.
+    if (url.is_empty())
+      continue;
+
     if (url.SchemeIs(content::kChromeUIScheme)) {
       // chrome:// URLs don't have content settings but can be muted, so just
       // mute the WebContents.

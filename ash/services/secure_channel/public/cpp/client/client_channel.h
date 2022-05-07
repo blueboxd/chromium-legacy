@@ -12,9 +12,7 @@
 #include "base/callback_forward.h"
 #include "base/observer_list.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // A full-duplex communication channel which is guaranteed to be authenticated
 // (i.e., the two sides of the channel both belong to the same underlying user).
@@ -94,15 +92,6 @@ class ClientChannel {
   bool is_disconnected_ = false;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when this file is moved to ash.
-namespace ash {
-namespace secure_channel {
-using ::chromeos::secure_channel::ClientChannel;
-}  // namespace secure_channel
-}  // namespace ash
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_CLIENT_CHANNEL_H_

@@ -19,31 +19,35 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+const CGFloat kSymbolImagePointSize = 18;
+}  // namespace
+
 @implementation BadgeButtonFactory
 
 - (BadgeButton*)badgeButtonForBadgeType:(BadgeType)badgeType {
   switch (badgeType) {
-    case BadgeType::kBadgeTypePasswordSave:
+    case kBadgeTypePasswordSave:
       return [self passwordsSaveBadgeButton];
-    case BadgeType::kBadgeTypePasswordUpdate:
+    case kBadgeTypePasswordUpdate:
       return [self passwordsUpdateBadgeButton];
-    case BadgeType::kBadgeTypeSaveCard:
+    case kBadgeTypeSaveCard:
       return [self saveCardBadgeButton];
-    case BadgeType::kBadgeTypeTranslate:
+    case kBadgeTypeTranslate:
       return [self translateBadgeButton];
-    case BadgeType::kBadgeTypeIncognito:
+    case kBadgeTypeIncognito:
       return [self incognitoBadgeButton];
-    case BadgeType::kBadgeTypeOverflow:
+    case kBadgeTypeOverflow:
       return [self overflowBadgeButton];
-    case BadgeType::kBadgeTypeSaveAddressProfile:
+    case kBadgeTypeSaveAddressProfile:
       return [self saveAddressProfileBadgeButton];
-    case BadgeType::kBadgeTypeAddToReadingList:
+    case kBadgeTypeAddToReadingList:
       return [self readingListBadgeButton];
-    case BadgeType::kBadgeTypePermissionsCamera:
+    case kBadgeTypePermissionsCamera:
       return [self permissionsCameraBadgeButton];
-    case BadgeType::kBadgeTypePermissionsMicrophone:
+    case kBadgeTypePermissionsMicrophone:
       return [self permissionsMicrophoneBadgeButton];
-    case BadgeType::kBadgeTypeNone:
+    case kBadgeTypeNone:
       NOTREACHED() << "A badge should not have kBadgeTypeNone";
       return nil;
   }
@@ -219,6 +223,10 @@
 
 - (BadgeButton*)createButtonForType:(BadgeType)badgeType image:(UIImage*)image {
   BadgeButton* button = [BadgeButton badgeButtonWithType:badgeType];
+  [button setPreferredSymbolConfiguration:
+              [UIImageSymbolConfiguration
+                  configurationWithPointSize:kSymbolImagePointSize]
+                          forImageInState:UIControlStateNormal];
   button.image = image;
   button.fullScreenOn = NO;
   button.imageView.contentMode = UIViewContentModeScaleAspectFit;

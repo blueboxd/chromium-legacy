@@ -27,28 +27,29 @@ namespace ash {
 namespace {
 
 // Returns apps::AppTypeName used for metrics.
-apps::AppTypeName GetHistogrameAppType(apps::mojom::AppType app_type) {
+apps::AppTypeName GetHistogrameAppType(apps::AppType app_type) {
   switch (app_type) {
-    case apps::mojom::AppType::kUnknown:
+    case apps::AppType::kUnknown:
       return apps::AppTypeName::kUnknown;
-    case apps::mojom::AppType::kArc:
+    case apps::AppType::kArc:
       return apps::AppTypeName::kArc;
-    case apps::mojom::AppType::kBuiltIn:
-    case apps::mojom::AppType::kCrostini:
+    case apps::AppType::kBuiltIn:
+    case apps::AppType::kCrostini:
       return apps::AppTypeName::kUnknown;
-    case apps::mojom::AppType::kChromeApp:
+    case apps::AppType::kChromeApp:
       return apps::AppTypeName::kChromeApp;
-    case apps::mojom::AppType::kWeb:
+    case apps::AppType::kWeb:
       return apps::AppTypeName::kWeb;
-    case apps::mojom::AppType::kMacOs:
-    case apps::mojom::AppType::kPluginVm:
-    case apps::mojom::AppType::kStandaloneBrowser:
-    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
-    case apps::mojom::AppType::kRemote:
-    case apps::mojom::AppType::kBorealis:
-    case apps::mojom::AppType::kExtension:
+    case apps::AppType::kMacOs:
+    case apps::AppType::kPluginVm:
+    case apps::AppType::kStandaloneBrowser:
+    case apps::AppType::kStandaloneBrowserChromeApp:
+    case apps::AppType::kRemote:
+    case apps::AppType::kBorealis:
+    case apps::AppType::kExtension:
+    case apps::AppType::kStandaloneBrowserExtension:
       return apps::AppTypeName::kUnknown;
-    case apps::mojom::AppType::kSystemWeb:
+    case apps::AppType::kSystemWeb:
       return apps::AppTypeName::kSystemWeb;
   }
 }
@@ -75,7 +76,7 @@ void AppLaunchHandler::OnAppUpdate(const apps::AppUpdate& update) {
   }
 
   // If the app is not ready, don't launch the app for the restoration.
-  if (update.Readiness() != apps::mojom::Readiness::kReady)
+  if (update.Readiness() != apps::Readiness::kReady)
     return;
 
   // If there is no restore data or the launch list for the app is empty, don't
@@ -122,7 +123,7 @@ void AppLaunchHandler::LaunchApps() {
   // for the app.
   std::set<std::string> app_ids;
   cache->ForEachApp([&app_ids, &launch_list](const apps::AppUpdate& update) {
-    if (update.Readiness() == apps::mojom::Readiness::kReady &&
+    if (update.Readiness() == apps::Readiness::kReady &&
         launch_list.find(update.AppId()) != launch_list.end()) {
       app_ids.insert(update.AppId());
     }
@@ -137,23 +138,25 @@ void AppLaunchHandler::LaunchApps() {
     if (app_id == app_constants::kChromeAppId)
       continue;
 
+    auto app_type =
+        apps::ConvertMojomAppTypToAppType(cache->GetAppType(app_id));
 #if !defined(OFFICIAL_BUILD)
     // Make shift-click on the launch button launch apps with a delay. This
     // allows developers to simulate delayed launch behaviors with ARC apps.
     // TODO(crbug.com/1281685): Remove before feature launch.
     if (delay_.is_zero()) {
-      LaunchApp(cache->GetAppType(app_id), app_id);
+      LaunchApp(app_type, app_id);
     } else {
       base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
           FROM_HERE,
-          base::BindOnce(&AppLaunchHandler::LaunchApp, base::Unretained(this),
-                         cache->GetAppType(app_id), app_id),
+          base::BindOnce(&AppLaunchHandler::LaunchApp,
+                         GetWeakPtrAppLaunchHandler(), app_type, app_id),
           current_delay);
       current_delay += delay_;
     }
 #else
     DCHECK(delay_.is_zero());
-    LaunchApp(cache->GetAppType(app_id), app_id);
+    LaunchApp(app_type, app_id);
 #endif
   }
 }
@@ -164,7 +167,7 @@ bool AppLaunchHandler::ShouldLaunchSystemWebAppOrChromeApp(
   return true;
 }
 
-void AppLaunchHandler::LaunchApp(apps::mojom::AppType app_type,
+void AppLaunchHandler::LaunchApp(apps::AppType app_type,
                                  const std::string& app_id) {
   DCHECK(restore_data_);
   DCHECK_NE(app_id, app_constants::kChromeAppId);
@@ -177,27 +180,28 @@ void AppLaunchHandler::LaunchApp(apps::mojom::AppType app_type,
   }
 
   switch (app_type) {
-    case apps::mojom::AppType::kArc:
+    case apps::AppType::kArc:
       // ArcAppLaunchHandler handles ARC apps restoration and ARC apps
       // restoration could be delayed, so return to preserve the restore data
       // for ARC apps.
       return;
-    case apps::mojom::AppType::kChromeApp:
-    case apps::mojom::AppType::kWeb:
-    case apps::mojom::AppType::kSystemWeb:
-    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
+    case apps::AppType::kChromeApp:
+    case apps::AppType::kWeb:
+    case apps::AppType::kSystemWeb:
+    case apps::AppType::kStandaloneBrowserChromeApp:
       if (ShouldLaunchSystemWebAppOrChromeApp(app_id, it->second))
         LaunchSystemWebAppOrChromeApp(app_type, app_id, it->second);
       break;
-    case apps::mojom::AppType::kBuiltIn:
-    case apps::mojom::AppType::kCrostini:
-    case apps::mojom::AppType::kPluginVm:
-    case apps::mojom::AppType::kUnknown:
-    case apps::mojom::AppType::kMacOs:
-    case apps::mojom::AppType::kStandaloneBrowser:
-    case apps::mojom::AppType::kRemote:
-    case apps::mojom::AppType::kBorealis:
-    case apps::mojom::AppType::kExtension:
+    case apps::AppType::kBuiltIn:
+    case apps::AppType::kCrostini:
+    case apps::AppType::kPluginVm:
+    case apps::AppType::kUnknown:
+    case apps::AppType::kMacOs:
+    case apps::AppType::kStandaloneBrowser:
+    case apps::AppType::kRemote:
+    case apps::AppType::kBorealis:
+    case apps::AppType::kExtension:
+    case apps::AppType::kStandaloneBrowserExtension:
       NOTREACHED();
       break;
   }
@@ -205,14 +209,14 @@ void AppLaunchHandler::LaunchApp(apps::mojom::AppType app_type,
 }
 
 void AppLaunchHandler::LaunchSystemWebAppOrChromeApp(
-    apps::mojom::AppType app_type,
+    apps::AppType app_type,
     const std::string& app_id,
     const app_restore::RestoreData::LaunchList& launch_list) {
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
   DCHECK(proxy);
 
-  if (app_type == apps::mojom::AppType::kChromeApp ||
-      app_type == apps::mojom::AppType::kStandaloneBrowserChromeApp) {
+  if (app_type == apps::AppType::kChromeApp ||
+      app_type == apps::AppType::kStandaloneBrowserChromeApp) {
     OnExtensionLaunching(app_id);
   }
 

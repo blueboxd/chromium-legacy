@@ -264,7 +264,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.DiskCache.InitResult" units="units"
-    expires_after="2022-04-05">
+    expires_after="2023-02-22">
   <owner>bashi@chromium.org</owner>
   <owner>nhiroki@chromium.org</owner>
   <summary>
@@ -273,7 +273,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.DiskCache.ReadResponseResult"
-    enum="ServiceWorkerReadResponseResult" expires_after="2022-06-21">
+    enum="ServiceWorkerReadResponseResult" expires_after="2022-08-21">
   <owner>bashi@chromium.org</owner>
   <owner>nhiroki@chromium.org</owner>
   <summary>
@@ -353,7 +353,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.MainResource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2022-07-03">
+    enum="ServiceWorkerStatusCode" expires_after="2022-09-11">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -377,7 +377,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.FetchEvent.Subresource.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2022-07-03">
+    enum="ServiceWorkerStatusCode" expires_after="2022-09-11">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -690,7 +690,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.PushEvent.Time" units="ms"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>peter@chromium.org</owner>
   <owner>knollr@chromium.org</owner>
   <summary>
@@ -714,7 +714,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.RegisteredStorageKeyCount" units="origins"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -897,7 +897,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Status"
-    enum="ServiceWorkerStatusCode" expires_after="2022-06-19">
+    enum="ServiceWorkerStatusCode" expires_after="2022-08-21">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -923,7 +923,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ServiceWorker.StartWorker.Time" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>wanderview@chromium.org</owner>
   <owner>asamidoi@chromium.org</owner>
   <owner>chrome-worker@google.com</owner>
@@ -1010,6 +1010,17 @@ chromium-metrics-reviews@google.com.
     a recovery, or the maximum number of retries is exceeded. See
     ServiceWorkerRegistry::OnRemoteStorageDisconnected() for the maximum number
     of retries.
+  </summary>
+</histogram>
+
+<histogram name="ServiceWorker.Storage.RetryQueueSizeForRecovery" units="tasks"
+    expires_after="2022-10-04">
+  <owner>joenotcharles@google.com</owner>
+  <owner>chrome-worker@google.com</owner>
+  <summary>
+    The number of queued tasks that are waiting to be re-posted after recovering
+    from a Storage Service crash. Logged at the same time as
+    ServiceWorker.Storage.RetryCountForRecovery.
   </summary>
 </histogram>
 

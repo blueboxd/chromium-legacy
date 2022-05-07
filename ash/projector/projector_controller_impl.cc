@@ -9,6 +9,7 @@
 #include "ash/projector/projector_metadata_controller.h"
 #include "ash/projector/projector_metrics.h"
 #include "ash/projector/projector_ui_controller.h"
+#include "ash/public/cpp/projector/annotator_tool.h"
 #include "ash/public/cpp/projector/projector_client.h"
 #include "ash/public/cpp/projector/projector_new_screencast_precondition.h"
 #include "ash/public/cpp/projector/projector_session.h"
@@ -90,6 +91,7 @@ void ProjectorControllerImpl::StartProjectorSession(
 
   auto* controller = CaptureModeController::Get();
   if (!controller->is_recording_in_progress()) {
+    controller->SetSource(CaptureModeSource::kFullscreen);
     // A capture mode session can be blocked by many factors, such as policy,
     // DLP, ... etc. We don't start a Projector session until we're sure a
     // capture session started.
@@ -211,12 +213,12 @@ ProjectorControllerImpl::GetNewScreencastPrecondition() const {
 
     if (!client_->IsDriveFsMounted()) {
       result.state = NewScreencastPreconditionState::kDisabled;
-      result.reasons = {NewScreencastPreconditionReason::kOthers};
+      result.reasons = {
+          client_->IsDriveFsMountFailed()
+              ? NewScreencastPreconditionReason::kDriveFsMountFailed
+              : NewScreencastPreconditionReason::kDriveFsUnmounted};
       return result;
     }
-
-    // TODO(crbug.com/1165435) Disable New Screencast button when out of disk
-    // space or drive quota.
   }
 
   if (projector_session_->is_active()) {
@@ -312,23 +314,19 @@ void ProjectorControllerImpl::OnRecordingStartAborted() {
   RecordCreationFlowMetrics(ProjectorCreationFlow::kRecordingAborted);
 }
 
-void ProjectorControllerImpl::OnLaserPointerPressed() {
-  DCHECK(ui_controller_);
-  ui_controller_->OnLaserPointerPressed();
-}
-
 void ProjectorControllerImpl::OnMarkerPressed() {
   DCHECK(ui_controller_);
   ui_controller_->OnMarkerPressed();
 }
 
+void ProjectorControllerImpl::SetAnnotatorTool(const AnnotatorTool& tool) {
+  DCHECK(ui_controller_);
+  ui_controller_->SetAnnotatorTool(tool);
+}
+
 void ProjectorControllerImpl::ResetTools() {
   if (ui_controller_)
     ui_controller_->ResetTools();
-}
-
-bool ProjectorControllerImpl::IsLaserPointerEnabled() {
-  return ui_controller_ && ui_controller_->IsLaserPointerEnabled();
 }
 
 bool ProjectorControllerImpl::IsAnnotatorEnabled() {

@@ -16,6 +16,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
+#include "components/autofill_assistant/browser/assistant_field_trial_util.h"
 #include "components/autofill_assistant/browser/features.h"
 #include "components/autofill_assistant/browser/intent_strings.h"
 #include "components/autofill_assistant/browser/service/api_key_fetcher.h"
@@ -59,6 +60,14 @@ constexpr base::TimeDelta kMaxFailedTriggerScriptsCacheDuration =
     base::Hours(1);
 constexpr base::TimeDelta kMaxUserDenylistedCacheDuration = base::Hours(1);
 
+// Synthetic field trial names and group names should match those specified
+// in google3/analysis/uma/dashboards/
+// .../variations/generate_server_hashes.py and
+// .../website/components/variations_dash/variations_histogram_entry.js.
+const char kTriggeredSyntheticTrial[] = "AutofillAssistantTriggered";
+const char kEnabledGroupName[] = "Enabled";
+const char kExperimentsSyntheticTrial[] = "AutofillAssistantExperimentsTrial";
+
 // Creates a service request sender that serves the pre-specified response.
 // Creation may fail (return null) if the parameter fails to decode.
 std::unique_ptr<ServiceRequestSender> CreateBase64TriggerScriptRequestSender(
@@ -81,9 +90,7 @@ std::unique_ptr<ServiceRequestSender> CreateRpcTriggerScriptRequestSender(
       /* access_token_fetcher = */ nullptr,
       std::make_unique<cup::CUPImplFactory>(),
       std::make_unique<NativeURLLoaderFactory>(),
-      ApiKeyFetcher().GetAPIKey(delegate->GetChannel()),
-      /* auth_enabled = */ false,
-      /* disable_auth_if_no_access_token = */ true);
+      ApiKeyFetcher().GetAPIKey(delegate->GetChannel()));
 }
 
 // Returns whether |trigger_context| contains either the REQUEST_TRIGGER_SCRIPT
@@ -333,6 +340,26 @@ TriggerContext* Starter::GetPendingTriggerContext() const {
   return pending_trigger_context_.get();
 }
 
+void Starter::RegisterSyntheticFieldTrials(
+    const TriggerContext& trigger_context) const {
+  std::unique_ptr<AssistantFieldTrialUtil> field_trial_util =
+      platform_delegate_->CreateFieldTrialUtil();
+  if (!field_trial_util) {
+    // Failsafe, should never happen.
+    NOTREACHED();
+    return;
+  }
+
+  field_trial_util->RegisterSyntheticFieldTrial(kTriggeredSyntheticTrial,
+                                                kEnabledGroupName);
+  // Synthetic trial for experiments.
+  for (const std::string& experiment_id :
+       trigger_context.GetScriptParameters().GetExperiments()) {
+    field_trial_util->RegisterSyntheticFieldTrial(kExperimentsSyntheticTrial,
+                                                  experiment_id);
+  }
+}
+
 void Starter::OnTabInteractabilityChanged(bool is_interactable) {
   CheckSettings();
   if (trigger_script_coordinator_) {
@@ -416,6 +443,10 @@ void Starter::OnDependenciesInvalidated() {
 void Starter::Start(std::unique_ptr<TriggerContext> trigger_context) {
   DCHECK(trigger_context);
   DCHECK(!trigger_context->GetDirectAction());
+
+  // Register synthetic trial as soon as possible.
+  RegisterSyntheticFieldTrials(*trigger_context);
+
   CancelPendingStartup(Metrics::TriggerScriptFinishedState::CANCELED);
   pending_trigger_context_ = std::move(trigger_context);
 
@@ -597,7 +628,8 @@ void Starter::StartTriggerScript() {
           web_contents(),
           /* user_data= */ nullptr,
           /* log_info= */ nullptr,
-          /* annotate_dom_model_service= */ nullptr),
+          /* annotate_dom_model_service= */ nullptr,
+          /* enable_full_stack_traces= */ false),
       std::move(service_request_sender),
       url_fetcher.GetTriggerScriptsEndpoint(),
       std::make_unique<StaticTriggerConditions>(

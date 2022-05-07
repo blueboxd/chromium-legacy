@@ -655,6 +655,10 @@ class ASH_EXPORT Shell : public SessionObserver,
   void AddShellObserver(ShellObserver* observer);
   void RemoveShellObserver(ShellObserver* observer);
 
+  // Disables event dispatch during shutdown so that Window events no longer
+  // propagate as they are being closed/destroyed.
+  void ShutdownEventDispatch();
+
   // Called when the login status changes.
   // TODO(oshima): Investigate if we can merge this and |OnLoginStateChanged|.
   void UpdateAfterLoginStatusChange(LoginStatus status);
@@ -675,10 +679,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   // TODO(jamescook): Move to Shelf.
   void NotifyShelfAlignmentChanged(aura::Window* root_window,
                                    ShelfAlignment old_alignment);
-
-  // Notifies observers that |root_window|'s shelf changed auto-hide behavior.
-  // TODO(jamescook): Move to Shelf.
-  void NotifyShelfAutoHideBehaviorChanged(aura::Window* root_window);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(ExtendedDesktopTest, TestCursor);

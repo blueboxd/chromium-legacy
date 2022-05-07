@@ -6,7 +6,6 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <!-- TODO(crbug.com/1286276): Replace icon placeholders. -->
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
         android:key="privacy_sandbox_toggle"
         android:title="@string/privacy_sandbox_trials_title"
@@ -17,7 +16,6 @@
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.privacy_sandbox.LearnMoreFragment"
         android:key="privacy_sandbox_learn_more"
-        android:summary="@string/privacy_sandbox_learn_more_link"
         app:userAction="Settings.PrivacySandbox.AdPersonalization.LearnMoreClicked"/>
 
     <org.chromium.components.browser_ui.settings.ChromeBasePreference

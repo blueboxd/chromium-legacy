@@ -8,6 +8,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/wm/desks/desks_controller.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -17,6 +18,7 @@
 #include "chrome/browser/ash/app_restore/app_restore_arc_task_handler.h"
 #include "chrome/browser/ash/app_restore/arc_app_launch_handler.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/desks_templates/desks_templates_client.h"
 #include "chrome/browser/ui/ash/shelf/chrome_shelf_controller_util.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_tabstrip.h"
@@ -28,6 +30,7 @@
 #include "components/app_restore/desk_template_read_handler.h"
 #include "components/app_restore/restore_data.h"
 #include "components/app_restore/window_info.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "extensions/common/extension.h"
 
 namespace {
@@ -91,8 +94,8 @@ bool DesksTemplatesAppLaunchHandler::ShouldLaunchSystemWebAppOrChromeApp(
   apps::AppServiceProxyFactory::GetForProfile(profile())
       ->AppRegistryCache()
       .ForOneApp(app_id, [&is_system_web_app](const apps::AppUpdate& update) {
-        if (update.AppType() == apps::mojom::AppType::kWeb ||
-            update.AppType() == apps::mojom::AppType::kSystemWeb) {
+        if (update.AppType() == apps::AppType::kWeb ||
+            update.AppType() == apps::AppType::kSystemWeb) {
           is_system_web_app = true;
         }
       });
@@ -122,8 +125,17 @@ bool DesksTemplatesAppLaunchHandler::ShouldLaunchSystemWebAppOrChromeApp(
   if (is_multi_instance_window)
     return true;
 
-  return ash::DesksController::Get()->OnSingleInstanceAppLaunchingFromTemplate(
-      app_id, launch_list);
+  const bool should_launch =
+      ash::DesksController::Get()->OnSingleInstanceAppLaunchingFromTemplate(
+          app_id, launch_list);
+
+  // Notify performance tracker that some tracked windows will be moving.
+  if (!should_launch) {
+    for (const auto& window : launch_list)
+      NotifyMovedSingleInstanceApp(window.first);
+  }
+
+  return should_launch;
 }
 
 void DesksTemplatesAppLaunchHandler::OnExtensionLaunching(
@@ -219,8 +231,8 @@ void DesksTemplatesAppLaunchHandler::MaybeLaunchArcApps() {
   std::set<std::string> app_ids;
   cache.ForEachApp(
       [&app_ids, &app_id_to_launch_list](const apps::AppUpdate& update) {
-        if (update.Readiness() == apps::mojom::Readiness::kReady &&
-            update.AppType() == apps::mojom::AppType::kArc &&
+        if (update.Readiness() == apps::Readiness::kReady &&
+            update.AppType() == apps::AppType::kArc &&
             base::Contains(app_id_to_launch_list, update.AppId())) {
           app_ids.insert(update.AppId());
         }
@@ -235,6 +247,8 @@ void DesksTemplatesAppLaunchHandler::MaybeLaunchArcApps() {
     DCHECK(it != app_id_to_launch_list.end());
     if (!ash::DesksController::Get()->OnSingleInstanceAppLaunchingFromTemplate(
             app_id, it->second)) {
+      for (auto& window : it->second)
+        NotifyMovedSingleInstanceApp(window.first);
       restore_data()->RemoveApp(app_id);
     }
   }
@@ -258,4 +272,9 @@ void DesksTemplatesAppLaunchHandler::RecordRestoredAppLaunch(
     apps::AppTypeName app_type_name) {
   // TODO: Add UMA Histogram.
   NOTIMPLEMENTED();
+}
+
+void DesksTemplatesAppLaunchHandler::NotifyMovedSingleInstanceApp(
+    int32_t window_id) {
+  DesksTemplatesClient::Get()->NotifyMovedSingleInstanceApp(window_id);
 }

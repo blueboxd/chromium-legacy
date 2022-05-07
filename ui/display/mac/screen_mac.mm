@@ -13,7 +13,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
@@ -102,13 +101,21 @@ DisplayMac BuildDisplayForScreen(NSScreen* screen) {
   bool enable_hdr = false;
   float hdr_max_lum_relative = 1.f;
   if (@available(macOS 10.15, *)) {
+    // It can be the case that `max_potential_edr_value` > 1, but
+    // `max_edr_value` == 1. This happens, e.g, when an HDR capable Macbook Pro
+    // display is set to maximum brightness. This can create the confusing
+    // appearance that the display is rapidly fluctuating between being HDR
+    // capable and HDR incapable. To avoid this confusion, set a minimum value
+    // to report when `max_potential_edr_value` > 1.
+    constexpr float kMinMaxEdrValueForHDR = 1.0625;
+
     const float max_potential_edr_value =
         [screen maximumPotentialExtendedDynamicRangeColorComponentValue];
     const float max_edr_value =
         [screen maximumExtendedDynamicRangeColorComponentValue];
-    if (max_potential_edr_value > 1) {
+    if (max_potential_edr_value > 1.f) {
       enable_hdr = true;
-      hdr_max_lum_relative = max_edr_value;
+      hdr_max_lum_relative = std::max(kMinMaxEdrValueForHDR, max_edr_value);
     }
   }
 
@@ -188,7 +195,7 @@ std::vector<DisplayMac> BuildDisplaysFromQuartz() {
   // doesn't hurt.
   CGDirectDisplayID online_displays[1024];
   CGDisplayCount online_display_count = 0;
-  if (CGGetOnlineDisplayList(base::size(online_displays), online_displays,
+  if (CGGetOnlineDisplayList(std::size(online_displays), online_displays,
                              &online_display_count) != kCGErrorSuccess) {
     return std::vector<DisplayMac>(1, BuildPrimaryDisplay());
   }
@@ -462,19 +469,12 @@ class ScreenMac : public Screen {
 
 // static
 gfx::NativeWindow Screen::GetWindowForView(gfx::NativeView native_view) {
-#if !defined(USE_AURA)
   NSView* view = native_view.GetNativeNSView();
   return [view window];
-#else
-  gfx::NativeWindow window = nil;
-  return window;
-#endif
 }
 
-#if !defined(USE_AURA)
 Screen* CreateNativeScreen() {
   return new ScreenMac;
 }
-#endif
 
 }  // namespace display

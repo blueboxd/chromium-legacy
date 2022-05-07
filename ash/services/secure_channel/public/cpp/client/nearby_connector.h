@@ -8,8 +8,7 @@
 #include "ash/services/secure_channel/public/mojom/nearby_connector.mojom.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
-namespace chromeos {
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Provides Nearby Connections functionality to the SecureChannel service.
 class NearbyConnector : public mojom::NearbyConnector {
@@ -23,14 +22,6 @@ class NearbyConnector : public mojom::NearbyConnector {
   mojo::ReceiverSet<mojom::NearbyConnector> receiver_set_;
 };
 
-}  // namespace secure_channel
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash {
-namespace secure_channel {
-using ::chromeos::secure_channel::NearbyConnector;
-}
-}  // namespace ash
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_NEARBY_CONNECTOR_H_

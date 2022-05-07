@@ -17,11 +17,12 @@ class NGFlexLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
  protected:
   DevtoolsFlexInfo LayoutForDevtools(const String& body_content) {
     SetBodyInnerHTML(body_content);
-    UpdateAllLifecyclePhasesForTest();
     LayoutNGFlexibleBox* flex =
         To<LayoutNGFlexibleBox>(GetLayoutObjectByElementId("flexbox"));
     EXPECT_NE(flex, nullptr);
-    return flex->LayoutForDevtools();
+    flex->SetNeedsLayoutForDevtools();
+    UpdateAllLifecyclePhasesForTest();
+    return *flex->FlexLayoutData();
   }
 };
 
@@ -46,8 +47,7 @@ TEST_F(NGFlexLayoutAlgorithmTest, ReplacedAspectRatioPrecision) {
       LogicalSize(LayoutUnit(100), kIndefiniteSize));
   NGBlockNode box(GetDocument().body()->GetLayoutBox());
 
-  scoped_refptr<const NGPhysicalBoxFragment> fragment =
-      RunBlockLayoutAlgorithm(box, space);
+  const NGPhysicalBoxFragment* fragment = RunBlockLayoutAlgorithm(box, space);
   EXPECT_EQ(PhysicalSize(84, 22), fragment->Size());
   ASSERT_EQ(1u, fragment->Children().size());
   fragment = To<NGPhysicalBoxFragment>(fragment->Children()[0].get());

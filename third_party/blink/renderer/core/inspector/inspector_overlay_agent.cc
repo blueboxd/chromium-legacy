@@ -928,16 +928,17 @@ Response InspectorOverlayAgent::getHighlightObjectForTest(
   namespace ColorFormatEnum = protocol::Overlay::ColorFormatEnum;
   if (format == ColorFormatEnum::Hsl) {
     config->color_format = ColorFormat::kHsl;
+  } else if (format == ColorFormatEnum::Hwb) {
+    config->color_format = ColorFormat::kHwb;
   } else if (format == ColorFormatEnum::Rgb) {
     config->color_format = ColorFormat::kRgb;
   } else {
     config->color_format = ColorFormat::kHex;
   }
-
-  node->GetDocument().EnsurePaintLocationDataValidForNode(
-      node, DocumentUpdateReason::kInspector);
   NodeHighlightTool tool(this, GetFrontend(), node, "" /* selector_list */,
                          std::move(config));
+  node->GetDocument().EnsurePaintLocationDataValidForNode(
+      node, DocumentUpdateReason::kInspector);
   *result = tool.GetNodeInspectorHighlightAsJson(
       true /* append_element_info */, include_distance.fromMaybe(false));
   return Response::Success();
@@ -1582,7 +1583,7 @@ Response InspectorOverlayAgent::HighlightConfigFromInspectorObject(
   String format = config->getColorFormat("hex");
 
   if (format != ColorFormatEnum::Rgb && format != ColorFormatEnum::Hex &&
-      format != ColorFormatEnum::Hsl) {
+      format != ColorFormatEnum::Hsl && format != ColorFormatEnum::Hwb) {
     return Response::InvalidParams("Unknown color format");
   }
 
@@ -1838,6 +1839,8 @@ InspectorOverlayAgent::ToHighlightConfig(
 
   if (format == ColorFormatEnum::Hsl) {
     highlight_config->color_format = ColorFormat::kHsl;
+  } else if (format == ColorFormatEnum::Hwb) {
+    highlight_config->color_format = ColorFormat::kHwb;
   } else if (format == ColorFormatEnum::Rgb) {
     highlight_config->color_format = ColorFormat::kRgb;
   } else {

@@ -5,9 +5,10 @@
 #ifndef CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_DATA_HOST_MANAGER_IMPL_H_
 #define CONTENT_BROWSER_ATTRIBUTION_REPORTING_ATTRIBUTION_DATA_HOST_MANAGER_IMPL_H_
 
+#include "base/containers/flat_map.h"
 #include "base/memory/raw_ptr.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
-#include "content/browser/attribution_reporting/common_source_info.h"
+#include "content/browser/attribution_reporting/attribution_source_type.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
@@ -16,7 +17,6 @@
 namespace content {
 
 class AttributionManager;
-class BrowserContext;
 
 // Manages a receiver set of all ongoing `AttributionDataHost`s and forwards
 // events to the AttributionManager which owns `this`. Because attributionsrc
@@ -27,8 +27,8 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
     : public AttributionDataHostManager,
       public blink::mojom::AttributionDataHost {
  public:
-  AttributionDataHostManagerImpl(BrowserContext* storage_partition,
-                                 AttributionManager* attribution_manager);
+  explicit AttributionDataHostManagerImpl(
+      AttributionManager* attribution_manager);
   AttributionDataHostManagerImpl(const AttributionDataHostManager& other) =
       delete;
   AttributionDataHostManagerImpl& operator=(
@@ -56,22 +56,30 @@ class CONTENT_EXPORT AttributionDataHostManagerImpl
     // Source type of this context. Note that data hosts which result in
     // triggers still have a source type of` kEvent` as they share the same web
     // API surface.
-    CommonSourceInfo::SourceType source_type;
+    AttributionSourceType source_type;
   };
 
   // blink::mojom::AttributionDataHost:
   void SourceDataAvailable(
       blink::mojom::AttributionSourceDataPtr data) override;
+  void TriggerDataAvailable(
+      blink::mojom::AttributionTriggerDataPtr data) override;
 
-  // Safe because the owning `AttributionManager` is guaranteed to outlive the
-  // browser context.
-  raw_ptr<BrowserContext> browser_context_;
+  void OnDataHostDisconnected();
 
   // Owns `this`.
   raw_ptr<AttributionManager> attribution_manager_;
 
   mojo::ReceiverSet<blink::mojom::AttributionDataHost, FrozenContext>
       receivers_;
+
+  // If the receiver is processing sources, stores
+  // the attribution destination, which is required to be non-opaque and to
+  // match between calls to `SourceDataAvailable()` within a single
+  // `AttributionDataHost`.
+  //
+  // If the receiver is processing triggers, stores an opaque origin.
+  base::flat_map<mojo::ReceiverId, url::Origin> receiver_data_;
 };
 
 }  // namespace content

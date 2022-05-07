@@ -22,6 +22,16 @@ chromium-metrics-reviews@google.com.
 
 <histograms>
 
+<variants name="ArcAccessibilityFeatures">
+  <variant name="DockedMagnifier"/>
+  <variant name="FocusHighlight"/>
+  <variant name="FullScreenMagnifier"/>
+  <variant name="SelectToSpeak"/>
+  <variant name="SpokenFeedback" summary="SpokenFeedback without Talkback"/>
+  <variant name="SwitchAccess"/>
+  <variant name="Talkback"/>
+</variants>
+
 <variants name="ArcPerformanceAppCategories">
   <variant name=".GachaClub" summary="Casual game 2: Gacha Club"/>
   <variant name=".GarenaFreeFire" summary="Shooter game: Garena Free Fire"/>
@@ -82,8 +92,20 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Arc.Accessibility.ActiveTime.{ArcAccessibilityFeatures}"
+    units="ms" expires_after="2022-04-10">
+  <owner>sahok@chromium.org</owner>
+  <owner>arc-framework@google.com</owner>
+  <summary>
+    For each window, measure the time that the window is focused with
+    {ArcAccessibilityFeatures} enabled. This metric is recorded when the window
+    loses focus or the window is closed.
+  </summary>
+  <token key="ArcAccessibilityFeatures" variants="ArcAccessibilityFeatures"/>
+</histogram>
+
 <histogram name="Arc.AccessibilityWithTalkBack" enum="BooleanEnabled"
-    expires_after="2022-04-10">
+    expires_after="2023-04-10">
   <owner>hirokisato@chromium.org</owner>
   <owner>arc-framework@google.com</owner>
   <summary>
@@ -102,9 +124,9 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Arc.AndroidBootTime" units="ms" expires_after="2022-04-24">
-  <owner>elijahtaylor@google.com</owner>
-  <owner>shihuis@google.com</owner>
+<histogram name="Arc.AndroidBootTime" units="ms" expires_after="2022-12-24">
+  <owner>yusukes@google.com</owner>
+  <owner>khmel@google.com</owner>
   <summary>The time elapsed for booting up the ARC instance.</summary>
 </histogram>
 
@@ -564,7 +586,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.CompanionLibraryApisCounter"
-    enum="CompanionLibraryApisList" expires_after="2022-04-10">
+    enum="CompanionLibraryApisList" expires_after="2022-09-10">
   <owner>sstan@google.com</owner>
   <owner>mhasank@google.com</owner>
   <owner>arc-commercial@google.com</owner>
@@ -974,7 +996,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.IntentHelper.OpenAppWithIntentAction"
-    enum="ArcIntentHelperIntentAction" expires_after="2022-04-17">
+    enum="ArcIntentHelperIntentAction" expires_after="2022-10-17">
   <owner>tsergeant@chromium.org</owner>
   <owner>chromeos-apps-foundation-team@google.com</owner>
   <summary>
@@ -996,7 +1018,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.LaunchedWithGhostWindow" units="apps"
-    expires_after="2022-04-24">
+    expires_after="2022-10-24">
   <owner>sstan@chromium.org</owner>
   <owner>nancylingwang@chromium.org</owner>
   <summary>The number of ARC apps launched with ghost window.</summary>
@@ -1101,7 +1123,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Net.ArcNetworkError" enum="ArcNetworkError"
-    expires_after="2022-04-01">
+    expires_after="2022-12-31">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-networking@google.com</owner>
   <summary>
@@ -1110,7 +1132,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Net.ArcNetworkEvent" enum="ArcNetworkEvent"
-    expires_after="2022-04-01">
+    expires_after="2022-12-31">
   <owner>hugobenichi@google.com</owner>
   <owner>cros-networking@google.com</owner>
   <summary>
@@ -1121,7 +1143,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Net.DnsQuery.AndroidApi" enum="BooleanSuccess"
-    expires_after="2022-07-22">
+    expires_after="2022-12-31">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1130,7 +1152,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.Net.DnsQuery.Other" enum="BooleanSuccess"
-    expires_after="2022-07-22">
+    expires_after="2022-12-31">
   <owner>mhasank@google.com</owner>
   <owner>arc-core@google.com</owner>
   <summary>
@@ -1255,7 +1277,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PlayStoreSearch.QueryTime" units="ms"
-    expires_after="2022-07-11">
+    expires_after="2022-09-11">
   <owner>hejq@chromium.org</owner>
   <summary>
     Time between sending an Play Store app discovery request and the storing
@@ -1310,7 +1332,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Arc.PrintPreview.PreviewEvent" enum="PrintPreviewHelperEvents"
-    expires_after="2022-04-04">
+    expires_after="2022-10-04">
   <owner>bmgordon@chromium.org</owner>
   <owner>project-bolton@google.com</owner>
   <summary>

@@ -618,7 +618,6 @@
 <translation id="5170206230005240598">Brailio rašto antraštės įgalintos</translation>
 <translation id="5183440668879371625">Ankstesnė Brailio rašmenų eilutė</translation>
 <translation id="5189244881767082992">Linija</translation>
-<translation id="5234747236692380506">įvesti tekstą „<ph name="TEXT" />“</translation>
 <translation id="5263034204789987535">Šviesiai gelsva spalva</translation>
 <translation id="5263344797180442561">h2</translation>
 <translation id="528468243742722775">Baigti</translation>
@@ -794,6 +793,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{dvitaškis}one{# dvitaškis}few{# dvitaškiai}many{# colons}other{# dvitaškių}}</translation>
 <translation id="6444046323172968959">Įspėjimo dialogo langas</translation>
 <translation id="6452403590345320472">Turinys</translation>
+<translation id="6457542714329819968">tipas</translation>
 <translation id="6468049171101508116">Kitas mygtukas</translation>
 <translation id="646954774886932461">Rodyklė</translation>
 <translation id="6475604559827479857">Žodžių paryškinimo spalva:</translation>

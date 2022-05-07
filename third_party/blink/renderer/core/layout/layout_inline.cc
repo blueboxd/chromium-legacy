@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/layout/layout_inline.h"
 
 #include "cc/base/region.h"
+#include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
@@ -538,6 +539,9 @@ void LayoutInline::AddChildIgnoringContinuation(LayoutObject* new_child,
     before_child = LastChild();
 
   if (!new_child->IsInline() && !new_child->IsFloatingOrOutOfFlowPositioned() &&
+      // Table parts can be either inline or block. When creating its table
+      // wrapper, |CreateAnonymousTableWithParent| creates an inline table if
+      // the parent is |LayoutInline|.
       !new_child->IsTablePart()) {
     if (UNLIKELY(RuntimeEnabledFeatures::LayoutNGBlockInInlineEnabled()) &&
         !ForceLegacyLayout()) {

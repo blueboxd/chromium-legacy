@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 GEN_INCLUDE(['select_to_speak_e2e_test_base.js']);
-GEN_INCLUDE(['mock_tts.js']);
+GEN_INCLUDE(['../common/testing/mock_tts.js']);
 
 /**
  * Browser tests for select-to-speak's feature to speak text
@@ -17,13 +17,10 @@ SelectToSpeakMouseSelectionTest = class extends SelectToSpeakE2ETest {
   }
 
   /** @override */
-  setUp() {
-    var runTest = this.deferRunTest(WhenTestDone.EXPECT);
-
+  async setUpDeferred() {
     window.EventType = chrome.automation.EventType;
     window.SelectToSpeakState = chrome.accessibilityPrivate.SelectToSpeakState;
 
-    (async function() {
       await importModule(
           'selectToSpeak', '/select_to_speak/select_to_speak_main.js');
       await importModule(
@@ -32,9 +29,6 @@ SelectToSpeakMouseSelectionTest = class extends SelectToSpeakE2ETest {
           'SelectToSpeakConstants',
           '/select_to_speak/select_to_speak_constants.js');
       selectToSpeak.prefsManager_.enhancedVoicesDialogShown_ = true;
-
-      runTest();
-    })();
   }
 
   tapTrayButton(desktop, callback) {

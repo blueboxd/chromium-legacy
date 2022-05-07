@@ -84,7 +84,12 @@ function removeDeviceDetailsPage(address) {
 
   const deviceDetailsPage =
       /** @type {!DeviceDetailsPage} */ (pageManager.registeredPages.get(id));
-  assert(deviceDetailsPage, 'Device Details page must exist');
+
+  // The device details page does not necessarily exist, return early if it is
+  // not found.
+  if (!deviceDetailsPage) {
+    return;
+  }
 
   deviceDetailsPage.disconnect();
   deviceDetailsPage.pageDiv.parentNode.removeChild(deviceDetailsPage.pageDiv);
@@ -168,7 +173,11 @@ function setupAdapterSystem(response) {
         event.detail.value;
     adapterPage.redraw();
 
-    if (event.detail.property == AdapterProperty.DISCOVERING &&
+    if (event.detail.property === AdapterProperty.POWERED) {
+      devicesPage.updatedScanButtonVisibility(event.detail.value);
+    }
+
+    if (event.detail.property === AdapterProperty.DISCOVERING &&
         !event.detail.value && !userRequestedScanStop && discoverySession) {
       updateStoppedDiscoverySession();
       Snackbar.show(

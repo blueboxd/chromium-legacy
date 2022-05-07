@@ -131,7 +131,7 @@ export class SettingsUiElement extends SettingsUiElementBase {
     Router.getInstance().initializeRouteFromUrl();
   }
 
-  ready() {
+  override ready() {
     super.ready();
 
     // Lazy-create the drawer the first time it is opened or swiped into view.
@@ -179,7 +179,7 @@ export class SettingsUiElement extends SettingsUiElementBase {
     this.addEventListener('refresh-pref', this.onRefreshPref_.bind(this));
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     document.documentElement.classList.remove('loading');
@@ -196,28 +196,26 @@ export class SettingsUiElement extends SettingsUiElementBase {
     setGlobalScrollTarget(this.$.container);
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
 
     Router.getInstance().resetRouteForTesting();
     resetGlobalScrollTargetForTesting();
   }
 
-  currentRouteChanged(route: Route) {
-    if (document.documentElement.hasAttribute('enable-branding-update')) {
-      if (route === routes.PRIVACY_GUIDE) {
-        // Privacy guide has a multi-card layout, which only needs shadows to
-        // show when there is more content to scroll.
-        this.enableShadowBehavior(true);
-      } else if (route.depth <= 1) {
-        // Main page uses scroll position to determine whether a shadow should
-        // be shown.
-        this.enableShadowBehavior(true);
-      } else if (!route.isNavigableDialog) {
-        // Sub-pages always show the top shadow, regardless of scroll position.
-        this.enableShadowBehavior(false);
-        this.showDropShadows();
-      }
+  override currentRouteChanged(route: Route) {
+    if (route === routes.PRIVACY_GUIDE) {
+      // Privacy guide has a multi-card layout, which only needs shadows to
+      // show when there is more content to scroll.
+      this.enableShadowBehavior(true);
+    } else if (route.depth <= 1) {
+      // Main page uses scroll position to determine whether a shadow should
+      // be shown.
+      this.enableShadowBehavior(true);
+    } else if (!route.isNavigableDialog) {
+      // Sub-pages always show the top shadow, regardless of scroll position.
+      this.enableShadowBehavior(false);
+      this.showDropShadows();
     }
 
     const urlSearchQuery =
@@ -244,7 +242,7 @@ export class SettingsUiElement extends SettingsUiElementBase {
   }
 
   // Override FindShortcutMixin methods.
-  handleFindShortcut(modalContextOpen: boolean) {
+  override handleFindShortcut(modalContextOpen: boolean) {
     if (modalContextOpen) {
       return false;
     }
@@ -255,7 +253,7 @@ export class SettingsUiElement extends SettingsUiElementBase {
   }
 
   // Override FindShortcutMixin methods.
-  searchInputHasFocus() {
+  override searchInputHasFocus() {
     return this.shadowRoot!.querySelector<CrToolbarElement>('cr-toolbar')!
         .getSearchField()
         .isSearchFocused();

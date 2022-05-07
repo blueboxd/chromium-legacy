@@ -5,7 +5,9 @@
 #include "chrome/browser/ash/policy/status_collector/managed_session_service.h"
 
 #include "base/logging.h"
+#include "chrome/browser/ash/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/ash/login/existing_user_controller.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "components/user_manager/user_manager.h"
 
@@ -14,6 +16,11 @@ namespace policy {
 namespace {
 
 constexpr base::TimeDelta kMinimumSuspendDuration = base::Minutes(1);
+
+ash::KioskLaunchController* GetKioskLaunchController() {
+  auto* host = ash::LoginDisplayHost::default_host();
+  return host ? host->GetKioskLaunchController() : nullptr;
+}
 
 }  // namespace
 
@@ -40,6 +47,10 @@ ManagedSessionService::~ManagedSessionService() {
         ->RemoveLoginStatusConsumer(this);
   }
 
+  if (GetKioskLaunchController()) {
+    GetKioskLaunchController()->RemoveKioskProfileLoadFailedObserver(this);
+  }
+
   if (ash::SessionTerminationManager::Get()) {
     ash::SessionTerminationManager::Get()->RemoveObserver(this);
   }
@@ -49,13 +60,9 @@ void ManagedSessionService::AddObserver(
     ManagedSessionService::Observer* observer) {
   observers_.AddObserver(observer);
   if (is_logged_in_observed_) {
-    if (user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
-      observer->OnGuestLogin();
-    } else {
-      auto* const profile = ash::ProfileHelper::Get()->GetProfileByUser(
-          user_manager::UserManager::Get()->GetPrimaryUser());
-      observer->OnLogin(profile);
-    }
+    auto* const profile = ash::ProfileHelper::Get()->GetProfileByUser(
+        user_manager::UserManager::Get()->GetPrimaryUser());
+    observer->OnLogin(profile);
   }
 }
 
@@ -149,11 +156,25 @@ void ManagedSessionService::OnAuthAttemptStarted() {
     ash::ExistingUserController::current_controller()->AddLoginStatusConsumer(
         this);
   }
+
+  if (GetKioskLaunchController()) {
+    // Remove observer first in case the auth attempt is because of a retry, and
+    // the observation was added, if it was not added removing the observer will
+    // be a no-op.
+    GetKioskLaunchController()->RemoveKioskProfileLoadFailedObserver(this);
+    GetKioskLaunchController()->AddKioskProfileLoadFailedObserver(this);
+  }
 }
 
 void ManagedSessionService::OnAuthFailure(const ash::AuthFailure& error) {
   for (auto& observer : observers_) {
     observer.OnLoginFailure(error);
+  }
+}
+
+void ManagedSessionService::OnKioskProfileLoadFailed() {
+  for (auto& observer : observers_) {
+    observer.OnKioskLoginFailure();
   }
 }
 
@@ -177,9 +198,7 @@ void ManagedSessionService::SetLoginStatus() {
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   is_logged_in_observed_ = true;
-  if (!user_manager::UserManager::Get()->IsLoggedInAsGuest()) {
-    profile_observations_.AddObservation(profile);
-  }
+  profile_observations_.AddObservation(profile);
   if (ash::SessionTerminationManager::Get()) {
     ash::SessionTerminationManager::Get()->AddObserver(this);
   }

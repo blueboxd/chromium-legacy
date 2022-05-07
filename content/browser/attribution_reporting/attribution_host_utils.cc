@@ -5,18 +5,18 @@
 #include "content/browser/attribution_reporting/attribution_host_utils.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_source.h"
+#include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
-#include "content/browser/attribution_reporting/attribution_policy.h"
 #include "content/browser/attribution_reporting/common_source_info.h"
 #include "content/browser/attribution_reporting/storable_source.h"
 #include "content/common/url_utils.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/content_browser_client.h"
-#include "content/public/common/content_client.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
+#include "third_party/blink/public/common/navigation/impression.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -29,12 +29,11 @@ bool IsOriginTrustworthyForAttributions(const url::Origin& origin) {
          network::IsOriginPotentiallyTrustworthy(origin);
 }
 
-VerifyResult VerifyAndStoreImpression(CommonSourceInfo::SourceType source_type,
-                                      const url::Origin& impression_origin,
-                                      const blink::Impression& impression,
-                                      BrowserContext* browser_context,
-                                      AttributionManager& attribution_manager,
-                                      base::Time impression_time) {
+void VerifyAndStoreImpression(AttributionSourceType source_type,
+                              const url::Origin& impression_origin,
+                              const blink::Impression& impression,
+                              AttributionManager& attribution_manager,
+                              base::Time impression_time) {
   // Convert |impression| into a StorableImpression that can be forwarded to
   // storage. If a reporting origin was not provided, default to the conversion
   // destination for reporting.
@@ -42,19 +41,11 @@ VerifyResult VerifyAndStoreImpression(CommonSourceInfo::SourceType source_type,
                                             ? impression_origin
                                             : *impression.reporting_origin;
 
-  const bool allowed =
-      GetContentClient()->browser()->IsConversionMeasurementOperationAllowed(
-          browser_context,
-          ContentBrowserClient::ConversionMeasurementOperation::kImpression,
-          &impression_origin, /*conversion_origin=*/nullptr, &reporting_origin);
-  if (!allowed)
-    return VerifyResult{.allowed = false, .stored = false};
-
   // Conversion measurement is only allowed in secure contexts.
   if (!IsOriginTrustworthyForAttributions(impression_origin) ||
       !IsOriginTrustworthyForAttributions(reporting_origin) ||
       !IsOriginTrustworthyForAttributions(impression.conversion_destination)) {
-    return VerifyResult{.allowed = true, .stored = false};
+    return;
   }
 
   StorableSource storable_impression(
@@ -62,15 +53,15 @@ VerifyResult VerifyAndStoreImpression(CommonSourceInfo::SourceType source_type,
       CommonSourceInfo(
           impression.impression_data, impression_origin,
           impression.conversion_destination, reporting_origin, impression_time,
-          GetExpiryTimeForImpression(impression.expiry, impression_time,
-                                     source_type),
-          source_type, impression.priority, /*debug_key=*/absl::nullopt));
+          CommonSourceInfo::GetExpiryTime(impression.expiry, impression_time,
+                                          source_type),
+          source_type, impression.priority, AttributionFilterData(),
+          /*debug_key=*/absl::nullopt, AttributionAggregatableSource()));
 
   // TODO(apaseltiner): It would be nice to be able to report an issue in
   // DevTools in the event that a debug key is present but the corresponding
   // cookie is not.
   attribution_manager.HandleSource(std::move(storable_impression));
-  return VerifyResult{.allowed = true, .stored = true};
 }
 
 absl::optional<blink::Impression> ParseImpressionFromApp(

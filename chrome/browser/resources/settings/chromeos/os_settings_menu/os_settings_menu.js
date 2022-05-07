@@ -12,7 +12,7 @@ import '//resources/polymer/v3_0/iron-collapse/iron-collapse.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
 import '//resources/polymer/v3_0/iron-selector/iron-selector.js';
 import '../../settings_shared_css.js';
-import '../os_icons.m.js';
+import '../os_icons.js';
 
 import {assert, assertNotReached} from '//resources/js/assert.m.js';
 import {loadTimeData} from '//resources/js/load_time_data.m.js';
@@ -43,6 +43,19 @@ Polymer({
       type: Boolean,
       value: loadTimeData.getBoolean('isGuest'),
       readOnly: true,
+    },
+
+    /**
+     * Whether Accessibility OS Settings visibility improvements are enabled.
+     * @private{boolean}
+     */
+    isAccessibilityOSSettingsVisibilityEnabled_: {
+      type: Boolean,
+      readOnly: true,
+      value() {
+        return loadTimeData.getBoolean(
+            'isAccessibilityOSSettingsVisibilityEnabled');
+      }
     },
 
     showCrostini: Boolean,

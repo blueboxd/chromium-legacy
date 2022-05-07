@@ -9,7 +9,7 @@
 
 namespace blink {
 
-NGFlexItemIterator::NGFlexItemIterator(const Vector<NGFlexLine>& flex_lines,
+NGFlexItemIterator::NGFlexItemIterator(const HeapVector<NGFlexLine>& flex_lines,
                                        const NGBlockBreakToken* break_token,
                                        bool is_horizontal_flow)
     : flex_lines_(flex_lines),
@@ -37,7 +37,9 @@ NGFlexItemIterator::NGFlexItemIterator(const Vector<NGFlexLine>& flex_lines,
   }
 }
 
-NGFlexItemIterator::Entry NGFlexItemIterator::NextItem() {
+NGFlexItemIterator::Entry NGFlexItemIterator::NextItem(bool broke_before_row) {
+  DCHECK(is_horizontal_flow_ || !broke_before_row);
+
   const NGBlockBreakToken* current_child_break_token = nullptr;
   NGFlexItem* current_item = next_unstarted_item_;
   wtf_size_t current_item_idx = 0;
@@ -56,27 +58,42 @@ NGFlexItemIterator::Entry NGFlexItemIterator::NextItem() {
       DCHECK(current_child_break_token);
       current_item = FindNextItem(current_child_break_token);
 
+      if (!is_horizontal_flow_) {
+        while (next_item_idx_for_line_.size() <= flex_line_idx_)
+          next_item_idx_for_line_.push_back(0);
+        // Store the next item index to process for this column so that the
+        // remaining items can be processed after the break tokens have been
+        // handled.
+        next_item_idx_for_line_[flex_line_idx_] = flex_item_idx_;
+      }
+
       current_item_idx = flex_item_idx_ - 1;
       current_line_idx = flex_line_idx_;
 
       if (child_token_idx_ == child_break_tokens.size()) {
         // We reached the last child break token. Prepare for the next unstarted
         // sibling, and forget the parent break token.
-        if (is_horizontal_flow_ && flex_item_idx_ != 0 &&
-            !current_child_break_token->IsBreakBefore()) {
+        if (is_horizontal_flow_ &&
+            (current_item_idx != 0 ||
+             !current_child_break_token->IsBreakBefore() ||
+             !broke_before_row)) {
           // All flex items in a row are processed before moving to the next
-          // fragmentainer, unless the item broke before. If the current item in
-          // the row has a break token (and did not break before), but the next
-          // item in the row doesn't, that means the next item has already
-          // finished layout. In this case, move to the next row.
+          // fragmentainer, unless the row broke before. If the current item in
+          // the row has a break token, but the next item in the row doesn't,
+          // that means the next item has already finished layout. In this case,
+          // move to the next row.
           //
-          // If an item broke before, then that means that the entire row broke
-          // before, so continue processing items in the current row.
-          flex_line_idx_++;
-          flex_item_idx_ = 0;
+          // Note: Rows don't produce a layout result, so if the row broke
+          // before, the first item in the row will have a broken before.
+          NextLine();
+        } else if (!break_token_->HasSeenAllChildren()) {
+          if (!is_horizontal_flow_) {
+            // Re-iterate over the columns to find any unprocessed items.
+            flex_line_idx_ = 0;
+            flex_item_idx_ = next_item_idx_for_line_[flex_line_idx_];
+          }
           next_unstarted_item_ = FindNextItem();
-        } else if (!break_token_->HasSeenAllChildren())
-          next_unstarted_item_ = FindNextItem();
+        }
         break_token_ = nullptr;
       }
     }
@@ -95,18 +112,52 @@ NGFlexItem* NGFlexItemIterator::FindNextItem(
     const NGBlockBreakToken* item_break_token) {
   while (flex_line_idx_ < flex_lines_.size()) {
     const auto& flex_line = flex_lines_[flex_line_idx_];
-    while (flex_item_idx_ < flex_line.line_items.size()) {
-      NGFlexItem* flex_item =
-          const_cast<NGFlexItem*>(&flex_line.line_items[flex_item_idx_++]);
-      if (!item_break_token ||
-          flex_item->ng_input_node == item_break_token->InputNode())
-        return flex_item;
+    if (!flex_line.has_seen_all_children || item_break_token) {
+      while (flex_item_idx_ < flex_line.line_items.size()) {
+        NGFlexItem* flex_item =
+            const_cast<NGFlexItem*>(&flex_line.line_items[flex_item_idx_++]);
+        if (!item_break_token ||
+            flex_item->ng_input_node == item_break_token->InputNode())
+          return flex_item;
+      }
     }
-    flex_item_idx_ = 0;
+    // If the current column had a break token, but later columns do not, that
+    // means that those later columns have completed layout and can be skipped.
+    if (!is_horizontal_flow_ && !item_break_token &&
+        flex_line_idx_ == next_item_idx_for_line_.size() - 1)
+      break;
+
     flex_line_idx_++;
+    AdjustItemIndexForNewLine();
   }
-  DCHECK(!item_break_token);
+
+  // We handle break tokens for all columns before moving to the unprocessed
+  // items for each column. This means that we may process a break token in an
+  // earlier column after a break token in a later column. Thus, if we haven't
+  // found the item matching the current break token, re-iterate from the first
+  // column.
+  if (item_break_token) {
+    DCHECK(!is_horizontal_flow_);
+    flex_line_idx_ = 0;
+    flex_item_idx_ = next_item_idx_for_line_[flex_line_idx_];
+    return FindNextItem(item_break_token);
+  }
   return nullptr;
+}
+
+void NGFlexItemIterator::NextLine() {
+  if (flex_item_idx_ == 0)
+    return;
+  flex_line_idx_++;
+  AdjustItemIndexForNewLine();
+  next_unstarted_item_ = FindNextItem();
+}
+
+void NGFlexItemIterator::AdjustItemIndexForNewLine() {
+  if (flex_line_idx_ < next_item_idx_for_line_.size())
+    flex_item_idx_ = next_item_idx_for_line_[flex_line_idx_];
+  else
+    flex_item_idx_ = 0;
 }
 
 }  // namespace blink

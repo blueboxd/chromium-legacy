@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/views/location_bar/omnibox_chip_button.h"
 
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -70,6 +71,7 @@ void OmniboxChipButton::AnimateExpand() {
 }
 
 void OmniboxChipButton::ResetAnimation(double value) {
+  fully_collapsed_ = value == 0.0;
   animation_->Reset(value);
 }
 
@@ -95,9 +97,13 @@ void OmniboxChipButton::OnThemeChanged() {
 }
 
 void OmniboxChipButton::UpdateBackgroundColor() {
-  SetBackground(
-      CreateBackgroundFromPainter(views::Painter::CreateSolidRoundRectPainter(
-          GetBackgroundColor(), GetIconSize())));
+  if (theme_ == Theme::kIconStyle) {
+    SetBackground(nullptr);
+  } else {
+    SetBackground(
+        CreateBackgroundFromPainter(views::Painter::CreateSolidRoundRectPainter(
+            GetBackgroundColor(), GetIconSize())));
+  }
 }
 
 void OmniboxChipButton::AnimationEnded(const gfx::Animation* animation) {
@@ -133,36 +139,26 @@ void OmniboxChipButton::UpdateIconAndColors() {
                     GetTextAndIconColor(), GetIconSize(), nullptr));
 }
 
-SkColor OmniboxChipButton::GetTextAndIconColor() {
-  switch (theme_) {
-    case Theme::kNormalVisibility: {
-      // TODO(crbug.com/1274118) Instead of using constants or toolbar colors,
-      // add the chip's properties.
-      return color_utils::IsDark(
-                 GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR))
-                 ? gfx::kGoogleBlue300
-                 : gfx::kGoogleBlue600;
-    }
-    case Theme::kLowVisibility: {
-      return GetThemeProvider()->GetColor(
-          ThemeProperties::COLOR_TAB_FOREGROUND_ACTIVE_FRAME_ACTIVE);
-    }
+SkColor OmniboxChipButton::GetTextAndIconColor() const {
+  if (theme_ == Theme::kIconStyle) {
+    // Use ThemeProvider rather than ColorProvider to correctly match the color
+    // used for page action icons.
+    return GetThemeProvider()->GetColor(
+        ThemeProperties::COLOR_OMNIBOX_RESULTS_ICON);
   }
+
+  return GetColorProvider()->GetColor(
+      theme_ == Theme::kLowVisibility
+          ? kColorOmniboxChipForegroundLowVisibility
+          : kColorOmniboxChipForegroundNormalVisibility);
 }
 
-SkColor OmniboxChipButton::GetBackgroundColor() {
-  SkColor active_tab_color =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR);
-
-  if (theme_ == Theme::kLowVisibility) {
-    return active_tab_color;
-  }
-
-  // TODO(crbug.com/1274118) Instead of using constants or toolbar colors, add
-  // the chip's properties.
-  return ThemeProperties::GetDefaultColor(
-      ThemeProperties::COLOR_TOOLBAR, false,
-      /*dark_mode=*/color_utils::IsDark(active_tab_color));
+SkColor OmniboxChipButton::GetBackgroundColor() const {
+  DCHECK(theme_ != Theme::kIconStyle);
+  return GetColorProvider()->GetColor(
+      theme_ == Theme::kLowVisibility
+          ? kColorOmniboxChipBackgroundLowVisibility
+          : kColorOmniboxChipBackgroundNormalVisibility);
 }
 
 void OmniboxChipButton::SetForceExpandedForTesting(

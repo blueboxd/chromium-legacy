@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
-#include "base/cxx17_backports.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
 #include "base/location.h"
@@ -89,10 +88,10 @@ void VerifyCommonProperties(std::unique_ptr<base::DictionaryValue> response,
 
 base::DictionaryValue CreateConnectMessage(int id) {
   base::DictionaryValue connect_message;
-  connect_message.SetInteger(kMessageId, id);
-  connect_message.SetString(kMessageType, kConnectMessage);
-  connect_message.SetString(kUserName, kTestClientUsername);
-  connect_message.SetString(kAuthServiceWithToken, "oauth2:sometoken");
+  connect_message.SetIntKey(kMessageId, id);
+  connect_message.SetStringKey(kMessageType, kConnectMessage);
+  connect_message.SetStringKey(kUserName, kTestClientUsername);
+  connect_message.SetStringKey(kAuthServiceWithToken, "oauth2:sometoken");
   connect_message.SetKey(
       kIceConfig,
       base::Value::FromUniquePtrValue(base::JSONReader::ReadDeprecated(
@@ -104,8 +103,8 @@ base::DictionaryValue CreateConnectMessage(int id) {
 
 base::DictionaryValue CreateDisconnectMessage(int id) {
   base::DictionaryValue disconnect_message;
-  disconnect_message.SetInteger(kMessageId, id);
-  disconnect_message.SetString(kMessageType, kDisconnectMessage);
+  disconnect_message.SetIntKey(kMessageId, id);
+  disconnect_message.SetStringKey(kMessageType, kDisconnectMessage);
   return disconnect_message;
 }
 
@@ -371,7 +370,7 @@ It2MeNativeMessagingHostTest::ReadMessageFromOutputPipe() {
 
     std::string message_json(length, '\0');
     read_result =
-        output_read_file_.ReadAtCurrentPos(base::data(message_json), length);
+        output_read_file_.ReadAtCurrentPos(std::data(message_json), length);
     if (read_result != static_cast<int>(length)) {
       LOG(ERROR) << "Message size (" << read_result
                  << ") doesn't match the header (" << length << ").";
@@ -531,8 +530,8 @@ void It2MeNativeMessagingHostTest::VerifyPolicyErrorResponse() {
 void It2MeNativeMessagingHostTest::TestBadRequest(const base::Value& message,
                                                   bool expect_error_response) {
   base::DictionaryValue good_message;
-  good_message.SetString(kMessageType, kHelloMessage);
-  good_message.SetInteger(kMessageId, 1);
+  good_message.SetStringKey(kMessageType, kHelloMessage);
+  good_message.SetIntKey(kMessageId, 1);
 
   WriteMessageToInputPipe(good_message);
   WriteMessageToInputPipe(message);
@@ -623,8 +622,8 @@ void It2MeNativeMessagingHostTest::TestConnect() {
 TEST_F(It2MeNativeMessagingHostTest, Hello) {
   int next_id = 0;
   base::DictionaryValue message;
-  message.SetInteger(kMessageId, ++next_id);
-  message.SetString(kMessageType, kHelloMessage);
+  message.SetIntKey(kMessageId, ++next_id);
+  message.SetStringKey(kMessageType, kHelloMessage);
   WriteMessageToInputPipe(message);
 
   VerifyHelloResponse(next_id);
@@ -633,9 +632,9 @@ TEST_F(It2MeNativeMessagingHostTest, Hello) {
 // Verify that response ID matches request ID.
 TEST_F(It2MeNativeMessagingHostTest, Id) {
   base::DictionaryValue message;
-  message.SetString(kMessageType, kHelloMessage);
+  message.SetStringKey(kMessageType, kHelloMessage);
   WriteMessageToInputPipe(message);
-  message.SetString(kMessageId, "42");
+  message.SetStringKey(kMessageId, "42");
   WriteMessageToInputPipe(message);
 
   std::unique_ptr<base::DictionaryValue> response = ReadMessageFromOutputPipe();
@@ -662,7 +661,7 @@ TEST_F(It2MeNativeMessagingHostTest,
        ConnectRespectsSuppressUserDialogsParameterOnChromeOsOnly) {
   int next_id = 1;
   base::DictionaryValue connect_message = CreateConnectMessage(next_id);
-  connect_message.SetBoolean(kSuppressUserDialogs, true);
+  connect_message.SetBoolKey(kSuppressUserDialogs, true);
   WriteMessageToInputPipe(connect_message);
   VerifyConnectResponses(next_id);
 #if BUILDFLAG(IS_CHROMEOS_ASH) || !defined(NDEBUG)
@@ -679,7 +678,7 @@ TEST_F(It2MeNativeMessagingHostTest,
        ConnectRespectsSuppressNotificationsParameterOnChromeOsOnly) {
   int next_id = 1;
   base::DictionaryValue connect_message = CreateConnectMessage(next_id);
-  connect_message.SetBoolean(kSuppressNotifications, true);
+  connect_message.SetBoolKey(kSuppressNotifications, true);
   WriteMessageToInputPipe(connect_message);
   VerifyConnectResponses(next_id);
 #if BUILDFLAG(IS_CHROMEOS_ASH) || !defined(NDEBUG)
@@ -708,14 +707,14 @@ TEST_F(It2MeNativeMessagingHostTest, MissingType) {
 // Verify rejection if type is unrecognized.
 TEST_F(It2MeNativeMessagingHostTest, InvalidType) {
   base::DictionaryValue message;
-  message.SetString(kMessageType, "xxx");
+  message.SetStringKey(kMessageType, "xxx");
   TestBadRequest(message, true);
 }
 
 // Verify rejection if type is unrecognized.
 TEST_F(It2MeNativeMessagingHostTest, BadPoliciesBeforeConnect) {
   base::DictionaryValue bad_policy;
-  bad_policy.SetInteger(policy::key::kRemoteAccessHostFirewallTraversal, 1);
+  bad_policy.SetIntKey(policy::key::kRemoteAccessHostFirewallTraversal, 1);
   SetPolicies(bad_policy);
   WriteMessageToInputPipe(CreateConnectMessage(1));
   VerifyPolicyErrorResponse();
@@ -724,7 +723,7 @@ TEST_F(It2MeNativeMessagingHostTest, BadPoliciesBeforeConnect) {
 // Verify rejection if type is unrecognized.
 TEST_F(It2MeNativeMessagingHostTest, BadPoliciesAfterConnect) {
   base::DictionaryValue bad_policy;
-  bad_policy.SetInteger(policy::key::kRemoteAccessHostFirewallTraversal, 1);
+  bad_policy.SetIntKey(policy::key::kRemoteAccessHostFirewallTraversal, 1);
   WriteMessageToInputPipe(CreateConnectMessage(1));
   VerifyConnectResponses(1);
   SetPolicies(bad_policy);

@@ -10,7 +10,7 @@ import '//resources/cr_elements/cr_toast/cr_toast.js';
 import '//resources/cr_elements/icons.m.js';
 import '//resources/cr_elements/policy/cr_policy_indicator.m.js';
 import '//resources/polymer/v3_0/iron-icon/iron-icon.js';
-import '../os_settings_icons_css.m.js';
+import '../os_settings_icons_css.js';
 import '../../prefs/prefs.js';
 import '../../settings_page/settings_animated_pages.js';
 import '../../settings_page/settings_subpage.js';
@@ -38,7 +38,7 @@ import {WebUIListenerBehavior} from '//resources/js/web_ui_listener_behavior.m.j
 import {afterNextRender, flush, html, Polymer, TemplateInstanceBase, Templatizer} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Route, Router} from '../../router.js';
-import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
+import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
 import {recordClick, recordNavigation, recordPageBlur, recordPageFocus, recordSearch, recordSettingChange, setUserActionRecorderForTesting} from '../metrics_recorder.m.js';
 import {routes} from '../os_route.m.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';

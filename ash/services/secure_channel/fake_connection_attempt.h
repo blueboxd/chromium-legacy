@@ -16,9 +16,7 @@
 #include "base/time/default_clock.h"
 #include "base/unguessable_token.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 class ConnectionAttemptDelegate;
 
@@ -90,8 +88,6 @@ class FakeConnectionAttempt : public ConnectionAttempt<FailureDetailType> {
       client_data_for_extraction_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_CONNECTION_ATTEMPT_H_

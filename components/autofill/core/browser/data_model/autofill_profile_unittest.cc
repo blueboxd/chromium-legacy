@@ -10,7 +10,6 @@
 #include <string>
 #include <vector>
 
-#include "base/cxx17_backports.h"
 #include "base/format_macros.h"
 #include "base/guid.h"
 #include "base/strings/utf_string_conversions.h"
@@ -307,7 +306,7 @@ TEST_P(AutofillProfileTest, CreateInferredLabelsI18n_CH) {
   };
 
   std::vector<std::u16string> labels;
-  for (size_t i = 0; i < base::size(kExpectedLabels); ++i) {
+  for (size_t i = 0; i < std::size(kExpectedLabels); ++i) {
     AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
@@ -341,7 +340,7 @@ TEST_P(AutofillProfileTest, CreateInferredLabelsI18n_FR) {
   };
 
   std::vector<std::u16string> labels;
-  for (size_t i = 0; i < base::size(kExpectedLabels); ++i) {
+  for (size_t i = 0; i < std::size(kExpectedLabels); ++i) {
     AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
@@ -385,7 +384,7 @@ TEST_P(AutofillProfileTest, CreateInferredLabelsI18n_KR) {
   };
 
   std::vector<std::u16string> labels;
-  for (size_t i = 0; i < base::size(kExpectedLabels); ++i) {
+  for (size_t i = 0; i < std::size(kExpectedLabels); ++i) {
     AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
@@ -422,7 +421,7 @@ TEST_P(AutofillProfileTest, CreateInferredLabelsI18n_JP_Latn) {
   };
 
   std::vector<std::u16string> labels;
-  for (size_t i = 0; i < base::size(kExpectedLabels); ++i) {
+  for (size_t i = 0; i < std::size(kExpectedLabels); ++i) {
     AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
@@ -455,7 +454,7 @@ TEST_P(AutofillProfileTest, CreateInferredLabelsI18n_JP_ja) {
   };
 
   std::vector<std::u16string> labels;
-  for (size_t i = 0; i < base::size(kExpectedLabels); ++i) {
+  for (size_t i = 0; i < std::size(kExpectedLabels); ++i) {
     AutofillProfile::CreateInferredLabels(ToRawPointerVector(profiles), nullptr,
                                           UNKNOWN_TYPE, i, "en-US", &labels);
     ASSERT_FALSE(labels.empty());
@@ -1703,6 +1702,39 @@ TEST_P(AutofillProfileTest, HasStructuredData) {
   profile.SetRawInfoWithVerificationStatus(NAME_MIDDLE, u"mitchell", kObserved);
   profile.SetRawInfoWithVerificationStatus(NAME_LAST, u"morrison", kObserved);
   EXPECT_TRUE(profile.HasStructuredData());
+}
+
+TEST_P(AutofillProfileTest, RemoveInaccessibleProfileValues) {
+  // Returns true if at least one field was removed.
+  auto RemoveInaccessibleProfileValues = [](AutofillProfile& profile,
+                                            const std::string& country_code) {
+    const ServerFieldTypeSet inaccessible_fields =
+        profile.FindInaccessibleProfileValues(country_code);
+    profile.ClearFields(inaccessible_fields);
+    return !inaccessible_fields.empty();
+  };
+
+  AutofillProfile profile1;
+  profile1.SetRawInfo(NAME_FIRST, u"Florian");
+  AutofillProfile profile2 = profile1;
+
+  // State is uncommon in Germany and inaccessible in the settings. Expect it
+  // to be removed.
+  profile1.SetRawInfo(ADDRESS_HOME_STATE, u"Bayern");
+  EXPECT_TRUE(RemoveInaccessibleProfileValues(profile1, "DE"));
+  EXPECT_EQ(profile1.Compare(profile2), 0);
+
+  // There are no ZIP codes in Angola.
+  profile1.SetRawInfo(ADDRESS_HOME_ZIP, u"12345");
+  EXPECT_TRUE(RemoveInaccessibleProfileValues(profile1, "AO"));
+  EXPECT_EQ(profile1.Compare(profile2), 0);
+
+  // The US uses both ZIP codes and states.
+  profile1.SetRawInfo(ADDRESS_HOME_STATE, u"CA");
+  profile1.SetRawInfo(ADDRESS_HOME_ZIP, u"12345");
+  profile2 = profile1;
+  EXPECT_FALSE(RemoveInaccessibleProfileValues(profile1, "US"));
+  EXPECT_EQ(profile1.Compare(profile2), 0);
 }
 
 enum Expectation { GREATER, LESS, EQUAL };

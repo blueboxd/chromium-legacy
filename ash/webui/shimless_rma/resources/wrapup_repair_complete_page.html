@@ -1,6 +1,15 @@
 <style include="cr-shared-style shimless-rma-shared shimless-fonts">
   cr-dialog::part(dialog) {
-    width: 700px;
+    width: 512px;
+  }
+
+  cr-dialog [slot=body] {
+    height: 480px;
+  }
+
+  cr-dialog [slot=footer] {
+    padding-bottom: 24px;
+    padding-top: 24px;
   }
 
   #buttonContainer {
@@ -16,7 +25,7 @@
   .button-card {
     align-items: center;
     border-radius: 8px;
-    box-shadow: var(--cr-card-shadow);
+    box-shadow: var(--cros-elevation-1-shadow);
     height: 120px;
     justify-content: start;
     padding: 0;
@@ -32,9 +41,20 @@
   }
 
   :host([plugged-in_]) #batteryCutButton {
-    opacity: 0.5;
+    opacity: 0.38;
   }
 
+  :host([plugged-in_]) #batteryCutButton .button-label {
+    color: var(--cros-text-color-disabled);
+  }
+
+  :host([plugged-in_]) #batteryCutButton .button-description {
+    color: var(--cros-text-color-disabled);
+  }
+
+  :host([plugged-in_]) #batteryCutoffInfoIcon {
+    color: var(--cros-icon-color-secondary);
+  }
 
   .button-label {
     color: var(--shimless-button-label-text-color);
@@ -66,7 +86,7 @@
   }
 
   .log {
-    white-space: pre;
+    white-space: normal;
   }
 </style>
 
@@ -119,8 +139,9 @@
             on-click="onBatteryCutButtonClick_"
             disabled$="[[disableBatteryCutButton_(pluggedIn_,
             allButtonsDisabled)]]">
-          <iron-icon id="battery-cutoff-icon" icon="shimless-icon:battery-cutoff"
-              class="button-icon" hidden="[[!checked]]">
+          <iron-icon id="batteryCutoffIcon"
+              icon="shimless-icon:battery-cutoff-disabled" class="button-icon"
+              hidden="[[!checked]]">
           </iron-icon>
           <div class="button-text">
             <div class="button-label">
@@ -152,11 +173,11 @@
   <div slot="body">
     <div class="log">[[log_]]</div>
   </div>
-  <div slot="footer">
+  <div class="dialog-footer" slot="button-container">
     <cr-button id="closeLogDialogButton" on-click="onCancelClick_">
       [[i18n('rmaLogsCancelButtonText')]]
     </cr-button>
-    <cr-button id="rmaLogButton" class="text-button pill" 
+    <cr-button id="rmaLogButton" class="text-button action-button"
         on-click="onRmaLogButtonClick_">
       [[i18n('rmaLogsSaveToUsbButtonText')]]
     </cr-button>

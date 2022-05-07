@@ -36,17 +36,17 @@
 
   TestRunner.markStep('detachAnotherFrame1');
   await BindingsTestRunner.detachFrame('anotherFrame1', '_test_detach-anotherFrame1.js');
-  await TestRunner.evaluateInPageAnonymously('GCController.collectAll()');
+  await BindingsTestRunner.GC();
   SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
   TestRunner.markStep('detachFrame2');
   await BindingsTestRunner.detachFrame('frame2', '_test_detachFrame2.js');
-  await TestRunner.evaluateInPageAnonymously('GCController.collectAll()');
+  await BindingsTestRunner.GC();
   SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
   TestRunner.markStep('detachFrame1');
   await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame1.js');
-  await TestRunner.evaluateInPageAnonymously('GCController.collectAll()');
+  await BindingsTestRunner.GC();
   SourcesTestRunner.dumpNavigatorView(sourcesNavigator, false);
 
   TestRunner.completeTest();

@@ -6,9 +6,9 @@
 #define ASH_COMPONENTS_PHONEHUB_CAMERA_ROLL_MANAGER_H_
 
 #include "ash/components/phonehub/proto/phonehub_api.pb.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "base/observer_list.h"
 #include "base/observer_list_types.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 
 namespace ash {
 namespace phonehub {
@@ -45,11 +45,6 @@ class CameraRollManager {
     // permissions have been rejected on the Android device. In this state the
     // UI is hidden but the settings toggle is shown in a grayed out state.
     NO_STORAGE_PERMISSION,
-    // Feature is supported by the phone but the settings hasn't been enabled on
-    // system settings and not have been dismissed by user
-    CAN_OPT_IN,
-    // Feature is supported and enabled but no item has been loaded yet
-    LOADING_VIEW,
     // We have items that can be displayed
     ITEMS_VISIBLE,
   };
@@ -72,14 +67,6 @@ class CameraRollManager {
   // device specified by the |item_metadata| to the Downloads folder.
   virtual void DownloadItem(
       const proto::CameraRollItemMetadata& item_metadata) = 0;
-  // Attempt to enable camera roll feature; return whether the operation is
-  // succeeded. It can only be changed via this function if the current
-  // state is mojom::FeatureState::kFurtherSetupRequired or
-  // mojom::FeatureState::kDisabledByUser.
-  virtual void EnableCameraRollFeatureInSystemSetting() = 0;
-
-  // Record user have dismissed the onboarding dialog.
-  virtual void OnCameraRollOnboardingUiDismissed() = 0;
 
  protected:
   CameraRollManager();

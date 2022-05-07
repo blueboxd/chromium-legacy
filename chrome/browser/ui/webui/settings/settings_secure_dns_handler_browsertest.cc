@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/feature_list.h"
 #include "chrome/browser/ui/webui/settings/settings_secure_dns_handler.h"
 
 #include "base/containers/adapters.h"
@@ -44,31 +45,46 @@ constexpr char kWebUiFunctionName[] = "webUiCallbackName";
 
 net::DohProviderEntry::List GetDohProviderListForTesting() {
   static const auto global1 = net::DohProviderEntry::ConstructForTesting(
-      "Provider_Global1", net::DohProviderIdForHistogram(-1), {} /*ip_strs */,
+      "Provider_Global1",
+      base::Feature("DohProviderFeatureForProvider_Global1",
+                    base::FEATURE_ENABLED_BY_DEFAULT),
+      net::DohProviderIdForHistogram{-1}, {} /*ip_strs */,
       {} /* dot_hostnames */, "https://global1.provider/dns-query{?dns}",
       "Global Provider 1" /* ui_name */,
       "https://global1.provider/privacy_policy/" /* privacy_policy */,
       true /* display_globally */, {} /* display_countries */);
   static const auto no_display = net::DohProviderEntry::ConstructForTesting(
-      "Provider_NoDisplay", net::DohProviderIdForHistogram(-2), {} /*ip_strs */,
+      "Provider_NoDisplay",
+      base::Feature("DohProviderFeatureForProvider_NoDisplay",
+                    base::FEATURE_ENABLED_BY_DEFAULT),
+      net::DohProviderIdForHistogram{-2}, {} /*ip_strs */,
       {} /* dot_hostnames */, "https://nodisplay.provider/dns-query{?dns}",
       "No Display Provider" /* ui_name */,
       "https://nodisplay.provider/privacy_policy/" /* privacy_policy */,
       false /* display_globally */, {} /* display_countries */);
   static const auto ee_fr = net::DohProviderEntry::ConstructForTesting(
-      "Provider_EE_FR", net::DohProviderIdForHistogram(-3), {} /*ip_strs */,
+      "Provider_EE_FR",
+      base::Feature("DohProviderFeatureForProvider_EE_FR",
+                    base::FEATURE_ENABLED_BY_DEFAULT),
+      net::DohProviderIdForHistogram{-3}, {} /*ip_strs */,
       {} /* dot_hostnames */, "https://ee.fr.provider/dns-query{?dns}",
       "EE/FR Provider" /* ui_name */,
       "https://ee.fr.provider/privacy_policy/" /* privacy_policy */,
       false /* display_globally */, {"EE", "FR"} /* display_countries */);
   static const auto fr = net::DohProviderEntry::ConstructForTesting(
-      "Provider_FR", net::DohProviderIdForHistogram(-4), {} /*ip_strs */,
+      "Provider_FR",
+      base::Feature("DohProviderFeatureForProvider_FR",
+                    base::FEATURE_ENABLED_BY_DEFAULT),
+      net::DohProviderIdForHistogram{-4}, {} /*ip_strs */,
       {} /* dot_hostnames */, "https://fr.provider/dns-query{?dns}",
       "FR Provider" /* ui_name */,
       "https://fr.provider/privacy_policy/" /* privacy_policy */,
       false /* display_globally */, {"FR"} /* display_countries */);
   static const auto global2 = net::DohProviderEntry::ConstructForTesting(
-      "Provider_Global2", net::DohProviderIdForHistogram(-5), {} /*ip_strs */,
+      "Provider_Global2",
+      base::Feature("DohProviderFeatureForProvider_Global2",
+                    base::FEATURE_ENABLED_BY_DEFAULT),
+      net::DohProviderIdForHistogram{-5}, {} /*ip_strs */,
       {} /* dot_hostnames */, "https://global2.provider/dns-query{?dns}",
       "Global Provider 2" /* ui_name */,
       "https://global2.provider/privacy_policy/" /* privacy_policy */,
@@ -134,10 +150,9 @@ class SecureDnsHandlerTest : public InProcessBrowserTest {
 
   // Updates out-params from the last message sent to WebUI about a secure DNS
   // change. Returns false if the message was invalid or not found.
-  bool GetLastSettingsChangedMessage(
-      std::string* secure_dns_mode,
-      std::vector<std::string>* secure_dns_templates,
-      int* management_mode) {
+  bool GetLastSettingsChangedMessage(std::string* out_secure_dns_mode,
+                                     std::string* out_doh_config,
+                                     int* out_management_mode) {
     for (const std::unique_ptr<content::TestWebUI::CallData>& data :
          base::Reversed(web_ui_.call_data())) {
       if (data->function_name() != "cr.webUIListenerCallback" ||
@@ -146,30 +161,27 @@ class SecureDnsHandlerTest : public InProcessBrowserTest {
         continue;
       }
 
-      const base::DictionaryValue* dict = nullptr;
-      if (!data->arg2()->GetAsDictionary(&dict))
+      const base::Value::Dict* dict = data->arg2()->GetIfDict();
+      if (!dict)
         return false;
 
       // Get the secure DNS mode.
-      if (!dict->FindStringPath("mode"))
+      const std::string* secure_dns_mode = dict->FindString("mode");
+      if (!secure_dns_mode)
         return false;
-      *secure_dns_mode = *dict->FindStringPath("mode");
+      *out_secure_dns_mode = *secure_dns_mode;
 
-      // Get the secure DNS templates.
-      if (!dict->FindListPath("templates"))
+      // Get the DoH config string.
+      const std::string* doh_config = dict->FindString("config");
+      if (!doh_config)
         return false;
-      secure_dns_templates->clear();
-      for (const auto& template_str :
-           dict->FindListPath("templates")->GetListDeprecated()) {
-        if (!template_str.is_string())
-          return false;
-        secure_dns_templates->push_back(template_str.GetString());
-      }
+      *out_doh_config = *doh_config;
 
       // Get the forced management description.
-      if (!dict->FindIntPath("managementMode"))
+      absl::optional<int> management_mode = dict->FindInt("managementMode");
+      if (!management_mode.has_value())
         return false;
-      *management_mode = *dict->FindIntPath("managementMode");
+      *out_management_mode = *management_mode;
 
       return true;
     }
@@ -200,29 +212,29 @@ class SecureDnsHandlerTest : public InProcessBrowserTest {
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsModes) {
   PrefService* local_state = g_browser_process->local_state();
   std::string secure_dns_mode;
-  std::vector<std::string> secure_dns_templates;
+  std::string doh_config;
   int management_mode;
 
   local_state->SetString(prefs::kDnsOverHttpsMode, SecureDnsConfig::kModeOff);
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
+  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode, &doh_config,
+                                            &management_mode));
   EXPECT_EQ(SecureDnsConfig::kModeOff, secure_dns_mode);
 
   local_state->SetString(prefs::kDnsOverHttpsMode,
                          SecureDnsConfig::kModeAutomatic);
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
+  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode, &doh_config,
+                                            &management_mode));
   EXPECT_EQ(SecureDnsConfig::kModeAutomatic, secure_dns_mode);
 
   local_state->SetString(prefs::kDnsOverHttpsMode,
                          SecureDnsConfig::kModeSecure);
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
+  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode, &doh_config,
+                                            &management_mode));
   EXPECT_EQ(SecureDnsConfig::kModeSecure, secure_dns_mode);
 
   local_state->SetString(prefs::kDnsOverHttpsMode, "unknown");
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
+  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode, &doh_config,
+                                            &management_mode));
   EXPECT_EQ(SecureDnsConfig::kModeOff, secure_dns_mode);
 }
 
@@ -236,10 +248,10 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsPolicy) {
                          SecureDnsConfig::kModeSecure);
 
   std::string secure_dns_mode;
-  std::vector<std::string> secure_dns_templates;
+  std::string doh_config;
   int management_mode;
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
+  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode, &doh_config,
+                                            &management_mode));
   EXPECT_EQ(SecureDnsConfig::kModeAutomatic, secure_dns_mode);
   EXPECT_EQ(static_cast<int>(SecureDnsConfig::ManagementMode::kNoOverride),
             management_mode);
@@ -251,18 +263,18 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsPolicyChange) {
                         base::Value(SecureDnsConfig::kModeAutomatic));
 
   std::string secure_dns_mode;
-  std::vector<std::string> secure_dns_templates;
+  std::string doh_config;
   int management_mode;
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
+  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode, &doh_config,
+                                            &management_mode));
   EXPECT_EQ(SecureDnsConfig::kModeAutomatic, secure_dns_mode);
   EXPECT_EQ(static_cast<int>(SecureDnsConfig::ManagementMode::kNoOverride),
             management_mode);
 
   SetPolicyForPolicyKey(&policy_map, policy::key::kDnsOverHttpsMode,
                         base::Value(SecureDnsConfig::kModeOff));
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
+  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode, &doh_config,
+                                            &management_mode));
   EXPECT_EQ(SecureDnsConfig::kModeOff, secure_dns_mode);
   EXPECT_EQ(static_cast<int>(SecureDnsConfig::ManagementMode::kNoOverride),
             management_mode);
@@ -281,10 +293,10 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, OtherPoliciesSet) {
                          SecureDnsConfig::kModeSecure);
 
   std::string secure_dns_mode;
-  std::vector<std::string> secure_dns_templates;
+  std::string doh_config;
   int management_mode;
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
+  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode, &doh_config,
+                                            &management_mode));
   EXPECT_EQ(SecureDnsConfig::kModeOff, secure_dns_mode);
   EXPECT_EQ(static_cast<int>(SecureDnsConfig::ManagementMode::kDisabledManaged),
             management_mode);
@@ -349,36 +361,32 @@ IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, SecureDnsTemplates) {
   std::string bad_template = "dns-query{?dns}";
 
   std::string secure_dns_mode;
-  std::vector<std::string> secure_dns_templates;
+  std::string doh_config;
   int management_mode;
   PrefService* local_state = g_browser_process->local_state();
   local_state->SetString(prefs::kDnsOverHttpsMode,
                          SecureDnsConfig::kModeAutomatic);
   local_state->SetString(prefs::kDnsOverHttpsTemplates, good_post_template);
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(1u, secure_dns_templates.size());
-  EXPECT_EQ(good_post_template, secure_dns_templates[0]);
+  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode, &doh_config,
+                                            &management_mode));
+  EXPECT_EQ(good_post_template, doh_config);
 
-  local_state->SetString(prefs::kDnsOverHttpsTemplates,
-                         good_post_template + " " + good_get_template);
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(2u, secure_dns_templates.size());
-  EXPECT_EQ(good_post_template, secure_dns_templates[0]);
-  EXPECT_EQ(good_get_template, secure_dns_templates[1]);
+  std::string two_templates = good_post_template + " " + good_get_template;
+  local_state->SetString(prefs::kDnsOverHttpsTemplates, two_templates);
+  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode, &doh_config,
+                                            &management_mode));
+  EXPECT_EQ(two_templates, doh_config);
 
   local_state->SetString(prefs::kDnsOverHttpsTemplates, bad_template);
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(0u, secure_dns_templates.size());
+  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode, &doh_config,
+                                            &management_mode));
+  EXPECT_THAT(doh_config, IsEmpty());
 
   local_state->SetString(prefs::kDnsOverHttpsTemplates,
                          bad_template + " " + good_post_template);
-  EXPECT_TRUE(GetLastSettingsChangedMessage(
-      &secure_dns_mode, &secure_dns_templates, &management_mode));
-  EXPECT_EQ(1u, secure_dns_templates.size());
-  EXPECT_EQ(good_post_template, secure_dns_templates[0]);
+  EXPECT_TRUE(GetLastSettingsChangedMessage(&secure_dns_mode, &doh_config,
+                                            &management_mode));
+  EXPECT_EQ(good_post_template, doh_config);
 }
 
 IN_PROC_BROWSER_TEST_F(SecureDnsHandlerTest, TemplateValid) {

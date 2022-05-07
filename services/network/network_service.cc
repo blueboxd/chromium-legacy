@@ -49,6 +49,7 @@
 #include "net/dns/host_resolver_manager.h"
 #include "net/dns/public/dns_config_overrides.h"
 #include "net/dns/public/dns_over_https_config.h"
+#include "net/dns/public/doh_provider_entry.h"
 #include "net/dns/system_dns_config_change_notifier.h"
 #include "net/dns/test_dns_config_service.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -407,13 +408,14 @@ void NetworkService::ReplaceSystemDnsConfigForTesting() {
 }
 
 void NetworkService::SetTestDohConfigForTesting(
+    net::SecureDnsMode secure_dns_mode,
     const net::DnsOverHttpsConfig& doh_config) {
   DCHECK_EQ(dns_config_overrides_set_by_, FunctionTag::None);
   dns_config_overrides_set_by_ = FunctionTag::SetTestDohConfigForTesting;
 
   // Overlay DoH settings on top of the system config, whenever it is received.
   net::DnsConfigOverrides overrides;
-  overrides.secure_dns_mode = net::SecureDnsMode::kSecure;
+  overrides.secure_dns_mode = secure_dns_mode;
   overrides.dns_over_https_config = doh_config;
   host_resolver_manager_->SetDnsConfigOverrides(std::move(overrides));
 
@@ -543,9 +545,6 @@ void NetworkService::ConfigureStubHostResolver(
   overrides.secure_dns_mode = secure_dns_mode;
   overrides.allow_dns_over_https_upgrade =
       base::FeatureList::IsEnabled(features::kDnsOverHttpsUpgrade);
-  overrides.disabled_upgrade_providers =
-      SplitString(features::kDnsOverHttpsUpgradeDisabledProvidersParam.Get(),
-                  ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   host_resolver_manager_->SetDnsConfigOverrides(overrides);
 }
@@ -737,24 +736,8 @@ void NetworkService::ClearSCTAuditingCache() {
 }
 
 void NetworkService::ConfigureSCTAuditing(
-    double sampling_rate,
-    base::TimeDelta log_expected_ingestion_delay,
-    base::TimeDelta log_max_ingestion_random_delay,
-    const GURL& reporting_uri,
-    const GURL& hashdance_lookup_uri,
-    const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
-    const net::MutableNetworkTrafficAnnotationTag&
-        hashdance_traffic_annotation) {
-  sct_auditing_cache_->set_sampling_rate(sampling_rate);
-  sct_auditing_cache_->set_log_expected_ingestion_delay(
-      log_expected_ingestion_delay);
-  sct_auditing_cache_->set_log_max_ingestion_random_delay(
-      log_max_ingestion_random_delay);
-  sct_auditing_cache_->set_report_uri(reporting_uri);
-  sct_auditing_cache_->set_hashdance_lookup_uri(hashdance_lookup_uri);
-  sct_auditing_cache_->set_traffic_annotation(traffic_annotation);
-  sct_auditing_cache_->set_hashdance_traffic_annotation(
-      hashdance_traffic_annotation);
+    mojom::SCTAuditingConfigurationPtr configuration) {
+  sct_auditing_cache_->Configure(std::move(configuration));
 }
 
 void NetworkService::UpdateCtLogList(std::vector<mojom::CTLogInfoPtr> log_list,
@@ -821,8 +804,8 @@ void NetworkService::SetPersistedFirstPartySetsAndGetCurrentSets(
     const std::string& persisted_sets,
     mojom::NetworkService::SetPersistedFirstPartySetsAndGetCurrentSetsCallback
         callback) {
-  first_party_sets_->SetPersistedSets(persisted_sets);
-  first_party_sets_->SetOnSiteDataCleared(std::move(callback));
+  first_party_sets_->SetPersistedSetsAndOnSiteDataCleared(persisted_sets,
+                                                          std::move(callback));
 }
 
 void NetworkService::SetExplicitlyAllowedPorts(

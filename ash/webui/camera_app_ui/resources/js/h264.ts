@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 /**
- * @fileoverview
+ * @file
  * H264 related utility functions referenced from
  * media/video/h264_level_limits.cc.
  */
@@ -20,6 +20,9 @@ export enum Profile {
 export const profileValues = new Set(
     Object.values(Profile).filter((x): x is Profile => typeof x === 'number'));
 
+/**
+ * Asserts that a number is one of the value of possible h264 profile.
+ */
 export function assertProfile(v: number): Profile {
   assert(profileValues.has(v));
   return v;
@@ -31,6 +34,9 @@ const profileNames: Record<Profile, string> = {
   [Profile.HIGH]: 'high',
 };
 
+/**
+ * Gets the name of a h264 profile.
+ */
 export function getProfileName(profile: Profile): string {
   return profileNames[profile];
 }
@@ -51,7 +57,7 @@ export enum Level {
   LV62 = 62,
 }
 
-export const Levels = Object.values(Level)
+export const LEVELS = Object.values(Level)
                           .filter((x): x is Level => typeof x === 'number')
                           .sort((a, b) => a - b);
 
@@ -62,8 +68,9 @@ export interface EncoderParameters {
 }
 
 const levelLimits = (() => {
-  const limit = (processRate: number, frameSize: number, mainBitrate: number) =>
-      ({processRate, frameSize, mainBitrate});
+  function limit(processRate: number, frameSize: number, mainBitrate: number) {
+    return {processRate, frameSize, mainBitrate};
+  }
   return {
     [Level.LV30]: limit(40500, 1620, 10000),
     [Level.LV31]: limit(108000, 3600, 14000),
@@ -93,8 +100,9 @@ export function getMaxBitrate(profile: Profile, level: Level): number {
         return mainBitrate;
       case Profile.HIGH:
         return Math.floor(mainBitrate * 5 / 4);
+      default:
+        assertNotReached();
     }
-    assertNotReached();
   })();
   return kbs * 1000;
 }
@@ -124,7 +132,7 @@ export function checkLevelLimits(
 export function getMinimalLevel(
     profile: Profile, bitrate: number, fps: number,
     resolution: Resolution): Level|null {
-  for (const level of Levels) {
+  for (const level of LEVELS) {
     if (checkLevelLimits(level, fps, resolution) &&
         getMaxBitrate(profile, level) >= bitrate) {
       return level;

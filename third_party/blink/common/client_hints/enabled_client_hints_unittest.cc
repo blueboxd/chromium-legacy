@@ -4,6 +4,7 @@
 
 #include "third_party/blink/public/common/client_hints/enabled_client_hints.h"
 
+#include "absl/types/optional.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/test/scoped_feature_list.h"
 #include "net/base/features.h"
@@ -43,8 +44,12 @@ void VerifyClientHintEnabledWithOriginTrialTokenInner(
     const WebClientHintsType client_hint_type,
     bool expected_client_hint_enabled) {
   AddHeader(response_headers, "Origin-Trial", token);
+  absl::optional<GURL> maybe_third_party_url;
+  if (third_party_url)
+    maybe_third_party_url = absl::make_optional(*third_party_url);
+
   EnabledClientHints hints;
-  hints.SetIsEnabled(GURL(kOriginUrl), third_party_url, response_headers,
+  hints.SetIsEnabled(GURL(kOriginUrl), maybe_third_party_url, response_headers,
                      client_hint_type, true);
   EXPECT_TRUE(hints.IsEnabled(client_hint_type) ==
               expected_client_hint_enabled);
@@ -377,10 +382,10 @@ TEST_P(PartitionedCookiesEnabledClientHintsTest,
   // The Origin Trial token expires in 2033.  Generate a new token by then, or
   // find a better way to re-generate a test trial token.
   static constexpr char kValidOriginTrialToken[] =
-      "A4s/"
-      "iPKfhEfgqQIIuz4zLuCpONpXOuYyJFBhBx1MfgS1aNhFujyhsg4lkfTRfjzQCI3aUbMwtNm2"
-      "5elLTR4UIgAAAABceyJvcmlnaW4iOiAiaHR0cHM6Ly8xMjcuMC4wLjE6NDQ0NDQiLCAiZmVh"
-      "dHVyZSI6ICJQYXJ0aXRpb25lZENvb2tpZXMiLCAiZXhwaXJ5IjogMjAwMDAwMDAwMH0=";
+      "A1ZeT+cUjeN+YRlvnoNP67cBtEZqx9Z4Gx/AmfsCIHvyULWM6t12q1Kd6YWHdMtF/"
+      "eC6MYGv0GMwIZo2J380WQ0AAABceyJvcmlnaW4iOiAiaHR0cHM6Ly8xMjcuMC4wLjE6NDQ0N"
+      "DQiLCAiZmVhdHVyZSI6ICJQYXJ0aXRpb25lZENvb2tpZXMiLCAiZXhwaXJ5IjogMTY0ODE2M"
+      "jU4Mn0=";
 
   VerifyClientHintEnabledWithOriginTrialToken(
       kValidOriginTrialToken,
@@ -392,10 +397,10 @@ TEST_P(PartitionedCookiesEnabledClientHintsTest,
        EnabledPartitionedCookiesClientHintWithInvalidOriginTrialToken) {
   // Changed the first character of the token in the last test.
   static constexpr char kValidOriginTrialToken[] =
-      "B4s/"
-      "iPKfhEfgqQIIuz4zLuCpONpXOuYyJFBhBx1MfgS1aNhFujyhsg4lkfTRfjzQCI3aUbMwtNm2"
-      "5elLTR4UIgAAAABceyJvcmlnaW4iOiAiaHR0cHM6Ly8xMjcuMC4wLjE6NDQ0NDQiLCAiZmVh"
-      "dHVyZSI6ICJQYXJ0aXRpb25lZENvb2tpZXMiLCAiZXhwaXJ5IjogMjAwMDAwMDAwMH0=";
+      "B1ZeT+cUjeN+YRlvnoNP67cBtEZqx9Z4Gx/AmfsCIHvyULWM6t12q1Kd6YWHdMtF/"
+      "eC6MYGv0GMwIZo2J380WQ0AAABceyJvcmlnaW4iOiAiaHR0cHM6Ly8xMjcuMC4wLjE6NDQ0N"
+      "DQiLCAiZmVhdHVyZSI6ICJQYXJ0aXRpb25lZENvb2tpZXMiLCAiZXhwaXJ5IjogMTY0ODE2M"
+      "jU4Mn0=";
 
   VerifyClientHintEnabledWithOriginTrialToken(
       kValidOriginTrialToken,

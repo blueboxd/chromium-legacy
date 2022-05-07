@@ -14,6 +14,7 @@
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_audio_focus_id_map.h"
+#include "chrome/browser/web_applications/web_app_launch_queue.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "content/public/browser/media_session.h"
@@ -56,6 +57,14 @@ bool WebAppTabHelper::HasLoadedNonAboutBlankPage() const {
   return has_loaded_non_about_blank_page_;
 }
 
+WebAppLaunchQueue& WebAppTabHelper::EnsureLaunchQueue() {
+  if (!launch_queue_) {
+    launch_queue_ = std::make_unique<WebAppLaunchQueue>(web_contents(),
+                                                        provider_->registrar());
+  }
+  return *launch_queue_;
+}
+
 void WebAppTabHelper::SetAppId(const AppId& app_id) {
   DCHECK(app_id.empty() || provider_->registrar().IsInstalled(app_id));
   if (app_id_ == app_id)
@@ -69,9 +78,6 @@ void WebAppTabHelper::SetAppId(const AppId& app_id) {
 
 void WebAppTabHelper::ReadyToCommitNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (navigation_handle->IsInPrimaryMainFrame()) {
     const GURL& url = navigation_handle->GetURL();
     const AppId app_id = FindAppIdWithUrlInScope(url);
@@ -89,9 +95,6 @@ void WebAppTabHelper::ReadyToCommitNavigation(
 
 void WebAppTabHelper::DidFinishNavigation(
     content::NavigationHandle* navigation_handle) {
-  // TODO(https://crbug.com/1218946): With MPArch there may be multiple main
-  // frames. This caller was converted automatically to the primary main frame
-  // to preserve its semantics. Follow up to confirm correctness.
   if (!navigation_handle->IsInPrimaryMainFrame() ||
       !navigation_handle->HasCommitted())
     return;

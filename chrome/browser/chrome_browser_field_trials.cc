@@ -38,7 +38,7 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chromeos/services/multidevice_setup/public/cpp/first_run_field_trial.h"
+#include "ash/services/multidevice_setup/public/cpp/first_run_field_trial.h"
 #endif
 
 namespace {
@@ -91,7 +91,7 @@ void ChromeBrowserFieldTrials::SetUpFeatureControllingFieldTrials(
     CreateFallbackSamplingTrialIfNeeded(feature_list);
     CreateFallbackUkmSamplingTrialIfNeeded(feature_list);
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    chromeos::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
+    ash::multidevice_setup::CreateFirstRunFieldTrial(feature_list);
 #endif
   }
 }

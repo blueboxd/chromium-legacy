@@ -199,6 +199,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/services/cros_dbus_service.h"
+#include "chromeos/dbus/session_manager/fake_session_manager_client.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/dbus/userdataauth/fake_userdataauth_client.h"
 #include "chromeos/dbus/util/version_loader.h"
@@ -288,6 +289,12 @@ void ApplySigninProfileModifications(Profile* profile) {
   auto* prefs = profile->GetPrefs();
 
   prefs->SetBoolean(::prefs::kSafeBrowsingEnabled, false);
+}
+
+void FakeSessionStopped() {
+  // Session manager would ask Chrome to exit. Fake this behavior.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(&chrome::ExitIgnoreUnloadHandlers));
 }
 
 }  // namespace
@@ -613,6 +620,8 @@ int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
   CHECK(DBusThreadManager::IsInitialized());
 
 #if !defined(USE_REAL_DBUS_CLIENTS)
+  // USE_REAL_DBUS clients may be undefined even if the device is using reals
+  // dbus clients.
   if (!base::SysInfo::IsRunningOnChromeOS()) {
     if (parsed_command_line().HasSwitch(
             switches::kFakeDriveFsLauncherChrootPath) &&
@@ -628,6 +637,12 @@ int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
     base::FilePath user_data_dir;
     base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
     FakeUserDataAuthClient::Get()->set_user_data_dir(user_data_dir);
+
+    chromeos::FakeSessionManagerClient* fake_session_manager_client =
+        chromeos::FakeSessionManagerClient::Get();
+    DCHECK(fake_session_manager_client);
+    fake_session_manager_client->set_stop_session_callback(
+        base::BindOnce(&FakeSessionStopped));
   }
 #endif  // !defined(USE_REAL_DBUS_CLIENTS)
 
@@ -953,6 +968,12 @@ void ChromeBrowserMainPartsAsh::PreProfileInit() {
     std::string user_id_hash =
         parsed_command_line().GetSwitchValueASCII(switches::kLoginProfile);
 
+    if (BrowserDataMigratorImpl::MaybeForceResumeMoveMigration(
+            g_browser_process->local_state(), account_id, user_id_hash)) {
+      LOG(WARNING) << "Restarting chrome to resume move migration.";
+      return;
+    }
+
     if (BrowserDataMigratorImpl::MaybeRestartToMigrate(
             account_id, user_id_hash,
             crosapi::browser_util::PolicyInitState::kBeforeInit)) {
@@ -1210,7 +1231,8 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
         std::make_unique<device_activity::DeviceActivityController>();
 
     device_activity_controller_->Start(
-        device_activity::Trigger::kNetwork, g_browser_process->local_state(),
+        device_activity::Trigger::kNetwork, chrome::GetChannel(),
+        g_browser_process->local_state(),
         g_browser_process->system_network_context_manager()
             ->GetSharedURLLoaderFactory());
   }
@@ -1287,20 +1309,18 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
     firmware_update_manager_->RequestAllUpdates();
   }
 
-  if (features::IsPciguardUiEnabled()) {
-    // The local_state pref may not be available at this stage of Chrome's
-    // lifecycle, default to false for now. The actual state will be set in a
-    // later initializer.
-    PeripheralNotificationManager::Initialize(
-        user_manager::UserManager::Get()->IsLoggedInAsGuest(),
-        /*initial_state=*/false);
-    Shell::Get()
-        ->pcie_peripheral_notification_controller()
-        ->OnPeripheralNotificationManagerInitialized();
-    Shell::Get()
-        ->usb_peripheral_notification_controller()
-        ->OnPeripheralNotificationManagerInitialized();
-  }
+  // The local_state pref may not be available at this stage of Chrome's
+  // lifecycle, default to false for now. The actual state will be set in a
+  // later initializer.
+  PeripheralNotificationManager::Initialize(
+      user_manager::UserManager::Get()->IsLoggedInAsGuest(),
+      /*initial_state=*/false);
+  Shell::Get()
+      ->pcie_peripheral_notification_controller()
+      ->OnPeripheralNotificationManagerInitialized();
+  Shell::Get()
+      ->usb_peripheral_notification_controller()
+      ->OnPeripheralNotificationManagerInitialized();
 
   crostini_unsupported_action_notifier_ =
       std::make_unique<crostini::CrostiniUnsupportedActionNotifier>();

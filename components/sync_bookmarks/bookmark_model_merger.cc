@@ -12,6 +12,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/trace_event.h"
@@ -19,10 +20,12 @@
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/protocol/bookmark_specifics.pb.h"
+#include "components/sync/protocol/entity_metadata.pb.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync_bookmarks/bookmark_specifics_conversions.h"
 #include "components/sync_bookmarks/switches.h"
 #include "components/sync_bookmarks/synced_bookmark_tracker.h"
+#include "components/sync_bookmarks/synced_bookmark_tracker_entity.h"
 #include "ui/base/models/tree_node_iterator.h"
 
 using syncer::EntityData;
@@ -409,8 +412,7 @@ int GetNumUnsyncedEntities(const SyncedBookmarkTracker* tracker) {
   DCHECK(tracker);
 
   int num_unsynced_entities = 0;
-  for (const SyncedBookmarkTracker::Entity* entity :
-       tracker->GetAllEntities()) {
+  for (const SyncedBookmarkTrackerEntity* entity : tracker->GetAllEntities()) {
     if (entity->IsUnsynced()) {
       ++num_unsynced_entities;
     }
@@ -520,8 +522,7 @@ BookmarkModelMerger::RemoteTreeNode::BuildTree(
   }
 
   // Sort the children according to their unique position.
-  std::sort(node.children_.begin(), node.children_.end(),
-            UniquePositionLessThan);
+  base::ranges::sort(node.children_, UniquePositionLessThan);
 
   return node;
 }
@@ -719,16 +720,14 @@ BookmarkModelMerger::FindGuidMatchesOrReassignLocal(
       continue;
     }
 
-    bool success =
+    const bool success =
         guid_to_match_map.emplace(node->guid(), GuidMatch{node, remote_node})
             .second;
 
     // Insertion must have succeeded unless there were duplicate GUIDs in the
     // local BookmarkModel (invariant violation that gets resolved upon
     // restart).
-    // TODO(crbug.com/516866): The below CHECK is added to debug some crashes.
-    // Should be converted to a DCHECK after the root cause if found.
-    CHECK(success);
+    DCHECK(success);
   }
 
   for (const bookmarks::BookmarkNode* node : nodes_to_replace_guid) {
@@ -743,7 +742,7 @@ void BookmarkModelMerger::MergeSubtree(
     const bookmarks::BookmarkNode* local_subtree_root,
     const RemoteTreeNode& remote_node) {
   const EntityData& remote_update_entity = remote_node.entity();
-  const SyncedBookmarkTracker::Entity* entity = bookmark_tracker_->Add(
+  const SyncedBookmarkTrackerEntity* entity = bookmark_tracker_->Add(
       local_subtree_root, remote_update_entity.id,
       remote_node.response_version(), remote_update_entity.creation_time,
       remote_update_entity.specifics);
@@ -899,7 +898,7 @@ void BookmarkModelMerger::ProcessRemoteCreation(
       CreateBookmarkNodeFromSpecifics(specifics.bookmark(), local_parent, index,
                                       bookmark_model_, favicon_service_);
   DCHECK(bookmark_node);
-  const SyncedBookmarkTracker::Entity* entity = bookmark_tracker_->Add(
+  const SyncedBookmarkTrackerEntity* entity = bookmark_tracker_->Add(
       bookmark_node, remote_update_entity.id, remote_node.response_version(),
       remote_update_entity.creation_time, specifics);
   const bool is_reupload_needed =
@@ -933,7 +932,7 @@ void BookmarkModelMerger::ProcessLocalCreation(
     const bookmarks::BookmarkNode* parent,
     size_t index) {
   DCHECK_LE(index, parent->children().size());
-  const SyncedBookmarkTracker::Entity* parent_entity =
+  const SyncedBookmarkTrackerEntity* parent_entity =
       bookmark_tracker_->GetEntityForBookmarkNode(parent);
   // Since we are merging top down, parent entity must be tracked.
   DCHECK(parent_entity);
@@ -958,7 +957,7 @@ void BookmarkModelMerger::ProcessLocalCreation(
       GenerateUniquePositionForLocalCreation(parent, index, suffix);
   const sync_pb::EntitySpecifics specifics = CreateSpecificsFromBookmarkNode(
       node, bookmark_model_, pos.ToProto(), /*force_favicon_load=*/true);
-  const SyncedBookmarkTracker::Entity* entity = bookmark_tracker_->Add(
+  const SyncedBookmarkTrackerEntity* entity = bookmark_tracker_->Add(
       node, sync_id, server_version, creation_time, specifics);
   // Mark the entity that it needs to be committed.
   bookmark_tracker_->IncrementSequenceNumber(entity);
@@ -1039,7 +1038,7 @@ BookmarkModelMerger::GenerateUniquePositionForLocalCreation(
   // one as it might be skipped if it has unprocessed remote matching by GUID
   // update.
   for (size_t i = index; i > 0; --i) {
-    const SyncedBookmarkTracker::Entity* predecessor_entity =
+    const SyncedBookmarkTrackerEntity* predecessor_entity =
         bookmark_tracker_->GetEntityForBookmarkNode(
             parent->children()[i - 1].get());
     if (predecessor_entity != nullptr) {

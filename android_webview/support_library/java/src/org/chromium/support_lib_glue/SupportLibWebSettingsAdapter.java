@@ -132,6 +132,27 @@ class SupportLibWebSettingsAdapter implements WebSettingsBoundaryInterface {
     }
 
     @Override
+    public void setAlgorithmicDarkeningAllowed(boolean allow) {
+        if (!AwDarkMode.isSimplifiedDarkModeEnabled()) {
+            Log.w(TAG,
+                    "setAlgorithmicDarkeningAllowed() is a no-op in an app with"
+                            + "targetSdkVersion<T");
+            return;
+        }
+        mAwSettings.setAlgorithmicDarkeningAllowed(allow);
+    }
+
+    @Override
+    public boolean isAlgorithmicDarkeningAllowed() {
+        if (!AwDarkMode.isSimplifiedDarkModeEnabled()) {
+            Log.w(TAG,
+                    "isAlgorithmicDarkeningAllowed() is a no-op in an app with targetSdkVersion<T");
+            return false;
+        }
+        return mAwSettings.isAlgorithmicDarkeningAllowed();
+    }
+
+    @Override
     public void setWebAuthnSupport(int support) {
         // Currently a no-op while this functionality is built out.
     }
@@ -140,5 +161,32 @@ class SupportLibWebSettingsAdapter implements WebSettingsBoundaryInterface {
     public int getWebAuthnSupport() {
         // Currently a no-op while this functionality is built out.
         return WebAuthnSupport.NONE;
+    }
+
+    @Override
+    public void setRequestedWithHeaderMode(int mode) {
+        recordApiCall(ApiCall.WEB_SETTINGS_SET_REQUESTED_WITH_HEADER_MODE);
+        switch (mode) {
+            case RequestedWithHeaderMode.NO_HEADER:
+                mAwSettings.setRequestedWithHeaderMode(AwSettings.REQUESTED_WITH_NO_HEADER);
+                break;
+            case RequestedWithHeaderMode.APP_PACKAGE_NAME:
+                mAwSettings.setRequestedWithHeaderMode(AwSettings.REQUESTED_WITH_APP_PACKAGE_NAME);
+                break;
+        }
+    }
+
+    @Override
+    public int getRequestedWithHeaderMode() {
+        recordApiCall(ApiCall.WEB_SETTINGS_GET_REQUESTED_WITH_HEADER_MODE);
+        // The AwSettings.REQUESTED_WITH_CONSTANT_WEBVIEW setting is intended to be internal
+        // and for testing only, so it will not be mapped in the public API.
+        switch (mAwSettings.getRequestedWithHeaderMode()) {
+            case AwSettings.REQUESTED_WITH_NO_HEADER:
+                return RequestedWithHeaderMode.NO_HEADER;
+            case AwSettings.REQUESTED_WITH_APP_PACKAGE_NAME:
+                return RequestedWithHeaderMode.APP_PACKAGE_NAME;
+        }
+        return RequestedWithHeaderMode.APP_PACKAGE_NAME;
     }
 }

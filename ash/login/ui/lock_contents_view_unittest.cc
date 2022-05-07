@@ -57,6 +57,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/test/event_generator.h"
@@ -169,6 +170,21 @@ class LockContentsViewUnitTest : public LoginTestBase {
     LoginUserView* user_view = view->GetUserView();
     generator->MoveMouseTo(user_view->GetBoundsInScreen().CenterPoint());
     generator->ClickLeftButton();
+  }
+
+  void VerifyUpdatingSmartLockStateSetsAuthMethod(
+      LoginBigUserView* view,
+      SmartLockState smart_lock_state,
+      bool should_have_auth_method) {
+    ASSERT_TRUE(view);
+    LoginAuthUserView* auth_user_view = view->auth_user();
+    ASSERT_TRUE(auth_user_view);
+    LoginAuthUserView::TestApi test_api(auth_user_view);
+    AccountId account_id = view->GetCurrentUser().basic_user_info.account_id;
+
+    DataDispatcher()->SetSmartLockState(account_id, smart_lock_state);
+    EXPECT_EQ(should_have_auth_method,
+              test_api.HasAuthMethod(LoginAuthUserView::AUTH_SMART_LOCK));
   }
 };
 
@@ -3098,6 +3114,87 @@ TEST_F(LockContentsViewUnitTest, ToggleGaiaOnUsersChanged) {
   EXPECT_CALL(*client, ShowGaiaSignin(_)).Times(1);
   AddUsers(0);
   Mock::VerifyAndClearExpectations(client.get());
+}
+
+TEST_F(LockContentsViewUnitTest, UpdatingSmartLockStateSetsAuthMethod) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kSmartLockUIRevamp);
+  // Build login screen with 1 user.
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLogin,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  AddUsers(1);
+  SetWidget(CreateWidgetWithContent(contents));
+  LoginBigUserView* big_view =
+      LockContentsView::TestApi(contents).primary_big_view();
+
+  std::pair<SmartLockState, bool> state_and_is_auth_method_expected[] = {
+      {SmartLockState::kDisabled, false},
+      {SmartLockState::kInactive, false},
+      {SmartLockState::kBluetoothDisabled, true},
+      {SmartLockState::kPhoneNotLockable, true},
+      {SmartLockState::kPhoneNotFound, true},
+      {SmartLockState::kConnectingToPhone, true},
+      {SmartLockState::kPhoneNotAuthenticated, true},
+      {SmartLockState::kPhoneFoundLockedAndDistant, true},
+      {SmartLockState::kPhoneFoundLockedAndProximate, true},
+      {SmartLockState::kPhoneFoundUnlockedAndDistant, true},
+      {SmartLockState::kPhoneAuthenticated, true},
+      {SmartLockState::kPasswordReentryRequired, true},
+      {SmartLockState::kPrimaryUserAbsent, true}
+
+  };
+
+  for (const auto& it : state_and_is_auth_method_expected) {
+    VerifyUpdatingSmartLockStateSetsAuthMethod(
+        big_view, /*smart_lock_state=*/it.first,
+        /*should_have_auth_method=*/it.second);
+  }
+}
+
+TEST_F(LockContentsViewUnitTest, SmartLockStateHidesPasswordView) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kSmartLockUIRevamp);
+  ui::ScopedAnimationDurationScaleMode non_zero_duration_mode(
+      ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
+
+  // Build login screen with 1 user.
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLogin,
+      DataDispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(DataDispatcher()));
+  LockContentsView::TestApi test_api(contents);
+  AddUsers(1);
+  const AccountId account_id = test_api.users()[0].account_id;
+  SetWidget(CreateWidgetWithContent(contents));
+  LoginBigUserView* big_view =
+      LockContentsView::TestApi(contents).primary_big_view();
+  ASSERT_TRUE(big_view);
+  LoginAuthUserView* auth_user_view = big_view->auth_user();
+  ASSERT_TRUE(auth_user_view);
+
+  EXPECT_TRUE(auth_user_view->password_view()->GetVisible());
+
+  // Check that password view is still visible when auth
+  // factor is in kReady state.
+  DataDispatcher()->SetSmartLockState(
+      account_id, SmartLockState::kPhoneFoundLockedAndProximate);
+  EXPECT_TRUE(auth_user_view->password_view()->GetVisible());
+
+  // Check that password view is no longer visible when auth
+  // factor is in kClickRequired state.
+  DataDispatcher()->SetSmartLockState(account_id,
+                                      SmartLockState::kPhoneAuthenticated);
+  EXPECT_FALSE(auth_user_view->password_view()->GetVisible());
+
+  // Check that password view becomes visible when auth
+  // factor is in kErrorPermanent state.
+  DataDispatcher()->SetSmartLockState(account_id,
+                                      SmartLockState::kPasswordReentryRequired);
+  EXPECT_TRUE(auth_user_view->password_view()->GetVisible());
 }
 
 }  // namespace ash

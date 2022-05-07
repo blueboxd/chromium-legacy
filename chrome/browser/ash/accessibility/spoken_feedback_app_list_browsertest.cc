@@ -217,7 +217,7 @@ class SpokenFeedbackAppListBaseTest
   void ReadWindowTitle() {
     extensions::browsertest_util::ExecuteScriptInBackgroundPageNoWait(
         browser()->profile(), extension_misc::kChromeVoxExtensionId,
-        "CommandHandler.onCommand('readCurrentTitle');");
+        "CommandHandlerInterface.instance.onCommand('readCurrentTitle');");
   }
 
   AppListItem* FindItemByName(const std::string& name, int* index) {
@@ -1454,8 +1454,14 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListProductivityLauncherTest,
   sm_.Replay();
 }
 
+// This test is flaky on chromeos: http://crbug.com/1300248
+#if BUILDFLAG(IS_CHROMEOS)
+#define MAYBE_LauncherSearchInClamshell DISABLED_LauncherSearchInClamshell
+#else
+#define MAYBE_LauncherSearchInClamshell LauncherSearchInClamshell
+#endif
 IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListSearchProductivityLauncherTest,
-                       LauncherSearchInClamshell) {
+                       MAYBE_LauncherSearchInClamshell) {
   EnableChromeVox();
 
   // Focus the shelf. This selects the launcher button.
@@ -1668,9 +1674,6 @@ IN_PROC_BROWSER_TEST_P(SpokenFeedbackAppListSearchProductivityLauncherTest,
 
   sm_.ExpectSpeech("A");
   sm_.ExpectSpeech("app 0");
-  sm_.ExpectSpeech("List item 1 of 3");
-  sm_.ExpectSpeech("Apps");
-  sm_.ExpectSpeech("List box");
 
   // Verify traversal works after result change.
   for (int i = 1; i < 3; ++i) {

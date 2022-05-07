@@ -618,7 +618,6 @@
 <translation id="5170206230005240598">Брайловите надписи са активирани</translation>
 <translation id="5183440668879371625">Предишен ред на брайловото писмо</translation>
 <translation id="5189244881767082992">Ред</translation>
-<translation id="5234747236692380506">въвеждане на „<ph name="TEXT" />“</translation>
 <translation id="5263034204789987535">бледожълто</translation>
 <translation id="5263344797180442561">заглавие от второ ниво</translation>
 <translation id="528468243742722775">Край</translation>
@@ -794,6 +793,7 @@
 <translation id="641759969622533235">{COUNT,plural, =1{двоеточие}other{# двоеточия}}</translation>
 <translation id="6444046323172968959">Диалогов прозорец със сигнал</translation>
 <translation id="6452403590345320472">Съдържание</translation>
+<translation id="6457542714329819968">въвеждане</translation>
 <translation id="6468049171101508116">Следващият бутон</translation>
 <translation id="646954774886932461">Показалец</translation>
 <translation id="6475604559827479857">Цвят за открояване на думи:</translation>

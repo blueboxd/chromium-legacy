@@ -42,6 +42,8 @@
 #import "ios/chrome/browser/web/web_navigation_browser_agent.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/follow/follow_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -56,16 +58,10 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 }
 }  // namespace
 
-#if !TARGET_OS_MACCATALYST
 @interface PopupMenuCoordinator () <PopupMenuCommands,
                                     PopupMenuPresenterDelegate,
                                     UIPopoverPresentationControllerDelegate,
                                     UISheetPresentationControllerDelegate>
-#else
-@interface PopupMenuCoordinator () <PopupMenuCommands,
-                                    PopupMenuPresenterDelegate,
-                                    UIPopoverPresentationControllerDelegate>
-#endif
 
 // Presenter for the popup menu, managing the animations.
 @property(nonatomic, strong) PopupMenuPresenter* presenter;
@@ -268,7 +264,6 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
 
   // Create the overflow menu mediator first so the popup mediator isn't created
   // if not needed.
-#if !TARGET_OS_MACCATALYST
   if (type == PopupMenuTypeToolsMenu && IsNewOverflowMenuEnabled()) {
     if (@available(iOS 15, *)) {
       self.overflowMenuMediator = [[OverflowMenuMediator alloc] init];
@@ -294,12 +289,17 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
           overlayPresenter;
       self.overflowMenuMediator.browserPolicyConnector =
           GetApplicationContext()->GetBrowserPolicyConnector();
-      self.overflowMenuMediator.followActionState =
-          IsWebChannelsEnabled()
-              ? GetFollowActionState(
-                    self.browser->GetWebStateList()->GetActiveWebState(),
-                    self.browser->GetBrowserState())
-              : FollowActionStateHidden;
+
+      if (IsWebChannelsEnabled()) {
+        self.overflowMenuMediator.followActionState = GetFollowActionState(
+            self.browser->GetWebStateList()->GetActiveWebState(),
+            self.browser->GetBrowserState());
+        ios::GetChromeBrowserProvider()
+            .GetFollowProvider()
+            ->SetFollowEventDelegate(self.browser);
+      } else {
+        self.overflowMenuMediator.followActionState = FollowActionStateHidden;
+      }
 
       self.contentBlockerMediator.consumer = self.overflowMenuMediator;
 
@@ -346,7 +346,6 @@ PopupMenuCommandType CommandTypeFromPopupType(PopupMenuType type) {
       return;
     }
   }
-#endif
 
   self.mediator = [[PopupMenuMediator alloc]
                    initWithType:type

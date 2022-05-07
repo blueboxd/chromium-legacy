@@ -33,7 +33,7 @@ class MockGooglePhotosAlbumsFetcher : public GooglePhotosAlbumsFetcher {
 
   MOCK_METHOD(GooglePhotosAlbumsCbkArgs,
               ParseResponse,
-              (absl::optional<base::Value> response),
+              (const base::Value::Dict* response),
               (override));
 };
 
@@ -57,7 +57,32 @@ class MockGooglePhotosCountFetcher : public GooglePhotosCountFetcher {
 
   MOCK_METHOD(int,
               ParseResponse,
-              (absl::optional<base::Value> response),
+              (const base::Value::Dict* response),
+              (override));
+};
+
+// Fetcher that claims the user is allowed to access Google Photos data. Used to
+// avoid network requests in unit tests.
+class MockGooglePhotosEnabledFetcher : public GooglePhotosEnabledFetcher {
+ public:
+  explicit MockGooglePhotosEnabledFetcher(Profile* profile);
+
+  MockGooglePhotosEnabledFetcher(const MockGooglePhotosEnabledFetcher&) =
+      delete;
+  MockGooglePhotosEnabledFetcher& operator=(
+      const MockGooglePhotosEnabledFetcher&) = delete;
+
+  ~MockGooglePhotosEnabledFetcher() override;
+
+  // GooglePhotosEnabledFetcher:
+  MOCK_METHOD(void,
+              AddRequestAndStartIfNecessary,
+              (base::OnceCallback<void(GooglePhotosEnablementState)> callback),
+              (override));
+
+  MOCK_METHOD(GooglePhotosEnablementState,
+              ParseResponse,
+              (const base::Value::Dict* response),
               (override));
 };
 
@@ -85,7 +110,7 @@ class MockGooglePhotosPhotosFetcher : public GooglePhotosPhotosFetcher {
 
   MOCK_METHOD(GooglePhotosPhotosCbkArgs,
               ParseResponse,
-              (absl::optional<base::Value> response),
+              (const base::Value::Dict* response),
               (override));
 };
 

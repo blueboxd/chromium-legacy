@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {ENTRIES} from '../test_util.js';
+import {ENTRIES, TestEntryInfo} from '../test_util.js';
 
 /**
  * Extension ID of the Files app.
@@ -102,6 +102,17 @@ export const BASIC_CROSTINI_ENTRY_SET = [
   ENTRIES.hello,
   ENTRIES.world,
   ENTRIES.desktop,
+];
+
+/**
+ * Basic entry set for the local volume with a ZIP archive.
+ * @type {!Array<!TestEntryInfo>}
+ * @const
+ */
+export const BASIC_ZIP_ENTRY_SET = [
+  ENTRIES.hello,
+  ENTRIES.world,
+  ENTRIES.zipArchive,
 ];
 
 /**

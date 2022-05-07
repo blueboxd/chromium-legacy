@@ -84,6 +84,9 @@
     <output filename="values-zh-rHK/browser_ui_strings.xml" lang="zh-HK" type="android" />
     <output filename="values-zh-rTW/browser_ui_strings.xml" lang="zh-TW" type="android" />
     <output filename="values-zu/browser_ui_strings.xml" lang="zu" type="android" />
+    <!-- Pseudolocales -->
+    <output filename="values-ar-rXB/browser_ui_strings.xml" lang="ar-XB" type="android" />
+    <output filename="values-en-rXA/browser_ui_strings.xml" lang="en-XA" type="android" />
   </outputs>
   <translations>
     <file path="translations/browser_ui_strings_af.xtb" lang="af" />
@@ -225,6 +228,9 @@
       <message name="IDS_RELOAD" desc="Label for a button that reloads the page. Used in multiple contexts. [CHAR_LIMIT=20]">
         Reload
       </message>
+      <message name="IDS_REFRESH" desc="Tooltip on Android for the button to refresh the current web page. [CHAR_LIMIT=27]">
+        Refresh
+      </message>
       <message name="IDS_NO_THANKS" desc="Generic label to say no thanks for a feature. [CHAR_LIMIT=32]">
         No thanks
       </message>
@@ -263,6 +269,9 @@
       </message>
       <message name="IDS_SEARCH" desc="The label for a search button.">
         Search
+      </message>
+      <message name="IDS_SETTINGS" desc="Title for Chrome's Settings.">
+        Settings
       </message>
       <message name="IDS_SHOW_INFO" desc="The label for a info button to show info.">
         Show Info
@@ -581,13 +590,13 @@
         URL truncated
       </message>
       <message name="IDS_PAGE_INFO_AD_PERSONALIZATION_TITLE" desc="The title of the 'Ad personalization' section in Page Info.">
-          Ad personalization
+        Ad personalization
       </message>
       <message name="IDS_PAGE_AD_PERSONALIZATION_DESCRIPTION" desc="Description of a section in PageInfo that shows information on how the current site is using ad personalization APIs from the Privacy Sandbox.">
         This site gets your interests from Chrome to show you more relevant ads
       </message>
       <message name="IDS_PAGE_INFO_AD_MANAGE_INTERESTS" desc="The button label of the 'Manage interests' button in Page Info. The button opens a settings page to manage interests for the site.">
-          Manage interests
+        Manage interests
       </message>
 
       <message name="IDS_COOKIES_TITLE" desc="Title for the Cookies settings screen [CHAR_LIMIT=32]">
@@ -865,7 +874,7 @@
         Simplified view for web pages
       </message>
       <message name="IDS_READER_FOR_ACCESSIBILITY_SUMMARY" desc="Summary of preference that allows the user to use simplified view on any supported articles, even if the page is mobile-friendly.">
-        Get notified when a site can be shown in simplified view
+        Get notified when an article can be shown in simplified view
       </message>
       <message name="IDS_ACCESSIBILITY_TAB_SWITCHER_TITLE" desc="Title of preference that allows the user to use a simplified tab switcher that is accessibility friendly. The words 'Open tabs' should match translation in TC ID 3108541343994525384, provided that 'open' is correctly used as an adjective and not a verb.">
         Simplified view for open tabs

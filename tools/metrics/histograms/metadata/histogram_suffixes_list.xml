@@ -680,6 +680,20 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="Autofill.SaveCreditCardPromptResult.Upload"/>
 </histogram_suffixes>
 
+<histogram_suffixes name="AutofillSaveCreditCardPromptWithMultipleLegalLines"
+    separator=".">
+  <suffix name="WithMultipleLegalLines"
+      label="When legal message has multiple lines"/>
+  <affected-histogram name="Autofill.CreditCardInfoBar.Server"/>
+  <affected-histogram
+      name="Autofill.SaveCreditCardPromptOffer.Upload.FirstShow"/>
+  <affected-histogram name="Autofill.SaveCreditCardPromptOffer.Upload.Reshows"/>
+  <affected-histogram
+      name="Autofill.SaveCreditCardPromptResult.Upload.FirstShow"/>
+  <affected-histogram
+      name="Autofill.SaveCreditCardPromptResult.Upload.Reshows"/>
+</histogram_suffixes>
+
 <histogram_suffixes name="AutofillStoredCardHasNickname" separator=".">
   <owner>sujiezhu@google.com</owner>
   <owner>jsaul@google.com</owner>
@@ -1453,59 +1467,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="ContentSettings.Exceptions.cookies"/>
   <affected-histogram name="ContentSettings.Exceptions.popups"/>
   <affected-histogram name="ContentSettings.Exceptions.subresource-filter"/>
-</histogram_suffixes>
-
-<histogram_suffixes name="ContentSettingsType" separator=".">
-  <suffix name="app-banner" label="App banner exceptions"/>
-  <suffix name="auto-dark-web-content"
-      label="Auto-dark web contents exceptions"/>
-  <suffix name="auto-select-certificate" label="Auto-select cert exceptions"/>
-  <suffix name="automatic-downloads" label="Automatic downloads exceptions"/>
-  <suffix name="autoplay" label="Autoplay exception"/>
-  <suffix name="background-sync" label="Background sync exceptions"/>
-  <suffix name="bluetooth-chooser-data" label="Bluetooth chooser data"/>
-  <suffix name="bluetooth-guard" label="Bluetooth guard exceptions"/>
-  <suffix name="client-hints" label="Client hints"/>
-  <suffix name="cookies" label="Cookies exceptions"/>
-  <suffix name="display-capture" label="Display Capture Exceptions"/>
-  <suffix name="durable-storage" label="Durable Storage Exceptions"/>
-  <suffix name="fullscreen" label="Fullscreen exceptions"/>
-  <suffix name="geolocation" label="Geolocation exceptions"/>
-  <suffix name="hid-chooser-data" label="HID chooser data"/>
-  <suffix name="images" label="Images exceptions"/>
-  <suffix name="important-site-info" label="Important site info"/>
-  <suffix name="installed-web-app-metadata" label="Installed web app metadata"/>
-  <suffix name="javascript" label="JavaScript exceptions"/>
-  <suffix name="keygen" label="Keygen exceptions"/>
-  <suffix name="media-engagement" label="Media engagement exceptions"/>
-  <suffix name="media-stream-camera" label="Camera exceptions"/>
-  <suffix name="media-stream-mic" label="Microphone exceptions"/>
-  <suffix name="midi-sysex" label="Midi exceptions"/>
-  <suffix name="mixed-script" label="Mixed script exceptions"/>
-  <suffix name="mouselock" label="Mouse lock exceptions"/>
-  <suffix name="notifications" label="Notification exceptions"/>
-  <suffix name="password-protection" label="Password protection"/>
-  <suffix name="permission-autoblocking-data"
-      label="Permission autoblocking data"/>
-  <suffix name="permission-autorevocation-data"
-      label="Permission autorevocation data"/>
-  <suffix name="plugins" label="Plugins exceptions"/>
-  <suffix name="popups" label="Popups exceptions"/>
-  <suffix name="ppapi-broker" label="Ppapi broker exceptions"/>
-  <suffix name="protected-media-identifier" label="Protected media exceptions"/>
-  <suffix name="protocol-handler" label="Protocol handler exceptions"/>
-  <suffix name="push-messaging" label="Push messaging exceptions"/>
-  <suffix name="request-desktop-site" label="Request desktop site exceptions"/>
-  <suffix name="safe-browsing-url-check-data"
-      label="Safe browsing url check data"/>
-  <suffix name="serial-chooser-data" label="Serial chooser data"/>
-  <suffix name="site-engagement" label="Site engagement exceptions"/>
-  <suffix name="sound" label="Sound exceptions"/>
-  <suffix name="ssl-cert-decisions" label="SSL cert decisions exceptions"/>
-  <suffix name="subresource-filter" label="Subresource filter exceptions"/>
-  <suffix name="subresource-filter-data" label="Subresource filter data"/>
-  <suffix name="usb-chooser-data" label="USB chooser data exceptions"/>
-  <affected-histogram name="ContentSettings.Exceptions"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ContentSuggestionCategory" separator=".">
@@ -2777,10 +2738,7 @@ chromium-metrics-reviews@google.com.
   <suffix name="TOUCH_MOVED" label=""/>
   <suffix name="TOUCH_PRESSED" label=""/>
   <suffix name="TOUCH_RELEASED" label=""/>
-  <affected-histogram name="Event.Latency.OS"/>
   <affected-histogram name="Event.Latency.OS2"/>
-  <affected-histogram name="Event.Latency.OS_NO_VALIDATION.NEGATIVE"/>
-  <affected-histogram name="Event.Latency.OS_NO_VALIDATION.POSITIVE"/>
 </histogram_suffixes>
 
 <histogram_suffixes name="ExtensionsDatabaseRestore" separator=".">
@@ -7420,21 +7378,6 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="PerformanceHints.Observer.HintForURLResult"/>
 </histogram_suffixes>
 
-<histogram_suffixes name="PerformanceMonitor" separator=".">
-  <suffix name="BrowserProcess" label=""/>
-  <suffix name="GPUProcess" label=""/>
-  <suffix name="NetworkProcess" label=""/>
-  <suffix name="PluginProcess" label=""/>
-  <suffix name="PPAPIProcess" label=""/>
-  <suffix name="RendererExtensionEventProcess" label=""/>
-  <suffix name="RendererExtensionPersistentProcess" label=""/>
-  <suffix name="RendererProcess" label=""/>
-  <suffix name="Total" label=""/>
-  <suffix name="UtilityProcess" label=""/>
-  <suffix name="WorkerProcess" label=""/>
-  <affected-histogram name="PerformanceMonitor.AverageCPU"/>
-</histogram_suffixes>
-
 <histogram_suffixes name="PermissionRequestGesture" separator=".">
   <suffix name="Gesture" label="With user gesture"/>
   <suffix name="NoGesture" label="Without user gesture"/>
@@ -7473,6 +7416,7 @@ chromium-metrics-reviews@google.com.
 <histogram_suffixes name="PermissionTypes" separator=".">
   <suffix name="AR" label="AR permission actions"/>
   <suffix name="AudioCapture" label="Microphone permission actions"/>
+  <suffix name="CameraPanTiltZoom" label="Camera movements permission actions"/>
   <suffix name="ClipboardReadWrite" label="Clipboard permission actions"/>
   <suffix name="DisplayCapture" label="Display capture permission actions"/>
   <suffix name="Geolocation" label="Geolocation permission actions"/>
@@ -7918,6 +7862,14 @@ chromium-metrics-reviews@google.com.
   <suffix name="BlinkGC" label="Only counting Blink GC memory."/>
   <suffix name="BlinkGC.AllocatedObjects"
       label="Only counting objects allocated using Blink GC."/>
+  <suffix name="BlinkGC.Fragmentation"
+      label="Fragmentation of Blink GC."/>
+  <suffix name="BlinkGC.Main.Heap"
+      label="Only counting memory on Blink GC's main thread heap."/>
+  <suffix name="BlinkGC.Main.Heap.AllocatedObjects"
+      label="Only counting objects allocated in Blink GC's main thread heap."/>
+  <suffix name="BlinkGC.Main.Heap.Fragmentation"
+      label="Fragmentation of Blink GC's main thread heap."/>
   <suffix name="CommandBuffer"
       label="Only counting memory used by GL command buffers."/>
   <suffix name="Discardable"
@@ -10077,6 +10029,7 @@ chromium-metrics-reviews@google.com.
 <histogram_suffixes name="SoftwareReporterEngine" separator="_">
   <suffix name="ESET" label=""/>
   <suffix name="URZA" label=""/>
+  <affected-histogram name="SoftwareReporter.CreateJobResult"/>
   <affected-histogram name="SoftwareReporter.FoundUwSReadError"/>
   <affected-histogram name="SoftwareReporter.LogsUploadEnabled"/>
   <affected-histogram name="SoftwareReporter.LogsUploadResult"/>
@@ -10085,9 +10038,9 @@ chromium-metrics-reviews@google.com.
   <affected-histogram name="SoftwareReporter.MemoryUsed"/>
   <affected-histogram name="SoftwareReporter.MinorVersion"/>
   <affected-histogram name="SoftwareReporter.RunningTime"/>
-  <affected-histogram name="SoftwareReporter.RunningTimeAccordingToChrome"/>
+  <affected-histogram name="SoftwareReporter.RunningTimeAccordingToChrome2"/>
   <affected-histogram name="SoftwareReporter.RunningTimeRegistryError"/>
-  <affected-histogram name="SoftwareReporter.RunningTimeWithoutSleep"/>
+  <affected-histogram name="SoftwareReporter.RunningTimeWithoutSleep2"/>
   <affected-histogram name="SoftwareReporter.Step"/>
 </histogram_suffixes>
 

@@ -7,11 +7,14 @@
 #include <algorithm>
 
 #include "base/containers/contains.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_types.h"
+#include "components/history_clusters/core/config.h"
 #include "components/history_clusters/core/features.h"
 
 namespace history_clusters {
@@ -54,6 +57,8 @@ GetAnnotatedVisitsToCluster::~GetAnnotatedVisitsToCluster() = default;
 bool GetAnnotatedVisitsToCluster::RunOnDBThread(
     history::HistoryBackend* backend,
     history::HistoryDatabase* db) {
+  base::ElapsedThreadTimer query_visits_timer;
+
   history::QueryOptions options;
 
   // History Clusters wants a complete navigation graph and internally handles
@@ -70,7 +75,8 @@ bool GetAnnotatedVisitsToCluster::RunOnDBThread(
     // Provide a parameter-controlled hard-cap of the max visits to fetch.
     // Note in most cases we stop fetching visits far before reaching this
     // number. This is to prevent OOM errors. See https://crbug.com/1262016.
-    options.max_count = kMaxVisitsToCluster.Get() - annotated_visits_.size();
+    options.max_count =
+        GetConfig().max_visits_to_cluster - annotated_visits_.size();
 
     // Bound visits by `original_end_time_` and `begin_time_limit_`, fetching
     // the more recent visits 1st.
@@ -184,6 +190,10 @@ bool GetAnnotatedVisitsToCluster::RunOnDBThread(
                                        history::SOURCE_SYNCED;
                               }),
       annotated_visits_.end());
+
+  base::UmaHistogramTimes(
+      "History.Clusters.Backend.QueryAnnotatedVisits.ThreadTime",
+      query_visits_timer.Elapsed());
 
   return true;
 }

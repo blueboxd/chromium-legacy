@@ -29,6 +29,7 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kInputMethodSettingsUiUpdate;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kPercentBasedScrolling;
+COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsPercentBasedScrollingEnabled();
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kPointerLockOptions;
 COMPONENT_EXPORT(UI_BASE_FEATURES)
@@ -130,12 +131,23 @@ COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsDeprecateAltClickEnabled();
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kRgbKeyboard;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsRgbKeyboardEnabled();
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kShortcutCustomizationApp;
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 bool IsShortcutCustomizationAppEnabled();
 
-#endif
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kLacrosResourcesFileSharing;
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 // Indicates whether DrmOverlayManager should used the synchronous API to
 // perform pageflip tests.
@@ -199,6 +211,16 @@ extern const base::Feature kUiCompositorReleaseTileResourcesForHiddenLayers;
 
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kUiCompositorRequiredTilesOnly;
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kEnableVariableRefreshRate;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsVariableRefreshRateEnabled();
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kWaylandScreenCoordinatesEnabled;
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+bool IsWaylandScreenCoordinatesEnabled();
 
 }  // namespace features
 

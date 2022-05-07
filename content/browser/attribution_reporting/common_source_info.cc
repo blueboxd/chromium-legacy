@@ -4,20 +4,46 @@
 
 #include "content/browser/attribution_reporting/common_source_info.h"
 
+#include <utility>
+
 #include "base/check_op.h"
+#include "base/cxx17_backports.h"
 #include "net/base/schemeful_site.h"
 
 namespace content {
 
-CommonSourceInfo::CommonSourceInfo(uint64_t source_event_id,
-                                   url::Origin impression_origin,
-                                   url::Origin conversion_origin,
-                                   url::Origin reporting_origin,
-                                   base::Time impression_time,
-                                   base::Time expiry_time,
-                                   SourceType source_type,
-                                   int64_t priority,
-                                   absl::optional<uint64_t> debug_key)
+base::Time CommonSourceInfo::GetExpiryTime(
+    absl::optional<base::TimeDelta> declared_expiry,
+    base::Time impression_time,
+    AttributionSourceType source_type) {
+  constexpr base::TimeDelta kMinImpressionExpiry = base::Days(1);
+  constexpr base::TimeDelta kDefaultImpressionExpiry = base::Days(30);
+
+  // Default to the maximum expiry time.
+  base::TimeDelta expiry = declared_expiry.value_or(kDefaultImpressionExpiry);
+
+  // Expiry time for event sources must be a whole number of days.
+  if (source_type == AttributionSourceType::kEvent)
+    expiry = expiry.RoundToMultiple(base::Days(1));
+
+  // If the impression specified its own expiry, clamp it to the minimum and
+  // maximum.
+  return impression_time +
+         base::clamp(expiry, kMinImpressionExpiry, kDefaultImpressionExpiry);
+}
+
+CommonSourceInfo::CommonSourceInfo(
+    uint64_t source_event_id,
+    url::Origin impression_origin,
+    url::Origin conversion_origin,
+    url::Origin reporting_origin,
+    base::Time impression_time,
+    base::Time expiry_time,
+    AttributionSourceType source_type,
+    int64_t priority,
+    AttributionFilterData filter_data,
+    absl::optional<uint64_t> debug_key,
+    AttributionAggregatableSource aggregatable_source)
     : source_event_id_(source_event_id),
       impression_origin_(std::move(impression_origin)),
       conversion_origin_(std::move(conversion_origin)),
@@ -26,7 +52,9 @@ CommonSourceInfo::CommonSourceInfo(uint64_t source_event_id,
       expiry_time_(expiry_time),
       source_type_(source_type),
       priority_(priority),
-      debug_key_(debug_key) {
+      filter_data_(std::move(filter_data)),
+      debug_key_(debug_key),
+      aggregatable_source_(std::move(aggregatable_source)) {
   // 30 days is the max allowed expiry for an impression.
   DCHECK_GE(base::Days(30), expiry_time - impression_time);
   // The impression must expire strictly after it occurred.

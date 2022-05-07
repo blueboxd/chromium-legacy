@@ -6,8 +6,8 @@
 #define ASH_COMPONENTS_PROXIMITY_AUTH_PROXIMITY_AUTH_PROFILE_PREF_MANAGER_H_
 
 #include "ash/components/proximity_auth/proximity_auth_pref_manager.h"
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "base/memory/weak_ptr.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_change_registrar.h"
 
@@ -27,7 +27,7 @@ namespace proximity_auth {
 // user profile.
 class ProximityAuthProfilePrefManager
     : public ProximityAuthPrefManager,
-      public chromeos::multidevice_setup::MultiDeviceSetupClient::Observer {
+      public ash::multidevice_setup::MultiDeviceSetupClient::Observer {
  public:
   // Creates a pref manager backed by preferences registered in
   // |pref_service| (persistent across browser restarts). |pref_service| should
@@ -35,8 +35,7 @@ class ProximityAuthProfilePrefManager
   // instance.
   ProximityAuthProfilePrefManager(
       PrefService* pref_service,
-      chromeos::multidevice_setup::MultiDeviceSetupClient*
-          multidevice_setup_client);
+      ash::multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client);
 
   ProximityAuthProfilePrefManager(const ProximityAuthProfilePrefManager&) =
       delete;
@@ -70,10 +69,10 @@ class ProximityAuthProfilePrefManager
   void SetHasShownLoginDisabledMessage(bool has_shown) override;
   bool HasShownLoginDisabledMessage() const override;
 
-  // chromeos::multidevice_setup::MultiDeviceSetupClient::Observer:
+  // ash::multidevice_setup::MultiDeviceSetupClient::Observer:
   void OnFeatureStatesChanged(
-      const chromeos::multidevice_setup::MultiDeviceSetupClient::
-          FeatureStatesMap& feature_states_map) override;
+      const ash::multidevice_setup::MultiDeviceSetupClient::FeatureStatesMap&
+          feature_states_map) override;
 
  private:
   const base::DictionaryValue* GetRemoteBleDevices() const;
@@ -94,8 +93,8 @@ class ProximityAuthProfilePrefManager
   AccountId account_id_;
 
   // Used to determine the FeatureState of Smart Lock.
-  chromeos::multidevice_setup::MultiDeviceSetupClient*
-      multidevice_setup_client_ = nullptr;
+  ash::multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_ =
+      nullptr;
 
   base::WeakPtrFactory<ProximityAuthProfilePrefManager> weak_ptr_factory_{this};
 };

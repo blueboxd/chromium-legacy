@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Poboljšajte Chrome šaljući Googleu statistike upotrebe i izvješća o rušenju.</translation>
 <translation id="417201473131094001">Nije podržano u Chrome Canaryju</translation>
 <translation id="4214277427269650960">Prijavite se na ovu web-lokaciju i Chrome. Sinkronizaciju možete uključiti kasnije.</translation>
+<translation id="4233521129555661685">Korisnik <ph name="USER_EMAIL1" /> upotrebljavao je Chrome i ostavio oznake, zaporke i druge postavke na ovom uređaju.</translation>
 <translation id="424864128008805179">Želite li se odjaviti s Chromea?</translation>
 <translation id="4249068189593983585">Savjet za Chrome. Za više opcija za kartice dodirnite i držite gumb Prikaži kartice na alatnoj traci pri dnu ili vrhu zaslona.</translation>
 <translation id="4523886039239821078">Neki programski dodaci uzrokuju rušenje preglednika Chrome. Deinstalirajte:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome nije uspio provjeriti sve zaporke. Pokušajte ponovno sutra ili <ph name="BEGIN_LINK" />provjerite zaporke na svojem Google računu<ph name="END_LINK" />.</translation>
 <translation id="484033449593719797">Nije podržano u beta verziji Chromea</translation>
 <translation id="5030102366287574140">Chrome vam može pomoći da se bolje zaštitite od povrede podataka, nesigurnih web-lokacija i još mnogo toga.</translation>
+<translation id="5108659628347594808">Poboljšavanje Chromea</translation>
 <translation id="5119391094379141756">Odaberite Chrome</translation>
 <translation id="5162467219239570114">Chrome je zastario. Ako u <ph name="BEGIN_LINK" />trgovini aplikacija<ph name="END_LINK" /> nema dostupnih ažuriranja, postoji mogućnost da vaš uređaj više ne podržava nove verzije Chromea.</translation>
 <translation id="5389212809648216794">Google Chrome ne može upotrebljavati vaš fotoaparat jer ga upotrebljava neka druga aplikacija</translation>
@@ -81,6 +83,15 @@
 <translation id="6709398533399187136">Vaša je zaporka ugrožena zbog povrede podataka. Google upravitelj zaporki preporučuje da je odmah promijenite.</translation>
 <translation id="6822673484890854830">Chrome nije uspio provjeriti sve zaporke. Pokušajte ponovo kasnije.</translation>
 <translation id="6964931465519938134">Sad možete koristiti Chrome svaki put kad dodirnete veze u porukama, dokumentima i drugim aplikacijama.</translation>
+<translation id="7046845777663074840">Kada je uključeno:
+<ph name="BEGIN_INDENT" />  • Pomozite poboljšati Chrome za korisnike koji ga upotrebljavaju na isti način kao vi.<ph name="END_INDENT" />
+
+Važne napomene:
+<ph name="BEGIN_INDENT" />  • Podaci o upotrebi Chromea šalju se Googleu, no nisu povezani s vama.
+
+  • Ako se Chrome sruši, pojedinosti o rušenju mogu uključivati neke osobne podatke.
+
+  • Ako uključite sinkronizaciju, mjerni podaci mogu uključivati i podatke o URL-ovima koje posjetite.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Prilagodite Chrome sebi</translation>
 <translation id="7124339256045485976">Ažuriranje Chromea</translation>
 <translation id="7161390184744336561">Google Chrome je zastario</translation>

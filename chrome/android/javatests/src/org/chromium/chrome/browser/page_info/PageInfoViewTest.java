@@ -96,6 +96,7 @@ import org.chromium.url.GURL;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
@@ -312,6 +313,8 @@ public class PageInfoViewTest {
         // Choose a fixed, "random" port to create stable screenshots.
         mTestServerRule.setServerPort(424242);
         mTestServerRule.setServerUsesHttps(true);
+
+        PageInfoAdPersonalizationController.setTopicsForTesting(Arrays.asList("Testing topic"));
     }
 
     @After
@@ -330,6 +333,7 @@ public class PageInfoViewTest {
         clearPermissions();
         HistoryContentManager.setProviderForTests(null);
         PageInfoHistoryController.setProviderForTests(null);
+        PageInfoAdPersonalizationController.setTopicsForTesting(null);
     }
 
     /**
@@ -799,11 +803,11 @@ public class PageInfoViewTest {
         onViewWaiting(allOf(withText(R.string.page_info_ad_manage_interests), isDisplayed()))
                 .perform(click());
         // Check that settings are displayed.
-        onView(withText(R.string.privacy_sandbox_topic_interests_category))
+        onView(withText(R.string.privacy_sandbox_topic_interests_subtitle))
                 .check(matches(isDisplayed()));
         // Leave settings view.
         onView(withContentDescription("Navigate up")).perform(click());
-        onView(withText(R.string.privacy_sandbox_topic_interests_category)).check(doesNotExist());
+        onView(withText(R.string.privacy_sandbox_topic_interests_subtitle)).check(doesNotExist());
     }
 
     // TODO(1071762): Add tests for preview pages, offline pages, offline state and other states.

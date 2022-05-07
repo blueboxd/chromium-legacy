@@ -26,12 +26,12 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 namespace {
+
 const char kTestFeature[] = "testFeature";
+
 }  // namespace
 
 class SecureChannelSingleClientProxyImplTest : public testing::Test {
@@ -393,6 +393,4 @@ TEST_F(SecureChannelSingleClientProxyImplTest, RegisterPayloadFileFails) {
   EXPECT_FALSE(fake_file_payload_listener.is_connected());
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

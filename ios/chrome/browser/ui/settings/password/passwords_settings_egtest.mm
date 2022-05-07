@@ -13,6 +13,9 @@
 #include "base/time/time.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/base/features.h"
+#import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui_test_util.h"
+#import "ios/chrome/browser/ui/settings/google_services/manage_sync_settings_constants.h"
 #include "ios/chrome/browser/ui/settings/password/password_settings_app_interface.h"
 #import "ios/chrome/browser/ui/settings/password/passwords_table_view_constants.h"
 #import "ios/chrome/browser/ui/settings/settings_root_table_constants.h"
@@ -25,6 +28,8 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
+#import "ios/public/provider/chrome/browser/signin/fake_chrome_identity.h"
+#import "ios/testing/earl_grey/app_launch_manager.h"
 #import "ios/testing/earl_grey/earl_grey_test.h"
 #include "ios/web/public/test/element_selector.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -232,6 +237,52 @@ id<GREYMatcher> DuplicateCredentialViewPasswordButton() {
                     nullptr);
 }
 
+// Matcher for the "Set up…"
+GREYElementInteraction* SetUpTrustedVaultLink() {
+  return [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                              kOnDeviceEncryptionSetUpId),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)];
+}
+
+// Matcher for the link allowing to learn more about
+// on device encryption. Only present when the user has opted-in.
+GREYElementInteraction* OptedInTrustedVaultLink() {
+  return [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                              kOnDeviceEncryptionLearnMoreId),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)];
+}
+
+// Matcher for the link explaining Trusted Vault.
+// Only present when the user has opted-in.
+GREYElementInteraction* OptedInTrustedVaultText() {
+  return [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                              kOnDeviceEncryptionOptedInTextId),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)];
+}
+
+// Matcher for the text offering the user to opt-in trusted vault.
+GREYElementInteraction* OptInTrustedVaultLink() {
+  return [[EarlGrey
+      selectElementWithMatcher:grey_allOf(grey_accessibilityID(
+                                              kOnDeviceEncryptionOptInId),
+                                          grey_sufficientlyVisible(), nil)]
+         usingSearchAction:grey_scrollInDirection(kGREYDirectionDown,
+                                                  kScrollAmount)
+      onElementWithMatcher:grey_accessibilityID(kPasswordsTableViewId)];
+}
+
 // Matches the pop-up (call-out) menu item with accessibility label equal to the
 // translated string identified by |label|.
 id<GREYMatcher> PopUpMenuItemWithLabel(int label) {
@@ -352,6 +403,14 @@ id<GREYMatcher> EditDoneButton() {
 - (AppLaunchConfiguration)appConfigurationForTestCase {
   AppLaunchConfiguration config;
 
+  if ([self isRunningTest:@selector
+            (testNoOndeviceEncryptionSetupWhenSignedOut)]) {
+    config.features_enabled.push_back(syncer::kSyncTrustedVaultPassphrasePromo);
+  }
+  if ([self isRunningTest:@selector(testNoOndeviceEncryptionWithoutFlag)]) {
+    config.features_disabled.push_back(
+        syncer::kSyncTrustedVaultPassphrasePromo);
+  }
   if ([self isRunningTest:@selector(testToolbarAddPasswordButton)] ||
       [self isRunningTest:@selector(testNoAddButtonInEditMode)] ||
       [self isRunningTest:@selector(testAddNewPasswordCredential)] ||
@@ -364,6 +423,30 @@ id<GREYMatcher> EditDoneButton() {
   }
 
   return config;
+}
+
+// Verifies that a signed out account has no option related to
+// on device encryption.
+- (void)testNoOndeviceEncryptionWithoutFlag {
+  OpenPasswordSettings();
+
+  // Check that the menus related to on-device encryptions are not displayed.
+  [OptedInTrustedVaultLink() assertWithMatcher:grey_nil()];
+  [OptedInTrustedVaultText() assertWithMatcher:grey_nil()];
+  [OptInTrustedVaultLink() assertWithMatcher:grey_nil()];
+  [SetUpTrustedVaultLink() assertWithMatcher:grey_nil()];
+}
+
+// Check that a user which is not logged in any account do not get
+// offered to use trusted vault.
+- (void)testNoOndeviceEncryptionSetupWhenSignedOut {
+  OpenPasswordSettings();
+
+  // Check that the menus related to on-device encryptions are not displayed.
+  [OptedInTrustedVaultLink() assertWithMatcher:grey_nil()];
+  [OptedInTrustedVaultText() assertWithMatcher:grey_nil()];
+  [OptInTrustedVaultLink() assertWithMatcher:grey_nil()];
+  [SetUpTrustedVaultLink() assertWithMatcher:grey_nil()];
 }
 
 // Verifies the UI elements are accessible on the Passwords page.
@@ -595,8 +678,8 @@ id<GREYMatcher> EditDoneButton() {
   // Finally, verify that the Edit button is visible and disabled, because there
   // are no other password entries left for deletion via the "Edit" mode.
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
-      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
-                                   grey_not(grey_enabled()), nil)];
+      assertWithMatcher:grey_allOf(grey_not(grey_enabled()),
+                                   grey_sufficientlyVisible(), nil)];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
@@ -656,8 +739,8 @@ id<GREYMatcher> EditDoneButton() {
   // Finally, verify that the Edit button is visible and disabled, because there
   // are no other password entries left for deletion via the "Edit" mode.
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
-      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
-                                   grey_not(grey_enabled()), nil)];
+      assertWithMatcher:grey_allOf(grey_not(grey_enabled()),
+                                   grey_sufficientlyVisible(), nil)];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
@@ -705,8 +788,8 @@ id<GREYMatcher> EditDoneButton() {
   // Finally, verify that the Edit button is visible and disabled, because there
   // are no other password entries left for deletion via the "Edit" mode.
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
-      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
-                                   grey_not(grey_enabled()), nil)];
+      assertWithMatcher:grey_allOf(grey_not(grey_enabled()),
+                                   grey_sufficientlyVisible(), nil)];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
@@ -1221,8 +1304,8 @@ id<GREYMatcher> EditDoneButton() {
 
   // Verify that the Edit button is visible and disabled.
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
-      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
-                                   grey_not(grey_enabled()), nil)];
+      assertWithMatcher:grey_allOf(grey_not(grey_enabled()),
+                                   grey_sufficientlyVisible(), nil)];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];
@@ -1278,10 +1361,10 @@ id<GREYMatcher> EditDoneButton() {
     [[EarlGrey
         selectElementWithMatcher:grey_allOf(
                                      ButtonWithAccessibilityLabel(dismissLabel),
-                                     grey_interactable(),
                                      grey_not(grey_accessibilityTrait(
                                          UIAccessibilityTraitNotEnabled)),
-                                     nullptr)] performAction:grey_tap()];
+                                     grey_interactable(), nullptr)]
+        performAction:grey_tap()];
   }
 
   // Wait until the activity view is dismissed.
@@ -1467,8 +1550,8 @@ id<GREYMatcher> EditDoneButton() {
       performAction:grey_replaceText(@"")];
 
   [[EarlGrey selectElementWithMatcher:EditDoneButton()]
-      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
-                                   grey_not(grey_enabled()), nil)];
+      assertWithMatcher:grey_allOf(grey_not(grey_enabled()),
+                                   grey_sufficientlyVisible(), nil)];
 
   [[EarlGrey selectElementWithMatcher:PasswordDetailPassword()]
       performAction:grey_replaceText(@"new password")];
@@ -1589,8 +1672,8 @@ id<GREYMatcher> EditDoneButton() {
       performAction:grey_replaceText(@"concrete username2")];
 
   [[EarlGrey selectElementWithMatcher:EditDoneButton()]
-      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
-                                   grey_not(grey_enabled()), nil)];
+      assertWithMatcher:grey_allOf(grey_not(grey_enabled()),
+                                   grey_sufficientlyVisible(), nil)];
 
   [[EarlGrey selectElementWithMatcher:NavigationBarCancelButton()]
       performAction:grey_tap()];
@@ -1675,8 +1758,8 @@ id<GREYMatcher> EditDoneButton() {
   // Finally, verify that the Edit button is visible and disabled, because there
   // are no other password entries left for deletion via the "Edit" mode.
   [[EarlGrey selectElementWithMatcher:NavigationBarEditButton()]
-      assertWithMatcher:grey_allOf(grey_sufficientlyVisible(),
-                                   grey_not(grey_enabled()), nil)];
+      assertWithMatcher:grey_allOf(grey_not(grey_enabled()),
+                                   grey_sufficientlyVisible(), nil)];
 
   [[EarlGrey selectElementWithMatcher:SettingsMenuBackButton()]
       performAction:grey_tap()];

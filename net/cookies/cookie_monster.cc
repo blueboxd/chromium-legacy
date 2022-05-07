@@ -52,7 +52,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/containers/flat_map.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -79,6 +78,7 @@
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_values.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
@@ -420,7 +420,7 @@ void CookieMonster::SetCanonicalCookieAsync(
     const GURL& source_url,
     const CookieOptions& options,
     SetCookiesCallback callback,
-    const CookieAccessResult* cookie_access_result) {
+    absl::optional<CookieAccessResult> cookie_access_result) {
   DCHECK(cookie->IsCanonical());
 
   std::string domain = cookie->Domain();
@@ -431,7 +431,7 @@ void CookieMonster::SetCanonicalCookieAsync(
           // the object.
           &CookieMonster::SetCanonicalCookie, base::Unretained(this),
           std::move(cookie), source_url, options, std::move(callback),
-          cookie_access_result),
+          std::move(cookie_access_result)),
       domain);
 }
 
@@ -560,7 +560,7 @@ void CookieMonster::SetPersistSessionCookies(bool persist_session_cookies) {
 const char* const CookieMonster::kDefaultCookieableSchemes[] = {"http", "https",
                                                                 "ws", "wss"};
 const int CookieMonster::kDefaultCookieableSchemesCount =
-    base::size(kDefaultCookieableSchemes);
+    std::size(kDefaultCookieableSchemes);
 
 CookieChangeDispatcher& CookieMonster::GetChangeDispatcher() {
   return change_dispatcher_;
@@ -1478,7 +1478,7 @@ void CookieMonster::SetCanonicalCookie(
     const GURL& source_url,
     const CookieOptions& options,
     SetCookiesCallback callback,
-    const CookieAccessResult* cookie_access_result) {
+    absl::optional<CookieAccessResult> cookie_access_result) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   bool delegate_treats_url_as_trustworthy =
@@ -1696,7 +1696,7 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
   // Ideally, this would be asserted up where we define kChangeCauseMapping,
   // but DeletionCause's visibility (or lack thereof) forces us to make
   // this check here.
-  static_assert(base::size(kChangeCauseMapping) == DELETE_COOKIE_LAST_ENTRY + 1,
+  static_assert(std::size(kChangeCauseMapping) == DELETE_COOKIE_LAST_ENTRY + 1,
                 "kChangeCauseMapping size should match DeletionCause size");
 
   CanonicalCookie* cc = it->second.get();
@@ -1748,7 +1748,7 @@ void CookieMonster::InternalDeletePartitionedCookie(
   // Ideally, this would be asserted up where we define kChangeCauseMapping,
   // but DeletionCause's visibility (or lack thereof) forces us to make
   // this check here.
-  static_assert(base::size(kChangeCauseMapping) == DELETE_COOKIE_LAST_ENTRY + 1,
+  static_assert(std::size(kChangeCauseMapping) == DELETE_COOKIE_LAST_ENTRY + 1,
                 "kChangeCauseMapping size should match DeletionCause size");
 
   CanonicalCookie* cc = cookie_it->second.get();
@@ -2512,7 +2512,7 @@ void CookieMonster::ConvertPartitionedCookie(const net::CanonicalCookie& cookie,
                          delegate_treats_url_as_trustworthy,
                          cookie_util::GetSamePartyStatus(
                              *new_cookie, options, first_party_sets_enabled_)),
-      cookieable_schemes_, nullptr);
+      cookieable_schemes_);
   auto key = GetKey(new_cookie->Domain());
   InternalInsertCookie(key, std::move(new_cookie), /*sync_to_store=*/true,
                        access_result);

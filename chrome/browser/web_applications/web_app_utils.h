@@ -108,17 +108,21 @@ bool AreNewFileHandlersASubsetOfOld(const apps::FileHandlers& old_handlers,
                                     const apps::FileHandlers& new_handlers);
 
 // Returns a display-ready string that holds all file type associations handled
-// by the app referenced by `app_id`. This will return capitalized file
-// extensions with the period truncated, like "TXT, PNG". `found_multiple`, when
-// non-null, will be set to indicate whether the returned string is a list
-// (false indicates it's a single object). Note that on Linux, the files must
-// actually match both the specified MIME types as well as the specified file
-// extensions, so this list of extensions is an incomplete picture (subset) of
-// which file types will be accepted.
-std::u16string GetFileTypeAssociationsHandledByWebAppForDisplay(
+// by the app referenced by `app_id`, as well as the number if items in the
+// list. This will return capitalized file extensions with the period truncated,
+// like "TXT, PNG". Note that on Linux, the files must actually match both the
+// specified MIME types as well as the specified file extensions, so this list
+// of extensions is an incomplete picture (subset) of which file types will be
+// accepted.
+std::tuple<std::u16string, size_t /*count*/>
+GetFileTypeAssociationsHandledByWebAppForDisplay(Profile* profile,
+                                                 const AppId& app_id);
+
+// As above, but returns the extensions handled by the app as a vector of
+// strings.
+std::vector<std::string> GetFileTypeAssociationsHandledByWebAppForDisplayAsList(
     Profile* profile,
-    const AppId& app_id,
-    bool* found_multiple = nullptr);
+    const AppId& app_id);
 
 // Updates the approved or disallowed protocol list for the given app. If
 // necessary, it also updates the protocol registration with the OS.
@@ -162,7 +166,7 @@ AppId GetAppIdFromAppSettingsUrl(const GURL& url);
 // Check if |url|'s path is an installed web app.
 bool HasAppSettingsPage(Profile* profile, const GURL& url);
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 // The kLacrosPrimary and kWebAppsCrosapi features are each independently
 // sufficient to enable the web apps Crosapi (used for Lacros web app
 // management).

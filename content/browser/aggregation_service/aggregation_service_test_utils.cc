@@ -92,19 +92,18 @@ testing::AssertionResult AggregatableReportsEqual(
 testing::AssertionResult ReportRequestsEqual(
     const AggregatableReportRequest& expected,
     const AggregatableReportRequest& actual) {
-  if (expected.processing_origins().size() !=
-      actual.processing_origins().size()) {
+  if (expected.processing_urls().size() != actual.processing_urls().size()) {
     return testing::AssertionFailure()
-           << "Expected processing_origins size "
-           << expected.processing_origins().size()
-           << ", actual: " << actual.processing_origins().size();
+           << "Expected processing_urls size "
+           << expected.processing_urls().size()
+           << ", actual: " << actual.processing_urls().size();
   }
-  for (size_t i = 0; i < expected.processing_origins().size(); ++i) {
-    if (expected.processing_origins()[i] != actual.processing_origins()[i]) {
+  for (size_t i = 0; i < expected.processing_urls().size(); ++i) {
+    if (expected.processing_urls()[i] != actual.processing_urls()[i]) {
       return testing::AssertionFailure()
-             << "Expected processing_origins()[" << i << "] to be "
-             << expected.processing_origins()[i]
-             << ", actual: " << actual.processing_origins()[i];
+             << "Expected processing_urls()[" << i << "] to be "
+             << expected.processing_urls()[i]
+             << ", actual: " << actual.processing_urls()[i];
     }
   }
 
@@ -124,18 +123,29 @@ testing::AssertionResult PayloadContentsEqual(
            << "Expected operation " << expected.operation
            << ", actual: " << actual.operation;
   }
-  if (expected.bucket != actual.bucket) {
-    return testing::AssertionFailure() << "Expected bucket " << expected.bucket
-                                       << ", actual: " << actual.bucket;
-  }
-  if (expected.value != actual.value) {
-    return testing::AssertionFailure() << "Expected value " << expected.value
-                                       << ", actual: " << actual.value;
-  }
-  if (expected.processing_type != actual.processing_type) {
+  if (expected.contributions.size() != actual.contributions.size()) {
     return testing::AssertionFailure()
-           << "Expected processing_type " << expected.processing_type
-           << ", actual: " << actual.processing_type;
+           << "Expected contributions.size() " << expected.contributions.size()
+           << ", actual: " << actual.contributions.size();
+  }
+  for (size_t i = 0; i < expected.contributions.size(); ++i) {
+    if (expected.contributions[i].bucket != actual.contributions[i].bucket) {
+      return testing::AssertionFailure()
+             << "Expected contribution " << i << " bucket "
+             << expected.contributions[i].bucket
+             << ", actual: " << actual.contributions[i].bucket;
+    }
+    if (expected.contributions[i].value != actual.contributions[i].value) {
+      return testing::AssertionFailure()
+             << "Expected contribution " << i << " value "
+             << expected.contributions[i].value
+             << ", actual: " << actual.contributions[i].value;
+    }
+  }
+  if (expected.aggregation_mode != actual.aggregation_mode) {
+    return testing::AssertionFailure()
+           << "Expected aggregation_mode " << expected.aggregation_mode
+           << ", actual: " << actual.aggregation_mode;
   }
 
   return testing::AssertionSuccess();
@@ -170,11 +180,13 @@ testing::AssertionResult SharedInfoEqual(
 }
 
 AggregatableReportRequest CreateExampleRequest(
-    AggregationServicePayloadContents::ProcessingType processing_type) {
+    AggregationServicePayloadContents::AggregationMode aggregation_mode) {
   return AggregatableReportRequest::Create(
              AggregationServicePayloadContents(
                  AggregationServicePayloadContents::Operation::kHistogram,
-                 /*bucket=*/123, /*value=*/456, processing_type),
+                 {AggregationServicePayloadContents::HistogramContribution{
+                     .bucket = 123, .value = 456}},
+                 aggregation_mode),
              AggregatableReportSharedInfo(
                  /*scheduled_report_time=*/base::Time::Now(),
                  /*privacy_budget_key=*/"example_budget_key",
@@ -187,9 +199,9 @@ AggregatableReportRequest CreateExampleRequest(
 
 AggregatableReportRequest CloneReportRequest(
     const AggregatableReportRequest& request) {
-  return AggregatableReportRequest::CreateForTesting(
-             request.processing_origins(), request.payload_contents(),
-             request.shared_info())
+  return AggregatableReportRequest::CreateForTesting(request.processing_urls(),
+                                                     request.payload_contents(),
+                                                     request.shared_info())
       .value();
 }
 
@@ -241,7 +253,7 @@ TestAggregationServiceStorageContext::GetKeyStorage() {
 
 std::ostream& operator<<(
     std::ostream& out,
-    const AggregationServicePayloadContents::Operation& operation) {
+    AggregationServicePayloadContents::Operation operation) {
   switch (operation) {
     case AggregationServicePayloadContents::Operation::kHistogram:
       return out << "kHistogram";
@@ -250,18 +262,18 @@ std::ostream& operator<<(
 
 std::ostream& operator<<(
     std::ostream& out,
-    const AggregationServicePayloadContents::ProcessingType& processing_type) {
-  switch (processing_type) {
-    case AggregationServicePayloadContents::ProcessingType::kTwoParty:
-      return out << "kTwoParty";
-    case AggregationServicePayloadContents::ProcessingType::kSingleServer:
-      return out << "kSingleServer";
+    AggregationServicePayloadContents::AggregationMode aggregation_mode) {
+  switch (aggregation_mode) {
+    case AggregationServicePayloadContents::AggregationMode::kTeeBased:
+      return out << "kTeeBased";
+    case AggregationServicePayloadContents::AggregationMode::
+        kExperimentalPoplar:
+      return out << "kExperimentalPoplar";
   }
 }
 
-std::ostream& operator<<(
-    std::ostream& out,
-    const AggregatableReportSharedInfo::DebugMode& debug_mode) {
+std::ostream& operator<<(std::ostream& out,
+                         AggregatableReportSharedInfo::DebugMode debug_mode) {
   switch (debug_mode) {
     case AggregatableReportSharedInfo::DebugMode::kDisabled:
       return out << "kDisabled";

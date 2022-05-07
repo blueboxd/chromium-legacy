@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/serialization/post_message_helper.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_post_message_options.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/events/message_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
@@ -212,11 +213,10 @@ void DedicatedWorker::Start() {
     // from a blob URL in a local resource cannot work with
     // asynchronous OnHostCreated call, so we call it directly here.
     // See https://crbug.com/1101603#c8.
-    factory_client_->CreateWorkerHostDeprecated(
-        token_, script_request_url_,
-        WTF::Bind([](const network::CrossOriginEmbedderPolicy&) {}));
+    factory_client_->CreateWorkerHostDeprecated(token_, script_request_url_,
+                                                base::DoNothing());
     OnHostCreated(std::move(blob_url_loader_factory),
-                  network::CrossOriginEmbedderPolicy());
+                  network::CrossOriginEmbedderPolicy(), mojo::NullRemote());
     return;
   }
 
@@ -229,7 +229,10 @@ void DedicatedWorker::Start() {
 void DedicatedWorker::OnHostCreated(
     mojo::PendingRemote<network::mojom::blink::URLLoaderFactory>
         blob_url_loader_factory,
-    const network::CrossOriginEmbedderPolicy& parent_coep) {
+    const network::CrossOriginEmbedderPolicy& parent_coep,
+    CrossVariantMojoRemote<
+        mojom::blink::BackForwardCacheControllerHostInterfaceBase>
+        back_forward_cache_controller_host) {
   DCHECK(!base::FeatureList::IsEnabled(features::kPlzDedicatedWorker));
   const RejectCoepUnsafeNone reject_coep_unsafe_none(
       network::CompatibleWithCrossOriginIsolated(parent_coep));
@@ -246,20 +249,20 @@ void DedicatedWorker::OnHostCreated(
         network::mojom::RequestMode::kSameOrigin,
         network::mojom::CredentialsMode::kSameOrigin,
         WTF::Bind(&DedicatedWorker::OnResponse, WrapPersistent(this)),
-        WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this)),
+        WTF::Bind(&DedicatedWorker::OnFinished, WrapPersistent(this),
+                  std::move(back_forward_cache_controller_host)),
         reject_coep_unsafe_none, std::move(blob_url_loader_factory));
     return;
   }
   if (options_->type() == script_type_names::kModule) {
     // Specify empty source code etc. here because scripts will be fetched on
     // the worker thread.
-    ContinueStart(script_request_url_,
-                  nullptr /* worker_main_script_load_params */,
-                  network::mojom::ReferrerPolicy::kDefault,
-                  Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
-                  absl::nullopt /* response_address_space */,
-                  String() /* source_code */, reject_coep_unsafe_none,
-                  mojo::NullRemote() /* back_forward_cache_controller_host */);
+    ContinueStart(
+        script_request_url_, nullptr /* worker_main_script_load_params */,
+        network::mojom::ReferrerPolicy::kDefault,
+        Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
+        absl::nullopt /* response_address_space */, String() /* source_code */,
+        reject_coep_unsafe_none, std::move(back_forward_cache_controller_host));
     return;
   }
   NOTREACHED() << "Invalid type: " << IDLEnumAsString(options_->type());
@@ -364,7 +367,9 @@ void DedicatedWorker::OnResponse() {
                                   classic_script_loader_->Identifier());
 }
 
-void DedicatedWorker::OnFinished() {
+void DedicatedWorker::OnFinished(
+    mojo::PendingRemote<mojom::blink::BackForwardCacheControllerHost>
+        back_forward_cache_controller_host) {
   DCHECK(GetExecutionContext()->IsContextThread());
   if (classic_script_loader_->Canceled()) {
     // Do nothing.
@@ -391,7 +396,7 @@ void DedicatedWorker::OnFinished() {
             : Vector<network::mojom::blink::ContentSecurityPolicyPtr>(),
         classic_script_loader_->ResponseAddressSpace(),
         classic_script_loader_->SourceText(), RejectCoepUnsafeNone(false),
-        mojo::NullRemote() /* back_forward_cache_controller_host */);
+        std::move(back_forward_cache_controller_host));
     probe::ScriptImported(GetExecutionContext(),
                           classic_script_loader_->Identifier(),
                           classic_script_loader_->SourceText());

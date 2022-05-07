@@ -37,18 +37,31 @@
 cxxbridge-cmd = "1"
 cxx = "1"
 serde = "1"
-serde_jsonrc = { version="0.1", features=["unbounded_depth"] }
+autocxx = "0.16"
+autocxx-gen = "0.16"
+
+[dependencies.serde_json_lenient]
+version = "0.1"
+features = [ "unbounded_depth", "float_roundtrip" ]
 
 [dependencies.bindgen]
 version = "0.59"
 build-script-outputs = [ "host-target.txt" ]
+features = [ "static" ]
 # TODO(crbug.com/1294010)
 # rustenv = [ "CARGO_PKG_VERSION=0.59" ]
 
-[dependencies.clang-sys]
+[dependencies.autocxx-bindgen]
+version = "0.59"
+build-script-outputs = [ "host-target.txt" ]
+features = [ "static" ]
+# TODO(crbug.com/1294010)
+# rustenv = [ "CARGO_PKG_VERSION=0.59" ]
+
+[dependencies.rustversion]
 version = "1"
 allow-first-party-usage = false
-build_script_outputs = [ "common.rs", "dynamic.rs" ]
+build_script_outputs = [ "version.rs" ]
 
 # Crates listed in dev-dependencies will have a :test_support GN target
 # built for them in their BUILD.gn file, which is marked testonly=true.
@@ -57,3 +70,4 @@ build_script_outputs = [ "common.rs", "dynamic.rs" ]
 [dev-dependencies]
 rstest = "0.12"
 small_ctor = "0.1"
+syn = {version = "1", features = ["full"]}

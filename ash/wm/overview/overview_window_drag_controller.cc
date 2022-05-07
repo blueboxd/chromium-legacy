@@ -320,7 +320,7 @@ void OverviewWindowDragController::StartNormalDragMode(
             /*is_dragging=*/true,
             SplitViewDragIndicators::WindowDraggingState::kFromOverview,
             SplitViewController::NONE));
-    item_->HideCannotSnapWarning();
+    item_->HideCannotSnapWarning(/*animate=*/true);
 
     // Update the split view divider bar status if necessary. If splitview is
     // active when dragging the overview window, the split divider bar should be
@@ -428,7 +428,7 @@ void OverviewWindowDragController::ResetGesture() {
       SplitViewController::Get(Shell::GetPrimaryRootWindow())
           ->OnWindowDragCanceled();
       overview_session_->ResetSplitViewDragIndicatorsWindowDraggingStates();
-      item_->UpdateCannotSnapWarningVisibility();
+      item_->UpdateCannotSnapWarningVisibility(/*animate=*/true);
     }
   }
   overview_session_->PositionWindows(/*animate=*/true);
@@ -635,19 +635,21 @@ OverviewWindowDragController::CompleteNormalDrag(
   const gfx::Point rounded_screen_point =
       gfx::ToRoundedPoint(location_in_screen);
   if (should_allow_split_view_) {
-    // Update the split view divider bar stuatus if necessary. The divider bar
+    // Update the split view divider bar status if necessary. The divider bar
     // should be placed above the dragged window after drag ends. Note here the
     // passed parameters |snap_position_| and |location_in_screen| won't be used
     // in this function for this case, but they are passed in as placeholders.
+    aura::Window* window = item_->GetWindow();
+    WindowState::Get(window)->set_snap_action_source(
+        WindowSnapActionSource::kDragOrSelectOverviewWindowToSnap);
     SplitViewController::Get(Shell::GetPrimaryRootWindow())
-        ->OnWindowDragEnded(item_->GetWindow(), snap_position_,
-                            rounded_screen_point);
+        ->OnWindowDragEnded(window, snap_position_, rounded_screen_point);
 
     // Update window grid bounds and |snap_position_| in case the screen
     // orientation was changed.
     UpdateDragIndicatorsAndOverviewGrid(location_in_screen);
     overview_session_->ResetSplitViewDragIndicatorsWindowDraggingStates();
-    item_->UpdateCannotSnapWarningVisibility();
+    item_->UpdateCannotSnapWarningVisibility(/*animate=*/true);
   }
 
   // This function has multiple exit positions, at each we must update the desks
@@ -812,6 +814,9 @@ void OverviewWindowDragController::SnapWindow(
   DCHECK(!SplitViewController::Get(Shell::GetPrimaryRootWindow())
               ->IsDividerAnimating());
   aura::Window* window = item_->GetWindow();
+  WindowState::Get(window)->set_snap_action_source(
+      WindowSnapActionSource::kDragOrSelectOverviewWindowToSnap);
+
   split_view_controller->SnapWindow(window, snap_position,
                                     /*activate_window=*/true);
   item_ = nullptr;

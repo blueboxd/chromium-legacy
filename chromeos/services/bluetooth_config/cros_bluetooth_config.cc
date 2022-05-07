@@ -46,7 +46,8 @@ CrosBluetoothConfig::CrosBluetoothConfig(
       discovery_session_manager_(initializer.CreateDiscoverySessionManager(
           adapter_state_controller_.get(),
           bluetooth_adapter,
-          discovered_devices_provider_.get())),
+          discovered_devices_provider_.get(),
+          fast_pair_delegate)),
       device_operation_handler_(initializer.CreateDeviceOperationHandler(
           adapter_state_controller_.get(),
           bluetooth_adapter,
@@ -83,6 +84,12 @@ void CrosBluetoothConfig::ObserveSystemProperties(
 void CrosBluetoothConfig::ObserveDeviceStatusChanges(
     mojo::PendingRemote<mojom::BluetoothDeviceStatusObserver> observer) {
   bluetooth_device_status_notifier_->ObserveDeviceStatusChanges(
+      std::move(observer));
+}
+
+void CrosBluetoothConfig::ObserveDiscoverySessionStatusChanges(
+    mojo::PendingRemote<mojom::DiscoverySessionStatusObserver> observer) {
+  discovery_session_manager_->ObserveDiscoverySessionStatusChanges(
       std::move(observer));
 }
 

@@ -12,6 +12,8 @@
 #include "chrome/browser/media/router/discovery/mdns/cast_media_sink_service_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/media_router/browser/logger_impl.h"
+#include "components/media_router/browser/media_router.h"
 #include "components/media_router/browser/media_routes_observer.h"
 #include "components/media_router/common/discovery/media_sink_internal.h"
 #include "components/media_router/common/discovery/media_sink_service_base.h"
@@ -55,6 +57,8 @@ class AccessCodeCastSinkService : public KeyedService {
    private:
     FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
                              AccessCodeCastDeviceRemovedAfterRouteEnds);
+    FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
+                             AddExistingSinkToMediaRouterWithRoute);
     // media_router::MediaRoutesObserver:
     void OnRoutesUpdated(const std::vector<MediaRoute>& routes) override;
 
@@ -75,6 +79,8 @@ class AccessCodeCastSinkService : public KeyedService {
                            AddExistingSinkToMediaRouter);
   FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
                            AddNewSinkToMediaRouter);
+  FRIEND_TEST_ALL_PREFIXES(AccessCodeCastSinkServiceTest,
+                           AddExistingSinkToMediaRouterWithRoute);
 
   // Constructor used for testing.
   AccessCodeCastSinkService(
@@ -95,8 +101,15 @@ class AccessCodeCastSinkService : public KeyedService {
   // KeyedService.
   void Shutdown() override;
 
+  void SetTaskRunnerForTest(
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
+    task_runner_ = task_runner;
+  }
+
   // Owns us via the KeyedService mechanism.
   const raw_ptr<Profile> profile_;
+
+  const raw_ptr<media_router::MediaRouter> media_router_;
 
   // Helper class for observing the removal of MediaRoutes.
   std::unique_ptr<AccessCodeMediaRoutesObserver> media_routes_observer_;
@@ -109,6 +122,13 @@ class AccessCodeCastSinkService : public KeyedService {
       cast_media_sink_service_impl_;
 
   net::BackoffEntry::Policy backoff_policy_;
+
+  // Map of callbacks that we are currently waiting to alert callers about the
+  // completion of discovery. This cannot be done until all routes on any given
+  // sink are terminated.
+  std::map<MediaSink::Id, ChannelOpenedCallback> pending_callbacks_;
+
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   base::WeakPtrFactory<AccessCodeCastSinkService> weak_ptr_factory_{this};
 };

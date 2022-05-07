@@ -20,7 +20,7 @@ import("//build/rust/rust_unit_tests_group.gni")
 #   crate_root (optional)
 #   features (optional)
 #   rustflags (optional)
-#     All as in rust_source_set.
+#     All as in rust_static_library.
 #
 # Example of usage:
 #
@@ -39,7 +39,7 @@ import("//build/rust/rust_unit_tests_group.gni")
 # import loop).
 
 template("rust_unit_test") {
-  assert(build_rust_unit_tests)
+  assert(can_build_rust_unit_tests)
   if (defined(invoker.crate_name)) {
     _crate_name = invoker.crate_name
   } else {
@@ -80,7 +80,8 @@ template("rust_unit_test") {
   }
 
   # TODO(crbug.com/1229320): Arrange to run test executables on try bots.
-  # TODO(crbug.com/gn/146): Allow Rust executables to depend on C/C++ source sets.
+  # TODO(crbug.com/gn/146): Allow Rust executables to depend on C/C++ source
+  # sets.
   # This is important in cases where Rust tests may depend upon C/C++
   # dependencies.
   executable(_exe_target_name) {
@@ -97,6 +98,16 @@ template("rust_unit_test") {
                              "crate_root",
                            ])
 
+    if (defined(output_dir) && output_dir != "") {
+      _out_dir = output_dir
+    } else {
+      _out_dir = target_out_dir
+    }
+
+    if (!defined(output_name) || output_name == "") {
+      output_name = _crate_name
+    }
+
     rustflags = [
       "--cfg",
       "feature=\"test\"",
@@ -110,7 +121,7 @@ template("rust_unit_test") {
     if (!defined(rustenv)) {
       rustenv = []
     }
-    rustenv += [ "OUT_DIR=" + rebase_path(target_out_dir) ]
+    rustenv += [ "OUT_DIR=" + rebase_path(_out_dir) ]
     metadata = {
       # Consumed by "rust_unit_tests_group" gni template.
       rust_unit_test_executables = [ _crate_name ]

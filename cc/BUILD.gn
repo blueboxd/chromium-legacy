@@ -200,6 +200,8 @@ cc_component("cc") {
     "metrics/jank_injector.h",
     "metrics/jank_metrics.cc",
     "metrics/jank_metrics.h",
+    "metrics/latency_jank_tracker.cc",
+    "metrics/latency_jank_tracker.h",
     "metrics/latency_ukm_reporter.cc",
     "metrics/latency_ukm_reporter.h",
     "metrics/lcd_text_metrics_reporter.cc",
@@ -465,6 +467,7 @@ cc_component("cc") {
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/mojom",
     "//services/tracing/public/cpp:cpp",
+    "//skia:skcms",
     "//ui/base:features",
     "//ui/events:events_base",
     "//ui/gfx",
@@ -846,6 +849,7 @@ cc_test("cc_unittests") {
       "paint/skottie_mru_resource_provider_unittest.cc",
       "paint/skottie_resource_metadata_unittest.cc",
       "paint/skottie_serialization_history_unittest.cc",
+      "paint/skottie_text_property_value_unittest.cc",
       "paint/skottie_transfer_cache_entry_unittest.cc",
       "paint/skottie_wrapper_unittest.cc",
     ]
@@ -896,6 +900,10 @@ cc_test("cc_unittests") {
 
   if (is_android && enable_chrome_android_internal) {
     data_deps += [ "//clank/build/bot/filters:cc_unittests_filters" ]
+  }
+
+  if (skia_support_skottie) {
+    data += [ "test/data/" ]
   }
 
   if (is_fuchsia) {

@@ -29,6 +29,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_rep.h"
 
 namespace chromeos {
 
@@ -143,7 +144,7 @@ void EduAccountLoginHandler::OnJavascriptDisallowed() {
 }
 
 void EduAccountLoginHandler::HandleIsNetworkReady(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   bool is_network_ready =
@@ -151,7 +152,7 @@ void EduAccountLoginHandler::HandleIsNetworkReady(
   ResolveJavascriptCallback(args[0], base::Value(is_network_ready));
 }
 
-void EduAccountLoginHandler::HandleGetParents(base::Value::ConstListView args) {
+void EduAccountLoginHandler::HandleGetParents(const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(args.size(), 1u);
@@ -166,8 +167,7 @@ void EduAccountLoginHandler::HandleGetParents(base::Value::ConstListView args) {
   FetchFamilyMembers();
 }
 
-void EduAccountLoginHandler::HandleParentSignin(
-    base::Value::ConstListView args) {
+void EduAccountLoginHandler::HandleParentSignin(const base::Value::List& args) {
   CHECK_EQ(args.size(), 3u);
   CHECK(args[0].is_string());
 

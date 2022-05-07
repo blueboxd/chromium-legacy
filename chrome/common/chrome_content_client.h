@@ -17,7 +17,6 @@
 #include "chrome/common/buildflags.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/common/content_client.h"
-#include "pdf/buildflags.h"
 #include "ppapi/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
@@ -59,13 +58,6 @@ class ChromeContentClient : public content::ContentClient {
       content::PepperPluginInfo::PPP_ShutdownModuleFunc shutdown_module);
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_PDF)
-  static void SetPDFEntryFunctions(
-      content::PepperPluginInfo::GetInterfaceFunc get_interface,
-      content::PepperPluginInfo::PPP_InitializeModuleFunc initialize_module,
-      content::PepperPluginInfo::PPP_ShutdownModuleFunc shutdown_module);
-#endif
-
 #if BUILDFLAG(ENABLE_PLUGINS)
   // This returns the most recent plugin based on the plugin versions. In the
   // event of a tie, a debug plugin will be considered more recent than a
@@ -88,11 +80,11 @@ class ChromeContentClient : public content::ContentClient {
   std::u16string GetLocalizedString(int message_id) override;
   std::u16string GetLocalizedString(int message_id,
                                     const std::u16string& replacement) override;
-  std::u16string GetLocalizedProtocolName(const std::string& protocol) override;
   base::StringPiece GetDataResource(
       int resource_id,
       ui::ResourceScaleFactor scale_factor) override;
   base::RefCountedMemory* GetDataResourceBytes(int resource_id) override;
+  std::string GetDataResourceString(int resource_id) override;
   gfx::Image& GetNativeImageNamed(int resource_id) override;
 #if BUILDFLAG(IS_MAC)
   base::FilePath GetChildProcessPath(

@@ -17,6 +17,7 @@
 #include "base/format_macros.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_split.h"
@@ -792,6 +793,19 @@ bool TemplateURLService::IsSearchResultsPageFromDefaultSearchProvider(
       default_provider->IsSearchURL(url, search_terms_data());
 }
 
+bool TemplateURLService::IsSideSearchSupportedForDefaultSearchProvider() const {
+  const TemplateURL* default_provider = GetDefaultSearchProvider();
+  return default_provider && default_provider->IsSideSearchSupported();
+}
+
+GURL TemplateURLService::GenerateSideSearchURLForDefaultSearchProvider(
+    const GURL& search_url,
+    const std::string& version) const {
+  DCHECK(IsSideSearchSupportedForDefaultSearchProvider());
+  return GetDefaultSearchProvider()->GenerateSideSearchURL(search_url, version,
+                                                           search_terms_data());
+}
+
 bool TemplateURLService::IsExtensionControlledDefaultSearch() const {
   return default_search_provider_source_ ==
       DefaultSearchManager::FROM_EXTENSION;
@@ -1539,6 +1553,8 @@ void TemplateURLService::Init(const Initializer* initializers,
       data.SetShortName(base::UTF8ToUTF16(initializers[i].content));
       data.SetKeyword(base::UTF8ToUTF16(initializers[i].keyword));
       data.SetURL(initializers[i].url);
+      // Set all to active by default for testing purposes.
+      data.is_active = TemplateURLData::ActiveStatus::kTrue;
       Add(std::make_unique<TemplateURL>(data));
 
       // Set the first provided identifier to be the default.

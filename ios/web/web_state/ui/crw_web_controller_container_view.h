@@ -6,6 +6,7 @@
 #define IOS_WEB_WEB_STATE_UI_CRW_WEB_CONTROLLER_CONTAINER_VIEW_H_
 
 #import <UIKit/UIKit.h>
+#import <WebKit/WebKit.h>
 
 #import "ios/web/common/crw_content_view.h"
 
@@ -67,6 +68,10 @@
 // is nil, store the webView in the view hierarchy keyWindow so WKWebView
 // doesn't suspend it's counterpart process.
 - (void)updateWebViewContentViewForContainerWindow:(UIWindow*)window;
+
+// Updates |webViewContentView| with the current fullscreen state
+- (void)updateWebViewContentViewFullscreenState:
+    (CrFullscreenState)fullscreenState;
 
 @end
 

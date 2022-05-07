@@ -59,16 +59,7 @@ group("resources") {
       ":bluetooth_pairing_dialog_resources",
       ":internet_config_dialog_resources",
       ":internet_detail_dialog_resources",
-      "chromeos:app_icon_resources",
-      "chromeos:multidevice_setup_resources",
-      "chromeos/accessibility:build",
-      "chromeos/audio:resources",
-      "chromeos/emoji_picker:resources",
-      "chromeos/launcher_internals:resources",
-      "chromeos/login:conditional_resources",
-      "chromeos/login:unconditional_resources",
-      "chromeos/multidevice_internals:resources",
-      "chromeos/network_ui:resources",
+      "chromeos:resources",
       "nearby_internals:resources",
       "nearby_share:resources",
       "settings/chromeos:resources",
@@ -81,6 +72,10 @@ group("resources") {
 
   if (is_win || is_mac || is_linux || is_chromeos_lacros || is_fuchsia) {
     public_deps += [ "browser_switch:resources" ]
+  }
+
+  if (is_win || is_mac || is_linux || is_chromeos || is_fuchsia) {
+    public_deps += [ "discards:resources" ]
   }
 
   if (is_win || is_mac || is_linux || is_fuchsia) {
@@ -134,7 +129,6 @@ if (enable_js_type_check) {
     if (is_linux || is_chromeos || is_win || is_mac) {
       deps += [
         "bluetooth_internals:closure_compile",
-        "discards:closure_compile",
         "feedback_webui/js:closure_compile",
         "gaia_auth_host:closure_compile",
         "image_editor:closure_compile",
@@ -142,7 +136,6 @@ if (enable_js_type_check) {
         "internals/user_education:closure_compile",
         "media_router:closure_compile",
         "nearby_internals:closure_compile",
-        "new_tab_page_instant:closure_compile",
         "ntp4:closure_compile",
         "omnibox:closure_compile",
         "settings:closure_compile",
@@ -316,6 +309,7 @@ repack("dev_ui_paks") {
     "$root_gen_dir/chrome/webrtc_logs_resources.pak",
     "$root_gen_dir/components/dev_ui_components_resources.pak",
     "$root_gen_dir/components/download_internals_resources.pak",
+    "$root_gen_dir/components/history_clusters_internals_resources.pak",
     "$root_gen_dir/components/optimization_guide_internals_resources.pak",
     "$root_gen_dir/components/sync_driver_sync_internals_resources.pak",
     "$root_gen_dir/content/browser/resources/media/media_internals_resources.pak",
@@ -332,6 +326,7 @@ repack("dev_ui_paks") {
     "//chrome/browser/resources/omnibox:resources",
     "//chrome/browser/resources/usb_internals:resources",
     "//components/download/resources/download_internals:resources",
+    "//components/history_clusters/history_clusters_internals/resources",
     "//components/optimization_guide/optimization_guide_internals/resources",
     "//components/resources:dev_ui_components_resources",
     "//components/sync/driver/resources",

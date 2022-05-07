@@ -85,6 +85,7 @@ public class ChromeCachedFlags {
                 add(ChromeFeatureList.CONDITIONAL_TAB_STRIP_ANDROID);
                 add(ChromeFeatureList.DOWNLOADS_AUTO_RESUMPTION_NATIVE);
                 add(ChromeFeatureList.DYNAMIC_COLOR_ANDROID);
+                add(ChromeFeatureList.DYNAMIC_COLOR_BUTTONS_ANDROID);
                 add(ChromeFeatureList.EARLY_LIBRARY_LOAD);
                 add(ChromeFeatureList.ELASTIC_OVERSCROLL);
                 add(ChromeFeatureList.ELIDE_PRIORITIZATION_OF_PRE_NATIVE_BOOTSTRAP_TASKS);
@@ -176,6 +177,7 @@ public class ChromeCachedFlags {
                         add(TabUiFeatureUtilities.TAB_GRID_LAYOUT_ANDROID_NEW_TAB_TILE);
                         add(TabUiFeatureUtilities.THUMBNAIL_ASPECT_RATIO);
                         add(TabUiFeatureUtilities.GRID_TAB_SWITCHER_FOR_TABLETS_POLISH);
+                        add(TabUiFeatureUtilities.TAB_STRIP_TAB_WIDTH);
                         add(ThemeUtils.ENABLE_FULL_DYNAMIC_COLORS);
                     }
                 };

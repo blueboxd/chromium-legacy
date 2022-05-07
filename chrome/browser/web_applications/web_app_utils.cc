@@ -39,6 +39,11 @@
 #include "components/user_manager/user_manager.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/app_service.mojom.h"
+#include "chromeos/lacros/lacros_service.h"
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
 namespace {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 bool g_enable_system_web_apps_in_lacros_for_testing = false;
@@ -285,10 +290,20 @@ bool AreNewFileHandlersASubsetOfOld(const apps::FileHandlers& old_handlers,
   return true;
 }
 
-std::u16string GetFileTypeAssociationsHandledByWebAppForDisplay(
+std::tuple<std::u16string, size_t>
+GetFileTypeAssociationsHandledByWebAppForDisplay(Profile* profile,
+                                                 const AppId& app_id) {
+  auto extensions =
+      GetFileTypeAssociationsHandledByWebAppForDisplayAsList(profile, app_id);
+  return {base::UTF8ToUTF16(base::JoinString(
+              extensions, l10n_util::GetStringUTF8(
+                              IDS_WEB_APP_FILE_HANDLING_LIST_SEPARATOR))),
+          extensions.size()};
+}
+
+std::vector<std::string> GetFileTypeAssociationsHandledByWebAppForDisplayAsList(
     Profile* profile,
-    const AppId& app_id,
-    bool* found_multiple) {
+    const AppId& app_id) {
   auto* provider = WebAppProvider::GetForLocalAppsUnchecked(profile);
   if (!provider)
     return {};
@@ -307,19 +322,20 @@ std::u16string GetFileTypeAssociationsHandledByWebAppForDisplay(
                  [](const std::string& extension) {
                    return base::ToUpperASCII(extension.substr(1));
                  });
-
-  if (found_multiple)
-    *found_multiple = extensions_for_display.size() > 1;
-
-  return base::UTF8ToUTF16(base::JoinString(
-      extensions_for_display,
-      l10n_util::GetStringUTF8(IDS_WEB_APP_FILE_HANDLING_LIST_SEPARATOR)));
+  return extensions_for_display;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 bool IsWebAppsCrosapiEnabled() {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
   return base::FeatureList::IsEnabled(features::kWebAppsCrosapi) ||
          crosapi::browser_util::IsLacrosPrimaryBrowser();
+#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  auto* lacros_service = chromeos::LacrosService::Get();
+  return lacros_service && lacros_service->init_params()->web_apps_enabled &&
+         lacros_service->IsAvailable<crosapi::mojom::AppPublisher>();
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 }
 #endif
 
@@ -344,8 +360,9 @@ void PersistProtocolHandlersUserChoice(
 
   OsIntegrationManager& os_integration_manager =
       provider->os_integration_manager();
-  const std::vector<ProtocolHandler> original_protocol_handlers =
-      os_integration_manager.GetAppProtocolHandlers(app_id);
+  const std::vector<custom_handlers::ProtocolHandler>
+      original_protocol_handlers =
+          os_integration_manager.GetAppProtocolHandlers(app_id);
 
   if (allowed) {
     provider->sync_bridge().AddAllowedLaunchProtocol(app_id,
@@ -441,11 +458,6 @@ bool CanUserUninstallWebApp(WebAppSources sources) {
   specified_sources[Source::kSubApp] = true;
   return HasAnySpecifiedSourcesAndNoOtherSources(sources, specified_sources);
 }
-
-void RegisterFileHandlersWithOs(WebAppProvider* provider,
-                                const AppId& app_id,
-                                absl::optional<ApiApprovalState> approval_state,
-                                base::OnceClosure finished_closure) {}
 
 AppId GetAppIdFromAppSettingsUrl(const GURL& url) {
   // App Settings page is served under chrome://app-settings/<app-id>.

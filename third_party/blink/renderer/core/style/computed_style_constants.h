@@ -74,10 +74,11 @@ enum PseudoId : uint8_t {
   kPseudoIdSpellingError,
   kPseudoIdGrammarError,
   // The following IDs are public but not tracked.
-  kPseudoIdTransition,
-  kPseudoIdTransitionContainer,
-  kPseudoIdTransitionOldContent,
-  kPseudoIdTransitionNewContent,
+  kPseudoIdPageTransition,
+  kPseudoIdPageTransitionContainer,
+  kPseudoIdPageTransitionImageWrapper,
+  kPseudoIdPageTransitionOutgoingImage,
+  kPseudoIdPageTransitionIncomingImage,
   // Internal IDs follow:
   kPseudoIdFirstLineInherited,
   kPseudoIdScrollbarThumb,
@@ -109,10 +110,11 @@ inline bool IsHighlightPseudoElement(PseudoId pseudo_id) {
 
 inline bool IsTransitionPseudoElement(PseudoId pseudo_id) {
   switch (pseudo_id) {
-    case kPseudoIdTransition:
-    case kPseudoIdTransitionContainer:
-    case kPseudoIdTransitionOldContent:
-    case kPseudoIdTransitionNewContent:
+    case kPseudoIdPageTransition:
+    case kPseudoIdPageTransitionContainer:
+    case kPseudoIdPageTransitionImageWrapper:
+    case kPseudoIdPageTransitionOutgoingImage:
+    case kPseudoIdPageTransitionIncomingImage:
       return true;
     default:
       return false;
@@ -122,6 +124,10 @@ inline bool IsTransitionPseudoElement(PseudoId pseudo_id) {
 inline bool PseudoElementHasArguments(PseudoId pseudo_id) {
   switch (pseudo_id) {
     case kPseudoIdHighlight:
+    case kPseudoIdPageTransitionContainer:
+    case kPseudoIdPageTransitionImageWrapper:
+    case kPseudoIdPageTransitionIncomingImage:
+    case kPseudoIdPageTransitionOutgoingImage:
       return true;
     default:
       return false;
@@ -372,19 +378,6 @@ enum EPaintOrder {
   kPaintOrderStrokeMarkersFill,
   kPaintOrderMarkersFillStroke,
   kPaintOrderMarkersStrokeFill
-};
-
-// To prevent increasing NodeRareData, the dynamic restyle flags for subject
-// ':has()' are defined as ComputedStyle extra field flags.
-// Unlike using the DynamicRestyleFlags, the ComputedStyle extra field flag
-// only works for the subject elements. So the filtering with these flags is
-// less targeted then the filtering with DynamicRestyleFlags which works
-// directly for the descendant elements being changed.
-enum EDynamicRestyleFlagsForSubjectHas {
-  kAncestorsAffectedByHoverInSubjectHas = 1 << 0,
-  kAncestorsAffectedByActiveInSubjectHas = 1 << 1,
-  kAncestorsAffectedByFocusInSubjectHas = 1 << 2,
-  kAncestorsAffectedByFocusVisibleInSubjectHas = 1 << 3,
 };
 
 constexpr size_t kViewportUnitFlagBits = 2;

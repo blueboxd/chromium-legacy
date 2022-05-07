@@ -4,19 +4,19 @@
 
 #include <memory>
 
+#include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client_impl.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/task_environment.h"
 #include "chrome/browser/ash/login/easy_unlock/smartlock_feature_usage_metrics.h"
 #include "chromeos/components/feature_usage/feature_usage_metrics.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client_impl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
 namespace {
 
-using chromeos::multidevice_setup::mojom::Feature;
-using chromeos::multidevice_setup::mojom::FeatureState;
+using multidevice_setup::mojom::Feature;
+using multidevice_setup::mojom::FeatureState;
 
 bool IsEligible1() {
   return true;
@@ -39,8 +39,7 @@ class SmartLockFeatureUsageMetricsTest : public ::testing::Test {
   SmartLockFeatureUsageMetricsTest() = default;
   ~SmartLockFeatureUsageMetricsTest() override = default;
 
-  chromeos::multidevice_setup::FakeMultiDeviceSetupClient
-      fake_multidevice_setup_client_;
+  multidevice_setup::FakeMultiDeviceSetupClient fake_multidevice_setup_client_;
   std::unique_ptr<feature_usage::FeatureUsageMetrics::Delegate>
       feature_usage_metrics_;
   base::test::TaskEnvironment task_environment_;

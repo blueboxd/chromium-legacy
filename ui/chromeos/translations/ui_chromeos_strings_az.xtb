@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">"<ph name="FILE_NAME" />" faylını adlandırmaq mümkün deyil. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">Dvorak klaviaturası ilə İngilis dili (ABŞ)</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - Host</translation>
+<translation id="1521655867290435174">Google Cədvəl</translation>
 <translation id="1538729222189715449">Linux faylları açılır...</translation>
 <translation id="1547964879613821194">Kanada İngiliscəsi</translation>
 <translation id="1556189134700913550">Hamısına tətbiq edin</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">Doğrulama təsdiqi şəbəkə tərəfindən ləğv edildi</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" /> atırmasına əlavə edin</translation>
 <translation id="255937426064304553">ABŞ Beynəlxalq</translation>
-<translation id="2562685439590298522">Sənəd</translation>
 <translation id="2563185590376525700">Qurbağa</translation>
 <translation id="2578394532502990878">Tamil dili (Fonetik)</translation>
 <translation id="2579959351793446050">Oriya dili</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">Genişlənmiş ABŞ klaviaturası</translation>
 <translation id="290843123675549676">Marathi</translation>
 <translation id="2923240520113693977">Eston</translation>
-<translation id="2925966894897775835">Vərəqlər</translation>
 <translation id="2938685643439809023">Monqolca</translation>
-<translation id="2943400156390503548">Slaydlar</translation>
 <translation id="2943503720238418293">Qısa ad istifadə edin</translation>
 <translation id="2949781154072577687"><ph name="DRIVE_NAME" /> formatlanır...</translation>
 <translation id="2951236788251446349">Meduza</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Administratorunuz tərəfindən idarə olunur, Detallar</translation>
 <translation id="4387004326333427325">Doğrulama təsdiqi uzaqdan ləğv edildi</translation>
 <translation id="4394214039309501350">Xarici keçid</translation>
+<translation id="4401287888955153199">Hamısını çıxarın</translation>
 <translation id="4418686080762064601">Fayllarınız üçün qısayol yaradın</translation>
 <translation id="4425149324548788773">Diskim</translation>
 <translation id="4439427728133035643"><ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" /> şəbəkə, <ph name="NETWORK_NAME" />, Siqnal Gücü <ph name="SIGNAL_STRENGTH" />%, Qoşulun</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">Faylları oflayn əlçatan edin</translation>
 <translation id="4658782175094886150">Qarda adam</translation>
 <translation id="4669606053856530811">"<ph name="SOURCE_NAME" />" bu element onlarla paylaşılmadığı halda, daxil ola bilməyəcəklər.</translation>
+<translation id="467809019005607715">Google Slayd</translation>
 <translation id="4690246192099372265">İsveç</translation>
 <translation id="4693155481716051732">Suşi</translation>
 <translation id="4694604912444486114">Meymun</translation>
@@ -657,6 +657,7 @@
 <translation id="6732801395666424405">Sertifikatlar yüklənilmədi</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">1 qovluq seçildi</translation>
+<translation id="6755827872271341378">ChromeOS Flex cihazı</translation>
 <translation id="6790428901817661496">Oxudun</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6806699711453372963">Linux paylaşımını idarə edin</translation>
@@ -734,6 +735,7 @@
 <translation id="7343393116438664539">Vyetnam dili (Teleks)</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> element kopyalanır...</translation>
 <translation id="7375951387215729722">Fayllar <ph name="COLUMN_NAME" /> üzrə artan sıra ilə çeşidlənib.</translation>
+<translation id="7402503521691663770">ChromeOS Flex cihazları</translation>
 <translation id="7408870451288633753">Çex</translation>
 <translation id="7417453074306512035">Efiop klaviaturası</translation>
 <translation id="7417705661718309329">Google xəritə</translation>
@@ -821,6 +823,7 @@
 <translation id="8042602468072383151"><ph name="AUDIO_TYPE" /> audiosu</translation>
 <translation id="8045462269890919536">Rumın</translation>
 <translation id="8049184478152619004">Şəxsi Blokdan Çıxarma Açarını (PUK) daxil edin</translation>
+<translation id="807187749540895545"><ph name="FILE_NAME" /> çıxarılır...</translation>
 <translation id="8079530767338315840">Təkrarlayın</translation>
 <translation id="8087576439476816834">Endirin: <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Mənimlə Paylaşılan</translation>
@@ -872,6 +875,7 @@
 <translation id="8484284835977497781">Son fotolarınızdan seçin.</translation>
 <translation id="8487700953926739672">Oflayn olaraq əlçatan</translation>
 <translation id="8492972329130824181">Ev şəbəkəsi əlçatan deyil. Qoşulmaq üçün mobil data rouminqi aktiv edilməlidir.</translation>
+<translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" /> element çıxarılır...</translation>
 <translation id="8521441079177373948">Böyük Britaniya</translation>
 <translation id="8525306231823319788">Tam ekran</translation>
 <translation id="853494022971700746">Fransız (Fransa)</translation>
@@ -947,6 +951,7 @@
 <translation id="9172592259078059678">Qucarat dilində Transliterasiya</translation>
 <translation id="9173120999827300720">Beynəlxalq klaviatura ilə İngilis dili (ABŞ)</translation>
 <translation id="9174050671906956834">Zibil qutusundakı elementlər 30 gün sonra həmişəlik silinir.</translation>
+<translation id="9183302530794969518">Google Sənəd</translation>
 <translation id="9189836632794948435">Qazax</translation>
 <translation id="9213073329713032541">Quraşdırma uğurla başladı.</translation>
 <translation id="9219103736887031265">Şəkillər</translation>

@@ -96,7 +96,6 @@ struct BLINK_COMMON_EXPORT WebPreferences {
   bool hide_scrollbars;
   bool accelerated_2d_canvas_enabled;
   bool canvas_2d_layers_enabled = false;
-  bool new_canvas_2d_api_enabled;
   bool antialiased_2d_canvas_disabled;
   bool antialiased_clips_2d_canvas_enabled;
   bool accelerated_filters_enabled;
@@ -256,6 +255,8 @@ struct BLINK_COMMON_EXPORT WebPreferences {
 
   // Don't accelerate small canvases to avoid crashes TODO(crbug.com/1004304)
   bool disable_accelerated_small_canvases;
+  // Disable the Web Authentication API.
+  bool disable_webauthn = false;
 #endif  // BUILDFLAG(IS_ANDROID)
 
   // Enable forcibly modifying content rendering to result in a light on dark

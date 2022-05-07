@@ -7,6 +7,7 @@
 
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
@@ -169,6 +170,8 @@ class CORE_EXPORT DisplayLockDocumentState final
   void NotifyPrintingOrPreviewChanged();
 
   base::TimeTicks GetLockUpdateTimestamp();
+
+  static constexpr float kViewportMarginPercentage = 150.f;
 
  private:
   IntersectionObserver& EnsureIntersectionObserver();

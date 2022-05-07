@@ -21,15 +21,8 @@ var EcheAppUIBrowserTest = class extends testing.Test {
   }
 
   /** @override */
-  get runAccessibilityChecks() {
-    return false;
-  }
-
-  /** @override */
   get featureList() {
-    return {
-      enabled: ['ash::features::kEcheSWA', 'ash::features::kPhoneHubRecentApps']
-    };
+    return {enabled: ['ash::features::kEcheSWA']};
   }
 };
 

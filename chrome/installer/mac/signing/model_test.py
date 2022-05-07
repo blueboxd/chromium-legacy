@@ -4,6 +4,7 @@
 
 import os.path
 import unittest
+from unittest import mock
 
 from . import model, test_common
 from .test_config import TestConfig
@@ -18,12 +19,18 @@ def _get_identity_hash(i):
     raise
 
 
+def _get_identity_hash(i):
+    if i == '[IDENTITY]':
+        return 'identity'
+
+    raise
+
+
 class TestCodeSignedProduct(unittest.TestCase):
 
     def test_requirements_string_identifier(self):
         product = model.CodeSignedProduct('path/binary', 'binary')
-        self.assertEqual('designated => identifier "binary"',
-                         product.requirements_string(TestConfig()))
+        self.assertEqual('', product.requirements_string(TestConfig()))
 
     def test_requirements_no_identifier(self):
         product = model.CodeSignedProduct(
@@ -62,18 +69,6 @@ class TestCodeSignedProduct(unittest.TestCase):
 
         self.assertEqual(
             '', product.requirements_string(RequirementConfig(identity='-')))
-
-
-class TestVerifyOptions(unittest.TestCase):
-
-    def test_valid_all(self):
-        opts = (
-            model.VerifyOptions.DEEP + model.VerifyOptions.NO_STRICT +
-            model.VerifyOptions.IGNORE_RESOURCES)
-        self.assertTrue(model.VerifyOptions.valid(opts))
-
-    def test_invalid(self):
-        self.assertFalse(model.VerifyOptions.valid(['--whatever']))
 
 
 @mock.patch('signing.model._get_identity_hash', _get_identity_hash)

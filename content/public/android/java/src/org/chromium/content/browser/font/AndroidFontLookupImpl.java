@@ -312,12 +312,10 @@ public class AndroidFontLookupImpl implements AndroidFontLookup {
             }
 
             logFetchFontResult(FetchFontResult.SUCCESS);
-            if (ContentFeatureList.isEnabled(BlinkFeatures.PREFETCH_ANDROID_FONTS)) {
-                mFetchedFontCache.put(fontUniqueName, fileDescriptor.dup());
-                // The size of the font cache should be at maximum the size of the font name to
-                // query map, since there is a limited number of fonts we fetch from GMS Core.
-                assert mFetchedFontCache.size() <= mFullFontNameToQuery.size();
-            }
+            mFetchedFontCache.put(fontUniqueName, fileDescriptor.dup());
+            // The size of the font cache should be at maximum the size of the font name to query
+            // map, since there is a limited number of fonts we fetch from GMS Core.
+            assert mFetchedFontCache.size() <= mFullFontNameToQuery.size();
             return fileDescriptor;
         } catch (NameNotFoundException | IOException | OutOfMemoryError | RuntimeException e) {
             // We sometimes get CursorWindowAllocationException, but it's a hidden class. So, we

@@ -4,7 +4,8 @@
 
 #include "chrome/common/pref_names.h"
 
-#include "base/cxx17_backports.h"
+#include <iterator>
+
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
@@ -262,7 +263,7 @@ const char* const kWebKitScriptsForFontFamilyMaps[] = {
 };
 
 const size_t kWebKitScriptsForFontFamilyMapsLength =
-    base::size(kWebKitScriptsForFontFamilyMaps);
+    std::size(kWebKitScriptsForFontFamilyMaps);
 
 // Strings for WebKit font family preferences. If these change, the pref prefix
 // in pref_names_util.cc and the pref format in font_settings_api.cc must also
@@ -1407,8 +1408,10 @@ const char kPrintingBackgroundGraphicsDefault[] =
 // A pref holding the default paper size.
 const char kPrintingPaperSizeDefault[] = "printing.paper_size_default";
 
+#if BUILDFLAG(ENABLE_PRINTING)
 // Boolean controlling whether printing is enabled.
 const char kPrintingEnabled[] = "printing.enabled";
+#endif  // BUILDFLAG(ENABLE_PRINTING)
 
 // Boolean controlling whether print preview is disabled.
 const char kPrintPreviewDisabled[] = "printing.print_preview_disabled";
@@ -1722,10 +1725,6 @@ const char kProfileAttributes[] = "profile.info_cache";
 // not happen if the browser crashes, so we remove the profile on next start.
 const char kProfilesDeleted[] = "profiles.profiles_deleted";
 
-// This is the location of a list of dictionaries of plugin stability stats.
-const char kStabilityPluginStats[] =
-    "user_experience_metrics.stability.plugin_stats2";
-
 // On Chrome OS, total number of non-Chrome user process crashes
 // since the last report.
 const char kStabilityOtherUserCrashCount[] =
@@ -1739,11 +1738,6 @@ const char kStabilityKernelCrashCount[] =
 // last report.
 const char kStabilitySystemUncleanShutdownCount[] =
     "user_experience_metrics.stability.system_unclean_shutdowns";
-
-// The keys below are used for the dictionaries in the
-// kStabilityPluginStats list.
-const char kStabilityPluginName[] = "name";
-const char kStabilityPluginCrashes[] = "crashes";
 
 // String containing the version of Chrome for which Chrome will not prompt the
 // user about setting Chrome as the default browser.
@@ -1778,6 +1772,9 @@ const char kDownloadDefaultDirectory[] = "download.default_directory";
 // Boolean that records if the download directory was changed by an
 // upgrade a unsafe location to a safe location.
 const char kDownloadDirUpgraded[] = "download.directory_upgrade";
+
+// base::Time value indicating the last timestamp when a download is completed.
+const char kDownloadLastCompleteTime[] = "download.last_complete_time";
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_MAC)

@@ -36,14 +36,15 @@
 #include "components/services/storage/public/mojom/quota_client.mojom.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "sql/test/test_helpers.h"
 #include "storage/browser/quota/quota_client_type.h"
 #include "storage/browser/quota/quota_database.h"
 #include "storage/browser/quota/quota_features.h"
+#include "storage/browser/quota/quota_internals.mojom.h"
 #include "storage/browser/quota/quota_manager_impl.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "storage/browser/quota/quota_override_handle.h"
 #include "storage/browser/test/mock_quota_client.h"
-#include "storage/browser/test/mock_quota_database.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -108,6 +109,19 @@ std::tuple<int64_t, int64_t> GetVolumeInfoForTests(
 
 StorageKey ToStorageKey(const std::string& url) {
   return StorageKey::CreateFromStringForTesting(url);
+}
+
+const storage::mojom::BucketTableEntry* FindBucketTableEntry(
+    const std::vector<storage::mojom::BucketTableEntryPtr>& bucket_entries,
+    BucketId& id) {
+  auto it = base::ranges::find_if(
+      bucket_entries, [id](const storage::mojom::BucketTableEntryPtr& entry) {
+        return entry->bucket_id == id.value();
+      });
+  if (it == bucket_entries.end()) {
+    return nullptr;
+  }
+  return it->get();
 }
 
 MATCHER_P3(MatchesBucketTableEntry, storage_key, type, use_count, "") {
@@ -436,6 +450,13 @@ class QuotaManagerImplTest : public testing::Test {
     return future.Get();
   }
 
+  std::vector<storage::mojom::BucketTableEntryPtr> RetrieveBucketsTable() {
+    base::test::TestFuture<std::vector<storage::mojom::BucketTableEntryPtr>>
+        future;
+    quota_manager_impl_->RetrieveBucketsTable(future.GetCallback());
+    return future.Take();
+  }
+
   void DidGetUsageAndQuotaWithBreakdown(
       base::OnceClosure quit_closure,
       QuotaStatusCode status,
@@ -519,8 +540,12 @@ class QuotaManagerImplTest : public testing::Test {
     quota_manager_impl_->SetQuotaChangeCallbackForTesting(std::move(cb));
   }
 
-  void SetQuotaDatabase(std::unique_ptr<QuotaDatabase> database) {
-    quota_manager_impl_->SetQuotaDatabaseForTesting(std::move(database));
+  QuotaError CorruptDatabaseForTesting(
+      base::OnceCallback<void(const base::FilePath&)> corrupter) {
+    base::test::TestFuture<QuotaError> corruption_future;
+    quota_manager_impl_->CorruptDatabaseForTesting(
+        std::move(corrupter), corruption_future.GetCallback());
+    return corruption_future.Get();
   }
 
   bool is_db_bootstrapping() {
@@ -622,6 +647,74 @@ TEST_F(QuotaManagerImplTest, QuotaDatabaseBootstrap) {
 
   bucket =
       GetBucket(ToStorageKey("http://example.com/"), kDefaultBucketName, kPerm);
+  ASSERT_TRUE(bucket.ok());
+}
+
+TEST_F(QuotaManagerImplTest, CorruptionRecovery) {
+  // Setup clients with both unmigrated and migrated data. Before corruption the
+  // bucket data will be used, while after corruption recovery data should be
+  // migrated again.
+  static const ClientBucketData kData1[] = {
+      {"http://foo.com/", kDefaultBucketName, kTemp, 10},
+      {"http://foo.com:8080/", kDefaultBucketName, kTemp, 15},
+  };
+  static const UnmigratedStorageKeyData kUnmigratedData1[] = {
+      {"http://foo.com/", kTemp, 10},
+      {"http://foo.com:8080/", kTemp, 15},
+  };
+  static const ClientBucketData kData2[] = {
+      {"https://foo.com/", kDefaultBucketName, kTemp, 30},
+      {"https://foo.com:8081/", kDefaultBucketName, kTemp, 35},
+  };
+  static const UnmigratedStorageKeyData kUnmigratedData2[] = {
+      {"https://foo.com/", kTemp, 30},
+      {"https://foo.com:8081/", kTemp, 35},
+  };
+  MockQuotaClient* fs_client = CreateAndRegisterClient(
+      QuotaClientType::kFileSystem, {kTemp, kPerm}, kUnmigratedData1);
+  MockQuotaClient* database_client = CreateAndRegisterClient(
+      QuotaClientType::kDatabase, {kTemp, kPerm}, kUnmigratedData2);
+  RegisterClientBucketData(fs_client, kData1);
+  RegisterClientBucketData(database_client, kData2);
+
+  // Basic sanity checks, make sure setup worked correctly.
+  auto bucket =
+      GetBucket(ToStorageKey("http://foo.com/"), kDefaultBucketName, kTemp);
+  ASSERT_TRUE(bucket.ok());
+  bucket = GetBucket(ToStorageKey("http://foo.com:8080/"), kDefaultBucketName,
+                     kTemp);
+  ASSERT_TRUE(bucket.ok());
+  bucket = GetBucket(ToStorageKey("https://foo.com:8081/"), kDefaultBucketName,
+                     kTemp);
+  ASSERT_TRUE(bucket.ok());
+
+  // Corrupt the database to make bucket lookup fail.
+  QuotaError corruption_error = CorruptDatabaseForTesting(
+      base::BindOnce([](const base::FilePath& db_path) {
+        ASSERT_TRUE(
+            sql::test::CorruptIndexRootPage(db_path, "buckets_by_storage_key"));
+      }));
+  ASSERT_EQ(QuotaError::kNone, corruption_error);
+
+  // Try to lookup a bucket, this should fail until the error threshold is
+  // reached.
+  for (int i = 0; i < QuotaManagerImpl::kThresholdOfErrorsToDisableDatabase;
+       ++i) {
+    EXPECT_FALSE(quota_manager_impl_->is_db_disabled_for_testing());
+    EXPECT_FALSE(is_db_bootstrapping());
+
+    bucket =
+        GetBucket(ToStorageKey("http://foo.com/"), kDefaultBucketName, kTemp);
+    ASSERT_FALSE(bucket.ok());
+    EXPECT_EQ(QuotaError::kDatabaseError, bucket.error());
+  }
+
+  // The last lookup attempt should have started another bootstrap attempt.
+  EXPECT_TRUE(is_db_bootstrapping());
+
+  // And with that bucket lookup should be working again.
+  bucket =
+      GetBucket(ToStorageKey("http://foo.com/"), kDefaultBucketName, kTemp);
   ASSERT_TRUE(bucket.ok());
 }
 
@@ -1695,6 +1788,55 @@ TEST_F(QuotaManagerImplTest, GetUsage_WithModification) {
   EXPECT_EQ(usage(), 4000 + 50000 + 900000000);
 }
 
+TEST_F(QuotaManagerImplTest, GetUsage_WithBucketModification) {
+  static const ClientBucketData kData[] = {
+      {"http://foo.com/", kDefaultBucketName, kTemp, 1},
+      {"http://foo.com/", kDefaultBucketName, kPerm, 50},
+      {"http://bar.com/", "logs", kTemp, 100},
+  };
+
+  MockQuotaClient* client =
+      CreateAndRegisterClient(QuotaClientType::kFileSystem, {kTemp, kPerm});
+  RegisterClientBucketData(client, kData);
+
+  auto global_usage_result = GetGlobalUsage(kPerm);
+  EXPECT_EQ(global_usage_result.usage, 50);
+  EXPECT_EQ(global_usage_result.unlimited_usage, 0);
+
+  auto foo_temp_bucket =
+      GetBucket(ToStorageKey("http://foo.com/"), kDefaultBucketName, kTemp);
+  ASSERT_TRUE(foo_temp_bucket.ok());
+  client->ModifyBucketAndNotify(foo_temp_bucket->id, 80000000);
+
+  global_usage_result = GetGlobalUsage(kTemp);
+  EXPECT_EQ(global_usage_result.usage, 1 + 100 + 80000000);
+  EXPECT_EQ(global_usage_result.unlimited_usage, 0);
+
+  global_usage_result = GetGlobalUsage(kPerm);
+  EXPECT_EQ(global_usage_result.usage, 50);
+  EXPECT_EQ(global_usage_result.unlimited_usage, 0);
+
+  auto foo_perm_bucket =
+      GetBucket(ToStorageKey("http://foo.com/"), kDefaultBucketName, kPerm);
+  ASSERT_TRUE(foo_perm_bucket.ok());
+  client->ModifyBucketAndNotify(foo_perm_bucket->id, 200);
+
+  global_usage_result = GetGlobalUsage(kPerm);
+  EXPECT_EQ(global_usage_result.usage, 50 + 200);
+  EXPECT_EQ(global_usage_result.unlimited_usage, 0);
+
+  GetHostUsageWithBreakdown("bar.com", kTemp);
+  EXPECT_EQ(usage(), 100);
+
+  auto bar_temp_bucket =
+      GetBucket(ToStorageKey("http://bar.com/"), "logs", kTemp);
+  ASSERT_TRUE(bar_temp_bucket.ok());
+  client->ModifyBucketAndNotify(bar_temp_bucket->id, 900000000);
+
+  GetHostUsageWithBreakdown("bar.com", kTemp);
+  EXPECT_EQ(usage(), 100 + 900000000);
+}
+
 TEST_F(QuotaManagerImplTest, GetUsage_WithDeleteBucket) {
   static const ClientBucketData kData[] = {
       {"http://foo.com/", kDefaultBucketName, kTemp, 1},
@@ -2409,22 +2551,23 @@ TEST_F(QuotaManagerImplTest, FindAndDeleteBucketDataWithDBError) {
   MockQuotaClient* fs_client =
       CreateAndRegisterClient(QuotaClientType::kFileSystem, {kTemp, kPerm});
 
-  auto quota_db = std::make_unique<MockQuotaDatabase>(
-      data_dir_.GetPath().AppendASCII("QuotaManager"));
-  MockQuotaDatabase* mock_database = quota_db.get();
-  SetQuotaDatabase(std::move(quota_db));
-
   RegisterClientBucketData(fs_client, kData);
 
   // Check usage data before deletion.
   GetHostUsageWithBreakdown("foo.com", kTemp);
   ASSERT_EQ(123, usage());
 
-  EXPECT_CALL(*mock_database, DeleteBucketInfo)
-      .Times(1)
-      .WillOnce(testing::Return(QuotaError::kDatabaseError));
+  // Bucket lookup uses the `buckets_by_storage_key` index. So, we can corrupt
+  // any other index, and SQLite will only detect the corruption when trying to
+  // delete a bucket.
+  QuotaError corruption_error = CorruptDatabaseForTesting(
+      base::BindOnce([](const base::FilePath& db_path) {
+        ASSERT_TRUE(sql::test::CorruptIndexRootPage(
+            db_path, "buckets_by_last_accessed"));
+      }));
+  ASSERT_EQ(QuotaError::kNone, corruption_error);
 
-  // Trying to delete bucket for "http://foo.com/" should return error.
+  // Deleting the bucket will result in an error.
   EXPECT_EQ(FindAndDeleteBucketData(ToStorageKey("http://foo.com"),
                                     kDefaultBucketName),
             QuotaStatusCode::kErrorInvalidModification);
@@ -2618,6 +2761,64 @@ TEST_F(QuotaManagerImplTest, DumpBucketTable) {
   EXPECT_THAT(entries, testing::UnorderedElementsAre(
                            MatchesBucketTableEntry(kStorageKey, kTemp, 1),
                            MatchesBucketTableEntry(kStorageKey, kPerm, 2)));
+}
+
+TEST_F(QuotaManagerImplTest, RetrieveBucketsTable) {
+  const StorageKey kStorageKey = ToStorageKey("http://example.com/");
+  const std::string kSerializedStorageKey = kStorageKey.Serialize();
+  const base::Time kAccessTime = base::Time::Now();
+
+  static const ClientBucketData kData[] = {
+      {"http://example.com/", kDefaultBucketName, kTemp, 0},
+      {"http://example.com/", kDefaultBucketName, kPerm, 0},
+  };
+
+  MockQuotaClient* client =
+      CreateAndRegisterClient(QuotaClientType::kFileSystem, {kTemp, kPerm});
+  RegisterClientBucketData(client, kData);
+
+  quota_manager_impl()->NotifyStorageAccessed(kStorageKey, kTemp, kAccessTime);
+  quota_manager_impl()->NotifyStorageAccessed(kStorageKey, kPerm, kAccessTime);
+
+  base::Time time1 = client->IncrementMockTime();
+  client->ModifyStorageKeyAndNotify(ToStorageKey("http://example.com/"), kTemp,
+                                    10);
+  client->ModifyStorageKeyAndNotify(ToStorageKey("http://example.com/"), kPerm,
+                                    10);
+  base::Time time2 = client->IncrementMockTime();
+  client->ModifyStorageKeyAndNotify(ToStorageKey("http://example.com/"), kTemp,
+                                    10);
+  base::Time time3 = client->IncrementMockTime();
+
+  auto temp_bucket = GetBucket(kStorageKey, kDefaultBucketName, kTemp);
+  auto perm_bucket = GetBucket(kStorageKey, kDefaultBucketName, kPerm);
+
+  const std::vector<storage::mojom::BucketTableEntryPtr> bucket_table_entries =
+      RetrieveBucketsTable();
+
+  auto* temp_entry =
+      FindBucketTableEntry(bucket_table_entries, temp_bucket->id);
+  EXPECT_TRUE(temp_entry);
+  EXPECT_EQ(temp_entry->storage_key, kSerializedStorageKey);
+  EXPECT_EQ(temp_entry->host, "example.com");
+  EXPECT_EQ(temp_entry->type, "temporary");
+  EXPECT_EQ(temp_entry->name, kDefaultBucketName);
+  EXPECT_EQ(temp_entry->use_count, 1);
+  EXPECT_EQ(temp_entry->last_accessed, kAccessTime);
+  EXPECT_GE(temp_entry->last_modified, time2);
+  EXPECT_LE(temp_entry->last_modified, time3);
+
+  auto* perm_entry =
+      FindBucketTableEntry(bucket_table_entries, perm_bucket->id);
+  EXPECT_TRUE(perm_entry);
+  EXPECT_EQ(perm_entry->storage_key, kSerializedStorageKey);
+  EXPECT_EQ(perm_entry->host, "example.com");
+  EXPECT_EQ(perm_entry->type, "persistent");
+  EXPECT_EQ(perm_entry->name, kDefaultBucketName);
+  EXPECT_EQ(perm_entry->use_count, 1);
+  EXPECT_EQ(perm_entry->last_accessed, kAccessTime);
+  EXPECT_GE(perm_entry->last_modified, time1);
+  EXPECT_LE(perm_entry->last_modified, time2);
 }
 
 TEST_F(QuotaManagerImplTest, QuotaForEmptyHost) {

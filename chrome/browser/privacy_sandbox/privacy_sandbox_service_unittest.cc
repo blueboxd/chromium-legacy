@@ -42,8 +42,12 @@
 #include "url/origin.h"
 
 namespace {
+using browsing_topics::Topic;
 using privacy_sandbox::CanonicalTopic;
 using testing::ElementsAre;
+
+const char kPrivacySandboxStartupHistogram[] =
+    "Settings.PrivacySandbox.StartupState";
 
 class TestInterestGroupManager : public content::InterestGroupManager {
  public:
@@ -59,6 +63,17 @@ class TestInterestGroupManager : public content::InterestGroupManager {
 
  private:
   std::vector<url::Origin> origins_;
+};
+
+class MockPrivacySandboxSettings
+    : public privacy_sandbox::PrivacySandboxSettings {
+ public:
+  void SetupDefaultResponse() {
+    ON_CALL(*this, IsPrivacySandboxRestricted).WillByDefault([]() {
+      return false;
+    });
+  }
+  MOCK_METHOD(bool, IsPrivacySandboxRestricted, (), (override));
 };
 
 struct DialogTestState {
@@ -634,17 +649,27 @@ class PrivacySandboxServiceTest : public testing::Test {
             base::test::TaskEnvironment::TimeSource::MOCK_TIME) {}
 
   void SetUp() override {
-    InitializePrefsBeforeStart();
+    auto mock_delegate = std::make_unique<
+        privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate>();
+    mock_delegate_ = mock_delegate.get();
+
+    InitializeBeforeStart();
+
+    privacy_sandbox_settings_ =
+        std::make_unique<privacy_sandbox::PrivacySandboxSettings>(
+            std::move(mock_delegate), host_content_settings_map(),
+            cookie_settings(), prefs(), /*incognito_profile=*/false);
 
     privacy_sandbox_service_ = std::make_unique<PrivacySandboxService>(
-        PrivacySandboxSettingsFactory::GetForProfile(profile()),
-        CookieSettingsFactory::GetForProfile(profile()).get(),
-        profile()->GetPrefs(), policy_service(), sync_service(),
+        privacy_sandbox_settings(), cookie_settings(), profile()->GetPrefs(),
+        policy_service(), sync_service(),
         identity_test_env()->identity_manager(), test_interest_group_manager(),
         GetProfileType());
   }
 
-  virtual void InitializePrefsBeforeStart() {}
+  virtual void InitializeBeforeStart() {
+    mock_delegate()->SetupDefaultResponse(/*restricted=*/false);
+  }
 
   virtual profile_metrics::BrowserProfileType GetProfileType() {
     return profile_metrics::BrowserProfileType::kRegular;
@@ -661,8 +686,8 @@ class PrivacySandboxServiceTest : public testing::Test {
   PrivacySandboxService* privacy_sandbox_service() {
     return privacy_sandbox_service_.get();
   }
-  PrivacySandboxSettings* privacy_sandbox_settings() {
-    return PrivacySandboxSettingsFactory::GetForProfile(profile());
+  privacy_sandbox::PrivacySandboxSettings* privacy_sandbox_settings() {
+    return privacy_sandbox_settings_.get();
   }
   base::test::ScopedFeatureList* feature_list() { return &feature_list_; }
   sync_preferences::TestingPrefServiceSyncable* prefs() {
@@ -671,6 +696,9 @@ class PrivacySandboxServiceTest : public testing::Test {
   HostContentSettingsMap* host_content_settings_map() {
     return HostContentSettingsMapFactory::GetForProfile(profile());
   }
+  content_settings::CookieSettings* cookie_settings() {
+    return CookieSettingsFactory::GetForProfile(profile()).get();
+  }
   syncer::TestSyncService* sync_service() { return &sync_service_; }
   policy::MockPolicyService* policy_service() { return &mock_policy_service_; }
   signin::IdentityTestEnvironment* identity_test_env() {
@@ -678,6 +706,10 @@ class PrivacySandboxServiceTest : public testing::Test {
   }
   TestInterestGroupManager* test_interest_group_manager() {
     return &test_interest_group_manager_;
+  }
+  privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate*
+  mock_delegate() {
+    return mock_delegate_;
   }
 
  private:
@@ -689,6 +721,9 @@ class PrivacySandboxServiceTest : public testing::Test {
   base::test::ScopedFeatureList feature_list_;
   syncer::TestSyncService sync_service_;
   TestInterestGroupManager test_interest_group_manager_;
+  privacy_sandbox_test_util::MockPrivacySandboxSettingsDelegate* mock_delegate_;
+  std::unique_ptr<privacy_sandbox::PrivacySandboxSettings>
+      privacy_sandbox_settings_;
 
   std::unique_ptr<PrivacySandboxService> privacy_sandbox_service_;
 };
@@ -725,113 +760,6 @@ TEST_F(PrivacySandboxServiceTest, GetFlocStatusForDisplay) {
 
 TEST_F(PrivacySandboxServiceTest, IsFlocIdResettable) {
   EXPECT_FALSE(privacy_sandbox_service()->IsFlocIdResettable());
-}
-
-TEST_F(PrivacySandboxServiceTest, UserResetFlocID) {
-  // Check that the PrivacySandboxSettings is informed, and the appropriate
-  // actions are logged, in response to a user resetting the floc id.
-  EXPECT_EQ(base::Time(),
-            privacy_sandbox_settings()->FlocDataAccessibleSince());
-
-  privacy_sandbox_test_util::MockPrivacySandboxObserver observer;
-  privacy_sandbox_settings()->AddObserver(&observer);
-  EXPECT_CALL(observer, OnFlocDataAccessibleSinceUpdated(true)).Times(2);
-
-  base::UserActionTester user_action_tester;
-  ASSERT_EQ(0, user_action_tester.GetActionCount(
-                   "Settings.PrivacySandbox.ResetFloc"));
-
-  privacy_sandbox_service()->ResetFlocId(/*user_initiated=*/true);
-
-  EXPECT_NE(base::Time(),
-            privacy_sandbox_settings()->FlocDataAccessibleSince());
-  ASSERT_EQ(1, user_action_tester.GetActionCount(
-                   "Settings.PrivacySandbox.ResetFloc"));
-
-  privacy_sandbox_service()->ResetFlocId(/*user_initiated=*/false);
-  ASSERT_EQ(1, user_action_tester.GetActionCount(
-                   "Settings.PrivacySandbox.ResetFloc"));
-}
-
-TEST_F(PrivacySandboxServiceTest, IsFlocPrefEnabled) {
-  // IsFlocPrefEnabled should directly reflect the state of the FLoC pref.
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, true);
-  EXPECT_TRUE(privacy_sandbox_service()->IsFlocPrefEnabled());
-
-  // The Privacy Sandbox APIs pref should not impact the return value.
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxApisEnabled, false);
-  EXPECT_TRUE(privacy_sandbox_service()->IsFlocPrefEnabled());
-
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, false);
-  EXPECT_FALSE(privacy_sandbox_service()->IsFlocPrefEnabled());
-}
-
-TEST_F(PrivacySandboxServiceTest, SetFlocPrefEnabled) {
-  // The FLoc pref should always be updated by this function, regardless of
-  // other Sandbox State.
-  base::UserActionTester user_action_tester;
-  ASSERT_EQ(0, user_action_tester.GetActionCount(
-                   "Settings.PrivacySandbox.FlocEnabled"));
-  ASSERT_EQ(0, user_action_tester.GetActionCount(
-                   "Settings.PrivacySandbox.FlocDisabled"));
-
-  privacy_sandbox_service()->SetFlocPrefEnabled(false);
-  EXPECT_FALSE(profile()->GetTestingPrefService()->GetBoolean(
-      prefs::kPrivacySandboxFlocEnabled));
-  ASSERT_EQ(0, user_action_tester.GetActionCount(
-                   "Settings.PrivacySandbox.FlocEnabled"));
-  ASSERT_EQ(1, user_action_tester.GetActionCount(
-                   "Settings.PrivacySandbox.FlocDisabled"));
-
-  // Disabling the sandbox shouldn't prevent the pref from being updated. This
-  // state is not directly allowable by the UI, but the state itself is valid
-  // as far as the PrivacySandboxService service is concerned.
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxApisEnabled, false);
-  privacy_sandbox_service()->SetFlocPrefEnabled(true);
-  EXPECT_TRUE(profile()->GetTestingPrefService()->GetBoolean(
-      prefs::kPrivacySandboxFlocEnabled));
-  ASSERT_EQ(1, user_action_tester.GetActionCount(
-                   "Settings.PrivacySandbox.FlocEnabled"));
-  ASSERT_EQ(1, user_action_tester.GetActionCount(
-                   "Settings.PrivacySandbox.FlocDisabled"));
-}
-
-TEST_F(PrivacySandboxServiceTest, OnPrivacySandboxPrefChanged) {
-  // When either the main Privacy Sandbox pref, or the FLoC pref, are changed
-  // the FLoC ID should be reset. This will be propagated to the settings
-  // instance, which should then notify observers.
-  privacy_sandbox_test_util::MockPrivacySandboxObserver
-      mock_privacy_sandbox_observer;
-  PrivacySandboxSettingsFactory::GetForProfile(profile())->AddObserver(
-      &mock_privacy_sandbox_observer);
-  EXPECT_CALL(mock_privacy_sandbox_observer,
-              OnFlocDataAccessibleSinceUpdated(/*reset_compute_timer=*/true));
-
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxApisEnabled, false);
-  testing::Mock::VerifyAndClearExpectations(&mock_privacy_sandbox_observer);
-
-  EXPECT_CALL(mock_privacy_sandbox_observer,
-              OnFlocDataAccessibleSinceUpdated(/*reset_compute_timer=*/true));
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, false);
-  testing::Mock::VerifyAndClearExpectations(&mock_privacy_sandbox_observer);
-
-  EXPECT_CALL(mock_privacy_sandbox_observer,
-              OnFlocDataAccessibleSinceUpdated(/*reset_compute_timer=*/true));
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxFlocEnabled, true);
-  testing::Mock::VerifyAndClearExpectations(&mock_privacy_sandbox_observer);
-
-  EXPECT_CALL(mock_privacy_sandbox_observer,
-              OnFlocDataAccessibleSinceUpdated(/*reset_compute_timer=*/true));
-  profile()->GetTestingPrefService()->SetBoolean(
-      prefs::kPrivacySandboxApisEnabled, true);
-  testing::Mock::VerifyAndClearExpectations(&mock_privacy_sandbox_observer);
 }
 
 TEST_F(PrivacySandboxServiceTest, GetFledgeJoiningEtldPlusOne) {
@@ -975,10 +903,553 @@ TEST_F(PrivacySandboxServiceTest, DialogActionUpdatesRequiredDialog) {
   EXPECT_TRUE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
 }
 
+TEST_F(PrivacySandboxServiceTest, PrivacySandboxDialogNoticeWaiting) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "false" /* consent required */}});
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationSandboxDisabled,
+                       std::make_unique<base::Value>(false));
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoticeDisplayed,
+                       std::make_unique<base::Value>(false));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kDialogWaiting, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, PrivacySandboxDialogConsentWaiting) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "true" /* consent required */}});
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationSandboxDisabled,
+                       std::make_unique<base::Value>(false));
+  prefs()->SetUserPref(prefs::kPrivacySandboxConsentDecisionMade,
+                       std::make_unique<base::Value>(false));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kDialogWaiting, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, PrivacySandboxV1OffDisabled) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "false" /* consent required */}});
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationSandboxDisabled,
+                       std::make_unique<base::Value>(true));
+  prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
+                       std::make_unique<base::Value>(false));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kDialogOffV1OffDisabled, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, PrivacySandboxV1OffEnabled) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "false" /* consent required */}});
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationSandboxDisabled,
+                       std::make_unique<base::Value>(true));
+  prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
+                       std::make_unique<base::Value>(true));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kDialogOffV1OffEnabled, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, PrivacySandboxRestricted) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "false" /* consent required */}});
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationSandboxRestricted,
+                       std::make_unique<base::Value>(true));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kDialogOffRestricted, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, PrivacySandboxManagedEnabled) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "false" /* consent required */}});
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationSandboxManaged,
+                       std::make_unique<base::Value>(true));
+  prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
+                       std::make_unique<base::Value>(true));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kDialogOffManagedEnabled, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, PrivacySandboxManagedDisabled) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "false" /* consent required */}});
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationSandboxManaged,
+                       std::make_unique<base::Value>(true));
+  prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
+                       std::make_unique<base::Value>(false));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kDialogOffManagedDisabled, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, PrivacySandbox3PCOffEnabled) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "false" /* consent required */}});
+  prefs()->SetUserPref(
+      prefs::kPrivacySandboxNoConfirmationThirdPartyCookiesBlocked,
+      std::make_unique<base::Value>(true));
+  prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
+                       std::make_unique<base::Value>(true));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/true,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kDialogOff3PCOffEnabled, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, PrivacySandbox3PCOffDisabled) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "false" /* consent required */}});
+  prefs()->SetUserPref(
+      prefs::kPrivacySandboxNoConfirmationThirdPartyCookiesBlocked,
+      std::make_unique<base::Value>(true));
+  prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
+                       std::make_unique<base::Value>(false));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/true,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kDialogOff3PCOffDisabled, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, PrivacySandboxConsentEnabled) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "true" /* consent required */}});
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationSandboxDisabled,
+                       std::make_unique<base::Value>(false));
+  prefs()->SetUserPref(prefs::kPrivacySandboxConsentDecisionMade,
+                       std::make_unique<base::Value>(true));
+  prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
+                       std::make_unique<base::Value>(true));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kConsentShownEnabled, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, PrivacySandboxConsentDisabled) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "true" /* consent required */}});
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationSandboxDisabled,
+                       std::make_unique<base::Value>(false));
+  prefs()->SetUserPref(prefs::kPrivacySandboxConsentDecisionMade,
+                       std::make_unique<base::Value>(true));
+  prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
+                       std::make_unique<base::Value>(false));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kConsentShownDisabled, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, PrivacySandboxNoticeEnabled) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "false" /* consent required */}});
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationSandboxDisabled,
+                       std::make_unique<base::Value>(false));
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoticeDisplayed,
+                       std::make_unique<base::Value>(true));
+  prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
+                       std::make_unique<base::Value>(true));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/true,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kNoticeShownEnabled, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, PrivacySandboxNoticeDisabled) {
+  base::HistogramTester histogram_tester;
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{"consent-required", "false" /* consent required */}});
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoConfirmationSandboxDisabled,
+                       std::make_unique<base::Value>(false));
+  prefs()->SetUserPref(prefs::kPrivacySandboxNoticeDisplayed,
+                       std::make_unique<base::Value>(true));
+  prefs()->SetUserPref(prefs::kPrivacySandboxApisEnabledV2,
+                       std::make_unique<base::Value>(false));
+
+  privacy_sandbox_test_util::SetupTestState(
+      prefs(), host_content_settings_map(),
+      /*privacy_sandbox_enabled=*/false,
+      /*block_third_party_cookies=*/false,
+      /*default_cookie_setting=*/ContentSetting::CONTENT_SETTING_ALLOW,
+      /*user_cookie_exceptions=*/{},
+      /*managed_cookie_setting=*/privacy_sandbox_test_util::kNoSetting,
+      /*managed_cookie_exceptions=*/{});
+  privacy_sandbox_service()->MaybeReconcilePrivacySandboxPref();
+
+  histogram_tester.ExpectUniqueSample(
+      kPrivacySandboxStartupHistogram,
+      PrivacySandboxService::PSStartupStates::kNoticeShownDisabled, 1);
+}
+
+TEST_F(PrivacySandboxServiceTest, DialogActionsUMAActions) {
+  base::UserActionTester user_action_tester;
+
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/false,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kNoticeShown);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.Notice.Shown"));
+
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/false,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kNoticeOpenSettings);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.Notice.OpenedSettings"));
+
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/false,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kNoticeAcknowledge);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.Notice.Acknowledged"));
+
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/false,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kNoticeDismiss);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.Notice.Dismissed"));
+
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/false,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kNoticeClosedNoInteraction);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.Notice.ClosedNoInteraction"));
+
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/true,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kConsentShown);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.Consent.Shown"));
+
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/true,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kConsentAccepted);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.Consent.Accepted"));
+
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/true,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kConsentDeclined);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.Consent.Declined"));
+
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/true,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kConsentMoreInfoOpened);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.Consent.LearnMoreExpanded"));
+
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/true,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+  privacy_sandbox_service()->DialogActionOccurred(
+      PrivacySandboxService::DialogAction::kConsentClosedNoDecision);
+  EXPECT_EQ(1, user_action_tester.GetActionCount(
+                   "Settings.PrivacySandbox.Consent.ClosedNoInteraction"));
+}
+
+TEST_F(PrivacySandboxServiceTest, Block3PCookieNoDialog) {
+  // Confirm that when 3P cookies are blocked, that no dialog is shown.
+  prefs()->SetUserPref(
+      prefs::kCookieControlsMode,
+      std::make_unique<base::Value>(static_cast<int>(
+          content_settings::CookieControlsMode::kBlockThirdParty)));
+  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
+            privacy_sandbox_service()->GetRequiredDialogType());
+
+  // This should persist even if 3P cookies become allowed.
+  prefs()->SetUserPref(prefs::kCookieControlsMode,
+                       std::make_unique<base::Value>(static_cast<int>(
+                           content_settings::CookieControlsMode::kOff)));
+  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
+            privacy_sandbox_service()->GetRequiredDialogType());
+}
+
+TEST_F(PrivacySandboxServiceTest, BlockAllCookiesNoDialog) {
+  // Confirm that when all cookies are blocked, that no dialog is shown.
+  cookie_settings()->SetDefaultCookieSetting(CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
+            privacy_sandbox_service()->GetRequiredDialogType());
+
+  // This should persist even if cookies become allowed.
+  cookie_settings()->SetDefaultCookieSetting(CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(PrivacySandboxService::DialogType::kNone,
+            privacy_sandbox_service()->GetRequiredDialogType());
+}
+
+class PrivacySandboxRestrictedTest : public PrivacySandboxServiceTest {
+  void InitializeBeforeStart() override {
+    prefs()->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, true);
+    mock_delegate()->SetupDefaultResponse(/*restricted=*/true);
+  }
+};
+
+TEST_F(PrivacySandboxRestrictedTest, DisablePreferenceOnStartup) {
+  // Confirm that because it is restricted, the Privacy Sandbox, which will have
+  // been enabled in the test setup, has been disabled by the service during
+  // creation.
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));
+}
+
+TEST_F(PrivacySandboxServiceTest, TestNoFakeTopics) {
+  auto* service = privacy_sandbox_service();
+  EXPECT_THAT(service->GetCurrentTopTopics(), testing::IsEmpty());
+  EXPECT_THAT(service->GetBlockedTopics(), testing::IsEmpty());
+}
+
+TEST_F(PrivacySandboxServiceTest, TestFakeTopics) {
+  feature_list()->Reset();
+  feature_list()->InitAndEnableFeatureWithParameters(
+      privacy_sandbox::kPrivacySandboxSettings3,
+      {{privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.name,
+        "true"}});
+  CanonicalTopic topic1(Topic(1), CanonicalTopic::AVAILABLE_TAXONOMY);
+  CanonicalTopic topic2(Topic(2), CanonicalTopic::AVAILABLE_TAXONOMY);
+  CanonicalTopic topic3(Topic(3), CanonicalTopic::AVAILABLE_TAXONOMY);
+  CanonicalTopic topic4(Topic(4), CanonicalTopic::AVAILABLE_TAXONOMY);
+
+  auto* service = privacy_sandbox_service();
+  EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic1, topic2));
+  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic3, topic4));
+
+  service->SetTopicAllowed(topic1, false);
+  EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic2));
+  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic1, topic3, topic4));
+
+  service->SetTopicAllowed(topic4, true);
+  EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic2, topic4));
+  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic1, topic3));
+}
+
 class PrivacySandboxServiceTestReconciliationBlocked
     : public PrivacySandboxServiceTest {
  public:
-  void InitializePrefsBeforeStart() override {
+  void InitializeBeforeStart() override {
     // Set the reconciled preference to true here, so when the service is
     // created prior to each test case running, it does not attempt to reconcile
     // the preferences. Tests must call ResetReconciledPref before testing to
@@ -1676,25 +2147,6 @@ TEST_F(PrivacySandboxServiceTestNonRegularProfile, NoMetricsRecorded) {
   histograms.ExpectTotalCount(histogram_name, 0);
 }
 
-TEST_F(PrivacySandboxServiceTestNonRegularProfile, TestFakeTopics) {
-  CanonicalTopic topic1(1, CanonicalTopic::AVAILABLE_TAXONOMY);
-  CanonicalTopic topic2(2, CanonicalTopic::AVAILABLE_TAXONOMY);
-  CanonicalTopic topic3(3, CanonicalTopic::AVAILABLE_TAXONOMY);
-  CanonicalTopic topic4(4, CanonicalTopic::AVAILABLE_TAXONOMY);
-
-  auto* service = privacy_sandbox_service();
-  EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic1, topic2));
-  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic3, topic4));
-
-  service->SetTopicAllowed(topic1, false);
-  EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic2));
-  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic1, topic3, topic4));
-
-  service->SetTopicAllowed(topic4, true);
-  EXPECT_THAT(service->GetCurrentTopTopics(), ElementsAre(topic2, topic4));
-  EXPECT_THAT(service->GetBlockedTopics(), ElementsAre(topic1, topic3));
-}
-
 TEST_F(PrivacySandboxServiceTestNonRegularProfile, NoDialogRequired) {
   // Non-regular profiles should never have a dialog shown.
   SetupDialogTestState(feature_list(), prefs(),
@@ -1718,9 +2170,9 @@ TEST_F(PrivacySandboxServiceTestNonRegularProfile, NoDialogRequired) {
             privacy_sandbox_service()->GetRequiredDialogType());
 }
 
-class PrivacySandboxServiceDeathTest : public testing::TestWithParam<int> {
+class PrivacySandboxServiceDialogTestBase {
  public:
-  PrivacySandboxServiceDeathTest() {
+  PrivacySandboxServiceDialogTestBase() {
     privacy_sandbox::RegisterProfilePrefs(prefs()->registry());
   }
 
@@ -1729,14 +2181,79 @@ class PrivacySandboxServiceDeathTest : public testing::TestWithParam<int> {
   sync_preferences::TestingPrefServiceSyncable* prefs() {
     return &pref_service_;
   }
+  MockPrivacySandboxSettings* privacy_sandbox_settings() {
+    return &privacy_sandbox_settings_;
+  }
 
  private:
   base::test::ScopedFeatureList feature_list_;
   sync_preferences::TestingPrefServiceSyncable pref_service_;
+  MockPrivacySandboxSettings privacy_sandbox_settings_;
 };
+
+class PrivacySandboxServiceDialogTest
+    : public PrivacySandboxServiceDialogTestBase,
+      public testing::Test {};
+
+TEST_F(PrivacySandboxServiceDialogTest, RestrictedDialog) {
+  // Confirm that when the Privacy Sandbox is restricted, that no dialog is
+  // shown.
+  SetupDialogTestState(feature_list(), prefs(),
+                       {/*consent_required=*/true,
+                        /*old_api_pref=*/true,
+                        /*new_api_pref=*/false,
+                        /*notice_displayed=*/false,
+                        /*consent_decision_made=*/false,
+                        /*confirmation_not_shown=*/false});
+
+  EXPECT_CALL(*privacy_sandbox_settings(), IsPrivacySandboxRestricted())
+      .Times(1)
+      .WillOnce(testing::Return(true));
+  EXPECT_EQ(
+      PrivacySandboxService::DialogType::kNone,
+      PrivacySandboxService::GetRequiredDialogTypeInternal(
+          prefs(), profile_metrics::BrowserProfileType::kRegular,
+          privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
+
+  // After being restricted, even if the restriction is removed, no dialog
+  // should be shown. No call should even need to be made to see if the
+  // sandbox is still restricted.
+  EXPECT_CALL(*privacy_sandbox_settings(), IsPrivacySandboxRestricted())
+      .Times(0);
+  EXPECT_EQ(
+      PrivacySandboxService::DialogType::kNone,
+      PrivacySandboxService::GetRequiredDialogTypeInternal(
+          prefs(), profile_metrics::BrowserProfileType::kRegular,
+          privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
+}
+
+TEST_F(PrivacySandboxServiceDialogTest, ManagedNoDialog) {
+  // Confirm that when the Privacy Sandbox is managed, that no dialog is
+  // shown.
+  prefs()->SetManagedPref(prefs::kPrivacySandboxApisEnabledV2,
+                          base::Value(true));
+  EXPECT_EQ(
+      PrivacySandboxService::DialogType::kNone,
+      PrivacySandboxService::GetRequiredDialogTypeInternal(
+          prefs(), profile_metrics::BrowserProfileType::kRegular,
+          privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
+
+  // This should persist even if the preference becomes unmanaged.
+  prefs()->RemoveManagedPref(prefs::kPrivacySandboxApisEnabledV2);
+  EXPECT_EQ(
+      PrivacySandboxService::DialogType::kNone,
+      PrivacySandboxService::GetRequiredDialogTypeInternal(
+          prefs(), profile_metrics::BrowserProfileType::kRegular,
+          privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
+}
+
+class PrivacySandboxServiceDeathTest
+    : public PrivacySandboxServiceDialogTestBase,
+      public testing::TestWithParam<int> {};
 
 TEST_P(PrivacySandboxServiceDeathTest, GetRequiredDialogType) {
   const auto& test_case = kDialogTestCases[GetParam()];
+  privacy_sandbox_settings()->SetupDefaultResponse();
 
   testing::Message scope_message;
   scope_message << "consent_required:" << test_case.test_setup.consent_required
@@ -1751,18 +2268,26 @@ TEST_P(PrivacySandboxServiceDeathTest, GetRequiredDialogType) {
 
   SetupDialogTestState(feature_list(), prefs(), test_case.test_setup);
   if (test_case.expected_output.dcheck_failure) {
-    EXPECT_DCHECK_DEATH(PrivacySandboxService::GetRequiredDialogTypeInternal(
-        prefs(), profile_metrics::BrowserProfileType::kRegular));
+    EXPECT_DCHECK_DEATH(
+        PrivacySandboxService::GetRequiredDialogTypeInternal(
+            prefs(), profile_metrics::BrowserProfileType::kRegular,
+            privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false);
+
+    );
     return;
   }
 
   // Returned dialog type should never change between successive calls.
-  EXPECT_EQ(test_case.expected_output.dialog_type,
-            PrivacySandboxService::GetRequiredDialogTypeInternal(
-                prefs(), profile_metrics::BrowserProfileType::kRegular));
-  EXPECT_EQ(test_case.expected_output.dialog_type,
-            PrivacySandboxService::GetRequiredDialogTypeInternal(
-                prefs(), profile_metrics::BrowserProfileType::kRegular));
+  EXPECT_EQ(
+      test_case.expected_output.dialog_type,
+      PrivacySandboxService::GetRequiredDialogTypeInternal(
+          prefs(), profile_metrics::BrowserProfileType::kRegular,
+          privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
+  EXPECT_EQ(
+      test_case.expected_output.dialog_type,
+      PrivacySandboxService::GetRequiredDialogTypeInternal(
+          prefs(), profile_metrics::BrowserProfileType::kRegular,
+          privacy_sandbox_settings(), /*third_party_cookies_blocked=*/false));
 
   EXPECT_EQ(test_case.expected_output.new_api_pref,
             prefs()->GetBoolean(prefs::kPrivacySandboxApisEnabledV2));

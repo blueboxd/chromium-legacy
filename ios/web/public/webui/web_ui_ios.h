@@ -42,18 +42,15 @@ class WebUIIOS {
   virtual void AddMessageHandler(
       std::unique_ptr<WebUIIOSMessageHandler> handler) = 0;
 
-  // Used by WebUIIOSMessageHandlers. If the given message is already
-  // registered, the call has no effect.
+  // Used by WebUIMessageHandlers. If the given message is already registered,
+  // the call has no effect.
   using MessageCallback =
-      base::RepeatingCallback<void(base::Value::ConstListView)>;
+      base::RepeatingCallback<void(const base::Value::List&)>;
   virtual void RegisterMessageCallback(const std::string& message,
                                        MessageCallback callback) = 0;
 
-  // Always use RegisterMessageCallback() above in new code.
-  //
-  // TODO(crbug.com/1243386): Existing callers of
-  // RegisterDeprecatedMessageCallback() should be migrated to
-  // RegisterMessageCallback() if possible.
+  // TODO(crbug.com/1243386): Instances of RegisterDeprecatedMessageCallback()
+  // should be migrated to RegisterMessageCallback().
   //
   // Used by WebUIIOSMessageHandlers. If the given message is already
   // registered, the call has no effect.

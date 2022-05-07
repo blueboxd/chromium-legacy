@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/privacy_sandbox/privacy_sandbox_dialog.h"
 #include "chrome/browser/ui/views/frame/app_menu_button.h"
@@ -26,15 +27,59 @@ constexpr int kDialogWidth = 512;
 constexpr int kDefaultConsentDialogHeight = 569;
 constexpr int kDefaultNoticeDialogHeight = 494;
 
+class PrivacySandboxDialogDelegate : public views::DialogDelegate {
+ public:
+  explicit PrivacySandboxDialogDelegate(
+      Browser* browser,
+      PrivacySandboxService::DialogType dialog_type)
+      : browser_(browser), dialog_type_(dialog_type) {
+    if (auto* privacy_sandbox_serivce =
+            PrivacySandboxServiceFactory::GetForProfile(browser->profile())) {
+      privacy_sandbox_serivce->DialogOpenedForBrowser(browser);
+    }
+    SetCloseCallback(base::BindOnce(&PrivacySandboxDialogDelegate::OnClose,
+                                    base::Unretained(this)));
+  }
+
+  bool OnCloseRequested(views::Widget::ClosedReason close_reason) override {
+    // Any close reason is sufficient to close the notice.
+    if (dialog_type_ == PrivacySandboxService::DialogType::kNotice)
+      return true;
+
+    // Only an unspecified close reason, which only occurs when the user has
+    // actually made a choice and not for things like pressing escape, is
+    // sufficient to close the consent.
+    return close_reason == views::Widget::ClosedReason::kUnspecified;
+  }
+
+  void OnClose() {
+    if (auto* privacy_sandbox_serivce =
+            PrivacySandboxServiceFactory::GetForProfile(browser_->profile())) {
+      privacy_sandbox_serivce->DialogClosedForBrowser(browser_);
+    }
+  }
+
+ private:
+  Browser* browser_;
+  PrivacySandboxService::DialogType dialog_type_;
+};
+
 }  // namespace
 
 // static
 void ShowPrivacySandboxDialog(Browser* browser,
                               PrivacySandboxService::DialogType dialog_type) {
-  auto dialog =
-      std::make_unique<PrivacySandboxDialogView>(browser, dialog_type);
+  auto delegate =
+      std::make_unique<PrivacySandboxDialogDelegate>(browser, dialog_type);
+  delegate->SetButtons(ui::DIALOG_BUTTON_NONE);
+  delegate->SetModalType(ui::MODAL_TYPE_WINDOW);
+  delegate->SetShowCloseButton(false);
+  delegate->SetOwnedByWidget(true);
+
+  delegate->SetContentsView(
+      std::make_unique<PrivacySandboxDialogView>(browser, dialog_type));
   constrained_window::CreateBrowserModalDialogViews(
-      std::move(dialog), browser->window()->GetNativeWindow());
+      std::move(delegate), browser->window()->GetNativeWindow());
 }
 
 PrivacySandboxDialogView::PrivacySandboxDialogView(
@@ -58,7 +103,6 @@ PrivacySandboxDialogView::PrivacySandboxDialogView(
                                        ->GetWebUI()
                                        ->GetController()
                                        ->GetAs<PrivacySandboxDialogUI>();
-  SetInitiallyFocusedView(web_view_);
   DCHECK(web_ui);
   // Unretained is fine because this outlives the inner web UI.
   web_ui->Initialize(
@@ -70,11 +114,7 @@ PrivacySandboxDialogView::PrivacySandboxDialogView(
                      base::Unretained(this)),
       dialog_type);
 
-  SetButtons(ui::DIALOG_BUTTON_NONE);
-  SetModalType(ui::MODAL_TYPE_WINDOW);
-  SetShowCloseButton(false);
   SetUseDefaultFillLayout(true);
-  set_margins(gfx::Insets());
 }
 
 void PrivacySandboxDialogView::Close() {
@@ -88,7 +128,7 @@ void PrivacySandboxDialogView::ResizeNativeView(int height) {
                        .height();
   web_view_->SetPreferredSize(gfx::Size(web_view_->GetPreferredSize().width(),
                                         std::min(height, max_height)));
-  SizeToContents();
+  GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
   GetWidget()->Show();
 
   DCHECK(!dialog_created_time_.is_null());
@@ -101,5 +141,5 @@ void PrivacySandboxDialogView::OpenPrivacySandboxSettings() {
   chrome::ShowPrivacySandboxSettings(browser_);
 }
 
-BEGIN_METADATA(PrivacySandboxDialogView, views::BubbleDialogDelegateView)
+BEGIN_METADATA(PrivacySandboxDialogView, views::View)
 END_METADATA

@@ -6,6 +6,50 @@
 
 namespace apps {
 
+APP_ENUM_TO_STRING(AppType,
+                   kUnknown,
+                   kArc,
+                   kBuiltIn,
+                   kCrostini,
+                   kChromeApp,
+                   kWeb,
+                   kMacOs,
+                   kPluginVm,
+                   kStandaloneBrowser,
+                   kRemote,
+                   kBorealis,
+                   kSystemWeb,
+                   kStandaloneBrowserChromeApp,
+                   kExtension,
+                   kStandaloneBrowserExtension)
+APP_ENUM_TO_STRING(Readiness,
+                   kUnknown,
+                   kReady,
+                   kDisabledByBlocklist,
+                   kDisabledByPolicy,
+                   kDisabledByUser,
+                   kTerminated,
+                   kUninstalledByUser,
+                   kRemoved,
+                   kUninstalledByMigration)
+APP_ENUM_TO_STRING(InstallReason,
+                   kUnknown,
+                   kSystem,
+                   kPolicy,
+                   kOem,
+                   kDefault,
+                   kSync,
+                   kUser,
+                   kSubApp)
+APP_ENUM_TO_STRING(InstallSource,
+                   kUnknown,
+                   kSystem,
+                   kSync,
+                   kPlayStore,
+                   kChromeWebStore,
+                   kBrowser)
+APP_ENUM_TO_STRING(WindowMode, kUnknown, kWindow, kBrowser, kTabbedWindow)
+
 App::App(AppType app_type, const std::string& app_id)
     : app_type(app_type), app_id(app_id) {}
 
@@ -86,6 +130,8 @@ AppType ConvertMojomAppTypToAppType(apps::mojom::AppType mojom_app_type) {
       return AppType::kStandaloneBrowserChromeApp;
     case apps::mojom::AppType::kExtension:
       return AppType::kExtension;
+    case apps::mojom::AppType::kStandaloneBrowserExtension:
+      return AppType::kStandaloneBrowserExtension;
   }
 }
 
@@ -119,6 +165,8 @@ mojom::AppType ConvertAppTypeToMojomAppType(AppType app_type) {
       return apps::mojom::AppType::kStandaloneBrowserChromeApp;
     case AppType::kExtension:
       return apps::mojom::AppType::kExtension;
+    case AppType::kStandaloneBrowserExtension:
+      return apps::mojom::AppType::kStandaloneBrowserExtension;
   }
 }
 

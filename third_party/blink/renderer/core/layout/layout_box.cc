@@ -3658,7 +3658,7 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
   // valid (see comment in `SetCachedLayoutResult`), don't return the fragment,
   // since it will be used to iteration the invalid children when running
   // simplified layout.
-  if (!physical_fragment.ChildrenValid() &&
+  if ((!physical_fragment.ChildrenValid() || IsShapingDeferred()) &&
       (size_cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout ||
        cache_status == NGLayoutCacheStatus::kNeedsSimplifiedLayout))
     return nullptr;
@@ -3746,6 +3746,16 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
       if (cache_status != NGLayoutCacheStatus::kHit)
         return nullptr;
 
+      // Miss the cache if we have nested multicol containers inside that also
+      // have OOF descendants. OOFs in nested multicol containers are handled in
+      // a special way during layout: When we have returned to the outermost
+      // fragmentation context root, we'll go through the nested multicol
+      // containers and lay out the OOFs inside. If we do that after having hit
+      // the cache (and thus kept the fragment with the OOF), we'd end up with
+      // extraneous OOF fragments.
+      if (UNLIKELY(physical_fragment.HasNestedMulticolsWithOOFs()))
+        return nullptr;
+
       // If the node didn't break into multiple fragments, we might be able to
       // re-use the result. If the fragmentainer block-size has changed, or if
       // the fragment's block-offset within the fragmentainer has changed, we
@@ -3783,12 +3793,22 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
         if (cached_layout_result->IsBlockSizeForFragmentationClamped())
           return nullptr;
 
-        bool check_exclusion_space = false;
-        if (!bfc_block_offset) {
-          // This happens for self-collapsing nodes, and also when the node
-          // isn't a regular block container (e.g. fieldset, flex, grid, table
-          // or multicol).
-          //
+        // Returns true if there are any floats added by |cached_layout_result|
+        // which will end up crossing the fragmentation line.
+        auto DoFloatsCrossFragmentationLine = [&]() -> bool {
+          const auto& result_exclusion_space =
+              cached_layout_result->ExclusionSpace();
+          if (result_exclusion_space != old_space.ExclusionSpace()) {
+            LayoutUnit block_end_offset =
+                new_space.FragmentainerOffsetAtBfc() +
+                result_exclusion_space.ClearanceOffset(EClear::kBoth);
+            if (block_end_offset > new_space.FragmentainerBlockSize())
+              return true;
+          }
+          return false;
+        };
+
+        if (!bfc_block_offset && cached_layout_result->IsSelfCollapsing()) {
           // Self-collapsing blocks may have floats and OOF descendants.
           // Checking if floats cross the fragmentation line is easy enough
           // (check the exclusion space), but we currently have no way of
@@ -3799,50 +3819,44 @@ const NGLayoutResult* LayoutBox::CachedLayoutResult(
           if (old_space.IsInitialColumnBalancingPass())
             return nullptr;
 
-          // If we're self-collapsing, we may continue, and just check the
-          // exclusion space for floats. Otherwise (the algorithm type probably
-          // didn't set a BFC block-offset), we need to give up, as we have no
-          // idea where we are.
-          //
-          // TODO(mstensho): Could we just fix it so that all algorithms set a
-          // BFC block-offset on the result, and change this test into a DCHECK?
-          if (!cached_layout_result->IsSelfCollapsing())
+          if (DoFloatsCrossFragmentationLine())
             return nullptr;
-
-          check_exclusion_space = true;
         } else {
+          // If floats were added inside an inline formatting context, they
+          // might extrude (and not included within the block-size for
+          // fragmentation calculation above, unlike block formatting contexts).
           if (physical_fragment.IsInlineFormattingContext() &&
-              !physical_fragment.IsFormattingContextRoot()) {
-            // If floats were added inside an inline formatting context, they
-            // might extrude.
-            if (cached_layout_result->ExclusionSpace() !=
-                old_space.ExclusionSpace())
-              check_exclusion_space = true;
+              !is_new_formatting_context) {
+            if (DoFloatsCrossFragmentationLine())
+              return nullptr;
           }
 
-          // Note: It should be fine to use NGLayoutResult::
-          // BlockSizeForFragmentation() directly here, rather than the helper
-          // function BlockSizeForFragmentation() in ng_fragmentation_utils.cc,
-          // since what the latter does shouldn't matter, since we're not
-          // monolithic content (HasBlockFragmentation() is true), and we're not
-          // a line box.
+          // Check if we have content which might cross the fragmentation line.
+          //
+          // NOTE: It's fine to use NGLayoutResult::BlockSizeForFragmentation()
+          // directly here, rather than the helper BlockSizeForFragmentation()
+          // in ng_fragmentation_utils.cc, since what the latter does shouldn't
+          // matter, since we're not monolithic content
+          // (HasBlockFragmentation() is true), and we're not a line box.
           LayoutUnit block_size_for_fragmentation =
               cached_layout_result->BlockSizeForFragmentation();
 
-          LayoutUnit block_end_offset = new_space.FragmentainerOffsetAtBfc() +
-                                        *bfc_block_offset +
-                                        block_size_for_fragmentation;
+          LayoutUnit block_end_offset =
+              new_space.FragmentainerOffsetAtBfc() +
+              bfc_block_offset.value_or(LayoutUnit()) +
+              block_size_for_fragmentation;
           if (block_end_offset > new_space.FragmentainerBlockSize())
             return nullptr;
         }
 
-        if (check_exclusion_space) {
-          const auto& exclusion_space = cached_layout_result->ExclusionSpace();
-          LayoutUnit block_end_offset =
-              new_space.FragmentainerOffsetAtBfc() +
-              exclusion_space.ClearanceOffset(EClear::kBoth);
-          if (block_end_offset > new_space.FragmentainerBlockSize())
-            return nullptr;
+        // Multi-cols behave differently between the initial column balancing
+        // pass, and the regular pass (specifically when forced breaks are
+        // present), we just miss the cache for these cases.
+        if (old_space.IsInitialColumnBalancingPass()) {
+          if (auto* block = DynamicTo<LayoutBlock>(this)) {
+            if (block->IsFragmentationContextRoot())
+              return nullptr;
+          }
         }
       }
     }

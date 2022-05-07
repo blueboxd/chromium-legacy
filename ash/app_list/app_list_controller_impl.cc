@@ -56,6 +56,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/callback_list.h"
+#include "base/containers/adapters.h"
 #include "base/containers/contains.h"
 #include "base/containers/cxx20_erase.h"
 #include "base/logging.h"
@@ -165,10 +166,11 @@ bool MinimizeAllWindows(const aura::Window::Windows& windows,
   aura::Window* container = Shell::Get()->GetPrimaryRootWindow()->GetChildById(
       kShellWindowId_HomeScreenContainer);
   aura::Window::Windows windows_to_minimize;
-  for (auto it = windows.rbegin(); it != windows.rend(); it++) {
-    if (!container->Contains(*it) && !base::Contains(windows_to_ignore, *it) &&
-        !WindowState::Get(*it)->IsMinimized()) {
-      windows_to_minimize.push_back(*it);
+  for (aura::Window* window : base::Reversed(windows)) {
+    if (!container->Contains(window) &&
+        !base::Contains(windows_to_ignore, window) &&
+        !WindowState::Get(window)->IsMinimized()) {
+      windows_to_minimize.push_back(window);
     }
   }
 
@@ -322,9 +324,6 @@ void AppListControllerImpl::RegisterProfilePrefs(PrefRegistrySimple* registry) {
       prefs::kSuggestedContentInfoDismissedInLauncher, false,
       user_prefs::PrefRegistrySyncable::SYNCABLE_OS_PREF);
   AppListNudgeController::RegisterProfilePrefs(registry);
-
-  // TODO(crbug.com/1277666): Move to Launcher nudge controller.
-  registry->RegisterDictionaryPref(prefs::kLauncherFilesPrivacyNotice);
 }
 
 void AppListControllerImpl::SetClient(AppListClient* client) {
@@ -478,6 +477,12 @@ void AppListControllerImpl::OnUserSessionAdded(const AccountId& account_id) {
 
   ash::ReportPrefSortOrderOnSessionStart(client_->GetPermanentSortingOrder(),
                                          IsTabletMode());
+
+  if (features::IsLauncherNudgeSessionResetEnabled()) {
+    AppListNudgeController::ResetPrefsForNewUserSession(
+        Shell::Get()->session_controller()->GetUserPrefServiceForUser(
+            account_id));
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1189,6 +1194,12 @@ void AppListControllerImpl::StartSearch(const std::u16string& raw_query) {
     base::TrimWhitespace(raw_query, base::TRIM_ALL, &query);
     client_->StartSearch(query);
   }
+}
+
+void AppListControllerImpl::StartZeroStateSearch(base::OnceClosure callback,
+                                                 base::TimeDelta timeout) {
+  if (client_)
+    client_->StartZeroStateSearch(std::move(callback), timeout);
 }
 
 void AppListControllerImpl::OpenSearchResult(const std::string& result_id,

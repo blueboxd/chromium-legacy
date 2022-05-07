@@ -102,7 +102,7 @@ CGFloat kSectionFooterHeight = 8.;
 
 - (CGFloat)tableView:(UITableView*)tableView
     heightForFooterInSection:(NSInteger)section {
-  if ([self.tableViewModel footerForSection:section])
+  if ([self.tableViewModel footerForSectionIndex:section])
     return UITableViewAutomaticDimension;
   return kSectionFooterHeight;
 }
@@ -162,7 +162,7 @@ CGFloat kSectionFooterHeight = 8.;
     viewForFooterInSection:(NSInteger)section {
   UIView* view = [super tableView:tableView viewForFooterInSection:section];
   NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:section];
+      [self.tableViewModel sectionIdentifierForSectionIndex:section];
   switch (sectionIdentifier) {
     case IdentitySectionIdentifier: {
       TableViewLinkHeaderFooterView* linkView =

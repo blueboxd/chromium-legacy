@@ -79,6 +79,9 @@ const base::Feature kFeedStamp{"FeedStamp", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const char kDefaultReferrerUrl[] = "https://www.google.com/";
 
+const base::Feature kWebFeedOnboarding{"WebFeedOnboarding",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kWebFeedSort{"WebFeedSort",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -100,5 +103,8 @@ std::string GetFeedReferrerUrl() {
       base::GetFieldTrialParamValueByFeature(*feature, "referrer_url");
   return referrer.empty() ? kDefaultReferrerUrl : referrer;
 }
+
+const base::Feature kPersonalizeFeedUnsignedUsers{
+    "PersonalizeFeedUnsignedUsers", base::FEATURE_ENABLED_BY_DEFAULT};
 
 }  // namespace feed

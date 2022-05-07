@@ -457,6 +457,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2310021320168182093">Chou2 (Zarf)</translation>
 <translation id="2316887270356262533">Liron më pak se 1 MB. Disa sajte mund të ngarkohen më ngadalë gjatë vizitës tënde të radhës.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> kërkon një emër përdoruesi dhe një fjalëkalim.</translation>
+<translation id="2318594867107319532">Vula kohore e politikës së fundit:</translation>
 <translation id="2328651992442742497">Lejohet (e parazgjedhur)</translation>
 <translation id="2329182534073751090">vendosja e dritareve</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, skadon më <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -491,6 +492,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2430968933669123598">Menaxho "Llogarinë e Google", shtyp Enter për të menaxhuar informacionin, privatësinë dhe sigurinë tënde në "Llogarinë tënde të Google"</translation>
 <translation id="2436186046335138073">Të lejohet <ph name="HANDLER_HOSTNAME" /> të hapë të gjitha lidhjet <ph name="PROTOCOL" />?</translation>
 <translation id="2438874542388153331">Katër shpime djathtas</translation>
+<translation id="2448295565072560657">Pajisjet periferike të montuara në këtë pajisje ndërkohë që je i/e identifikuar</translation>
 <translation id="2450021089947420533">Udhëtimet</translation>
 <translation id="2463739503403862330">Plotëso</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -498,6 +500,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2465688316154986572">Kapje me tel</translation>
 <translation id="2465914000209955735">Menaxho skedarët që ke shkarkuar në Chrome</translation>
 <translation id="2466004615675155314">Shfaq informacione nga uebi</translation>
+<translation id="2467272921457885625">Specifikimet dhe statistikat e harduerit të pajisjes, si p.sh. historiku i përdorimit të CPU/RAM</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Po ekzekuton diagnostikimin e rrjetit<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">Renditja 1 deri në N</translation>
 <translation id="2470767536994572628">Kur redakton shënimet, ky dokument do të kthehet te pamja me një faqe dhe te rrotullimi fillestar</translation>
@@ -524,6 +527,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="2539524384386349900">Zbulo</translation>
 <translation id="2540701853218677861">Historik i identifikimit/daljes së pajisjeve, duke përfshirë vulat kohore dhe përpjekjet e dështuara</translation>
 <translation id="2541219929084442027">Faqet që shikon në skedat "e fshehta" nuk do të ruhen në historikun e shfletuesit tënd, vendin e ruajtjes të kukive apo historikun e kërkimeve pasi ke mbyllur të gjitha skedat e tua "të fshehta". Çdo skedar që shkarkon apo faqeshënues që krijon do të mbahet.</translation>
+<translation id="2544546346215446551">Administratori yt rinisi pajisjen tënde</translation>
 <translation id="2544644783021658368">Një dokument i vetëm</translation>
 <translation id="2546283357679194313">Kukit dhe të dhënat e faqes</translation>
 <translation id="254947805923345898">Vlera e politikës nuk është e vlefshme.</translation>
@@ -938,7 +942,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="385051799172605136">Prapa</translation>
 <translation id="3858027520442213535">Përditëso datën dhe kohën</translation>
 <translation id="3858860766373142691">Emri</translation>
-<translation id="3879224246272917991">Statistikat e pajisjes si p.sh. përdorimin e njësisë CPU/RAM dhe specifikimet e harduerit</translation>
 <translation id="3881478300875776315">Shfaq më pak rreshta</translation>
 <translation id="3884278016824448484">Identifikuesi i pajisjes bie në konflikt</translation>
 <translation id="3885155851504623709">Famullia</translation>
@@ -973,6 +976,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="3990250421422698716">Zhvendosja e bordurës</translation>
 <translation id="3996311196211510766">Sajti <ph name="ORIGIN" /> ka kërkuar që të zbatohet një politikë e origjinës
     për të gjitha kërkesat drejtuar atij, por kjo politikë nuk mund të zbatohet aktualisht.</translation>
+<translation id="4006465311664329701">Mënyrat e pagesës, ofertat dhe adresat që përdorin Google Pay</translation>
 <translation id="4009243425692662128">Përmbajtja e faqeve që printon i dërgohet "Resë kompjuterike të Google" ose palëve të treta për analizë. Për shembull, mund të skanohet për të dhëna delikate.</translation>
 <translation id="4010758435855888356">Të lejohet qasja te hapësira ruajtëse?</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Dokumenti PDF me {COUNT} faqe}other{Dokumenti PDF me {COUNT} faqe}}</translation>
@@ -1250,6 +1254,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, shtyp Tab pastaj Enter për të krijuar shpejt një "Fletë të re të Google</translation>
 <translation id="4825507807291741242">I fuqishëm</translation>
 <translation id="483241715238664915">Aktivizo paralajmërimet</translation>
+<translation id="4834250788637067901">Mënyrat e pagesës, ofertat dhe adresat që përdorin Google Pay</translation>
 <translation id="4838327282952368871">Si në ëndërr</translation>
 <translation id="4840250757394056958">Shiko historikun tënd të Chrome</translation>
 <translation id="484462545196658690">Automatike</translation>
@@ -1377,7 +1382,6 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="5205222826937269299">Emri është i detyrueshëm</translation>
 <translation id="5209518306177824490">Gjurma e gishtit SHA-1</translation>
 <translation id="5209670883520018268">Tabakaja 20</translation>
-<translation id="5215116848420601511">Mënyrat e pagesës dhe adresat që përdorin Google Pay</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="521659676233207110">Tabakaja 13</translation>
 <translation id="5216942107514965959">Vizituar për herë të fundit sot</translation>
@@ -1655,6 +1659,7 @@ Ndryshe kjo do të bllokohet nga cilësimet e tua të privatësisë. Kjo do ta l
 <translation id="6157754950574419155">Hiqi të gjitha nga historiku</translation>
 <translation id="6157877588268064908">Për të parë mënyrat dhe kërkesat e dërgimit, zgjidh një adresë</translation>
 <translation id="6165508094623778733">Mëso më shumë</translation>
+<translation id="6167577165590485365">Përpjekja e fundit për nxjerrje:</translation>
 <translation id="6169916984152623906">Tani mund të shfletosh në mënyrë private dhe personat e tjerë që përdorin këtë pajisje nuk do të shikojnë aktivitetin tënd. Sidoqoftë, shkarkimet dhe faqeshënuesit do të ruhen.</translation>
 <translation id="6177128806592000436">Lidhja jote me këtë sajt nuk është e sigurt</translation>
 <translation id="6180316780098470077">Intervali i ripërpjekjes</translation>
@@ -2289,7 +2294,6 @@ Detaje shtesë:
 <translation id="8241712895048303527">Blloko në këtë sajt</translation>
 <translation id="8242426110754782860">Vazhdo</translation>
 <translation id="8249296373107784235">Ndërprite</translation>
-<translation id="8249320324621329438">Marrja e fundit:</translation>
 <translation id="8253091569723639551">Adresa e faturimit është e detyrueshme</translation>
 <translation id="8257387598443225809">Ky aplikacion është projektuar për celular</translation>
 <translation id="825929999321470778">Shfaq të gjitha fjalëkalimet e ruajtura</translation>
@@ -2492,7 +2496,6 @@ Detaje shtesë:
 <translation id="8975012916872825179">Përfshin informacione si numrat e telefonit, adresat e email-it dhe adresat e transportit</translation>
 <translation id="8975263830901772334">Emrat e skedarëve që printon</translation>
 <translation id="8978053250194585037">"Shfletimi i sigurt i Google" <ph name="BEGIN_LINK" />zbuloi së fundi mashtrime<ph name="END_LINK" /> në <ph name="SITE" />. Sajtet mashtruese pretendojnë se janë sajte të tjera uebi për të të mashtruar.</translation>
-<translation id="8983003182662520383">Mënyrat e pagesës dhe adresat që përdorin Google Pay</translation>
 <translation id="8983369100812962543">Tani mund t'i ndryshosh përmasat e aplikacionit</translation>
 <translation id="8987245424886630962"><ph name="VIEW_CHROME_HISTORY_FOCUSED_FRIENDLY_MATCH_TEXT" />. Shtyp "Tab" dhe më pas "Enter" për të shikuar historikun tënd të shfletimit në Chrome</translation>
 <translation id="8987927404178983737">Muaji</translation>

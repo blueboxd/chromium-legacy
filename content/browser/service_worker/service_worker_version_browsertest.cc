@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "content/browser/service_worker/service_worker_version.h"
+
 #include <stddef.h>
 #include <stdint.h>
 
@@ -13,7 +15,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/statistics_recorder.h"
@@ -36,7 +37,6 @@
 #include "content/browser/service_worker/service_worker_host.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_test_utils.h"
-#include "content/browser/service_worker/service_worker_version.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
@@ -70,6 +70,9 @@ using blink::mojom::CacheStorageError;
 namespace content {
 
 namespace {
+
+using ::testing::Eq;
+using ::testing::Pointee;
 
 // V8ScriptRunner::setCacheTimeStamp() stores 16 byte data (marker + tag +
 // timestamp).
@@ -216,7 +219,7 @@ CreateMainScriptResponse() {
       "Content-Type: application/javascript\0"
       "\0";
   response_head.headers =
-      new net::HttpResponseHeaders(std::string(data, base::size(data)));
+      new net::HttpResponseHeaders(std::string(data, std::size(data)));
   return std::make_unique<ServiceWorkerVersion::MainScriptResponse>(
       response_head);
 }
@@ -1447,8 +1450,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest,
   // Once it's started, the worker script is read from the network and the COEP
   // value is set to the version.
   ASSERT_EQ(StartWorker(), blink::ServiceWorkerStatusCode::kOk);
-  EXPECT_EQ(CrossOriginEmbedderPolicyRequireCorp(),
-            version_->cross_origin_embedder_policy());
+  EXPECT_THAT(version_->cross_origin_embedder_policy(),
+              Pointee(Eq(CrossOriginEmbedderPolicyRequireCorp())));
 }
 
 // Tests that JS can be executed in the context of a running service worker.

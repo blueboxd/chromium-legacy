@@ -90,7 +90,7 @@ void ChromeTableViewControllerTest::CheckTitleWithId(int expected_title_id) {
 void ChromeTableViewControllerTest::CheckSectionHeader(NSString* expected_text,
                                                        int section) {
   TableViewHeaderFooterItem* header =
-      [[controller_ tableViewModel] headerForSection:section];
+      [[controller_ tableViewModel] headerForSectionIndex:section];
   ASSERT_TRUE([header respondsToSelector:@selector(text)]);
   EXPECT_NSEQ(expected_text, [(id)header text]);
 }
@@ -104,7 +104,7 @@ void ChromeTableViewControllerTest::CheckSectionHeaderWithId(
 void ChromeTableViewControllerTest::CheckSectionFooter(NSString* expected_text,
                                                        int section) {
   TableViewHeaderFooterItem* footer =
-      [[controller_ tableViewModel] footerForSection:section];
+      [[controller_ tableViewModel] footerForSectionIndex:section];
   ASSERT_TRUE([footer respondsToSelector:@selector(text)]);
   EXPECT_NSEQ(expected_text, [(id)footer text]);
 }
@@ -123,6 +123,14 @@ void ChromeTableViewControllerTest::CheckTextCellText(NSString* expected_text,
   EXPECT_NSEQ(expected_text, [cell text]);
 }
 
+void ChromeTableViewControllerTest::CheckURLCellTitle(NSString* expected_title,
+                                                      int section,
+                                                      int item) {
+  id cell = GetTableViewItem(section, item);
+  ASSERT_TRUE([cell respondsToSelector:@selector(title)]);
+  EXPECT_NSEQ(expected_title, [cell title]);
+}
+
 void ChromeTableViewControllerTest::CheckTextCellTextWithId(
     int expected_text_id,
     int section,
@@ -139,6 +147,18 @@ void ChromeTableViewControllerTest::CheckTextCellTextAndDetailText(
   ASSERT_TRUE([cell respondsToSelector:@selector(text)]);
   ASSERT_TRUE([cell respondsToSelector:@selector(detailText)]);
   EXPECT_NSEQ(expected_text, [cell text]);
+  EXPECT_NSEQ(expected_detail_text, [cell detailText]);
+}
+
+void ChromeTableViewControllerTest::CheckURLCellTitleAndDetailText(
+    NSString* expected_title,
+    NSString* expected_detail_text,
+    int section,
+    int item) {
+  id cell = GetTableViewItem(section, item);
+  ASSERT_TRUE([cell respondsToSelector:@selector(title)]);
+  ASSERT_TRUE([cell respondsToSelector:@selector(detailText)]);
+  EXPECT_NSEQ(expected_title, [cell title]);
   EXPECT_NSEQ(expected_detail_text, [cell detailText]);
 }
 
@@ -216,7 +236,7 @@ void ChromeTableViewControllerTest::DeleteItem(
     // Delete data in the model.
     TableViewModel* model = strong_controller.tableViewModel;
     NSInteger section_ID =
-        [model sectionIdentifierForSection:index_path.section];
+        [model sectionIdentifierForSectionIndex:index_path.section];
     NSInteger item_type = [model itemTypeForIndexPath:index_path];
     NSUInteger index = [model indexInItemTypeForIndexPath:index_path];
     [model removeItemWithType:item_type

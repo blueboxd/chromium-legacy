@@ -28,6 +28,8 @@
 #include <utility>
 
 #include "third_party/blink/renderer/core/animation/css/css_animation_data.h"
+#include "third_party/blink/renderer/core/css/cascade_layer.h"
+#include "third_party/blink/renderer/core/css/cascade_layer_map.h"
 #include "third_party/blink/renderer/core/css/css_color.h"
 #include "third_party/blink/renderer/core/css/css_computed_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_container_rule.h"
@@ -38,6 +40,8 @@
 #include "third_party/blink/renderer/core/css/css_gradient_value.h"
 #include "third_party/blink/renderer/core/css/css_import_rule.h"
 #include "third_party/blink/renderer/core/css/css_keyframe_rule.h"
+#include "third_party/blink/renderer/core/css/css_layer_block_rule.h"
+#include "third_party/blink/renderer/core/css/css_layer_statement_rule.h"
 #include "third_party/blink/renderer/core/css/css_media_rule.h"
 #include "third_party/blink/renderer/core/css/css_property_name.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -59,6 +63,7 @@
 #include "third_party/blink/renderer/core/css/properties/computed_style_utils.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
 #include "third_party/blink/renderer/core/css/properties/css_property_ref.h"
+#include "third_party/blink/renderer/core/css/resolver/scoped_style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 #include "third_party/blink/renderer/core/css/resolver/style_rule_usage_tracker.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
@@ -75,6 +80,7 @@
 #include "third_party/blink/renderer/core/dom/pseudo_element.h"
 #include "third_party/blink/renderer/core/dom/slot_assignment_engine.h"
 #include "third_party/blink/renderer/core/dom/text.h"
+#include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
@@ -868,6 +874,65 @@ Response InspectorCSSAgent::getMediaQueries(
   return Response::Success();
 }
 
+std::unique_ptr<protocol::CSS::CSSLayerData>
+InspectorCSSAgent::BuildLayerDataObject(const CascadeLayer* layer,
+                                        unsigned& max_order) {
+  const unsigned order = layer->GetOrder().value_or(0);
+  max_order = max(max_order, order);
+  std::unique_ptr<protocol::CSS::CSSLayerData> layer_data =
+      protocol::CSS::CSSLayerData::create()
+          .setName(layer->GetName())
+          .setOrder(order)
+          .build();
+  const auto& sublayers = layer->GetDirectSubLayers();
+  if (sublayers.IsEmpty())
+    return layer_data;
+
+  auto sublayers_data =
+      std::make_unique<protocol::Array<protocol::CSS::CSSLayerData>>();
+  for (const CascadeLayer* sublayer : sublayers)
+    sublayers_data->emplace_back(BuildLayerDataObject(sublayer, max_order));
+  layer_data->setSubLayers(std::move(sublayers_data));
+  return layer_data;
+}
+
+Response InspectorCSSAgent::getLayersForNode(
+    int node_id,
+    std::unique_ptr<protocol::CSS::CSSLayerData>* root_layer) {
+  Element* element = nullptr;
+  const Response response = dom_agent_->AssertElement(node_id, element);
+  if (!response.IsSuccess())
+    return response;
+
+  *root_layer = protocol::CSS::CSSLayerData::create()
+                    .setName("implicit outer layer")
+                    .setOrder(0)
+                    .build();
+
+  const auto* scoped_resolver =
+      element->GetTreeScope().GetScopedStyleResolver();
+  // GetScopedStyleResolver returns a nullptr if the tree scope has no
+  // stylesheets.
+  if (!scoped_resolver)
+    return Response::Success();
+
+  const CascadeLayerMap* layer_map = scoped_resolver->GetCascadeLayerMap();
+
+  if (!layer_map)
+    return Response::Success();
+
+  const CascadeLayer* root = layer_map->GetRootLayer();
+  unsigned max_order = 0;
+  auto sublayers_data =
+      std::make_unique<protocol::Array<protocol::CSS::CSSLayerData>>();
+  for (const auto& sublayer : root->GetDirectSubLayers())
+    sublayers_data->emplace_back(BuildLayerDataObject(sublayer, max_order));
+  (*root_layer)->setOrder(max_order + 1);
+  (*root_layer)->setSubLayers(std::move(sublayers_data));
+
+  return Response::Success();
+}
+
 Response InspectorCSSAgent::getMatchedStylesForNode(
     int node_id,
     Maybe<protocol::CSS::CSSStyle>* inline_style,
@@ -877,6 +942,8 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
         pseudo_id_matches,
     Maybe<protocol::Array<protocol::CSS::InheritedStyleEntry>>*
         inherited_entries,
+    Maybe<protocol::Array<protocol::CSS::InheritedPseudoElementMatches>>*
+        inherited_pseudo_id_matches,
     Maybe<protocol::Array<protocol::CSS::CSSKeyframesRule>>*
         css_keyframes_rules) {
   Response response = AssertEnabled();
@@ -912,8 +979,7 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   InspectorStyleResolver resolver(element, element_pseudo_id);
 
   // Matched rules.
-  *matched_css_rules =
-      BuildArrayForMatchedRuleList(resolver.MatchedRules(), kPseudoIdNone);
+  *matched_css_rules = BuildArrayForMatchedRuleList(resolver.MatchedRules());
 
   // Pseudo elements.
   if (element_pseudo_id)
@@ -934,8 +1000,7 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
         protocol::CSS::PseudoElementMatches::create()
             .setPseudoType(
                 InspectorDOMAgent::ProtocolPseudoElementType(match->pseudo_id))
-            .setMatches(BuildArrayForMatchedRuleList(match->matched_rules,
-                                                     match->pseudo_id))
+            .setMatches(BuildArrayForMatchedRuleList(match->matched_rules))
             .build());
   }
 
@@ -945,8 +1010,8 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
   for (InspectorCSSMatchedRules* match : resolver.ParentRules()) {
     std::unique_ptr<protocol::CSS::InheritedStyleEntry> entry =
         protocol::CSS::InheritedStyleEntry::create()
-            .setMatchedCSSRules(BuildArrayForMatchedRuleList(
-                match->matched_rules, match->pseudo_id))
+            .setMatchedCSSRules(
+                BuildArrayForMatchedRuleList(match->matched_rules))
             .build();
     if (match->element->style() && match->element->style()->length()) {
       InspectorStyleSheetForInlineStyle* style_sheet =
@@ -956,6 +1021,33 @@ Response InspectorCSSAgent::getMatchedStylesForNode(
             style_sheet->BuildObjectForStyle(style_sheet->InlineStyle()));
     }
     inherited_entries->fromJust()->emplace_back(std::move(entry));
+  }
+
+  *inherited_pseudo_id_matches = std::make_unique<
+      protocol::Array<protocol::CSS::InheritedPseudoElementMatches>>();
+
+  for (InspectorCSSMatchedPseudoElements* match :
+       resolver.ParentPseudoElementRules()) {
+    auto parent_pseudo_element_matches = std::make_unique<
+        protocol::Array<protocol::CSS::PseudoElementMatches>>();
+    for (InspectorCSSMatchedRules* pseudo_match : match->pseudo_element_rules) {
+      parent_pseudo_element_matches->emplace_back(
+          protocol::CSS::PseudoElementMatches::create()
+              .setPseudoType(InspectorDOMAgent::ProtocolPseudoElementType(
+                  pseudo_match->pseudo_id))
+              .setMatches(
+                  BuildArrayForMatchedRuleList(pseudo_match->matched_rules))
+              .build());
+    }
+
+    std::unique_ptr<protocol::CSS::InheritedPseudoElementMatches>
+        inherited_pseudo_element_matches =
+            protocol::CSS::InheritedPseudoElementMatches::create()
+                .setPseudoElements(std::move(parent_pseudo_element_matches))
+                .build();
+
+    inherited_pseudo_id_matches->fromJust()->emplace_back(
+        std::move(inherited_pseudo_element_matches));
   }
 
   *css_keyframes_rules = AnimationsForNode(element, animating_element);
@@ -1880,31 +1972,6 @@ void InspectorCSSAgent::CollectMediaQueriesFromRule(
         source_url, parent_style_sheet));
 }
 
-std::unique_ptr<protocol::Array<protocol::CSS::CSSMedia>>
-InspectorCSSAgent::BuildMediaListChain(CSSRule* rule) {
-  if (!rule)
-    return nullptr;
-  auto media_array =
-      std::make_unique<protocol::Array<protocol::CSS::CSSMedia>>();
-  CSSRule* parent_rule = rule;
-  while (parent_rule) {
-    CollectMediaQueriesFromRule(parent_rule, media_array.get());
-    if (parent_rule->parentRule()) {
-      parent_rule = parent_rule->parentRule();
-    } else {
-      CSSStyleSheet* style_sheet = parent_rule->parentStyleSheet();
-      while (style_sheet) {
-        CollectMediaQueriesFromStyleSheet(style_sheet, media_array.get());
-        parent_rule = style_sheet->ownerRule();
-        if (parent_rule)
-          break;
-        style_sheet = style_sheet->parentStyleSheet();
-      }
-    }
-  }
-  return media_array;
-}
-
 std::unique_ptr<protocol::CSS::CSSContainerQuery>
 InspectorCSSAgent::BuildContainerQueryObject(CSSContainerRule* rule) {
   std::unique_ptr<protocol::CSS::CSSContainerQuery> container_query_object =
@@ -1937,20 +2004,6 @@ void InspectorCSSAgent::CollectContainerQueriesFromRule(
     container_queries->emplace_back(BuildContainerQueryObject(container_rule));
 }
 
-std::unique_ptr<protocol::Array<protocol::CSS::CSSContainerQuery>>
-InspectorCSSAgent::BuildContainerQueries(CSSRule* rule) {
-  if (!rule)
-    return nullptr;
-  auto container_queries =
-      std::make_unique<protocol::Array<protocol::CSS::CSSContainerQuery>>();
-  CSSRule* parent_rule = rule;
-  while (parent_rule) {
-    CollectContainerQueriesFromRule(parent_rule, container_queries.get());
-    parent_rule = parent_rule->parentRule();
-  }
-  return container_queries;
-}
-
 std::unique_ptr<protocol::CSS::CSSSupports>
 InspectorCSSAgent::BuildSupportsObject(CSSSupportsRule* rule) {
   std::unique_ptr<protocol::CSS::CSSSupports> supports_object =
@@ -1979,18 +2032,90 @@ void InspectorCSSAgent::CollectSupportsFromRule(
     supports_list->emplace_back(BuildSupportsObject(supports_rule));
 }
 
-std::unique_ptr<protocol::Array<protocol::CSS::CSSSupports>>
-InspectorCSSAgent::BuildSupportsList(CSSRule* rule) {
-  if (!rule)
-    return nullptr;
+std::unique_ptr<protocol::CSS::CSSLayer> InspectorCSSAgent::BuildLayerObject(
+    CSSLayerBlockRule* rule) {
+  std::unique_ptr<protocol::CSS::CSSLayer> layer_object =
+      protocol::CSS::CSSLayer::create().setText(rule->name()).build();
+
+  auto it =
+      css_style_sheet_to_inspector_style_sheet_.find(rule->parentStyleSheet());
+  if (it != css_style_sheet_to_inspector_style_sheet_.end()) {
+    InspectorStyleSheet* inspector_style_sheet = it->value;
+    layer_object->setStyleSheetId(inspector_style_sheet->Id());
+  }
+
+  InspectorStyleSheet* inspector_style_sheet =
+      BindStyleSheet(rule->parentStyleSheet());
+  layer_object->setRange(inspector_style_sheet->RuleHeaderSourceRange(rule));
+
+  return layer_object;
+}
+
+std::unique_ptr<protocol::CSS::CSSLayer>
+InspectorCSSAgent::BuildLayerObjectFromImport(CSSImportRule* rule) {
+  std::unique_ptr<protocol::CSS::CSSLayer> layer_object =
+      protocol::CSS::CSSLayer::create().setText(rule->layerName()).build();
+
+  auto it =
+      css_style_sheet_to_inspector_style_sheet_.find(rule->parentStyleSheet());
+  if (it != css_style_sheet_to_inspector_style_sheet_.end()) {
+    InspectorStyleSheet* inspector_style_sheet = it->value;
+    layer_object->setStyleSheetId(inspector_style_sheet->Id());
+  }
+
+  InspectorStyleSheet* inspector_style_sheet =
+      BindStyleSheet(rule->parentStyleSheet());
+  layer_object->setRange(inspector_style_sheet->RuleHeaderSourceRange(rule));
+
+  return layer_object;
+}
+
+void InspectorCSSAgent::CollectLayersFromRule(
+    CSSRule* rule,
+    protocol::Array<protocol::CSS::CSSLayer>* layers_list) {
+  if (auto* layer_rule = DynamicTo<CSSLayerBlockRule>(rule)) {
+    layers_list->emplace_back(BuildLayerObject(layer_rule));
+  } else if (auto* import_rule = DynamicTo<CSSImportRule>(rule)) {
+    layers_list->emplace_back(BuildLayerObjectFromImport(import_rule));
+  }
+}
+
+void InspectorCSSAgent::FillAncestorData(CSSRule* rule,
+                                         protocol::CSS::CSSRule* result) {
+  auto layers_list =
+      std::make_unique<protocol::Array<protocol::CSS::CSSLayer>>();
+  auto media_list =
+      std::make_unique<protocol::Array<protocol::CSS::CSSMedia>>();
   auto supports_list =
       std::make_unique<protocol::Array<protocol::CSS::CSSSupports>>();
+  auto container_queries_list =
+      std::make_unique<protocol::Array<protocol::CSS::CSSContainerQuery>>();
+
   CSSRule* parent_rule = rule;
   while (parent_rule) {
+    CollectLayersFromRule(parent_rule, layers_list.get());
+    CollectMediaQueriesFromRule(parent_rule, media_list.get());
+    CollectContainerQueriesFromRule(parent_rule, container_queries_list.get());
     CollectSupportsFromRule(parent_rule, supports_list.get());
-    parent_rule = parent_rule->parentRule();
+    if (parent_rule->parentRule()) {
+      parent_rule = parent_rule->parentRule();
+    } else {
+      CSSStyleSheet* style_sheet = parent_rule->parentStyleSheet();
+      while (style_sheet) {
+        CollectMediaQueriesFromStyleSheet(style_sheet, media_list.get());
+        parent_rule = style_sheet->ownerRule();
+        if (parent_rule)
+          break;
+        style_sheet = style_sheet->parentStyleSheet();
+      }
+    }
   }
-  return supports_list;
+  result->setMedia(std::move(media_list));
+  result->setSupports(std::move(supports_list));
+  std::reverse(layers_list.get()->begin(), layers_list.get()->end());
+  result->setLayers(std::move(layers_list));
+  if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled())
+    result->setContainerQueries(std::move(container_queries_list));
 }
 
 InspectorStyleSheetForInlineStyle* InspectorCSSAgent::AsInspectorStyleSheet(
@@ -2167,18 +2292,13 @@ std::unique_ptr<protocol::CSS::CSSRule> InspectorCSSAgent::BuildObjectForRule(
     return nullptr;
 
   std::unique_ptr<protocol::CSS::CSSRule> result =
-      inspector_style_sheet->BuildObjectForRuleWithoutMedia(rule);
-  result->setMedia(BuildMediaListChain(rule));
-  if (RuntimeEnabledFeatures::CSSContainerQueriesEnabled())
-    result->setContainerQueries(BuildContainerQueries(rule));
-  result->setSupports(BuildSupportsList(rule));
+      inspector_style_sheet->BuildObjectForRuleWithoutAncestorData(rule);
+  FillAncestorData(rule, result.get());
   return result;
 }
 
 std::unique_ptr<protocol::Array<protocol::CSS::RuleMatch>>
-InspectorCSSAgent::BuildArrayForMatchedRuleList(
-    RuleIndexList* rule_list,
-    PseudoId matches_for_pseudo_id) {
+InspectorCSSAgent::BuildArrayForMatchedRuleList(RuleIndexList* rule_list) {
   auto result = std::make_unique<protocol::Array<protocol::CSS::RuleMatch>>();
   if (!rule_list)
     return result;

@@ -6,14 +6,13 @@
 #define ASH_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_CONNECTION_ATTEMPT_IMPL_H_
 
 #include "ash/services/secure_channel/public/cpp/client/connection_attempt.h"
+#include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Concrete implementation of ConnectionAttempt.
 class ConnectionAttemptImpl : public ConnectionAttempt,
@@ -55,8 +54,6 @@ class ConnectionAttemptImpl : public ConnectionAttempt,
   base::WeakPtrFactory<ConnectionAttemptImpl> weak_ptr_factory_{this};
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_CONNECTION_ATTEMPT_IMPL_H_

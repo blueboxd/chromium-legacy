@@ -157,7 +157,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.HttpsFirstMode.SettingChanged" enum="BooleanEnabled"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>cthomp@chromium.org</owner>
   <owner>trusty-transport@chromium.org</owner>
   <summary>
@@ -179,7 +179,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.JSONParser.ChromiumExtensionUsage"
-    enum="JsonParserExtension" expires_after="2022-06-26">
+    enum="JsonParserExtension" expires_after="2022-08-28">
   <owner>rsesek@chromium.org</owner>
   <owner>chrome-platform-security@google.com</owner>
   <summary>
@@ -304,7 +304,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SafetyTips.GetDomainInfoTime" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
@@ -316,7 +316,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Security.SafetyTips.GetReputationStatusWithEngagedSitesTime"
-    units="ms" expires_after="2022-07-03">
+    units="ms" expires_after="2022-09-11">
   <owner>jdeblasio@chromium.org</owner>
   <owner>estark@chromium.org</owner>
   <owner>blundell@chromium.org</owner>
@@ -821,6 +821,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="SiteIsolation.ORB.BlockingReason"
+    enum="OrbBlockingDecisionReason" expires_after="M106">
+  <owner>creis@chromium.org</owner>
+  <owner>lukasza@chromium.org</owner>
+  <summary>
+    Logs why ORB has reached a blocking decision.
+
+    Logged for each response processed by OpaqueResponseBlockingAnalyzer.
+  </summary>
+</histogram>
+
 <histogram name="SiteIsolation.ORB.CorbVsOrb" enum="CorbVsOrb"
     expires_after="M106">
   <owner>creis@chromium.org</owner>
@@ -832,6 +843,18 @@ chromium-metrics-reviews@google.com.
     Logged at the end of lifetime of the ResponseAnalyzer (i.e. after processing
     each response that is subject to CORB - most NetworkService responses, but
     also CORB-covered web bundles).
+  </summary>
+</histogram>
+
+<histogram name="SiteIsolation.ORB.CorbVsOrb.OrbBlockedAndCorbDidnt.Reason"
+    enum="OrbBlockingDecisionReason" expires_after="M106">
+  <owner>creis@chromium.org</owner>
+  <owner>lukasza@chromium.org</owner>
+  <summary>
+    Logs why ORB has reached a blocking decision.
+
+    Logged when it turned out that CORB wouldn't have blocked the response, but
+    ORB blocked the response.
   </summary>
 </histogram>
 

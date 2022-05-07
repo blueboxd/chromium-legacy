@@ -9,7 +9,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.doAnswer;
 
-import android.content.Context;
 import android.location.LocationManager;
 import android.os.Build;
 
@@ -26,9 +25,9 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.robolectric.ParameterizedRobolectricTestRunner;
 import org.robolectric.ParameterizedRobolectricTestRunner.Parameters;
+import org.robolectric.RuntimeEnvironment;
 import org.robolectric.Shadows;
 import org.robolectric.annotation.Config;
-import org.robolectric.shadow.api.Shadow;
 import org.robolectric.shadows.ShadowLocationManager;
 import org.robolectric.shadows.ShadowLog; // remove me ?
 
@@ -58,15 +57,11 @@ public class LocationProviderTest {
                 {LocationProviderType.ANDROID}, {LocationProviderType.GMS_CORE}});
     }
 
-    @Mock
-    private Context mContext;
-
     // Member variables for LocationProviderType.GMS_CORE case.
     @Mock
     private GoogleApiClient mGoogleApiClient;
     private boolean mGoogleApiClientIsConnected;
 
-    // Member variables for LocationProviderType.ANDROID case.
     private LocationManager mLocationManager;
     private ShadowLocationManager mShadowLocationManager;
 
@@ -82,8 +77,7 @@ public class LocationProviderTest {
     public void setUp() {
         ShadowLog.stream = System.out;
         MockitoAnnotations.initMocks(this);
-
-        mContext = Mockito.mock(Context.class);
+        mLocationManager = RuntimeEnvironment.application.getSystemService(LocationManager.class);
     }
 
     /**
@@ -143,7 +137,6 @@ public class LocationProviderTest {
 
         // Robolectric has a ShadowLocationManager class that mocks the behaviour of the real
         // class very closely. Use it here.
-        mLocationManager = Shadow.newInstanceOf(LocationManager.class);
         mShadowLocationManager = Shadows.shadowOf(mLocationManager);
         locationProviderAndroid.setLocationManagerForTesting(mLocationManager);
         LocationProviderFactory.setLocationProviderImpl(locationProviderAndroid);

@@ -14069,6 +14069,136 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, 204Navigation) {
   EXPECT_EQ(1, controller.GetEntryCount());
 }
 
+// Tests that navigating to an empty URL or a URL that never commits will
+// have appropriate origins. Empty URL navigations are not currently known to
+// be possible, but it used to be possible and caused crashes because the
+// initiator origin wasn't inherited correctly with empty URLs. See also
+// https://crbug.com/1240138.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, NavigateToEmptyURL) {
+  GURL url_1 = embedded_test_server()->GetURL("/title1.html");
+  GURL url_2 = embedded_test_server()->GetURL("/title2.html");
+  GURL url_204 = embedded_test_server()->GetURL("/page204.html");
+
+  // Navigate to the initial page.
+  EXPECT_TRUE(NavigateToURL(shell(), url_1));
+  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
+      shell()->web_contents()->GetController());
+  NavigationEntryImpl* entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(url_1, entry->GetURL());
+  EXPECT_EQ(1, controller.GetEntryCount());
+
+  // Navigate (browser-initiated) to an empty URL, which will get rewritten to
+  // about:blank and commit an opaque origin.
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(), GURL("about:blank")));
+
+  entry = controller.GetLastCommittedEntry();
+  EXPECT_EQ(GURL("about:blank"), entry->GetURL());
+  EXPECT_EQ(2, controller.GetEntryCount());
+  EXPECT_TRUE(contents()->GetMainFrame()->GetLastCommittedOrigin().opaque());
+  EXPECT_FALSE(entry->root_node()->frame_entry->initiator_origin().has_value());
+
+  // Trying to navigate to an empty URL through setting the location would fail
+  // because it's not a valid URL and it's stopped in the renderer.
+  EXPECT_FALSE(NavigateToURLFromRenderer(shell(), GURL()));
+  EXPECT_EQ(entry, controller.GetLastCommittedEntry());
+  EXPECT_EQ(2, controller.GetEntryCount());
+
+  // Navigate another URL.
+  EXPECT_TRUE(NavigateToURL(shell(), url_2));
+  const url::Origin& opener_origin =
+      contents()->GetMainFrame()->GetLastCommittedOrigin();
+
+  {
+    // Pop open a new window which won't commit a navigation, so it will stay at
+    // the initial NavigationEntry.
+    Shell* new_shell = OpenWindow(contents(), url_204);
+    WebContentsImpl* new_contents =
+        static_cast<WebContentsImpl*>(new_shell->web_contents());
+
+    // The initial NavigationEntry, if it exists, will have an empty URL, and
+    // its initiator origin is set to the origin of the document that opened the
+    // window.
+    NavigationControllerImpl& new_controller = new_contents->GetController();
+    if (blink::features::IsInitialNavigationEntryEnabled()) {
+      EXPECT_EQ(1, new_controller.GetEntryCount());
+      entry = new_controller.GetLastCommittedEntry();
+      EXPECT_TRUE(entry->IsInitialEntry());
+      EXPECT_EQ(GURL(), entry->GetURL());
+
+      scoped_refptr<FrameNavigationEntry> frame_entry =
+          entry->root_node()->frame_entry.get();
+      ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+      EXPECT_EQ(opener_origin, frame_entry->initiator_origin().value());
+      EXPECT_EQ(
+          opener_origin,
+          new_shell->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+    } else {
+      EXPECT_EQ(0, new_controller.GetEntryCount());
+    }
+  }
+
+  {
+    // Pop open a new window which won't commit a navigation, but this time use
+    // the 'noopener' option, which will cause the navigation to be triggered
+    // by the browser.
+    ShellAddedObserver new_shell_observer;
+    EXPECT_TRUE(
+        ExecJs(shell(), "window.open('/page204.html', '_blank', 'noopener');"));
+    Shell* new_shell = new_shell_observer.GetShell();
+
+    // The initial NavigationEntry, if it exists, will have an empty URL, and
+    // its initiator origin is set to an opaque origin (not the opener's
+    // origin).
+    NavigationControllerImpl& new_controller =
+        static_cast<WebContentsImpl*>(new_shell->web_contents())
+            ->GetController();
+    if (blink::features::IsInitialNavigationEntryEnabled()) {
+      EXPECT_EQ(1, new_controller.GetEntryCount());
+      entry = new_controller.GetLastCommittedEntry();
+      EXPECT_TRUE(entry->IsInitialEntry());
+      EXPECT_EQ(GURL(), entry->GetURL());
+
+      scoped_refptr<FrameNavigationEntry> frame_entry =
+          entry->root_node()->frame_entry.get();
+      ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+      EXPECT_NE(opener_origin, frame_entry->initiator_origin().value());
+      EXPECT_TRUE(frame_entry->initiator_origin()->opaque());
+      EXPECT_EQ(
+          frame_entry->initiator_origin().value(),
+          new_shell->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+    } else {
+      EXPECT_EQ(0, new_controller.GetEntryCount());
+    }
+  }
+
+  {
+    // Pop open another window,  this time to an empty URL and with the
+    // 'noopener' option. This navigation will go through the browser and the
+    // empty URL will be rewritten to about:blank#blocked, but the initiator
+    // origin is still set to the opener's origin.
+    ShellAddedObserver new_shell_observer;
+    EXPECT_TRUE(ExecJs(shell(), "window.open('', '_blank', 'noopener');"));
+    Shell* new_shell = new_shell_observer.GetShell();
+    EXPECT_TRUE(WaitForLoadStop(new_shell->web_contents()));
+
+    NavigationControllerImpl& new_controller =
+        static_cast<WebContentsImpl*>(new_shell->web_contents())
+            ->GetController();
+    EXPECT_EQ(1, new_controller.GetEntryCount());
+    entry = new_controller.GetLastCommittedEntry();
+    EXPECT_FALSE(entry->IsInitialEntry());
+    EXPECT_EQ(GURL("about:blank#blocked"), entry->GetURL());
+
+    scoped_refptr<FrameNavigationEntry> frame_entry =
+        entry->root_node()->frame_entry.get();
+    ASSERT_TRUE(frame_entry->initiator_origin().has_value());
+    EXPECT_EQ(opener_origin, frame_entry->initiator_origin().value());
+    EXPECT_EQ(
+        opener_origin,
+        new_shell->web_contents()->GetMainFrame()->GetLastCommittedOrigin());
+  }
+}
+
 // Tests that stopping a load clears the pending navigation entry.
 IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest, StopDuringLoad) {
   // Load an initial page since the behavior differs for the first entry.
@@ -18698,20 +18828,11 @@ class DidCommitNavigationCanceller : public DidCommitNavigationInterceptor {
 
 }  //  namespace
 
-// Test is flaky on Mac: https://crbug.com/1151545.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
-  DISABLED_CrossProcessIframeToInvalidURLCancelsRedirectSpoof
-#else
-#define MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof \
-  CrossProcessIframeToInvalidURLCancelsRedirectSpoof
-#endif
 // When running OpenURL to an invalid URL on a frame proxy it should not spoof
 // the url by canceling a main frame navigation.
 // See https://crbug.com/966914.
-IN_PROC_BROWSER_TEST_P(
-    NavigationControllerBrowserTest,
-    MAYBE_CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       CrossProcessIframeToInvalidURLCancelsRedirectSpoof) {
   // This tests something that can only happened with out of process iframes.
   if (!AreAllSitesIsolatedForTesting())
     return;
@@ -20920,6 +21041,32 @@ IN_PROC_BROWSER_TEST_P(NavigationControllerInitialNavigationEntryBrowserTest,
             capturer.did_replace_entry());
   EXPECT_EQ(1, new_controller.GetEntryCount());
   EXPECT_EQ(url, new_controller.GetLastCommittedEntry()->GetURL());
+}
+
+// A test to verify that a navigation with |force_new_browsing_instance| set to
+// true results in a new BrowsingInstance, even if it's to a URL compatible with
+// the original SiteInstance.
+IN_PROC_BROWSER_TEST_P(NavigationControllerBrowserTest,
+                       ResetForTestForcesNewBrowsingInstance) {
+  GURL test_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), test_url));
+
+  SiteInstance* initial_site_instance = contents()->GetSiteInstance();
+
+  FrameTreeNode* root = contents()->GetPrimaryFrameTree().root();
+  DisableProactiveBrowsingInstanceSwapFor(root->current_frame_host());
+
+  TestNavigationObserver navigation_observer(contents());
+  NavigationController::LoadURLParams params(test_url);
+  params.force_new_browsing_instance = true;
+  contents()->GetController().LoadURLWithParams(params);
+  navigation_observer.Wait();
+  EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
+
+  SiteInstance* post_reset_site_instance = contents()->GetSiteInstance();
+  EXPECT_NE(initial_site_instance, post_reset_site_instance);
+  EXPECT_FALSE(
+      post_reset_site_instance->IsRelatedSiteInstance(initial_site_instance));
 }
 
 INSTANTIATE_TEST_SUITE_P(

@@ -14,7 +14,6 @@
 
 #include "base/command_line.h"
 #include "base/containers/flat_map.h"
-#include "base/cxx17_backports.h"
 #include "base/debug/leak_annotations.h"
 #include "base/environment.h"
 #include "base/logging.h"
@@ -47,6 +46,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/gfx/image/image_skia_source.h"
 #include "ui/gfx/skbitmap_operations.h"
 #include "ui/gtk/gtk_compat.h"
@@ -554,7 +554,7 @@ gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,
 
   std::string content_types[] = {content_type, kUnknownContentType};
 
-  for (size_t i = 0; i < base::size(content_types); ++i) {
+  for (size_t i = 0; i < std::size(content_types); ++i) {
     auto icon = TakeGObject(g_content_type_get_icon(content_type.c_str()));
     SkBitmap bitmap;
     if (GtkCheckVersion(4)) {
@@ -920,7 +920,11 @@ void GtkUi::UpdateColors() {
            (color_scheme == ui::NativeTheme::ColorScheme::kPlatformHighContrast)
                ? ui::ColorProviderManager::ContrastMode::kHigh
                : ui::ColorProviderManager::ContrastMode::kNormal,
-           ui::ColorProviderManager::SystemTheme::kCustom, nullptr});
+           ui::ColorProviderManager::SystemTheme::kCustom,
+           // Some theme colors, e.g. COLOR_NTP_LINK, are derived from color
+           // provider colors. We assume that those sources' colors won't change
+           // with frame type.
+           ui::ColorProviderManager::FrameType::kChromium, nullptr});
 
   SkColor location_bar_border = GetBorderColor("GtkEntry#entry");
   if (SkColorGetA(location_bar_border))
@@ -937,6 +941,11 @@ void GtkUi::UpdateColors() {
 
   SkColor tab_border = GetBorderColor("GtkButton#button");
   // Separates the toolbar from the bookmark bar or butter bars.
+  colors_[ThemeProperties::COLOR_DOWNLOAD_SHELF_CONTENT_AREA_SEPARATOR] =
+      tab_border;
+  colors_[ThemeProperties::COLOR_INFOBAR_CONTENT_AREA_SEPARATOR] = tab_border;
+  colors_[ThemeProperties::COLOR_SIDE_PANEL_CONTENT_AREA_SEPARATOR] =
+      tab_border;
   colors_[ThemeProperties::COLOR_TOOLBAR_CONTENT_AREA_SEPARATOR] = tab_border;
   // Separates entries in the downloads bar.
   colors_[ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR] = tab_border;
@@ -995,7 +1004,6 @@ void GtkUi::UpdateColors() {
     color_map[ThemeProperties::COLOR_TOOLBAR] = tab_color;
     color_map[ThemeProperties::COLOR_DOWNLOAD_SHELF] = tab_color;
     color_map[ThemeProperties::COLOR_INFOBAR] = tab_color;
-    color_map[ThemeProperties::COLOR_STATUS_BUBBLE] = tab_color;
     color_map[ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_ACTIVE] =
         tab_color;
     color_map[ThemeProperties::COLOR_TAB_BACKGROUND_ACTIVE_FRAME_INACTIVE] =
@@ -1054,9 +1062,13 @@ void GtkUi::UpdateColors() {
     // If we can't get a contrasting stroke from the theme, have ThemeService
     // provide a stroke color for us.
     if (toolbar_top_separator_has_good_contrast()) {
-      color_map[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR] =
+      color_map[ThemeProperties::COLOR_TAB_STROKE_FRAME_ACTIVE] =
           toolbar_top_separator;
-      color_map[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_INACTIVE] =
+      color_map[ThemeProperties::COLOR_TAB_STROKE_FRAME_INACTIVE] =
+          toolbar_top_separator_inactive;
+      color_map[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_ACTIVE] =
+          toolbar_top_separator;
+      color_map[ThemeProperties::COLOR_TOOLBAR_TOP_SEPARATOR_FRAME_INACTIVE] =
           toolbar_top_separator_inactive;
     }
   }

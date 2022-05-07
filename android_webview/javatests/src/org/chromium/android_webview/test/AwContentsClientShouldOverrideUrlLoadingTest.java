@@ -23,6 +23,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
+import org.chromium.android_webview.test.TestAwContentsClient.OnReceivedError2Helper;
 import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -35,7 +36,6 @@ import org.chromium.content_public.browser.NavigationHistory;
 import org.chromium.content_public.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnEvaluateJavaScriptResultHelper;
 import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnPageStartedHelper;
-import org.chromium.content_public.browser.test.util.TestCallbackHelperContainer.OnReceivedErrorHelper;
 import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.url.GURL;
@@ -260,8 +260,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
     @Feature({"AndroidWebView", "Navigation"})
     public void testDoesNotCauseOnReceivedError() throws Throwable {
         standardSetup();
-        OnReceivedErrorHelper onReceivedErrorHelper = mContentsClient.getOnReceivedErrorHelper();
-        final int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
+        OnReceivedError2Helper onReceivedError2Helper = mContentsClient.getOnReceivedError2Helper();
+        final int onReceivedError2Count = onReceivedError2Helper.getCallCount();
 
         mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 CommonResources.makeHtmlPageWithSimpleLinkTo(
@@ -280,7 +280,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         mActivityTestRule.loadUrlSync(
                 mAwContents, mContentsClient.getOnPageFinishedHelper(), DATA_URL);
 
-        Assert.assertEquals(onReceivedErrorCallCount, onReceivedErrorHelper.getCallCount());
+        Assert.assertEquals(onReceivedError2Count, onReceivedError2Helper.getCallCount());
     }
 
     @Test
@@ -814,8 +814,8 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         setupWithProvidedContentsClient(new DestroyInCallbackClient());
         mShouldOverrideUrlLoadingHelper = mContentsClient.getShouldOverrideUrlLoadingHelper();
 
-        OnReceivedErrorHelper onReceivedErrorHelper = mContentsClient.getOnReceivedErrorHelper();
-        int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
+        OnReceivedError2Helper onReceivedError2Helper = mContentsClient.getOnReceivedError2Helper();
+        int onReceivedError2Count = onReceivedError2Helper.getCallCount();
 
         mActivityTestRule.loadDataSync(mAwContents, mContentsClient.getOnPageFinishedHelper(),
                 CommonResources.makeHtmlPageWithSimpleLinkTo(
@@ -837,6 +837,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         class ReloadInCallbackClient extends TestAwContentsClient {
             @Override
             public boolean shouldOverrideUrlLoading(AwContentsClient.AwWebResourceRequest request) {
+                super.shouldOverrideUrlLoading(request);
                 mAwContents.loadUrl(request.url);
                 return true;
             }
@@ -844,6 +845,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
 
         setupWithProvidedContentsClient(new ReloadInCallbackClient());
         mShouldOverrideUrlLoadingHelper = mContentsClient.getShouldOverrideUrlLoadingHelper();
+        int shouldOverrideUrlLoadingCallCount = mShouldOverrideUrlLoadingHelper.getCallCount();
 
         final String linkUrl =
                 addPageToTestServer("/foo.html", "<html><body>hello world</body></html>");
@@ -855,6 +857,9 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         int pageFinishedCount = onPageFinishedHelper.getCallCount();
         clickOnLinkUsingJs();
         onPageFinishedHelper.waitForCallback(pageFinishedCount);
+        mShouldOverrideUrlLoadingHelper.waitForCallback(shouldOverrideUrlLoadingCallCount);
+        Assert.assertEquals(
+                linkUrl, mShouldOverrideUrlLoadingHelper.getShouldOverrideUrlLoadingUrl());
 
         Assert.assertEquals(new GURL(linkUrl), mAwContents.getUrl());
         Assert.assertTrue("Should have a navigation history", mAwContents.canGoBack());
@@ -864,8 +869,11 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         Assert.assertEquals(linkUrl, navHistory.getEntryAtIndex(1).getUrl().getSpec());
 
         pageFinishedCount = onPageFinishedHelper.getCallCount();
+        shouldOverrideUrlLoadingCallCount = mShouldOverrideUrlLoadingHelper.getCallCount();
         InstrumentationRegistry.getInstrumentation().runOnMainSync(() -> mAwContents.goBack());
         onPageFinishedHelper.waitForCallback(pageFinishedCount);
+        Assert.assertEquals("Should not invoke shouldOverrideUrlLoading() for history navigation",
+                shouldOverrideUrlLoadingCallCount, mShouldOverrideUrlLoadingHelper.getCallCount());
 
         Assert.assertFalse("Should not be able to navigate backward", mAwContents.canGoBack());
         Assert.assertEquals(new GURL(firstUrl), mAwContents.getUrl());
@@ -1107,12 +1115,6 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
                 return true;
             }
             return false;
-        }
-
-        @Override
-        public void onReceivedError(int errorCode, String description, String failingUrl) {
-            super.onReceivedError(errorCode, description, failingUrl);
-            throw new RuntimeException("we should not receive an error code! " + failingUrl);
         }
 
         @Override

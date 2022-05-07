@@ -36,6 +36,8 @@
 #include "third_party/blink/renderer/core/dom/tree_scope.h"
 #include "third_party/blink/renderer/core/scroll/scroll_customization.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/custom_spaces.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/wtf.h"
@@ -197,7 +199,8 @@ class CORE_EXPORT Node : public EventTarget {
   bool HasTagName(const SVGQualifiedName&) const;
   virtual String nodeName() const = 0;
   virtual String nodeValue() const;
-  virtual void setNodeValue(const String&);
+  virtual void setNodeValue(const String&,
+                            ExceptionState& = ASSERT_NO_EXCEPTION);
   virtual NodeType getNodeType() const = 0;
   ContainerNode* parentNode() const;
   Element* parentElement() const;
@@ -418,7 +421,7 @@ class CORE_EXPORT Node : public EventTarget {
   };
   virtual void NotifyLoadedSheetAndAllCriticalSubresources(
       LoadedSheetErrorStatus) {}
-  virtual void StartLoadingDynamicSheet() { NOTREACHED(); }
+  virtual void SetToPendingState() { NOTREACHED(); }
 
   bool HasName() const {
     DCHECK(!IsTextNode());
@@ -1011,7 +1014,7 @@ class CORE_EXPORT Node : public EventTarget {
 
     kDefaultNodeFlags = kIsFinishedParsingChildrenFlag,
 
-    // 3 bits remaining.
+    // 2 bits remaining.
   };
 
   ALWAYS_INLINE bool GetFlag(NodeFlags mask) const {

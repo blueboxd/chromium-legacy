@@ -23,16 +23,11 @@ namespace {
 
 using ::webrtc::TaskQueueTest;
 
-constexpr base::TimeDelta kMetronomeTick = base::Hertz(64);
-
 // Test-only factory needed for the TaskQueueTest suite.
 class TestMetronomeTaskQueueFactory final : public webrtc::TaskQueueFactory {
  public:
   TestMetronomeTaskQueueFactory()
-      : metronome_source_(
-            base::MakeRefCounted<blink::MetronomeSource>(base::TimeTicks::Now(),
-                                                         kMetronomeTick)),
-        factory_(CreateWebRtcMetronomeTaskQueueFactory(metronome_source_)) {}
+      : factory_(CreateWebRtcMetronomeTaskQueueFactory()) {}
 
   std::unique_ptr<webrtc::TaskQueueBase, webrtc::TaskQueueDeleter>
   CreateTaskQueue(absl::string_view name, Priority priority) const override {
@@ -41,7 +36,6 @@ class TestMetronomeTaskQueueFactory final : public webrtc::TaskQueueFactory {
 
  private:
   base::test::TaskEnvironment task_environment_;
-  scoped_refptr<blink::MetronomeSource> metronome_source_;
   std::unique_ptr<webrtc::TaskQueueFactory> factory_;
 };
 
@@ -56,16 +50,17 @@ INSTANTIATE_TEST_SUITE_P(
 class MetronomeTaskQueueProvider : public MetronomeLikeTaskQueueProvider {
  public:
   void Initialize() override {
-    scoped_refptr<blink::MetronomeSource> metronome_source =
-        base::MakeRefCounted<blink::MetronomeSource>(base::TimeTicks::Now(),
-                                                     kMetronomeTick);
-    task_queue_ =
-        CreateWebRtcMetronomeTaskQueueFactory(metronome_source)
-            ->CreateTaskQueue("MetronomeTestTaskQueue",
-                              webrtc::TaskQueueFactory::Priority::NORMAL);
+    task_queue_ = CreateWebRtcMetronomeTaskQueueFactory()->CreateTaskQueue(
+        "MetronomeTestTaskQueue", webrtc::TaskQueueFactory::Priority::NORMAL);
   }
 
-  base::TimeDelta MetronomeTick() const override { return kMetronomeTick; }
+  base::TimeDelta DeltaToNextTick() const override {
+    base::TimeTicks now = base::TimeTicks::Now();
+    return MetronomeSource::TimeSnappedToNextTick(now) - now;
+  }
+  base::TimeDelta MetronomeTick() const override {
+    return MetronomeSource::Tick();
+  }
   webrtc::TaskQueueBase* TaskQueue() const override {
     return task_queue_.get();
   }

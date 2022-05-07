@@ -26,7 +26,7 @@ void ExtensionControlHandler::RegisterMessages() {
 }
 
 void ExtensionControlHandler::HandleDisableExtension(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   const std::string& extension_id = args[0].GetString();
   extensions::ExtensionService* extension_service =
       extensions::ExtensionSystem::Get(Profile::FromWebUI(web_ui()))

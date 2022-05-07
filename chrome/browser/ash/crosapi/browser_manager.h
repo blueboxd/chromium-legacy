@@ -24,6 +24,7 @@
 #include "chrome/browser/ash/crosapi/crosapi_util.h"
 #include "chrome/browser/ash/crosapi/environment_provider.h"
 #include "chromeos/crosapi/mojom/crosapi.mojom.h"
+#include "chromeos/crosapi/mojom/desk_template.mojom.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/policy/core/common/cloud/cloud_policy_store.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -86,6 +87,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
 
   // Returns true if Lacros is terminated.
   bool IsTerminated() const { return is_terminated_; }
+
+  // Tests will typically manually launch Lacros. As such it should not be
+  // automatically launched.
+  void DisableAutoLaunchForTesting();
 
   // Opens the browser window in lacros-chrome.
   // If lacros-chrome is not yet launched, it triggers to launch. If this is
@@ -194,6 +199,13 @@ class BrowserManager : public session_manager::SessionManagerObserver,
       base::OnceCallback<void(const absl::optional<GURL>&)>;
   // Gets Url of the active tab from lacros if there is any.
   void GetActiveTabUrl(GetActiveTabUrlCallback callback);
+
+  using GetTabStripModelUrlsCallback =
+      base::OnceCallback<void(crosapi::mojom::DeskTemplateStatePtr)>;
+  // Gets URLs and active indices of the tab strip models from the Lacros
+  // browser window.
+  void GetTabStripModelUrls(const std::string& window_unique_id,
+                            GetTabStripModelUrlsCallback callback);
 
   void AddObserver(BrowserManagerObserver* observer);
   void RemoveObserver(BrowserManagerObserver* observer);
@@ -485,6 +497,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   std::set<Feature> keep_alive_features_;
 
   base::ObserverList<BrowserManagerObserver> observers_;
+
+  bool disable_autolaunch_for_testing_ = false;
 
   base::WeakPtrFactory<BrowserManager> weak_factory_{this};
 };

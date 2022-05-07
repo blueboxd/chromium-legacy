@@ -30,7 +30,7 @@ namespace autofill_assistant {
 class UserModel;
 
 // GENERATED_JAVA_ENUM_PACKAGE: (
-// org.chromium.chrome.browser.autofill_assistant.user_data)
+// org.chromium.components.autofill_assistant.user_data)
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantTermsAndConditionsState
 enum TermsAndConditionsState {
   NOT_SELECTED = 0,
@@ -39,12 +39,12 @@ enum TermsAndConditionsState {
 };
 
 // GENERATED_JAVA_ENUM_PACKAGE: (
-// org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections)
+// org.chromium.components.autofill_assistant.user_data.additional_sections)
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantTextInputType
 enum TextInputType { INPUT_TEXT = 0, INPUT_ALPHANUMERIC = 1 };
 
 // GENERATED_JAVA_ENUM_PACKAGE: (
-// org.chromium.chrome.browser.autofill_assistant.user_data)
+// org.chromium.components.autofill_assistant.user_data)
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantContactField
 enum AutofillContactField {
   NAME_FULL = 7,
@@ -53,7 +53,7 @@ enum AutofillContactField {
 };
 
 // GENERATED_JAVA_ENUM_PACKAGE: (
-// org.chromium.chrome.browser.autofill_assistant.user_data)
+// org.chromium.components.autofill_assistant.user_data)
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: AssistantUserDataEventType
 enum UserDataEventType {
   UNKNOWN,
@@ -111,6 +111,9 @@ struct PaymentInstrument {
   absl::optional<std::string> identifier;
   std::unique_ptr<autofill::CreditCard> card;
   std::unique_ptr<autofill::AutofillProfile> billing_address;
+  // This field is only filled for payment instruments being sent from our own
+  // endpoint. It is absl::nullopt for Chrome Autofill data.
+  absl::optional<std::string> edit_token;
 };
 
 // Struct for holding a contact. This is a wrapper around AutofillProfile to
@@ -144,6 +147,9 @@ struct Address {
 
   absl::optional<std::string> identifier;
   std::unique_ptr<autofill::AutofillProfile> profile;
+  // This field is only filled for addresses being sent from our own endpoint.
+  // It is absl::nullopt for Chrome Autofill data.
+  absl::optional<std::string> edit_token;
 };
 
 // Struct for holding metrics data used by CollectUserDataAction.
@@ -158,7 +164,10 @@ struct UserDataMetrics {
 
   bool initially_prefilled = false;
   bool personal_data_changed = false;
-  bool action_successful = false;
+  Metrics::CollectUserDataResult action_result =
+      Metrics::CollectUserDataResult::FAILURE;
+
+  Metrics::UserDataSource user_data_source = Metrics::UserDataSource::UNKNOWN;
 
   // Selection states.
   Metrics::UserDataSelectionState contact_selection_state =
@@ -310,6 +319,9 @@ struct CollectUserDataOptions {
   bool should_store_data_changes = false;
   bool can_edit_contacts = true;
   bool use_gms_core_edit_dialogs = false;
+
+  absl::optional<std::string> add_payment_instrument_action_token;
+  absl::optional<std::string> add_address_token;
 
   // If empty, terms and conditions should not be shown.
   std::string accept_terms_and_conditions_text;

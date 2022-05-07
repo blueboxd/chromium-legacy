@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 GEN_INCLUDE(['select_to_speak_e2e_test_base.js']);
-GEN_INCLUDE(['mock_tts.js']);
+GEN_INCLUDE(['../common/testing/mock_tts.js']);
 
 /**
  * Browser tests for select-to-speak's feature to speak text
@@ -17,18 +17,13 @@ SelectToSpeakKeystrokeSelectionTest = class extends SelectToSpeakE2ETest {
   }
 
   /** @override */
-  setUp() {
-    var runTest = this.deferRunTest(WhenTestDone.EXPECT);
-    (async function() {
-      await importModule(
-          'selectToSpeak', '/select_to_speak/select_to_speak_main.js');
-      await importModule(
-          'SelectToSpeakConstants',
-          '/select_to_speak/select_to_speak_constants.js');
-      selectToSpeak.prefsManager_.enhancedVoicesDialogShown_ = true;
-
-      runTest();
-    })();
+  async setUpDeferred() {
+    await importModule(
+        'selectToSpeak', '/select_to_speak/select_to_speak_main.js');
+    await importModule(
+        'SelectToSpeakConstants',
+        '/select_to_speak/select_to_speak_constants.js');
+    selectToSpeak.prefsManager_.enhancedVoicesDialogShown_ = true;
   }
 
   /**

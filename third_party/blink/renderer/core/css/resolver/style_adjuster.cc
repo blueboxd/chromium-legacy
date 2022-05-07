@@ -81,22 +81,6 @@ bool IsOverflowClipOrVisible(EOverflow overflow) {
   return overflow == EOverflow::kClip || overflow == EOverflow::kVisible;
 }
 
-bool IsEditableElement(Element* element, const ComputedStyle& style) {
-  if (style.UserModify() != EUserModify::kReadOnly)
-    return true;
-
-  if (!element)
-    return false;
-
-  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element))
-    return !textarea->IsDisabledOrReadOnly();
-
-  if (auto* input = DynamicTo<HTMLInputElement>(*element))
-    return !input->IsDisabledOrReadOnly() && input->IsTextField();
-
-  return false;
-}
-
 TouchAction AdjustTouchActionForElement(TouchAction touch_action,
                                         const ComputedStyle& style,
                                         const ComputedStyle& parent_style,
@@ -524,6 +508,11 @@ static void AdjustStyleForHTMLElement(ComputedStyle& style,
       style.SetDisplay(EDisplay::kNone);
     }
   }
+
+  if (IsA<HTMLBodyElement>(element) &&
+      element.GetDocument().FirstBodyElement() != element) {
+    style.SetIsSecondaryBodyElement();
+  }
 }
 
 void StyleAdjuster::AdjustOverflow(ComputedStyle& style, Element* element) {
@@ -645,10 +634,28 @@ static void AdjustStyleForDisplay(ComputedStyle& style,
   }
 }
 
-static void AdjustEffectiveTouchAction(ComputedStyle& style,
-                                       const ComputedStyle& parent_style,
-                                       Element* element,
-                                       bool is_svg_root) {
+bool StyleAdjuster::IsEditableElement(Element* element,
+                                      const ComputedStyle& style) {
+  if (style.UserModify() != EUserModify::kReadOnly)
+    return true;
+
+  if (!element)
+    return false;
+
+  if (auto* textarea = DynamicTo<HTMLTextAreaElement>(*element))
+    return !textarea->IsDisabledOrReadOnly();
+
+  if (auto* input = DynamicTo<HTMLInputElement>(*element))
+    return !input->IsDisabledOrReadOnly() && input->IsTextField();
+
+  return false;
+}
+
+void StyleAdjuster::AdjustEffectiveTouchAction(
+    ComputedStyle& style,
+    const ComputedStyle& parent_style,
+    Element* element,
+    bool is_svg_root) {
   TouchAction inherited_action = parent_style.GetEffectiveTouchAction();
 
   bool is_replaced_canvas = element && IsA<HTMLCanvasElement>(element) &&

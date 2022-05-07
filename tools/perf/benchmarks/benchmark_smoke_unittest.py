@@ -56,7 +56,7 @@ def SmokeTestGenerator(benchmark_class, num_pages=1, story_tag_filter=None):
   # than is usually intended. Instead, if a particular benchmark is failing,
   # disable it in tools/perf/benchmarks/*.
   @decorators.Disabled('android')  # crbug.com/641934
-  def BenchmarkSmokeTest(self):
+  def BenchmarkSmokeTestFunc(self):
     # Some benchmarks are running multiple iterations
     # which is not needed for a smoke test
     if hasattr(benchmark_class, 'enable_smoke_test_mode'):
@@ -92,9 +92,9 @@ def SmokeTestGenerator(benchmark_class, num_pages=1, story_tag_filter=None):
   # Set real_test_func as benchmark_class to make typ
   # write benchmark_class source filepath to trace instead of
   # path to this file
-  BenchmarkSmokeTest.real_test_func = benchmark_class
+  BenchmarkSmokeTestFunc.real_test_func = benchmark_class
 
-  return BenchmarkSmokeTest
+  return BenchmarkSmokeTestFunc
 
 
 # The list of benchmark modules to be excluded from our smoke tests.
@@ -111,6 +111,7 @@ _BLACK_LIST_TEST_MODULES = {
 _BLACK_LIST_TEST_NAMES = [
     'memory.long_running_idle_gmail_background_tbmv2',
     'tab_switching.typical_25',
+    'tracing.tracing_with_background_memory_infra',  # crbug.com/1301865
     'UNSCHEDULED_oortonline_tbmv2',
     'webrtc',  # crbug.com/932036
     'v8.runtime_stats.top_25',  # Fails in Windows, crbug.com/1043048
@@ -125,6 +126,10 @@ def MergeDecorators(method, method_attribute, benchmark, benchmark_attribute):
       getattr(benchmark, benchmark_attribute, set()))
   if merged_attributes:
     setattr(method, method_attribute, merged_attributes)
+
+
+class BenchmarkSmokeTest(unittest.TestCase):
+  pass
 
 
 def load_tests(loader, standard_tests, pattern):
@@ -144,9 +149,6 @@ def load_tests(loader, standard_tests, pattern):
       continue
     if benchmark.Name() in _BLACK_LIST_TEST_NAMES:
       continue
-
-    class BenchmarkSmokeTest(unittest.TestCase):
-      pass
 
     # tab_switching needs more than one page to test correctly.
     if 'tab_switching' in benchmark.Name():

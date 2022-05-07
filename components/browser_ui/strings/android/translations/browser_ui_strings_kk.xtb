@@ -55,7 +55,7 @@
 <translation id="2315043854645842844">Операциялық жүйе клиенттік сертификатты таңдауға қолдау көрсетпейді.</translation>
 <translation id="2321958826496381788">Сырғытпаны оқу ыңғайлы болғанға дейін сүйреңіз. Абзацты екі рет басқан кезде, мәтіннің үлкендігі осындай болуы керек.</translation>
 <translation id="2359808026110333948">Жалғастыру</translation>
-<translation id="2379925928934107488">Chrome қараңғы режим қолданғанда, сайттарға да мүмкіндігінше қараңғы режим қолданыңыз.</translation>
+<translation id="2379925928934107488">Chrome қараңғы тақырып қолданғанда, сайттарға да мүмкіндігінше қараңғы тақырып қолданыңыз.</translation>
 <translation id="2387895666653383613">Мәтін масштабтау</translation>
 <translation id="2402980924095424747"><ph name="MEGABYTES" /> МБ</translation>
 <translation id="2404630663942400771">{PERMISSIONS_SUMMARY_ALLOWED,plural, =1{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> және тағы <ph name="NUM_MORE" /> қызметті пайдалануға рұқсат етілген.}other{<ph name="PERMISSION_1" />, <ph name="PERMISSION_2" /> және тағы <ph name="NUM_MORE" /> қызметті пайдалануға рұқсат етілген.}}</translation>
@@ -255,6 +255,7 @@
 <translation id="7087918508125750058"><ph name="ITEM_COUNT" /> таңдалды. Опциялар экранның жоғарғы жағында тұр</translation>
 <translation id="7141896414559753902">Сайттардың қалқымалы терезе көрсетуіне және бағыттауына тыйым салу (ұсынылады)</translation>
 <translation id="7176368934862295254"><ph name="KILOBYTES" /> КБ</translation>
+<translation id="7180611975245234373">Жаңарту</translation>
 <translation id="723171743924126238">Кескіндерді таңдау</translation>
 <translation id="7243308994586599757">Опциялар экранның төменгі жағында тұрады</translation>
 <translation id="7250468141469952378"><ph name="ITEM_COUNT" /> таңдалды</translation>
@@ -308,7 +309,9 @@
 <translation id="83792324527827022">Сайт камера мен микрофонды пайдаланып жатыр.</translation>
 <translation id="8380167699614421159">Бұл сайтта мазалайтын немесе жалған ақпаратты жарнамалар көрсетіледі</translation>
 <translation id="8394832520002899662">Сайтқа оралу үшін түртіңіз.</translation>
+<translation id="8409345997656833551">Мақала үшін қарапайым көрініс қолжетімді болған кезде хабарлау</translation>
 <translation id="8425213833346101688">Өзгерту</translation>
+<translation id="8428213095426709021">Параметрлер</translation>
 <translation id="8441146129660941386">Артқа</translation>
 <translation id="8444433999583714703"><ph name="APP_NAME" /> браузері геодерегіңізді пайдалануы үшін, <ph name="BEGIN_LINK" />Android параметрлерінде<ph name="END_LINK" /> оны да қосыңыз.</translation>
 <translation id="8447861592752582886">Құрылғыға кіру рұқсатының күшін жою</translation>

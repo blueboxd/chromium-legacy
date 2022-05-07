@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_link.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_positioned_node.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/text/writing_mode.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"
@@ -47,19 +48,21 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
 
   struct ChildWithOffset {
     DISALLOW_NEW();
-    ChildWithOffset(LogicalOffset offset,
-                    scoped_refptr<const NGPhysicalFragment> fragment)
+    ChildWithOffset(LogicalOffset offset, const NGPhysicalFragment* fragment)
         : offset(offset), fragment(std::move(fragment)) {}
+
+    void Trace(Visitor*) const;
 
     // We store logical offsets (instead of the final physical), as we can't
     // convert into the physical coordinate space until we know our final size.
     LogicalOffset offset;
-    scoped_refptr<const NGPhysicalFragment> fragment;
+    Member<const NGPhysicalFragment> fragment;
   };
 
-  using ChildrenVector = Vector<ChildWithOffset, 4>;
+  using ChildrenVector = HeapVector<ChildWithOffset, 4>;
   using MulticolCollection =
-      HeapHashMap<Member<LayoutBox>, NGMulticolWithPendingOOFs<LogicalOffset>>;
+      HeapHashMap<Member<LayoutBox>,
+                  Member<NGMulticolWithPendingOOFs<LogicalOffset>>>;
 
   LayoutUnit BfcLineOffset() const { return bfc_line_offset_; }
   void SetBfcLineOffset(LayoutUnit bfc_line_offset) {
@@ -87,8 +90,9 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     may_have_descendant_above_block_start_ = b;
   }
 
-  void SetExclusionSpace(NGExclusionSpace&& exclusion_space) {
-    exclusion_space_ = std::move(exclusion_space);
+  NGExclusionSpace& ExclusionSpace() { return exclusion_space_; }
+  void SetExclusionSpace(const NGExclusionSpace& exclusion_space) {
+    exclusion_space_ = exclusion_space;
   }
 
   void SetLinesUntilClamp(const absl::optional<int>& value) {
@@ -166,8 +170,8 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   // store such inner multicols for later use.
   void AddMulticolWithPendingOOFs(
       const NGBlockNode& multicol,
-      NGMulticolWithPendingOOFs<LogicalOffset> multicol_info =
-          NGMulticolWithPendingOOFs<LogicalOffset>());
+      NGMulticolWithPendingOOFs<LogicalOffset>* multicol_info =
+          MakeGarbageCollected<NGMulticolWithPendingOOFs<LogicalOffset>>());
 
   bool HasOutOfFlowFragmentChild() const {
     return has_out_of_flow_fragment_child_;
@@ -178,10 +182,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   }
 
   void SwapOutOfFlowPositionedCandidates(
-      Vector<NGLogicalOutOfFlowPositionedNode>* candidates);
+      HeapVector<NGLogicalOutOfFlowPositionedNode>* candidates);
 
   void SwapOutOfFlowFragmentainerDescendants(
-      Vector<NGLogicalOutOfFlowPositionedNode>* descendants);
+      HeapVector<NGLogicalOutOfFlowPositionedNode>* descendants);
 
   void SwapMulticolsWithPendingOOFs(
       MulticolCollection* multicols_with_pending_oofs);
@@ -214,7 +218,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
     return !multicols_with_pending_oofs_.IsEmpty();
   }
 
-  Vector<NGLogicalOutOfFlowPositionedNode>*
+  HeapVector<NGLogicalOutOfFlowPositionedNode>*
   MutableOutOfFlowPositionedCandidates() {
     return &oof_positioned_candidates_;
   }
@@ -352,8 +356,7 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
       const NGInlineContainer<LogicalOffset>* inline_container = nullptr,
       absl::optional<LayoutUnit> adjustment_for_oof_propagation = LayoutUnit());
 
-  void AddChildInternal(scoped_refptr<const NGPhysicalFragment>,
-                        const LogicalOffset&);
+  void AddChildInternal(const NGPhysicalFragment*, const LogicalOffset&);
 
   NGLayoutInputNode node_;
   const NGConstraintSpace* space_;
@@ -364,10 +367,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGFragmentBuilder {
   NGExclusionSpace exclusion_space_;
   absl::optional<int> lines_until_clamp_;
 
-  Vector<NGLogicalOutOfFlowPositionedNode> oof_positioned_candidates_;
-  Vector<NGLogicalOutOfFlowPositionedNode>
+  HeapVector<NGLogicalOutOfFlowPositionedNode> oof_positioned_candidates_;
+  HeapVector<NGLogicalOutOfFlowPositionedNode>
       oof_positioned_fragmentainer_descendants_;
-  Vector<NGLogicalOutOfFlowPositionedNode> oof_positioned_descendants_;
+  HeapVector<NGLogicalOutOfFlowPositionedNode> oof_positioned_descendants_;
 
   MulticolCollection multicols_with_pending_oofs_;
 

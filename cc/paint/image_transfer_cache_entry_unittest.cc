@@ -16,10 +16,12 @@
 #include "build/build_config.h"
 #include "cc/paint/image_transfer_cache_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkImage.h"
 #include "third_party/skia/include/core/SkImageInfo.h"
 #include "third_party/skia/include/core/SkPixmap.h"
+#include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/core/SkYUVAPixmaps.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
@@ -228,7 +230,7 @@ TEST_P(ImageTransferCacheEntryTest, Deserialize) {
   auto client_entry(std::make_unique<ClientImageTransferCacheEntry>(
       yuva_pixmaps.planes().data(), yuva_info.planeConfig(),
       yuva_info.subsampling(), nullptr /* decoded color space*/,
-      yuva_info.yuvColorSpace(), true /* needs_mips */));
+      yuva_info.yuvColorSpace(), true /* needs_mips */, absl::nullopt));
   uint32_t size = client_entry->SerializedSize();
   std::vector<uint8_t> data(size);
   ASSERT_TRUE(client_entry->Serialize(
@@ -378,7 +380,8 @@ TEST(ImageTransferCacheEntryTestNoYUV, CPUImageWithMips) {
   SkBitmap bitmap;
   bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(gr_context->maxTextureSize() + 1, 10));
-  ClientImageTransferCacheEntry client_entry(&bitmap.pixmap(), nullptr, true);
+  ClientImageTransferCacheEntry client_entry(&bitmap.pixmap(), true,
+                                             absl::nullopt);
   std::vector<uint8_t> storage(client_entry.SerializedSize());
   client_entry.Serialize(base::make_span(storage.data(), storage.size()));
 
@@ -404,7 +407,8 @@ TEST(ImageTransferCacheEntryTestNoYUV, CPUImageAddMipsLater) {
   SkBitmap bitmap;
   bitmap.allocPixels(
       SkImageInfo::MakeN32Premul(gr_context->maxTextureSize() + 1, 10));
-  ClientImageTransferCacheEntry client_entry(&bitmap.pixmap(), nullptr, false);
+  ClientImageTransferCacheEntry client_entry(&bitmap.pixmap(), false,
+                                             absl::nullopt);
   std::vector<uint8_t> storage(client_entry.SerializedSize());
   client_entry.Serialize(base::make_span(storage.data(), storage.size()));
 

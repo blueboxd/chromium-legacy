@@ -6,9 +6,9 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/observer_list.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/core/common/autofill_features.h"
-#include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/web/modules/autofill/web_form_element_observer.h"
 #include "third_party/blink/public/web/web_input_element.h"

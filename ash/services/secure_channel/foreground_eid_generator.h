@@ -11,15 +11,16 @@
 
 #include "ash/services/secure_channel/data_with_timestamp.h"
 #include "base/gtest_prod_util.h"
-#include "base/time/clock.h"
+
+namespace base {
+class Clock;
+}
 
 namespace cryptauth {
 class BeaconSeed;
-}  // namespace cryptauth
+}
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 class RawEidGenerator;
 
@@ -192,13 +193,6 @@ class ForegroundEidGenerator {
       GeneratePossibleAdvertisements_NoAdvertisements_EmptySeeds);
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash::secure_channel {
-using ::chromeos::secure_channel::ForegroundEidGenerator;
-}
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FOREGROUND_EID_GENERATOR_H_

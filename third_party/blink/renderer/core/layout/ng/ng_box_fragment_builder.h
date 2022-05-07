@@ -9,6 +9,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/layout/geometry/box_sides.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_rect.h"
+#include "third_party/blink/renderer/core/layout/ng/flex/ng_flex_data.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_fragment_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_fragment_items_builder.h"
@@ -588,25 +589,28 @@ class CORE_EXPORT NGBoxFragmentBuilder final
       std::unique_ptr<NGGridLayoutData> grid_layout_data) {
     grid_layout_data_ = std::move(grid_layout_data);
   }
+  void TransferFlexLayoutData(
+      std::unique_ptr<DevtoolsFlexInfo> flex_layout_data) {
+    flex_layout_data_ = std::move(flex_layout_data);
+  }
 
   const NGGridLayoutData& GridLayoutData() const {
     DCHECK(grid_layout_data_);
     return *grid_layout_data_.get();
   }
 
-  bool HasBreakTokenData() const { return break_token_data_.get(); }
+  bool HasBreakTokenData() const { return break_token_data_; }
 
   NGBlockBreakTokenData* EnsureBreakTokenData() {
     if (!HasBreakTokenData())
-      break_token_data_ = std::make_unique<NGBlockBreakTokenData>();
-    return break_token_data_.get();
+      break_token_data_ = MakeGarbageCollected<NGBlockBreakTokenData>();
+    return break_token_data_;
   }
 
-  NGBlockBreakTokenData* GetBreakTokenData() { return break_token_data_.get(); }
+  NGBlockBreakTokenData* GetBreakTokenData() { return break_token_data_; }
 
-  void SetBreakTokenData(
-      std::unique_ptr<NGBlockBreakTokenData> break_token_data) {
-    break_token_data_ = std::move(break_token_data);
+  void SetBreakTokenData(NGBlockBreakTokenData* break_token_data) {
+    break_token_data_ = break_token_data;
   }
 
   // The |NGFragmentItemsBuilder| for the inline formatting context of this box.
@@ -656,6 +660,8 @@ class CORE_EXPORT NGBoxFragmentBuilder final
     has_forced_break_ = true;
     minimal_space_shortage_ = LayoutUnit::Max();
   }
+
+  bool HasForcedBreak() const { return has_forced_break_; }
 
   void InsertLegacyPositionedObject(const NGBlockNode& positioned) const {
     positioned.InsertIntoLegacyPositionedObjectsOf(
@@ -723,8 +729,7 @@ class CORE_EXPORT NGBoxFragmentBuilder final
 
   // Table specific types.
   absl::optional<PhysicalRect> table_grid_rect_;
-  absl::optional<NGTableFragmentData::ColumnGeometries>
-      table_column_geometries_;
+  NGTableFragmentData::ColumnGeometries table_column_geometries_;
   scoped_refptr<const NGTableBorders> table_collapsed_borders_;
   std::unique_ptr<NGTableFragmentData::CollapsedBordersGeometry>
       table_collapsed_borders_geometry_;
@@ -733,10 +738,12 @@ class CORE_EXPORT NGBoxFragmentBuilder final
   // Table cell specific types.
   absl::optional<wtf_size_t> table_cell_column_index_;
 
-  std::unique_ptr<NGBlockBreakTokenData> break_token_data_;
+  NGBlockBreakTokenData* break_token_data_ = nullptr;
 
   // Grid specific types.
   std::unique_ptr<NGGridLayoutData> grid_layout_data_;
+
+  std::unique_ptr<DevtoolsFlexInfo> flex_layout_data_;
 
   LogicalBoxSides sides_to_include_;
 

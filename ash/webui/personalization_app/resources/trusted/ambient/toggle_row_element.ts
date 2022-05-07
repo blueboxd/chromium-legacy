@@ -34,10 +34,16 @@ export class ToggleRow extends WithPersonalizationStore {
   }
 
   checked: boolean;
-  ariaLabel: string;
+  override ariaLabel: string;
 
   private getAriaLabel_(): string {
     return this.i18n(this.checked ? 'ambientModeOn' : 'ambientModeOff');
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'toggle-row': ToggleRow;
   }
 }
 

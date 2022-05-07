@@ -17,9 +17,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Test mojom::Channel implementation.
 class FakeChannel : public mojom::Channel {
@@ -73,8 +71,6 @@ class FakeChannel : public mojom::Channel {
       file_payload_listeners_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_CHANNEL_H_

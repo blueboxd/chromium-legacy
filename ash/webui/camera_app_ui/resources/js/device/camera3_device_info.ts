@@ -13,19 +13,54 @@ import {
 } from '../type.js';
 
 /**
+ * Groups resolutions with same ratio into same list.
+ *
+ * @param resolutions Resolutions to be grouped.
+ * @return Ratio as key, all resolutions with that ratio as value.
+ */
+function groupResolutionRatio(resolutions: Resolution[]):
+    Map<number, Resolution[]> {
+  function toSupportedPreviewRatio(r: Resolution): number {
+    // Special aspect ratio mapping rule, see http://b/147986763.
+    if (r.width === 848 && r.height === 480) {
+      return (new Resolution(16, 9)).aspectRatio;
+    }
+    return r.aspectRatio;
+  }
+
+  const result = new Map<number, ResolutionList>();
+  for (const r of resolutions) {
+    const ratio = toSupportedPreviewRatio(r);
+    const ratios = result.get(ratio) ?? [];
+    ratios.push(r);
+    result.set(ratio, ratios);
+  }
+  return result;
+}
+
+export type CapturePreviewPairs =
+    Array<{captureResolutions: Resolution[], previewResolutions: Resolution[]}>;
+
+/**
  * Video device information queried from HALv3 mojo private API.
  */
 export class Camera3DeviceInfo {
   readonly deviceId: string;
-  readonly videoResols: ResolutionList = [];
+
+  readonly videoResolutions: ResolutionList = [];
+
   readonly videoMaxFps: MaxFpsInfo = {};
+
+  readonly photoPreviewPairs: CapturePreviewPairs;
+
+  readonly videoPreviewPairs: CapturePreviewPairs;
 
   /**
    * @param deviceInfo Information of the video device.
    * @param facing Camera facing of the video device.
-   * @param photoResols Supported available photo resolutions
+   * @param photoResolutions Supported available photo resolutions
    *     of the video device.
-   * @param videoResolFpses Supported available video
+   * @param videoResolutionFpses Supported available video
    *     resolutions and maximal capture fps of the video device.
    * @param fpsRanges Supported fps ranges of the video device.
    * @param supportPTZ Is supported PTZ controls.
@@ -33,23 +68,63 @@ export class Camera3DeviceInfo {
   constructor(
       deviceInfo: MediaDeviceInfo,
       readonly facing: Facing,
-      readonly photoResols: ResolutionList,
-      videoResolFpses: VideoConfig[],
+      readonly photoResolutions: ResolutionList,
+      videoResolutionFpses: VideoConfig[],
       readonly fpsRanges: FpsRangeList,
       readonly supportPTZ: boolean,
   ) {
     this.deviceId = deviceInfo.deviceId;
-    videoResolFpses.filter(({maxFps}) => maxFps >= 24)
-        .forEach(({width, height, maxFps}) => {
-          const r = new Resolution(width, height);
-          this.videoResols.push(r);
-          this.videoMaxFps[r.toString()] = maxFps;
-        });
+    for (const {width, height, maxFps} of videoResolutionFpses) {
+      if (maxFps < 24) {
+        continue;
+      }
+      const r = new Resolution(width, height);
+      this.videoResolutions.push(r);
+      this.videoMaxFps[r.toString()] = maxFps;
+    }
+    this.photoPreviewPairs =
+        this.pairedPreviewCaptureResolutions(this.photoResolutions);
+    this.videoPreviewPairs =
+        this.pairedPreviewCaptureResolutions(this.videoResolutions);
+  }
+
+  /**
+   * @param videoResolution Video resolution.
+   * @return The constant fps supported by this video resolution.
+   */
+  getConstFpses(videoResolution: Resolution): number[] {
+    const deviceConstFpses =
+        this.fpsRanges.filter(({minFps, maxFps}) => minFps === maxFps)
+            .map(({minFps}) => minFps);
+    const resolutionMaxFps = this.videoMaxFps[videoResolution.toString()];
+    return deviceConstFpses.filter((constFps) => constFps <= resolutionMaxFps);
+  }
+
+  private pairedPreviewCaptureResolutions(captureRs: Resolution[]):
+      CapturePreviewPairs {
+    // Filter out preview resolution greater than 1920x1080 and 1600x1200 for
+    // preventing performance issue.
+    const previewRs = this.videoResolutions.filter(
+        ({width, height}) => width <= 1920 && height <= 1200);
+    const previewRatios = groupResolutionRatio(previewRs);
+    const captureRatios = groupResolutionRatio(captureRs);
+    // Pairing preview and capture resolution with same aspect ratio.
+    const pairedResolutions: CapturePreviewPairs = [];
+    for (const [ratio, captureResolutions] of captureRatios) {
+      const previewResolutions = previewRatios.get(ratio);
+      if (previewResolutions === undefined) {
+        continue;
+      }
+      pairedResolutions.push({captureResolutions, previewResolutions});
+    }
+    return pairedResolutions;
   }
 
   /**
    * Creates a Camera3DeviceInfo by given device info and the mojo device
    *     operator.
+   *
+   * @param deviceInfo Given device info.
    * @param videoConfigFilter Filters the available video capability exposed by
    *     device.
    * @throws Thrown when the device operation is not supported.

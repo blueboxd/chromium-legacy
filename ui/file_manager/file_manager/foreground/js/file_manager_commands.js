@@ -917,7 +917,7 @@ CommandHandler.COMMANDS_['new-folder'] = new class extends FilesCommand {
                       .catch(error => {
                         listContainer.endBatchUpdates();
                         this.busy_ = false;
-                        console.error(error);
+                        console.warn(error);
                       });
                 }
               },
@@ -1737,7 +1737,7 @@ CommandHandler.COMMANDS_['open-with'] = new class extends FilesCommand {
         })
         .catch(error => {
           if (error) {
-            console.error(error.stack || error);
+            console.warn(error.stack || error);
           }
         });
   }
@@ -1759,7 +1759,7 @@ CommandHandler.COMMANDS_['invoke-sharesheet'] = new class extends FilesCommand {
     const launchSource = CommandUtil.getSharesheetLaunchSource(event);
     chrome.fileManagerPrivate.invokeSharesheet(entries, launchSource, () => {
       if (chrome.runtime.lastError) {
-        console.error(chrome.runtime.lastError.message);
+        console.warn(chrome.runtime.lastError.message);
         return;
       }
     });
@@ -1788,7 +1788,7 @@ CommandHandler.COMMANDS_['invoke-sharesheet'] = new class extends FilesCommand {
 
     chrome.fileManagerPrivate.sharesheetHasTargets(entries, hasTargets => {
       if (chrome.runtime.lastError) {
-        console.error(chrome.runtime.lastError.message);
+        console.warn(chrome.runtime.lastError.message);
         return;
       }
       event.command.setHidden(!hasTargets);
@@ -1877,7 +1877,12 @@ CommandHandler.COMMANDS_['toggle-holding-space'] =
     // Update the command to add or remove holding space items depending on the
     // current holding space state - the command will remove items only if all
     // currently selected items are already in the holding space.
-    const state = await getHoldingSpaceState();
+    let state;
+    try {
+      state = await getHoldingSpaceState();
+    } catch (e) {
+      console.warn('Error getting holding space state', e);
+    }
     if (!state) {
       command.setHidden(true);
       return;
@@ -2078,6 +2083,57 @@ CommandHandler.COMMANDS_['toggle-pinned'] = new class extends FilesCommand {
 };
 
 /**
+ * Extracts content of ZIP files in the current selection.
+ */
+CommandHandler.COMMANDS_['extract-all'] = new class extends FilesCommand {
+  execute(event, fileManager) {
+    const dirEntry = fileManager.getCurrentDirectoryEntry();
+    if (!dirEntry ||
+        !fileManager.getSelection().entries.every(
+            CommandUtil.shouldShowMenuItemsForEntry.bind(
+                null, fileManager.volumeManager))) {
+      return;
+    }
+
+    const selectionEntries = fileManager.getSelection().entries;
+    if (util.isExtractArchiveEnabled()) {
+      chrome.fileManagerPrivate.startIOTask(
+          chrome.fileManagerPrivate.IOTaskType.EXTRACT, selectionEntries,
+          {destinationFolder: /** @type {!DirectoryEntry} */ (dirEntry)});
+    }
+  }
+
+  /** @override */
+  canExecute(event, fileManager) {
+    if (!util.isExtractArchiveEnabled()) {
+      event.command.setHidden(true);
+      event.canExecute = false;
+      return;
+    }
+    const dirEntry = fileManager.getCurrentDirectoryEntry();
+    const selection = fileManager.getSelection();
+
+    if (!dirEntry || fileManager.directoryModel.isReadOnly() || !selection ||
+        selection.totalCount === 0) {
+      event.command.setHidden(true);
+      event.canExecute = false;
+    } else {
+      // Check the selected entries for a ZIP archive in the selected set.
+      for (const entry of selection.entries) {
+        if (FileType.getExtension(entry) === '.zip') {
+          event.command.setHidden(false);
+          event.canExecute = true;
+          return;
+        }
+      }
+      // Didn't find any ZIP files, disable extract-all.
+      event.command.setHidden(true);
+      event.canExecute = false;
+    }
+  }
+};
+
+/**
  * Creates ZIP file for current selection.
  */
 CommandHandler.COMMANDS_['zip-selection'] = new class extends FilesCommand {
@@ -2105,6 +2161,16 @@ CommandHandler.COMMANDS_['zip-selection'] = new class extends FilesCommand {
   canExecute(event, fileManager) {
     const dirEntry = fileManager.getCurrentDirectoryEntry();
     const selection = fileManager.getSelection();
+
+    // Hide ZIP selection for single ZIP file selected.
+    if (util.isExtractArchiveEnabled()) {
+      if (selection.entries.length === 1 &&
+          FileType.getExtension(selection.entries[0]) === '.zip') {
+        event.command.setHidden(true);
+        event.canExecute = false;
+        return;
+      }
+    }
 
     if (!selection.entries.every(CommandUtil.shouldShowMenuItemsForEntry.bind(
             null, fileManager.volumeManager))) {
@@ -2268,7 +2334,7 @@ CommandHandler.COMMANDS_['share-with-linux'] = new class extends FilesCommand {
       chrome.fileManagerPrivate.sharePathsWithCrostini(
           constants.DEFAULT_CROSTINI_VM, [dir], true /* persist */, () => {
             if (chrome.runtime.lastError) {
-              console.error(
+              console.warn(
                   'Error sharing with linux: ' +
                   chrome.runtime.lastError.message);
             }
@@ -2344,7 +2410,7 @@ CommandHandler.COMMANDS_['share-with-plugin-vm'] =
       chrome.fileManagerPrivate.sharePathsWithCrostini(
           constants.PLUGIN_VM, [dir], true /* persist */, () => {
             if (chrome.runtime.lastError) {
-              console.error(
+              console.warn(
                   'Error sharing with Plugin VM: ' +
                   chrome.runtime.lastError.message);
             }

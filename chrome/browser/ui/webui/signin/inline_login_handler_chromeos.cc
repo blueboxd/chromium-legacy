@@ -404,7 +404,7 @@ void InlineLoginHandlerChromeOS::OnGetAccounts(
 }
 
 void InlineLoginHandlerChromeOS::GetAccountsNotAvailableInArc(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(1u, args.size());
   const std::string& callback_id = args[0].GetString();
   ::GetAccountManagerFacade(Profile::FromWebUI(web_ui())->GetPath().value())
@@ -447,7 +447,7 @@ void InlineLoginHandlerChromeOS::FinishGetAccountsNotAvailableInArc(
 }
 
 void InlineLoginHandlerChromeOS::MakeAvailableInArcAndCloseDialog(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(1u, args.size());
   const base::Value& dictionary = args[0];
   CHECK(dictionary.is_dict());
@@ -468,7 +468,7 @@ void InlineLoginHandlerChromeOS::HandleSkipWelcomePage(
 }
 
 void InlineLoginHandlerChromeOS::OpenGuestWindowAndCloseDialog(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   crosapi::BrowserManager::Get()->NewGuestWindow();
   close_dialog_closure_.Run();
 }

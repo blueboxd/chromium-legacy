@@ -45,7 +45,7 @@ using perfetto::protos::pbzero::ChromeTrackEvent;
 constexpr const char* kExecutionModeString[] = {"parallel", "sequenced",
                                                 "single thread", "job"};
 static_assert(
-    size(kExecutionModeString) ==
+    std::size(kExecutionModeString) ==
         static_cast<size_t>(TaskSourceExecutionMode::kMax) + 1,
     "Array kExecutionModeString is out of sync with TaskSourceExecutionMode.");
 
@@ -447,8 +447,7 @@ bool TaskTracker::CanRunPriority(TaskPriority priority) const {
 }
 
 RegisteredTaskSource TaskTracker::RunAndPopNextTask(
-    RegisteredTaskSource task_source,
-    base::Location* posted_from) {
+    RegisteredTaskSource task_source) {
   DCHECK(task_source);
 
   const bool should_run_tasks = BeforeRunTask(task_source->shutdown_behavior());
@@ -464,8 +463,6 @@ RegisteredTaskSource TaskTracker::RunAndPopNextTask(
   }
 
   if (task) {
-    if (posted_from)
-      *posted_from = task->posted_from;
     // Run the |task| (whether it's a worker task or the Clear() closure).
     RunTask(std::move(task.value()), task_source.get(), traits);
   }

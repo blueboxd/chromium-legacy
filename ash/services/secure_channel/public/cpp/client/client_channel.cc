@@ -8,9 +8,7 @@
 #include "base/callback.h"
 #include "base/guid.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 ClientChannel::Observer::~Observer() = default;
 
@@ -77,6 +75,4 @@ void ClientChannel::NotifyMessageReceived(const std::string& payload) {
     observer.OnMessageReceived(payload_copy);
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

@@ -19,11 +19,13 @@
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_manager.h"
+#include "ui/color/color_provider_utils.h"
 #include "ui/color/color_recipe.h"
 #include "ui/color/color_transform.h"
 #include "ui/color/win/accent_color_observer.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/views_features.h"
 
 namespace {
 
@@ -200,6 +202,24 @@ void FrameColorHelper::FetchAccentColors() {
   }
 }
 
+ui::ColorTransform GetCaptionForegroundColor(
+    ui::ColorTransform input_transform) {
+  const auto generator = [](ui::ColorTransform input_transform,
+                            SkColor input_color, const ui::ColorMixer& mixer) {
+    const SkColor background_color = input_transform.Run(input_color, mixer);
+    const float windows_luma = 0.25f * SkColorGetR(background_color) +
+                               0.625f * SkColorGetG(background_color) +
+                               0.125f * SkColorGetB(background_color);
+    const SkColor result_color =
+        (windows_luma <= 128.0f) ? SK_ColorWHITE : SK_ColorBLACK;
+    DVLOG(2) << "ColorTransform GetCaptionForegroundColor:"
+             << " Background Color: " << ui::SkColorName(background_color)
+             << " Result Color: " << ui::SkColorName(result_color);
+    return result_color;
+  };
+  return base::BindRepeating(generator, std::move(input_transform));
+}
+
 }  // namespace
 
 void AddNativeChromeColorMixer(ui::ColorProvider* provider,
@@ -211,17 +231,84 @@ void AddNativeChromeColorMixer(ui::ColorProvider* provider,
   // actually pass in these IDs.
   FrameColorHelper::Get()->AddBorderAccentColors(mixer);
 
-  if (key.contrast_mode == ui::ColorProviderManager::ContrastMode::kHigh) {
-    // High contrast uses system colors.
-    mixer[kColorLocationBarBorder] = {ui::kColorNativeWindowText};
-    mixer[kColorOmniboxBackground] = {ui::kColorNativeBtnFace};
-    mixer[kColorOmniboxText] = {ui::kColorNativeBtnText};
-    mixer[kColorToolbar] = {ui::kColorNativeWindow};
-    mixer[kColorToolbarText] = {ui::kColorNativeBtnText};
-    mixer[kColorTabForegroundActiveFrameActive] = {
-        ui::kColorNativeHighlightText};
+  mixer[kColorCaptionButtonForegroundActive] =
+      GetCaptionForegroundColor(kColorWindowControlButtonBackgroundActive);
+  mixer[kColorCaptionButtonForegroundInactive] =
+      GetCaptionForegroundColor(kColorWindowControlButtonBackgroundInactive);
+  mixer[kColorCaptionCloseButtonBackgroundHovered] = {
+      SkColorSetRGB(0xE8, 0x11, 0x23)};
+  mixer[kColorCaptionCloseButtonForegroundHovered] = {SK_ColorWHITE};
+  mixer[kColorCaptionForegroundActive] =
+      GetCaptionForegroundColor(ui::kColorFrameActive);
+  mixer[kColorCaptionForegroundInactive] =
+      SetAlpha(GetCaptionForegroundColor(ui::kColorFrameInactive), 0x66);
+
+  if (key.color_mode == ui::ColorProviderManager::ColorMode::kLight) {
+    mixer[kColorNewTabPageBackground] = {ui::kColorNativeWindow};
+    mixer[kColorNewTabPageLink] = {ui::kColorNativeHotlight};
+    mixer[kColorNewTabPageText] = {ui::kColorNativeWindowText};
+  }
+
+  if (key.contrast_mode != ui::ColorProviderManager::ContrastMode::kHigh) {
+    FrameColorHelper::Get()->AddNativeChromeColors(mixer, key);
     return;
   }
 
-  FrameColorHelper::Get()->AddNativeChromeColors(mixer, key);
+  // High contrast uses system colors.
+  mixer[kColorDownloadShelfContentAreaSeparator] = {
+      kColorToolbarContentAreaSeparator};
+  mixer[kColorInfoBarContentAreaSeparator] = {
+      kColorToolbarContentAreaSeparator};
+  mixer[kColorLocationBarBorder] = {ui::kColorNativeWindowText};
+  mixer[kColorOmniboxBackground] = {ui::kColorNativeBtnFace};
+  mixer[kColorOmniboxBackgroundHovered] = {kColorOmniboxBackground};
+  mixer[kColorOmniboxBubbleOutline] = {kColorOmniboxText};
+  mixer[kColorOmniboxKeywordSelected] = {kColorOmniboxText};
+  mixer[kColorOmniboxResultsBackground] = {kColorOmniboxBackground};
+  mixer[kColorOmniboxResultsBackgroundHovered] = {
+      kColorOmniboxResultsBackgroundSelected};
+  mixer[kColorOmniboxResultsBackgroundSelected] = {ui::kColorNativeHighlight};
+  mixer[kColorOmniboxResultsIcon] = {kColorOmniboxText};
+  mixer[kColorOmniboxResultsIconSelected] = {kColorOmniboxResultsTextSelected};
+  mixer[kColorOmniboxResultsTextDimmed] = {kColorOmniboxText};
+  mixer[kColorOmniboxResultsTextDimmedSelected] = {
+      kColorOmniboxResultsTextSelected};
+  mixer[kColorOmniboxResultsTextNegative] = {kColorOmniboxText};
+  mixer[kColorOmniboxResultsTextNegativeSelected] = {
+      kColorOmniboxResultsTextSelected};
+  mixer[kColorOmniboxResultsTextPositive] = {kColorOmniboxText};
+  mixer[kColorOmniboxResultsTextPositiveSelected] = {
+      kColorOmniboxResultsTextSelected};
+  mixer[kColorOmniboxResultsTextSecondary] = {kColorOmniboxText};
+  mixer[kColorOmniboxResultsTextSecondarySelected] = {
+      kColorOmniboxResultsTextSelected};
+  mixer[kColorOmniboxResultsTextSelected] = {ui::kColorNativeHighlightText};
+  mixer[kColorOmniboxResultsUrl] = {kColorOmniboxText};
+  mixer[kColorOmniboxResultsUrlSelected] = {kColorOmniboxResultsTextSelected};
+  mixer[kColorOmniboxSecurityChipDangerous] = {kColorOmniboxText};
+  mixer[kColorOmniboxSecurityChipDefault] = {kColorOmniboxText};
+  mixer[kColorOmniboxSecurityChipSecure] = {kColorOmniboxText};
+  mixer[kColorOmniboxText] = {ui::kColorNativeBtnText};
+  mixer[kColorOmniboxTextDimmed] = {kColorOmniboxText};
+  mixer[kColorTabBackgroundActiveFrameActive] = {kColorToolbar};
+  mixer[kColorTabBackgroundActiveFrameInactive] = {
+      kColorTabBackgroundActiveFrameActive};
+  mixer[kColorTabForegroundActiveFrameActive] = {ui::kColorNativeHighlightText};
+  mixer[kColorToolbar] = {ui::kColorNativeWindow};
+  mixer[kColorToolbarButtonIcon] = {kColorToolbarText};
+  const bool platform_high_contrast_ink_drop = base::FeatureList::IsEnabled(
+      views::features::kEnablePlatformHighContrastInkDrop);
+  if (platform_high_contrast_ink_drop)
+    mixer[kColorToolbarButtonIconHovered] = {ui::kColorNativeHighlightText};
+  else
+    mixer[kColorToolbarButtonIconHovered] = {kColorToolbarText};
+  mixer[kColorToolbarButtonIconInactive] = {ui::kColorNativeGrayText};
+  mixer[kColorToolbarContentAreaSeparator] = {kColorToolbarText};
+  if (platform_high_contrast_ink_drop)
+    mixer[kColorToolbarInkDrop] = {ui::kColorNativeHighlight};
+  mixer[kColorToolbarSeparator] = {ui::kColorNativeWindowText};
+  mixer[kColorToolbarText] = {ui::kColorNativeBtnText};
+  mixer[kColorToolbarTopSeparatorFrameActive] = {kColorToolbarSeparator};
+  mixer[kColorToolbarTopSeparatorFrameInactive] = {
+      kColorToolbarTopSeparatorFrameActive};
 }

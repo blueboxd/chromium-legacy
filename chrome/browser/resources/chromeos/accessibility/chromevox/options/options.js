@@ -7,20 +7,7 @@
  *
  */
 
-goog.provide('OptionsPage');
-
-goog.require('AbstractTts');
-goog.require('BluetoothBrailleDisplayUI');
-goog.require('ConsoleTts');
-goog.require('Msgs');
-goog.require('PanelCommand');
-goog.require('TtsBackground');
-goog.require('BrailleTable');
-goog.require('BrailleTranslatorManager');
-goog.require('ChromeVox');
-goog.require('ChromeVoxKbHandler');
-goog.require('ChromeVoxPrefs');
-goog.require('ExtensionBridge');
+import {TtsBackground} from '../common/tts_background.js';
 
 /** @const {string} */
 const GOOGLE_TTS_EXTENSION_ID = 'gjjabgpgjpampikjhjpfhneeoapjbjaf';
@@ -31,9 +18,7 @@ const ESPEAK_TTS_EXTENSION_ID = 'dakbfdmgjiabojdgbiljlhgjbokobjpg';
 /**
  * Class to manage the options page.
  */
-OptionsPage = class {
-  constructor() {}
-
+export class OptionsPage {
   /**
    * Initialize the options page by setting the current value of all prefs, and
    * adding event listeners.
@@ -517,7 +502,7 @@ OptionsPage = class {
   static getBrailleTranslatorManager() {
     return chrome.extension.getBackgroundPage()['braille_translator_manager'];
   }
-};
+}
 
 /**
  * The ChromeVoxPrefs object.

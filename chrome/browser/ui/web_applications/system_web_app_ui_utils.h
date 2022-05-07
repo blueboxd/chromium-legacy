@@ -25,7 +25,7 @@ class WebAppProvider;
 
 // Returns the system app type for the given App ID.
 absl::optional<SystemAppType> GetSystemWebAppTypeForAppId(Profile* profile,
-                                                          AppId app_id);
+                                                          const AppId& app_id);
 
 // Returns the PWA system App ID for the given system app type.
 absl::optional<AppId> GetAppIdForSystemWebApp(Profile* profile,
@@ -74,7 +74,7 @@ struct SystemAppLaunchParams {
 // |profile|, or use content::TestNavigationObserver to wait the navigation.
 void LaunchSystemWebAppAsync(
     Profile* profile,
-    const SystemAppType type,
+    SystemAppType type,
     const SystemAppLaunchParams& params = SystemAppLaunchParams(),
     apps::mojom::WindowInfoPtr window_info = nullptr);
 

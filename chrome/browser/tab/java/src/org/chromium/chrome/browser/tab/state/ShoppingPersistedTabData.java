@@ -14,6 +14,7 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.chromium.base.Callback;
 import org.chromium.base.FeatureList;
 import org.chromium.base.Log;
+import org.chromium.base.annotations.DoNotClassMerge;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.Supplier;
@@ -55,7 +56,11 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * {@link PersistedTabData} for Shopping related websites
+ *
+ * This class should not be merged because it is being used as a key in a Map
+ * in PersistedTabDataConfiguration.java.
  */
+@DoNotClassMerge
 public class ShoppingPersistedTabData extends PersistedTabData {
     private static final String TAG = "SPTD";
     private static final String STALE_TAB_THRESHOLD_SECONDS_PARAM =
@@ -436,6 +441,10 @@ public class ShoppingPersistedTabData extends PersistedTabData {
      * - Uninitialized Tab
      */
     public static void from(Tab tab, Callback<ShoppingPersistedTabData> callback) {
+        if (tab == null || tab.isDestroyed()) {
+            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT, () -> { callback.onResult(null); });
+            return;
+        }
         if (sDelayedInitFinished) {
             fromWithoutDelayedInit(tab, callback);
         } else {
@@ -463,12 +472,14 @@ public class ShoppingPersistedTabData extends PersistedTabData {
         PersistedTabData.from(tab,
                 (data, storage, id, factoryCallback)
                         -> {
-                    ShoppingPersistedTabData shoppingPersistedTabData =
-                            new ShoppingPersistedTabData(tab, storage, id);
-                    PostTask.postTask(TaskTraits.USER_BLOCKING_MAY_BLOCK, () -> {
-                        shoppingPersistedTabData.deserializeAndLog(data);
-                        PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
-                                () -> { factoryCallback.onResult(shoppingPersistedTabData); });
+                    PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
+                        ShoppingPersistedTabData shoppingPersistedTabData =
+                                ShoppingPersistedTabData.from(tab);
+                        PostTask.postTask(TaskTraits.USER_BLOCKING_MAY_BLOCK, () -> {
+                            shoppingPersistedTabData.deserializeAndLog(data);
+                            PostTask.runOrPostTask(UiThreadTaskTraits.DEFAULT,
+                                    () -> { factoryCallback.onResult(shoppingPersistedTabData); });
+                        });
                     });
                 },
                 (supplierCallback)

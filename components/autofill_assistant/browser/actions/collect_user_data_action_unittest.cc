@@ -2476,6 +2476,12 @@ TEST_F(CollectUserDataActionTest, LinkClickWritesPartialUserData) {
               Property(&CollectUserDataResultProto::set_text_input_memory_keys,
                        UnorderedElementsAre("key1")))))));
   action.ProcessAction(callback_.Get());
+  EXPECT_THAT(
+      GetUkmCollectUserDataResult(ukm_recorder_),
+      ElementsAreArray({ToHumanReadableEntry(
+          source_id_, kResult,
+          static_cast<int64_t>(Metrics::CollectUserDataResult::
+                                   TERMS_AND_CONDITIONS_LINK_CLICKED))}));
 }
 
 TEST_F(CollectUserDataActionTest, ConfirmButtonChip) {
@@ -2532,6 +2538,8 @@ TEST_F(CollectUserDataActionTest, ConfirmButtonFallbackText) {
 }
 
 TEST_F(CollectUserDataActionTest, ContactDataFromProto) {
+  ON_CALL(mock_action_delegate_, GetPersonalDataManager())
+      .WillByDefault(Return(nullptr));
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
         EXPECT_FALSE(collect_user_data_options->should_store_data_changes);
@@ -2541,38 +2549,39 @@ TEST_F(CollectUserDataActionTest, ContactDataFromProto) {
                     Not(IsEmpty()));
         auto mappings = field_formatter::CreateAutofillMappings(
             *user_data_.available_contacts_[0]->profile, "en-US");
-        EXPECT_THAT(
-            mappings,
-            IsSupersetOf({Pair(field_formatter::Key(3), "John"),
-                          Pair(field_formatter::Key(5), "Doe"),
-                          Pair(field_formatter::Key(7), "John Doe"),
-                          Pair(field_formatter::Key(10), "1234567890"),
-                          Pair(field_formatter::Key(12), "1"),
-                          Pair(field_formatter::Key(14), "+11234567890")}));
+        EXPECT_THAT(mappings,
+                    IsSupersetOf(
+                        {Pair(field_formatter::Key(3), "John"),
+                         Pair(field_formatter::Key(5), "Doe"),
+                         Pair(field_formatter::Key(7), "John Doe"),
+                         Pair(field_formatter::Key(9), "johndoe@google.com")}));
 
         std::move(collect_user_data_options->confirm_callback)
             .Run(&user_data_, &user_model_);
       });
 
+  GetUserDataResponseProto user_data_response;
+  user_data_response.set_locale("en-US");
+  auto* profile = user_data_response.add_available_contacts();
+  (*profile->mutable_values())[7] = MakeAutofillEntry("John Doe");
+  (*profile->mutable_values())[9] = MakeAutofillEntry("johndoe@google.com");
+  auto* incomplete = user_data_response.add_available_contacts();
+  (*incomplete->mutable_values())[7] = MakeAutofillEntry("Jane Doe");
+  EXPECT_CALL(mock_action_delegate_, RequestUserData)
+      .WillOnce(RunOnceCallback<1>(true, user_data_response));
+
   ActionProto action_proto;
   auto* collect_user_data = action_proto.mutable_collect_user_data();
   collect_user_data->set_request_terms_and_conditions(false);
   collect_user_data->mutable_contact_details()->set_request_payer_name(true);
+  collect_user_data->mutable_contact_details()->set_request_payer_email(true);
   *collect_user_data->mutable_contact_details()->add_required_data_piece() =
       MakeRequiredDataPiece(autofill::ServerFieldType::NAME_FULL);
-  collect_user_data->mutable_contact_details()->set_request_payer_phone(true);
   *collect_user_data->mutable_contact_details()->add_required_data_piece() =
-      MakeRequiredDataPiece(autofill::ServerFieldType::PHONE_HOME_WHOLE_NUMBER);
+      MakeRequiredDataPiece(autofill::ServerFieldType::EMAIL_ADDRESS);
   collect_user_data->mutable_contact_details()->set_contact_details_name(
       kMemoryLocation);
-  collect_user_data->mutable_user_data()->set_locale("en-US");
-  auto* profile =
-      collect_user_data->mutable_user_data()->add_available_contacts();
-  (*profile->mutable_values())[7] = MakeAutofillEntry("John Doe");
-  (*profile->mutable_values())[14] = MakeAutofillEntry("+1 123-456-7890");
-  auto* incomplete =
-      collect_user_data->mutable_user_data()->add_available_contacts();
-  (*incomplete->mutable_values())[7] = MakeAutofillEntry("Jane Doe");
+  collect_user_data->mutable_data_source();
 
   EXPECT_CALL(mock_personal_data_manager_, RecordUseOf).Times(0);
   EXPECT_CALL(
@@ -2584,29 +2593,52 @@ TEST_F(CollectUserDataActionTest, ContactDataFromProto) {
 }
 
 TEST_F(CollectUserDataActionTest, PhoneNumberFromProto) {
+  ON_CALL(mock_action_delegate_, GetPersonalDataManager())
+      .WillByDefault(Return(nullptr));
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
         EXPECT_FALSE(collect_user_data_options->should_store_data_changes);
         EXPECT_FALSE(collect_user_data_options->can_edit_contacts);
+
         ASSERT_EQ(user_data_.available_contacts_.size(), 1u);
         EXPECT_THAT(user_data_.available_contacts_[0]->profile->guid(),
                     Not(IsEmpty()));
-        auto mappings = field_formatter::CreateAutofillMappings(
+        auto contact_mappings = field_formatter::CreateAutofillMappings(
             *user_data_.available_contacts_[0]->profile, "en-US");
         // Initially the contact contains the backend data.
         EXPECT_THAT(
-            mappings,
+            contact_mappings,
             IsSupersetOf({Pair(field_formatter::Key(3), "John"),
                           Pair(field_formatter::Key(5), "Doe"),
                           Pair(field_formatter::Key(7), "John Doe"),
                           Pair(field_formatter::Key(10), "1234567890"),
                           Pair(field_formatter::Key(12), "1"),
                           Pair(field_formatter::Key(14), "+11234567890")}));
-        ASSERT_EQ(user_data_.available_contacts_.size(), 1u);
+
+        ASSERT_EQ(user_data_.available_phone_numbers_.size(), 1u);
+        EXPECT_THAT(user_data_.available_phone_numbers_[0]->profile->guid(),
+                    Not(IsEmpty()));
+        auto phone_number_mappings = field_formatter::CreateAutofillMappings(
+            *user_data_.available_phone_numbers_[0]->profile, "en-US");
+        EXPECT_THAT(
+            phone_number_mappings,
+            IsSupersetOf({Pair(field_formatter::Key(10), "1876543210"),
+                          Pair(field_formatter::Key(12), "1"),
+                          Pair(field_formatter::Key(14), "+11876543210")}));
 
         std::move(collect_user_data_options->confirm_callback)
             .Run(&user_data_, &user_model_);
       });
+
+  GetUserDataResponseProto user_data_response;
+  user_data_response.set_locale("en-US");
+  auto* profile = user_data_response.add_available_contacts();
+  (*profile->mutable_values())[7] = MakeAutofillEntry("John Doe");
+  (*profile->mutable_values())[14] = MakeAutofillEntry("+1 123-456-7890");
+  *user_data_response.add_available_phone_numbers()->mutable_value() =
+      MakeAutofillEntry("+1 187-654-3210");
+  EXPECT_CALL(mock_action_delegate_, RequestUserData)
+      .WillOnce(RunOnceCallback<1>(true, user_data_response));
 
   ActionProto action_proto;
   auto* collect_user_data = action_proto.mutable_collect_user_data();
@@ -2620,15 +2652,7 @@ TEST_F(CollectUserDataActionTest, PhoneNumberFromProto) {
       ->set_separate_phone_number_section(true);
   collect_user_data->mutable_contact_details()->set_phone_number_section_title(
       "Phone number");
-  collect_user_data->mutable_user_data()->set_locale("en-US");
-  auto* profile =
-      collect_user_data->mutable_user_data()->add_available_contacts();
-  (*profile->mutable_values())[7] = MakeAutofillEntry("John Doe");
-  (*profile->mutable_values())[14] = MakeAutofillEntry("+1 123-456-7890");
-  *collect_user_data->mutable_user_data()
-       ->add_available_phone_numbers()
-       ->mutable_value() =
-      MakeAutofillEntry("+1 187-654-3210", /* raw= */ false);
+  collect_user_data->mutable_data_source();
 
   EXPECT_CALL(mock_personal_data_manager_, RecordUseOf).Times(0);
   EXPECT_CALL(
@@ -2647,11 +2671,13 @@ TEST_F(CollectUserDataActionTest, PhoneNumberFromProto) {
                             Pair(field_formatter::Key(10), "1876543210"),
                             Pair(field_formatter::Key(12), "1"),
                             Pair(field_formatter::Key(14), "+11876543210")}));
-  ASSERT_EQ(user_data_.available_contacts_.size(), 1u);
+  EXPECT_EQ(user_data_.available_contacts_.size(), 1u);
 }
 
 TEST_F(CollectUserDataActionTest, PaymentDataFromProto) {
   autofill::CountryNames::SetLocaleString("en-US");
+  ON_CALL(mock_action_delegate_, GetPersonalDataManager())
+      .WillByDefault(Return(nullptr));
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
         EXPECT_FALSE(collect_user_data_options->should_store_data_changes);
@@ -2703,14 +2729,10 @@ TEST_F(CollectUserDataActionTest, PaymentDataFromProto) {
             .Run(&user_data_, &user_model_);
       });
 
-  ActionProto action_proto;
-  auto* collect_user_data = action_proto.mutable_collect_user_data();
-  collect_user_data->set_request_terms_and_conditions(false);
-  collect_user_data->set_request_payment_method(true);
-  collect_user_data->set_billing_address_name("billing");
-  collect_user_data->mutable_user_data()->set_locale("en-US");
-  auto* payment_instrument = collect_user_data->mutable_user_data()
-                                 ->add_available_payment_instruments();
+  GetUserDataResponseProto user_data_response;
+  user_data_response.set_locale("en-US");
+  auto* payment_instrument =
+      user_data_response.add_available_payment_instruments();
   AddCompleteCardEntriesToMap("John Doe",
                               payment_instrument->mutable_card_values());
   payment_instrument->set_instrument_id(123456);
@@ -2718,6 +2740,15 @@ TEST_F(CollectUserDataActionTest, PaymentDataFromProto) {
   payment_instrument->set_last_four_digits("1111");
   AddCompleteAddressEntriesToMap("John Doe",
                                  payment_instrument->mutable_address_values());
+  EXPECT_CALL(mock_action_delegate_, RequestUserData)
+      .WillOnce(RunOnceCallback<1>(true, user_data_response));
+
+  ActionProto action_proto;
+  auto* collect_user_data = action_proto.mutable_collect_user_data();
+  collect_user_data->set_request_terms_and_conditions(false);
+  collect_user_data->set_request_payment_method(true);
+  collect_user_data->set_billing_address_name("billing");
+  collect_user_data->mutable_data_source();
 
   EXPECT_CALL(mock_personal_data_manager_, RecordUseOf).Times(0);
   EXPECT_CALL(
@@ -2730,6 +2761,8 @@ TEST_F(CollectUserDataActionTest, PaymentDataFromProto) {
 
 TEST_F(CollectUserDataActionTest, ShippingDataFromProto) {
   autofill::CountryNames::SetLocaleString("en-US");
+  ON_CALL(mock_action_delegate_, GetPersonalDataManager())
+      .WillByDefault(Return(nullptr));
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
         EXPECT_FALSE(collect_user_data_options->should_store_data_changes);
@@ -2752,14 +2785,18 @@ TEST_F(CollectUserDataActionTest, ShippingDataFromProto) {
             .Run(&user_data_, &user_model_);
       });
 
+  GetUserDataResponseProto user_data_response;
+  user_data_response.set_locale("en-US");
+  auto* address = user_data_response.add_available_addresses();
+  AddCompleteAddressEntriesToMap("John Doe", address->mutable_values());
+  EXPECT_CALL(mock_action_delegate_, RequestUserData)
+      .WillOnce(RunOnceCallback<1>(true, user_data_response));
+
   ActionProto action_proto;
   auto* collect_user_data = action_proto.mutable_collect_user_data();
   collect_user_data->set_request_terms_and_conditions(false);
   collect_user_data->set_shipping_address_name("shipping");
-  collect_user_data->mutable_user_data()->set_locale("en-US");
-  auto* address =
-      collect_user_data->mutable_user_data()->add_available_addresses();
-  AddCompleteAddressEntriesToMap("John Doe", address->mutable_values());
+  collect_user_data->mutable_data_source();
 
   EXPECT_CALL(mock_personal_data_manager_, RecordUseOf).Times(0);
   EXPECT_CALL(
@@ -2771,6 +2808,8 @@ TEST_F(CollectUserDataActionTest, ShippingDataFromProto) {
 }
 
 TEST_F(CollectUserDataActionTest, RawDataFromProtoDoesNotGetFormatted) {
+  ON_CALL(mock_action_delegate_, GetPersonalDataManager())
+      .WillByDefault(Return(nullptr));
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
         EXPECT_FALSE(collect_user_data_options->should_store_data_changes);
@@ -2794,20 +2833,23 @@ TEST_F(CollectUserDataActionTest, RawDataFromProtoDoesNotGetFormatted) {
             .Run(&user_data_, &user_model_);
       });
 
-  ActionProto action_proto;
-  auto* collect_user_data = action_proto.mutable_collect_user_data();
-  collect_user_data->set_request_terms_and_conditions(false);
-  collect_user_data->mutable_contact_details()->set_request_payer_name(true);
-  collect_user_data->mutable_contact_details()->set_request_payer_phone(true);
-  collect_user_data->mutable_contact_details()->set_contact_details_name(
-      kMemoryLocation);
-  collect_user_data->mutable_user_data()->set_locale("en-US");
-  auto* profile =
-      collect_user_data->mutable_user_data()->add_available_contacts();
+  GetUserDataResponseProto user_data_response;
+  user_data_response.set_locale("en-US");
+  auto* profile = user_data_response.add_available_contacts();
   (*profile->mutable_values())[7] =
       MakeAutofillEntry("John Doe", /* raw= */ true);
   (*profile->mutable_values())[14] =
       MakeAutofillEntry("+1 123-456-7890", /* raw= */ true);
+  EXPECT_CALL(mock_action_delegate_, RequestUserData)
+      .WillOnce(RunOnceCallback<1>(true, user_data_response));
+
+  ActionProto action_proto;
+  auto* collect_user_data = action_proto.mutable_collect_user_data();
+  collect_user_data->set_request_terms_and_conditions(false);
+  collect_user_data->mutable_contact_details()->set_request_payer_name(true);
+  collect_user_data->mutable_contact_details()->set_contact_details_name(
+      kMemoryLocation);
+  collect_user_data->mutable_data_source();
 
   EXPECT_CALL(mock_personal_data_manager_, RecordUseOf).Times(0);
   EXPECT_CALL(
@@ -2820,6 +2862,8 @@ TEST_F(CollectUserDataActionTest, RawDataFromProtoDoesNotGetFormatted) {
 
 TEST_F(CollectUserDataActionTest, SelectEntriesFromProtoFromIdentifiers) {
   autofill::CountryNames::SetLocaleString("en-US");
+  ON_CALL(mock_action_delegate_, GetPersonalDataManager())
+      .WillByDefault(Return(nullptr));
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
         ASSERT_TRUE(user_data_.has_selected_address("contact"));
@@ -2843,6 +2887,47 @@ TEST_F(CollectUserDataActionTest, SelectEntriesFromProtoFromIdentifiers) {
             .Run(&user_data_, &user_model_);
       });
 
+  // The default selection would select Jane Doe, as she is created later (see
+  // |DefaultSelectEntriesFromProtoWithoutIdentifiers|), select John Doe by
+  // identifier instead.
+  GetUserDataResponseProto user_data_response;
+  user_data_response.set_locale("en-US");
+  user_data_response.set_selected_contact_identifier("selected-contact");
+  auto* contact_1 = user_data_response.add_available_contacts();
+  contact_1->set_identifier("selected-contact");
+  (*contact_1->mutable_values())[7] = MakeAutofillEntry("John Doe");
+  auto* contact_2 = user_data_response.add_available_contacts();
+  contact_2->set_identifier("not-selected");
+  (*contact_2->mutable_values())[7] = MakeAutofillEntry("Jane Doe");
+
+  user_data_response.set_selected_shipping_address_identifier(
+      "selected-address");
+  auto* address_1 = user_data_response.add_available_addresses();
+  address_1->set_identifier("selected-address");
+  AddCompleteAddressEntriesToMap("John Doe", address_1->mutable_values());
+  auto* address_2 = user_data_response.add_available_addresses();
+  address_2->set_identifier("not-selected");
+  AddCompleteAddressEntriesToMap("Jane Doe", address_2->mutable_values());
+
+  user_data_response.set_selected_payment_instrument_identifier(
+      "selected-instrument");
+  auto* payment_instrument_1 =
+      user_data_response.add_available_payment_instruments();
+  payment_instrument_1->set_identifier("selected-instrument");
+  AddCompleteCardEntriesToMap("John Doe",
+                              payment_instrument_1->mutable_card_values());
+  AddCompleteAddressEntriesToMap(
+      "John Doe", payment_instrument_1->mutable_address_values());
+  auto* payment_instrument_2 =
+      user_data_response.add_available_payment_instruments();
+  payment_instrument_2->set_identifier("not-selected");
+  AddCompleteCardEntriesToMap("Jane Doe",
+                              payment_instrument_2->mutable_card_values());
+  AddCompleteAddressEntriesToMap(
+      "Jane Doe", payment_instrument_2->mutable_address_values());
+  EXPECT_CALL(mock_action_delegate_, RequestUserData)
+      .WillOnce(RunOnceCallback<1>(true, user_data_response));
+
   ActionProto action_proto;
   auto* collect_user_data = action_proto.mutable_collect_user_data();
   collect_user_data->set_request_terms_and_conditions(false);
@@ -2852,50 +2937,7 @@ TEST_F(CollectUserDataActionTest, SelectEntriesFromProtoFromIdentifiers) {
   collect_user_data->set_shipping_address_name("shipping");
   collect_user_data->set_request_payment_method(true);
   collect_user_data->set_billing_address_name("billing");
-  collect_user_data->mutable_user_data()->set_locale("en-US");
-
-  // The default selection would select Jane Doe, as she is created later (see
-  // |DefaultSelectEntriesFromProtoWithoutIdentifiers|), select John Doe by
-  // identifier instead.
-
-  collect_user_data->mutable_user_data()->set_selected_contact_identifier(
-      "selected-contact");
-  auto* contact_1 =
-      collect_user_data->mutable_user_data()->add_available_contacts();
-  contact_1->set_identifier("selected-contact");
-  (*contact_1->mutable_values())[7] = MakeAutofillEntry("John Doe");
-  auto* contact_2 =
-      collect_user_data->mutable_user_data()->add_available_contacts();
-  contact_2->set_identifier("not-selected");
-  (*contact_2->mutable_values())[7] = MakeAutofillEntry("Jane Doe");
-
-  collect_user_data->mutable_user_data()
-      ->set_selected_shipping_address_identifier("selected-address");
-  auto* address_1 =
-      collect_user_data->mutable_user_data()->add_available_addresses();
-  address_1->set_identifier("selected-address");
-  AddCompleteAddressEntriesToMap("John Doe", address_1->mutable_values());
-  auto* address_2 =
-      collect_user_data->mutable_user_data()->add_available_addresses();
-  address_2->set_identifier("not-selected");
-  AddCompleteAddressEntriesToMap("Jane Doe", address_2->mutable_values());
-
-  collect_user_data->mutable_user_data()
-      ->set_selected_payment_instrument_identifier("selected-instrument");
-  auto* payment_instrument_1 = collect_user_data->mutable_user_data()
-                                   ->add_available_payment_instruments();
-  payment_instrument_1->set_identifier("selected-instrument");
-  AddCompleteCardEntriesToMap("John Doe",
-                              payment_instrument_1->mutable_card_values());
-  AddCompleteAddressEntriesToMap(
-      "John Doe", payment_instrument_1->mutable_address_values());
-  auto* payment_instrument_2 = collect_user_data->mutable_user_data()
-                                   ->add_available_payment_instruments();
-  payment_instrument_2->set_identifier("not-selected");
-  AddCompleteCardEntriesToMap("Jane Doe",
-                              payment_instrument_2->mutable_card_values());
-  AddCompleteAddressEntriesToMap(
-      "Jane Doe", payment_instrument_2->mutable_address_values());
+  collect_user_data->mutable_data_source();
 
   EXPECT_CALL(
       callback_,
@@ -2908,6 +2950,8 @@ TEST_F(CollectUserDataActionTest, SelectEntriesFromProtoFromIdentifiers) {
 TEST_F(CollectUserDataActionTest,
        DefaultSelectEntriesFromProtoWithoutIdentifiers) {
   autofill::CountryNames::SetLocaleString("en-US");
+  ON_CALL(mock_action_delegate_, GetPersonalDataManager())
+      .WillByDefault(Return(nullptr));
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
         ASSERT_TRUE(user_data_.has_selected_address("contact"));
@@ -2931,6 +2975,34 @@ TEST_F(CollectUserDataActionTest,
             .Run(&user_data_, &user_model_);
       });
 
+  // The default selection will select Jane Doe, as she is created later.
+  GetUserDataResponseProto user_data_response;
+  user_data_response.set_locale("en-US");
+  auto* contact_1 = user_data_response.add_available_contacts();
+  (*contact_1->mutable_values())[7] = MakeAutofillEntry("John Doe");
+  auto* contact_2 = user_data_response.add_available_contacts();
+  (*contact_2->mutable_values())[7] = MakeAutofillEntry("Jane Doe");
+
+  auto* address_1 = user_data_response.add_available_addresses();
+  AddCompleteAddressEntriesToMap("John Doe", address_1->mutable_values());
+  auto* address_2 = user_data_response.add_available_addresses();
+  AddCompleteAddressEntriesToMap("Jane Doe", address_2->mutable_values());
+
+  auto* payment_instrument_1 =
+      user_data_response.add_available_payment_instruments();
+  AddCompleteCardEntriesToMap("John Doe",
+                              payment_instrument_1->mutable_card_values());
+  AddCompleteAddressEntriesToMap(
+      "John Doe", payment_instrument_1->mutable_address_values());
+  auto* payment_instrument_2 =
+      user_data_response.add_available_payment_instruments();
+  AddCompleteCardEntriesToMap("Jane Doe",
+                              payment_instrument_2->mutable_card_values());
+  AddCompleteAddressEntriesToMap(
+      "Jane Doe", payment_instrument_2->mutable_address_values());
+  EXPECT_CALL(mock_action_delegate_, RequestUserData)
+      .WillOnce(RunOnceCallback<1>(true, user_data_response));
+
   ActionProto action_proto;
   auto* collect_user_data = action_proto.mutable_collect_user_data();
   collect_user_data->set_request_terms_and_conditions(false);
@@ -2940,36 +3012,7 @@ TEST_F(CollectUserDataActionTest,
   collect_user_data->set_shipping_address_name("shipping");
   collect_user_data->set_request_payment_method(true);
   collect_user_data->set_billing_address_name("billing");
-  collect_user_data->mutable_user_data()->set_locale("en-US");
-
-  // The default selection will select Jane Doe, as she is created later.
-
-  auto* contact_1 =
-      collect_user_data->mutable_user_data()->add_available_contacts();
-  (*contact_1->mutable_values())[7] = MakeAutofillEntry("John Doe");
-  auto* contact_2 =
-      collect_user_data->mutable_user_data()->add_available_contacts();
-  (*contact_2->mutable_values())[7] = MakeAutofillEntry("Jane Doe");
-
-  auto* address_1 =
-      collect_user_data->mutable_user_data()->add_available_addresses();
-  AddCompleteAddressEntriesToMap("John Doe", address_1->mutable_values());
-  auto* address_2 =
-      collect_user_data->mutable_user_data()->add_available_addresses();
-  AddCompleteAddressEntriesToMap("Jane Doe", address_2->mutable_values());
-
-  auto* payment_instrument_1 = collect_user_data->mutable_user_data()
-                                   ->add_available_payment_instruments();
-  AddCompleteCardEntriesToMap("John Doe",
-                              payment_instrument_1->mutable_card_values());
-  AddCompleteAddressEntriesToMap(
-      "John Doe", payment_instrument_1->mutable_address_values());
-  auto* payment_instrument_2 = collect_user_data->mutable_user_data()
-                                   ->add_available_payment_instruments();
-  AddCompleteCardEntriesToMap("Jane Doe",
-                              payment_instrument_2->mutable_card_values());
-  AddCompleteAddressEntriesToMap(
-      "Jane Doe", payment_instrument_2->mutable_address_values());
+  collect_user_data->mutable_data_source();
 
   EXPECT_CALL(
       callback_,
@@ -3508,13 +3551,57 @@ TEST_F(CollectUserDataActionTest, LogUkmSuccess) {
   collect_user_data_proto->set_show_terms_as_checkbox(false);
   collect_user_data_proto->set_terms_require_review_text("terms review");
 
+  base::OnceCallback<void(UserData*, const UserModel*)> confirm_callback;
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
         user_data_.terms_and_conditions_ = ACCEPTED;
-        TimeTicksOverride::now_ticks_ += base::Seconds(4);
 
-        std::move(collect_user_data_options->confirm_callback)
-            .Run(&user_data_, &user_model_);
+        confirm_callback =
+            std::move(collect_user_data_options->confirm_callback);
+      });
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+
+  // We start counting the "wait time" after CollecUserData is called, so we
+  // need to increase the timer and call the callback at this point.
+  TimeTicksOverride::now_ticks_ += base::Seconds(4);
+  ASSERT_TRUE(confirm_callback);
+  std::move(confirm_callback).Run(&user_data_, &user_model_);
+
+  EXPECT_THAT(
+      GetUkmCollectUserDataResult(ukm_recorder_),
+      ElementsAreArray({ToHumanReadableEntry(
+          source_id_, kResult,
+          static_cast<int64_t>(Metrics::CollectUserDataResult::SUCCESS))}));
+  EXPECT_THAT(
+      GetUkmTimeTakenMs(ukm_recorder_),
+      ElementsAreArray({ToHumanReadableEntry(source_id_, kTimeTakenMs, 4000)}));
+  EXPECT_THAT(
+      GetUkmUserDataSource(ukm_recorder_),
+      ElementsAreArray({ToHumanReadableEntry(
+          source_id_, kUserDataSource,
+          static_cast<int64_t>(Metrics::UserDataSource::CHROME_AUTOFILL))}));
+}
+
+TEST_F(CollectUserDataActionTest, LogUkmAdditionalActionSelected) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_privacy_notice_text("privacy");
+  collect_user_data_proto->set_request_terms_and_conditions(true);
+  collect_user_data_proto->set_accept_terms_and_conditions_text(
+      "terms and conditions");
+  collect_user_data_proto->set_show_terms_as_checkbox(false);
+  collect_user_data_proto->set_terms_require_review_text("terms review");
+  collect_user_data_proto->add_additional_actions();
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
+        std::move(collect_user_data_options->additional_actions_callback)
+            .Run(/* index= */ 0, &user_data_, &user_model_);
       });
 
   EXPECT_CALL(
@@ -3527,10 +3614,8 @@ TEST_F(CollectUserDataActionTest, LogUkmSuccess) {
       GetUkmCollectUserDataResult(ukm_recorder_),
       ElementsAreArray({ToHumanReadableEntry(
           source_id_, kResult,
-          static_cast<int64_t>(Metrics::CollectUserDataResult::SUCCESS))}));
-  EXPECT_THAT(
-      GetUkmTimeTakenMs(ukm_recorder_),
-      ElementsAreArray({ToHumanReadableEntry(source_id_, kTimeTakenMs, 4000)}));
+          static_cast<int64_t>(
+              Metrics::CollectUserDataResult::ADDITIONAL_ACTION_SELECTED))}));
 }
 
 TEST_F(CollectUserDataActionTest, LogUkmFailure) {
@@ -3549,10 +3634,12 @@ TEST_F(CollectUserDataActionTest, LogUkmFailure) {
     CollectUserDataAction action(&mock_action_delegate_, action_proto);
     ON_CALL(mock_action_delegate_, CollectUserData(_))
         .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
-          TimeTicksOverride::now_ticks_ += base::Seconds(3);
           // The continue button is never pressed.
         });
     action.ProcessAction(callback_.Get());
+    // We start counting the "wait time" after CollecUserData is called, so we
+    // need to increase the timer at this point.
+    TimeTicksOverride::now_ticks_ += base::Seconds(3);
 
     // The CollectUserDataAction destructor is called, this simulates the user
     // closing the bottom sheet or the tab.
@@ -3565,6 +3652,42 @@ TEST_F(CollectUserDataActionTest, LogUkmFailure) {
   EXPECT_THAT(
       GetUkmTimeTakenMs(ukm_recorder_),
       ElementsAreArray({ToHumanReadableEntry(source_id_, kTimeTakenMs, 3000)}));
+}
+
+TEST_F(CollectUserDataActionTest, LogUkmDataFromBackend) {
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_privacy_notice_text("privacy");
+  collect_user_data_proto->set_request_terms_and_conditions(true);
+  collect_user_data_proto->set_accept_terms_and_conditions_text(
+      "terms and conditions");
+  collect_user_data_proto->set_show_terms_as_checkbox(false);
+  collect_user_data_proto->set_terms_require_review_text("terms review");
+  collect_user_data_proto->mutable_user_data();
+
+  ON_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillByDefault([&](CollectUserDataOptions* collect_user_data_options) {
+        user_data_.terms_and_conditions_ = ACCEPTED;
+
+        std::move(collect_user_data_options->confirm_callback)
+            .Run(&user_data_, &user_model_);
+      });
+
+  EXPECT_CALL(
+      callback_,
+      Run(Pointee(Property(&ProcessedActionProto::status, ACTION_APPLIED))));
+  CollectUserDataAction action(&mock_action_delegate_, action_proto);
+  action.ProcessAction(callback_.Get());
+
+  EXPECT_THAT(
+      GetUkmCollectUserDataResult(ukm_recorder_),
+      ElementsAreArray({ToHumanReadableEntry(
+          source_id_, kResult,
+          static_cast<int64_t>(Metrics::CollectUserDataResult::SUCCESS))}));
+  EXPECT_THAT(GetUkmUserDataSource(ukm_recorder_),
+              ElementsAreArray({ToHumanReadableEntry(
+                  source_id_, kUserDataSource,
+                  static_cast<int64_t>(Metrics::UserDataSource::BACKEND))}));
 }
 
 TEST_F(CollectUserDataActionTest, LogsUkmInitialSelectionFieldBitArray) {
@@ -3721,7 +3844,9 @@ TEST_F(CollectUserDataActionTest, NoDefaultProfileLogsAllFieldsAsEmpty) {
                   source_id_, kInitialCreditCardFieldsStatus, 0)}));
 }
 
-TEST_F(CollectUserDataActionTest, ReloadsDataOnRequest) {
+TEST_F(CollectUserDataActionTest, FailsActionWithReloadStatus) {
+  ON_CALL(mock_action_delegate_, GetPersonalDataManager)
+      .WillByDefault(Return(nullptr));
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault(
           Invoke([=](CollectUserDataOptions* collect_user_data_options) {
@@ -3733,6 +3858,7 @@ TEST_F(CollectUserDataActionTest, ReloadsDataOnRequest) {
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
   collect_user_data_proto->set_privacy_notice_text("privacy");
   collect_user_data_proto->set_request_terms_and_conditions(false);
+  collect_user_data_proto->mutable_user_data();
 
   EXPECT_CALL(callback_,
               Run(Pointee(AllOf(
@@ -3744,9 +3870,45 @@ TEST_F(CollectUserDataActionTest, ReloadsDataOnRequest) {
   EXPECT_TRUE(user_data_.previous_user_data_metrics_->personal_data_changed);
 }
 
+TEST_F(CollectUserDataActionTest, ReloadsDataIfRequested) {
+  base::HistogramTester histogram_tester;
+
+  ON_CALL(mock_action_delegate_, GetPersonalDataManager)
+      .WillByDefault(Return(nullptr));
+  EXPECT_CALL(mock_action_delegate_, RequestUserData)
+      .Times(2)
+      .WillRepeatedly(RunOnceCallback<1>(true, GetUserDataResponseProto()));
+  EXPECT_CALL(mock_action_delegate_, CollectUserData(_))
+      .WillOnce(Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+        std::move(collect_user_data_options->reload_data_callback)
+            .Run(&user_data_);
+      }))
+      .WillOnce(Invoke([=](CollectUserDataOptions* collect_user_data_options) {
+        // We can't submit here since the user data is not complete.
+      }));
+
+  ActionProto action_proto;
+  auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
+  collect_user_data_proto->set_privacy_notice_text("privacy");
+  collect_user_data_proto->set_request_terms_and_conditions(false);
+  collect_user_data_proto->mutable_data_source();
+
+  // We do not expect the action to end.
+  std::unique_ptr<CollectUserDataAction> action =
+      std::make_unique<CollectUserDataAction>(&mock_action_delegate_,
+                                              action_proto);
+  action->ProcessAction(callback_.Get());
+
+  action.reset();
+  histogram_tester.ExpectTotalCount(
+      "Android.AutofillAssistant.PaymentRequest.AutofillChanged", 1u);
+}
+
 TEST_F(CollectUserDataActionTest, ReloadingActionDoesNotLog) {
   base::HistogramTester histogram_tester;
 
+  ON_CALL(mock_action_delegate_, GetPersonalDataManager)
+      .WillByDefault(Return(nullptr));
   ON_CALL(mock_action_delegate_, CollectUserData(_))
       .WillByDefault(
           Invoke([=](CollectUserDataOptions* collect_user_data_options) {
@@ -3758,6 +3920,7 @@ TEST_F(CollectUserDataActionTest, ReloadingActionDoesNotLog) {
   auto* collect_user_data_proto = action_proto.mutable_collect_user_data();
   collect_user_data_proto->set_privacy_notice_text("privacy");
   collect_user_data_proto->set_request_terms_and_conditions(false);
+  collect_user_data_proto->mutable_user_data();
 
   std::unique_ptr<CollectUserDataAction> action =
       std::make_unique<CollectUserDataAction>(&mock_action_delegate_,

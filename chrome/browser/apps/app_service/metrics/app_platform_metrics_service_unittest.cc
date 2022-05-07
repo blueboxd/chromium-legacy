@@ -211,6 +211,18 @@ class AppPlatformMetricsServiceTest : public testing::Test {
     sync_service_->SetFirstSetupComplete(true);
   }
 
+  void ResetAppPlatformMetricsService() {
+    app_platform_metrics_service_.reset();
+    app_platform_metrics_service_ =
+        std::make_unique<AppPlatformMetricsService>(testing_profile_.get());
+
+    app_platform_metrics_service_->Start(
+        apps::AppServiceProxyFactory::GetForProfile(testing_profile_.get())
+            ->AppRegistryCache(),
+        apps::AppServiceProxyFactory::GetForProfile(testing_profile_.get())
+            ->InstanceRegistry());
+  }
+
   void InstallApps() {
     auto* proxy =
         apps::AppServiceProxyFactory::GetForProfile(testing_profile_.get());
@@ -329,7 +341,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kArc, apps::mojom::InstallReason::kUser),
+            AppTypeName::kArc, apps::InstallReason::kUser),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
@@ -337,7 +349,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kBuiltIn, apps::mojom::InstallReason::kSystem),
+            AppTypeName::kBuiltIn, apps::InstallReason::kSystem),
         /*expected_count=*/1);
 
     // Should be 3 Borealis apps: The installer/launcher created by the
@@ -352,12 +364,12 @@ class AppPlatformMetricsServiceTest : public testing::Test {
     // The installer/launcher is preinstalled, the others are user-installed.
     histogram_tester_.ExpectUniqueSample(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kBorealis, apps::mojom::InstallReason::kDefault),
+            AppTypeName::kBorealis, apps::InstallReason::kDefault),
         /*sample=*/1,
         /*bucket_count=*/1);
     histogram_tester_.ExpectUniqueSample(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kBorealis, apps::mojom::InstallReason::kUser),
+            AppTypeName::kBorealis, apps::InstallReason::kUser),
         /*sample=*/borealis_apps_count - 1,
         /*bucket_count=*/1);
 
@@ -367,7 +379,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kCrostini, apps::mojom::InstallReason::kUser),
+            AppTypeName::kCrostini, apps::InstallReason::kUser),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
@@ -378,7 +390,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kWeb, apps::mojom::InstallReason::kSync),
+            AppTypeName::kWeb, apps::InstallReason::kSync),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
@@ -386,7 +398,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kMacOs, apps::mojom::InstallReason::kUnknown),
+            AppTypeName::kMacOs, apps::InstallReason::kUnknown),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
@@ -394,7 +406,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kPluginVm, apps::mojom::InstallReason::kUser),
+            AppTypeName::kPluginVm, apps::InstallReason::kUser),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
@@ -402,8 +414,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kStandaloneBrowser,
-            apps::mojom::InstallReason::kSystem),
+            AppTypeName::kStandaloneBrowser, apps::InstallReason::kSystem),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
@@ -412,7 +423,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
             AppTypeName::kStandaloneBrowserChromeApp,
-            apps::mojom::InstallReason::kUser),
+            apps::InstallReason::kUser),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
@@ -421,7 +432,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
             AppTypeName::kStandaloneBrowserChromeApp,
-            apps::mojom::InstallReason::kUser),
+            apps::InstallReason::kUser),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
@@ -429,7 +440,7 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kRemote, apps::mojom::InstallReason::kPolicy),
+            AppTypeName::kRemote, apps::InstallReason::kPolicy),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(
@@ -437,14 +448,14 @@ class AppPlatformMetricsServiceTest : public testing::Test {
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kSystemWeb, apps::mojom::InstallReason::kSystem),
+            AppTypeName::kSystemWeb, apps::InstallReason::kSystem),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountHistogramNameForTest(AppTypeName::kWeb),
         /*expected_count=*/1);
     histogram_tester_.ExpectTotalCount(
         AppPlatformMetrics::GetAppsCountPerInstallReasonHistogramNameForTest(
-            AppTypeName::kWeb, apps::mojom::InstallReason::kSubApp),
+            AppTypeName::kWeb, apps::InstallReason::kSubApp),
         /*expected_count=*/1);
   }
 
@@ -657,6 +668,12 @@ class AppPlatformMetricsServiceTest : public testing::Test {
                                              (int)app_type_name);
     }
     ASSERT_EQ(usage_time, duration);
+  }
+
+  void VerifyNoAppUsageTimeUkm() {
+    auto entries =
+        test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
+    ASSERT_EQ(0U, entries.size());
   }
 
   void VerifyInstalledAppsUkm(const std::string& app_info,
@@ -1157,8 +1174,7 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTime) {
   VerifyAppUsageTimeHistogram(base::Minutes(3),
                               /*expected_count=*/1,
                               AppTypeName::kChromeBrowser);
-  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/180000,
-                        AppTypeName::kChromeBrowser);
+  VerifyNoAppUsageTimeUkm();
 
   task_environment_.FastForwardBy(base::Minutes(15));
   VerifyAppUsageTimeCountHistogram(/*expected_count=*/2, AppTypeName::kArc);
@@ -1170,6 +1186,17 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTime) {
   VerifyAppUsageTimeHistogram(base::Minutes(5),
                               /*expected_count=*/3,
                               AppTypeName::kChromeBrowser);
+  VerifyNoAppUsageTimeUkm();
+
+  // Set the browser window inactive.
+  ModifyInstance(app_constants::kChromeAppId,
+                 browser->window()->GetNativeWindow(), kInactiveInstanceState);
+
+  // Set time passed 2 hours to record the usage time AppKM with duration = 18
+  // minutes.
+  task_environment_.FastForwardBy(base::Minutes(95));
+  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/1080000,
+                        AppTypeName::kChromeBrowser);
 }
 
 TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkm) {
@@ -1187,18 +1214,94 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkm) {
   sync_service()->SetDisableReasons(
       syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
 
-  task_environment_.FastForwardBy(base::Minutes(5));
+  task_environment_.FastForwardBy(base::Hours(2));
 
-  // Verify UKM is not reported.
-  const auto entries =
-      test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
-  ASSERT_EQ(0U, entries.size());
+  VerifyNoAppUsageTimeUkm();
 
   // Set sync is allowed by setting an empty disable reason set.
   sync_service()->SetDisableReasons(syncer::SyncService::DisableReasonSet());
-  task_environment_.FastForwardBy(base::Minutes(5));
-  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/600000,
+
+  task_environment_.FastForwardBy(base::Hours(1));
+  ModifyInstance(app_constants::kChromeAppId,
+                 browser->window()->GetNativeWindow(), kInactiveInstanceState);
+
+  task_environment_.FastForwardBy(base::Hours(1));
+  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/10800000,
                         AppTypeName::kChromeBrowser);
+}
+
+TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkmReportAfterReboot) {
+  // Create a browser window.
+  InstallOneApp(app_constants::kChromeAppId, AppType::kChromeApp, "Chrome",
+                Readiness::kReady, InstallSource::kSystem);
+  std::unique_ptr<Browser> browser = CreateBrowserWithAuraWindow1();
+  EXPECT_EQ(1U, BrowserList::GetInstance()->size());
+
+  // Set the browser window active.
+  ModifyInstance(app_constants::kChromeAppId,
+                 browser->window()->GetNativeWindow(), kActiveInstanceState);
+
+  task_environment_.FastForwardBy(base::Minutes(30));
+
+  // Create a web app tab.
+  const std::string web_app_id = "w";
+  const GURL url = GURL("https://foo.com");
+  auto web_app_window =
+      CreateWebAppWindow(browser->window()->GetNativeWindow());
+
+  // Set the web app tab as activated.
+  ModifyWebAppInstance(web_app_id, web_app_window.get(), kActiveInstanceState);
+
+  task_environment_.FastForwardBy(base::Minutes(20));
+  ModifyInstance(app_constants::kChromeAppId,
+                 browser->window()->GetNativeWindow(), kInactiveInstanceState);
+  ModifyWebAppInstance(web_app_id, web_app_window.get(),
+                       kInactiveInstanceState);
+
+  VerifyNoAppUsageTimeUkm();
+
+  // Reset PlatformMetricsService to simulate the system reboot, and verify
+  // AppKM is restored from the user pref and reported after 5 minutes after
+  // reboot.
+  ResetAppPlatformMetricsService();
+  VerifyNoAppUsageTimeUkm();
+
+  task_environment_.FastForwardBy(base::Minutes(5));
+  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/1800000,
+                        AppTypeName::kChromeBrowser);
+  VerifyAppUsageTimeUkm(url, /*duration=*/1200000, AppTypeName::kChromeBrowser);
+
+  // Set the browser window as activated.
+  ModifyInstance(app_constants::kChromeAppId,
+                 browser->window()->GetNativeWindow(), kActiveInstanceState);
+  task_environment_.FastForwardBy(base::Minutes(10));
+  ModifyInstance(app_constants::kChromeAppId,
+                 browser->window()->GetNativeWindow(), kInactiveInstanceState);
+
+  // Verify UKM is not reported.
+  auto entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
+  ASSERT_EQ(2U, entries.size());
+
+  // Reset PlatformMetricsService to simulate the system reboot, and verify
+  // only the new AppKM is reported.
+  ResetAppPlatformMetricsService();
+  task_environment_.FastForwardBy(base::Minutes(5));
+
+  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
+  ASSERT_EQ(3U, entries.size());
+  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/2400000,
+                        AppTypeName::kChromeBrowser);
+  VerifyAppUsageTimeUkm(url, /*duration=*/1200000, AppTypeName::kChromeBrowser);
+
+  // Reset PlatformMetricsService to simulate the system reboot, and verify no
+  // more AppKM is reported.
+  ResetAppPlatformMetricsService();
+  task_environment_.FastForwardBy(base::Minutes(5));
+  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
+  ASSERT_EQ(3U, entries.size());
+  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/2400000,
+                        AppTypeName::kChromeBrowser);
+  VerifyAppUsageTimeUkm(url, /*duration=*/1200000, AppTypeName::kChromeBrowser);
 }
 
 TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkmWithMultipleWindows) {
@@ -1212,8 +1315,6 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkmWithMultipleWindows) {
   ModifyInstance(app_constants::kChromeAppId,
                  browser1->window()->GetNativeWindow(), kActiveInstanceState);
   task_environment_.FastForwardBy(base::Minutes(5));
-  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/300000,
-                        AppTypeName::kChromeBrowser);
 
   // Set the browser window1 inactive.
   ModifyInstance(app_constants::kChromeAppId,
@@ -1226,12 +1327,7 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkmWithMultipleWindows) {
   // Set the browser window2 active.
   ModifyInstance(app_constants::kChromeAppId,
                  browser2->window()->GetNativeWindow(), kActiveInstanceState);
-  task_environment_.FastForwardBy(base::Minutes(4));
-
-  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/540000,
-                        AppTypeName::kChromeBrowser);
-
-  task_environment_.FastForwardBy(base::Minutes(3));
+  task_environment_.FastForwardBy(base::Minutes(7));
 
   // Close windows.
   ModifyInstance(app_constants::kChromeAppId,
@@ -1241,7 +1337,10 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkmWithMultipleWindows) {
                  browser2->window()->GetNativeWindow(),
                  apps::InstanceState::kDestroyed);
 
-  task_environment_.FastForwardBy(base::Minutes(2));
+  VerifyNoAppUsageTimeUkm();
+
+  // Verify UKM is reported after 2hours.
+  task_environment_.FastForwardBy(base::Minutes(107));
   VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/720000,
                         AppTypeName::kChromeBrowser);
 }
@@ -1260,7 +1359,7 @@ TEST_F(AppPlatformMetricsServiceTest,
   auto web_app_window =
       CreateWebAppWindow(browser->window()->GetNativeWindow());
 
-  // Set the browser window as activated.
+  // Set the browser window as inactivated.
   ModifyInstance(app_constants::kChromeAppId,
                  browser->window()->GetNativeWindow(), kInactiveInstanceState);
 
@@ -1268,11 +1367,7 @@ TEST_F(AppPlatformMetricsServiceTest,
   ModifyWebAppInstance(web_app_id, web_app_window.get(), kActiveInstanceState);
 
   task_environment_.FastForwardBy(base::Minutes(5));
-
-  // Verify only the web app UKM is reported.
-  auto entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
-  ASSERT_EQ(1U, entries.size());
-  VerifyAppUsageTimeUkm(url, /*duration=*/300000, AppTypeName::kChromeBrowser);
+  VerifyNoAppUsageTimeUkm();
 
   // Set the browser window and web app tabs as inactivated.
   ModifyInstance(app_constants::kChromeAppId,
@@ -1288,11 +1383,7 @@ TEST_F(AppPlatformMetricsServiceTest,
   ModifyInstance(app_constants::kChromeAppId,
                  browser->window()->GetNativeWindow(), kActiveInstanceState);
   task_environment_.FastForwardBy(base::Minutes(3));
-
-  // Verify only the web app UKM is reported.
-  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
-  ASSERT_EQ(2U, entries.size());
-  VerifyAppUsageTimeUkm(url, /*duration=*/480000, AppTypeName::kChromeBrowser);
+  VerifyNoAppUsageTimeUkm();
 
   // Set the web app tab as inactivated.
   ModifyWebAppInstance(web_app_id, web_app_window.get(),
@@ -1307,12 +1398,13 @@ TEST_F(AppPlatformMetricsServiceTest,
   ModifyInstance(app_constants::kChromeAppId,
                  browser->window()->GetNativeWindow(),
                  apps::InstanceState::kDestroyed);
+  VerifyNoAppUsageTimeUkm();
 
-  task_environment_.FastForwardBy(base::Minutes(4));
+  task_environment_.FastForwardBy(base::Minutes(109));
 
-  // Verify only the browser UKM is reported.
-  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
-  ASSERT_EQ(3U, entries.size());
+  // Verify the app usage time AppKM for the web app and browser window.
+  auto entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
+  ASSERT_EQ(2U, entries.size());
   VerifyAppUsageTimeUkm(url, /*duration=*/480000, AppTypeName::kChromeBrowser);
   VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/60000,
                         AppTypeName::kChromeBrowser);
@@ -1340,11 +1432,7 @@ TEST_F(AppPlatformMetricsServiceTest,
                  browser->window()->GetNativeWindow(), kActiveInstanceState);
 
   task_environment_.FastForwardBy(base::Minutes(5));
-
-  // Verify only the web app UKM is reported.
-  auto entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
-  ASSERT_EQ(1U, entries.size());
-  VerifyAppUsageTimeUkm(url, /*duration=*/300000, AppTypeName::kChromeBrowser);
+  VerifyNoAppUsageTimeUkm();
 
   // Set the web app tab as inactivated.
   ModifyWebAppInstance(web_app_id, web_app_window.get(),
@@ -1354,11 +1442,13 @@ TEST_F(AppPlatformMetricsServiceTest,
   // Set the browser window as inactivated.
   ModifyInstance(app_constants::kChromeAppId,
                  browser->window()->GetNativeWindow(), kInactiveInstanceState);
-  task_environment_.FastForwardBy(base::Minutes(2));
+  VerifyNoAppUsageTimeUkm();
+  task_environment_.FastForwardBy(base::Minutes(112));
 
-  // Verify the browser UKM is reported.
-  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
+  // Verify the app usage time AppKM.
+  auto entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
   ASSERT_EQ(2U, entries.size());
+  VerifyAppUsageTimeUkm(url, /*duration=*/300000, AppTypeName::kChromeBrowser);
   VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/180000,
                         AppTypeName::kChromeBrowser);
 
@@ -1374,11 +1464,15 @@ TEST_F(AppPlatformMetricsServiceTest,
   ModifyInstance(app_constants::kChromeAppId,
                  browser->window()->GetNativeWindow(), kInactiveInstanceState);
 
+  // Verify no more app usage time AppKM is recorded.
+  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
+  ASSERT_EQ(2U, entries.size());
+
   // Set the web app tab as inactivated.
   ModifyWebAppInstance(web_app_id, web_app_window.get(),
                        kInactiveInstanceState);
 
-  task_environment_.FastForwardBy(base::Minutes(3));
+  task_environment_.FastForwardBy(base::Minutes(118));
 
   // Verify only the web app UKM is reported.
   entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
@@ -1400,7 +1494,12 @@ TEST_F(AppPlatformMetricsServiceTest,
   // Set the web app tab as destroyed.
   ModifyWebAppInstance(web_app_id, web_app_window.get(),
                        apps::InstanceState::kDestroyed);
-  task_environment_.FastForwardBy(base::Minutes(4));
+
+  // Verify no more app usage time AppKM is recorded.
+  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
+  ASSERT_EQ(3U, entries.size());
+
+  task_environment_.FastForwardBy(base::Minutes(119));
 
   entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
   ASSERT_EQ(4U, entries.size());
@@ -1438,42 +1537,25 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkmForMultipleWebAppOpenInTab) {
 
   task_environment_.FastForwardBy(base::Minutes(5));
 
-  // Verify only the web app1 UKM is reported.
-  auto entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
-  ASSERT_EQ(1U, entries.size());
-  VerifyAppUsageTimeUkm(url1, /*duration=*/300000, AppTypeName::kChromeBrowser);
-
   // Set the web app tab 2 as activated.
   ModifyWebAppInstance(web_app_id2, web_app_window2.get(),
                        kActiveInstanceState);
   ModifyWebAppInstance(web_app_id1, web_app_window1.get(),
                        kInactiveInstanceState);
-  task_environment_.FastForwardBy(base::Minutes(5));
-
-  // Verify only the web app2 UKM is reported.
-  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
-  ASSERT_EQ(2U, entries.size());
-  VerifyAppUsageTimeUkm(url2, /*duration=*/300000, AppTypeName::kChromeBrowser);
+  task_environment_.FastForwardBy(base::Minutes(4));
 
   // Set the web app tabs as inactivated.
   ModifyWebAppInstance(web_app_id1, web_app_window1.get(),
                        kInactiveInstanceState);
   ModifyWebAppInstance(web_app_id2, web_app_window2.get(),
                        kInactiveInstanceState);
-  task_environment_.FastForwardBy(base::Minutes(5));
 
-  // Verify the browser UKM is reported.
-  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
-  ASSERT_EQ(3U, entries.size());
-  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/300000,
-                        AppTypeName::kChromeBrowser);
-
-  task_environment_.FastForwardBy(base::Minutes(2));
+  task_environment_.FastForwardBy(base::Minutes(3));
+  VerifyNoAppUsageTimeUkm();
 
   // Set the browser window as activated.
   ModifyInstance(app_constants::kChromeAppId,
                  browser->window()->GetNativeWindow(), kInactiveInstanceState);
-  task_environment_.FastForwardBy(base::Minutes(3));
 
   // Destroy the browser windows, and web app tabs.
   ModifyWebAppInstance(web_app_id1, web_app_window1.get(),
@@ -1484,10 +1566,14 @@ TEST_F(AppPlatformMetricsServiceTest, UsageTimeUkmForMultipleWebAppOpenInTab) {
                  browser->window()->GetNativeWindow(),
                  apps::InstanceState::kDestroyed);
 
-  // Verify the browser UKM is reported.
-  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
-  ASSERT_EQ(4U, entries.size());
-  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/420000,
+  task_environment_.FastForwardBy(base::Minutes(108));
+
+  // Verify the app usage time AppKM for the web apps and browser window.
+  auto entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.UsageTime");
+  ASSERT_EQ(3U, entries.size());
+  VerifyAppUsageTimeUkm(url1, /*duration=*/300000, AppTypeName::kChromeBrowser);
+  VerifyAppUsageTimeUkm(url2, /*duration=*/240000, AppTypeName::kChromeBrowser);
+  VerifyAppUsageTimeUkm(app_constants::kChromeAppId, /*duration=*/180000,
                         AppTypeName::kChromeBrowser);
 }
 
@@ -1712,6 +1798,12 @@ class AppPlatformInputMetricsTest : public AppPlatformMetricsServiceTest {
                                            (int)event_source);
   }
 
+  void VerifyNoUkm() {
+    auto entries =
+        test_ukm_recorder()->GetEntriesByName("ChromeOSApp.InputEvent");
+    ASSERT_EQ(0U, entries.size());
+  }
+
  private:
   std::unique_ptr<ash::AshTestHelper> ash_test_helper_;
 
@@ -1726,12 +1818,14 @@ TEST_F(AppPlatformInputMetricsTest, WindowIsDestroyed) {
   ModifyInstance(/*app_id=*/"a", window(), kActive);
   CreateInputEvent(InputEventSource::kMouse);
   app_platform_input_metrics()->OnFiveMinutes();
+  VerifyNoUkm();
+  app_platform_input_metrics()->OnTwoHours();
   VerifyUkm("app://com.google.A", AppTypeName::kArc, /*event_count=*/1,
             InputEventSource::kMouse);
 
   ModifyInstance(/*app_id=*/"a", window(), apps::InstanceState::kDestroyed);
   CreateInputEvent(InputEventSource::kMouse);
-  app_platform_input_metrics()->OnFiveMinutes();
+  app_platform_input_metrics()->OnTwoHours();
   // Verify no more input event is recorded.
   VerifyUkm("app://com.google.A", AppTypeName::kArc, /*event_count=*/1,
             InputEventSource::kMouse);
@@ -1741,6 +1835,8 @@ TEST_F(AppPlatformInputMetricsTest, MouseEvent) {
   ModifyInstance(/*app_id=*/"a", window(), apps::InstanceState::kActive);
   CreateInputEvent(InputEventSource::kMouse);
   app_platform_input_metrics()->OnFiveMinutes();
+  VerifyNoUkm();
+  app_platform_input_metrics()->OnTwoHours();
   VerifyUkm("app://com.google.A", AppTypeName::kArc, /*event_count=*/1,
             InputEventSource::kMouse);
 }
@@ -1749,6 +1845,8 @@ TEST_F(AppPlatformInputMetricsTest, StylusEvent) {
   ModifyInstance(/*app_id=*/"w", window(), apps::InstanceState::kActive);
   CreateInputEvent(InputEventSource::kStylus);
   app_platform_input_metrics()->OnFiveMinutes();
+  VerifyNoUkm();
+  app_platform_input_metrics()->OnTwoHours();
   VerifyUkm("https://foo.com", AppTypeName::kWeb, /*event_count=*/1,
             InputEventSource::kStylus);
 }
@@ -1758,6 +1856,8 @@ TEST_F(AppPlatformInputMetricsTest, TouchEvents) {
   CreateInputEvent(InputEventSource::kTouch);
   CreateInputEvent(InputEventSource::kTouch);
   app_platform_input_metrics()->OnFiveMinutes();
+  VerifyNoUkm();
+  app_platform_input_metrics()->OnTwoHours();
   VerifyUkm("app://com.google.A", AppTypeName::kArc, /*event_count=*/2,
             InputEventSource::kTouch);
 }
@@ -1766,6 +1866,8 @@ TEST_F(AppPlatformInputMetricsTest, KeyEvents) {
   ModifyInstance(/*app_id=*/"a", window(), apps::InstanceState::kActive);
   CreateInputEvent(InputEventSource::kKeyboard);
   app_platform_input_metrics()->OnFiveMinutes();
+  VerifyNoUkm();
+  app_platform_input_metrics()->OnTwoHours();
   VerifyUkm("app://com.google.A", AppTypeName::kArc, /*event_count=*/1,
             InputEventSource::kKeyboard);
 
@@ -1773,9 +1875,14 @@ TEST_F(AppPlatformInputMetricsTest, KeyEvents) {
   CreateInputEvent(InputEventSource::kKeyboard);
   app_platform_input_metrics()->OnFiveMinutes();
 
-  // Verify 2 input metrics events are recorded.
-  const auto entries =
+  // Verify no more input events UKM recorded.
+  auto entries =
       test_ukm_recorder()->GetEntriesByName("ChromeOSApp.InputEvent");
+  ASSERT_EQ(1U, entries.size());
+
+  app_platform_input_metrics()->OnTwoHours();
+  // Verify 2 input metrics events are recorded.
+  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.InputEvent");
   ASSERT_EQ(2U, entries.size());
   std::set<int> counts;
   for (const auto* entry : entries) {
@@ -1799,6 +1906,8 @@ TEST_F(AppPlatformInputMetricsTest, MultipleEvents) {
   CreateInputEvent(InputEventSource::kKeyboard);
   CreateInputEvent(InputEventSource::kStylus);
   app_platform_input_metrics()->OnFiveMinutes();
+  VerifyNoUkm();
+  app_platform_input_metrics()->OnTwoHours();
 
   // Verify 3 input metrics events are recorded.
   const auto entries =
@@ -1840,6 +1949,8 @@ TEST_F(AppPlatformInputMetricsTest, BrowserWindow) {
   ModifyInstance(app_constants::kChromeAppId, window(), kActiveInstanceState);
   CreateInputEvent(InputEventSource::kMouse);
   app_platform_input_metrics()->OnFiveMinutes();
+  VerifyNoUkm();
+  app_platform_input_metrics()->OnTwoHours();
   VerifyUkm(std::string("app://") + app_constants::kChromeAppId,
             AppTypeName::kChromeBrowser, /*event_count=*/1,
             InputEventSource::kMouse);
@@ -1854,6 +1965,13 @@ TEST_F(AppPlatformInputMetricsTest, BrowserWindow) {
   ModifyInstance(web_app_id1, web_app_window1.get(), kActiveInstanceState);
   CreateInputEvent(InputEventSource::kMouse);
   app_platform_input_metrics()->OnFiveMinutes();
+
+  // Verify no more input events UKM recorded.
+  auto entries =
+      test_ukm_recorder()->GetEntriesByName("ChromeOSApp.InputEvent");
+  ASSERT_EQ(1U, entries.size());
+
+  app_platform_input_metrics()->OnTwoHours();
   // Verify 2 input metrics events are recorded.
   VerifyUkm(2, url1.spec(), AppTypeName::kChromeBrowser,
             /*event_count=*/1, InputEventSource::kMouse);
@@ -1870,6 +1988,12 @@ TEST_F(AppPlatformInputMetricsTest, BrowserWindow) {
   CreateInputEvent(InputEventSource::kStylus);
   CreateInputEvent(InputEventSource::kStylus);
   app_platform_input_metrics()->OnFiveMinutes();
+
+  // Verify no more input events UKM recorded.
+  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.InputEvent");
+  ASSERT_EQ(2U, entries.size());
+
+  app_platform_input_metrics()->OnTwoHours();
   // Verify 3 input metrics events are recorded.
   VerifyUkm(3, url2.spec(), AppTypeName::kChromeBrowser,
             /*event_count=*/2, InputEventSource::kStylus);
@@ -1880,6 +2004,12 @@ TEST_F(AppPlatformInputMetricsTest, BrowserWindow) {
   ModifyInstance(web_app_id1, web_app_window1.get(), kActiveInstanceState);
   CreateInputEvent(InputEventSource::kKeyboard);
   app_platform_input_metrics()->OnFiveMinutes();
+
+  // Verify no more input events UKM recorded.
+  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.InputEvent");
+  ASSERT_EQ(3U, entries.size());
+
+  app_platform_input_metrics()->OnTwoHours();
   // Verify 4 input metrics events are recorded.
   VerifyUkm(4, url1.spec(), AppTypeName::kChromeBrowser,
             /*event_count=*/1, InputEventSource::kKeyboard);
@@ -1888,10 +2018,90 @@ TEST_F(AppPlatformInputMetricsTest, BrowserWindow) {
   ModifyInstance(web_app_id1, web_app_window1.get(), kInactiveInstanceState);
   CreateInputEvent(InputEventSource::kStylus);
   app_platform_input_metrics()->OnFiveMinutes();
+
+  // Verify no more input events UKM recorded.
+  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.InputEvent");
+  ASSERT_EQ(4U, entries.size());
+
+  app_platform_input_metrics()->OnTwoHours();
   // Verify 5 input metrics events are recorded.
   VerifyUkm(5, std::string("app://") + app_constants::kChromeAppId,
             AppTypeName::kChromeBrowser,
             /*event_count=*/1, InputEventSource::kStylus);
+}
+
+TEST_F(AppPlatformInputMetricsTest, InputEventsUkmReportAfterReboot) {
+  ModifyInstance(/*app_id=*/"a", window(), apps::InstanceState::kActive);
+  CreateInputEvent(InputEventSource::kKeyboard);
+  CreateInputEvent(InputEventSource::kStylus);
+  CreateInputEvent(InputEventSource::kStylus);
+  app_platform_input_metrics()->OnFiveMinutes();
+  VerifyNoUkm();
+  ModifyInstance(/*app_id=*/"a", window(), kInactiveInstanceState);
+
+  // Reset PlatformMetricsService to simulate the system reboot, and verify
+  // AppKM is restored from the user pref and reported after 5 minutes after
+  // reboot.
+  ResetAppPlatformMetricsService();
+  VerifyNoUkm();
+
+  ModifyInstance(/*app_id=*/"a", window(), apps::InstanceState::kActive);
+  CreateInputEvent(InputEventSource::kStylus);
+
+  app_platform_input_metrics()->OnFiveMinutes();
+  // Verify 2 input metrics events are recorded from pref.
+  auto entries =
+      test_ukm_recorder()->GetEntriesByName("ChromeOSApp.InputEvent");
+  ASSERT_EQ(2U, entries.size());
+  int event_source;
+  int keyboard_event_count = 0;
+  int stylus_event_count = 0;
+  for (const auto* entry : entries) {
+    test_ukm_recorder()->ExpectEntrySourceHasUrl(entry,
+                                                 GURL("app://com.google.A"));
+    test_ukm_recorder()->ExpectEntryMetric(entry, "AppType",
+                                           (int)AppTypeName::kArc);
+    event_source =
+        *(test_ukm_recorder()->GetEntryMetric(entry, "AppInputEventSource"));
+    if (event_source == (int)InputEventSource::kKeyboard) {
+      keyboard_event_count =
+          *(test_ukm_recorder()->GetEntryMetric(entry, "AppInputEventCount"));
+    } else if (event_source == (int)InputEventSource::kStylus) {
+      stylus_event_count =
+          *(test_ukm_recorder()->GetEntryMetric(entry, "AppInputEventCount"));
+    }
+  }
+  EXPECT_EQ(1, keyboard_event_count);
+  EXPECT_EQ(2, stylus_event_count);
+
+  CreateInputEvent(InputEventSource::kStylus);
+  app_platform_input_metrics()->OnFiveMinutes();
+
+  // Verify no more input events UKM recorded.
+  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.InputEvent");
+  ASSERT_EQ(2U, entries.size());
+
+  ModifyInstance(/*app_id=*/"a", window(), kInactiveInstanceState);
+
+  // Reset PlatformMetricsService to simulate the system reboot, and verify
+  // only the new AppKM is reported.
+  ResetAppPlatformMetricsService();
+  // Verify no more input events UKM recorded.
+  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.InputEvent");
+  ASSERT_EQ(2U, entries.size());
+
+  app_platform_input_metrics()->OnFiveMinutes();
+  // Verify the input metrics events are recorded from pref.
+  VerifyUkm(/*count=*/3, "app://com.google.A", AppTypeName::kArc,
+            /*event_count=*/2, InputEventSource::kStylus);
+
+  // Reset PlatformMetricsService to simulate the system reboot, and verify no
+  // more AppKM is reported.
+  ResetAppPlatformMetricsService();
+  app_platform_input_metrics()->OnFiveMinutes();
+  // Verify no more input events UKM recorded.
+  entries = test_ukm_recorder()->GetEntriesByName("ChromeOSApp.InputEvent");
+  ASSERT_EQ(3U, entries.size());
 }
 
 }  // namespace apps

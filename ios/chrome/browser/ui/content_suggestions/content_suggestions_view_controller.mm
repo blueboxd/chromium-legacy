@@ -1,4 +1,4 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
+// Copyright 2022 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,35 +8,23 @@
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "components/strings/grit/components_strings.h"
-#import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cells_constants.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_header_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_item.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_tile_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_parent_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_return_to_recent_tab_view.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_selection_actions.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_shortcut_tile_view.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_text_item.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_layout_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_whats_new_view.h"
-#import "ios/chrome/browser/ui/content_suggestions/cells/suggested_content.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_commands.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_constants.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_feature.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_controlling.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_header_synchronizing.h"
-#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_layout.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_menu_provider.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_view_controller_audience.h"
-#import "ios/chrome/browser/ui/content_suggestions/identifier/content_suggestions_section_information.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
-#import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
 #import "ios/chrome/browser/ui/ntp/new_tab_page_header_constants.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
 #import "ios/chrome/browser/ui/toolbar/public/toolbar_utils.h"
@@ -44,6 +32,7 @@
 #import "ios/chrome/browser/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/material_timing.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
+#import "ios/chrome/common/ui/favicon/favicon_view.h"
 #import "ios/chrome/common/ui/util/constraints_ui_util.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -52,94 +41,160 @@
 #error "This file requires ARC support."
 #endif
 
-namespace {
-const CGFloat kCardBorderRadius = 11;
-}  // namespace
-
 @interface ContentSuggestionsViewController () <
     UIGestureRecognizerDelegate,
     ContentSuggestionsSelectionActions>
 
-// The layout of the content suggestions collection view.
-@property(nonatomic, strong) ContentSuggestionsLayout* layout;
-
-// Dictionary keyed by SectionIdentifier containing section configuration
-// information.
-@property(nonatomic, strong)
-    NSMutableDictionary<NSNumber*, ContentSuggestionsSectionInformation*>*
-        sectionInfoBySectionIdentifier;
-
-// Ordered list of sections being shown.
-@property(nonatomic, strong)
-    NSMutableArray<ContentSuggestionsSectionInformation*>* orderedSectionsInfo;
 // Whether an item of type ItemTypePromo has already been added to the model.
 @property(nonatomic, assign) BOOL promoAdded;
+
+// StackView holding all subviews.
+@property(nonatomic, strong) UIStackView* verticalStackView;
+
+// List of all UITapGestureRecognizers created for the Most Visisted tiles.
+@property(nonatomic, strong)
+    NSMutableArray<UITapGestureRecognizer*>* mostVisitedTapRecognizers;
+// The UITapGestureRecognizer for the Return To Recent Tab tile.
+@property(nonatomic, strong)
+    UITapGestureRecognizer* returnToRecentTabTapRecognizer;
+// The UITapGestureRecognizer for the NTP promo view.
+@property(nonatomic, strong) UITapGestureRecognizer* promoTapRecognizer;
+
+// The Return To Recent Tab view.
+@property(nonatomic, strong)
+    ContentSuggestionsReturnToRecentTabView* returnToRecentTabTile;
+// The WhatsNew view.
+@property(nonatomic, strong) ContentSuggestionsWhatsNewView* whatsNewView;
+// StackView holding all of |mostVisitedViews|.
+@property(nonatomic, strong) UIStackView* mostVisitedStackView;
+// List of all of the Most Visited views.
+@property(nonatomic, strong)
+    NSMutableArray<ContentSuggestionsMostVisitedTileView*>* mostVisitedViews;
+// StackView holding all of |shortcutsViews|.
+@property(nonatomic, strong) UIStackView* shortcutsStackView;
+// List of all of the Shortcut views.
+@property(nonatomic, strong)
+    NSMutableArray<ContentSuggestionsShortcutTileView*>* shortcutsViews;
 
 @end
 
 @implementation ContentSuggestionsViewController
 
-@dynamic collectionViewModel;
-
-#pragma mark - Lifecycle
-
-- (instancetype)initWithStyle:(CollectionViewControllerStyle)style {
-  _layout = [[ContentSuggestionsLayout alloc] init];
-  self = [super initWithLayout:_layout style:style];
-  return self;
+- (instancetype)init {
+  return [super initWithNibName:nil bundle:nil];
 }
-
-#pragma mark - Public
-
-// Removes the |section|.
-- (void)dismissSection:(NSInteger)section {
-  if (section >= [self numberOfSectionsInCollectionView:self.collectionView]) {
-    return;
-  }
-
-  NSInteger sectionIdentifier =
-      [self.collectionViewModel sectionIdentifierForSection:section];
-
-  [self.collectionView
-      performBatchUpdates:^{
-        [self.collectionViewModel
-            removeSectionWithIdentifier:sectionIdentifier];
-        [self.collectionView
-            deleteSections:[NSIndexSet indexSetWithIndex:section]];
-      }
-               completion:nil];
-}
-
-#pragma mark - UIViewController
 
 - (void)viewDidLoad {
   [super viewDidLoad];
 
-  self.collectionView.prefetchingEnabled = NO;
-  // Overscroll action does not work well with content offset, so set this
-  // to never and internally offset the UI to account for safe area insets.
-  self.collectionView.contentInsetAdjustmentBehavior =
-      UIScrollViewContentInsetAdjustmentNever;
+  self.view.backgroundColor = ntp_home::kNTPBackgroundColor();
+  self.view.accessibilityIdentifier = kContentSuggestionsCollectionIdentifier;
 
-  self.collectionView.delegate = self;
-  self.collectionView.backgroundColor = ntp_home::kNTPBackgroundColor();
-  self.styler.cellStyle = MDCCollectionViewCellStyleCard;
-  self.styler.cardBorderRadius = kCardBorderRadius;
-  self.styler.separatorColor = [UIColor clearColor];
-  self.collectionView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.verticalStackView = [[UIStackView alloc] init];
+  self.verticalStackView.translatesAutoresizingMaskIntoConstraints = NO;
+  self.verticalStackView.axis = UILayoutConstraintAxisVertical;
+  // A centered alignment will ensure the views are centered.
+  self.verticalStackView.alignment = UIStackViewAlignmentCenter;
+  // A fill distribution allows for the custom spacing between elements and
+  // height/width configurations for each row.
+  self.verticalStackView.distribution = UIStackViewDistributionFill;
+  [self.view addSubview:_verticalStackView];
+  AddSameConstraints(self.view, _verticalStackView);
 
-  ApplyVisualConstraints(@[ @"V:|[collection]|", @"H:|[collection]|" ],
-                         @{@"collection" : self.collectionView});
-}
+  CGFloat horizontalSpacing =
+      ContentSuggestionsTilesHorizontalSpacing(self.traitCollection);
+  if (self.returnToRecentTabTile) {
+    [self addUIElement:self.returnToRecentTabTile
+        withCustomBottomSpacing:content_suggestions::
+                                    kReturnToRecentTabSectionBottomMargin];
+    CGFloat cardWidth = content_suggestions::searchFieldWidth(
+        self.view.bounds.size.width, self.traitCollection);
+    [NSLayoutConstraint activateConstraints:@[
+      [self.returnToRecentTabTile.widthAnchor
+          constraintEqualToConstant:cardWidth],
+      [self.returnToRecentTabTile.heightAnchor
+          constraintEqualToConstant:kReturnToRecentTabSize.height]
+    ]];
+  }
+  if (self.whatsNewView) {
+    [self addUIElement:self.whatsNewView withCustomBottomSpacing:0];
+    CGFloat width =
+        MostVisitedTilesContentHorizontalSpace(self.traitCollection);
+    CGSize size =
+        MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory);
+    [NSLayoutConstraint activateConstraints:@[
+      [self.whatsNewView.widthAnchor constraintEqualToConstant:width],
+      [self.whatsNewView.heightAnchor constraintEqualToConstant:size.height]
+    ]];
+  }
+  NSUInteger index = 0;
+  if (self.mostVisitedViews) {
+    self.mostVisitedStackView = [[UIStackView alloc] init];
+    self.mostVisitedStackView.axis = UILayoutConstraintAxisHorizontal;
+    self.mostVisitedStackView.alignment = UIStackViewAlignmentTop;
+    self.mostVisitedStackView.distribution = UIStackViewDistributionFillEqually;
+    self.mostVisitedStackView.spacing = horizontalSpacing;
+    for (ContentSuggestionsMostVisitedTileView* view in self.mostVisitedViews) {
+      view.accessibilityIdentifier = [NSString
+          stringWithFormat:
+              @"%@%li",
+              kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+              index];
+      view.menuProvider = self.menuProvider;
+      UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(contentSuggestionsElementTapped:)];
+      [view addGestureRecognizer:tapRecognizer];
+      tapRecognizer.enabled = YES;
+      [self.mostVisitedTapRecognizers addObject:tapRecognizer];
+      [self.mostVisitedStackView addArrangedSubview:view];
+      index++;
+    }
+    [self addUIElement:self.mostVisitedStackView
+        withCustomBottomSpacing:kMostVisitedBottomMargin];
+    CGFloat width =
+        MostVisitedTilesContentHorizontalSpace(self.traitCollection);
+    CGSize size =
+        MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory);
+    [NSLayoutConstraint activateConstraints:@[
+      [self.mostVisitedStackView.widthAnchor constraintEqualToConstant:width],
+      [self.mostVisitedStackView.heightAnchor
+          constraintEqualToConstant:size.height]
+    ]];
+  }
+  if (self.shortcutsViews) {
+    self.shortcutsStackView = [[UIStackView alloc] init];
+    self.shortcutsStackView.axis = UILayoutConstraintAxisHorizontal;
+    self.shortcutsStackView.alignment = UIStackViewAlignmentTop;
+    self.shortcutsStackView.distribution = UIStackViewDistributionFillEqually;
+    self.shortcutsStackView.spacing = horizontalSpacing;
+    for (ContentSuggestionsShortcutTileView* view in self.shortcutsViews) {
+      view.accessibilityIdentifier = [NSString
+          stringWithFormat:
+              @"%@%li",
+              kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+              index];
+      UITapGestureRecognizer* tapRecognizer = [[UITapGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(contentSuggestionsElementTapped:)];
+      [view addGestureRecognizer:tapRecognizer];
+      [self.mostVisitedTapRecognizers addObject:tapRecognizer];
+      [self.shortcutsStackView addArrangedSubview:view];
+      index++;
+    }
 
-- (void)viewDidAppear:(BOOL)animated {
-  [super viewDidAppear:animated];
-
-  // TODO(crbug.com/1200303): Reload data is needed here so the content matches
-  // the current UI Layout after changing the Feed state (e.g. Turned On/Off).
-  // This shouldn't be necessary once we stop starting and stopping the
-  // Coordinator to achieve this.
-  [self.collectionView reloadData];
+    [self addUIElement:self.shortcutsStackView
+        withCustomBottomSpacing:kMostVisitedBottomMargin];
+    CGFloat width =
+        MostVisitedTilesContentHorizontalSpace(self.traitCollection);
+    CGSize size =
+        MostVisitedCellSize(self.traitCollection.preferredContentSizeCategory);
+    [NSLayoutConstraint activateConstraints:@[
+      [self.shortcutsStackView.widthAnchor constraintEqualToConstant:width],
+      [self.shortcutsStackView.heightAnchor
+          constraintEqualToConstant:size.height]
+    ]];
+  }
 }
 
 - (void)viewDidDisappear:(BOOL)animated {
@@ -148,193 +203,6 @@ const CGFloat kCardBorderRadius = 11;
     [self.audience viewDidDisappear];
   }
 }
-
-#pragma mark - UICollectionViewDelegate
-
-- (void)collectionView:(UICollectionView*)collectionView
-    didSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
-
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-  switch ([self contentSuggestionTypeForItem:item]) {
-    case ContentSuggestionTypeMostVisited:
-      [self.suggestionCommandHandler openMostVisitedItem:item
-                                                 atIndex:indexPath.item];
-      break;
-    case ContentSuggestionTypeReturnToRecentTab:
-      [self.suggestionCommandHandler openMostRecentTab];
-      break;
-    case ContentSuggestionTypePromo:
-      [self dismissSection:indexPath.section];
-      [self.suggestionCommandHandler handlePromoTapped];
-      [self.collectionViewLayout invalidateLayout];
-      break;
-    case ContentSuggestionTypeEmpty:
-      break;
-  }
-}
-
-- (UICollectionViewCell*)collectionView:(UICollectionView*)collectionView
-                 cellForItemAtIndexPath:(NSIndexPath*)indexPath {
-  UICollectionViewCell* cell = [super collectionView:collectionView
-                              cellForItemAtIndexPath:indexPath];
-  if ([self isMostVisitedSection:indexPath.section]) {
-    cell.accessibilityIdentifier = [NSString
-        stringWithFormat:
-            @"%@%li",
-            kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
-            indexPath.row];
-    // Apple doesn't handle the transparency of the background during animations
-    // linked to context menus. To prevent the cell from turning black during
-    // animations, its background is set to be the same as the NTP background.
-    // See: crbug.com/1120321.
-    cell.backgroundColor = ntp_home::kNTPBackgroundColor();
-    [self.collectionViewModel itemAtIndexPath:indexPath]
-        .accessibilityIdentifier = cell.accessibilityIdentifier;
-  }
-
-  return cell;
-}
-
-- (UIContextMenuConfiguration*)collectionView:(UICollectionView*)collectionView
-    contextMenuConfigurationForItemAtIndexPath:(NSIndexPath*)indexPath
-                                         point:(CGPoint)point {
-  CollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-
-  if (![item isKindOfClass:[ContentSuggestionsMostVisitedItem class]])
-    return nil;
-
-  ContentSuggestionsMostVisitedItem* contentSuggestionsItem =
-      base::mac::ObjCCastStrict<ContentSuggestionsMostVisitedItem>(item);
-
-  return [self.menuProvider
-      contextMenuConfigurationForItem:contentSuggestionsItem
-                             fromView:[self.collectionView
-                                          cellForItemAtIndexPath:indexPath]];
-}
-
-#pragma mark - UICollectionViewDelegateFlowLayout
-
-- (CGSize)collectionView:(UICollectionView*)collectionView
-                    layout:(UICollectionViewLayout*)collectionViewLayout
-    sizeForItemAtIndexPath:(NSIndexPath*)indexPath {
-  if ([self isMostVisitedSection:indexPath.section]) {
-    return [ContentSuggestionsMostVisitedCell defaultSize];
-  }
-  CGSize size = [super collectionView:collectionView
-                               layout:collectionViewLayout
-               sizeForItemAtIndexPath:indexPath];
-  return size;
-}
-
-- (UIEdgeInsets)collectionView:(UICollectionView*)collectionView
-                        layout:(UICollectionViewLayout*)collectionViewLayout
-        insetForSectionAtIndex:(NSInteger)section {
-  UIEdgeInsets parentInset = [super collectionView:collectionView
-                                            layout:collectionViewLayout
-                            insetForSectionAtIndex:section];
-  if ([self isHeaderSection:section] || [self isSingleCellSection:section]) {
-    parentInset.top = 0;
-    parentInset.left = 0;
-    parentInset.right = 0;
-  } else if ([self isReturnToRecentTabSection:section]) {
-    CGFloat collectionWidth = collectionView.bounds.size.width;
-    CGFloat maxCardWidth = content_suggestions::searchFieldWidth(
-        collectionWidth, self.traitCollection);
-    CGFloat margin =
-        MAX(0, (collectionView.frame.size.width - maxCardWidth) / 2);
-    parentInset.left = margin;
-    parentInset.right = margin;
-    parentInset.bottom =
-        content_suggestions::kReturnToRecentTabSectionBottomMargin;
-  } else if ([self isMostVisitedSection:section] ||
-             [self isPromoSection:section]) {
-    CGFloat margin = CenteredTilesMarginForWidth(
-        self.traitCollection, collectionView.frame.size.width);
-    parentInset.left = margin;
-    parentInset.right = margin;
-    if ([self isMostVisitedSection:section]) {
-      parentInset.bottom = kMostVisitedBottomMargin;
-    }
-  }
-  return parentInset;
-}
-
-- (CGFloat)collectionView:(UICollectionView*)collectionView
-                                 layout:(UICollectionViewLayout*)
-                                            collectionViewLayout
-    minimumLineSpacingForSectionAtIndex:(NSInteger)section {
-  if ([self isMostVisitedSection:section]) {
-    return kContentSuggestionsTilesVerticalSpacing;
-  }
-  return [super collectionView:collectionView
-                                   layout:collectionViewLayout
-      minimumLineSpacingForSectionAtIndex:section];
-}
-
-#pragma mark - MDCCollectionViewStylingDelegate
-
-- (BOOL)collectionView:(UICollectionView*)collectionView
-    hidesInkViewAtIndexPath:(NSIndexPath*)indexPath {
-  return YES;
-}
-
-- (UIColor*)collectionView:(nonnull UICollectionView*)collectionView
-    cellBackgroundColorAtIndexPath:(nonnull NSIndexPath*)indexPath {
-  if ([self shouldUseCustomStyleForSection:indexPath.section]) {
-    return UIColor.clearColor;
-  }
-  return ntp_home::kNTPBackgroundColor();
-}
-
-- (CGSize)collectionView:(UICollectionView*)collectionView
-                             layout:
-                                 (UICollectionViewLayout*)collectionViewLayout
-    referenceSizeForHeaderInSection:(NSInteger)section {
-  if ([self isHeaderSection:section]) {
-    return CGSizeMake(0, [self.headerProvider headerHeight]);
-  }
-  CGSize defaultSize = [super collectionView:collectionView
-                                      layout:collectionViewLayout
-             referenceSizeForHeaderInSection:section];
-  if (UIContentSizeCategoryIsAccessibilityCategory(
-          self.traitCollection.preferredContentSizeCategory)) {
-    // Double the size of the header as it is now on two lines.
-    defaultSize.height *= 2;
-  }
-  return defaultSize;
-}
-
-- (BOOL)collectionView:(nonnull UICollectionView*)collectionView
-    shouldHideItemBackgroundAtIndexPath:(nonnull NSIndexPath*)indexPath {
-  return [self shouldUseCustomStyleForSection:indexPath.section];
-}
-
-- (BOOL)collectionView:(UICollectionView*)collectionView
-    shouldHideHeaderBackgroundForSection:(NSInteger)section {
-  return [self shouldUseCustomStyleForSection:section];
-}
-
-- (CGFloat)collectionView:(UICollectionView*)collectionView
-    cellHeightAtIndexPath:(NSIndexPath*)indexPath {
-  CSCollectionViewItem* item =
-      [self.collectionViewModel itemAtIndexPath:indexPath];
-  UIEdgeInsets inset = [self collectionView:collectionView
-                                     layout:collectionView.collectionViewLayout
-                     insetForSectionAtIndex:indexPath.section];
-  CGFloat width =
-      CGRectGetWidth(collectionView.bounds) - inset.left - inset.right;
-
-  return [item cellHeightForWidth:width];
-}
-
-- (BOOL)collectionView:(UICollectionView*)collectionView
-    shouldHideHeaderSeparatorForSection:(NSInteger)section {
-  return [self shouldUseCustomStyleForSection:section];
-}
-
 
 #pragma mark - UIGestureRecognizerDelegate
 
@@ -348,112 +216,148 @@ const CGFloat kCardBorderRadius = 11;
 
 #pragma mark - ContentSuggestionsConsumer
 
-- (void)reloadDataWithSections:
-            (NSArray<ContentSuggestionsSectionInformation*>*)sections
-                      andItems:
-                          (NSMutableDictionary<NSNumber*, NSArray*>*)items {
-  [self resetModels];
-  self.orderedSectionsInfo = [sections mutableCopy];
+- (void)showReturnToRecentTabTileWithConfig:
+    (ContentSuggestionsReturnToRecentTabItem*)config {
+  self.returnToRecentTabTile = [[ContentSuggestionsReturnToRecentTabView alloc]
+      initWithConfiguration:config];
+  self.returnToRecentTabTapRecognizer = [[UITapGestureRecognizer alloc]
+      initWithTarget:self
+              action:@selector(contentSuggestionsElementTapped:)];
+  [self.returnToRecentTabTile
+      addGestureRecognizer:self.returnToRecentTabTapRecognizer];
+  self.returnToRecentTabTapRecognizer.enabled = YES;
+  // If the Content Suggestions is already shown, add the Return to Recent Tab
+  // tile to the StackView.
+  if ([[self.verticalStackView arrangedSubviews] count]) {
+    [self.verticalStackView insertArrangedSubview:self.returnToRecentTabTile
+                                          atIndex:0];
+    [self.verticalStackView
+        setCustomSpacing:content_suggestions::
+                             kReturnToRecentTabSectionBottomMargin
+               afterView:self.returnToRecentTabTile];
+    CGFloat cardWidth = content_suggestions::searchFieldWidth(
+        self.view.bounds.size.width, self.traitCollection);
+    [NSLayoutConstraint activateConstraints:@[
+      [self.returnToRecentTabTile.widthAnchor
+          constraintEqualToConstant:cardWidth],
+      [self.returnToRecentTabTile.heightAnchor
+          constraintEqualToConstant:kReturnToRecentTabSize.height]
+    ]];
+    [self.audience returnToRecentTabWasAdded];
+  }
+}
 
-  // The data is reset, add the new data directly in the model then reload the
-  // collection.
-  [self addSectionsForSectionInfoToModel:sections withItems:items];
-  for (ContentSuggestionsSectionInformation* sectionInfo in sections) {
-    if (sectionInfo.sectionID == ContentSuggestionsSectionSingleCell) {
-      DCHECK(IsSingleCellContentSuggestionsEnabled());
-      DCHECK_EQ(1.0, [items[@(sectionInfo.sectionID)] count]);
-      ContentSuggestionsParentItem* item =
-          static_cast<ContentSuggestionsParentItem*>(
-              items[@(sectionInfo.sectionID)][0]);
-      item.tapTarget = self;
-      item.menuProvider = self.menuProvider;
+- (void)hideReturnToRecentTabTile {
+  [self.returnToRecentTabTile removeFromSuperview];
+  self.returnToRecentTabTile = nil;
+}
+
+- (void)showWhatsNewViewWithConfig:(ContentSuggestionsWhatsNewItem*)config {
+  self.whatsNewView =
+      [[ContentSuggestionsWhatsNewView alloc] initWithConfiguration:config];
+  self.promoTapRecognizer = [[UITapGestureRecognizer alloc]
+      initWithTarget:self
+              action:@selector(contentSuggestionsElementTapped:)];
+  [self.whatsNewView addGestureRecognizer:self.promoTapRecognizer];
+  self.promoTapRecognizer.enabled = YES;
+}
+
+- (void)hideWhatsNewView {
+  [self.whatsNewView removeFromSuperview];
+  self.whatsNewView = nil;
+}
+
+- (void)setMostVisitedTilesWithConfigs:
+    (NSArray<ContentSuggestionsMostVisitedItem*>*)configs {
+  if (!self.mostVisitedViews) {
+    self.mostVisitedViews = [NSMutableArray array];
+  }
+  BOOL refreshingTiles = NO;
+  if ([self.mostVisitedViews count]) {
+    refreshingTiles = YES;
+    for (ContentSuggestionsMostVisitedTileView* view in self.mostVisitedViews) {
+      [view removeFromSuperview];
     }
-    [self addSuggestionsToModel:items[@(sectionInfo.sectionID)]
-                withSectionInfo:sectionInfo];
+    [self.mostVisitedViews removeAllObjects];
   }
-  [self.collectionView reloadData];
+  NSInteger index = 0;
+  for (ContentSuggestionsMostVisitedItem* item in configs) {
+    ContentSuggestionsMostVisitedTileView* view =
+        [[ContentSuggestionsMostVisitedTileView alloc]
+            initWithConfiguration:item];
+    view.menuProvider = self.menuProvider;
+    [self.mostVisitedViews addObject:view];
+    if (refreshingTiles) {
+      view.accessibilityIdentifier = [NSString
+          stringWithFormat:
+              @"%@%li",
+              kContentSuggestionsMostVisitedAccessibilityIdentifierPrefix,
+              index];
+      [self.mostVisitedStackView addArrangedSubview:view];
+      index++;
+    }
+  }
 }
 
-- (void)addSection:(ContentSuggestionsSectionInformation*)sectionInfo
-         withItems:(NSArray<CSCollectionViewItem*>*)items
-        completion:(void (^)(void))completion {
-  SectionIdentifier sectionIdentifier =
-      [self sectionIdentifierForInfo:sectionInfo];
-  CSCollectionViewModel* model = self.collectionViewModel;
-
-  if ([model hasSectionForSectionIdentifier:sectionIdentifier])
-    return;
-
-  auto addSectionBlock = ^{
-    NSIndexSet* addedSection = [self
-        addSectionsForSectionInfoToModel:@[ sectionInfo ]
-                               withItems:@{@(sectionInfo.sectionID) : items}];
-    [self.collectionView insertSections:addedSection];
-    NSArray<NSIndexPath*>* addedItems =
-        [self addSuggestionsToModel:items withSectionInfo:sectionInfo];
-    [self.collectionView insertItemsAtIndexPaths:addedItems];
-  };
-
-  [UIView performWithoutAnimation:^{
-    [self.collectionView performBatchUpdates:addSectionBlock
-                                  completion:^(BOOL finished) {
-                                    completion();
-                                  }];
-  }];
+- (void)setShortcutTilesWithConfigs:
+    (NSArray<ContentSuggestionsMostVisitedActionItem*>*)configs {
+  if (!self.shortcutsViews) {
+    self.shortcutsViews = [NSMutableArray array];
+  }
+  // Assumes this only called before viewDidLoad, so there is no need to add the
+  // views into the view hierarchy here.
+  for (ContentSuggestionsMostVisitedActionItem* item in configs) {
+    ContentSuggestionsShortcutTileView* view =
+        [[ContentSuggestionsShortcutTileView alloc] initWithConfiguration:item];
+    [self.shortcutsViews addObject:view];
+  }
 }
 
-- (void)clearSection:(ContentSuggestionsSectionInformation*)sectionInfo {
-  SectionIdentifier sectionIdentifier =
-      [self sectionIdentifierForInfo:sectionInfo];
-  CSCollectionViewModel* model = self.collectionViewModel;
-
-  if (![model hasSectionForSectionIdentifier:sectionIdentifier])
-    return;
-
-  NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
-
-  [self dismissSection:section];
+- (void)updateReadingListCount:(NSInteger)count {
+  for (ContentSuggestionsShortcutTileView* view in self.shortcutsViews) {
+    if (view.config.collectionShortcutType ==
+        NTPCollectionShortcutTypeReadingList) {
+      [view updateCount:count];
+      return;
+    }
+  }
 }
 
-- (void)itemHasChanged:(CollectionViewItem<SuggestedContent>*)item {
-  if (![self.collectionViewModel hasItem:item]) {
-    return;
+- (void)updateMostVisitedTileConfig:(ContentSuggestionsMostVisitedItem*)config {
+  for (ContentSuggestionsMostVisitedTileView* view in self.mostVisitedViews) {
+    if (view.config == config) {
+      dispatch_async(dispatch_get_main_queue(), ^{
+        [view.faviconView configureWithAttributes:config.attributes];
+      });
+      return;
+    }
   }
-  if (IsSingleCellContentSuggestionsEnabled()) {
-    ContentSuggestionsParentItem* parentItem =
-        static_cast<ContentSuggestionsParentItem*>(item);
-    parentItem.tapTarget = self;
-  }
-  [self reconfigureCellsForItems:@[ item ]];
 }
 
-#pragma mark - UIAccessibilityAction
-
-- (BOOL)accessibilityScroll:(UIAccessibilityScrollDirection)direction {
-  CGFloat toolbarHeight =
-      ToolbarExpandedHeight(self.traitCollection.preferredContentSizeCategory);
-  // The collection displays the fake omnibox on the top of the other elements.
-  // The default scrolling action scrolls for the full height of the collection,
-  // hiding elements behing the fake omnibox. This reduces the scrolling by the
-  // height of the fake omnibox.
-  if (direction == UIAccessibilityScrollDirectionDown) {
-    CGFloat newYOffset = self.collectionView.contentOffset.y +
-                         self.collectionView.bounds.size.height - toolbarHeight;
-    newYOffset = MIN(self.collectionView.contentSize.height -
-                         self.collectionView.bounds.size.height,
-                     newYOffset);
-    self.collectionView.contentOffset =
-        CGPointMake(self.collectionView.contentOffset.x, newYOffset);
-  } else if (direction == UIAccessibilityScrollDirectionUp) {
-    CGFloat newYOffset = self.collectionView.contentOffset.y -
-                         self.collectionView.bounds.size.height + toolbarHeight;
-    newYOffset = MAX(0, newYOffset);
-    self.collectionView.contentOffset =
-        CGPointMake(self.collectionView.contentOffset.x, newYOffset);
-  } else {
-    return NO;
+- (CGFloat)contentSuggestionsHeight {
+  CGFloat height = 0;
+  if ([self.mostVisitedViews count] > 0) {
+    height += MostVisitedCellSize(
+                  UIApplication.sharedApplication.preferredContentSizeCategory)
+                  .height +
+              kMostVisitedBottomMargin;
   }
-  return YES;
+  if ([self.shortcutsViews count] > 0) {
+    height += MostVisitedCellSize(
+                  UIApplication.sharedApplication.preferredContentSizeCategory)
+                  .height +
+              kMostVisitedBottomMargin;
+  }
+  if (self.returnToRecentTabTile) {
+    height += (kReturnToRecentTabSize.height +
+               content_suggestions::kReturnToRecentTabSectionBottomMargin);
+  }
+  if (self.whatsNewView) {
+    height += MostVisitedCellSize(
+                  UIApplication.sharedApplication.preferredContentSizeCategory)
+                  .height;
+  }
+  return height;
 }
 
 #pragma mark - ContentSuggestionsSelectionActions
@@ -520,260 +424,11 @@ const CGFloat kCardBorderRadius = 11;
 
 #pragma mark - Private
 
-// Checks if the |section| is empty and add an empty element if it is the case.
-// Must be called from inside a performBatchUpdates: block.
-- (void)addEmptySectionPlaceholderIfNeeded:(NSInteger)section {
-  if ([self.collectionViewModel numberOfItemsInSection:section] > 0)
-    return;
-
-  NSIndexPath* emptyItem = [self addEmptyItemForSection:section];
-  if (emptyItem)
-    [self.collectionView insertItemsAtIndexPaths:@[ emptyItem ]];
-}
-
-// Returns the ContentSuggestionType associated with an ItemType |type|.
-- (ContentSuggestionType)contentSuggestionTypeForItemType:(NSInteger)type {
-  switch (type) {
-    case ItemTypeEmpty:
-      return ContentSuggestionTypeEmpty;
-    case ItemTypeReturnToRecentTab:
-      return ContentSuggestionTypeReturnToRecentTab;
-    case ItemTypeMostVisited:
-      return ContentSuggestionTypeMostVisited;
-    case ItemTypePromo:
-      return ContentSuggestionTypePromo;
-    default:
-      return ContentSuggestionTypeEmpty;
+- (void)addUIElement:(UIView*)view withCustomBottomSpacing:(CGFloat)spacing {
+  [self.verticalStackView addArrangedSubview:view];
+  if (spacing > 0) {
+    [self.verticalStackView setCustomSpacing:spacing afterView:view];
   }
-}
-
-// Returns the item type corresponding to the section |info|.
-- (ItemType)itemTypeForInfo:(ContentSuggestionsSectionInformation*)info {
-  switch (info.sectionID) {
-    case ContentSuggestionsSectionReturnToRecentTab:
-      return ItemTypeReturnToRecentTab;
-    case ContentSuggestionsSectionMostVisited:
-      return ItemTypeMostVisited;
-    case ContentSuggestionsSectionPromo:
-      return ItemTypePromo;
-    case ContentSuggestionsSectionSingleCell:
-      return ItemTypeSingleCell;
-    case ContentSuggestionsSectionLogo:
-    case ContentSuggestionsSectionUnknown:
-      return ItemTypeUnknown;
-  }
-}
-
-// Returns the section identifier corresponding to the section |info|.
-- (SectionIdentifier)sectionIdentifierForInfo:
-    (ContentSuggestionsSectionInformation*)info {
-  switch (info.sectionID) {
-    case ContentSuggestionsSectionMostVisited:
-      return SectionIdentifierMostVisited;
-    case ContentSuggestionsSectionLogo:
-      return SectionIdentifierLogo;
-    case ContentSuggestionsSectionReturnToRecentTab:
-      return SectionIdentifierReturnToRecentTab;
-    case ContentSuggestionsSectionPromo:
-      return SectionIdentifierPromo;
-    case ContentSuggestionsSectionSingleCell:
-      return SectionIdentifierSingleCell;
-    case ContentSuggestionsSectionUnknown:
-      return SectionIdentifierDefault;
-  }
-}
-
-- (BOOL)shouldUseCustomStyleForSection:(NSInteger)section {
-  NSNumber* identifier =
-      @([self.collectionViewModel sectionIdentifierForSection:section]);
-  ContentSuggestionsSectionInformation* sectionInformation =
-      self.sectionInfoBySectionIdentifier[identifier];
-  return sectionInformation.layout == ContentSuggestionsSectionLayoutCustom;
-}
-
-- (ContentSuggestionType)contentSuggestionTypeForItem:
-    (CollectionViewItem*)item {
-  return [self contentSuggestionTypeForItemType:item.type];
-}
-
-- (NSArray<NSIndexPath*>*)
-    addSuggestionsToModel:(NSArray<CSCollectionViewItem*>*)suggestions
-          withSectionInfo:(ContentSuggestionsSectionInformation*)sectionInfo {
-  NSMutableArray<NSIndexPath*>* indexPaths = [NSMutableArray array];
-
-  CSCollectionViewModel* model = self.collectionViewModel;
-  NSInteger sectionIdentifier = [self sectionIdentifierForInfo:sectionInfo];
-
-  if (suggestions.count == 0) {
-    // No suggestions for this section. Add the item signaling this section is
-    // empty if there is currently no item in it.
-    if ([model hasSectionForSectionIdentifier:sectionIdentifier] &&
-        [model numberOfItemsInSection:[model sectionForSectionIdentifier:
-                                                 sectionIdentifier]] == 0) {
-      NSIndexPath* emptyItemIndexPath =
-          [self addEmptyItemForSection:
-                    [model sectionForSectionIdentifier:sectionIdentifier]];
-      if (emptyItemIndexPath) {
-        [indexPaths addObject:emptyItemIndexPath];
-      }
-    }
-    return indexPaths;
-  }
-
-  // Add the items from this section.
-  [suggestions enumerateObjectsUsingBlock:^(CSCollectionViewItem* item,
-                                            NSUInteger index, BOOL* stop) {
-    ItemType type = [self itemTypeForInfo:sectionInfo];
-    if (type == ItemTypePromo && !self.promoAdded) {
-      self.promoAdded = YES;
-      [self.audience promoShown];
-    }
-    item.type = type;
-    NSIndexPath* addedIndexPath = [self addItem:item
-                        toSectionWithIdentifier:sectionIdentifier];
-
-    [indexPaths addObject:addedIndexPath];
-  }];
-
-  return indexPaths;
-}
-
-- (NSIndexSet*)
-    addSectionsForSectionInfoToModel:
-        (NSArray<ContentSuggestionsSectionInformation*>*)sectionsInfo
-                           withItems:(NSDictionary<NSNumber*, NSArray*>*)items {
-  NSMutableIndexSet* addedSectionIdentifiers = [NSMutableIndexSet indexSet];
-
-  CSCollectionViewModel* model = self.collectionViewModel;
-  for (ContentSuggestionsSectionInformation* sectionInfo in sectionsInfo) {
-    NSInteger sectionIdentifier = [self sectionIdentifierForInfo:sectionInfo];
-    NSArray* itemsArray = items[@(sectionInfo.sectionID)];
-    if ([model hasSectionForSectionIdentifier:sectionIdentifier] ||
-        (!sectionInfo.showIfEmpty && [itemsArray count] == 0)) {
-      continue;
-    }
-
-    NSUInteger sectionIndex = 0;
-    for (ContentSuggestionsSectionInformation* orderedSectionInfo in self
-             .orderedSectionsInfo) {
-      NSInteger orderedSectionIdentifier =
-          [self sectionIdentifierForInfo:orderedSectionInfo];
-      if (orderedSectionIdentifier == sectionIdentifier) {
-        break;
-      }
-      if ([model hasSectionForSectionIdentifier:orderedSectionIdentifier]) {
-        sectionIndex++;
-      }
-    }
-    [model insertSectionWithIdentifier:sectionIdentifier atIndex:sectionIndex];
-
-    self.sectionInfoBySectionIdentifier[@(sectionIdentifier)] = sectionInfo;
-    [addedSectionIdentifiers addIndex:sectionIdentifier];
-
-    if (sectionIdentifier == SectionIdentifierLogo) {
-      [self addLogoHeaderIfNeeded];
-    }
-  }
-
-  NSMutableIndexSet* indexSet = [NSMutableIndexSet indexSet];
-  [addedSectionIdentifiers enumerateIndexesUsingBlock:^(
-                               NSUInteger sectionIdentifier, BOOL* stop) {
-    [indexSet addIndex:[model sectionForSectionIdentifier:sectionIdentifier]];
-  }];
-  return indexSet;
-}
-
-- (NSIndexPath*)addEmptyItemForSection:(NSInteger)section {
-  CSCollectionViewModel* model = self.collectionViewModel;
-  NSInteger sectionIdentifier = [model sectionIdentifierForSection:section];
-  ContentSuggestionsSectionInformation* sectionInfo =
-      self.sectionInfoBySectionIdentifier[@(sectionIdentifier)];
-
-  CSCollectionViewItem* item = [self emptyItemForSectionInfo:sectionInfo];
-  if (!item) {
-    return nil;
-  }
-  return [self addItem:item toSectionWithIdentifier:sectionIdentifier];
-}
-
-- (BOOL)isReturnToRecentTabSection:(NSInteger)section {
-  return [self.collectionViewModel sectionIdentifierForSection:section] ==
-         SectionIdentifierReturnToRecentTab;
-}
-
-- (BOOL)isMostVisitedSection:(NSInteger)section {
-  return [self.collectionViewModel sectionIdentifierForSection:section] ==
-         SectionIdentifierMostVisited;
-}
-
-- (BOOL)isHeaderSection:(NSInteger)section {
-  return [self.collectionViewModel sectionIdentifierForSection:section] ==
-         SectionIdentifierLogo;
-}
-
-- (BOOL)isPromoSection:(NSInteger)section {
-  return [self.collectionViewModel sectionIdentifierForSection:section] ==
-         SectionIdentifierPromo;
-}
-
-- (BOOL)isSingleCellSection:(NSInteger)section {
-  return [self.collectionViewModel sectionIdentifierForSection:section] ==
-         SectionIdentifierSingleCell;
-}
-
-// Adds the header for the first section, containing the logo and the omnibox,
-// if there is no header for the section.
-- (void)addLogoHeaderIfNeeded {
-  DCHECK(!IsContentSuggestionsHeaderMigrationEnabled());
-  if (![self.collectionViewModel
-          headerForSectionWithIdentifier:SectionIdentifierLogo]) {
-    ContentSuggestionsHeaderItem* header =
-        [[ContentSuggestionsHeaderItem alloc] initWithType:ItemTypeHeader];
-    header.view =
-        [self headerViewForWidth:self.collectionView.bounds.size.width];
-    [self.collectionViewModel setHeader:header
-               forSectionWithIdentifier:SectionIdentifierLogo];
-  }
-}
-
-- (UIView*)headerViewForWidth:(CGFloat)width {
-  return [self.headerProvider
-      headerForWidth:width
-      safeAreaInsets:[self.audience safeAreaInsetsForDiscoverFeed]];
-}
-
-// Resets the models, removing the current CollectionViewItem and the
-// SectionInfo.
-- (void)resetModels {
-  [self loadModel];
-  self.sectionInfoBySectionIdentifier = [[NSMutableDictionary alloc] init];
-}
-
-// Returns a item to be displayed when the section identified by |sectionInfo|
-// is empty.
-// Returns nil if there is no empty item for this section info.
-- (CSCollectionViewItem*)emptyItemForSectionInfo:
-    (ContentSuggestionsSectionInformation*)sectionInfo {
-  if (!sectionInfo.emptyText || !sectionInfo.expanded)
-    return nil;
-  ContentSuggestionsTextItem* item =
-      [[ContentSuggestionsTextItem alloc] initWithType:ItemTypeEmpty];
-  item.text = l10n_util::GetNSString(IDS_NTP_TITLE_NO_SUGGESTIONS);
-  item.detailText = sectionInfo.emptyText;
-
-  return item;
-}
-
-// Adds |item| to |sectionIdentifier| section of the model of the
-// CollectionView. Returns the IndexPath of the newly added item.
-- (NSIndexPath*)addItem:(CSCollectionViewItem*)item
-    toSectionWithIdentifier:(NSInteger)sectionIdentifier {
-  CSCollectionViewModel* model = self.collectionViewModel;
-  NSInteger section = [model sectionForSectionIdentifier:sectionIdentifier];
-  NSInteger itemNumber = [model numberOfItemsInSection:section];
-  [model addItem:item toSectionWithIdentifier:sectionIdentifier];
-
-  return [NSIndexPath indexPathForItem:itemNumber inSection:section];
 }
 
 @end

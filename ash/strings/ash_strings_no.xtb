@@ -31,6 +31,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1150989369772528668">Kalender</translation>
 <translation id="1153356358378277386">Tilkoblede enheter</translation>
 <translation id="1165712434476988950">Enheten må startes på nytt for at oppdateringen skal tas i bruk.</translation>
+<translation id="1171742223880403396">USB-C-kabelen din kobler seg kanskje ikke til skjermer på riktig måte</translation>
 <translation id="1175572348579024023">Rull</translation>
 <translation id="1178581264944972037">Stans midlertidig</translation>
 <translation id="1181037720776840403">Fjern</translation>
@@ -91,9 +92,9 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1414271762428216854"><ph name="APP_NAME" /> – installert app</translation>
 <translation id="1419738280318246476">Lås opp enheten for å utføre varselhandlingen</translation>
 <translation id="1420408895951708260">Slå av/på nattlys. <ph name="STATE_TEXT" /></translation>
+<translation id="1420732223884894666">Se nylige bilder og medier fra telefonen din på <ph name="DEVICE_TYPE" /></translation>
 <translation id="1426410128494586442">Ja</translation>
 <translation id="1438357537418863713">Strømming av apper er nå konfigurert. Når du har begynt å bruke denne funksjonen, vises nylig åpnede apper her.</translation>
-<translation id="144853431011121127">Få varsler fra telefonen din på <ph name="DEVICE_TYPE" /></translation>
 <translation id="1455242230282523554">Vis språkinnstillinger</translation>
 <translation id="1460620680449458626">Lyden er dempet.</translation>
 <translation id="1467432559032391204">Venstre</translation>
@@ -197,6 +198,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="2132302418721800944">Ta opp hele skjermen</translation>
 <translation id="2135456203358955318">Dokket lupe</translation>
 <translation id="2148716181193084225">I dag</translation>
+<translation id="2159930836979502091">Gå til denne fanen</translation>
 <translation id="2170530631236737939">Sveip ned med tre fingre for å lukke Oversikt</translation>
 <translation id="219905428774326614">Appoversikt, alle apper</translation>
 <translation id="2201071101391734388">Nylig bilde <ph name="INDEX" /> av <ph name="TOTAL_COUNT" />.</translation>
@@ -317,6 +319,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="301282384882049174">Delt av administratoren din</translation>
 <translation id="3017687597151988916">Vinduet er valgt som kilde</translation>
 <translation id="3033545621352269033">På</translation>
+<translation id="3033912566804961911">Kombiner med <ph name="DESK_NAME" /></translation>
 <translation id="3036649622769666520">Åpne filer</translation>
 <translation id="3038571455154067151">For å logge på, skriv inn koden din for foreldretilgang til Family Link</translation>
 <translation id="3039939407102840004">Pekepennen har <ph name="PERCENTAGE" /> prosent batteri.</translation>
@@ -342,6 +345,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3153444934357957346">Du kan bare ha opptil <ph name="MULTI_PROFILE_USER_LIMIT" /> kontoer i multipålogging.</translation>
 <translation id="3154351730702813399">Enhetsadministratoren kan overvåke surfeaktiviteten din.</translation>
 <translation id="316086887565479535">Apper som ikke støttes, i malen</translation>
+<translation id="3161500364292033097">Lukk skrivebordet og vinduene</translation>
 <translation id="316356270129335934"><ph name="MANAGER" /> utfører en rollback på <ph name="DEVICE_TYPE" />. Enheten blir tilbakestilt, og alle data blir slettet.</translation>
 <translation id="3181441307743005334">Det kan ta en stund å starte på nytt</translation>
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Koblet til en enhet}other{Koblet til # enheter}}</translation>
@@ -353,6 +357,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="3227137524299004712">Mikrofon</translation>
 <translation id="324366796737464147">Støyreduksjon</translation>
 <translation id="3249513730522716925">Vinduet <ph name="WINDOW_TITLE" /> ble flyttet fra skrivebord <ph name="ACTIVE_DESK" /> til skrivebord <ph name="TARGET_DESK" /></translation>
+<translation id="3252573918265662711">Konfigurer</translation>
 <translation id="3255483164551725916">Hva kan du gjøre?</translation>
 <translation id="3269597722229482060">Høyreklikk</translation>
 <translation id="3289544412142055976">Linux-apper støttes ikke for øyeblikket</translation>
@@ -560,6 +565,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="4449692009715125625">{NUM_NOTIFICATIONS,plural, =1{1 viktig varsel}other{# viktige varsler}}</translation>
 <translation id="4450893287417543264">Ikke vis igjen</translation>
 <translation id="4451374464530248585">Hurtigtasten Alt + nedoverpil er endret. For å bruke Page Down-tasten, trykk på <ph name="LAUNCHER_KEY_NAME" />-tasten + nedoverpilen.</translation>
+<translation id="4455051983450390249">Se varslene på telefonen din på <ph name="DEVICE_TYPE" /></translation>
 <translation id="445864333228800152">God kveld</translation>
 <translation id="4458688154122353284">Avslutt skjermopptak</translation>
 <translation id="4471354919263203780">Laster ned filer for talegjenkjenning … <ph name="PERCENT" /> %</translation>
@@ -731,6 +737,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" /> <ph name="DATE" /></translation>
 <translation id="5600837773213129531">Trykk på Ctrl + Alt + Z for å slå av taletilbakemelding.</translation>
 <translation id="5601503069213153581">PIN</translation>
+<translation id="5618148318840095371">Vi har flyttet deg til et bedre nettverk</translation>
 <translation id="5619862035903135339">Skjermdumper er deaktivert på grunn av en administratorregel</translation>
 <translation id="5625955975703555628">LTE+</translation>
 <translation id="5648021990716966815">Mikrofonkontakt</translation>
@@ -766,6 +773,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="583281660410589416">Ukjent</translation>
 <translation id="5837036133683224804">Stopp <ph name="ROUTE_TITLE" /> på <ph name="RECEIVER_NAME" /></translation>
 <translation id="584525477304726060">Hold for å maksimere</translation>
+<translation id="5856638668464565213"><ph name="NETWORK_NAME" /> er ikke aktivert.</translation>
 <translation id="5860033963881614850">Av</translation>
 <translation id="5860491529813859533">Slå på</translation>
 <translation id="5867217927013474703">Samler inn nettverksinformasjon</translation>
@@ -797,6 +805,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="602472752137106327">Vis vinduer fra alle skrivebord – alternativknappen er valgt</translation>
 <translation id="6025324406281560198"><ph name="SECURITY_STATUS" /> – <ph name="CONNECTION_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> – administreres av administratoren din</translation>
 <translation id="6027518778343897451">Det er ingen aktiviteter <ph name="CURRENT_MONTH_DAY" />. Trykk på Enter for å åpne Google Kalender i nettleseren.</translation>
+<translation id="6027952026115023659">Få tilgang til meldingsappene på telefonen din på <ph name="DEVICE_TYPE" /></translation>
 <translation id="6030495522958826102">Menyen ble flyttet til nedre venstre hjørne av skjermen.</translation>
 <translation id="6032620807120418574">Klikk hvor som helst for å ta opp i fullskjerm</translation>
 <translation id="6040071906258664830">Mikrofonopptak er <ph name="STATE" /></translation>
@@ -823,6 +832,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="6165508094623778733">Finn ut mer</translation>
 <translation id="6166852626429024716">Søk på enheten, i apper, i innstillinger og på nettet.</translation>
 <translation id="6179832488876878285">Du kan feste viktige filer her. Åpne Filer-appen for å komme i gang.</translation>
+<translation id="619279033188484792">Se nylige bilder, medier og varsler fra telefonen din på <ph name="DEVICE_TYPE" /></translation>
 <translation id="6220928844947387476">Nå kan du ta opp deg selv og skjermen din samtidig</translation>
 <translation id="622484624075952240">Ned</translation>
 <translation id="6231419273573514727">Ytelsen til eksterne enheter kan være begrenset</translation>
@@ -879,7 +889,6 @@ Nylig installert</translation>
 <translation id="6578407462441924264">Uten navn</translation>
 <translation id="6585808820553845416">Økten slutter om <ph name="SESSION_TIME_REMAINING" />.</translation>
 <translation id="6593850935013518327"><ph name="PRIMARY_TEXT" /> <ph name="SECONDARY_TEXT" /></translation>
-<translation id="6602800870584047641">Tilkoblingen din byttet til et sikrere nettverk</translation>
 <translation id="661203523074512333"><ph name="SECURITY_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /> – administreres av administratoren din</translation>
 <translation id="6612802754306526077">Skjermopptaksmodus er valgt</translation>
 <translation id="6614169507485700968">Personvernskjermen er på</translation>
@@ -936,9 +945,11 @@ Nylig installert</translation>
 <translation id="6921188888306725546">Tastatursnarveier er forbedret</translation>
 <translation id="6931576957638141829">Lagre i</translation>
 <translation id="6945221475159498467">Velg</translation>
+<translation id="6960565108681981554">Ikke aktivert. Kontakt operatøren din.</translation>
 <translation id="6961121602502368900">Demp telefonen er ikke tilgjengelig for jobbprofiler</translation>
 <translation id="6961840794482373852">Hurtigtasten Alt + oppoverpil er endret. For å bruke Page Up-tasten, trykk på <ph name="LAUNCHER_KEY_NAME" />-tasten + oppoverpilen.</translation>
 <translation id="6965382102122355670">OK</translation>
+<translation id="6967933908874208731">Se nylige bilder, medier, varsler og meldingsapper fra telefonen din på <ph name="DEVICE_TYPE" /></translation>
 <translation id="6972754398087986839">Kom i gang</translation>
 <translation id="6979158407327259162">Google Disk</translation>
 <translation id="6981982820502123353">Tilgjengelighet</translation>
@@ -964,6 +975,7 @@ Nylig installert</translation>
 <translation id="7076293881109082629">Pålogging</translation>
 <translation id="7086931198345821656">Denne oppdateringen krever en powerwash på <ph name="DEVICE_TYPE" />. Alle data blir slettet. Finn ut mer om den nyeste <ph name="SYSTEM_APP_NAME" />-oppdateringen.</translation>
 <translation id="7088960765736518739">Brytertilgang</translation>
+<translation id="7098053464892629930">Last ned appen for <ph name="NAME" /> på Google Play for å se alle tilgjengelige funksjoner</translation>
 <translation id="7098389117866926363">USB-C-enhet (venstre port på baksiden)</translation>
 <translation id="7106330611027933926">Vis skrivebordslinje</translation>
 <translation id="7118268675952955085">skjermdump</translation>
@@ -1039,7 +1051,6 @@ Nylig installert</translation>
 <translation id="7595633564847427181">M</translation>
 <translation id="7600875258240007829">Se alle varslene</translation>
 <translation id="7607002721634913082">Satt på pause</translation>
-<translation id="7610198039767537854">Se nylige bilder fra telefonens kamerarull på <ph name="DEVICE_TYPE" /></translation>
 <translation id="7624117708979618027"><ph name="TEMPERATURE_F" />° F</translation>
 <translation id="7631906263969450674">Merkepenn</translation>
 <translation id="7633755430369750696">Vis innstillinger for nærdeling.</translation>
@@ -1050,6 +1061,7 @@ Nylig installert</translation>
 <translation id="7649070708921625228">Hjelp</translation>
 <translation id="7654687942625752712">Trykk og hold på begge volumknappene i fem sekunder for å slå av taletilbakemelding.</translation>
 <translation id="7658239707568436148">Avbryt</translation>
+<translation id="7659861092419699379">Skrivebordet og vinduene er lukket</translation>
 <translation id="7660160718439869192"><ph name="NAME" /> vises på enheter som er tilknyttet med <ph name="EMAIL" /></translation>
 <translation id="7662283695561029522">Trykk for å konfigurere</translation>
 <translation id="7670953955701272011">Åpne denne datoen i Google Kalender</translation>
@@ -1209,6 +1221,7 @@ Nylig installert</translation>
 <translation id="8660331759611631213">Kvadratroten av 71</translation>
 <translation id="8663756353922886599"><ph name="CONNECTION_STATUS" /> – signalstyrke <ph name="SIGNAL_STRENGTH" /></translation>
 <translation id="8664753092453405566">Vis nettverksliste. <ph name="STATE_TEXT" /></translation>
+<translation id="8666856788528804727">Åpne <ph name="NAME" /> for å konfigurere enheten din</translation>
 <translation id="8676770494376880701">Laveffektslader er tilkoblet</translation>
 <translation id="8683506306463609433">Ytelsessporing er aktiv</translation>
 <translation id="8685326675965865247">Søk på enheten, i apper, i innstillinger og på nettet. Bruk piltastene til å navigere i appene.</translation>

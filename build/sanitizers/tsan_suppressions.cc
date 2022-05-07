@@ -81,9 +81,6 @@ char kTSanDefaultSuppressions[] =
     // http://crbug.com/380554
     "deadlock:g_type_add_interface_static\n"
 
-    // http:://crbug.com/386385
-    "race:content::AppCacheStorageImpl::DatabaseTask::CallRunCompleted\n"
-
     // http://crbug.com/397022
     "deadlock:"
     "base::trace_event::TraceEventTestFixture_ThreadOnceBlocking_Test::"
@@ -132,6 +129,10 @@ char kTSanDefaultSuppressions[] =
 
     // https://crbug.com/1158622
     "race:absl::synchronization_internal::Waiter::Post\n"
+
+    // Harmless data races, see WTF::StringImpl::Release code comments.
+    "race:scoped_refptr<WTF::StringImpl>::AddRef\n"
+    "race:scoped_refptr<WTF::StringImpl>::Release\n"
 
     // End of suppressions.
     ;  // Please keep this semicolon.

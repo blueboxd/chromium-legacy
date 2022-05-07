@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/ptr_util.h"
@@ -36,6 +35,7 @@
 #include "storage/browser/test/mock_file_update_observer.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/sandbox_file_system_test_helper.h"
 #include "storage/common/file_system/file_system_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,13 +47,14 @@ namespace storage {
 class FileSystemOperationImplTest : public testing::Test {
  public:
   FileSystemOperationImplTest()
-      : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
+      : special_storage_policy_(
+            base::MakeRefCounted<MockSpecialStoragePolicy>()),
+        task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {}
 
   FileSystemOperationImplTest(const FileSystemOperationImplTest&) = delete;
   FileSystemOperationImplTest& operator=(const FileSystemOperationImplTest&) =
       delete;
 
- protected:
   void SetUp() override {
     EXPECT_TRUE(base_.CreateUniqueTempDir());
     change_observers_ = MockFileChangeObserver::CreateList(&change_observer_);
@@ -62,8 +63,7 @@ class FileSystemOperationImplTest : public testing::Test {
     base::FilePath base_dir = base_.GetPath().AppendASCII("filesystem");
     quota_manager_ = base::MakeRefCounted<MockQuotaManager>(
         /* is_incognito= */ false, base_dir,
-        base::ThreadTaskRunnerHandle::Get().get(),
-        /* special storage policy= */ nullptr);
+        base::ThreadTaskRunnerHandle::Get(), special_storage_policy_);
     quota_manager_proxy_ = base::MakeRefCounted<MockQuotaManagerProxy>(
         quota_manager(), base::ThreadTaskRunnerHandle::Get());
     sandbox_file_system_.SetUp(base_dir, quota_manager_proxy_.get());
@@ -436,14 +436,16 @@ class FileSystemOperationImplTest : public testing::Test {
     return status;
   }
 
-  base::test::TaskEnvironment task_environment_;
-
- private:
-  scoped_refptr<QuotaManager> quota_manager_;
-  scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
+ protected:
+  scoped_refptr<MockSpecialStoragePolicy> special_storage_policy_;
 
   // Common temp base for nondestructive uses.
   base::ScopedTempDir base_;
+
+  base::test::TaskEnvironment task_environment_;
+
+  scoped_refptr<QuotaManager> quota_manager_;
+  scoped_refptr<QuotaManagerProxy> quota_manager_proxy_;
 
   SandboxFileSystemTestHelper sandbox_file_system_;
 
@@ -811,7 +813,7 @@ TEST_F(FileSystemOperationImplTest, TestCopyInForeignFileSuccess) {
   base::FilePath src_local_disk_file_path;
   base::CreateTemporaryFile(&src_local_disk_file_path);
   const char test_data[] = "foo";
-  int data_size = base::size(test_data);
+  int data_size = std::size(test_data);
   base::WriteFile(src_local_disk_file_path, test_data, data_size);
 
   FileSystemURL dest_dir(CreateDirectory("dest"));
@@ -841,7 +843,7 @@ TEST_F(FileSystemOperationImplTest, TestCopyInForeignFileFailureByQuota) {
   base::FilePath src_local_disk_file_path;
   base::CreateTemporaryFile(&src_local_disk_file_path);
   const char test_data[] = "foo";
-  base::WriteFile(src_local_disk_file_path, test_data, base::size(test_data));
+  base::WriteFile(src_local_disk_file_path, test_data, std::size(test_data));
 
   FileSystemURL dest_dir(CreateDirectory("dest"));
 

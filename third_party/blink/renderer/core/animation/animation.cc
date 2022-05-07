@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
+#include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/events/animation_playback_event.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -614,7 +615,8 @@ bool Animation::PreCommit(
   bool should_start = Playing() && (!compositor_state_ || changed);
 
   if (start_on_compositor && should_cancel && should_start &&
-      compositor_state_ && compositor_state_->pending_action == kStart) {
+      compositor_state_ && compositor_state_->pending_action == kStart &&
+      !compositor_state_->effect_changed) {
     // Restarting but still waiting for a start time.
     return false;
   }

@@ -33,8 +33,9 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/process_dice_header_delegate_impl.h"
 #include "chrome/browser/signin/signin_features.h"
+#include "chrome/browser/signin/signin_manager.h"
+#include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/tab_contents/tab_util.h"
-#include "chrome/browser/ui/profile_picker.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 #include "chrome/browser/ui/webui/signin/login_ui_service_factory.h"
 #include "chrome/browser/ui/webui/signin/signin_ui_error.h"
@@ -69,11 +70,6 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-#include "chrome/browser/lacros/account_manager/account_manager_util.h"
-#include "chrome/browser/lacros/account_manager/account_profile_mapper.h"
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "chrome/browser/ui/webui/signin/turn_sync_on_helper.h"
@@ -164,26 +160,6 @@ bool ShouldBlockReconcilorForRequest(ChromeRequestAdapter* request) {
 }
 
 #endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
-
-#if BUILDFLAG(IS_CHROMEOS_LACROS)
-void OnLacrosAccountsAvailableAsSecondaryFetched(
-    AccountProfileMapper* mapper,
-    const base::FilePath& profile_path,
-    const std::vector<account_manager::Account>& accounts) {
-  if (!accounts.empty()) {
-    // Pass in the current profile to signal that the user wants to select a
-    // _secondary_ account for this particular profile.
-    ProfilePicker::Show(
-        ProfilePicker::EntryPoint::kLacrosSelectAvailableAccount, GURL(),
-        profile_path);
-    return;
-  }
-  mapper->ShowAddAccountDialog(profile_path,
-                               account_manager::AccountManagerFacade::
-                                   AccountAdditionSource::kOgbAddAccount,
-                               AccountProfileMapper::AddAccountCallback());
-}
-#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 class RequestDestructionObserverUserData : public base::SupportsUserData::Data {
  public:
@@ -347,12 +323,9 @@ void ProcessMirrorHeader(
 
     AccountProfileMapper* mapper =
         g_browser_process->profile_manager()->GetAccountProfileMapper();
-    GetAccountsAvailableAsSecondary(
-        mapper, profile->GetPath(),
-        // It's safe to bind raw `mapper`, the callback gets called iff
-        // `mapper` is still valid.
-        base::BindOnce(&OnLacrosAccountsAvailableAsSecondaryFetched, mapper,
-                       profile->GetPath()));
+    SigninManagerFactory::GetForProfile(profile)->StartWebSigninFlow(
+        profile->GetPath(), mapper,
+        account_reconcilor->GetConsistencyCookieManager());
 #else
     ::GetAccountManagerFacade(profile->GetPath().value())
         ->ShowAddAccountDialog(account_manager::AccountManagerFacade::
@@ -644,8 +617,9 @@ void FixAccountConsistencyRequestHeader(
 
   // If new url is eligible to have the header, add it, otherwise remove it.
 
-// Mirror header:
-#if BUILDFLAG(ENABLE_MIRROR)
+  // Mirror header:
+  // The Mirror header may be added on desktop platforms, for integration with
+  // Google Drive.
   int profile_mode_mask = PROFILE_MODE_DEFAULT;
   if (incognito_availibility ==
           static_cast<int>(IncognitoModePrefs::Availability::kDisabled) ||
@@ -665,7 +639,6 @@ void FixAccountConsistencyRequestHeader(
       request, redirect_url, gaia_id, is_child_account, account_consistency,
       cookie_settings, profile_mode_mask, kChromeMirrorHeaderSource,
       /*force_account_consistency=*/false);
-#endif  // BUILDFLAG(ENABLE_MIRROR)
 
 // Dice header:
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)

@@ -8,9 +8,7 @@
 #include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 class ClientChannel;
 
@@ -50,15 +48,6 @@ class ConnectionAttempt {
   Delegate* delegate_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when this file is moved to ash.
-namespace ash {
-namespace secure_channel {
-using ::chromeos::secure_channel::ConnectionAttempt;
-}  // namespace secure_channel
-}  // namespace ash
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_CONNECTION_ATTEMPT_H_

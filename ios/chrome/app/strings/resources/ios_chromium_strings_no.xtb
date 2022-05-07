@@ -44,6 +44,7 @@
 <translation id="3344973607274501920">Chromium kunne ikke sjekke passordene dine. Se om du er koblet til internett.</translation>
 <translation id="3472200483164753384">Støttes ikke i Chromium Canary</translation>
 <translation id="3639997914391704523">Chromium kan sjekke passordene dine når du logger på med Google-kontoen din.</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" /> har brukt Chromium og etterlatt seg bokmerker, passord og andre innstillinger på denne enheten.</translation>
 <translation id="3805899903892079518">Chromium har ikke tilgang til bildene eller videoene dine. Slå på tilgangen i iOS-innstillingene &gt; Personvern &gt; Bilder.</translation>
 <translation id="4043291146360695975">Passord lagres i Passordlagring kun på denne enheten.</translation>
 <translation id="4099085513035183040">Støttes ikke i Chromium Beta</translation>
@@ -55,6 +56,15 @@
 <translation id="4828317641996116749">Chromium kunne ikke sjekke alle passordene. Prøv igjen senere.</translation>
 <translation id="4985291216379576555">Uten nett – Chromium kan ikke se etter oppdateringer</translation>
 <translation id="4999538639245140991">Fordi du logger av en konto som er administrert av <ph name="SIGNOUT_MANAGED_DOMAIN" />, blir Chromium-dataene dine slettet fra denne enheten, men de blir værende i Google-kontoen din.</translation>
+<translation id="5039881550736388123">Når du gir samtykke
+<ph name="BEGIN_INDENT" />  • bidrar du til å gjøre Chromium bedre for folk som bruker nettleseren på samme måte som deg<ph name="END_INDENT" />
+
+Dette bør du tenke over:
+<ph name="BEGIN_INDENT" />  • Google mottar informasjon om hvordan du bruker Chromium, men informasjonen er ikke knyttet til deg.
+
+  • Hvis Chromium krasjer, kan detaljene om krasjet inneholde enkelte personopplysninger.
+
+  • Hvis du slår på synkronisering, kan verdiene også inneholde informasjon om nettadressene du besøker.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Logg på Chromium</translation>
 <translation id="5224391634244552924">Ingen lagrede passord. Chromium kan sjekke passordene dine når du lagrer dem.</translation>
 <translation id="5308226104666789935">Chromium kan ikke se etter oppdateringer</translation>
@@ -65,6 +75,7 @@
 <translation id="5777187867430702742">Chromium-side</translation>
 <translation id="5862307444128926510">Velkommen til Chromium</translation>
 <translation id="5945387852661427312">Du logger på med en konto som administreres av <ph name="DOMAIN" />, og du gir dermed administratoren for dette domenet kontroll over Chromium-dataene dine. Dataene dine blir knyttet til denne kontoen permanent. Når du logger av Chromium, slettes dataene dine fra denne enheten, men de er fortsatt lagret i Google-kontoen din.</translation>
+<translation id="5983312940147103417">Gjør Chromium bedre</translation>
 <translation id="602807004951640891">Ved å bruke Chromium samtykker du i <ph name="BEGIN_LINK_TOS" />vilkårene for bruk<ph name="END_LINK_TOS" />.</translation>
 <translation id="6119647025869519954">Slik velger du Chromium som standardnettleser:
 1. Åpne Innstillinger.

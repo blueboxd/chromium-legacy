@@ -29,8 +29,7 @@ ContentLayerClientImpl::ContentLayerClientImpl()
     : cc_picture_layer_(cc::PictureLayer::Create(this)),
       raster_invalidation_function_(
           base::BindRepeating(&ContentLayerClientImpl::InvalidateRect,
-                              base::Unretained(this))),
-      layer_state_(PropertyTreeState::Uninitialized()) {}
+                              base::Unretained(this))) {}
 
 ContentLayerClientImpl::~ContentLayerClientImpl() {
   cc_picture_layer_->ClearClient();
@@ -61,14 +60,9 @@ void ContentLayerClientImpl::AppendAdditionalInfoAsJSON(
 #endif
 }
 
-scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
+void ContentLayerClientImpl::UpdateCcPictureLayer(
     const PendingLayer& pending_layer) {
   const auto& paint_chunks = pending_layer.Chunks();
-  if (paint_chunks.begin()->is_cacheable)
-    id_.emplace(paint_chunks.begin()->id);
-  else
-    id_ = absl::nullopt;
-
 #if EXPENSIVE_DCHECKS_ARE_ON()
   paint_chunk_debug_data_ = std::make_unique<JSONArray>();
   for (auto it = paint_chunks.begin(); it != paint_chunks.end(); ++it) {
@@ -82,19 +76,13 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   }
 #endif  // EXPENSIVE_DCHECKS_ARE_ON()
 
-  // The raster invalidator will only handle invalidations within a cc::Layer so
-  // we need this invalidation if the layer's properties have changed.
   auto layer_state = pending_layer.GetPropertyTreeState();
-  if (layer_state != layer_state_)
-    cc_picture_layer_->SetSubtreePropertyChanged();
-
   gfx::Size layer_bounds = pending_layer.LayerBounds();
   gfx::Vector2dF layer_offset = pending_layer.LayerOffset();
   gfx::Size old_layer_bounds = raster_invalidator_.LayerBounds();
   DCHECK_EQ(old_layer_bounds, cc_picture_layer_->bounds());
   raster_invalidator_.Generate(raster_invalidation_function_, paint_chunks,
                                layer_offset, layer_bounds, layer_state);
-  layer_state_ = layer_state;
 
   absl::optional<RasterUnderInvalidationCheckingParams>
       raster_under_invalidation_params;
@@ -116,9 +104,10 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
   // Here check layer_bounds because RasterInvalidator doesn't issue raster
   // invalidation when only layer_bounds changes.
   if (cc_display_item_list_ && layer_bounds == old_layer_bounds &&
+      cc_picture_layer_->draws_content() == pending_layer.DrawsContent() &&
       !raster_under_invalidation_params) {
     DCHECK_EQ(cc_picture_layer_->bounds(), layer_bounds);
-    return cc_picture_layer_;
+    return;
   }
 
   cc_display_item_list_ = PaintChunksToCcLayer::Convert(
@@ -128,19 +117,16 @@ scoped_refptr<cc::PictureLayer> ContentLayerClientImpl::UpdateCcPictureLayer(
 
   cc_picture_layer_->SetBounds(layer_bounds);
   cc_picture_layer_->SetHitTestable(true);
-  // TODO(wangxianzhu): Use SetIsDrawable(pending_layer.DrawsContent()) when
-  // it's accurate. For now it only covers a subset of drawing content
-  // conditions (i.e. the following DCHECK).
-  DCHECK(!pending_layer.DrawsContent() ||
-         cc_display_item_list_->TotalOpCount());
-  cc_picture_layer_->SetIsDrawable(
-      (!layer_bounds.IsEmpty() && cc_display_item_list_->TotalOpCount()) ||
-      // Backdrop effects and filters require the layer to be drawable even if
-      // the layer draws nothing.
-      layer_state.Effect().HasBackdropEffect() ||
-      !layer_state.Effect().Filter().IsEmpty());
+  cc_picture_layer_->SetIsDrawable(pending_layer.DrawsContent());
 
-  return cc_picture_layer_;
+  bool contents_opaque = pending_layer.RectKnownToBeOpaque().Contains(
+      gfx::RectF(gfx::PointAtOffsetFromOrigin(pending_layer.LayerOffset()),
+                 gfx::SizeF(pending_layer.LayerBounds())));
+  cc_picture_layer_->SetContentsOpaque(contents_opaque);
+  if (!contents_opaque) {
+    cc_picture_layer_->SetContentsOpaqueForText(
+        pending_layer.TextKnownToBeOnOpaqueBackground());
+  }
 }
 
 void ContentLayerClientImpl::InvalidateRect(const gfx::Rect& rect) {

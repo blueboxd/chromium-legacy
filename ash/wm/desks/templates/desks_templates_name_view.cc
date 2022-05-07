@@ -95,6 +95,11 @@ void DesksTemplatesNameView::OnGestureEvent(ui::GestureEvent* event) {
   event->StopPropagation();
 }
 
+void DesksTemplatesNameView::SetViewName(const std::u16string& name) {
+  SetText(temporary_name_.value_or(name));
+  PreferredSizeChanged();
+}
+
 int DesksTemplatesNameView::GetAvailableWidth() const {
   auto* parent_view = static_cast<const views::BoxLayoutView*>(parent());
   int available_width = parent_view->width() -

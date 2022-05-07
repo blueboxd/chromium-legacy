@@ -11,6 +11,7 @@
 #include "ash/webui/file_manager/resources/grit/file_manager_swa_resources.h"
 #include "ash/webui/file_manager/url_constants.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/web_applications/system_web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
@@ -70,9 +71,9 @@ std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForFileManager() {
 
   auto* color_provider = ash::AshColorProvider::Get();
   info->theme_color =
-      color_provider->GetBackgroundColorInMode(/*use_dark_mode=*/false);
+      color_provider->GetBackgroundColorInMode(/*use_dark_color=*/false);
   info->dark_mode_theme_color =
-      color_provider->GetBackgroundColorInMode(/*use_dark_mode=*/true);
+      color_provider->GetBackgroundColorInMode(/*use_dark_color=*/true);
   info->background_color = info->theme_color;
   info->dark_mode_background_color = info->dark_mode_theme_color;
   info->display_mode = blink::mojom::DisplayMode::kStandalone;
@@ -92,8 +93,15 @@ std::unique_ptr<WebAppInstallInfo> CreateWebAppInfoForFileManager() {
   AppendFileHandler(*info, "open-hosted-gslides", {"gslides"});
 
   // Drive & Office Docs:
-  AppendFileHandler(*info, "open-web-drive-office",
-                    {"doc", "docx", "xls", "xlsx", "ppt", "pptx"});
+  AppendFileHandler(*info,
+                    ::file_manager::file_tasks::kActionIdWebDriveOfficeWord,
+                    {"doc", "docx"});
+  AppendFileHandler(*info,
+                    ::file_manager::file_tasks::kActionIdWebDriveOfficeExcel,
+                    {"xls", "xlsx"});
+  AppendFileHandler(
+      *info, ::file_manager::file_tasks::kActionIdWebDriveOfficePowerPoint,
+      {"ppt", "pptx"});
 
   // View in the browser (with mime-type):
   AppendFileHandler(*info, "view-pdf", {"pdf"}, "application/pdf");

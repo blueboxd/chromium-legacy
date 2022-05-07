@@ -7,8 +7,8 @@
 
 #include "ash/components/phonehub/notification.h"
 #include "ash/components/phonehub/notification_manager.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 
 namespace ash {
 namespace phonehub {
@@ -40,8 +40,7 @@ class NotificationManagerImpl
   MessageSender* message_sender_;
   UserActionRecorder* user_action_recorder_;
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
-  chromeos::multidevice_setup::mojom::FeatureState
-      notifications_feature_status_;
+  multidevice_setup::mojom::FeatureState notifications_feature_status_;
 };
 
 }  // namespace phonehub

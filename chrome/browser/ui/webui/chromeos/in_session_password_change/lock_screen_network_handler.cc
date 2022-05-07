@@ -78,7 +78,7 @@ void NetworkConfigMessageHandler::RegisterMessages() {
                           weak_ptr_factory_.GetWeakPtr()));
 }
 
-void NetworkConfigMessageHandler::Initialize(base::Value::ConstListView args) {
+void NetworkConfigMessageHandler::Initialize(const base::Value::List& args) {
   AllowJavascript();
 
   // Check if the main dialog exists and notify that the network dialog has
@@ -92,7 +92,7 @@ void NetworkConfigMessageHandler::Initialize(base::Value::ConstListView args) {
 }
 
 void NetworkConfigMessageHandler::ShowNetworkDetails(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(1u, args.size());
   std::string guid = args[0].GetString();
 
@@ -100,21 +100,21 @@ void NetworkConfigMessageHandler::ShowNetworkDetails(
 }
 
 void NetworkConfigMessageHandler::ShowNetworkConfig(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(1u, args.size());
   std::string guid = args[0].GetString();
 
   InternetConfigDialog::ShowDialogForNetworkId(guid);
 }
 
-void NetworkConfigMessageHandler::AddNetwork(base::Value::ConstListView args) {
+void NetworkConfigMessageHandler::AddNetwork(const base::Value::List& args) {
   CHECK_EQ(1u, args.size());
   std::string onc_type = args[0].GetString();
 
   InternetConfigDialog::ShowDialogForNetworkType(onc_type);
 }
 
-void NetworkConfigMessageHandler::GetHostname(base::Value::ConstListView args) {
+void NetworkConfigMessageHandler::GetHostname(const base::Value::List& args) {
   CHECK_EQ(1u, args.size());
   std::string callback_id = args[0].GetString();
   std::string hostname =

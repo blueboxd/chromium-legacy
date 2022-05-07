@@ -1016,7 +1016,8 @@ void MainThreadSchedulerImpl::SetRendererHidden(bool hidden) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "MainThreadSchedulerImpl::OnRendererHidden");
     main_thread_only().renderer_hidden_metadata.emplace(
-        "MainThreadSchedulerImpl.RendererHidden", /* is_hidden */ 1);
+        "MainThreadSchedulerImpl.RendererHidden", /* is_hidden */ 1,
+        base::SampleMetadataScope::kProcess);
   } else {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                  "MainThreadSchedulerImpl::OnRendererVisible");
@@ -1581,10 +1582,6 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
     new_policy.should_pause_task_queues_for_android_webview() = true;
   }
 
-  if (main_thread_only().use_virtual_time) {
-    new_policy.use_virtual_time() = true;
-  }
-
   if (scheduling_settings_
           .prioritize_compositing_and_loading_during_early_loading &&
       current_use_case() == UseCase::kEarlyLoading) {
@@ -2077,7 +2074,6 @@ void MainThreadSchedulerImpl::Policy::WriteIntoTrace(
   dict.Add("should_pause_task_queues", should_pause_task_queues());
   dict.Add("should_pause_task_queues_for_android_webview",
            should_pause_task_queues_for_android_webview());
-  dict.Add("use_virtual_time", use_virtual_time());
 }
 
 void MainThreadSchedulerImpl::OnIdlePeriodStarted() {

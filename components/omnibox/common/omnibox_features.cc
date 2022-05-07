@@ -280,13 +280,8 @@ const base::Feature kOmniboxPedalsAndroidBatch1{
 const base::Feature kOmniboxPedalsBatch2NonEnglish{
     "OmniboxPedalsBatch2NonEnglish", base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Feature used to enable the third batch of Pedals.
-const base::Feature kOmniboxPedalsBatch3{"OmniboxPedalsBatch3",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Feature used to enable the third batch of Pedals (Find your phone, etc.)
 // for non-English locales (English locales are 'en' and 'en-GB').
-// This feature is only meaningful if `OmniboxPedalsBatch3` is enabled.
 const base::Feature kOmniboxPedalsBatch3NonEnglish{
     "OmniboxPedalsBatch3NonEnglish", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -314,7 +309,7 @@ const base::Feature kBlurWithEscape{"OmniboxBlurWithEscape",
 // chrome://settings/searchEngines. This section contains any search engines
 // that have been used or manually added/modified by the user.
 const base::Feature kActiveSearchEngines{"OmniboxActiveSearchEngines",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // When enabled, adds a "starter pack" of @history, @bookmarks, and @settings
 // scopes to Site Search/Keyword Mode.
@@ -345,4 +340,15 @@ const char kDefaultTypedNavigationsToHttpsTimeoutParam[] = "timeout";
 // Spare renderer warmup for faster website loading.
 const base::Feature kOmniboxSpareRenderer{"OmniboxSpareRenderer",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, Omnibox reports the Assisted Query Stats in the aqs= param in the
+// Search Results Page URL.
+const base::Feature kReportAssistedQueryStats{"OmniboxReportAssistedQueryStats",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+
+// If enabled, Omnibox reports the Searchbox Stats in the gs_lcrp= param in the
+// Search Results Page URL.
+extern const base::Feature kReportSearchboxStats{
+    "OmniboxReportSearchboxStats", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace omnibox

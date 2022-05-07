@@ -587,13 +587,13 @@ TEST_F(ElementTest, ParseFocusgroupAttrDefaultValuesWhenEmptyValue) {
   ASSERT_TRUE(not_fg);
 
   FocusgroupFlags not_fg_flags = not_fg->GetFocusgroupFlags();
-  ASSERT_FALSE(focusgroup::IsFocusgroup(not_fg_flags));
+  ASSERT_EQ(not_fg_flags, FocusgroupFlags::kNone);
 
   auto* fg = document.getElementById("fg");
   ASSERT_TRUE(fg);
 
   FocusgroupFlags fg_flags = fg->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg_flags));
+  ASSERT_NE(fg_flags, FocusgroupFlags::kNone);
 
   ASSERT_TRUE(fg_flags & FocusgroupFlags::kHorizontal);
   ASSERT_TRUE(fg_flags & FocusgroupFlags::kVertical);
@@ -678,11 +678,8 @@ TEST_F(ElementTest, ParseFocusgroupAttrExtendCorrectly) {
         </div>
       </div>
       <div id=fg4 focusgroup></div>
-      <div id=fg-none focusgroup=none>
-        <div id=fg5 focusgroup=extend></div>
-      </div>
     </div>
-    <div id=fg6 focusgroup=extend>
+    <div id=fg5 focusgroup=extend>
   )HTML");
 
   // 1. Root focusgroup shouldn't extend any other.
@@ -690,7 +687,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrExtendCorrectly) {
   ASSERT_TRUE(fg1);
 
   FocusgroupFlags fg1_flags = fg1->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg1_flags));
+  ASSERT_NE(fg1_flags, FocusgroupFlags::kNone);
   ASSERT_FALSE(fg1_flags & FocusgroupFlags::kExtend);
 
   // 2. Direct child on which we specified "extend" should extend.
@@ -698,7 +695,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrExtendCorrectly) {
   ASSERT_TRUE(fg2);
 
   FocusgroupFlags fg2_flags = fg2->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg2_flags));
+  ASSERT_NE(fg2_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg2_flags & FocusgroupFlags::kExtend);
 
   // 3. A focusgroup marked as extend should extend its closest ancestor even if
@@ -707,7 +704,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrExtendCorrectly) {
   ASSERT_TRUE(fg3);
 
   FocusgroupFlags fg3_flags = fg3->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg3_flags));
+  ASSERT_NE(fg3_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg3_flags & FocusgroupFlags::kExtend);
 
   // 4. A focusgroup child of another focusgroup should only extend if the
@@ -716,26 +713,16 @@ TEST_F(ElementTest, ParseFocusgroupAttrExtendCorrectly) {
   ASSERT_TRUE(fg4);
 
   FocusgroupFlags fg4_flags = fg4->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg4_flags));
+  ASSERT_NE(fg4_flags, FocusgroupFlags::kNone);
   ASSERT_FALSE(fg4_flags & FocusgroupFlags::kExtend);
 
-  // 5. When an element has the value "focusgroup=none", it should break any
-  // extend relationship between two focusgroups - in this case, with |fg5|, the
-  // element should be treated as a focusgroup that doesn't extend.
+  // 5. A focusgroup that doesn't have an ancestor focusgroup can't extend.
   auto* fg5 = document.getElementById("fg5");
   ASSERT_TRUE(fg5);
 
   FocusgroupFlags fg5_flags = fg5->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg5_flags));
+  ASSERT_NE(fg5_flags, FocusgroupFlags::kNone);
   ASSERT_FALSE(fg5_flags & FocusgroupFlags::kExtend);
-
-  // 6. A focusgroup that doesn't have an ancestor focusgroup can't extend.
-  auto* fg6 = document.getElementById("fg6");
-  ASSERT_TRUE(fg6);
-
-  FocusgroupFlags fg6_flags = fg6->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg6_flags));
-  ASSERT_FALSE(fg6_flags & FocusgroupFlags::kExtend);
 }
 
 TEST_F(ElementTest, ParseFocusgroupAttrWrapCorrectly) {
@@ -757,7 +744,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrWrapCorrectly) {
   ASSERT_TRUE(fg1);
 
   FocusgroupFlags fg1_flags = fg1->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg1_flags));
+  ASSERT_NE(fg1_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg1_flags & FocusgroupFlags::kWrapHorizontally);
   ASSERT_TRUE(fg1_flags & FocusgroupFlags::kWrapVertically);
 
@@ -767,7 +754,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrWrapCorrectly) {
   ASSERT_TRUE(fg2);
 
   FocusgroupFlags fg2_flags = fg2->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg2_flags));
+  ASSERT_NE(fg2_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg2_flags & FocusgroupFlags::kWrapHorizontally);
   ASSERT_TRUE(fg2_flags & FocusgroupFlags::kWrapVertically);
 
@@ -777,7 +764,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrWrapCorrectly) {
   ASSERT_TRUE(fg3);
 
   FocusgroupFlags fg3_flags = fg3->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg3_flags));
+  ASSERT_NE(fg3_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg3_flags & FocusgroupFlags::kWrapHorizontally);
   ASSERT_FALSE(fg3_flags & FocusgroupFlags::kWrapVertically);
 
@@ -787,7 +774,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrWrapCorrectly) {
   ASSERT_TRUE(fg4);
 
   FocusgroupFlags fg4_flags = fg4->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg4_flags));
+  ASSERT_NE(fg4_flags, FocusgroupFlags::kNone);
   ASSERT_FALSE(fg4_flags & FocusgroupFlags::kWrapHorizontally);
   ASSERT_TRUE(fg4_flags & FocusgroupFlags::kWrapVertically);
 
@@ -797,9 +784,115 @@ TEST_F(ElementTest, ParseFocusgroupAttrWrapCorrectly) {
   ASSERT_TRUE(fg5);
 
   FocusgroupFlags fg5_flags = fg5->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg5_flags));
+  ASSERT_NE(fg5_flags, FocusgroupFlags::kNone);
   ASSERT_FALSE(fg5_flags & FocusgroupFlags::kWrapHorizontally);
   ASSERT_FALSE(fg5_flags & FocusgroupFlags::kWrapVertically);
+}
+
+TEST_F(ElementTest, ParseFocusgroupAttrDoesntWrapInExtendingFocusgroupOnly) {
+  Document& document = GetDocument();
+  SetBodyContent(R"HTML(
+    <div id=fg1 focusgroup>
+      <div id=fg2 focusgroup="extend horizontal wrap"></div>
+      <div id=fg3 focusgroup="extend vertical wrap"></div>
+      <div id=fg4 focusgroup="extend wrap"></div>
+    </div>
+    <div id=fg5 focusgroup=horizontal>
+      <div id=fg6 focusgroup="extend horizontal wrap"></div>
+      <div id=fg7 focusgroup="extend vertical wrap"></div>
+      <div id=fg8 focusgroup="extend wrap"></div>
+    </div>
+    <div id=fg9 focusgroup=vertical>
+      <div id=fg10 focusgroup="extend horizontal wrap"></div>
+      <div id=fg11 focusgroup="extend vertical wrap"></div>
+      <div id=fg12 focusgroup="extend wrap"></div>
+    </div>
+  )HTML");
+
+  auto* fg1 = document.getElementById("fg1");
+  auto* fg2 = document.getElementById("fg2");
+  auto* fg3 = document.getElementById("fg3");
+  auto* fg4 = document.getElementById("fg4");
+  auto* fg5 = document.getElementById("fg5");
+  auto* fg6 = document.getElementById("fg6");
+  auto* fg7 = document.getElementById("fg7");
+  auto* fg8 = document.getElementById("fg8");
+  auto* fg9 = document.getElementById("fg9");
+  auto* fg10 = document.getElementById("fg10");
+  auto* fg11 = document.getElementById("fg11");
+  auto* fg12 = document.getElementById("fg12");
+  ASSERT_TRUE(fg1);
+  ASSERT_TRUE(fg2);
+  ASSERT_TRUE(fg3);
+  ASSERT_TRUE(fg4);
+  ASSERT_TRUE(fg5);
+  ASSERT_TRUE(fg6);
+  ASSERT_TRUE(fg7);
+  ASSERT_TRUE(fg8);
+  ASSERT_TRUE(fg9);
+  ASSERT_TRUE(fg10);
+  ASSERT_TRUE(fg11);
+  ASSERT_TRUE(fg12);
+
+  FocusgroupFlags fg1_flags = fg1->GetFocusgroupFlags();
+  ASSERT_NE(fg1_flags, FocusgroupFlags::kNone);
+  ASSERT_FALSE(fg1_flags & FocusgroupFlags::kWrapHorizontally);
+  ASSERT_FALSE(fg1_flags & FocusgroupFlags::kWrapVertically);
+
+  FocusgroupFlags fg2_flags = fg2->GetFocusgroupFlags();
+  ASSERT_NE(fg2_flags, FocusgroupFlags::kNone);
+  ASSERT_FALSE(fg2_flags & FocusgroupFlags::kWrapHorizontally);
+  ASSERT_FALSE(fg2_flags & FocusgroupFlags::kWrapVertically);
+
+  FocusgroupFlags fg3_flags = fg3->GetFocusgroupFlags();
+  ASSERT_NE(fg3_flags, FocusgroupFlags::kNone);
+  ASSERT_FALSE(fg3_flags & FocusgroupFlags::kWrapHorizontally);
+  ASSERT_FALSE(fg3_flags & FocusgroupFlags::kWrapVertically);
+
+  FocusgroupFlags fg4_flags = fg4->GetFocusgroupFlags();
+  ASSERT_NE(fg4_flags, FocusgroupFlags::kNone);
+  ASSERT_FALSE(fg4_flags & FocusgroupFlags::kWrapHorizontally);
+  ASSERT_FALSE(fg4_flags & FocusgroupFlags::kWrapVertically);
+
+  FocusgroupFlags fg5_flags = fg5->GetFocusgroupFlags();
+  ASSERT_NE(fg5_flags, FocusgroupFlags::kNone);
+  ASSERT_FALSE(fg5_flags & FocusgroupFlags::kWrapHorizontally);
+  ASSERT_FALSE(fg5_flags & FocusgroupFlags::kWrapVertically);
+
+  FocusgroupFlags fg6_flags = fg6->GetFocusgroupFlags();
+  ASSERT_NE(fg6_flags, FocusgroupFlags::kNone);
+  ASSERT_FALSE(fg6_flags & FocusgroupFlags::kWrapHorizontally);
+  ASSERT_FALSE(fg6_flags & FocusgroupFlags::kWrapVertically);
+
+  FocusgroupFlags fg7_flags = fg7->GetFocusgroupFlags();
+  ASSERT_NE(fg7_flags, FocusgroupFlags::kNone);
+  ASSERT_FALSE(fg7_flags & FocusgroupFlags::kWrapHorizontally);
+  ASSERT_TRUE(fg7_flags & FocusgroupFlags::kWrapVertically);
+
+  FocusgroupFlags fg8_flags = fg8->GetFocusgroupFlags();
+  ASSERT_NE(fg8_flags, FocusgroupFlags::kNone);
+  ASSERT_FALSE(fg8_flags & FocusgroupFlags::kWrapHorizontally);
+  ASSERT_TRUE(fg8_flags & FocusgroupFlags::kWrapVertically);
+
+  FocusgroupFlags fg9_flags = fg9->GetFocusgroupFlags();
+  ASSERT_NE(fg9_flags, FocusgroupFlags::kNone);
+  ASSERT_FALSE(fg9_flags & FocusgroupFlags::kWrapHorizontally);
+  ASSERT_FALSE(fg9_flags & FocusgroupFlags::kWrapVertically);
+
+  FocusgroupFlags fg10_flags = fg10->GetFocusgroupFlags();
+  ASSERT_NE(fg10_flags, FocusgroupFlags::kNone);
+  ASSERT_TRUE(fg10_flags & FocusgroupFlags::kWrapHorizontally);
+  ASSERT_FALSE(fg10_flags & FocusgroupFlags::kWrapVertically);
+
+  FocusgroupFlags fg11_flags = fg11->GetFocusgroupFlags();
+  ASSERT_NE(fg11_flags, FocusgroupFlags::kNone);
+  ASSERT_FALSE(fg11_flags & FocusgroupFlags::kWrapHorizontally);
+  ASSERT_FALSE(fg11_flags & FocusgroupFlags::kWrapVertically);
+
+  FocusgroupFlags fg12_flags = fg12->GetFocusgroupFlags();
+  ASSERT_NE(fg12_flags, FocusgroupFlags::kNone);
+  ASSERT_TRUE(fg12_flags & FocusgroupFlags::kWrapHorizontally);
+  ASSERT_FALSE(fg12_flags & FocusgroupFlags::kWrapVertically);
 }
 
 TEST_F(ElementTest, ParseFocusgroupAttrGridCorrectly) {
@@ -829,7 +922,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrGridCorrectly) {
   ASSERT_TRUE(fg1);
 
   FocusgroupFlags fg1_flags = fg1->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg1_flags));
+  ASSERT_NE(fg1_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg1_flags & FocusgroupFlags::kGrid);
   ASSERT_FALSE(fg1_flags & FocusgroupFlags::kHorizontal);
   ASSERT_TRUE(fg1_flags & FocusgroupFlags::kVertical);
@@ -841,7 +934,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrGridCorrectly) {
   ASSERT_TRUE(fg2);
 
   FocusgroupFlags fg2_flags = fg2->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg2_flags));
+  ASSERT_NE(fg2_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg2_flags & FocusgroupFlags::kGrid);
   ASSERT_TRUE(fg2_flags & FocusgroupFlags::kHorizontal);
   ASSERT_FALSE(fg2_flags & FocusgroupFlags::kVertical);
@@ -852,7 +945,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrGridCorrectly) {
   ASSERT_TRUE(fg3);
 
   FocusgroupFlags fg3_flags = fg3->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg3_flags));
+  ASSERT_NE(fg3_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg3_flags & FocusgroupFlags::kGrid);
   ASSERT_TRUE(fg3_flags & FocusgroupFlags::kHorizontal);
   ASSERT_FALSE(fg3_flags & FocusgroupFlags::kVertical);
@@ -863,7 +956,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrGridCorrectly) {
   ASSERT_TRUE(fg4);
 
   FocusgroupFlags fg4_flags = fg4->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg4_flags));
+  ASSERT_NE(fg4_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg4_flags & FocusgroupFlags::kGrid);
   ASSERT_TRUE(fg4_flags & FocusgroupFlags::kHorizontal);
   ASSERT_FALSE(fg4_flags & FocusgroupFlags::kVertical);
@@ -875,7 +968,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrGridCorrectly) {
   ASSERT_TRUE(fg5);
 
   FocusgroupFlags fg5_flags = fg5->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg5_flags));
+  ASSERT_NE(fg5_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg5_flags & FocusgroupFlags::kGrid);
   ASSERT_FALSE(fg5_flags & FocusgroupFlags::kHorizontal);
   ASSERT_TRUE(fg5_flags & FocusgroupFlags::kVertical);
@@ -886,7 +979,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrGridCorrectly) {
   ASSERT_TRUE(fg6);
 
   FocusgroupFlags fg6_flags = fg6->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg6_flags));
+  ASSERT_NE(fg6_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg6_flags & FocusgroupFlags::kGrid);
   ASSERT_TRUE(fg6_flags & FocusgroupFlags::kHorizontal);
   ASSERT_FALSE(fg6_flags & FocusgroupFlags::kVertical);
@@ -898,7 +991,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrGridCorrectly) {
   ASSERT_TRUE(fg7);
 
   FocusgroupFlags fg7_flags = fg7->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg7_flags));
+  ASSERT_NE(fg7_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg7_flags & FocusgroupFlags::kGrid);
   ASSERT_FALSE(fg7_flags & FocusgroupFlags::kHorizontal);
   ASSERT_TRUE(fg7_flags & FocusgroupFlags::kVertical);
@@ -908,22 +1001,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrGridCorrectly) {
   ASSERT_TRUE(fg8);
 
   FocusgroupFlags fg8_flags = fg8->GetFocusgroupFlags();
-  ASSERT_FALSE(focusgroup::IsFocusgroup(fg8_flags));
-}
-
-TEST_F(ElementTest, ParseFocusgroupAttrExplicitlyNoneCorrectly) {
-  Document& document = GetDocument();
-  SetBodyContent(R"HTML(
-    <div id=fg1 focusgroup=none></div>
-  )HTML");
-
-  // "focusgroup=none" should only set the kExplicitlyNone flag.
-  auto* fg1 = document.getElementById("fg1");
-  ASSERT_TRUE(fg1);
-
-  FocusgroupFlags fg1_flags = fg1->GetFocusgroupFlags();
-  ASSERT_FALSE(focusgroup::IsFocusgroup(fg1_flags));
-  ASSERT_TRUE(fg1_flags & FocusgroupFlags::kExplicitlyNone);
+  ASSERT_EQ(fg8_flags, FocusgroupFlags::kNone);
 }
 
 TEST_F(ElementTest, ParseFocusgroupAttrValueRecomputedAfterDOMStructureChange) {
@@ -945,7 +1023,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrValueRecomputedAfterDOMStructureChange) {
   ASSERT_TRUE(fg2);
 
   FocusgroupFlags fg2_flags = fg2->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg2_flags));
+  ASSERT_NE(fg2_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg2_flags & FocusgroupFlags::kExtend);
   ASSERT_TRUE(fg2_flags & FocusgroupFlags::kWrapHorizontally);
   ASSERT_TRUE(fg2_flags & FocusgroupFlags::kWrapVertically);
@@ -954,7 +1032,7 @@ TEST_F(ElementTest, ParseFocusgroupAttrValueRecomputedAfterDOMStructureChange) {
   ASSERT_TRUE(fg3);
 
   FocusgroupFlags fg3_flags = fg3->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg3_flags));
+  ASSERT_NE(fg3_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg3_flags & FocusgroupFlags::kExtend);
   ASSERT_TRUE(fg3_flags & FocusgroupFlags::kWrapHorizontally);
   ASSERT_TRUE(fg3_flags & FocusgroupFlags::kWrapVertically);
@@ -968,13 +1046,13 @@ TEST_F(ElementTest, ParseFocusgroupAttrValueRecomputedAfterDOMStructureChange) {
   // 3. Validate that the focusgroup properties were updated correctly on |fg2|
   // and |fg3| after they moved to a different ancestor.
   fg2_flags = fg2->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg2_flags));
+  ASSERT_NE(fg2_flags, FocusgroupFlags::kNone);
   ASSERT_FALSE(fg2_flags & FocusgroupFlags::kExtend);
   ASSERT_FALSE(fg2_flags & FocusgroupFlags::kWrapHorizontally);
   ASSERT_FALSE(fg2_flags & FocusgroupFlags::kWrapVertically);
 
   fg3_flags = fg3->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg3_flags));
+  ASSERT_NE(fg3_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg3_flags & FocusgroupFlags::kExtend);
   ASSERT_FALSE(fg3_flags & FocusgroupFlags::kWrapHorizontally);
   ASSERT_FALSE(fg3_flags & FocusgroupFlags::kWrapVertically);
@@ -994,14 +1072,14 @@ TEST_F(ElementTest, ParseFocusgroupAttrValueClearedAfterNodeRemoved) {
   ASSERT_TRUE(fg1);
 
   FocusgroupFlags fg1_flags = fg1->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg1_flags));
+  ASSERT_NE(fg1_flags, FocusgroupFlags::kNone);
   ASSERT_FALSE(fg1_flags & FocusgroupFlags::kExtend);
 
   auto* fg2 = document.getElementById("fg2");
   ASSERT_TRUE(fg2);
 
   FocusgroupFlags fg2_flags = fg2->GetFocusgroupFlags();
-  ASSERT_TRUE(focusgroup::IsFocusgroup(fg2_flags));
+  ASSERT_NE(fg2_flags, FocusgroupFlags::kNone);
   ASSERT_TRUE(fg2_flags & FocusgroupFlags::kExtend);
 
   // 2. Remove |fg1| from the DOM.
@@ -1010,10 +1088,10 @@ TEST_F(ElementTest, ParseFocusgroupAttrValueClearedAfterNodeRemoved) {
   // 3. Validate that the focusgroup properties were cleared from both
   // focusgroups.
   fg1_flags = fg1->GetFocusgroupFlags();
-  ASSERT_FALSE(focusgroup::IsFocusgroup(fg1_flags));
+  ASSERT_EQ(fg1_flags, FocusgroupFlags::kNone);
 
   fg2_flags = fg2->GetFocusgroupFlags();
-  ASSERT_FALSE(focusgroup::IsFocusgroup(fg2_flags));
+  ASSERT_EQ(fg2_flags, FocusgroupFlags::kNone);
 }
 
 }  // namespace blink

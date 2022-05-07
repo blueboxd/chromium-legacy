@@ -47,6 +47,14 @@ constexpr int kMaxMigrationAttemptCount = 3;
 const base::Feature kLacrosMoveProfileMigration{
     "LacrosMoveProfileMigration", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Injects the restart function called from
+// `BrowserDataMigratorImpl::AttemptRestart()` in RAII manner.
+class ScopedRestartAttemptForTesting {
+ public:
+  explicit ScopedRestartAttemptForTesting(base::RepeatingClosure callback);
+  ~ScopedRestartAttemptForTesting();
+};
+
 // The interface is exposed to be inherited by fakes in tests.
 class BrowserDataMigrator {
  public:
@@ -147,6 +155,19 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
   BrowserDataMigratorImpl& operator=(const BrowserDataMigratorImpl&) = delete;
   ~BrowserDataMigratorImpl() override;
 
+  // Calls `chrome::AttemptRestart()` unless `ScopedRestartAttemptForTesting` is
+  // in scope.
+  static void AttemptRestart();
+
+  // Check if move migration has to be resumed. This has to be checked before a
+  // Profile object is created using the user's profile data directory. Like
+  // `MaybeRestartToMigrate()` it returns true if the D-Bus call to the
+  // session_manager is made and successful. The return value of true means that
+  // `chrome::AttemptRestart()` has been called.
+  static bool MaybeForceResumeMoveMigration(PrefService* local_state,
+                                            const AccountId& account_id,
+                                            const std::string& user_id_hash);
+
   // Checks if migration is required for the user identified by `user_id_hash`
   // and if it is required, calls a D-Bus method to session_manager and
   // terminates ash-chrome. It returns true if the D-Bus call to the
@@ -156,6 +177,19 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
       const AccountId& account_id,
       const std::string& user_id_hash,
       crosapi::browser_util::PolicyInitState policy_init_state);
+
+  // Very similar to `MaybeRestartToMigrate`, but this checks the disk space in
+  // addition, and reports an error if out of disk space case.
+  // |callback| will be called on completion.
+  // On success, the first argument of the |callback| will be true, and the
+  // second argument should be ignored.
+  // On error, the first argument of the |callback| will be false. If the error
+  // is caused by out-of-disk, the required size to be freed up is passed
+  // to the second argument. Otherwise the second argument is nullopt.
+  static void MaybeRestartToMigrateWithDiskCheck(
+      const AccountId& account_id,
+      const std::string& user_id_hash,
+      base::OnceCallback<void(bool, const absl::optional<uint64_t>&)> callback);
 
   // `BrowserDataMigrator` methods.
   void Migrate(MigrateCallback callback) override;
@@ -176,6 +210,22 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
                            MigrateOutOfDiskForCopy);
   FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorImplTest,
                            MigrateOutOfDiskForMove);
+  FRIEND_TEST_ALL_PREFIXES(BrowserDataMigratorRestartTest,
+                           MaybeRestartToMigrateWithMigrationStep);
+
+  // The common implementation of `MaybeRestartToMigrate` and
+  // `MaybeRestartToMigrateWithDiskCheck`.
+  static bool MaybeRestartToMigrateInternal(
+      const AccountId& account_id,
+      const std::string& user_id_hash,
+      crosapi::browser_util::PolicyInitState policy_init_state);
+
+  // A part of `MaybeRestartToMigrateWithDiskCheck`, runs after the disk check.
+  static void MaybeRestartToMigrateWithDiskCheckAfterDiskCheck(
+      const AccountId& account_id,
+      const std::string& user_id_hash,
+      base::OnceCallback<void(bool, const absl::optional<uint64_t>&)> callback,
+      uint64_t required_size);
 
   // Sets the value of `kMigrationStep` in Local State.
   static void SetMigrationStep(PrefService* local_state, MigrationStep step);
@@ -204,7 +254,8 @@ class BrowserDataMigratorImpl : public BrowserDataMigrator {
   // Called from `MaybeRestartToMigrate()` to proceed with restarting to start
   // the migration. It returns true if D-Bus call was successful.
   static bool RestartToMigrate(const AccountId& account_id,
-                               const std::string& user_id_hash);
+                               const std::string& user_id_hash,
+                               PrefService* local_state);
 
   // Called on UI thread once migration is finished.
   void MigrateInternalFinishedUIThread(MigrationResult result);

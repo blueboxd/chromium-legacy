@@ -136,9 +136,15 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   apps::Permissions CreatePermissions(const WebApp* web_app);
 
   // Creates an |apps::AppPtr| describing |web_app|.
+  // Note: migration in progress. Changes should be made to both |CreateWebApp|
+  // and |ConvertWebApp| until complete.
+  // TODO(crbug.com/1253250): Delete |ConvertWebApp| once migration is complete.
   apps::AppPtr CreateWebApp(const WebApp* web_app);
 
   // Creates an |apps::mojom::App| describing |web_app|.
+  // Note: migration in progress. Changes should be made to both |CreateWebApp|
+  // and |ConvertWebApp| until complete.
+  // TODO(crbug.com/1253250): Delete |ConvertWebApp| once migration is complete.
   apps::mojom::AppPtr ConvertWebApp(const WebApp* web_app);
 
   // Constructs an App with only the information required to identify an
@@ -207,7 +213,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
 
   void OpenNativeSettings(const std::string& app_id);
 
-  apps::mojom::WindowMode GetWindowMode(const std::string& app_id);
+  apps::WindowMode GetWindowMode(const std::string& app_id);
 
   void SetWindowMode(const std::string& app_id,
                      apps::mojom::WindowMode window_mode);
@@ -216,7 +222,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
                            apps::mojom::RunOnOsLoginMode run_on_os_login_mode);
 
   // Converts |display_mode| to a |window_mode|.
-  apps::mojom::WindowMode ConvertDisplayModeToWindowMode(
+  apps::WindowMode ConvertDisplayModeToWindowMode(
       blink::mojom::DisplayMode display_mode);
 
   // Converts RunOnOsLoginMode from apps::mojom::RunOnOsLoginMode to
@@ -225,8 +231,8 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
       apps::mojom::RunOnOsLoginMode login_mode);
 
   // Converts RunOnOsLoginMode from web_app::RunOnOsLoginMode to
-  // apps::mojom::RunOnOsLoginMode.
-  apps::mojom::RunOnOsLoginMode ConvertOsLoginModeToMojom(
+  // apps::RunOnOsLoginMode.
+  apps::RunOnOsLoginMode ConvertOsLoginMode(
       web_app::RunOnOsLoginMode login_mode);
 
   void PublishWindowModeUpdate(const std::string& app_id,
@@ -315,7 +321,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   // NotificationDisplayService::Observer overrides.
   void OnNotificationDisplayed(
       const message_center::Notification& notification,
-      const NotificationCommon::Metadata* const metadata) override;
+      const NotificationCommon::Metadata* metadata) override;
   void OnNotificationClosed(const std::string& notification_id) override;
   void OnNotificationDisplayServiceDestroyed(
       NotificationDisplayService* service) override;
@@ -326,7 +332,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
   void OnRequestUpdate(int render_process_id,
                        int render_frame_id,
                        blink::mojom::MediaStreamType stream_type,
-                       const content::MediaRequestState state) override;
+                       content::MediaRequestState state) override;
 
   // apps::AppWebContentsData::Client:
   void OnWebContentsDestroyed(content::WebContents* contents) override;
@@ -365,7 +371,7 @@ class WebAppPublisherHelper : public AppRegistrarObserver,
                             const std::string& notification_id);
   void MaybeAddWebPageNotifications(
       const message_center::Notification& notification,
-      const NotificationCommon::Metadata* const metadata);
+      const NotificationCommon::Metadata* metadata);
 
   // Returns whether the app should show a badge.
   bool ShouldShowBadge(const std::string& app_id,

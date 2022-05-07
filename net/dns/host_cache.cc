@@ -284,16 +284,13 @@ HostCache::Entry::GetEndpoints() const {
   if (ip_endpoints_.value().empty())
     return endpoints;
 
-  if (endpoint_metadatas_.has_value()) {
-    HttpsRecordPriority last_priority = 0;
-    for (const auto& metadata : endpoint_metadatas_.value()) {
-      // Ensure metadatas are iterated in priority order.
-      DCHECK_GE(metadata.first, last_priority);
-      last_priority = metadata.first;
-
+  absl::optional<std::vector<ConnectionEndpointMetadata>> metadatas =
+      GetMetadatas();
+  if (metadatas.has_value()) {
+    for (ConnectionEndpointMetadata& metadata : metadatas.value()) {
       endpoints.emplace_back();
       endpoints.back().ip_endpoints = ip_endpoints_.value();
-      endpoints.back().metadata = metadata.second;
+      endpoints.back().metadata = std::move(metadata);
     }
   }
 
@@ -302,6 +299,24 @@ HostCache::Entry::GetEndpoints() const {
   endpoints.back().ip_endpoints = ip_endpoints_.value();
 
   return endpoints;
+}
+
+absl::optional<std::vector<ConnectionEndpointMetadata>>
+HostCache::Entry::GetMetadatas() const {
+  if (!endpoint_metadatas_.has_value())
+    return absl::nullopt;
+
+  std::vector<ConnectionEndpointMetadata> metadatas;
+  HttpsRecordPriority last_priority = 0;
+  for (const auto& metadata : endpoint_metadatas_.value()) {
+    // Ensure metadatas are iterated in priority order.
+    DCHECK_GE(metadata.first, last_priority);
+    last_priority = metadata.first;
+
+    metadatas.push_back(metadata.second);
+  }
+
+  return metadatas;
 }
 
 absl::optional<base::TimeDelta> HostCache::Entry::GetOptionalTtl() const {
@@ -328,7 +343,8 @@ HostCache::Entry HostCache::Entry::MergeEntries(Entry front, Entry back) {
   front.MergeAddressesFrom(back);
   MergeLists(&front.text_records_, back.text_records());
   MergeLists(&front.hostnames_, back.hostnames());
-  MergeLists(&front.experimental_results_, back.experimental_results());
+  MergeLists(&front.https_record_compatibility_,
+             back.https_record_compatibility_);
 
   // The DNS aliases include the canonical name(s), if any, each as the
   // first entry in the field, which is an optional vector. If |front| has
@@ -397,7 +413,7 @@ HostCache::Entry::Entry(const HostCache::Entry& entry,
       legacy_addresses_(entry.legacy_addresses()),
       text_records_(entry.text_records()),
       hostnames_(entry.hostnames()),
-      experimental_results_(entry.experimental_results()),
+      https_record_compatibility_(entry.https_record_compatibility_),
       source_(entry.source()),
       pinning_(entry.pinning()),
       ttl_(entry.ttl()),
@@ -414,7 +430,7 @@ HostCache::Entry::Entry(
     const absl::optional<AddressList>& legacy_addresses,
     absl::optional<std::vector<std::string>>&& text_records,
     absl::optional<std::vector<HostPortPair>>&& hostnames,
-    absl::optional<std::vector<bool>>&& experimental_results,
+    absl::optional<std::vector<bool>>&& https_record_compatibility,
     Source source,
     base::TimeTicks expires,
     int network_changes)
@@ -425,13 +441,13 @@ HostCache::Entry::Entry(
       legacy_addresses_(legacy_addresses),
       text_records_(std::move(text_records)),
       hostnames_(std::move(hostnames)),
-      experimental_results_(std::move(experimental_results)),
+      https_record_compatibility_(std::move(https_record_compatibility)),
       source_(source),
       expires_(expires),
       network_changes_(network_changes) {}
 
 void HostCache::Entry::PrepareForCacheInsertion() {
-  experimental_results_.reset();
+  https_record_compatibility_.reset();
 }
 
 bool HostCache::Entry::IsStale(base::TimeTicks now, int network_changes) const {

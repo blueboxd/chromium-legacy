@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
+#include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_iframe_element.h"
@@ -34,6 +35,14 @@ class FencedFrameShadowDOMDelegateTest : private ScopedFencedFramesForTest,
     params["implementation_type"] = "shadow_dom";
     enabled_feature_list_.InitAndEnableFeatureWithParameters(
         features::kFencedFrames, params);
+
+    SecurityContext& security_context =
+        GetDocument().GetFrame()->DomWindow()->GetSecurityContext();
+    security_context.SetSecurityOriginForTesting(nullptr);
+    security_context.SetSecurityOrigin(
+        SecurityOrigin::CreateFromString("https://fencedframedelegate.test"));
+    EXPECT_EQ(security_context.GetSecureContextMode(),
+              SecureContextMode::kSecureContext);
   }
 
   HTMLFencedFrameElement& FencedFrame() {
@@ -71,8 +80,8 @@ TEST_F(FencedFrameShadowDOMDelegateTest, CreateRaw) {
       MakeGarbageCollected<HTMLFencedFrameElement>(GetDocument());
 
   EXPECT_FALSE(fenced_frame->isConnected());
-  EXPECT_NE(nullptr, fenced_frame->UserAgentShadowRoot());
-  EXPECT_EQ("", fenced_frame->UserAgentShadowRoot()->innerHTML());
+  // The ShadowRoot isn't created until the element is connected.
+  EXPECT_EQ(nullptr, fenced_frame->UserAgentShadowRoot());
 
   GetDocument().body()->AppendChild(fenced_frame);
   EXPECT_TRUE(fenced_frame->isConnected());
@@ -97,7 +106,7 @@ TEST_F(FencedFrameShadowDOMDelegateTest, CreateViasetInnerHTML) {
 TEST_F(FencedFrameShadowDOMDelegateTest, AppendRemoveAppend) {
   HTMLFencedFrameElement* fenced_frame =
       MakeGarbageCollected<HTMLFencedFrameElement>(GetDocument());
-  EXPECT_EQ(0u, fenced_frame->UserAgentShadowRoot()->CountChildren());
+  EXPECT_EQ(nullptr, fenced_frame->UserAgentShadowRoot());
 
   // Upon insertion of an HTMLFencedFrameElement, its
   // FencedFrameShadowDOMDelegate creates an internal <iframe>.
@@ -188,13 +197,13 @@ TEST_F(FencedFrameShadowDOMDelegateTest, PresentationAttributes) {
 TEST_F(FencedFrameShadowDOMDelegateTest, NavigationWithInsertionAndRemoval) {
   HTMLFencedFrameElement* fenced_frame =
       MakeGarbageCollected<HTMLFencedFrameElement>(GetDocument());
-  EXPECT_EQ(0u, fenced_frame->UserAgentShadowRoot()->CountChildren());
+  EXPECT_EQ(nullptr, fenced_frame->UserAgentShadowRoot());
   EXPECT_FALSE(fenced_frame->ShouldFreezeFrameSizeOnNextLayoutForTesting());
   EXPECT_FALSE(fenced_frame->FrozenFrameSize());
 
   // Navigation before insertion has no effect.
   fenced_frame->setAttribute(html_names::kSrcAttr, "https://example.com");
-  EXPECT_EQ(0u, fenced_frame->UserAgentShadowRoot()->CountChildren());
+  EXPECT_EQ(nullptr, fenced_frame->UserAgentShadowRoot());
   EXPECT_FALSE(fenced_frame->ShouldFreezeFrameSizeOnNextLayoutForTesting());
   EXPECT_FALSE(fenced_frame->FrozenFrameSize());
 

@@ -21,11 +21,16 @@
 #include "chrome/browser/password_manager/android/password_store_android_backend_bridge.h"
 #include "chrome/browser/password_manager/android/password_store_operation_target.h"
 #include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
+#include "chrome/browser/password_manager/android/password_sync_controller_delegate_bridge_impl.h"
 #include "components/autofill/core/browser/autofill_regexes.h"
 #include "components/password_manager/core/browser/login_database.h"
 #include "components/password_manager/core/browser/password_form.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
 #include "components/password_manager/core/browser/password_store_util.h"
+#include "components/password_manager/core/common/password_manager_features.h"
+#include "components/sync/base/user_selectable_type.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "components/sync/model/proxy_model_type_controller_delegate.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -132,6 +137,15 @@ LoginsResultOrError JoinRetrievedLoginsOrError(
     std::move(logins.begin(), logins.end(), std::back_inserter(joined_logins));
   }
   return joined_logins;
+}
+
+PasswordStoreAndroidBackendBridge::Account GetAccount(
+    absl::optional<std::string> syncing_account) {
+  if (syncing_account.has_value()) {
+    return PasswordStoreAndroidBackendBridge::SyncingAccount(
+        syncing_account.value());
+  }
+  return PasswordStoreOperationTarget::kLocalStorage;
 }
 
 }  // namespace
@@ -246,23 +260,30 @@ void PasswordStoreAndroidBackend::JobReturnHandler::RecordMetrics(
   metrics_recorder_.RecordMetrics(!error.has_value(), std::move(error));
 }
 
-PasswordStoreAndroidBackend::PasswordStoreAndroidBackend()
+PasswordStoreAndroidBackend::PasswordStoreAndroidBackend(
+    std::unique_ptr<SyncDelegate> sync_delegate)
     : lifecycle_helper_(std::make_unique<PasswordManagerLifecycleHelperImpl>()),
       bridge_(PasswordStoreAndroidBackendBridge::Create()),
-      sync_controller_delegate_(
-          std::make_unique<PasswordSyncControllerDelegateAndroid>()) {
+      sync_delegate_(std::move(sync_delegate)) {
   DCHECK(bridge_);
   bridge_->SetConsumer(weak_ptr_factory_.GetWeakPtr());
+  sync_controller_delegate_ =
+      std::make_unique<PasswordSyncControllerDelegateAndroid>(
+          std::make_unique<PasswordSyncControllerDelegateBridgeImpl>(),
+          sync_delegate_.get());
 }
 
 PasswordStoreAndroidBackend::PasswordStoreAndroidBackend(
     base::PassKey<class PasswordStoreAndroidBackendTest>,
     std::unique_ptr<PasswordStoreAndroidBackendBridge> bridge,
-    std::unique_ptr<PasswordManagerLifecycleHelper> lifecycle_helper)
+    std::unique_ptr<PasswordManagerLifecycleHelper> lifecycle_helper,
+    std::unique_ptr<SyncDelegate> sync_delegate,
+    std::unique_ptr<PasswordSyncControllerDelegateAndroid>
+        sync_controller_delegate)
     : lifecycle_helper_(std::move(lifecycle_helper)),
       bridge_(std::move(bridge)),
-      sync_controller_delegate_(
-          std::make_unique<PasswordSyncControllerDelegateAndroid>()) {
+      sync_delegate_(std::move(sync_delegate)),
+      sync_controller_delegate_(std::move(sync_controller_delegate)) {
   DCHECK(bridge_);
   bridge_->SetConsumer(weak_ptr_factory_.GetWeakPtr());
 }
@@ -291,17 +312,16 @@ void PasswordStoreAndroidBackend::Shutdown(
 
 void PasswordStoreAndroidBackend::GetAllLoginsAsync(
     LoginsOrErrorReply callback) {
-  GetAllLoginsForTarget(PasswordStoreOperationTarget::kDefault,
-                        std::move(callback));
+  GetAllLoginsForAccount(GetAccount(sync_delegate_->GetSyncingAccount()),
+                         std::move(callback));
 }
 
 void PasswordStoreAndroidBackend::GetAutofillableLoginsAsync(
     LoginsOrErrorReply callback) {
-  JobId job_id = bridge_->GetAutofillableLogins();
-  QueueNewJob(job_id,
-              JobReturnHandler(
-                  std::move(callback),
-                  MetricsRecorder(MetricInfix("GetAutofillableLoginsAsync"))));
+  JobId job_id = bridge_->GetAutofillableLogins(
+      GetAccount(sync_delegate_->GetSyncingAccount()));
+  QueueNewJob(job_id, std::move(callback),
+              MetricInfix("GetAutofillableLoginsAsync"));
 }
 
 void PasswordStoreAndroidBackend::FillMatchingLoginsAsync(
@@ -339,26 +359,24 @@ void PasswordStoreAndroidBackend::FillMatchingLoginsAsync(
 void PasswordStoreAndroidBackend::AddLoginAsync(
     const PasswordForm& form,
     PasswordStoreChangeListReply callback) {
-  JobId job_id = bridge_->AddLogin(form);
-  QueueNewJob(job_id,
-              JobReturnHandler(std::move(callback),
-                               MetricsRecorder(MetricInfix("AddLoginAsync"))));
+  JobId job_id =
+      bridge_->AddLogin(form, GetAccount(sync_delegate_->GetSyncingAccount()));
+  QueueNewJob(job_id, std::move(callback), MetricInfix("AddLoginAsync"));
 }
 
 void PasswordStoreAndroidBackend::UpdateLoginAsync(
     const PasswordForm& form,
     PasswordStoreChangeListReply callback) {
-  JobId job_id = bridge_->UpdateLogin(form);
-  QueueNewJob(job_id, JobReturnHandler(
-                          std::move(callback),
-                          MetricsRecorder(MetricInfix("UpdateLoginAsync"))));
+  JobId job_id = bridge_->UpdateLogin(
+      form, GetAccount(sync_delegate_->GetSyncingAccount()));
+  QueueNewJob(job_id, std::move(callback), MetricInfix("UpdateLoginAsync"));
 }
 
 void PasswordStoreAndroidBackend::RemoveLoginAsync(
     const PasswordForm& form,
     PasswordStoreChangeListReply callback) {
-  RemoveLoginForTarget(form, PasswordStoreOperationTarget::kDefault,
-                       std::move(callback));
+  RemoveLoginForAccount(form, GetAccount(sync_delegate_->GetSyncingAccount()),
+                        std::move(callback));
 }
 
 void PasswordStoreAndroidBackend::FilterAndRemoveLogins(
@@ -410,16 +428,10 @@ void PasswordStoreAndroidBackend::RemoveLoginsByURLAndTimeAsync(
       ReportMetricsAndInvokeCallbackForStoreModifications(
           MetricInfix("RemoveLoginsByURLAndTimeAsync"), std::move(callback));
 
-  JobId get_logins_job_id =
-      bridge_->GetAllLogins(PasswordStoreOperationTarget::kDefault);
-  QueueNewJob(
-      get_logins_job_id,
-      JobReturnHandler(
-          base::BindOnce(&PasswordStoreAndroidBackend::FilterAndRemoveLogins,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(url_filter),
-                         delete_begin, delete_end,
-                         std::move(record_metrics_and_reply)),
-          MetricsRecorder(MetricInfix("GetAllLoginsAsync"))));
+  GetAllLoginsAsync(base::BindOnce(
+      &PasswordStoreAndroidBackend::FilterAndRemoveLogins,
+      weak_ptr_factory_.GetWeakPtr(), std::move(url_filter), delete_begin,
+      delete_end, std::move(record_metrics_and_reply)));
 }
 
 void PasswordStoreAndroidBackend::RemoveLoginsCreatedBetweenAsync(
@@ -431,18 +443,12 @@ void PasswordStoreAndroidBackend::RemoveLoginsCreatedBetweenAsync(
       ReportMetricsAndInvokeCallbackForStoreModifications(
           MetricInfix("RemoveLoginsCreatedBetweenAsync"), std::move(callback));
 
-  JobId get_logins_job_id =
-      bridge_->GetAllLogins(PasswordStoreOperationTarget::kDefault);
-  QueueNewJob(
-      get_logins_job_id,
-      JobReturnHandler(
-          base::BindOnce(&PasswordStoreAndroidBackend::FilterAndRemoveLogins,
-                         weak_ptr_factory_.GetWeakPtr(),
-                         // Include all urls.
-                         base::BindRepeating([](const GURL&) { return true; }),
-                         delete_begin, delete_end,
-                         std::move(record_metrics_and_reply)),
-          MetricsRecorder(MetricInfix("GetAllLoginsAsync"))));
+  GetAllLoginsAsync(base::BindOnce(
+      &PasswordStoreAndroidBackend::FilterAndRemoveLogins,
+      weak_ptr_factory_.GetWeakPtr(),
+      // Include all urls.
+      base::BindRepeating([](const GURL&) { return true; }), delete_begin,
+      delete_end, std::move(record_metrics_and_reply)));
 }
 
 void PasswordStoreAndroidBackend::DisableAutoSignInForOriginsAsync(
@@ -464,15 +470,10 @@ void PasswordStoreAndroidBackend::DisableAutoSignInForOriginsAsync(
           MetricsRecorder(MetricInfix("DisableAutoSignInForOriginsAsync")),
           std::move(completion));
 
-  JobId get_logins_job_id =
-      bridge_->GetAllLogins(PasswordStoreOperationTarget::kDefault);
-  QueueNewJob(get_logins_job_id,
-              JobReturnHandler(
-                  base::BindOnce(
-                      &PasswordStoreAndroidBackend::FilterAndDisableAutoSignIn,
-                      weak_ptr_factory_.GetWeakPtr(), origin_filter,
-                      std::move(record_metrics_and_run_completion)),
-                  MetricsRecorder(MetricInfix("GetAllLoginsAsync"))));
+  GetAllLoginsAsync(
+      base::BindOnce(&PasswordStoreAndroidBackend::FilterAndDisableAutoSignIn,
+                     weak_ptr_factory_.GetWeakPtr(), origin_filter,
+                     std::move(record_metrics_and_run_completion)));
 }
 
 SmartBubbleStatsStore* PasswordStoreAndroidBackend::GetSmartBubbleStatsStore() {
@@ -485,11 +486,7 @@ FieldInfoStore* PasswordStoreAndroidBackend::GetFieldInfoStore() {
 
 std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
 PasswordStoreAndroidBackend::CreateSyncControllerDelegate() {
-  return std::make_unique<syncer::ProxyModelTypeControllerDelegate>(
-      base::SequencedTaskRunnerHandle::Get(),
-      base::BindRepeating(
-          &PasswordStoreAndroidBackend::GetSyncControllerDelegate,
-          base::Unretained(this)));
+  return sync_controller_delegate_->CreateProxyModelControllerDelegate();
 }
 
 void PasswordStoreAndroidBackend::ClearAllLocalPasswords() {
@@ -523,7 +520,7 @@ void PasswordStoreAndroidBackend::ClearAllLocalPasswords() {
               base::Unretained(raw_recorder));
 
           callbacks_chain = base::BindOnce(
-              &PasswordStoreAndroidBackend::RemoveLoginForTarget, weak_self,
+              &PasswordStoreAndroidBackend::RemoveLoginForAccount, weak_self,
               std::move(*login), PasswordStoreOperationTarget::kLocalStorage,
               std::move(record_removal_result)
                   .Then(std::move(callbacks_chain)));
@@ -534,8 +531,17 @@ void PasswordStoreAndroidBackend::ClearAllLocalPasswords() {
       weak_ptr_factory_.GetWeakPtr(),
       MetricsRecorder(MetricInfix("ClearAllLocalPasswords")));
 
-  GetAllLoginsForTarget(PasswordStoreOperationTarget::kLocalStorage,
-                        std::move(cleaning_callback));
+  GetAllLoginsForAccount(PasswordStoreOperationTarget::kLocalStorage,
+                         std::move(cleaning_callback));
+}
+
+void PasswordStoreAndroidBackend::OnSyncServiceInitialized(
+    syncer::SyncService* sync_service) {
+  if (!sync_service->IsSyncFeatureEnabled() ||
+      !sync_service->GetUserSettings()->GetSelectedTypes().Has(
+          syncer::UserSelectableType::kPasswords)) {
+    sync_controller_delegate_->NotifyCredentialManagerWhenNotSyncing();
+  }
 }
 
 void PasswordStoreAndroidBackend::OnCompleteWithLogins(
@@ -583,15 +589,14 @@ void PasswordStoreAndroidBackend::OnError(JobId job_id,
   }
 }
 
-base::WeakPtr<syncer::ModelTypeControllerDelegate>
-PasswordStoreAndroidBackend::GetSyncControllerDelegate() {
-  return sync_controller_delegate_->GetWeakPtr();
-}
-
+template <typename Callback>
 void PasswordStoreAndroidBackend::QueueNewJob(JobId job_id,
-                                              JobReturnHandler return_handler) {
+                                              Callback callback,
+                                              MetricInfix metric_infix) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(main_sequence_checker_);
-  request_for_job_.emplace(job_id, std::move(return_handler));
+  request_for_job_.emplace(
+      job_id, JobReturnHandler(std::move(callback),
+                               MetricsRecorder(std::move(metric_infix))));
 }
 
 PasswordStoreAndroidBackend::JobReturnHandler
@@ -608,11 +613,12 @@ void PasswordStoreAndroidBackend::GetLoginsAsync(const PasswordFormDigest& form,
                                                  bool include_psl,
                                                  LoginsOrErrorReply callback) {
   JobId job_id = bridge_->GetLoginsForSignonRealm(
-      FormToSignonRealmQuery(form, include_psl));
-  QueueNewJob(job_id, JobReturnHandler(
-                          base::BindOnce(&ValidateSignonRealm, std::move(form),
-                                         include_psl, std::move(callback)),
-                          MetricsRecorder(MetricInfix("GetLoginsAsync"))));
+      FormToSignonRealmQuery(form, include_psl),
+      GetAccount(sync_delegate_->GetSyncingAccount()));
+  QueueNewJob(job_id,
+              base::BindOnce(&ValidateSignonRealm, std::move(form), include_psl,
+                             std::move(callback)),
+              MetricInfix("GetLoginsAsync"));
 }
 
 void PasswordStoreAndroidBackend::FilterAndDisableAutoSignIn(
@@ -691,23 +697,19 @@ PasswordStoreChangeListReply PasswordStoreAndroidBackend::
       MetricsRecorder(metric_infix), std::move(callback));
 }
 
-void PasswordStoreAndroidBackend::GetAllLoginsForTarget(
-    PasswordStoreOperationTarget target,
+void PasswordStoreAndroidBackend::GetAllLoginsForAccount(
+    PasswordStoreAndroidBackendBridge::Account account,
     LoginsOrErrorReply callback) {
-  JobId job_id = bridge_->GetAllLogins(target);
-  QueueNewJob(job_id, JobReturnHandler(
-                          std::move(callback),
-                          MetricsRecorder(MetricInfix("GetAllLoginsAsync"))));
+  JobId job_id = bridge_->GetAllLogins(std::move(account));
+  QueueNewJob(job_id, std::move(callback), MetricInfix("GetAllLoginsAsync"));
 }
 
-void PasswordStoreAndroidBackend::RemoveLoginForTarget(
+void PasswordStoreAndroidBackend::RemoveLoginForAccount(
     const PasswordForm& form,
-    PasswordStoreOperationTarget target,
+    PasswordStoreAndroidBackendBridge::Account account,
     PasswordStoreChangeListReply callback) {
-  JobId job_id = bridge_->RemoveLogin(form, target);
-  QueueNewJob(job_id, JobReturnHandler(
-                          std::move(callback),
-                          MetricsRecorder(MetricInfix("RemoveLoginAsync"))));
+  JobId job_id = bridge_->RemoveLogin(form, std::move(account));
+  QueueNewJob(job_id, std::move(callback), MetricInfix("RemoveLoginAsync"));
 }
 
 void PasswordStoreAndroidBackend::OnForegroundSessionStart() {

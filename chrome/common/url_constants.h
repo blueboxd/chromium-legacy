@@ -27,6 +27,9 @@
 
 namespace chrome {
 
+// "Learn more" URL linked in the dialog to cast using a code.
+extern const char kAccessCodeCastLearnMoreURL[];
+
 // "Learn more" URL for accessibility image labels, linked from the permissions
 // dialog shown when a user enables the feature.
 extern const char kAccessibilityLabelsLearnMoreURL[];
@@ -361,6 +364,9 @@ extern const char kLinuxAppsLearnMoreURL[];
 // The URL for the "Learn more" link for natural scrolling on ChromeOS.
 extern const char kNaturalScrollHelpURL[];
 
+// The URL for the "Learn more" link for touchpad haptic feedback on Chrome OS.
+extern const char kHapticFeedbackHelpURL[];
+
 // The URL path to offline OEM EULA.
 extern const char kOemEulaURLPath[];
 
@@ -444,6 +450,13 @@ extern const char kOutdatedPluginLearnMoreURL[];
 
 // "Learn more" URL for the phone hub notifications and apps access setup.
 extern const char kPhoneHubPermissionLearnMoreURL[];
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_FUCHSIA)
+
+// "Learn more" URL for the chrome apps deprecation dialog.
+extern const char kChromeAppsDeprecationLearnMoreURL[];
+#endif
 
 // Please do not append entries here. See the comments at the top of the file.
 

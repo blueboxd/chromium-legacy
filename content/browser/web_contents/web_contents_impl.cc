@@ -119,6 +119,7 @@
 #include "content/public/browser/download_manager.h"
 #include "content/public/browser/file_select_listener.h"
 #include "content/public/browser/focused_node_details.h"
+#include "content/public/browser/frame_type.h"
 #include "content/public/browser/global_routing_id.h"
 #include "content/public/browser/invalidate_type.h"
 #include "content/public/browser/javascript_dialog_manager.h"
@@ -459,16 +460,13 @@ base::flat_set<WebContentsImpl*>* FullscreenContentsSet(
 
 // Returns true if |host| has the Window Placement permission granted.
 bool IsWindowPlacementGranted(RenderFrameHost* host) {
-  auto* controller =
-      PermissionControllerImpl::FromBrowserContext(host->GetBrowserContext());
+  content::PermissionController* permission_controller =
+      host->GetBrowserContext()->GetPermissionController();
+  DCHECK(permission_controller);
 
-  // TODO(crbug.com/698985): Resolve GetLastCommitted[URL|Origin]() usage.
-  return controller &&
-         controller->GetPermissionStatusForFrame(
-             PermissionType::WINDOW_PLACEMENT, host,
-             PermissionUtil::GetLastCommittedOriginAsURL(
-                 content::WebContents::FromRenderFrameHost(host))) ==
-             blink::mojom::PermissionStatus::GRANTED;
+  return permission_controller->GetPermissionStatusForCurrentDocument(
+             PermissionType::WINDOW_PLACEMENT, host) ==
+         blink::mojom::PermissionStatus::GRANTED;
 }
 
 // Adjust the requested |bounds| for opening or placing a window and return the
@@ -2318,19 +2316,6 @@ void WebContentsImpl::WriteIntoTrace(perfetto::TracedValue context) {
            primary_frame_tree_.root()->frame_tree_node_id());
 }
 
-void WebContentsImpl::DisallowActivationNavigationsForBug1234857() {
-  disallow_activation_navigations_ = true;
-
-  // Flush any inactive frames since they will never be activated.
-  ForEachRenderFrameHost(base::BindRepeating([](RenderFrameHostImpl* rfh) {
-    // Just look at main frames since we only need to call
-    // IsInactiveAndDisallowActivation() on the main frame.
-    if (!rfh->GetParent())
-      rfh->IsInactiveAndDisallowActivation(
-          DisallowActivationReasonId::kBug1234857);
-  }));
-}
-
 const base::Location& WebContentsImpl::GetCreatorLocation() {
   return creator_location_;
 }
@@ -2465,8 +2450,9 @@ void WebContentsImpl::AttachInnerWebContents(
   // the first navigation, but when attaching a new window we don't navigate
   // before attaching. If the browser side is already initialized, the calls
   // below will just early return.
-  inner_render_manager->InitRenderView(inner_main_frame->GetSiteInstance(),
-                                       inner_render_view_host, nullptr);
+  inner_render_manager->InitRenderView(
+      inner_main_frame->GetSiteInstance()->group(), inner_render_view_host,
+      nullptr);
   if (!inner_render_manager->GetRenderWidgetHostView()) {
     inner_web_contents_impl->CreateRenderWidgetHostViewForRenderManager(
         inner_render_view_host);
@@ -2497,7 +2483,7 @@ void WebContentsImpl::AttachInnerWebContents(
       render_frame_host_impl->frame_tree_node()) {
     inner_web_contents_impl->SetFocusedFrame(
         inner_web_contents_impl->primary_frame_tree_.root(),
-        render_frame_host_impl->GetSiteInstance());
+        render_frame_host_impl->GetSiteInstance()->group());
   }
   outer_render_manager->set_attach_complete();
 
@@ -2713,9 +2699,6 @@ const blink::web_pref::WebPreferences WebContentsImpl::ComputeWebPreferences() {
   prefs.canvas_2d_layers_enabled =
       command_line.HasSwitch(switches::kEnableCanvas2DLayers) ||
       base::FeatureList::IsEnabled(features::kEnableCanvas2DLayers);
-  prefs.new_canvas_2d_api_enabled =
-      command_line.HasSwitch(switches::kEnableNewCanvas2DAPI) ||
-      base::FeatureList::IsEnabled(features::kEnableNewCanvas2DAPI);
   prefs.antialiased_2d_canvas_disabled =
       command_line.HasSwitch(switches::kDisable2dCanvasAntialiasing);
   prefs.antialiased_clips_2d_canvas_enabled =
@@ -3074,8 +3057,9 @@ void WebContentsImpl::Init(const WebContents::CreateParams& params,
   if (params.desired_renderer_state ==
       CreateParams::kInitializeAndWarmupRendererProcess) {
     if (!GetRenderManager()->current_frame_host()->IsRenderFrameLive()) {
-      GetRenderManager()->InitRenderView(site_instance.get(),
-                                         GetRenderViewHost(), nullptr);
+      GetRenderManager()->InitRenderView(
+          static_cast<SiteInstanceImpl*>(site_instance.get())->group(),
+          GetRenderViewHost(), nullptr);
     }
   }
 
@@ -3932,8 +3916,10 @@ FrameTree* WebContentsImpl::CreateNewWindow(
   // this named frame have proxies for it.  Must be called after
   // SetSessionStorageNamespace, since this calls CreateRenderView, which uses
   // GetSessionStorageNamespace.
-  if (!params.frame_name.empty())
-    new_contents_impl->GetRenderManager()->CreateProxiesForNewNamedFrame();
+  if (!params.frame_name.empty()) {
+    new_contents_impl->GetRenderManager()->CreateProxiesForNewNamedFrame(
+        new_contents_impl->GetMainFrame()->browsing_context_state());
+  }
 
   // Save the window for later if we're not suppressing the opener (since it
   // will be shown immediately).
@@ -5790,9 +5776,20 @@ void WebContentsImpl::DidNavigateAnyFramePostCommit(
   // we want to guard the dialog cancellations below.
   const bool is_active = render_frame_host->IsActive();
 
-  // If we navigate off the page, close all JavaScript dialogs.
-  if (is_active && !details.is_same_document)
+  // If we navigate off the active non-fenced frame page, close all JavaScript
+  // dialogs. We do not cancel the dialogs for fenced frames because it can be
+  // used as a communication channel. Please see also:
+  // RenderFrameHostManager::UnloadOldFrame in
+  // content/browser/renderer_host/render_frame_host_manager.cc
+  //
+  // TODO(crbug.com/1299379): Note that fenced frames cannot open modal dialogs
+  // so this only affects dialogs outside the fenced frame tree. If this is ever
+  // changed then the navigation should be deferred till the dialog from within
+  // the fenced frame is open.
+  if (is_active && !render_frame_host->IsNestedWithinFencedFrame() &&
+      !details.is_same_document) {
     CancelActiveAndPendingDialogs();
+  }
 
   // If this is a user-initiated navigation, start allowing JavaScript dialogs
   // again.
@@ -7318,8 +7315,10 @@ void WebContentsImpl::DidStartLoading(FrameTreeNode* frame_tree_node,
                                       bool should_show_loading_ui) {
   OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::DidStartLoading",
                         "frame_tree_node", frame_tree_node);
-  LoadingStateChanged(frame_tree_node->IsMainFrame() && should_show_loading_ui,
-                      nullptr);
+  LoadingStateChanged(
+      frame_tree_node->GetFrameType() == FrameType::kPrimaryMainFrame &&
+          should_show_loading_ui,
+      nullptr);
 
   // Reset the focus state from DidStartNavigation to false if a new load starts
   // afterward, in case loading logic triggers a FocusLocationBarByDefault call.
@@ -7469,10 +7468,6 @@ void WebContentsImpl::RegisterExistingOriginToPreventOptInIsolation(
   }
 }
 
-bool WebContentsImpl::IsActivationNavigationDisallowedForBug1234857() {
-  return disallow_activation_navigations_;
-}
-
 void WebContentsImpl::DidChangeName(RenderFrameHostImpl* render_frame_host,
                                     const std::string& name) {
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::DidChangeName",
@@ -7595,11 +7590,9 @@ void WebContentsImpl::UpdateTargetURL(RenderFrameHostImpl* render_frame_host,
 }
 
 bool WebContentsImpl::ShouldRouteMessageEvent(
-    RenderFrameHostImpl* target_rfh,
-    SiteInstance* source_site_instance) const {
-  OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::ShouldRouteMessageEvent",
-                        "render_frame_host", target_rfh, "source_site_instance",
-                        source_site_instance);
+    RenderFrameHostImpl* target_rfh) const {
+  OPTIONAL_TRACE_EVENT1("content", "WebContentsImpl::ShouldRouteMessageEvent",
+                        "render_frame_host", target_rfh);
   // Allow the message if this WebContents is dedicated to a browser plugin
   // guest.
   // Note: This check means that an embedder could theoretically receive a
@@ -7630,10 +7623,11 @@ void WebContentsImpl::EnsureOpenerProxiesExist(
       // process but we intentionally do not expose the embedder's opener chain
       // to it.
       source_web_contents->GetRenderManager()->CreateRenderFrameProxy(
-          GetSiteInstance());
+          GetSiteInstance(),
+          source_web_contents->GetMainFrame()->browsing_context_state());
     } else {
       source_rfh->frame_tree_node()->render_manager()->CreateOpenerProxies(
-          GetSiteInstance(), nullptr);
+          GetSiteInstance(), nullptr, source_rfh->browsing_context_state());
     }
   }
 }
@@ -7675,9 +7669,9 @@ void WebContentsImpl::SetFocusedFrameTree(FrameTree* frame_tree_to_focus) {
 }
 
 void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
-                                      SiteInstance* source) {
+                                      SiteInstanceGroup* source) {
   OPTIONAL_TRACE_EVENT2("content", "WebContentsImpl::SetFocusedFrame",
-                        "frame_tree_node", node, "source_site_instance",
+                        "frame_tree_node", node, "source_site_instance_group",
                         source);
   node->frame_tree()->SetFocusedFrame(node, source);
 
@@ -7707,7 +7701,8 @@ void WebContentsImpl::SetFocusedFrame(FrameTreeNode* node,
   } else if (node_.OuterContentsFrameTreeNode() &&
              node_.OuterContentsFrameTreeNode()
                      ->current_frame_host()
-                     ->GetSiteInstance() == source) {
+                     ->GetSiteInstance()
+                     ->group() == source) {
     // A GuestView embedding a fenced frame will have an
     // OuterContentsFrameTreeNode. However, it will not have the same site
     // instance because a FencedFrame creates a new BrowsingInstance.

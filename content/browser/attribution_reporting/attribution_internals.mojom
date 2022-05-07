@@ -7,8 +7,8 @@ module content.mojom;
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
-// Represents CommonSourceInfo::SourceType.
-enum SourceType {
+// Represents AttributionSourceType.
+enum AttributionSourceType {
   kNavigation,
   kEvent,
 };
@@ -43,6 +43,7 @@ struct WebUIAttributionReport {
     kProhibitedByBrowserPolicy,
     kSent,
     kNetworkError,
+    kNoMatchingSourceFilterData,
   };
 
   Status status;
@@ -64,10 +65,11 @@ struct WebUIAttributionSource {
   url.mojom.Origin reporting_origin;
   double impression_time;
   double expiry_time;
-  SourceType source_type;
+  AttributionSourceType source_type;
   int64 priority;
   AttributionDebugKey? debug_key;
   array<uint64> dedup_keys;
+  map<string, array<string>> filter_data;
 
   // Union of `StorableSource::Result` and `StoredSource::AttributionLogic`,
   // and `AttributionStorage::DeactivatedSource::Reason`.
@@ -76,7 +78,7 @@ struct WebUIAttributionSource {
     // The source was dropped due to `CommonSourceInfo::AttributionLogic::kNever`.
     kNoised,
     kReplacedByNewerSource,
-    kReachedAttributionLimit,
+    kReachedEventLevelAttributionLimit,
     kInternalError,
     kInsufficientSourceCapacity,
     kInsufficientUniqueDestinationCapacity,

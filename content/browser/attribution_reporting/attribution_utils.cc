@@ -6,9 +6,13 @@
 
 #include "base/check.h"
 #include "base/check_op.h"
+#include "base/containers/contains.h"
 #include "base/containers/span.h"
 #include "base/json/json_writer.h"
+#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
+#include "content/browser/attribution_reporting/attribution_filter_data.h"
+#include "content/browser/attribution_reporting/common_source_info.h"
 
 namespace content {
 
@@ -17,16 +21,16 @@ namespace {
 constexpr base::TimeDelta kWindowDeadlineOffset = base::Hours(1);
 
 base::span<const base::TimeDelta> EarlyDeadlines(
-    CommonSourceInfo::SourceType source_type) {
+    AttributionSourceType source_type) {
   static constexpr base::TimeDelta kEarlyDeadlinesNavigation[] = {
       base::Days(2) - kWindowDeadlineOffset,
       base::Days(7) - kWindowDeadlineOffset,
   };
 
   switch (source_type) {
-    case CommonSourceInfo::SourceType::kNavigation:
+    case AttributionSourceType::kNavigation:
       return kEarlyDeadlinesNavigation;
-    case CommonSourceInfo::SourceType::kEvent:
+    case AttributionSourceType::kEvent:
       return base::span<const base::TimeDelta>();
   }
 }
@@ -89,7 +93,7 @@ base::Time ComputeReportTime(const CommonSourceInfo& source,
   return ReportTimeFromDeadline(source.impression_time(), deadline_to_use);
 }
 
-int NumReportWindows(CommonSourceInfo::SourceType source_type) {
+int NumReportWindows(AttributionSourceType source_type) {
   // Add 1 for the expiry deadline.
   return 1 + EarlyDeadlines(source_type).size();
 }
@@ -110,26 +114,6 @@ base::Time ReportTimeAtWindow(const CommonSourceInfo& source,
   return ReportTimeFromDeadline(source.impression_time(), deadline);
 }
 
-uint64_t TriggerDataCardinality(CommonSourceInfo::SourceType source_type) {
-  switch (source_type) {
-    case CommonSourceInfo::SourceType::kNavigation:
-      return 8;
-    case CommonSourceInfo::SourceType::kEvent:
-      return 2;
-  }
-}
-
-double RandomizedTriggerRate(CommonSourceInfo::SourceType source_type) {
-  // Note: When these values are changed from .0024 and/or .0000025, update
-  // `AttributionReport::ReportBody()` per the comment there.
-  switch (source_type) {
-    case CommonSourceInfo::SourceType::kNavigation:
-      return .0024;
-    case CommonSourceInfo::SourceType::kEvent:
-      return .0000025;
-  }
-}
-
 std::string SerializeAttributionJson(const base::Value& body,
                                      bool pretty_print) {
   int options = pretty_print ? base::JSONWriter::OPTIONS_PRETTY_PRINT : 0;
@@ -139,6 +123,59 @@ std::string SerializeAttributionJson(const base::Value& body,
       base::JSONWriter::WriteWithOptions(body, options, &output_json);
   DCHECK(success);
   return output_json;
+}
+
+bool AttributionFilterDataMatch(const AttributionFilterData& source,
+                                const AttributionFilterData& trigger,
+                                bool negated) {
+  // A filter is considered matched if the filter key is only present either on
+  // the source or trigger, or the intersection of the filter values is
+  // non-empty.
+  // Returns true if all the filters matched.
+  //
+  // If the filters are negated, the behavior should be that every single filter
+  // key does not match between the two (negating the function result is not
+  // sufficient by the API definition).
+  return base::ranges::all_of(
+      trigger.filter_values(), [&](const auto& trigger_filter) {
+        auto source_filter = source.filter_values().find(trigger_filter.first);
+        if (source_filter == source.filter_values().end())
+          return true;
+
+        // Desired behavior is to treat any empty set of values as a single
+        // unique value itself. This means:
+        //  - x:[] match x:[] is false when negated, and true otherwise.
+        //  - x:[1,2,3] match x:[] is true when negated, and false otherwise.
+        if (trigger_filter.second.empty()) {
+          return negated != source_filter->second.empty();
+        }
+
+        auto predicate = [&](const std::string& value) {
+          return negated != base::Contains(source_filter->second, value);
+        };
+
+        // Negating filters must ensure no value matches any source-side value,
+        // whereas only one value must match normally.
+        return negated ? base::ranges::all_of(trigger_filter.second, predicate)
+                       : base::ranges::any_of(trigger_filter.second, predicate);
+      });
+}
+
+bool AttributionFiltersMatch(const AttributionFilterData& source_filter_data,
+                             const AttributionFilterData& trigger_filters,
+                             const AttributionFilterData& trigger_not_filters) {
+  if (!trigger_filters.filter_values().empty() &&
+      !AttributionFilterDataMatch(source_filter_data, trigger_filters)) {
+    return false;
+  }
+
+  if (!trigger_not_filters.filter_values().empty() &&
+      !AttributionFilterDataMatch(source_filter_data, trigger_not_filters,
+                                  /*negated=*/true)) {
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace content

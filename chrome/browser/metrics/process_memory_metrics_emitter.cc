@@ -13,7 +13,6 @@
 #include "base/compiler_specific.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
-#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/stringprintf.h"
@@ -114,6 +113,14 @@ const Metric kAllocatorDumpNamesForMetrics[] = {
     {"blink_gc", "BlinkGC.AllocatedObjects", MetricSize::kLarge,
      kAllocatedObjectsSize, EmitTo::kSizeInUkmAndUma,
      &Memory_Experimental::SetBlinkGC_AllocatedObjects},
+    {"blink_gc", "BlinkGC.Fragmentation", MetricSize::kPercentage,
+     "fragmentation", EmitTo::kSizeInUmaOnly, nullptr},
+    {"blink_gc/main", "BlinkGC.Main.Heap", MetricSize::kLarge, kEffectiveSize,
+     EmitTo::kSizeInUmaOnly, nullptr},
+    {"blink_gc/main", "BlinkGC.Main.Heap.AllocatedObjects", MetricSize::kLarge,
+     kAllocatedObjectsSize, EmitTo::kSizeInUmaOnly, nullptr},
+    {"blink_gc/main", "BlinkGC.Main.Heap.Fragmentation",
+     MetricSize::kPercentage, "fragmentation", EmitTo::kSizeInUmaOnly, nullptr},
     {"blink_objects/Document", "NumberOfDocuments", MetricSize::kTiny,
      MemoryAllocatorDump::kNameObjectCount, EmitTo::kCountsInUkmAndSizeInUma,
      &Memory_Experimental::SetNumberOfDocuments},
@@ -786,14 +793,6 @@ void EmitProcessUmaAndUkm(const GlobalMemoryDump::ProcessDump& pmd,
 #endif
   MEMORY_METRICS_HISTOGRAM_MB(GetPrivateFootprintHistogramName(process_type),
                               pmd.os_dump().private_footprint_kb / kKiB);
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (process_type == HistogramProcessType::kBrowser && profile_manager &&
-      profile_manager->GetZombieProfileCount() > 0) {
-    // Measure impact of the DestroyProfileOnBrowserClose experiment.
-    MEMORY_METRICS_HISTOGRAM_MB(
-        GetPrivateFootprintHistogramName(process_type) + ".HasZombieProfile",
-        pmd.os_dump().private_footprint_kb / kKiB);
-  }
   MEMORY_METRICS_HISTOGRAM_MB(std::string(kMemoryHistogramPrefix) +
                                   process_name + ".SharedMemoryFootprint",
                               pmd.os_dump().shared_footprint_kb / kKiB);
@@ -828,7 +827,7 @@ void EmitSummedGpuMemory(const GlobalMemoryDump::ProcessDump& pmd,
                              &Memory_Experimental::SetGpuMemory};
 
   uint64_t total = 0;
-  for (size_t i = 0; i < base::size(gpu_categories); ++i) {
+  for (size_t i = 0; i < std::size(gpu_categories); ++i) {
     total +=
         pmd.GetMetric(gpu_categories[i], synthetic_metric.metric).value_or(0);
   }
@@ -1224,13 +1223,6 @@ void ProcessMemoryMetricsEmitter::CollateResults() {
 #endif
     UMA_HISTOGRAM_MEMORY_LARGE_MB("Memory.Total.PrivateMemoryFootprint",
                                   private_footprint_total_kb / kKiB);
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    if (profile_manager && profile_manager->GetZombieProfileCount() > 0) {
-      // Measure impact of the DestroyProfileOnBrowserClose experiment.
-      UMA_HISTOGRAM_MEMORY_LARGE_MB(
-          "Memory.Total.PrivateMemoryFootprint.HasZombieProfile",
-          private_footprint_total_kb / kKiB);
-    }
     // The pseudo metric of Memory.Total.PrivateMemoryFootprint. Only used to
     // assess field trial data quality.
     UMA_HISTOGRAM_MEMORY_LARGE_MB(

@@ -480,6 +480,15 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
       @"microphoneCaptureState" : @"webViewMicrophoneCaptureStateDidChange",
     }];
   }
+
+  if (@available(iOS 15.4, *)) {
+    if (base::FeatureList::IsEnabled(web::features::kEnableFullscreenAPI)) {
+      [observers addEntriesFromDictionary:@{
+        @"fullscreenState" : @"fullscreenStateDidChange"
+      }];
+    }
+  }
+
   return observers;
 }
 
@@ -1490,6 +1499,25 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   }
 }
 
+#if defined(__IPHONE_15_4) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_15_4
+CrFullscreenState CrFullscreenStateFromWKFullscreenState(
+    WKFullscreenState state) API_AVAILABLE(ios(15.4)) {
+  switch (state) {
+    case WKFullscreenStateEnteringFullscreen:
+      return CrFullscreenState::kEnteringFullscreen;
+    case WKFullscreenStateExitingFullscreen:
+      return CrFullscreenState::kExitingFullscreen;
+    case WKFullscreenStateInFullscreen:
+      return CrFullscreenState::kInFullscreen;
+    case WKFullscreenStateNotInFullscreen:
+      return CrFullscreenState::kNotInFullScreen;
+    default:
+      NOTREACHED();
+      return CrFullscreenState::kNotInFullScreen;
+  }
+}
+#endif  // defined (__IPHONE_15_4)
+
 #pragma mark - Security Helpers
 
 - (void)updateSSLStatusForCurrentNavigationItem {
@@ -1633,9 +1661,23 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
   if (!self.webView || [_containerView webViewContentView])
     return;
 
-  CRWWebViewContentView* webViewContentView =
-      [[CRWWebViewContentView alloc] initWithWebView:self.webView
-                                          scrollView:self.webScrollView];
+#if defined(__IPHONE_15_4) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_15_4
+  if (@available(iOS 15.4, *)) {
+    CRWWebViewContentView* webViewContentView = [[CRWWebViewContentView alloc]
+        initWithWebView:self.webView
+             scrollView:self.webScrollView
+        fullscreenState:CrFullscreenStateFromWKFullscreenState(
+                            self.webView.fullscreenState)];
+    [_containerView displayWebViewContentView:webViewContentView];
+    return;
+  }
+#endif  // defined(__IPHONE_15_4)
+
+  CRWWebViewContentView* webViewContentView = [[CRWWebViewContentView alloc]
+      initWithWebView:self.webView
+           scrollView:self.webScrollView
+      fullscreenState:CrFullscreenState::kNotInFullScreen];
+
   [_containerView displayWebViewContentView:webViewContentView];
 }
 
@@ -1794,6 +1836,16 @@ typedef void (^ViewportStateCompletion)(const web::PageViewportState*);
 // Called when WKWebView microphoneCaptureState property has changed.
 - (void)webViewMicrophoneCaptureStateDidChange API_AVAILABLE(ios(15.0)) {
   self.webStateImpl->OnStateChangedForPermission(web::PermissionMicrophone);
+}
+
+- (void)fullscreenStateDidChange {
+#if defined(__IPHONE_15_4) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_15_4
+  if (@available(iOS 15.4, *)) {
+    [_containerView updateWebViewContentViewFullscreenState:
+                        CrFullscreenStateFromWKFullscreenState(
+                            self.webView.fullscreenState)];
+  }
+#endif  // defined (__IPHONE_15_4)
 }
 
 #pragma mark - CRWWebViewHandlerDelegate

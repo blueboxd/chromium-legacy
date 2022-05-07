@@ -87,7 +87,7 @@ V4L2VideoDecoder::GetSupportedConfigs() {
     return absl::nullopt;
 
   auto configs = device->GetSupportedDecodeProfiles(
-      base::size(kSupportedInputFourccs), kSupportedInputFourccs);
+      std::size(kSupportedInputFourccs), kSupportedInputFourccs);
 
   if (configs.empty())
     return absl::nullopt;
@@ -107,6 +107,8 @@ V4L2VideoDecoder::V4L2VideoDecoder(
       weak_this_for_polling_factory_(this) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   VLOGF(2);
+
+  base::PlatformThread::SetName("V4L2VideoDecoderThread");
 
   weak_this_for_polling_ = weak_this_for_polling_factory_.GetWeakPtr();
 }

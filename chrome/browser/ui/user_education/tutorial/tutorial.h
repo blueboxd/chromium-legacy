@@ -62,12 +62,13 @@ class Tutorial {
     BuildFromDescriptionStep(const TutorialDescription::Step& step,
                              absl::optional<std::pair<int, int>> progress,
                              bool is_last_step,
+                             bool can_be_restarted,
                              TutorialService* tutorial_service);
 
     StepBuilder& SetAnchorElementID(ui::ElementIdentifier anchor_element_id);
     StepBuilder& SetAnchorElementName(std::string anchor_element_name);
-    StepBuilder& SetTitleText(absl::optional<std::u16string> title_text_);
-    StepBuilder& SetBodyText(std::u16string body_text_);
+    StepBuilder& SetTitleTextID(int title_text_id);
+    StepBuilder& SetBodyTextID(int body_text_id);
     // Sets the step type; `event_type_` should be set only for custom events.
     StepBuilder& SetStepType(
         ui::InteractionSequence::StepType step_type_,
@@ -79,6 +80,7 @@ class Tutorial {
     StepBuilder& SetTransitionOnlyOnEvent(bool transition_only_on_event_);
     StepBuilder& SetNameElementsCallback(
         TutorialDescription::NameElementsCallback name_elements_callback_);
+    StepBuilder& SetCanBeRestarted(bool can_be_restarted_);
 
     std::unique_ptr<ui::InteractionSequence::Step> Build(
         TutorialService* tutorial_service);
@@ -86,6 +88,7 @@ class Tutorial {
    private:
     absl::optional<std::pair<int, int>> progress;
     bool is_last_step = false;
+    bool can_be_restarted = false;
 
     ui::InteractionSequence::StepStartCallback BuildStartCallback(
         TutorialService* tutorial_service);

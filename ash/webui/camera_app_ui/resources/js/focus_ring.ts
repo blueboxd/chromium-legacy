@@ -2,10 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import {
-  assert,
-  assertInstanceof,
-} from './assert.js';
+import {assert} from './assert.js';
 import {cssStyle} from './css.js';
 import * as dom from './dom.js';
 import {getStyleValueInPx} from './util.js';
@@ -63,20 +60,25 @@ function showFocus(el: HTMLElement) {
   ringCSSStyle.setProperty('left', `${(uiRect.left + uiRect.right) / 2}px`);
 }
 
+/**
+ * Initializes DOM elements and observers used for focus ring.
+ */
 export function initialize(): void {
   ring = dom.get('#focus-ring', HTMLElement);
   ringCSSStyle = cssStyle('#focus-ring');
 
-  const setup = (el: HTMLElement) => {
+  function setup(el: HTMLElement) {
     el.addEventListener('focus', () => showFocus(el));
     if (el === document.activeElement) {
       showFocus(el);
     }
-  };
+  }
 
-  dom.getAll('[tabindex]', HTMLElement).forEach(setup);
+  for (const el of dom.getAll('[tabindex]', HTMLElement)) {
+    setup(el);
+  }
   const observer = new MutationObserver((mutationList) => {
-    mutationList.forEach((mutation) => {
+    for (const mutation of mutationList) {
       assert(mutation.type === 'childList');
       // Only the newly added nodes with [tabindex] are considered here. So
       // simply adding class attribute on existing element will not work.
@@ -84,12 +86,11 @@ export function initialize(): void {
         if (!(node instanceof HTMLElement)) {
           continue;
         }
-        const el = assertInstanceof(node, HTMLElement);
-        if (el.hasAttribute('tabindex')) {
-          setup(el);
+        if (node.hasAttribute('tabindex')) {
+          setup(node);
         }
       }
-    });
+    }
   });
   observer.observe(document.body, {
     subtree: true,

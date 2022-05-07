@@ -237,8 +237,8 @@ interface AppHistory : EventTarget
     attribute @@toStringTag
     getter canGoBack
     getter canGoForward
-    getter current
-    getter oncurrentchange
+    getter currentEntry
+    getter oncurrententrychange
     getter onnavigate
     getter onnavigateerror
     getter onnavigatesuccess
@@ -247,11 +247,11 @@ interface AppHistory : EventTarget
     method constructor
     method entries
     method forward
-    method goTo
     method navigate
     method reload
-    method updateCurrent
-    setter oncurrentchange
+    method traverseTo
+    method updateCurrentEntry
+    setter oncurrententrychange
     setter onnavigate
     setter onnavigateerror
     setter onnavigatesuccess
@@ -696,6 +696,7 @@ interface CSSColorValue
     attribute @@toStringTag
     method constructor
     method toHSL
+    method toHWB
     method toRGB
 interface CSSConditionRule : CSSGroupingRule
     attribute @@toStringTag
@@ -757,6 +758,17 @@ interface CSSHSL : CSSColorValue
     setter h
     setter l
     setter s
+interface CSSHWB : CSSColorValue
+    attribute @@toStringTag
+    getter alpha
+    getter b
+    getter h
+    getter w
+    method constructor
+    setter alpha
+    setter b
+    setter h
+    setter w
 interface CSSImageValue : CSSStyleValue
     attribute @@toStringTag
     method constructor
@@ -1285,9 +1297,9 @@ interface CloseWatcher : EventTarget
     attribute @@toStringTag
     getter oncancel
     getter onclose
+    method close
     method constructor
     method destroy
-    method signalClosed
     setter oncancel
     setter onclose
 interface Comment : CharacterData
@@ -2650,15 +2662,15 @@ interface FeaturePolicy
     method getAllowlistForFeature
 interface FederatedCredential : Credential
     static method logoutRps
-    static method revoke
     attribute @@toStringTag
-    getter approvedBy
     getter iconURL
-    getter idToken
     getter name
     getter protocol
     getter provider
     method constructor
+    method login
+    method logout
+    method revoke
 interface File : Blob
     attribute @@toStringTag
     getter lastModified
@@ -2941,7 +2953,6 @@ interface HTMLAnchorElement : HTMLElement
     getter port
     getter protocol
     getter referrerPolicy
-    getter registerAttributionSource
     getter rel
     getter relList
     getter rev
@@ -2974,7 +2985,6 @@ interface HTMLAnchorElement : HTMLElement
     setter port
     setter protocol
     setter referrerPolicy
-    setter registerAttributionSource
     setter rel
     setter relList
     setter rev
@@ -3680,9 +3690,9 @@ interface HTMLImageElement : HTMLElement
     getter crossOrigin
     getter currentSrc
     getter decoding
+    getter fetchpriority
     getter height
     getter hspace
-    getter importance
     getter isMap
     getter loading
     getter longDesc
@@ -3707,9 +3717,9 @@ interface HTMLImageElement : HTMLElement
     setter border
     setter crossOrigin
     setter decoding
+    setter fetchpriority
     setter height
     setter hspace
-    setter importance
     setter isMap
     setter loading
     setter longDesc
@@ -3846,14 +3856,15 @@ interface HTMLLegendElement : HTMLElement
 interface HTMLLinkElement : HTMLElement
     attribute @@toStringTag
     getter as
+    getter blocking
     getter charset
     getter crossOrigin
     getter disabled
+    getter fetchpriority
     getter href
     getter hreflang
     getter imageSizes
     getter imageSrcset
-    getter importance
     getter integrity
     getter media
     getter referrerPolicy
@@ -3868,14 +3879,15 @@ interface HTMLLinkElement : HTMLElement
     getter type
     method constructor
     setter as
+    setter blocking
     setter charset
     setter crossOrigin
     setter disabled
+    setter fetchpriority
     setter href
     setter hreflang
     setter imageSizes
     setter imageSrcset
-    setter importance
     setter integrity
     setter media
     setter referrerPolicy
@@ -4199,12 +4211,13 @@ interface HTMLScriptElement : HTMLElement
     static method supports
     attribute @@toStringTag
     getter async
+    getter blocking
     getter charset
     getter crossOrigin
     getter defer
     getter event
+    getter fetchpriority
     getter htmlFor
-    getter importance
     getter integrity
     getter noModule
     getter referrerPolicy
@@ -4213,12 +4226,13 @@ interface HTMLScriptElement : HTMLElement
     getter type
     method constructor
     setter async
+    setter blocking
     setter charset
     setter crossOrigin
     setter defer
     setter event
+    setter fetchpriority
     setter htmlFor
-    setter importance
     setter integrity
     setter noModule
     setter referrerPolicy
@@ -4314,11 +4328,13 @@ interface HTMLSpanElement : HTMLElement
     method constructor
 interface HTMLStyleElement : HTMLElement
     attribute @@toStringTag
+    getter blocking
     getter disabled
     getter media
     getter sheet
     getter type
     method constructor
+    setter blocking
     setter disabled
     setter media
     setter type
@@ -4802,9 +4818,9 @@ interface Image
     getter crossOrigin
     getter currentSrc
     getter decoding
+    getter fetchpriority
     getter height
     getter hspace
-    getter importance
     getter isMap
     getter loading
     getter longDesc
@@ -4829,9 +4845,9 @@ interface Image
     setter border
     setter crossOrigin
     setter decoding
+    setter fetchpriority
     setter height
     setter hspace
-    setter importance
     setter isMap
     setter loading
     setter longDesc
@@ -5811,7 +5827,6 @@ interface Navigator
     getter geolocation
     getter hardwareConcurrency
     getter hid
-    getter id
     getter ink
     getter keyboard
     getter language
@@ -6340,7 +6355,7 @@ interface PerformanceEntry
     getter duration
     getter entryType
     getter name
-    getter navigationCount
+    getter navigationId
     getter startTime
     method constructor
     method toJSON
@@ -9079,6 +9094,7 @@ interface USBDevice
     method constructor
     method controlTransferIn
     method controlTransferOut
+    method forget
     method isochronousTransferIn
     method isochronousTransferOut
     method open
@@ -9253,6 +9269,13 @@ interface VideoTrack
     getter sourceBuffer
     method constructor
     setter selected
+interface VideoTrackGenerator
+    attribute @@toStringTag
+    getter muted
+    getter track
+    getter writable
+    method constructor
+    setter muted
 interface VideoTrackList : EventTarget
     attribute @@toStringTag
     getter length
@@ -10603,10 +10626,6 @@ interface WebGLUniformLocation
 interface WebGLVertexArrayObject
     attribute @@toStringTag
     method constructor
-interface WebId
-    attribute @@toStringTag
-    method constructor
-    method provide
 interface WebKitCSSMatrix : DOMMatrixReadOnly
     attribute @@toStringTag
     getter a
@@ -11389,6 +11408,12 @@ namespace CSS
     method Q
     method ch
     method cm
+    method cqb
+    method cqh
+    method cqi
+    method cqmax
+    method cqmin
+    method cqw
     method deg
     method dpcm
     method dpi
@@ -11419,12 +11444,6 @@ namespace CSS
     method percent
     method pt
     method px
-    method qb
-    method qh
-    method qi
-    method qmax
-    method qmin
-    method qw
     method rad
     method registerProperty
     method rem
@@ -11456,7 +11475,6 @@ namespace CSS
     attribute testRunner
     attribute textInputController
     getter anonymous
-    getter appHistory
     getter attributionReporting
     getter caches
     getter clientInformation
@@ -11485,6 +11503,7 @@ namespace CSS
     getter locationbar
     getter menubar
     getter name
+    getter navigation
     getter navigator
     getter offscreenBuffering
     getter onabort
@@ -11706,6 +11725,7 @@ namespace CSS
     setter locationbar
     setter menubar
     setter name
+    setter navigation
     setter offscreenBuffering
     setter onabort
     setter onafterprint

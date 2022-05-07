@@ -98,6 +98,8 @@ component("bindings_base") {
     "map_traits_stl.h",
     "message.h",
     "message_header_validator.h",
+    "message_metadata_helpers.h",
+    "optional_as_pointer.h",
     "scoped_interface_endpoint_handle.h",
     "scoped_message_error_crash_key.cc",
     "scoped_message_error_crash_key.h",
@@ -135,7 +137,6 @@ component("bindings_base") {
 component("bindings") {
   sources = [
     "associated_interface_ptr_info.h",
-    "associated_interface_request.h",
     "associated_receiver.h",
     "associated_receiver_set.h",
     "associated_remote.h",
@@ -151,9 +152,6 @@ component("bindings") {
     "generic_pending_receiver.h",
     "interface_endpoint_client.h",
     "interface_endpoint_controller.h",
-    "interface_ptr.h",
-    "interface_ptr_info.h",
-    "interface_request.h",
     "lib/associated_interface_ptr_state.cc",
     "lib/associated_interface_ptr_state.h",
     "lib/associated_receiver.cc",

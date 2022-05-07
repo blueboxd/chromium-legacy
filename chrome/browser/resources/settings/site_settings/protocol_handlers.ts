@@ -28,14 +28,6 @@ import {getTemplate} from './protocol_handlers.html.js';
 
 import {SiteSettingsMixin} from './site_settings_mixin.js';
 
-/**
- * All possible actions in the menu.
- */
-enum MenuActions {
-  SET_DEFAULT = 'SetDefault',
-  REMOVE = 'Remove',
-}
-
 export type HandlerEntry = {
   host: string,
   is_default: boolean,
@@ -154,7 +146,7 @@ export class ProtocolHandlersElement extends ProtocolHandlersElementBase {
   ignoredProtocols: Array<HandlerEntry>;
   private handlersEnabledPref_: chrome.settingsPrivate.PrefObject;
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.addWebUIListener(

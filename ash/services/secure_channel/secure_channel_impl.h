@@ -11,28 +11,23 @@
 #include <vector>
 
 #include "ash/services/secure_channel/active_connection_manager.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "ash/services/secure_channel/ble_connection_manager.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "ash/services/secure_channel/ble_scanner.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "ash/services/secure_channel/ble_synchronizer_base.h"
 #include "ash/services/secure_channel/connection_attempt_details.h"
 #include "ash/services/secure_channel/pending_connection_manager.h"
 #include "ash/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "base/containers/flat_map.h"
+// TODO(https://crbug.com/1164001): move to forward declaration.
 #include "chromeos/components/multidevice/remote_device_cache.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 
 namespace device {
 class BluetoothAdapter;
-}  // namespace device
+}
 
-namespace chromeos {
+namespace ash::secure_channel {
 
-namespace secure_channel {
-
+class BleConnectionManager;
+class BleScanner;
+class BleSynchronizerBase;
 class BluetoothHelper;
 class NearbyConnectionManager;
 class SecureChannelDisconnector;
@@ -200,8 +195,6 @@ class SecureChannelImpl : public mojom::SecureChannel,
 std::ostream& operator<<(std::ostream& stream,
                          const SecureChannelImpl::ApiFunctionName& role);
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_SECURE_CHANNEL_IMPL_H_

@@ -84,6 +84,7 @@
 #include "content/web_test/common/web_test_constants.h"
 #include "content/web_test/common/web_test_string_util.h"
 #include "content/web_test/common/web_test_switches.h"
+#include "ipc/ipc_channel_proxy.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -1818,6 +1819,12 @@ void WebTestControlHost::PrepareRendererForNextWebTest() {
   params.transition_type = ui::PageTransitionFromInt(ui::PAGE_TRANSITION_TYPED);
   params.should_clear_history_list = true;
   params.initiator_origin = url::Origin();  // Opaque initiator.
+  // We should always reset the browsing instance, but it slows down tests
+  // significantly. For efficiency, this is limited to tests known to be
+  // affected.
+  params.force_new_browsing_instance =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kResetBrowsingInstanceBetweenTests);
   web_contents->GetController().LoadURLWithParams(params);
 
   // The navigation might have to wait for before unload handler to execute. The

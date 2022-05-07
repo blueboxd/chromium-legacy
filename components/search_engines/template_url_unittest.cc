@@ -2,25 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "components/search_engines/template_url.h"
+
 #include <stddef.h>
 
 #include "base/base64.h"
 #include "base/base_paths.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/i18n/case_conversion.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "components/google/core/common/google_util.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/search_engines/search_engines_switches.h"
 #include "components/search_engines/search_terms_data.h"
-#include "components/search_engines/template_url.h"
 #include "components/search_engines/testing_search_terms_data.h"
 #include "net/base/url_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/metrics_proto/chrome_searchbox_stats.pb.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 #include "third_party/metrics_proto/omnibox_input_type.pb.h"
 
@@ -90,7 +92,7 @@ TEST_F(TemplateURLTest, URLRefTestSearchTerms) {
        "http://foo/?boo=sea+rch%2Fbar"},
       {"http://en.wikipedia.org/{searchTerms}", u"wiki/?",
        "http://en.wikipedia.org/wiki/%3F"}};
-  for (size_t i = 0; i < base::size(search_term_cases); ++i) {
+  for (size_t i = 0; i < std::size(search_term_cases); ++i) {
     const SearchTermsCase& value = search_term_cases[i];
     TemplateURLData data;
     data.SetURL(value.url);
@@ -395,7 +397,7 @@ TEST_F(TemplateURLTest, URLRefTestSearchTermsUsingTermsData) {
 
   TestingSearchTermsData search_terms_data("http://example.com/e/");
   TemplateURLData data;
-  for (size_t i = 0; i < base::size(search_term_cases); ++i) {
+  for (size_t i = 0; i < std::size(search_term_cases); ++i) {
     const SearchTermsCase& value = search_term_cases[i];
     data.SetURL(value.url);
     TemplateURL url(data);
@@ -436,7 +438,7 @@ TEST_F(TemplateURLTest, URLRefTermToWide) {
   TemplateURL url(data);
   EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
   ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
-  for (size_t i = 0; i < base::size(to_wide_cases); i++) {
+  for (size_t i = 0; i < std::size(to_wide_cases); i++) {
     EXPECT_EQ(to_wide_cases[i].expected_decoded_term,
               url.url_ref().SearchTermToString16(
                   to_wide_cases[i].encoded_search_term));
@@ -455,7 +457,7 @@ TEST_F(TemplateURLTest, DisplayURLToURLRef) {
       {"http://foo{searchTerms}{language}", u"http://foo%s{language}"},
   };
   TemplateURLData data;
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     data.SetURL(test_data[i].url);
     TemplateURL url(data);
     EXPECT_EQ(test_data[i].expected_result,
@@ -498,7 +500,7 @@ TEST_F(TemplateURLTest, ReplaceSearchTerms) {
   };
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     data.SetURL(test_data[i].url);
     TemplateURL url(data);
     EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
@@ -534,7 +536,7 @@ TEST_F(TemplateURLTest, ReplaceArbitrarySearchTerms) {
        "http://foo/%82%A0%20%82%A2/bar"},
   };
   TemplateURLData data;
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     data.SetURL(test_data[i].url);
     data.input_encodings.clear();
     data.input_encodings.push_back(test_data[i].encoding);
@@ -586,7 +588,7 @@ TEST_F(TemplateURLTest, ReplaceSearchTermsMultipleEncodings) {
   };
 
   TemplateURLData data;
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     data.SetURL(test_data[i].url);
     data.input_encodings = test_data[i].encodings;
     TemplateURL url(data);
@@ -602,6 +604,9 @@ TEST_F(TemplateURLTest, ReplaceSearchTermsMultipleEncodings) {
 
 // Tests replacing assisted query stats (AQS) in various scenarios.
 TEST_F(TemplateURLTest, ReplaceAssistedQueryStats) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({omnibox::kReportAssistedQueryStats}, {});
+
   struct TestData {
     const std::u16string search_term;
     const std::string aqs;
@@ -632,7 +637,7 @@ TEST_F(TemplateURLTest, ReplaceAssistedQueryStats) {
   };
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     data.SetURL(test_data[i].url);
     TemplateURL url(data);
     EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
@@ -644,6 +649,118 @@ TEST_F(TemplateURLTest, ReplaceAssistedQueryStats) {
                                                  search_terms_data_));
     ASSERT_TRUE(result.is_valid());
     EXPECT_EQ(test_data[i].expected_result, result.spec());
+  }
+}
+
+// Tests replacing searchbox stats (gs_lcrp) in various scenarios.
+TEST_F(TemplateURLTest, ReplaceSearchboxStats) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures({omnibox::kReportSearchboxStats}, {});
+
+  metrics::ChromeSearchboxStats empty_searchbox_stats;
+  metrics::ChromeSearchboxStats non_empty_searchbox_stats;
+  non_empty_searchbox_stats.set_client_name("chrome");
+
+  struct TestData {
+    const std::u16string search_term;
+    const metrics::ChromeSearchboxStats searchbox_stats;
+    const std::string base_url;
+    const std::string url;
+    const std::string expected_result;
+  } test_data[] = {
+      // No HTTPS: no gs_lcrp.
+      {u"foo", non_empty_searchbox_stats, "http://foo/",
+       "{google:baseURL}?q={searchTerms}&{google:searchboxStats}",
+       "http://foo/?q=foo&"},
+      // HTTPS and empty gs_lcrp: no gs_lcrp.
+      {u"foo", empty_searchbox_stats, "https://foo/",
+       "{google:baseURL}?q={searchTerms}&{google:searchboxStats}",
+       "https://foo/?q=foo&"},
+      // HTTPS and non-empty gs_lcrp: replace gs_lcrp.
+      {u"foo", non_empty_searchbox_stats, "https://foo/",
+       "{google:baseURL}?q={searchTerms}&{google:searchboxStats}",
+       "https://foo/?q=foo&gs_lcrp=EgZjaHJvbWU=&"},
+      // HTTPS and non-empty gs_lcrp but no google:searchboxStats: no gs_lcrp.
+      {u"foo", non_empty_searchbox_stats, "https://foo/",
+       "{google:baseURL}?q={searchTerms}", "https://foo/?q=foo"},
+      // Non-Google search provider, No HTTPS: no gs_lcrp.
+      {u"foo", non_empty_searchbox_stats, "https://foo/",
+       "http://foo/?{searchTerms}&{google:searchboxStats}", "http://foo/?foo&"},
+      // Non-Google search provider, HTTPS and empty gs_lcrp: no gs_lcrp.
+      {u"foo", empty_searchbox_stats, "https://foo/",
+       "https://foo/?{searchTerms}&{google:searchboxStats}",
+       "https://foo/?foo&"},
+      // Non-Google search provider, HTTPS and non-empty gs_lcrp: replace
+      // gs_lcrp.
+      {u"foo", non_empty_searchbox_stats, "https://foo/",
+       "https://foo/?{searchTerms}&{google:searchboxStats}",
+       "https://foo/?foo&gs_lcrp=EgZjaHJvbWU=&"},
+      // Non-Google search provider, HTTPS and non-empty gs_lcrp but no
+      // google:searchboxStats: no gs_lcrp.
+      {u"foo", non_empty_searchbox_stats, "https://foo/",
+       "https://foo/?{searchTerms}", "https://foo/?foo"},
+  };
+  TemplateURLData data;
+  data.input_encodings.push_back("UTF-8");
+  for (const auto& entry : test_data) {
+    data.SetURL(entry.url);
+    TemplateURL url(data);
+    EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
+    ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
+    TemplateURLRef::SearchTermsArgs search_terms_args(entry.search_term);
+    search_terms_args.searchbox_stats.MergeFrom(entry.searchbox_stats);
+    search_terms_data_.set_google_base_url(entry.base_url);
+    GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args,
+                                                 search_terms_data_));
+    ASSERT_TRUE(result.is_valid());
+    EXPECT_EQ(entry.expected_result, result.spec());
+  }
+}
+
+// Tests replacing searchbox stats (gs_lcrp) and assisted query stats (AQS).
+TEST_F(TemplateURLTest, ReplaceSearchboxStatsAndAssistedQueryStats) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {omnibox::kReportSearchboxStats, omnibox::kReportAssistedQueryStats}, {});
+
+  metrics::ChromeSearchboxStats non_empty_searchbox_stats;
+  non_empty_searchbox_stats.set_client_name("chrome");
+
+  struct TestData {
+    const std::u16string search_term;
+    const std::string aqs;
+    const metrics::ChromeSearchboxStats searchbox_stats;
+    const std::string base_url;
+    const std::string url;
+    const std::string expected_result;
+  } test_data[] = {
+      // HTTPS and non-empty gs_lcrp and AQS: replace both.
+      {u"foo", "chrome.0.0l6", non_empty_searchbox_stats, "https://foo/",
+       "{google:baseURL}?q={searchTerms}&{google:searchboxStats}{google:"
+       "assistedQueryStats}",
+       "https://foo/?q=foo&gs_lcrp=EgZjaHJvbWU=&aqs=chrome.0.0l6&"},
+      // Non-Google search provider, HTTPS and non-empty gs_lcrp and AQS:
+      // replace both.
+      {u"foo", "chrome.0.0l6", non_empty_searchbox_stats, "https://foo/",
+       "https://foo/"
+       "?{searchTerms}&{google:searchboxStats}{google:assistedQueryStats}",
+       "https://foo/?foo&gs_lcrp=EgZjaHJvbWU=&aqs=chrome.0.0l6&"},
+  };
+  TemplateURLData data;
+  data.input_encodings.push_back("UTF-8");
+  for (const auto& entry : test_data) {
+    data.SetURL(entry.url);
+    TemplateURL url(data);
+    EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
+    ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
+    TemplateURLRef::SearchTermsArgs search_terms_args(entry.search_term);
+    search_terms_args.assisted_query_stats = entry.aqs;
+    search_terms_args.searchbox_stats.MergeFrom(entry.searchbox_stats);
+    search_terms_data_.set_google_base_url(entry.base_url);
+    GURL result(url.url_ref().ReplaceSearchTerms(search_terms_args,
+                                                 search_terms_data_));
+    ASSERT_TRUE(result.is_valid());
+    EXPECT_EQ(entry.expected_result, result.spec());
   }
 }
 
@@ -665,7 +782,7 @@ TEST_F(TemplateURLTest, ReplaceCursorPosition) {
   };
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     data.SetURL(test_data[i].url);
     TemplateURL url(data);
     EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
@@ -696,7 +813,7 @@ TEST_F(TemplateURLTest, ReplaceInputType) {
   };
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     data.SetURL(test_data[i].url);
     TemplateURL url(data);
     EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
@@ -730,7 +847,7 @@ TEST_F(TemplateURLTest, ReplaceOmniboxFocusType) {
   };
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     data.SetURL(test_data[i].url);
     TemplateURL url(data);
     EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
@@ -759,7 +876,7 @@ TEST_F(TemplateURLTest, ReplaceIsPrefetch) {
   };
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     data.SetURL(test_data[i].url);
     TemplateURL url(data);
     EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
@@ -792,7 +909,7 @@ TEST_F(TemplateURLTest, ReplaceCurrentPageUrl) {
   };
   TemplateURLData data;
   data.input_encodings.push_back("UTF-8");
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     data.SetURL(test_data[i].url);
     TemplateURL url(data);
     EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
@@ -819,7 +936,7 @@ TEST_F(TemplateURLTest, PlayAPIAttribution) {
       {"http://foo/?q={searchTerms}", u"bar", true,
        "http://foo/?q=bar&chrome_dse_attribution=1"}};
   TemplateURLData data;
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     data.SetURL(test_data[i].url);
     data.created_from_play_api = test_data[i].created_from_play_api;
     TemplateURL url(data);
@@ -856,7 +973,7 @@ TEST_F(TemplateURLTest, Suggestions) {
   TemplateURL url(data);
   EXPECT_TRUE(url.url_ref().IsValid(search_terms_data_));
   ASSERT_TRUE(url.url_ref().SupportsReplacement(search_terms_data_));
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     TemplateURLRef::SearchTermsArgs search_terms_args(u"foobar");
     search_terms_args.accepted_suggestion = test_data[i].accepted_suggestion;
     search_terms_args.original_query =
@@ -925,7 +1042,7 @@ TEST_F(TemplateURLTest, HostAndSearchTermKey) {
       {"http://blah/?q=stock:{searchTerms}", "blah", "/", "q"},
   };
 
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     TemplateURLData data;
     data.SetURL(test_data[i].url);
     TemplateURL url(data);
@@ -970,7 +1087,7 @@ TEST_F(TemplateURLTest, SearchTermKeyLocation) {
        "", "", ""},
   };
 
-  for (size_t i = 0; i < base::size(test_data); ++i) {
+  for (size_t i = 0; i < std::size(test_data); ++i) {
     TemplateURLData data;
     data.SetURL(test_data[i].url);
     TemplateURL url(data);
@@ -999,7 +1116,7 @@ TEST_F(TemplateURLTest, GoogleBaseSuggestURL) {
     { "http://google.com/intl/xx/", "http://google.com/complete/", },
   };
 
-  for (size_t i = 0; i < base::size(data); ++i)
+  for (size_t i = 0; i < std::size(data); ++i)
     CheckSuggestBaseURL(data[i].base_url, data[i].base_suggest_url);
 }
 
@@ -1763,7 +1880,7 @@ TEST_F(TemplateURLTest, IsSearchResults) {
     { "http://bar/newtab", false, },
   };
 
-  for (size_t i = 0; i < base::size(url_data); ++i) {
+  for (size_t i = 0; i < std::size(url_data); ++i) {
     EXPECT_EQ(url_data[i].result,
               search_provider.IsSearchURL(GURL(url_data[i].url),
                                           search_terms_data_));
@@ -1926,7 +2043,7 @@ TEST_F(TemplateURLTest, GenerateSearchURL) {
       "http://foo/blah.blah.blah.blah.blah" }
   };
 
-  for (size_t i = 0; i < base::size(generate_url_cases); ++i) {
+  for (size_t i = 0; i < std::size(generate_url_cases); ++i) {
     TemplateURLData data;
     data.SetURL(generate_url_cases[i].url);
     TemplateURL t_url(data);

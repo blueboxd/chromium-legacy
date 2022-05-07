@@ -4,23 +4,18 @@
 
 import("//build/config/android/abi.gni")
 import("//build/config/sysroot.gni")
+import("//build/partitioned_shared_library.gni")
 import("//chromecast/chromecast.gni")
 import("//media/media_options.gni")
 
 # These targets shall only be referenced on Android builds.
 assert(is_android)
 
-cast_shared_library("libcast_shell_android") {
-  # TODO: Remove the ldflags after migrating away from protobuf_lite to
-  # protobuf_full.
-  ldflags = [ "-Wl,-z,muldefs" ]
-
-  sources = [ "//chromecast/app/android/cast_jni_loader.cc" ]
-
-  deps = [
+# Deps shared by libcast_browser_android and libcast_shell_android.
+group("common_apk_deps") {
+  public_deps = [
     "//base",
     "//chromecast:cast_shell_jni_registration",
-    "//chromecast:cast_shell_lib",
     "//chromecast:chromecast_buildflags",
     "//chromecast/app",
     "//chromecast/app:cast_crash_client",
@@ -32,6 +27,7 @@ cast_shared_library("libcast_shell_android") {
     "//chromecast/media/cma/backend/android:cast_media_android",
     "//components/crash/android:crash_android",
     "//components/minidump_uploader",
+    "//components/module_installer/android:native",
     "//content/public/app",
     "//content/public/browser",
     "//skia",
@@ -40,7 +36,7 @@ cast_shared_library("libcast_shell_android") {
   # Explicit dependencies required for JNI registration to be able to find the
   # native side functions.
   if (is_component_build) {
-    deps += [
+    public_deps += [
       "//device/bluetooth",
       "//device/gamepad",
       "//media/midi",
@@ -49,6 +45,51 @@ cast_shared_library("libcast_shell_android") {
       "//ui/shell_dialogs",
     ]
   }
+}
+
+cast_shared_library("libcast_shell_android") {
+  # TODO: Remove the ldflags after migrating away from protobuf_lite to
+  # protobuf_full.
+  ldflags = [ "-Wl,-z,muldefs" ]
+
+  sources = [ "//chromecast/app/android/cast_jni_loader.cc" ]
+
+  deps = [
+    ":common_apk_deps",
+    "//chromecast:cast_shell_lib",
+  ]
+}
+
+cast_shared_library("libcast_browser_android") {
+  # TODO: Remove the ldflags after migrating away from protobuf_lite to
+  # protobuf_full.
+  ldflags = [ "-Wl,-z,muldefs" ]
+
+  sources = [ "//chromecast/app/android/cast_jni_loader.cc" ]
+
+  deps = [
+    ":common_apk_deps",
+    "//chromecast:cast_shell_lib_simple",
+  ]
+}
+
+group("native") {
+  deps = [ ":cast_browser" ]
+}
+
+component("cast_browser") {
+  # TODO: Remove the ldflags after migrating away from protobuf_lite to
+  # protobuf_full.
+  ldflags = [ "-Wl,-z,muldefs" ]
+
+  sources = [ "//chromecast/app/android/cast_browser_module_entrypoint.cc" ]
+
+  deps = [
+    ":common_apk_deps",
+    "//chromecast:cast_shell_lib_simple",
+  ]
+
+  cflags = [ "-fsymbol-partition=cast_browser_partition" ]
 }
 
 # These are all known //third_party/android_deps targets that chromecast

@@ -1059,6 +1059,12 @@ void WebGPUDecoderImpl::DoRequestDevice(
   if (request_device_properties.depthClamping) {
     required_features.push_back(WGPUFeatureName_DepthClamping);
   }
+  if (request_device_properties.depth24UnormStencil8) {
+    required_features.push_back(WGPUFeatureName_Depth24UnormStencil8);
+  }
+  if (request_device_properties.depth32FloatStencil8) {
+    required_features.push_back(WGPUFeatureName_Depth32FloatStencil8);
+  }
   if (request_device_properties.invalidFeature) {
     // Pass something invalid.
     required_features.push_back(static_cast<WGPUFeatureName>(-1));
@@ -1069,6 +1075,7 @@ void WebGPUDecoderImpl::DoRequestDevice(
   // If a new toggle is added here, ForceDawnTogglesForWebGPU() which collects
   // info for about:gpu should be updated as well.
   WGPUDawnTogglesDeviceDescriptor dawn_toggles;
+  dawn_toggles.chain.next = nullptr;
   std::vector<const char*> force_enabled_toggles;
   std::vector<const char*> force_disabled_toggles;
 
@@ -1362,7 +1369,7 @@ error::Error WebGPUDecoderImpl::DoCommands(unsigned int num_commands,
 
     const unsigned int arg_count = size - 1;
     unsigned int command_index = command - kFirstWebGPUCommand;
-    if (command_index < base::size(command_info)) {
+    if (command_index < std::size(command_info)) {
       // Prevent all further WebGPU commands from being processed if the server
       // is destroyed.
       if (destroyed_) {

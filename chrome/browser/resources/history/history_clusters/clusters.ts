@@ -24,7 +24,6 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 import {BrowserProxyImpl} from './browser_proxy.js';
 import {getTemplate} from './clusters.html.js';
 import {Cluster, PageCallbackRouter, PageHandlerRemote, QueryResult, URLVisit} from './history_clusters.mojom-webui.js';
-import {ClusterAction, MetricsProxyImpl} from './metrics_proxy.js';
 
 /**
  * @fileoverview This file provides a custom element that requests and shows
@@ -95,6 +94,14 @@ class HistoryClustersElement extends PolymerElement {
       result_: Object,
 
       /**
+       * Boolean determining if spinner shows instead of load more button.
+       */
+      showSpinner_: {
+        type: Boolean,
+        value: false,
+      },
+
+      /**
        * The list of visits to be removed. A non-empty array indicates a pending
        * remove request to the browser.
        */
@@ -115,6 +122,7 @@ class HistoryClustersElement extends PolymerElement {
   private onVisitsRemovedListenerId_: number|null = null;
   private pageHandler_: PageHandlerRemote;
   private result_: QueryResult;
+  private showSpinner_: boolean;
   private visitsToBeRemoved_: Array<URLVisit>;
 
   //============================================================================
@@ -127,7 +135,7 @@ class HistoryClustersElement extends PolymerElement {
     this.callbackRouter_ = BrowserProxyImpl.getInstance().callbackRouter;
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     // Register a per-document singleton focus outline manager. Some of our
@@ -146,7 +154,7 @@ class HistoryClustersElement extends PolymerElement {
             this.onVisitsRemoved_.bind(this));
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     assert(this.onClustersQueryResultListenerId_);
     this.callbackRouter_.removeListener(this.onClustersQueryResultListenerId_);
@@ -171,6 +179,7 @@ class HistoryClustersElement extends PolymerElement {
 
   private onLoadMoreButtonClick_() {
     if (this.result_ && this.result_.canLoadMore) {
+      this.showSpinner_ = true;
       // Prevent sending further load-more requests until this one finishes.
       this.set('result_.canLoadMore', false);
       this.pageHandler_.loadMoreClusters(this.result_.query);
@@ -194,8 +203,6 @@ class HistoryClustersElement extends PolymerElement {
   private onRemoveCluster_(event: CustomEvent<number>) {
     const index = event.detail;
     this.splice('result_.clusters', index, 1);
-    MetricsProxyImpl.getInstance().recordClusterAction(
-        ClusterAction.DELETED, index);
   }
 
   /**
@@ -321,6 +328,7 @@ class HistoryClustersElement extends PolymerElement {
         this.onLoadMoreButtonClick_();
       }
     });
+    this.showSpinner_ = false;
   }
 
   /**

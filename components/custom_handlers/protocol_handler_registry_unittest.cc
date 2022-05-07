@@ -17,6 +17,7 @@
 #include "base/task/post_task.h"
 #include "build/build_config.h"
 #include "components/custom_handlers/pref_names.h"
+#include "components/custom_handlers/protocol_handler.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/custom_handlers/test_protocol_handler_registry_delegate.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -24,7 +25,6 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_task_traits.h"
-#include "content/public/common/custom_handlers/protocol_handler.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
@@ -32,26 +32,22 @@
 #include "third_party/blink/public/common/security/protocol_handler_security_level.h"
 
 using content::BrowserThread;
-using content::ProtocolHandler;
 
 namespace custom_handlers {
 
-std::unique_ptr<base::DictionaryValue> GetProtocolHandlerValue(
-    const std::string& protocol,
-    const std::string& url) {
-  auto value = std::make_unique<base::DictionaryValue>();
-  value->SetString("protocol", protocol);
-  value->SetString("url", url);
-  return value;
+base::Value GetProtocolHandlerValue(const std::string& protocol,
+                                    const std::string& url) {
+  base::Value::Dict value;
+  value.Set("protocol", protocol);
+  value.Set("url", url);
+  return base::Value(std::move(value));
 }
 
-std::unique_ptr<base::DictionaryValue> GetProtocolHandlerValueWithDefault(
-    const std::string& protocol,
-    const std::string& url,
-    bool is_default) {
-  std::unique_ptr<base::DictionaryValue> value =
-      GetProtocolHandlerValue(protocol, url);
-  value->SetBoolean("default", is_default);
+base::Value GetProtocolHandlerValueWithDefault(const std::string& protocol,
+                                               const std::string& url,
+                                               bool is_default) {
+  base::Value value = GetProtocolHandlerValue(protocol, url);
+  value.GetDict().Set("default", is_default);
   return value;
 }
 
@@ -301,8 +297,7 @@ TEST_F(ProtocolHandlerRegistryTest, Encode) {
   ProtocolHandler handler("news", GURL("https://example.com"), "app_id", now,
                           blink::ProtocolHandlerSecurityLevel::kStrict);
   auto value = handler.Encode();
-  ProtocolHandler recreated =
-      ProtocolHandler::CreateProtocolHandler(value.get());
+  ProtocolHandler recreated = ProtocolHandler::CreateProtocolHandler(value);
   EXPECT_EQ("news", recreated.protocol());
   EXPECT_EQ(GURL("https://example.com"), recreated.url());
   EXPECT_EQ(now, recreated.last_modified());

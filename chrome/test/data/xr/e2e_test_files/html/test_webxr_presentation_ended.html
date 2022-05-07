@@ -14,6 +14,7 @@ event received.
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
       onSessionEnded = function(event) {
+        console.log('Got onSessionEnded event');
         sessionInfos[getSessionType(event.session)].clearSession();
         if (hasPresentedFrame) {
           done();

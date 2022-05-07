@@ -111,6 +111,7 @@ class DeviceCloudPolicyInitializer
   DeviceCloudPolicyManagerAsh* policy_manager_;
   chromeos::system::StatisticsProvider* statistics_provider_;
   bool is_initialized_ = false;
+  bool policy_manager_store_ready_notified_ = false;
 
   base::CallbackListSubscription state_keys_update_subscription_;
   base::ScopedObservation<

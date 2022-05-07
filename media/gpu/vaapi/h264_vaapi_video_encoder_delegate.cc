@@ -10,7 +10,6 @@
 #include <utility>
 
 #include "base/bits.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/ref_counted_memory.h"
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
@@ -251,15 +250,15 @@ bool H264VaapiVideoEncoderDelegate::Initialize(
   // Checks if |level_| is valid. If it is invalid, set |level_| to a minimum
   // level that comforts Table A-1 in H.264 spec with specified bitrate,
   // framerate and dimension.
-  if (!CheckH264LevelLimits(profile_, level_, config.bitrate.target(),
+  if (!CheckH264LevelLimits(profile_, level_, config.bitrate.target_bps(),
                             initial_framerate, mb_width_ * mb_height_)) {
     absl::optional<uint8_t> valid_level =
-        FindValidH264Level(profile_, config.bitrate.target(), initial_framerate,
-                           mb_width_ * mb_height_);
+        FindValidH264Level(profile_, config.bitrate.target_bps(),
+                           initial_framerate, mb_width_ * mb_height_);
     if (!valid_level) {
       VLOGF(1) << "Could not find a valid h264 level for"
                << " profile=" << profile_
-               << " bitrate=" << config.bitrate.target()
+               << " bitrate=" << config.bitrate.target_bps()
                << " framerate=" << initial_framerate
                << " size=" << config.input_visible_size.ToString();
       return false;
@@ -682,7 +681,7 @@ void H264VaapiVideoEncoderDelegate::GeneratePackedSPS() {
       packed_sps_->AppendBits(4, current_sps_.bit_rate_scale);
       packed_sps_->AppendBits(4, current_sps_.cpb_size_scale);
       CHECK_LT(base::checked_cast<size_t>(current_sps_.cpb_cnt_minus1),
-               base::size(current_sps_.bit_rate_value_minus1));
+               std::size(current_sps_.bit_rate_value_minus1));
       for (int i = 0; i <= current_sps_.cpb_cnt_minus1; ++i) {
         packed_sps_->AppendUE(current_sps_.bit_rate_value_minus1[i]);
         packed_sps_->AppendUE(current_sps_.cpb_size_value_minus1[i]);

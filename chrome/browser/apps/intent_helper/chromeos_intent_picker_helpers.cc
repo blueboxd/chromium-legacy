@@ -73,7 +73,7 @@ bool ShouldAutoDisplayUi(
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (ash::switches::IsTabletFormFactor()) {
     if (ui_auto_display_service->GetLastUsedPlatformForTablets(url) ==
-        IntentPickerAutoDisplayPref::Platform::kChrome) {
+        IntentPickerAutoDisplayService::Platform::kChrome) {
       return false;
     }
   }
@@ -155,12 +155,12 @@ void OnIntentPickerClosedChromeOs(
   if (ash::switches::IsTabletFormFactor() && should_persist) {
     // On devices of tablet form factor, until the user has decided to persist
     // the setting, the browser-side intent picker should always be seen.
-    auto platform = IntentPickerAutoDisplayPref::Platform::kNone;
+    auto platform = IntentPickerAutoDisplayService::Platform::kNone;
     if (entry_type == PickerEntryType::kArc) {
-      platform = IntentPickerAutoDisplayPref::Platform::kArc;
+      platform = IntentPickerAutoDisplayService::Platform::kArc;
     } else if (entry_type == PickerEntryType::kUnknown &&
                close_reason == IntentPickerCloseReason::STAY_IN_CHROME) {
-      platform = IntentPickerAutoDisplayPref::Platform::kChrome;
+      platform = IntentPickerAutoDisplayService::Platform::kChrome;
     }
     IntentPickerAutoDisplayService::Get(
         Profile::FromBrowserContext(web_contents->GetBrowserContext()))
@@ -182,7 +182,7 @@ void OnIntentPickerClosedChromeOs(
   if (entry_type == PickerEntryType::kUnknown &&
       close_reason == IntentPickerCloseReason::DIALOG_DEACTIVATED &&
       ui_auto_display_service) {
-    ui_auto_display_service->IncrementCounter(url);
+    ui_auto_display_service->IncrementPickerUICounter(url);
   }
 
   if (should_persist) {
@@ -206,6 +206,10 @@ void LaunchAppFromIntentPickerChromeOs(content::WebContents* web_contents,
   DCHECK(!launch_name.empty());
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
+
+  if (base::FeatureList::IsEnabled(features::kLinkCapturingUiUpdate)) {
+    IntentPickerAutoDisplayService::Get(profile)->ResetIntentChipCounter(url);
+  }
 
   auto* proxy = AppServiceProxyFactory::GetForProfile(profile);
 

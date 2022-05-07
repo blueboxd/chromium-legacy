@@ -104,13 +104,6 @@ class BrowserTabStripController::TabContextMenuContents
         this, controller->browser()->tab_menu_model_delegate(),
         controller->model_, controller->tabstrip_->GetModelIndexOf(tab));
 
-    // If IPH is showing, continue into the menu. IsCommandIdAlerted()
-    // is called on |menu_runner_| construction, and we check
-    // |tab_groups_promo_handle_| there. So we must do this first.
-    tab_groups_promo_handle_ =
-        controller->browser()->window()->CloseFeaturePromoAndContinue(
-            feature_engagement::kIPHDesktopTabGroupsNewGroupFeature);
-
     // Because we use "new" badging for feature promos, we cannot use system-
     // native context menus. (See crbug.com/1109256.)
     const int run_flags =
@@ -143,11 +136,9 @@ class BrowserTabStripController::TabContextMenuContents
 
   bool IsCommandIdAlerted(int command_id) const override {
     return command_id == TabStripModel::CommandAddToNewGroup &&
-           tab_groups_promo_handle_;
-  }
-
-  void MenuClosed(ui::SimpleMenuModel*) override {
-    tab_groups_promo_handle_.Release();
+           controller_->GetBrowser()->window()->IsFeaturePromoActive(
+               feature_engagement::kIPHDesktopTabGroupsNewGroupFeature,
+               /* include_continued_promos =*/true);
   }
 
   bool GetAcceleratorForCommandId(int command_id,
@@ -184,9 +175,6 @@ class BrowserTabStripController::TabContextMenuContents
 
   // A pointer back to our hosting controller, for command state information.
   raw_ptr<BrowserTabStripController> controller_;
-
-  // Handle we keep if showing menu IPH for tab groups.
-  FeaturePromoController::PromoHandle tab_groups_promo_handle_;
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -588,10 +576,6 @@ SkColor BrowserTabStripController::GetFrameColor(
   return GetFrameView()->GetFrameColor(active_state);
 }
 
-SkColor BrowserTabStripController::GetToolbarTopSeparatorColor() const {
-  return GetFrameView()->GetToolbarTopSeparatorColor();
-}
-
 absl::optional<int> BrowserTabStripController::GetCustomBackgroundId(
     BrowserFrameActiveState active_state) const {
   return GetFrameView()->GetCustomBackgroundId(active_state);
@@ -785,8 +769,7 @@ void BrowserTabStripController::AddTab(WebContents* contents,
   // Cancel any pending tab transition.
   hover_tab_selector_.CancelTabTransition();
 
-  tabstrip_->AddTabAt(index, TabRendererData::FromTabInModel(model_, index),
-                      is_active);
+  tabstrip_->AddTabAt(index, TabRendererData::FromTabInModel(model_, index));
   // Try to show tab groups IPH if needed.
   if (tabstrip_->GetTabCount() >= 6) {
     browser_view_->NotifyFeatureEngagementEvent(

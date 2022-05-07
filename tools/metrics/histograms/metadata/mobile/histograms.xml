@@ -52,7 +52,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.AppMenu.TimeToTakeAction.Abandoned" units="ms"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>gangwu@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -77,7 +77,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.CanonicalURLResult" enum="CanonicalURLResult"
-    expires_after="2022-07-11">
+    expires_after="2022-09-11">
   <owner>pkl@chromium.org</owner>
   <owner>sebsg@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
@@ -339,12 +339,12 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Mobile.RecentTabsManager.TotalTabsFromOtherDevicesOpenAll"
-    units="count" expires_after="2022-04-19">
+    units="count" expires_after="2023-04-19">
   <owner>sczs@chromium.org</owner>
   <owner>edchin@chromium.org</owner>
   <summary>
     Records the total number of tabs opened when Open all was selected from
-    other devices in Recent Tabs.
+    other devices in Recent Tabs, iOS only.
   </summary>
 </histogram>
 
@@ -506,6 +506,59 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Mobile.SystemNotification.Permission.Change"
+    enum="BooleanEnabled" expires_after="2022-12-31">
+  <owner>salg@google.com</owner>
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    Records the notification permission state every time Android notifies Chrome
+    of a change, this includes when granting access via the OS prompt and
+    granting/blocking access via the OS settings.
+  </summary>
+</histogram>
+
+<histogram name="Mobile.SystemNotification.Permission.OSPromptResult"
+    enum="BooleanEnabled" expires_after="2022-12-31">
+  <owner>salg@google.com</owner>
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    Records the action taken by the user after being shown the OS prompt to
+    grant notification permissions. Only recorded on Android T+.
+  </summary>
+</histogram>
+
+<histogram name="Mobile.SystemNotification.Permission.RationaleResult"
+    enum="NotificationRationaleResult" expires_after="2022-12-31">
+  <owner>salg@google.com</owner>
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    Records the action taken by the user after being shown the notification
+    rationale prompt. Only recorded on Android T+.
+  </summary>
+</histogram>
+
+<histogram name="Mobile.SystemNotification.Permission.StartupRequestCount"
+    units="attempts" expires_after="2022-12-31">
+  <owner>salg@google.com</owner>
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    Records how many times we've shown the user any notification permission UI
+    (either rationale and/or OS prompt) on startup. Recorded every time we are
+    about to show any UI. Only recorded on Android T+.
+  </summary>
+</histogram>
+
+<histogram name="Mobile.SystemNotification.Permission.StartupState"
+    enum="NotificationPermissionState" expires_after="2022-12-31">
+  <owner>salg@google.com</owner>
+  <owner>shaktisahu@chromium.org</owner>
+  <summary>
+    Records the current state of the notification permission and if disabled the
+    reason. Recorded on startup before any permission prompts are shown. Only
+    recorded on Android T+.
+  </summary>
+</histogram>
+
 <histogram name="Mobile.SystemNotification.Shown" enum="SystemNotificationType"
     expires_after="never">
 <!-- expires-never: Core Android notification metrics. Used by multiple teams. -->
@@ -549,7 +602,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileDownload.DownloadLaterPromptStatus"
-    enum="DownloadLaterPromptStatus" expires_after="2022-02-06">
+    enum="DownloadLaterPromptStatus" expires_after="2023-02-06">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -559,7 +612,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileDownload.DownloadPromptStatus"
-    enum="DownloadPromptStatus" expires_after="2022-02-16">
+    enum="DownloadPromptStatus" expires_after="2023-02-16">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -590,21 +643,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileDownload.Location.Dialog.Suggestion.Events"
-    enum="DownloadLocationSuggestionEvent" expires_after="2022-02-16">
+    enum="DownloadLocationSuggestionEvent" expires_after="2023-02-16">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>Records the download location suggestion event.</summary>
 </histogram>
 
 <histogram name="MobileDownload.Location.Dialog.SuggestionSelected"
-    enum="BooleanSelected" expires_after="2022-02-16">
+    enum="BooleanSelected" expires_after="2023-02-16">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>Records the download location suggestion choice.</summary>
 </histogram>
 
 <histogram name="MobileDownload.Location.Dialog.Type"
-    enum="DownloadLocationDialogType" expires_after="2022-02-16">
+    enum="DownloadLocationDialogType" expires_after="2023-02-16">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -614,7 +667,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileDownload.Location.DirectoryType"
-    enum="DownloadLocationDirectoryType" expires_after="2022-02-16">
+    enum="DownloadLocationDirectoryType" expires_after="2023-02-16">
   <owner>xingliu@chromium.org</owner>
   <owner>dtrainor@chromium.org</owner>
   <owner>qinmin@chromium.org</owner>
@@ -626,14 +679,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileDownload.Location.Download.DirectoryType"
-    enum="DownloadLocationDirectoryType" expires_after="2022-02-16">
+    enum="DownloadLocationDirectoryType" expires_after="2023-02-16">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>Records the directory type when download is completed.</summary>
 </histogram>
 
 <histogram name="MobileDownload.Location.Setting.DirectoryType"
-    enum="DownloadLocationDirectoryType" expires_after="2022-02-16">
+    enum="DownloadLocationDirectoryType" expires_after="2023-02-16">
   <owner>xingliu@chromium.org</owner>
   <owner>clank-downloads@google.com</owner>
   <summary>
@@ -712,7 +765,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="MobileFre.FragmentInflationSpeed" units="ms"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <summary>
@@ -725,7 +778,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="MobileFre.FromLaunch" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>skym@chromium.org</owner>
   <owner>wenyufu@chromium.org</owner>
   <summary>
@@ -802,7 +855,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileFre.Progress" enum="MobileFreProgress"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>bsazonov@chromium.org</owner>
   <owner>msarda@chromium.org</owner>
   <owner>droger@chromium.org</owner>
@@ -911,7 +964,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileIntent.FirstPartyToInternalScheme" enum="Boolean"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>peconn@chromium.org</owner>
   <owner>peter@chromium.org</owner>
   <summary>
@@ -1049,7 +1102,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.DailyLaunchCount" units="units"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -1082,7 +1135,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.IntentToCreationTime" units="ms"
-    expires_after="2022-07-03">
+    expires_after="2022-09-11">
   <owner>tedchoc@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
@@ -1094,7 +1147,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="MobileStartup.LaunchCause" enum="LaunchCause"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>mthiesse@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>

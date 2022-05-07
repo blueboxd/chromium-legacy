@@ -67,7 +67,7 @@ const uint8_t kApplicationServerKey[kApplicationServerKeyLength] = {
 std::string GetTestApplicationServerKey() {
   std::string application_server_key(
       kApplicationServerKey,
-      kApplicationServerKey + base::size(kApplicationServerKey));
+      kApplicationServerKey + std::size(kApplicationServerKey));
 
   return application_server_key;
 }
@@ -311,7 +311,7 @@ class IsolatedAppBrowserCookieTest : public IsolatedAppBrowserTest {
   }
 
   std::string GetHeader(const net::test_server::HttpRequest& request,
-                        std::string header_name) {
+                        const std::string& header_name) {
     auto header = request.headers.find(header_name);
     return header != request.headers.end() ? header->second : "";
   }

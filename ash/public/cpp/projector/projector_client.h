@@ -13,6 +13,7 @@ class FilePath;
 
 namespace ash {
 
+class AnnotatorMessageHandler;
 struct NewScreencastPrecondition;
 
 // Creates interface to access Browser side functionalities for the
@@ -31,6 +32,9 @@ class ASH_PUBLIC_EXPORT ProjectorClient {
   // Returns false if Drive is not enabled.
   virtual bool GetDriveFsMountPointPath(base::FilePath* result) const = 0;
   virtual bool IsDriveFsMounted() const = 0;
+  // Return true if Drive mount failed. Drive will not automatically retry to
+  // mount.
+  virtual bool IsDriveFsMountFailed() const = 0;
   // Opens Projector SWA. The app by default showing the Projector Gallery view.
   virtual void OpenProjectorApp() const = 0;
   // Minimizes Projector SWA.
@@ -41,6 +45,10 @@ class ASH_PUBLIC_EXPORT ProjectorClient {
   virtual void ShowSelfieCam() = 0;
   virtual void CloseSelfieCam() = 0;
   virtual bool IsSelfieCamVisible() const = 0;
+
+  // Registers the AnnotatorMessageHandler that is owned by the WebUI that
+  // contains the Projector annotator.
+  virtual void SetAnnotatorMessageHandler(AnnotatorMessageHandler* handler) = 0;
 
   // Notifies the Projector SWA if it can trigger a new Projector session.
   virtual void OnNewScreencastPreconditionChanged(

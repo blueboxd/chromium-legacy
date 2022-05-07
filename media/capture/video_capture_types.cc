@@ -5,7 +5,6 @@
 #include "media/capture/video_capture_types.h"
 
 #include "base/check.h"
-#include "base/cxx17_backports.h"
 #include "base/strings/stringprintf.h"
 #include "media/base/limits.h"
 
@@ -54,11 +53,11 @@ bool VideoCaptureFormat::ComparePixelFormatPreference(
     const VideoPixelFormat& rhs) {
   auto* format_lhs = std::find(
       kSupportedCapturePixelFormats,
-      kSupportedCapturePixelFormats + base::size(kSupportedCapturePixelFormats),
+      kSupportedCapturePixelFormats + std::size(kSupportedCapturePixelFormats),
       lhs);
   auto* format_rhs = std::find(
       kSupportedCapturePixelFormats,
-      kSupportedCapturePixelFormats + base::size(kSupportedCapturePixelFormats),
+      kSupportedCapturePixelFormats + std::size(kSupportedCapturePixelFormats),
       rhs);
   return format_lhs < format_rhs;
 }
@@ -96,8 +95,6 @@ VideoCaptureParams::SuggestConstraints() const {
       break;
 
     case ResolutionChangePolicy::FIXED_ASPECT_RATIO: {
-      // TODO(miu): This is a place-holder until "min constraints" are plumbed-
-      // in from the MediaStream framework.  http://crbug.com/473336
       constexpr int kMinLines = 180;
       if (max_frame_size.height() <= kMinLines) {
         min_frame_size = max_frame_size;

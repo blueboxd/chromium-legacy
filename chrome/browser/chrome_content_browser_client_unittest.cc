@@ -865,25 +865,21 @@ class ChromeContentBrowserClientSwitchTest : public testing::Test {
   static const int kFakeChildProcessId = 1;
 };
 
-TEST_F(ChromeContentBrowserClientSwitchTest, WebSQLInThirdPartyContextDefault) {
+TEST_F(ChromeContentBrowserClientSwitchTest, WebSQLAccessDefault) {
   client_.AppendExtraCommandLineSwitches(&command_line_, kFakeChildProcessId);
-  EXPECT_FALSE(command_line_.HasSwitch(
-      blink::switches::kWebSQLInThirdPartyContextEnabled));
+  EXPECT_FALSE(command_line_.HasSwitch(blink::switches::kWebSQLAccess));
 }
 
-TEST_F(ChromeContentBrowserClientSwitchTest,
-       WebSQLInThirdPartyContextDisabled) {
-  testing_local_state_.Get()->SetBoolean(
-      policy::policy_prefs::kWebSQLInThirdPartyContextEnabled, false);
+TEST_F(ChromeContentBrowserClientSwitchTest, WebSQLAccessDisabled) {
+  testing_local_state_.Get()->SetBoolean(policy::policy_prefs::kWebSQLAccess,
+                                         false);
   client_.AppendExtraCommandLineSwitches(&command_line_, kFakeChildProcessId);
-  EXPECT_FALSE(command_line_.HasSwitch(
-      blink::switches::kWebSQLInThirdPartyContextEnabled));
+  EXPECT_FALSE(command_line_.HasSwitch(blink::switches::kWebSQLAccess));
 }
 
-TEST_F(ChromeContentBrowserClientSwitchTest, WebSQLInThirdPartyContextEnabled) {
-  testing_local_state_.Get()->SetBoolean(
-      policy::policy_prefs::kWebSQLInThirdPartyContextEnabled, true);
+TEST_F(ChromeContentBrowserClientSwitchTest, WebSQLAccessEnabled) {
+  testing_local_state_.Get()->SetBoolean(policy::policy_prefs::kWebSQLAccess,
+                                         true);
   client_.AppendExtraCommandLineSwitches(&command_line_, kFakeChildProcessId);
-  EXPECT_TRUE(command_line_.HasSwitch(
-      blink::switches::kWebSQLInThirdPartyContextEnabled));
+  EXPECT_TRUE(command_line_.HasSwitch(blink::switches::kWebSQLAccess));
 }

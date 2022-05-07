@@ -22,11 +22,11 @@ import {focusWithoutInk} from '//resources/js/cr/ui/focus_without_ink.m.js';
 import {I18nMixin, I18nMixinInterface} from '//resources/js/i18n_mixin.js';
 import {listenOnce} from '//resources/js/util.m.js';
 import {IronResizableBehavior} from '//resources/polymer/v3_0/iron-resizable-behavior/iron-resizable-behavior.js';
-import {afterNextRender, html, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {afterNextRender, mixinBehaviors, PolymerElement} from '//resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 
 import {loadTimeData} from '../i18n_setup.js';
-import {Route, RouteObserverMixin, Router} from '../router.js';
+import {Route, RouteObserverMixin, RouteObserverMixinInterface, Router} from '../router.js';
 import {getSettingIdParameter} from '../setting_id_param_util.js';
 
 import {getTemplate} from './settings_subpage.html.js';
@@ -40,8 +40,10 @@ export interface SettingsSubpageElement {
 const SettingsSubpageElementBase =
     mixinBehaviors(
         [IronResizableBehavior],
-        RouteObserverMixin(FindShortcutMixin(I18nMixin(PolymerElement)))) as
-    {new (): PolymerElement & FindShortcutMixinInterface & I18nMixinInterface};
+        RouteObserverMixin(FindShortcutMixin(I18nMixin(PolymerElement)))) as {
+      new (): PolymerElement & FindShortcutMixinInterface & I18nMixinInterface &
+      RouteObserverMixinInterface
+    };
 
 export class SettingsSubpageElement extends SettingsSubpageElementBase {
   static get is() {
@@ -135,7 +137,7 @@ export class SettingsSubpageElement extends SettingsSubpageElementBase {
     this.findShortcutListenOnAttach = false;
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     if (this.searchLabel) {
@@ -146,7 +148,7 @@ export class SettingsSubpageElement extends SettingsSubpageElementBase {
     }
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
 
     if (this.eventTracker_) {
@@ -196,7 +198,7 @@ export class SettingsSubpageElement extends SettingsSubpageElementBase {
     afterNextRender(this, () => focusWithoutInk(this.$.closeButton));
   }
 
-  currentRouteChanged(newRoute: Route, oldRoute: Route|null) {
+  override currentRouteChanged(newRoute: Route, oldRoute?: Route) {
     this.active_ = this.getAttribute('route-path') === newRoute.path;
     if (this.active_ && this.searchLabel && this.preserveSearchTerm) {
       this.getSearchField_().then(() => this.restoreSearchInput_());
@@ -273,7 +275,7 @@ export class SettingsSubpageElement extends SettingsSubpageElementBase {
   }
 
   // Override FindShortcutBehavior methods.
-  handleFindShortcut(modalContextOpen: boolean) {
+  override handleFindShortcut(modalContextOpen: boolean) {
     if (modalContextOpen) {
       return false;
     }
@@ -282,7 +284,7 @@ export class SettingsSubpageElement extends SettingsSubpageElementBase {
   }
 
   // Override FindShortcutBehavior methods.
-  searchInputHasFocus() {
+  override searchInputHasFocus() {
     const field = this.shadowRoot!.querySelector('cr-search-field')!;
     return field.getSearchInput() === field.shadowRoot!.activeElement;
   }

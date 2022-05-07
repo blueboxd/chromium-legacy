@@ -19,9 +19,6 @@ namespace tether {
 
 namespace {
 
-// TODO(https://crbug.com/1164001): remove when secure_channel moved to ash
-namespace secure_channel = ::chromeos::secure_channel;
-
 const char kTetherFeature[] = "magic_tether";
 
 }  // namespace

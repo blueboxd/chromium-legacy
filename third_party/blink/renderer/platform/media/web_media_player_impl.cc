@@ -87,6 +87,7 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_view.h"
+#include "third_party/blink/renderer/platform/media/buffered_data_source_host_impl.h"
 #include "third_party/blink/renderer/platform/media/power_status_helper.h"
 #include "third_party/blink/renderer/platform/media/text_track_impl.h"
 #include "third_party/blink/renderer/platform/media/video_decode_stats_reporter.h"
@@ -579,6 +580,8 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   DVLOG(1) << __func__;
   DCHECK(main_task_runner_->BelongsToCurrentThread());
+
+  ReportSessionUMAs();
 
   if (set_cdm_result_) {
     DVLOG(2)
@@ -1458,6 +1461,7 @@ void WebMediaPlayerImpl::Paint(cc::PaintCanvas* canvas,
   scoped_refptr<media::VideoFrame> video_frame =
       GetCurrentFrameFromCompositor();
   last_frame_request_time_ = tick_clock_->NowTicks();
+  video_frame_readback_count_++;
 
   video_renderer_.Paint(
       video_frame, canvas, gfx::RectF(rect), flags,
@@ -1467,6 +1471,7 @@ void WebMediaPlayerImpl::Paint(cc::PaintCanvas* canvas,
 
 scoped_refptr<media::VideoFrame> WebMediaPlayerImpl::GetCurrentFrame() {
   last_frame_request_time_ = tick_clock_->NowTicks();
+  video_frame_readback_count_++;
   return GetCurrentFrameFromCompositor();
 }
 
@@ -4013,6 +4018,32 @@ void WebMediaPlayerImpl::RegisterFrameSinkHierarchy() {
 void WebMediaPlayerImpl::UnregisterFrameSinkHierarchy() {
   if (bridge_)
     bridge_->UnregisterFrameSinkHierarchy();
+}
+
+void WebMediaPlayerImpl::ReportSessionUMAs() const {
+  if (renderer_type_ != media::RendererType::kDefault &&
+      renderer_type_ != media::RendererType::kMediaFoundation) {
+    return;
+  }
+
+  // Report the `Media.DroppedFrameCount2.{RendererType}.{EncryptedOrClear}`
+  // UMA.
+  constexpr char kDroppedFrameUmaPrefix[] = "Media.DroppedFrameCount2.";
+  std::string uma_name = kDroppedFrameUmaPrefix;
+  uma_name += GetRendererName(renderer_type_);
+  if (is_encrypted_)
+    uma_name += ".Encrypted";
+  else
+    uma_name += ".Clear";
+  base::UmaHistogramCounts1M(uma_name, DroppedFrameCount());
+
+  if (!is_encrypted_) {
+    // Report the `Media.FrameReadBackCount.{RendererType}` UMA.
+    constexpr char kFrameReadBackUmaPrefix[] = "Media.FrameReadBackCount.";
+    uma_name = kFrameReadBackUmaPrefix;
+    uma_name += GetRendererName(renderer_type_);
+    base::UmaHistogramCounts10M(uma_name, video_frame_readback_count_);
+  }
 }
 
 }  // namespace blink

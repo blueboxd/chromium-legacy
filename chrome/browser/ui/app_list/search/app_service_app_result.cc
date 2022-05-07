@@ -31,7 +31,6 @@
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "components/favicon/core/large_icon_service.h"
-#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "extensions/common/extension.h"
@@ -46,23 +45,21 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
                                          apps::IconLoader* icon_loader)
     : AppResult(profile, app_id, controller, is_recommendation),
       icon_loader_(icon_loader),
-      app_type_(apps::mojom::AppType::kUnknown),
+      app_type_(apps::AppType::kUnknown),
       is_platform_app_(false),
       show_in_launcher_(false) {
   apps::AppServiceProxyFactory::GetForProfile(profile)
       ->AppRegistryCache()
       .ForOneApp(app_id, [this](const apps::AppUpdate& update) {
         app_type_ = update.AppType();
-        is_platform_app_ =
-            update.IsPlatformApp() == apps::mojom::OptionalBool::kTrue;
-        show_in_launcher_ =
-            update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue;
+        is_platform_app_ = update.IsPlatformApp().value_or(false);
+        show_in_launcher_ = update.ShowInLauncher().value_or(false);
 
-        if (update.Readiness() == apps::mojom::Readiness::kDisabledByPolicy) {
+        if (update.Readiness() == apps::Readiness::kDisabledByPolicy) {
           SetAccessibleName(l10n_util::GetStringFUTF16(
               IDS_APP_ACCESSIBILITY_BLOCKED_INSTALLED_APP_ANNOUNCEMENT,
               base::UTF8ToUTF16(update.ShortName())));
-        } else if (update.Paused() == apps::mojom::OptionalBool::kTrue) {
+        } else if (update.Paused().value_or(false)) {
           SetAccessibleName(l10n_util::GetStringFUTF16(
               IDS_APP_ACCESSIBILITY_PAUSED_INSTALLED_APP_ANNOUNCEMENT,
               base::UTF8ToUTF16(update.ShortName())));
@@ -79,14 +76,14 @@ AppServiceAppResult::AppServiceAppResult(Profile* profile,
   SetCategory(Category::kApps);
 
   switch (app_type_) {
-    case apps::mojom::AppType::kBuiltIn:
+    case apps::AppType::kBuiltIn:
       set_id(app_id);
       // TODO(crbug.com/826982): Is this SetResultType call necessary?? Does
       // anyone care about the kInternalApp vs kInstalledApp distinction?
       SetResultType(ResultType::kInternalApp);
       apps::RecordBuiltInAppSearchResult(app_id);
       break;
-    case apps::mojom::AppType::kChromeApp:
+    case apps::AppType::kChromeApp:
       // TODO(crbug.com/826982): why do we pass the URL and not the app_id??
       // Can we replace this by the simpler "set_id(app_id)", and therefore
       // pull that out of the switch?
@@ -113,7 +110,7 @@ void AppServiceAppResult::Open(int event_flags) {
 void AppServiceAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
   // TODO(crbug.com/826982): drop the (app_type_ == etc), and check
   // show_in_launcher_ for all app types?
-  if ((app_type_ == apps::mojom::AppType::kBuiltIn) && !show_in_launcher_) {
+  if ((app_type_ == apps::AppType::kBuiltIn) && !show_in_launcher_) {
     std::move(callback).Run(nullptr);
     return;
   }
@@ -125,28 +122,29 @@ void AppServiceAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
 
 ash::SearchResultType AppServiceAppResult::GetSearchResultType() const {
   switch (app_type_) {
-    case apps::mojom::AppType::kArc:
+    case apps::AppType::kArc:
       return ash::PLAY_STORE_APP;
-    case apps::mojom::AppType::kBuiltIn:
+    case apps::AppType::kBuiltIn:
       return ash::INTERNAL_APP;
-    case apps::mojom::AppType::kPluginVm:
+    case apps::AppType::kPluginVm:
       return ash::PLUGIN_VM_APP;
-    case apps::mojom::AppType::kCrostini:
+    case apps::AppType::kCrostini:
       return ash::CROSTINI_APP;
-    case apps::mojom::AppType::kChromeApp:
-    case apps::mojom::AppType::kWeb:
-    case apps::mojom::AppType::kSystemWeb:
-    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
+    case apps::AppType::kChromeApp:
+    case apps::AppType::kWeb:
+    case apps::AppType::kSystemWeb:
+    case apps::AppType::kStandaloneBrowserChromeApp:
       return ash::EXTENSION_APP;
-    case apps::mojom::AppType::kStandaloneBrowser:
+    case apps::AppType::kStandaloneBrowser:
       return ash::LACROS;
-    case apps::mojom::AppType::kRemote:
+    case apps::AppType::kRemote:
       return ash::REMOTE_APP;
-    case apps::mojom::AppType::kBorealis:
+    case apps::AppType::kBorealis:
       return ash::BOREALIS_APP;
-    case apps::mojom::AppType::kExtension:
-    case apps::mojom::AppType::kMacOs:
-    case apps::mojom::AppType::kUnknown:
+    case apps::AppType::kExtension:
+    case apps::AppType::kStandaloneBrowserExtension:
+    case apps::AppType::kMacOs:
+    case apps::AppType::kUnknown:
       NOTREACHED();
       return ash::SEARCH_RESULT_TYPE_BOUNDARY;
   }
@@ -185,11 +183,11 @@ void AppServiceAppResult::Launch(int event_flags,
   bool is_active_app = false;
   proxy->AppRegistryCache().ForOneApp(
       app_id(), [&is_active_app](const apps::AppUpdate& update) {
-        if (update.AppType() == apps::mojom::AppType::kCrostini ||
-            update.AppType() == apps::mojom::AppType::kWeb ||
-            update.AppType() == apps::mojom::AppType::kSystemWeb ||
-            (update.AppType() == apps::mojom::AppType::kChromeApp &&
-             update.IsPlatformApp() == apps::mojom::OptionalBool::kFalse)) {
+        if (update.AppType() == apps::AppType::kCrostini ||
+            update.AppType() == apps::AppType::kWeb ||
+            update.AppType() == apps::AppType::kSystemWeb ||
+            (update.AppType() == apps::AppType::kChromeApp &&
+             update.IsPlatformApp().value_or(true))) {
           is_active_app = true;
         }
       });
@@ -236,14 +234,14 @@ void AppServiceAppResult::CallLoadIcon(bool chip, bool allow_placeholder_icon) {
   const int dimension = GetIconDimension(chip);
   if (base::FeatureList::IsEnabled(features::kAppServiceLoadIconWithoutMojom)) {
     icon_loader_releaser_ = icon_loader_->LoadIcon(
-        apps::ConvertMojomAppTypToAppType(app_type_), app_id(),
-        apps::IconType::kStandard, dimension, allow_placeholder_icon,
+        app_type_, app_id(), apps::IconType::kStandard, dimension,
+        allow_placeholder_icon,
         base::BindOnce(&AppServiceAppResult::OnLoadIcon,
                        weak_ptr_factory_.GetWeakPtr(), chip));
   } else {
     icon_loader_releaser_ = icon_loader_->LoadIcon(
-        app_type_, app_id(), apps::mojom::IconType::kStandard, dimension,
-        allow_placeholder_icon,
+        apps::ConvertAppTypeToMojomAppType(app_type_), app_id(),
+        apps::mojom::IconType::kStandard, dimension, allow_placeholder_icon,
         apps::MojomIconValueToIconValueCallback(
             base::BindOnce(&AppServiceAppResult::OnLoadIcon,
                            weak_ptr_factory_.GetWeakPtr(), chip)));

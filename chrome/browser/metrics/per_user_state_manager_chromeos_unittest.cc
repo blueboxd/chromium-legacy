@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/per_user_state_manager_chromeos.h"
 
+#include "chrome/browser/ash/login/login_pref_names.h"
+#include "chrome/browser/ash/login/startup_utils.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/metrics/profile_pref_names.h"
@@ -152,6 +154,18 @@ class PerUserStateManagerChromeOSTest : public testing::Test {
     profile_->GetPrefs()->SetBoolean(
         prefs::kMetricsRequiresClientIdResetOnConsent,
         has_consented_to_metrics);
+    profile_->GetPrefs()->SetBoolean(prefs::kMetricsUserInheritOwnerConsent,
+                                     false);
+  }
+
+  void SetShouldInheritOwnerConsent(bool should_inherit) {
+    profile_->GetPrefs()->SetBoolean(prefs::kMetricsUserInheritOwnerConsent,
+                                     should_inherit);
+  }
+
+  void SetGuestOobeMetricsConsent(bool metrics_consent) {
+    GetLocalState()->SetBoolean(ash::prefs::kOobeGuestMetricsEnabled,
+                                metrics_consent);
   }
 
   void RunUntilIdle() { task_environment_.RunUntilIdle(); }
@@ -174,6 +188,7 @@ class PerUserStateManagerChromeOSTest : public testing::Test {
         test_user_manager_.get(), &pref_service_, storage_limits_,
         signing_key_);
 
+    ash::StartupUtils::RegisterPrefs(pref_service_.registry());
     PerUserStateManagerChromeOS::RegisterPrefs(pref_service_.registry());
   }
 
@@ -308,6 +323,38 @@ TEST_F(PerUserStateManagerChromeOSTest,
   EXPECT_FALSE(GetPerUserStateManager()->is_log_store_set());
 }
 
+TEST_F(PerUserStateManagerChromeOSTest,
+       GuestWithNoDeviceOwnerLoadsConsentSetOnOobe) {
+  GetPerUserStateManager()->SetIsManaged(false);
+  GetPerUserStateManager()->SetIsDeviceOwned(false);
+
+  // Guest user went through oobe.
+  SetGuestOobeMetricsConsent(true);
+
+  // Simulate ephemeral user login.
+  LoginGuestUser(RegisterGuestUser());
+
+  // User log store is created async. Ensure that the log store loading
+  // finishes.
+  RunUntilIdle();
+
+  // Consent set by guest during OOBE.
+  EXPECT_TRUE(
+      *GetPerUserStateManager()->GetCurrentUserReportingConsentIfApplicable());
+
+  // Ensure state has been reset.
+  EXPECT_FALSE(
+      GetLocalState()->GetBoolean(ash::prefs::kOobeGuestMetricsEnabled));
+
+  // Check to ensure that metrics consent is stored in profile pref.
+  EXPECT_TRUE(
+      GetTestProfile()->GetPrefs()->GetBoolean(prefs::kMetricsUserConsent));
+
+  // Log store should be set to use ephemeral partition in the absence of a
+  // device owner.
+  EXPECT_TRUE(GetPerUserStateManager()->is_log_store_set());
+}
+
 TEST_F(PerUserStateManagerChromeOSTest, OwnerCannotUsePerUser) {
   // Create device owner.
   const AccountId account_id =
@@ -327,6 +374,34 @@ TEST_F(PerUserStateManagerChromeOSTest, OwnerCannotUsePerUser) {
       GetPerUserStateManager()->GetCurrentUserReportingConsentIfApplicable());
 
   // User logs should still be persisted in the owner's cryptohome.
+  EXPECT_TRUE(GetPerUserStateManager()->is_log_store_set());
+}
+
+TEST_F(PerUserStateManagerChromeOSTest,
+       NewOrMigratingUserInheritsOwnerConsent) {
+  auto* test_user =
+      RegisterUser(AccountId::FromUserEmailGaiaId("test@example.com", "1"));
+  InitializeProfileState(/*user_id=*/"", /*metrics_consent=*/false,
+                         /*has_consented_to_metrics=*/false);
+
+  // User should inherit owner consent if migrating or new user.
+  SetShouldInheritOwnerConsent(true);
+
+  GetPerUserStateManager()->SetIsManaged(false);
+  GetPerUserStateManager()->SetDeviceMetricsConsent(true);
+
+  // Simulate user login.
+  LoginRegularUser(test_user);
+
+  // User log store is created async. Ensure that the log store loading
+  // finishes.
+  RunUntilIdle();
+
+  // User consent should be set to true since pref is true and device metrics
+  // consent is also true.
+  EXPECT_TRUE(
+      GetPerUserStateManager()->GetCurrentUserReportingConsentIfApplicable());
+
   EXPECT_TRUE(GetPerUserStateManager()->is_log_store_set());
 }
 

@@ -29,8 +29,10 @@
 #include "base/files/scoped_file.h"
 #include "base/json/json_writer.h"
 #include "base/logging.h"
+#include "base/memory/page_size.h"
 #include "base/posix/eintr_wrapper.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
@@ -102,6 +104,29 @@ std::map<base::PlatformThreadId, std::string> ThreadNames(pid_t pid) {
     char name[256];
     char state;
     sscanf(buffer, "%d %s %c %d %d", &process_id, name, &state, &ppid, &pgrp);
+
+    auto status_path = path.Append("status");
+    base::File status_file{status_path,
+                           base::File::FLAG_OPEN | base::File::FLAG_READ};
+    if (!status_file.IsValid()) {
+      LOG(WARNING) << "Invalid file: " << status_path.value();
+      continue;
+    }
+    bytes_read = status_file.ReadAtCurrentPos(buffer, 4096);
+    if (bytes_read <= 0)
+      continue;
+    buffer[bytes_read] = '\0';
+    auto lines = SplitString(buffer, "\n", base::TRIM_WHITESPACE,
+                             base::SPLIT_WANT_NONEMPTY);
+    for (base::StringPiece sp : lines) {
+      if (sp.rfind("NSpid:\t", 0) == 0) {
+        auto line_parts = SplitString(sp, "\t", base::TRIM_WHITESPACE,
+                                      base::SPLIT_WANT_NONEMPTY);
+        std::string inner_pid = line_parts.back();
+        sscanf(inner_pid.c_str(), "%d", &process_id);
+      }
+    }
+
     result[base::PlatformThreadId(process_id)] = std::string(name);
   }
 
@@ -153,6 +178,8 @@ class PartitionRootInspector {
     size_t slot_size = 0;
     size_t allocated_slots = 0;
     size_t freelist_size = 0;
+
+    base::internal::PartitionBucket<base::internal::ThreadSafe> bucket;
     std::vector<size_t> freelist_sizes;
     // Flattened versions of the lists.
     std::vector<SlotSpanMetadata<ThreadSafe>> active_slot_spans;
@@ -287,6 +314,7 @@ bool PartitionRootInspector::GatherStatistics() {
   for (auto& bucket : root_.get()->buckets) {
     BucketStats stats;
     stats.slot_size = bucket.slot_size;
+    stats.bucket = bucket;
 
     // Only look at the small buckets.
     if (bucket.slot_size > 4096)
@@ -323,12 +351,17 @@ bool PartitionRootInspector::GatherStatistics() {
         return false;
 
       size_t freelist_size =
-          bucket.get_slots_per_span() - allocated_unprovisioned;
+          active_slot_span.is_decommitted()
+              ? 0
+              : (bucket.get_slots_per_span() - allocated_unprovisioned);
 
       stats.freelist_size += freelist_size;
       stats.freelist_sizes.push_back(freelist_size);
     }
 
+    // Full slot spans are not in any list.
+    stats.allocated_slots +=
+        bucket.num_full_slot_spans * bucket.get_slots_per_span();
     bucket_stats_.push_back(stats);
   }
 
@@ -476,22 +509,46 @@ void DisplayRootData(PartitionRootInspector& root_inspector,
 }
 
 base::Value Dump(PartitionRootInspector& root_inspector) {
-  auto slot_span_to_value =
-      [](const SlotSpanMetadata<ThreadSafe>& slot_span) -> base::Value {
+  auto slot_span_to_value = [](const SlotSpanMetadata<ThreadSafe>& slot_span,
+                               size_t slots_per_span) -> base::Value {
     auto result = base::Value(base::Value::Type::DICTIONARY);
 
     result.SetKey("num_allocated_slots",
                   base::Value{slot_span.num_allocated_slots});
     result.SetKey("num_unprovisioned_slots",
                   base::Value{slot_span.num_unprovisioned_slots});
+    result.SetKey("freelist_is_sorted",
+                  base::Value{slot_span.freelist_is_sorted()});
+    result.SetKey("freelist_is_sorted",
+                  base::Value{slot_span.freelist_is_sorted()});
+    size_t freelist_size =
+        slot_span.is_decommitted()
+            ? 0
+            : (slots_per_span - slot_span.num_allocated_slots -
+               slot_span.num_unprovisioned_slots);
+    result.SetKey("freelist_size",
+                  base::Value{static_cast<int>(freelist_size)});
+    result.SetKey("marked_full", base::Value{slot_span.marked_full});
+    result.SetKey("is_empty", base::Value{slot_span.is_empty()});
+    result.SetKey("is_decommitted", base::Value{slot_span.is_decommitted()});
     return result;
   };
 
   auto bucket_to_value =
       [&](const PartitionRootInspector::BucketStats& stats) -> base::Value {
     auto result = base::Value(base::Value::Type::DICTIONARY);
+    const size_t kPageSize = base::GetPageSize();
+    size_t slots_per_span =
+        (stats.bucket.num_system_pages_per_slot_span * kPageSize) /
+        stats.slot_size;
 
     result.SetKey("slot_size", base::Value{static_cast<int>(stats.slot_size)});
+    result.SetKey("num_system_pages_per_slot_span",
+                  base::Value{stats.bucket.num_system_pages_per_slot_span});
+    result.SetKey("num_slots_per_span",
+                  base::Value{static_cast<int>(slots_per_span)});
+    result.SetKey("num_full_slot_spans",
+                  base::Value{stats.bucket.num_full_slot_spans});
     result.SetKey("allocated_slots",
                   base::Value{static_cast<int>(stats.allocated_slots)});
     result.SetKey("freelist_size",
@@ -499,19 +556,19 @@ base::Value Dump(PartitionRootInspector& root_inspector) {
 
     auto active_list = base::Value(base::Value::Type::LIST);
     for (auto& slot_span : stats.active_slot_spans) {
-      active_list.Append(slot_span_to_value(slot_span));
+      active_list.Append(slot_span_to_value(slot_span, slots_per_span));
     }
     result.SetKey("active_slot_spans", std::move(active_list));
 
     auto empty_list = base::Value(base::Value::Type::LIST);
     for (auto& slot_span : stats.empty_slot_spans) {
-      empty_list.Append(slot_span_to_value(slot_span));
+      empty_list.Append(slot_span_to_value(slot_span, slots_per_span));
     }
     result.SetKey("empty_slot_spans", std::move(empty_list));
 
     auto decommitted_list = base::Value(base::Value::Type::LIST);
     for (auto& slot_span : stats.decommitted_slot_spans) {
-      decommitted_list.Append(slot_span_to_value(slot_span));
+      decommitted_list.Append(slot_span_to_value(slot_span, slots_per_span));
     }
     result.SetKey("decommitted_slot_spans", std::move(decommitted_list));
 

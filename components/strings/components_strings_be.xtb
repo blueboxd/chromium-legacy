@@ -458,6 +458,7 @@
 <translation id="2310021320168182093">Chou2 (канверт)</translation>
 <translation id="2316887270356262533">Вызваліцца да 1 МБ. Некаторыя сайты могуць загружацца павальней пры наступным наведванні.</translation>
 <translation id="2317259163369394535">Для <ph name="DOMAIN" /> патрабуецца імя карыстальніка і пароль.</translation>
+<translation id="2318594867107319532">Апошняя метка часу палітыкі:</translation>
 <translation id="2328651992442742497">Дазволена (стандартна)</translation>
 <translation id="2329182534073751090">размяшчэнне вокнаў</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, дзейнічае да <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -492,6 +493,7 @@
 <translation id="2430968933669123598">Кіраванне Уліковым запісам Google. Каб кіраваць параметрамі даных, прыватнасці і бяспекі ва Уліковым запісе Google, націсніце Enter</translation>
 <translation id="2436186046335138073">Дазволіць <ph name="HANDLER_HOSTNAME" /> адкрываць усе спасылкі тыпу "<ph name="PROTOCOL" />"?</translation>
 <translation id="2438874542388153331">Чатыры дзіркі справа</translation>
+<translation id="2448295565072560657">Перыферыйныя прылады, падключаныя да прылады пры выкананым уваходзе ва ўліковы запіс</translation>
 <translation id="2450021089947420533">Шляхі карыстальніка</translation>
 <translation id="2463739503403862330">Запоўніць</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -499,6 +501,7 @@
 <translation id="2465688316154986572">Скаба</translation>
 <translation id="2465914000209955735">Кіраваць файламі, якія вы спампавалі ў браўзеры Chrome</translation>
 <translation id="2466004615675155314">Паказаць інфармацыю з інтэрнэту</translation>
+<translation id="2467272921457885625">Характарыстыкі апаратнага забеспячэння прылады і статыстыка (напрыклад, даныя пра выкарыстанне цэнтральнага працэсара і аператыўнай памяці)</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Запусціць дыягностыку сеткі<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">Парадак "ад 1 да N"</translation>
 <translation id="2470767536994572628">Калі вы будзеце змяняць анатацыі, гэты дакумент вернецца ў аднастаронкавы выгляд і прыме першапачатковую пазіцыю</translation>
@@ -525,6 +528,7 @@
 <translation id="2539524384386349900">Выявіць</translation>
 <translation id="2540701853218677861">Гісторыю ўваходу ў сістэму на прыладзе і выхаду з яе (у тым ліку меткі часу і інфармацыю пра няўдалыя спробы)</translation>
 <translation id="2541219929084442027">Старонкі, наведаныя ва ўкладках у рэжыме інкогніта, не будуць заставацца ў гісторыі браўзера, сховішчы файлаў cookie і гісторыі пошуку, пасля таго як вы закрыеце ўсе такія ўкладкі. Усе спампаваныя файлы і створаныя закладкі будуць захаваны.</translation>
+<translation id="2544546346215446551">Адміністратар перазапусціў вашу прыладу</translation>
 <translation id="2544644783021658368">Адзіны дакумент</translation>
 <translation id="2546283357679194313">Файлы сookie і даныя сайтаў</translation>
 <translation id="254947805923345898">Значэнне палітыкі несапраўднае.</translation>
@@ -938,7 +942,6 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Абнавіць дату і час</translation>
 <translation id="3858860766373142691">Назва</translation>
-<translation id="3879224246272917991">Статыстыка па абсталяванні: напрыклад, загружанасць працэсара, выкарыстанне аператыўнай памяці, характарыстыкі апаратнага забеспячэння</translation>
 <translation id="3881478300875776315">Паказваць менш радкоў</translation>
 <translation id="3884278016824448484">Канфлікт ідэнтыфікатара прылады</translation>
 <translation id="3885155851504623709">Прыход</translation>
@@ -973,6 +976,7 @@
 <translation id="3990250421422698716">Велічыня зруху</translation>
 <translation id="3996311196211510766">Сайт "<ph name="ORIGIN" />" патрабуе, каб на ўсе запыты да яго распаўсюджвалася
     палітыка крыніцы, але гэту палітыку зараз прымяніць нельга.</translation>
+<translation id="4006465311664329701">Спосабы аплаты, прапановы і адрасы, якія выкарыстоўваюць Google Pay</translation>
 <translation id="4009243425692662128">Змесціва старонак, якія вы друкуеце, перасылаецца для аналізу ў Google Cloud або староннія сэрвісы (напрыклад, для праверкі на наяўнасць канфідэнцыяльных даных).</translation>
 <translation id="4010758435855888356">Дазволіць доступ да сховішча?</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Дакумент PDF з {COUNT} старонкай}one{Дакумент PDF з {COUNT} старонкай}few{Дакумент PDF з {COUNT} старонкамі}many{Дакумент PDF з {COUNT} старонкамі}other{Дакумент PDF з {COUNT} старонкі}}</translation>
@@ -1252,6 +1256,7 @@
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />. Каб хутка стварыць новую табліцу Google, націсніце Tab, затым Enter</translation>
 <translation id="4825507807291741242">Моцны</translation>
 <translation id="483241715238664915">Уключыць папярэджанні</translation>
+<translation id="4834250788637067901">Спосабы аплаты, прапановы і адрасы, якія выкарыстоўваюць Google Pay</translation>
 <translation id="4838327282952368871">Летуценны</translation>
 <translation id="4840250757394056958">Праглядзець гісторыю Chrome</translation>
 <translation id="484462545196658690">Аўтаматычна</translation>
@@ -1379,7 +1384,6 @@
 <translation id="5205222826937269299">Увядзіце імя</translation>
 <translation id="5209518306177824490">Лічбавы адбітак SHA-1:</translation>
 <translation id="5209670883520018268">Латок 20</translation>
-<translation id="5215116848420601511">Спосабы аплаты і адрасы, якія выкарыстоўваюць Google Pay</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="521659676233207110">Латок 13</translation>
 <translation id="5216942107514965959">Апошняе наведванне: сёння</translation>
@@ -1658,6 +1662,7 @@
 <translation id="6157754950574419155">Выдаліць усе даныя з гісторыі</translation>
 <translation id="6157877588268064908">Выберыце адрас, каб убачыць спосабы дастаўкі і патрабаванні для дастаўкі</translation>
 <translation id="6165508094623778733">Даведацца больш</translation>
+<translation id="6167577165590485365">Апошняя спроба атрымання:</translation>
 <translation id="6169916984152623906">Цяпер вы можаце праглядаць вэб-старонкі ў прыватным рэжыме, іншыя карыстальнікі гэтай прылады не будуць бачыць вашы дзеянні. Аднак спампоўкі і закладкі будуць захоўвацца.</translation>
 <translation id="6177128806592000436">Ваша падключэнне да гэтага сайта небяспечнае</translation>
 <translation id="6180316780098470077">Інтэрвал паміж спробамі</translation>
@@ -2293,7 +2298,6 @@
 <translation id="8241712895048303527">Блакіраваць на гэтым сайце</translation>
 <translation id="8242426110754782860">Працягнуць</translation>
 <translation id="8249296373107784235">Скасаваць</translation>
-<translation id="8249320324621329438">Апошняе абнаўленне:</translation>
 <translation id="8253091569723639551">Патрабуецца адрас для выстаўлення рахункаў</translation>
 <translation id="8257387598443225809">Гэта праграма створана для мабільных прылад</translation>
 <translation id="825929999321470778">Паказаць усе захаваныя паролі</translation>
@@ -2496,7 +2500,6 @@
 <translation id="8975012916872825179">Уключае ў сябе такую інфармацыю, як нумары тэлефонаў, адрасы электроннай пошты і адрасы дастаўкі</translation>
 <translation id="8975263830901772334">Назвы файлаў, якія вы друкуеце</translation>
 <translation id="8978053250194585037">Бяспечны прагляд Google толькі што <ph name="BEGIN_LINK" />выявіў фішынг<ph name="END_LINK" /> на сайце <ph name="SITE" />. Фішынгавыя сайты выдаюць сябе за іншыя сайты, каб падмануць вас.</translation>
-<translation id="8983003182662520383">Спосабы аплаты і адрасы, якія выкарыстоўваюць Google Pay</translation>
 <translation id="8983369100812962543">Цяпер можна змяняць памер праграмы</translation>
 <translation id="8987245424886630962"><ph name="VIEW_CHROME_HISTORY_FOCUSED_FRIENDLY_MATCH_TEXT" />. Каб азнаёміцца з гісторыяй прагляду сайтаў у Chrome, націсніце Tab, затым Enter</translation>
 <translation id="8987927404178983737">Месяц</translation>

@@ -203,7 +203,7 @@ void MaybeCreateSafeBrowsing(
 }  // anonymous namespace
 
 std::string GetProduct() {
-  return embedder_support::GetProduct(/*allow_override=*/true);
+  return embedder_support::GetProductAndVersion();
 }
 
 std::string GetUserAgent() {
@@ -801,7 +801,12 @@ bool AwContentBrowserClient::
   // creation/modification NavigationStateChanged calls to preserve legacy
   // behavior (not firing extra onPageFinished calls), as initial
   // NavigationEntries used to not exist. See https://crbug.com/1277414.
-  return true;
+  // However, if kWebViewSynthesizePageLoadOnlyOnInitialMainDocumentAccess is
+  // enabled, we won't need to ignore the extra NavigationStateChanged() calls,
+  // because they won't trigger synthesized page loads and won't cause extra
+  // onPageFinished calls.
+  return !base::FeatureList::IsEnabled(
+      features::kWebViewSynthesizePageLoadOnlyOnInitialMainDocumentAccess);
 }
 
 bool AwContentBrowserClient::CreateThreadPool(base::StringPiece name) {
@@ -830,10 +835,10 @@ AwContentBrowserClient::CreateLoginDelegate(
 bool AwContentBrowserClient::HandleExternalProtocol(
     const GURL& url,
     content::WebContents::Getter web_contents_getter,
-    int child_id,
     int frame_tree_node_id,
     content::NavigationUIData* navigation_data,
-    bool is_main_frame,
+    bool is_primary_main_frame,
+    bool /* is_in_fenced_frame_tree */,
     network::mojom::WebSandboxFlags /*sandbox_flags*/,
     ui::PageTransition page_transition,
     bool has_user_gesture,

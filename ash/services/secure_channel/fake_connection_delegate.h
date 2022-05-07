@@ -11,9 +11,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Test ConnectionDelegate implementation.
 class FakeConnectionDelegate : public mojom::ConnectionDelegate {
@@ -64,8 +62,6 @@ class FakeConnectionDelegate : public mojom::ConnectionDelegate {
   mojo::PendingReceiver<mojom::MessageReceiver> message_receiver_receiver_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_CONNECTION_DELEGATE_H_

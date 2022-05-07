@@ -117,8 +117,7 @@ class OopPixelTest : public testing::Test,
     InitializeOOPContext();
     gles2_context_provider_ =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
-            /*enable_gles2_interface=*/true, /*support_locking=*/true,
-            viz::RasterInterfaceType::None);
+            viz::TestContextType::kGLES2, /*support_locking=*/true);
     gpu::ContextResult result = gles2_context_provider_->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
   }
@@ -133,8 +132,8 @@ class OopPixelTest : public testing::Test,
 
     raster_context_provider_ =
         base::MakeRefCounted<viz::TestInProcessContextProvider>(
-            /*enable_gles2_interface=*/false, /*support_locking=*/true,
-            viz::RasterInterfaceType::GPU, &gr_shader_cache_, &activity_flags_);
+            viz::TestContextType::kGpuRaster, /*support_locking=*/true,
+            &gr_shader_cache_, &activity_flags_);
     gpu::ContextResult result = raster_context_provider_->BindToCurrentThread();
     DCHECK_EQ(result, gpu::ContextResult::kSuccess);
     const int raster_max_texture_size =
@@ -219,7 +218,8 @@ class OopPixelTest : public testing::Test,
       raster_implementation->BeginRasterCHROMIUM(
           options.preclear_color, /*needs_clear=*/options.preclear,
           options.msaa_sample_count, msaa_mode, options.use_lcd_text,
-          options.target_color_params.color_space, mailbox.name);
+          /*visible=*/true, options.target_color_params.color_space,
+          mailbox.name);
       raster_implementation->EndRasterCHROMIUM();
     }
 
@@ -230,7 +230,8 @@ class OopPixelTest : public testing::Test,
     raster_implementation->BeginRasterCHROMIUM(
         options.background_color, /*needs_clear=*/!options.preclear,
         options.msaa_sample_count, msaa_mode, options.use_lcd_text,
-        options.target_color_params.color_space, mailbox.name);
+        /*visible=*/true, options.target_color_params.color_space,
+        mailbox.name);
     size_t max_op_size_limit =
         gpu::raster::RasterInterface::kDefaultMaxOpSizeHint;
     raster_implementation->RasterCHROMIUM(

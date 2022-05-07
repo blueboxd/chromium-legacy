@@ -7,8 +7,12 @@
         "reporting_origin": "https://r.test",
         "destination": "https://d.test",
         "registration_config": {
-          "trigger_data": "1"
-        }
+          "event_triggers": [
+            {
+              "trigger_data": "1"
+            }
+          ]
+	}
       }
     },
     {
@@ -18,8 +22,12 @@
         "reporting_origin": "https://r.test",
         "destination": "https://d.test",
         "registration_config": {
-          "trigger_data": "3",
-          "dedup_key": "22"
+          "event_triggers": [
+            {
+              "trigger_data": "3",
+              "deduplication_key": "22"
+            }
+          ]
         }
       }
     },
@@ -30,7 +38,11 @@
         "reporting_origin": "https://r.test",
         "destination": "https://d.test",
         "registration_config": {
-          "trigger_data": "6"
+          "event_triggers": [
+            {
+              "trigger_data": "6"
+            }
+          ]
         }
       }
     }
@@ -45,7 +57,7 @@
          "trigger_data": "2"
       },
       "report_time": 1643408373,
-      "report_url": "https://r.test/.well-known/attribution-reporting/report-attribution",
+      "report_url": "https://r.test/.well-known/attribution-reporting/report-event-attribution",
       "test_info": {
          "randomized_trigger": false
       }
@@ -59,7 +71,7 @@
          "trigger_data": "4"
       },
       "report_time": 1643408373,
-      "report_url": "https://r.test/.well-known/attribution-reporting/report-attribution",
+      "report_url": "https://r.test/.well-known/attribution-reporting/report-event-attribution",
       "test_info": {
          "randomized_trigger": false
       }
@@ -73,7 +85,7 @@
          "trigger_data": "5"
       },
       "report_time": 1643408373,
-      "report_url": "https://r.test/.well-known/attribution-reporting/report-attribution",
+      "report_url": "https://r.test/.well-known/attribution-reporting/report-event-attribution",
       "test_info": {
          "randomized_trigger": false
       }

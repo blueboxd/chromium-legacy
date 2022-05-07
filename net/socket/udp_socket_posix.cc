@@ -2,6 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "build/build_config.h"
+
+#if BUILDFLAG(IS_APPLE)
+// This must be defined before including <netinet/in.h>
+// to use IPV6_DONTFRAG, one of the IPv6 Sockets option introduced by RFC 3542
+#define __APPLE_USE_RFC_3542
+#endif  // BUILDFLAG(IS_APPLE)
+
 #include "net/socket/udp_socket_posix.h"
 
 #include <errno.h>
@@ -29,8 +37,7 @@
 #include "base/task/post_task.h"
 #include "base/task/task_runner_util.h"
 #include "base/task/thread_pool.h"
-#include "base/trace_event/trace_event.h"
-#include "build/build_config.h"
+#include "base/trace_event/typed_macros.h"
 #include "build/chromeos_buildflags.h"
 #include "net/base/features.h"
 #include "net/base/io_buffer.h"
@@ -63,6 +70,10 @@
 #include <dlfcn.h>
 #include <pthread.h>
 #endif  // BUILDFLAG(IS_APPLE) && !BUILDFLAG(CRONET_BUILD)
+
+#if BUILDFLAG(IS_MAC)
+#include "base/mac/mac_util.h"
+#endif  // BUILDFLAG(IS_MAC)
 
 namespace net {
 
@@ -140,6 +151,18 @@ const unsigned int GUARD_CLOSE = 1u << 0;
 const unsigned int GUARD_DUP = 1u << 1;
 
 const guardid_t kSocketFdGuard = 0xD712BC0BC9A4EAD4;
+
+// Returns true if `socket` is connected to 0.0.0.0, false otherwise.
+// For detecting slow socket close due to a MacOS bug
+// (https://crbug.com/1194888).
+bool PeerIsZeroIPv4(const UDPSocketPosix& socket) {
+  IPEndPoint peer;
+  // Note this may call `getpeername` if the address is not cached, adding some
+  // overhead.
+  if (socket.GetPeerAddress(&peer) != OK)
+    return false;
+  return peer.address().IsIPv4() && peer.address().IsZero();
+}
 
 #endif  // BUILDFLAG(IS_APPLE) && !BUILDFLAG(CRONET_BUILD)
 
@@ -288,6 +311,13 @@ void UDPSocketPosix::Close() {
   // crbug.com/906005.
   CHECK_EQ(socket_hash_, GetSocketFDHash(socket_));
 #if BUILDFLAG(IS_APPLE) && !BUILDFLAG(CRONET_BUILD)
+  // A MacOS bug can cause sockets to 0.0.0.0 to take 1 second to close. Log a
+  // trace event for this case so that it can be correlated with jank in traces.
+  // Use the "base" category since "net" isn't enabled by default. See
+  // https://crbug.com/1194888.
+  TRACE_EVENT("base", "CloseSocketUDP", "connected_to_zero",
+              PeerIsZeroIPv4(*this));
+
   // Attempt to clear errors on the socket so that they are not returned by
   // close(). See https://crbug.com/1151048.
   int value = 0;
@@ -546,8 +576,24 @@ int UDPSocketPosix::SetDoNotFragment() {
   DCHECK_NE(socket_, kInvalidSocket);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
-#if !defined(IP_PMTUDISC_DO)
+#if !defined(IP_PMTUDISC_DO) && !BUILDFLAG(IS_MAC)
   return ERR_NOT_IMPLEMENTED;
+
+// setsockopt(IP_DONTFRAG) is supported on macOS from Big Sur
+#elif BUILDFLAG(IS_MAC)
+  if (!base::mac::IsAtLeastOS11()) {
+    return ERR_NOT_IMPLEMENTED;
+  }
+  int val = 1;
+  if (addr_family_ == AF_INET6) {
+    int rv =
+        setsockopt(socket_, IPPROTO_IPV6, IPV6_DONTFRAG, &val, sizeof(val));
+    // IP_DONTFRAG is not supported on v4mapped addresses.
+    return rv == 0 ? OK : MapSystemError(errno);
+  }
+  int rv = setsockopt(socket_, IPPROTO_IP, IP_DONTFRAG, &val, sizeof(val));
+  return rv == 0 ? OK : MapSystemError(errno);
+
 #else
   if (addr_family_ == AF_INET6) {
     int val = IPV6_PMTUDISC_DO;
@@ -636,8 +682,8 @@ int UDPSocketPosix::AllowAddressSharingForMulticast() {
 }
 
 void UDPSocketPosix::ReadWatcher::OnFileCanReadWithoutBlocking(int) {
-  TRACE_EVENT0(NetTracingCategory(),
-               "UDPSocketPosix::ReadWatcher::OnFileCanReadWithoutBlocking");
+  TRACE_EVENT(NetTracingCategory(),
+              "UDPSocketPosix::ReadWatcher::OnFileCanReadWithoutBlocking");
   if (!socket_->read_callback_.is_null())
     socket_->DidCompleteRead();
 }

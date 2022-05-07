@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
@@ -48,6 +47,7 @@
 #include "storage/browser/test/mock_blob_registry_delegate.h"
 #include "storage/browser/test/mock_quota_manager.h"
 #include "storage/browser/test/mock_quota_manager_proxy.h"
+#include "storage/browser/test/mock_special_storage_policy.h"
 #include "storage/browser/test/test_file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
@@ -83,8 +83,10 @@ const storage::FileSystemType kFileSystemType =
 class BlobURLTest : public testing::Test {
  public:
   BlobURLTest()
-      : task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
-        blob_data_(new BlobDataBuilder("uuid")),
+      : special_storage_policy_(
+            base::MakeRefCounted<storage::MockSpecialStoragePolicy>()),
+        task_environment_(BrowserTaskEnvironment::IO_MAINLOOP),
+        blob_data_(std::make_unique<BlobDataBuilder>("uuid")),
         response_error_code_(net::OK),
         expected_error_code_(net::OK),
         expected_status_code_(0) {}
@@ -115,10 +117,9 @@ class BlobURLTest : public testing::Test {
   void SetUpFileSystem() {
     quota_manager_ = base::MakeRefCounted<storage::MockQuotaManager>(
         /*is_incognito=*/false, temp_dir_.GetPath(),
-        base::ThreadTaskRunnerHandle::Get(),
-        /*special_storage_policy=*/nullptr);
+        base::ThreadTaskRunnerHandle::Get(), special_storage_policy_);
     quota_manager_proxy_ = base::MakeRefCounted<storage::MockQuotaManagerProxy>(
-        quota_manager_.get(), base::ThreadTaskRunnerHandle::Get().get());
+        quota_manager_.get(), base::ThreadTaskRunnerHandle::Get());
     // Prepare file system.
     file_system_context_ = storage::CreateFileSystemContextForTesting(
         quota_manager_proxy_.get(), temp_dir_.GetPath());
@@ -136,12 +137,12 @@ class BlobURLTest : public testing::Test {
     const char kFilename1[] = "FileSystemFile1.dat";
     temp_file_system_file1_ = GetFileSystemURL(kFilename1);
     WriteFileSystemFile(kFilename1, kTestFileSystemFileData1,
-                        base::size(kTestFileSystemFileData1) - 1,
+                        std::size(kTestFileSystemFileData1) - 1,
                         &temp_file_system_file_modification_time1_);
     const char kFilename2[] = "FileSystemFile2.dat";
     temp_file_system_file2_ = GetFileSystemURL(kFilename2);
     WriteFileSystemFile(kFilename2, kTestFileSystemFileData2,
-                        base::size(kTestFileSystemFileData2) - 1,
+                        std::size(kTestFileSystemFileData2) - 1,
                         &temp_file_system_file_modification_time2_);
   }
 
@@ -322,6 +323,7 @@ class BlobURLTest : public testing::Test {
     return blob_context_.AsWeakPtr();
   }
 
+  scoped_refptr<storage::MockSpecialStoragePolicy> special_storage_policy_;
   base::ScopedTempDir temp_dir_;
   base::FilePath temp_file1_;
   base::FilePath temp_file2_;
@@ -355,13 +357,13 @@ class BlobURLTest : public testing::Test {
 
 TEST_F(BlobURLTest, TestGetSimpleDataRequest) {
   blob_data_->AppendData(kTestData1);
-  TestSuccessNonrangeRequest(kTestData1, base::size(kTestData1) - 1);
+  TestSuccessNonrangeRequest(kTestData1, std::size(kTestData1) - 1);
 }
 
 TEST_F(BlobURLTest, TestGetSimpleFileRequest) {
   blob_data_->AppendFile(temp_file1_, 0, std::numeric_limits<uint64_t>::max(),
                          base::Time());
-  TestSuccessNonrangeRequest(kTestFileData1, base::size(kTestFileData1) - 1);
+  TestSuccessNonrangeRequest(kTestFileData1, std::size(kTestFileData1) - 1);
 }
 
 TEST_F(BlobURLTest, TestGetLargeFileRequest) {
@@ -405,7 +407,7 @@ TEST_F(BlobURLTest, TestGetSimpleFileSystemFileRequest) {
       0, std::numeric_limits<uint64_t>::max(), base::Time(),
       file_system_context_);
   TestSuccessNonrangeRequest(kTestFileSystemFileData1,
-                             base::size(kTestFileSystemFileData1) - 1);
+                             std::size(kTestFileSystemFileData1) - 1);
 }
 
 TEST_F(BlobURLTest, TestGetLargeFileSystemFileRequest) {
@@ -470,7 +472,7 @@ TEST_F(BlobURLTest, TestGetSimpleDataHandleRequest) {
       base::MakeRefCounted<storage::FakeBlobDataHandle>(kTestDataHandleData1,
                                                         ""));
   TestSuccessNonrangeRequest(kTestDataHandleData1,
-                             base::size(kTestDataHandleData1) - 1);
+                             std::size(kTestDataHandleData1) - 1);
 }
 
 TEST_F(BlobURLTest, TestGetComplicatedDataFileAndDiskCacheRequest) {
@@ -570,7 +572,7 @@ TEST_F(BlobURLTest, TestSideData) {
   expected_status_code_ = 200;
   expected_response_ = kTestDataHandleData2;
   TestRequest("GET", net::HttpRequestHeaders());
-  EXPECT_EQ(static_cast<int>(base::size(kTestDataHandleData2) - 1),
+  EXPECT_EQ(static_cast<int>(std::size(kTestDataHandleData2) - 1),
             response_headers_->GetContentLength());
 
   EXPECT_EQ(std::string(kTestDiskCacheSideData), response_metadata_);
@@ -583,7 +585,7 @@ TEST_F(BlobURLTest, TestZeroSizeSideData) {
   expected_status_code_ = 200;
   expected_response_ = kTestDataHandleData2;
   TestRequest("GET", net::HttpRequestHeaders());
-  EXPECT_EQ(static_cast<int>(base::size(kTestDataHandleData2) - 1),
+  EXPECT_EQ(static_cast<int>(std::size(kTestDataHandleData2) - 1),
             response_headers_->GetContentLength());
 
   EXPECT_TRUE(response_metadata_.empty());

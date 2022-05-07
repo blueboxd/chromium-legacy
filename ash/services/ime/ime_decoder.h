@@ -11,7 +11,7 @@
 #include "base/scoped_native_library.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
+namespace ash {
 namespace ime {
 
 // START: Signatures of "C" API entry points of CrOS 1P IME shared library.
@@ -103,6 +103,6 @@ class ImeDecoderImpl : public ImeDecoder {
 };
 
 }  // namespace ime
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_IME_IME_DECODER_H_

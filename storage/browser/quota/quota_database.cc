@@ -18,6 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/metrics/histogram_functions.h"
 #include "components/services/storage/public/cpp/buckets/constants.h"
+#include "components/services/storage/public/cpp/quota_error_or.h"
 #include "sql/database.h"
 #include "sql/error_metrics.h"
 #include "sql/meta_table.h"
@@ -89,7 +90,7 @@ const QuotaDatabase::TableSchema QuotaDatabase::kTables[] = {
      " last_modified INTEGER NOT NULL,"
      " expiration INTEGER NOT NULL,"
      " quota INTEGER NOT NULL)"}};
-const size_t QuotaDatabase::kTableCount = base::size(QuotaDatabase::kTables);
+const size_t QuotaDatabase::kTableCount = std::size(QuotaDatabase::kTables);
 
 // static
 const QuotaDatabase::IndexSchema QuotaDatabase::kIndexes[] = {
@@ -99,7 +100,7 @@ const QuotaDatabase::IndexSchema QuotaDatabase::kIndexes[] = {
     {"buckets_by_last_modified", kBucketTable, "(type, last_modified)", false},
     {"buckets_by_expiration", kBucketTable, "(expiration)", false},
 };
-const size_t QuotaDatabase::kIndexCount = base::size(QuotaDatabase::kIndexes);
+const size_t QuotaDatabase::kIndexCount = std::size(QuotaDatabase::kIndexes);
 
 QuotaDatabase::BucketTableEntry::BucketTableEntry() = default;
 
@@ -271,6 +272,37 @@ QuotaErrorOr<BucketInfo> QuotaDatabase::GetBucket(
   return BucketInfo(BucketId(statement.ColumnInt64(0)), storage_key,
                     storage_type, bucket_name, statement.ColumnTime(1),
                     statement.ColumnInt(2));
+}
+
+QuotaErrorOr<BucketInfo> QuotaDatabase::GetBucketById(BucketId bucket_id) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  QuotaError open_error = EnsureOpened(EnsureOpenedMode::kFailIfNotFound);
+  if (open_error != QuotaError::kNone)
+    return open_error;
+
+  static constexpr char kSql[] =
+      // clang-format off
+      "SELECT storage_key, type, name, expiration, quota "
+        "FROM buckets "
+        "WHERE id = ?";
+  // clang-format on
+  sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
+  statement.BindInt64(0, bucket_id.value());
+
+  if (!statement.Step()) {
+    return statement.Succeeded() ? QuotaError::kNotFound
+                                 : QuotaError::kDatabaseError;
+  }
+
+  absl::optional<StorageKey> storage_key =
+      StorageKey::Deserialize(statement.ColumnString(0));
+  if (!storage_key.has_value())
+    return QuotaError::kNotFound;
+
+  return BucketInfo(bucket_id, storage_key.value(),
+                    static_cast<StorageType>(statement.ColumnInt(1)),
+                    statement.ColumnString(2), statement.ColumnTime(3),
+                    statement.ColumnInt(4));
 }
 
 QuotaErrorOr<std::set<BucketLocator>> QuotaDatabase::GetBucketsForType(
@@ -556,7 +588,9 @@ QuotaError QuotaDatabase::DeleteBucketInfo(BucketId bucket_id) {
   if (!statement.Run())
     return QuotaError::kDatabaseError;
 
-  ScheduleCommit();
+  // Commit so deletion is reflected immediately.
+  Commit();
+
   return QuotaError::kNone;
 }
 
@@ -685,6 +719,22 @@ QuotaError QuotaDatabase::SetIsBootstrapped(bool bootstrap_flag) {
   return meta_table_->SetValue(kBucketsTableBootstrapped, bootstrap_flag)
              ? QuotaError::kNone
              : QuotaError::kDatabaseError;
+}
+
+QuotaError QuotaDatabase::RazeAndReopen() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(db_);
+
+  // Abort the long-running transaction.
+  db_->RollbackTransaction();
+
+  // Raze and close the database. Reset `db_` to nullptr so EnsureOpened will
+  // recreate the database.
+  if (!db_->Raze())
+    return QuotaError::kDatabaseError;
+  db_ = nullptr;
+
+  return EnsureOpened(EnsureOpenedMode::kCreateIfNotFound);
 }
 
 QuotaError QuotaDatabase::CorruptForTesting(
@@ -1014,10 +1064,12 @@ QuotaErrorOr<BucketInfo> QuotaDatabase::CreateBucketInternal(
   if (!statement.Run())
     return QuotaError::kDatabaseError;
 
-  ScheduleCommit();
-
   int64_t bucket_id = db_->GetLastInsertRowId();
   DCHECK_GT(bucket_id, 0);
+
+  // Commit so bucket data is persisted immediately.
+  Commit();
+
   return BucketInfo(BucketId(bucket_id), storage_key, type, bucket_name,
                     base::Time::Max(), 0);
 }

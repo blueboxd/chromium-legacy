@@ -55,7 +55,7 @@ void MetricsReportingHandler::OnJavascriptDisallowed() {
 }
 
 void MetricsReportingHandler::HandleGetMetricsReporting(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   CHECK_GT(args.size(), 0u);
   const base::Value& callback_id = args[0];
@@ -85,7 +85,7 @@ std::unique_ptr<base::DictionaryValue>
 }
 
 void MetricsReportingHandler::HandleSetMetricsReportingEnabled(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   if (IsMetricsReportingPolicyManaged()) {
     NOTREACHED();
     // NOTE: ChangeMetricsReportingState() already checks whether metrics

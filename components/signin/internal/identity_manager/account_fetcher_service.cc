@@ -20,6 +20,7 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/internal/identity_manager/account_capabilities_fetcher.h"
+#include "components/signin/internal/identity_manager/account_capabilities_fetcher_factory.h"
 #include "components/signin/internal/identity_manager/account_info_fetcher.h"
 #include "components/signin/internal/identity_manager/account_tracker_service.h"
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service.h"
@@ -27,6 +28,7 @@
 #include "components/signin/public/base/signin_client.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/identity_manager/account_capabilities.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "net/http/http_status_code.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
@@ -74,7 +76,9 @@ void AccountFetcherService::Initialize(
     SigninClient* signin_client,
     ProfileOAuth2TokenService* token_service,
     AccountTrackerService* account_tracker_service,
-    std::unique_ptr<image_fetcher::ImageDecoder> image_decoder) {
+    std::unique_ptr<image_fetcher::ImageDecoder> image_decoder,
+    std::unique_ptr<AccountCapabilitiesFetcherFactory>
+        account_capabilities_fetcher_factory) {
   DCHECK(signin_client);
   DCHECK(!signin_client_);
   signin_client_ = signin_client;
@@ -88,6 +92,11 @@ void AccountFetcherService::Initialize(
   DCHECK(image_decoder);
   DCHECK(!image_decoder_);
   image_decoder_ = std::move(image_decoder);
+  DCHECK(!account_capabilities_fetcher_factory_);
+  DCHECK(account_capabilities_fetcher_factory);
+  account_capabilities_fetcher_factory_ =
+      std::move(account_capabilities_fetcher_factory);
+
   repeating_timer_ = std::make_unique<signin::PersistentRepeatingTimer>(
       signin_client_->GetPrefs(), AccountFetcherService::kLastUpdatePref,
       kRefreshFromTokenServiceDelay,
@@ -238,28 +247,28 @@ void AccountFetcherService::SetIsChildAccount(const CoreAccountId& account_id,
 }
 #endif
 
-bool AccountFetcherService::IsAccountCapabilitiesFetcherEnabled() {
+bool AccountFetcherService::IsAccountCapabilitiesFetchingEnabled() {
   if (enable_account_capabilities_fetcher_for_test_)
     return true;
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  return true;
-#else
-  return false;
-#endif
+  return base::FeatureList::IsEnabled(
+      switches::kEnableFetchingAccountCapabilities);
 }
 
 void AccountFetcherService::StartFetchingAccountCapabilities(
-    const CoreAccountId& account_id) {
+    const CoreAccountInfo& account_info) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(network_fetches_enabled_);
 
   std::unique_ptr<AccountCapabilitiesFetcher>& request =
-      account_capabilities_requests_[account_id];
+      account_capabilities_requests_[account_info.account_id];
   if (!request) {
-    request = std::make_unique<AccountCapabilitiesFetcher>(
-        token_service_, signin_client_->GetURLLoaderFactory(), this,
-        account_id);
+    request =
+        account_capabilities_fetcher_factory_->CreateAccountCapabilitiesFetcher(
+            account_info,
+            base::BindOnce(
+                &AccountFetcherService::OnAccountCapabilitiesFetchComplete,
+                base::Unretained(this)));
     request->Start();
   }
 }
@@ -273,8 +282,8 @@ void AccountFetcherService::RefreshAccountInfo(const CoreAccountId& account_id,
 
   if ((!only_fetch_if_invalid ||
        !info.capabilities.AreAllCapabilitiesKnown()) &&
-      IsAccountCapabilitiesFetcherEnabled()) {
-    StartFetchingAccountCapabilities(account_id);
+      IsAccountCapabilitiesFetchingEnabled()) {
+    StartFetchingAccountCapabilities(info);
   }
 
   // |only_fetch_if_invalid| is false when the service is due for a timed
@@ -381,17 +390,13 @@ void AccountFetcherService::OnUserInfoFetchFailure(
   user_info_requests_.erase(account_id);
 }
 
-void AccountFetcherService::OnAccountCapabilitiesFetchSuccess(
+void AccountFetcherService::OnAccountCapabilitiesFetchComplete(
     const CoreAccountId& account_id,
-    const AccountCapabilities& account_capabilities) {
-  account_tracker_service_->SetAccountCapabilities(account_id,
-                                                   account_capabilities);
-  account_capabilities_requests_.erase(account_id);
-}
-
-void AccountFetcherService::OnAccountCapabilitiesFetchFailure(
-    const CoreAccountId& account_id) {
-  VLOG(1) << "Failed to get AccountCapabilities for " << account_id;
+    const absl::optional<AccountCapabilities>& account_capabilities) {
+  if (account_capabilities.has_value()) {
+    account_tracker_service_->SetAccountCapabilities(account_id,
+                                                     *account_capabilities);
+  }
   // |account_id| is owned by the request. Cannot be used after this line.
   account_capabilities_requests_.erase(account_id);
 }

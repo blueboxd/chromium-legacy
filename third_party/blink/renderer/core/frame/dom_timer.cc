@@ -92,16 +92,19 @@ DOMTimer::DOMTimer(ExecutionContext* context,
   // Step 11:
   // Note: The implementation uses >= instead of >, contrary to what the spec
   // requires crbug.com/1108877.
-  if (nesting_level_ >= kMaxTimerNestingLevel && timeout < kMinimumInterval)
+  int max_nesting_level = features::IsMaxUnthrottledTimeoutNestingLevelEnabled()
+                              ? features::GetMaxUnthrottledTimeoutNestingLevel()
+                              : kMaxTimerNestingLevel;
+  if (nesting_level_ >= max_nesting_level && timeout < kMinimumInterval)
     timeout = kMinimumInterval;
 
   // Select TaskType based on nesting level.
   TaskType task_type;
-  if (timeout.is_zero()) {
-    task_type = TaskType::kJavascriptTimerImmediate;
-    DCHECK_LT(nesting_level_, kMaxTimerNestingLevel);
-  } else if (nesting_level_ >= kMaxTimerNestingLevel) {
+  if (nesting_level_ >= kMaxTimerNestingLevel) {
     task_type = TaskType::kJavascriptTimerDelayedHighNesting;
+  } else if (timeout.is_zero()) {
+    task_type = TaskType::kJavascriptTimerImmediate;
+    DCHECK_LT(nesting_level_, max_nesting_level);
   } else {
     task_type = TaskType::kJavascriptTimerDelayedLowNesting;
   }
@@ -181,17 +184,23 @@ void DOMTimer::Fired() {
     // Make adjustments when the nesting level becomes >= |kMaxNestingLevel|.
     // Note: The implementation uses >= instead of >, contrary to what the spec
     // requires crbug.com/1108877.
+    int max_nesting_level =
+        features::IsMaxUnthrottledTimeoutNestingLevelEnabled()
+            ? features::GetMaxUnthrottledTimeoutNestingLevel()
+            : kMaxTimerNestingLevel;
+    // Step 11:
+    if (nesting_level_ == max_nesting_level &&
+        RepeatInterval() < kMinimumInterval) {
+      AugmentRepeatInterval(kMinimumInterval - RepeatInterval());
+    }
     if (nesting_level_ == kMaxTimerNestingLevel) {
       // Move to the TaskType that corresponds to nesting level >=
       // |kMaxNestingLevel|.
       MoveToNewTaskRunner(
           context->GetTaskRunner(TaskType::kJavascriptTimerDelayedHighNesting));
-      // Step 11:
-      if (RepeatInterval() < kMinimumInterval)
-        AugmentRepeatInterval(kMinimumInterval - RepeatInterval());
     }
 
-    DCHECK(nesting_level_ < kMaxTimerNestingLevel ||
+    DCHECK(nesting_level_ < max_nesting_level ||
            RepeatInterval() >= kMinimumInterval);
 
     // No access to member variables after this point, it can delete the timer.

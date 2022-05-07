@@ -57,6 +57,13 @@ export class RealboxElement extends PolymerElement {
       // Public properties
       //========================================================================
 
+      /** Whether the theme is dark. */
+      isDark: {
+        type: Boolean,
+        computed: `computeIsDark_(theme)`,
+        reflectToAttribute: true,
+      },
+
       /** Whether matches are currently visible. */
       matchesAreVisible: {
         type: Boolean,
@@ -173,6 +180,7 @@ export class RealboxElement extends PolymerElement {
     };
   }
 
+  isDark: boolean;
   matchesAreVisible: boolean;
   matchSearchbox: boolean;
   theme: SearchBoxTheme;
@@ -208,7 +216,7 @@ export class RealboxElement extends PolymerElement {
     return this.selectedMatch_ ? 'off' : 'polite';
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.autocompleteResultChangedListenerId_ =
         this.callbackRouter_.autocompleteResultChanged.addListener(
@@ -218,7 +226,7 @@ export class RealboxElement extends PolymerElement {
             this.onAutocompleteMatchImageAvailable_.bind(this));
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     this.callbackRouter_.removeListener(
         assert(this.autocompleteResultChangedListenerId_!));
@@ -226,7 +234,7 @@ export class RealboxElement extends PolymerElement {
         assert(this.autocompleteMatchImageAvailableListenerId_!));
   }
 
-  ready() {
+  override ready() {
     super.ready();
     performance.measure('realbox-creation', 'realbox-creation-start');
   }
@@ -644,6 +652,13 @@ export class RealboxElement extends PolymerElement {
   //============================================================================
   // Helpers
   //============================================================================
+
+  private computeIsDark_(): boolean {
+    if (!this.theme) {
+      return false;
+    }
+    return this.theme.isDark;
+  }
 
   private computeSelectedMatch_(): AutocompleteMatch|null {
     if (!this.result_ || !this.result_.matches) {

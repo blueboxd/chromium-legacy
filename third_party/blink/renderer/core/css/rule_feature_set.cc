@@ -126,6 +126,7 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoAfter:
     case CSSSelector::kPseudoMarker:
     case CSSSelector::kPseudoModal:
+    case CSSSelector::kPseudoSelectorFragmentAnchor:
     case CSSSelector::kPseudoBackdrop:
     case CSSSelector::kPseudoLang:
     case CSSSelector::kPseudoDir:
@@ -187,10 +188,11 @@ bool SupportsInvalidation(CSSSelector::PseudoType type) {
     case CSSSelector::kPseudoSpellingError:
     case CSSSelector::kPseudoGrammarError:
     case CSSSelector::kPseudoHas:
-    case CSSSelector::kPseudoTransition:
-    case CSSSelector::kPseudoTransitionContainer:
-    case CSSSelector::kPseudoTransitionNewContent:
-    case CSSSelector::kPseudoTransitionOldContent:
+    case CSSSelector::kPseudoPageTransition:
+    case CSSSelector::kPseudoPageTransitionContainer:
+    case CSSSelector::kPseudoPageTransitionImageWrapper:
+    case CSSSelector::kPseudoPageTransitionIncomingImage:
+    case CSSSelector::kPseudoPageTransitionOutgoingImage:
       return true;
     case CSSSelector::kPseudoUnknown:
     case CSSSelector::kPseudoLeftPage:
@@ -634,6 +636,7 @@ InvalidationSet* RuleFeatureSet::InvalidationSetForSimpleSelector(
       case CSSSelector::kPseudoHasDatalist:
       case CSSSelector::kPseudoMultiSelectFocus:
       case CSSSelector::kPseudoModal:
+      case CSSSelector::kPseudoSelectorFragmentAnchor:
         return &EnsurePseudoInvalidationSet(selector.GetPseudoType(), type,
                                             position);
       case CSSSelector::kPseudoFirstOfType:
@@ -1570,10 +1573,6 @@ bool RuleFeatureSet::NeedsHasInvalidationForElement(Element& element) const {
 bool RuleFeatureSet::NeedsHasInvalidationForPseudoClass(
     CSSSelector::PseudoType pseudo_type) const {
   return pseudos_in_has_argument_.Contains(pseudo_type);
-}
-
-bool RuleFeatureSet::NeedsHasInvalidationForPseudoStateChange() const {
-  return !pseudos_in_has_argument_.IsEmpty();
 }
 
 void RuleFeatureSet::InvalidationSetFeatures::Add(

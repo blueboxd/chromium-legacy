@@ -15,6 +15,7 @@
 
 #include "ash/components/disks/disk.h"
 #include "ash/components/disks/disk_mount_manager.h"
+#include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -33,6 +34,7 @@
 #include "chrome/browser/ash/drive/file_system_util.h"
 #include "chrome/browser/ash/file_manager/copy_or_move_io_task.h"
 #include "chrome/browser/ash/file_manager/delete_io_task.h"
+#include "chrome/browser/ash/file_manager/extract_io_task.h"
 #include "chrome/browser/ash/file_manager/fileapi_util.h"
 #include "chrome/browser/ash/file_manager/io_task.h"
 #include "chrome/browser/ash/file_manager/path_util.h"
@@ -630,7 +632,8 @@ FileManagerPrivateGetSizeStatsFunction::Run() {
   base::WeakPtr<Volume> volume =
       volume_manager->FindVolumeById(params->volume_id);
   if (!volume.get())
-    return RespondNow(Error("Volume not found"));
+    return RespondNow(
+        Error("GetSizeStats: volume with ID * not found", params->volume_id));
 
   if (volume->type() == file_manager::VOLUME_TYPE_MTP) {
     // Resolve storage_name.
@@ -790,7 +793,8 @@ FileManagerPrivateFormatVolumeFunction::Run() {
   base::WeakPtr<Volume> volume =
       volume_manager->FindVolumeById(params->volume_id);
   if (!volume)
-    return RespondNow(Error("Volume not found"));
+    return RespondNow(
+        Error("FormatVolume: volume with ID * not found", params->volume_id));
 
   DiskMountManager::GetInstance()->FormatMountedDevice(
       volume->mount_path().AsUTF8Unsafe(),
@@ -850,7 +854,8 @@ FileManagerPrivateRenameVolumeFunction::Run() {
   base::WeakPtr<Volume> volume =
       volume_manager->FindVolumeById(params->volume_id);
   if (!volume)
-    return RespondNow(Error("Volume not found"));
+    return RespondNow(
+        Error("RenameVolume: volume with ID * not found", params->volume_id));
 
   DiskMountManager::GetInstance()->RenameMountedDevice(
       volume->mount_path().AsUTF8Unsafe(), params->new_name);
@@ -1553,6 +1558,16 @@ FileManagerPrivateInternalStartIOTaskFunction::Run() {
       task = std::make_unique<file_manager::io_task::DeleteIOTask>(
           std::move(source_urls), file_system_context);
       break;
+    case file_manager::io_task::OperationType::kExtract:
+      if (base::FeatureList::IsEnabled(
+              chromeos::features::kFilesExtractArchive)) {
+        task = std::make_unique<file_manager::io_task::ExtractIOTask>(
+            std::move(source_urls), std::move(destination_folder_url),
+            file_system_context);
+        break;
+      }
+      // Fall through
+      ABSL_FALLTHROUGH_INTENDED;
     default:
       // TODO(b/199804935): Replace with MoveIOTask when implemented.
       task = std::make_unique<file_manager::io_task::DummyIOTask>(

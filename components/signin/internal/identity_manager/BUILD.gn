@@ -13,6 +13,7 @@ source_set("identity_manager") {
     "account_capabilities_constants.h",
     "account_capabilities_fetcher.cc",
     "account_capabilities_fetcher.h",
+    "account_capabilities_fetcher_factory.h",
     "account_fetcher_service.cc",
     "account_fetcher_service.h",
     "account_info_fetcher.cc",
@@ -71,6 +72,10 @@ source_set("identity_manager") {
 
   if (is_android) {
     sources += [
+      "account_capabilities_fetcher_android.cc",
+      "account_capabilities_fetcher_android.h",
+      "account_capabilities_fetcher_factory_android.cc",
+      "account_capabilities_fetcher_factory_android.h",
       "child_account_info_fetcher_android.cc",
       "child_account_info_fetcher_android.h",
       "profile_oauth2_token_service_delegate_android.cc",
@@ -79,6 +84,13 @@ source_set("identity_manager") {
     deps += [
       "//components/signin/internal/base",
       "//components/signin/public/android:jni_headers",
+    ]
+  } else {
+    sources += [
+      "account_capabilities_fetcher_factory_gaia.cc",
+      "account_capabilities_fetcher_factory_gaia.h",
+      "account_capabilities_fetcher_gaia.cc",
+      "account_capabilities_fetcher_gaia.h",
     ]
   }
 
@@ -138,6 +150,7 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "account_capabilities_fetcher_unittest.cc",
     "account_info_util_unittest.cc",
     "account_tracker_service_unittest.cc",
     "gaia_cookie_manager_service_unittest.cc",
@@ -179,6 +192,11 @@ source_set("unit_tests") {
 
   if (is_android) {
     sources += [ "profile_oauth2_token_service_delegate_android_unittest.cc" ]
+
+    deps += [
+      "//components/signin/public/android:signin_java_test_support",
+      "//components/signin/public/android:test_support_jni_headers",
+    ]
   }
 
   if (is_chromeos_ash) {
@@ -211,6 +229,10 @@ static_library("test_support") {
   testonly = true
 
   sources = [
+    "fake_account_capabilities_fetcher.cc",
+    "fake_account_capabilities_fetcher.h",
+    "fake_account_capabilities_fetcher_factory.cc",
+    "fake_account_capabilities_fetcher_factory.h",
     "fake_profile_oauth2_token_service.cc",
     "fake_profile_oauth2_token_service.h",
     "fake_profile_oauth2_token_service_delegate.cc",
@@ -228,6 +250,7 @@ static_library("test_support") {
   public_deps = [
     ":identity_manager",
     "//base",
+    "//components/signin/public/identity_manager",
     "//google_apis:test_support",
   ]
 }

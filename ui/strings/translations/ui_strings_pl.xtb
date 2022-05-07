@@ -62,7 +62,6 @@
 <translation id="2666092431469916601">Do góry</translation>
 <translation id="2701330563083355633">Tę kartę udostępnia <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Nowy</translation>
-<translation id="2743387203779672305">Skopiuj do schowka</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{rok temu}few{# lata temu}many{# lat temu}other{# roku temu}}</translation>
 <translation id="2878511608894704031">Usuń wszystko</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{za 1 dzień}few{za # dni}many{za # dni}other{za # dnia}}</translation>
@@ -94,10 +93,11 @@
 <translation id="3889424535448813030">Strzałka w prawo</translation>
 <translation id="3897092660631435901">Menu</translation>
 <translation id="3909791450649380159">Wy&amp;tnij</translation>
+<translation id="3924145049010392604">Meta</translation>
 <translation id="3990502903496589789">Krawędź po prawej</translation>
 <translation id="3994749195054421561">Kolumna <ph name="COLUMN_NAME" /> została posortowana rosnąco.</translation>
+<translation id="4031910098617850788">F5</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 nieprzeczytane powiadomienie}few{# nieprzeczytane powiadomienia}many{# nieprzeczytanych powiadomień}other{# nieprzeczytanego powiadomienia}}</translation>
-<translation id="4250229828105606438">Zrzut ekranu</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{miesiąc temu}few{# miesiące temu}many{# miesięcy temu}other{# miesiąca temu}}</translation>
 <translation id="4289300219472526559">Zacznij mówić</translation>
 <translation id="4289540628985791613">Przegląd</translation>
@@ -204,7 +204,6 @@
 <translation id="8730621377337864115">Gotowe</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 godz.}few{# godz.}many{# godz.}other{# godz.}}</translation>
 <translation id="8798099450830957504">Domyślny</translation>
-<translation id="883911313571074303">Dodaj notatkę na grafice</translation>
 <translation id="8841375032071747811">Przycisk Wstecz</translation>
 <translation id="8867568208303837180">Wysyłam...</translation>
 <translation id="8876215549894133151">Format:</translation>

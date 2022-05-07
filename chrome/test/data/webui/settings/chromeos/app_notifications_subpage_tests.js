@@ -107,7 +107,7 @@ class FakeAppNotificationHandler {
   }
 
   /**
-   * @return {!apps.mojom.Permission}
+   * @return {!appManagement.mojom.Permission}
    */
   getLastUpdatedPermission() {
     return this.lastUpdatedAppPermission_;
@@ -148,7 +148,7 @@ class FakeAppNotificationHandler {
 
   /**
    * @param {string} id
-   * @param {!apps.mojom.Permission} permission
+   * @param {!appManagement.mojom.Permission} permission
    */
   setNotificationPermission(id, permission) {
     return new Promise(resolve => {
@@ -223,12 +223,13 @@ suite('AppNotificationsSubpageTests', function() {
   /**
    * @param {string} id
    * @param {string} title
-   * @param {!apps.mojom.Permission} permission
-   * @param {?apps.mojom.Readiness} readiness
+   * @param {!appManagement.mojom.Permission} permission
+   * @param {?chromeos.settings.appNotification.mojom.Readiness} readiness
    * @return {!chromeos.settings.appNotification.mojom.App}
    */
   function createApp(
-      id, title, permission, readiness = apps.mojom.Readiness.kReady) {
+      id, title, permission,
+      readiness = chromeos.settings.appNotification.mojom.Readiness.kReady) {
     return {
       id: id,
       title: title,
@@ -302,7 +303,8 @@ suite('AppNotificationsSubpageTests', function() {
     assertEquals(2, appRowList.length);
 
     const app3 = createApp(
-        '1', 'App1', permission1, apps.mojom.Readiness.kUninstalledByUser);
+        '1', 'App1', permission1,
+        chromeos.settings.appNotification.mojom.Readiness.kUninstalledByUser);
     simulateNotificationAppChanged(app3);
 
     await flushTasks();

@@ -29,9 +29,9 @@ import static org.hamcrest.core.AllOf.allOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_CHOICE_LIST;
-import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW;
-import static org.chromium.chrome.browser.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
+import static org.chromium.components.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_CHOICE_LIST;
+import static org.chromium.components.autofill_assistant.AssistantTagsForTesting.COLLECT_USER_DATA_TERMS_REQUIRE_REVIEW;
+import static org.chromium.components.autofill_assistant.AssistantTagsForTesting.VERTICAL_EXPANDER_CHEVRON;
 
 import android.support.test.InstrumentationRegistry;
 import android.view.View;
@@ -47,27 +47,33 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.chrome.autofill_assistant.R;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
-import org.chromium.chrome.browser.autofill_assistant.AssistantOptionModel.AddressModel;
-import org.chromium.chrome.browser.autofill_assistant.AssistantOptionModel.ContactModel;
-import org.chromium.chrome.browser.autofill_assistant.AssistantOptionModel.PaymentInstrumentModel;
 import org.chromium.chrome.browser.autofill_assistant.AutofillAssistantCollectUserDataTestHelper.ViewHolder;
-import org.chromium.chrome.browser.autofill_assistant.generic_ui.AssistantValue;
-import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
-import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantCollectUserDataModel;
-import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantContactField;
-import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantLoginChoice;
-import org.chromium.chrome.browser.autofill_assistant.user_data.AssistantTermsAndConditionsState;
-import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionFactory;
-import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantStaticTextSection;
-import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection;
-import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputSection.TextInputFactory;
-import org.chromium.chrome.browser.autofill_assistant.user_data.additional_sections.AssistantTextInputType;
 import org.chromium.chrome.browser.customtabs.CustomTabActivityTestRule;
 import org.chromium.chrome.browser.customtabs.CustomTabsTestUtils;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.components.autofill_assistant.AssistantAutofillCreditCard;
+import org.chromium.components.autofill_assistant.AssistantAutofillProfile;
+import org.chromium.components.autofill_assistant.AssistantDialogButton;
+import org.chromium.components.autofill_assistant.AssistantInfoPopup;
+import org.chromium.components.autofill_assistant.AssistantOptionModel.AddressModel;
+import org.chromium.components.autofill_assistant.AssistantOptionModel.ContactModel;
+import org.chromium.components.autofill_assistant.AssistantOptionModel.PaymentInstrumentModel;
+import org.chromium.components.autofill_assistant.AssistantPaymentInstrument;
+import org.chromium.components.autofill_assistant.AssistantStaticDependencies;
+import org.chromium.components.autofill_assistant.R;
+import org.chromium.components.autofill_assistant.generic_ui.AssistantValue;
+import org.chromium.components.autofill_assistant.user_data.AssistantCollectUserDataCoordinator;
+import org.chromium.components.autofill_assistant.user_data.AssistantCollectUserDataModel;
+import org.chromium.components.autofill_assistant.user_data.AssistantContactField;
+import org.chromium.components.autofill_assistant.user_data.AssistantLoginChoice;
+import org.chromium.components.autofill_assistant.user_data.AssistantTermsAndConditionsState;
+import org.chromium.components.autofill_assistant.user_data.additional_sections.AssistantAdditionalSectionFactory;
+import org.chromium.components.autofill_assistant.user_data.additional_sections.AssistantStaticTextSection;
+import org.chromium.components.autofill_assistant.user_data.additional_sections.AssistantTextInputSection;
+import org.chromium.components.autofill_assistant.user_data.additional_sections.AssistantTextInputSection.TextInputFactory;
+import org.chromium.components.autofill_assistant.user_data.additional_sections.AssistantTextInputType;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.ArrayList;
@@ -286,7 +292,7 @@ public class AutofillAssistantCollectUserDataUiTest {
                 .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
                 () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
 
-        /* Request all PR sections. */
+        // Request all PR sections.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             model.set(AssistantCollectUserDataModel.DELEGATE, delegate);
             model.set(AssistantCollectUserDataModel.REQUEST_NAME, true);
@@ -296,6 +302,25 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.REQUEST_SHIPPING_ADDRESS, true);
             model.set(AssistantCollectUserDataModel.REQUEST_LOGIN_CHOICE, true);
             model.set(AssistantCollectUserDataModel.VISIBLE, true);
+        });
+
+        // Without WebContents, there are no editors and the 'add' buttons should be removed.
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mContactSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mPaymentSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mShippingSection))))
+                .check(matches(not(isDisplayed())));
+        onView(allOf(withId(R.id.section_title_add_button),
+                       isDescendantOfA(is(viewHolder.mLoginsSection))))
+                .check(matches(not(isDisplayed())));
+
+        // Add WebContents to set editors.
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.WEB_CONTENTS, mTestRule.getWebContents());
         });
 
         // Empty sections should display the 'add' button in their title.
@@ -314,7 +339,7 @@ public class AutofillAssistantCollectUserDataUiTest {
                        isDescendantOfA(is(viewHolder.mLoginsSection))))
                 .check(matches(not(isDisplayed())));
 
-        /* Empty sections should be 'fixed', i.e., they can not be expanded. */
+        // Empty sections should be 'fixed', i.e., they can not be expanded.
         onView(allOf(withTagValue(is(VERTICAL_EXPANDER_CHEVRON)),
                        isDescendantOfA(is(viewHolder.mContactSection))))
                 .check(matches(not(isDisplayed())));
@@ -325,7 +350,7 @@ public class AutofillAssistantCollectUserDataUiTest {
                        isDescendantOfA(is(viewHolder.mShippingSection))))
                 .check(matches(not(isDisplayed())));
 
-        /* Empty sections are collapsed. */
+        // Empty sections are collapsed.
         onView(allOf(withTagValue(is(COLLECT_USER_DATA_CHOICE_LIST)),
                        isDescendantOfA(is(viewHolder.mContactSection))))
                 .check(matches(not(isDisplayed())));
@@ -336,7 +361,7 @@ public class AutofillAssistantCollectUserDataUiTest {
                        isDescendantOfA(is(viewHolder.mShippingSection))))
                 .check(matches(not(isDisplayed())));
 
-        /* Empty sections should be empty. */
+        // Empty sections should be empty.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             assertThat(viewHolder.mContactList.getItemCount(), is(0));
             assertThat(viewHolder.mPaymentMethodList.getItemCount(), is(0));
@@ -344,7 +369,7 @@ public class AutofillAssistantCollectUserDataUiTest {
             assertThat(viewHolder.mLoginList.getItemCount(), is(0));
         });
 
-        /* Test delegate status. */
+        // Test delegate status.
         assertThat(delegate.mPaymentInstrument, nullValue());
         assertThat(delegate.mContact, nullValue());
         assertThat(delegate.mShippingAddress, nullValue());
@@ -539,14 +564,13 @@ public class AutofillAssistantCollectUserDataUiTest {
                     new ContactModel(contact));
             AssistantAutofillProfile phone_number = createDummyContact(profile);
             model.set(AssistantCollectUserDataModel.AVAILABLE_PHONE_NUMBERS,
-                    Collections.singletonList(new ContactModel(contact)));
+                    Collections.singletonList(new ContactModel(phone_number)));
             model.set(
                     AssistantCollectUserDataModel.SELECTED_PHONE_NUMBER, new ContactModel(contact));
-            AssistantAutofillProfile address = createDummyAddress(profile);
             model.set(AssistantCollectUserDataModel.AVAILABLE_SHIPPING_ADDRESSES,
-                    Collections.singletonList(new AddressModel(address)));
+                    Collections.singletonList(createAddressModel(profile)));
             model.set(AssistantCollectUserDataModel.SELECTED_SHIPPING_ADDRESS,
-                    new AddressModel(address));
+                    createAddressModel(profile));
             AssistantPaymentInstrument paymentInstrument =
                     AssistantCollectUserDataModel.createAssistantPaymentInstrument(
                             createDummyCreditCard(creditCard), createDummyAddress(profile));
@@ -628,7 +652,7 @@ public class AutofillAssistantCollectUserDataUiTest {
             model.set(AssistantCollectUserDataModel.AVAILABLE_CONTACTS,
                     Collections.singletonList(new ContactModel(contact)));
             model.set(AssistantCollectUserDataModel.AVAILABLE_SHIPPING_ADDRESSES,
-                    Collections.singletonList(new AddressModel(createDummyAddress(profile))));
+                    Collections.singletonList(createAddressModel(profile)));
             AssistantPaymentInstrument paymentInstrument =
                     AssistantCollectUserDataModel.createAssistantPaymentInstrument(
                             createDummyCreditCard(creditCard), createDummyAddress(profile));
@@ -1138,5 +1162,15 @@ public class AutofillAssistantCollectUserDataUiTest {
                 creditCard.getIssuerIconDrawableId(), creditCard.getBillingAddressId(),
                 creditCard.getServerId(), creditCard.getInstrumentId(), creditCard.getNickname(),
                 creditCard.getCardArtUrl(), creditCard.getVirtualCardEnrollmentState());
+    }
+
+    private AddressModel createAddressModel(PersonalDataManager.AutofillProfile profile) {
+        String fullDescription =
+                PersonalDataManager.getInstance()
+                        .getShippingAddressLabelWithCountryForPaymentRequest(profile);
+        String summaryDescription =
+                PersonalDataManager.getInstance()
+                        .getShippingAddressLabelWithoutCountryForPaymentRequest(profile);
+        return new AddressModel(createDummyAddress(profile), fullDescription, summaryDescription);
     }
 }

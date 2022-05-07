@@ -64,7 +64,9 @@
 #include "third_party/blink/public/common/chrome_debug_urls.h"
 
 #if BUILDFLAG(IS_WIN)
+#include "base/test/scoped_feature_list.h"
 #include "base/win/windows_version.h"
+#include "sandbox/policy/features.h"
 #endif
 
 namespace content {
@@ -882,6 +884,27 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
   EXPECT_EQ(0, host_destructions_);
 }
 
+#if BUILDFLAG(IS_WIN)
+// Test class instance to run specific setup steps for renderer app container.
+class RendererAppContainerRenderProcessHostTest : public RenderProcessHostTest {
+ public:
+  RendererAppContainerRenderProcessHostTest() {
+    scoped_feature_list_.InitWithFeatureState(
+        sandbox::policy::features::kRendererAppContainer, true);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(RendererAppContainerRenderProcessHostTest, Navigate) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("foo.com", "/title1.html")));
+}
+
+#endif  // BUILDFLAG(IS_WIN)
+
 // Test class instance to run specific setup steps for capture streams.
 class CaptureStreamRenderProcessHostTest : public RenderProcessHostTest {
  public:
@@ -1620,8 +1643,10 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, AllowUnusedProcessToExit) {
 
   // There shouldn't be live RenderViewHosts or proxies either.
   EXPECT_FALSE(original_rfh->GetRenderViewHost()->IsRenderViewLive());
-  EXPECT_FALSE(root->render_manager()->GetRenderFrameProxyHost(
-      original_rfh->GetSiteInstance()->group()));
+  EXPECT_FALSE(
+      root->current_frame_host()
+          ->browsing_context_state()
+          ->GetRenderFrameProxyHost(original_rfh->GetSiteInstance()->group()));
 
   // Reset the process exit related counts.
   process_exits_ = 0;
@@ -1750,8 +1775,10 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   EXPECT_EQ(0, host_destructions_);
 
   // There shouldn't be live proxies either.
-  RenderFrameProxyHost* proxy = root->render_manager()->GetRenderFrameProxyHost(
-      child_rfh1->GetSiteInstance()->group());
+  RenderFrameProxyHost* proxy =
+      root->current_frame_host()
+          ->browsing_context_state()
+          ->GetRenderFrameProxyHost(child_rfh1->GetSiteInstance()->group());
   EXPECT_FALSE(proxy->is_render_frame_proxy_live());
 
   // Reset the process exit related counts.

@@ -5,10 +5,9 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_CONSTANTS_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PARTITION_ALLOC_CONSTANTS_H_
 
-#include <limits.h>
-#include <cstddef>
-
 #include <algorithm>
+#include <climits>
+#include <cstddef>
 #include <limits>
 
 #include "base/allocator/partition_allocator/address_pool_manager_types.h"
@@ -22,7 +21,28 @@
 #include <mach/vm_page_size.h>
 #endif
 
-namespace partition_alloc::internal {
+namespace partition_alloc {
+
+// Bit flag constants used at `flag` argument of PartitionRoot::AllocWithFlags,
+// AlignedAllocWithFlags, etc.
+struct AllocFlags {
+  // In order to support bit operations like `flag_a | flag_b`, the old-
+  // fashioned enum (+ surrounding named struct) is used instead of enum class.
+  enum : int {
+    kReturnNull = 1 << 0,
+    kZeroFill = 1 << 1,
+    kNoHooks = 1 << 2,  // Internal only.
+    // If the allocation requires a "slow path" (such as allocating/committing a
+    // new slot span), return nullptr instead. Note this makes all large
+    // allocations return nullptr, such as direct-mapped ones, and even for
+    // smaller ones, a nullptr value is common.
+    kFastPathOrReturnNull = 1 << 3,  // Internal only.
+
+    kLastFlag = kFastPathOrReturnNull
+  };
+};
+
+namespace internal {
 
 // Size of a cache line. Not all CPUs in the world have a 64 bytes cache line
 // size, but as of 2021, most do. This is in particular the case for almost all
@@ -245,14 +265,14 @@ static constexpr pool_handle kConfigurablePoolHandle = 3;
 constexpr size_t kMaxMemoryTaggingSize = 1024;
 
 #if defined(PA_HAS_MEMORY_TAGGING)
-// Returns whether the tag of a pointer/slot overflowed and slot needs to be
-// moved to quarantine.
-constexpr ALWAYS_INLINE bool HasOverflowTag(uintptr_t ptr) {
+// Returns whether the tag of |object| overflowed and the containing slot needs
+// to be moved to quarantine.
+ALWAYS_INLINE bool HasOverflowTag(void* object) {
   // The tag with which the slot is put to quarantine.
   constexpr uintptr_t kOverflowTag = 0x0f00000000000000uLL;
   static_assert((kOverflowTag & ~kMemTagUnmask) != 0,
                 "Overflow tag must be in tag bits");
-  return (ptr & ~kMemTagUnmask) == kOverflowTag;
+  return (reinterpret_cast<uintptr_t>(object) & ~kMemTagUnmask) == kOverflowTag;
 }
 #endif  // defined(PA_HAS_MEMORY_TAGGING)
 
@@ -342,7 +362,7 @@ MaxDirectMapped() {
   return (1UL << 31) - kSuperPageSize;
 }
 
-// Max alignment supported by AlignedAllocFlags().
+// Max alignment supported by AlignedAllocWithFlags().
 // kSuperPageSize alignment can't be easily supported, because each super page
 // starts with guard pages & metadata.
 constexpr size_t kMaxSupportedAlignment = kSuperPageSize / 2;
@@ -370,7 +390,7 @@ constexpr size_t kBitsPerSizeT = sizeof(void*) * CHAR_BIT;
 // *possibly* empty SlotSpans.
 //
 // In all cases, PartitionRoot::PurgeMemory() with the
-// PartitionPurgeDecommitEmptySlotSpans flag will eagerly decommit all entries
+// PurgeFlags::kDecommitEmptySlotSpans flag will eagerly decommit all entries
 // in the ring buffer, so with periodic purge enabled, this typically happens
 // every few seconds.
 constexpr size_t kEmptyCacheIndexBits = 7;
@@ -397,26 +417,15 @@ constexpr unsigned char kQuarantinedByte = 0xEF;
 // static_cast<uint32_t>(-1) is too close to a "real" size.
 constexpr size_t kInvalidBucketSize = 1;
 
-// Flags for `PartitionAllocFlags`.
-enum PartitionAllocFlags {
-  PartitionAllocReturnNull = 1 << 0,
-  PartitionAllocZeroFill = 1 << 1,
-  PartitionAllocNoHooks = 1 << 2,  // Internal only.
-  // If the allocation requires a "slow path" (such as allocating/committing a
-  // new slot span), return nullptr instead. Note this makes all large
-  // allocations return nullptr, such as direct-mapped ones, and even for
-  // smaller ones, a nullptr value is common.
-  PartitionAllocFastPathOrReturnNull = 1 << 3,  // Internal only.
+}  // namespace internal
 
-  PartitionAllocLastFlag = PartitionAllocFastPathOrReturnNull
-};
-
-}  // namespace partition_alloc::internal
+}  // namespace partition_alloc
 
 namespace base {
 
 // TODO(https://crbug.com/1288247): Remove these 'using' declarations once
 // the migration to the new namespaces gets done.
+using ::partition_alloc::AllocFlags;
 using ::partition_alloc::internal::DirectMapAllocationGranularity;
 using ::partition_alloc::internal::DirectMapAllocationGranularityOffsetMask;
 using ::partition_alloc::internal::DirectMapAllocationGranularityShift;
@@ -464,12 +473,6 @@ using ::partition_alloc::internal::MaxSuperPagesInPool;
 using ::partition_alloc::internal::MaxSystemPagesPerRegularSlotSpan;
 using ::partition_alloc::internal::NumPartitionPagesPerSuperPage;
 using ::partition_alloc::internal::NumSystemPagesPerPartitionPage;
-using ::partition_alloc::internal::PartitionAllocFastPathOrReturnNull;
-using ::partition_alloc::internal::PartitionAllocFlags;
-using ::partition_alloc::internal::PartitionAllocLastFlag;
-using ::partition_alloc::internal::PartitionAllocNoHooks;
-using ::partition_alloc::internal::PartitionAllocReturnNull;
-using ::partition_alloc::internal::PartitionAllocZeroFill;
 using ::partition_alloc::internal::PartitionPageBaseMask;
 using ::partition_alloc::internal::PartitionPageOffsetMask;
 using ::partition_alloc::internal::PartitionPageShift;

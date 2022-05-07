@@ -18,8 +18,8 @@ class Popup {
 
   /** @param {number} value */
   setSchemeRadio(value) {
-    var radios = document.querySelectorAll('input[name="scheme"]');
-    for (var i = 0; i < radios.length; i++) {
+    const radios = document.querySelectorAll('input[name="scheme"]');
+    for (let i = 0; i < radios.length; i++) {
       radios[i].checked = (radios[i].value == value);
       radios[i].disabled = !Storage.enabled;
     }
@@ -85,22 +85,22 @@ class Popup {
   }
 
   addRadioListeners() {
-    var radios = document.querySelectorAll('input[name="scheme"]');
-    for (var i = 0; i < radios.length; i++) {
+    const radios = document.querySelectorAll('input[name="scheme"]');
+    for (let i = 0; i < radios.length; i++) {
       radios[i].addEventListener('change', (event) => {
-        this.onSchemeChange(event.target.value);
+        this.onSchemeChange(Number(event.target.value));
       }, false);
       radios[i].addEventListener('click', (event) => {
-        this.onSchemeChange(event.target.value);
+        this.onSchemeChange(Number(event.target.value));
       }, false);
     }
   }
 
   init() {
-    var i18nElements = document.querySelectorAll('*[i18n-content]');
-    for (var i = 0; i < i18nElements.length; i++) {
-      var elem = i18nElements[i];
-      var msg = elem.getAttribute('i18n-content');
+    const i18nElements = document.querySelectorAll('*[i18n-content]');
+    for (let i = 0; i < i18nElements.length; i++) {
+      const elem = i18nElements[i];
+      const msg = elem.getAttribute('i18n-content');
       elem.innerHTML = chrome.i18n.getMessage(msg);
     }
 
@@ -118,8 +118,8 @@ class Popup {
     }
 
     chrome.windows.getLastFocused({'populate': true}, (window) => {
-      for (var i = 0; i < window.tabs.length; i++) {
-        var tab = window.tabs[i];
+      for (let i = 0; i < window.tabs.length; i++) {
+        const tab = window.tabs[i];
         if (tab.active) {
           if (isDisallowedUrl(tab.url)) {
             $('scheme_title').innerText =

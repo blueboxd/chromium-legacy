@@ -17,7 +17,7 @@ import '../../settings_shared_css.js';
 import '../../settings_shared_css.js';
 import '../guest_os/guest_os_shared_usb_devices.js';
 import '../guest_os/guest_os_shared_paths.js';
-import '//resources/cr_components/chromeos/localized_link/localized_link.js';
+import '//resources/cr_components/localized_link/localized_link.js';
 import './android_apps_subpage.js';
 import './app_notifications_page/app_notifications_subpage.js';
 import './app_management_page/app_management_page.js';
@@ -33,7 +33,7 @@ import {assert, assertNotReached} from 'chrome://resources/js/assert.m.js';
 
 import {loadTimeData} from '../../i18n_setup.js';
 import {Route, Router} from '../../router.js';
-import {DeepLinkingBehavior} from '../deep_linking_behavior.m.js';
+import {DeepLinkingBehavior} from '../deep_linking_behavior.js';
 import {routes} from '../os_route.m.js';
 import {PrefsBehavior} from '../prefs_behavior.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
@@ -48,16 +48,17 @@ import {getAppNotificationProvider} from './app_notifications_page/mojo_interfac
  */
 export function isAppInstalled(app) {
   switch (app.readiness) {
-    case apps.mojom.Readiness.kReady:
-    case apps.mojom.Readiness.kDisabledByBlocklist:
-    case apps.mojom.Readiness.kDisabledByPolicy:
-    case apps.mojom.Readiness.kDisabledByUser:
-    case apps.mojom.Readiness.kTerminated:
+    case chromeos.settings.appNotification.mojom.Readiness.kReady:
+    case chromeos.settings.appNotification.mojom.Readiness.kDisabledByBlocklist:
+    case chromeos.settings.appNotification.mojom.Readiness.kDisabledByPolicy:
+    case chromeos.settings.appNotification.mojom.Readiness.kDisabledByUser:
+    case chromeos.settings.appNotification.mojom.Readiness.kTerminated:
       return true;
-    case apps.mojom.Readiness.kUninstalledByUser:
-    case apps.mojom.Readiness.kUninstalledByMigration:
-    case apps.mojom.Readiness.kRemoved:
-    case apps.mojom.Readiness.kUnknown:
+    case chromeos.settings.appNotification.mojom.Readiness.kUninstalledByUser:
+    case chromeos.settings.appNotification.mojom.Readiness
+        .kUninstalledByMigration:
+    case chromeos.settings.appNotification.mojom.Readiness.kRemoved:
+    case chromeos.settings.appNotification.mojom.Readiness.kUnknown:
       return false;
   }
   assertNotReached();

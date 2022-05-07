@@ -145,7 +145,7 @@ void PolicyUIHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
-void PolicyUIHandler::HandleCopyPoliciesJson(base::Value::ConstListView args) {
+void PolicyUIHandler::HandleCopyPoliciesJson(const base::Value::List& args) {
   NSString* jsonString = base::SysUTF8ToNSString(GetPoliciesAsJson());
   [UIPasteboard generalPasteboard].string = jsonString;
 }
@@ -211,11 +211,11 @@ base::Value PolicyUIHandler::GetPolicyValues() const {
 }
 
 void PolicyUIHandler::HandleListenPoliciesUpdates(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   OnRefreshPoliciesDone();
 }
 
-void PolicyUIHandler::HandleReloadPolicies(base::Value::ConstListView args) {
+void PolicyUIHandler::HandleReloadPolicies(const base::Value::List& args) {
   GetPolicyService()->RefreshPolicies(base::BindOnce(
       &PolicyUIHandler::OnRefreshPoliciesDone, weak_factory_.GetWeakPtr()));
 }

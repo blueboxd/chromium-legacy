@@ -33,9 +33,9 @@ namespace input_method {
 
 namespace {
 
-using ::chromeos::ime::TextSuggestion;
-using ::chromeos::ime::TextSuggestionMode;
-using ::chromeos::ime::TextSuggestionType;
+using ime::TextSuggestion;
+using ime::TextSuggestionMode;
+using ime::TextSuggestionType;
 
 const size_t kMaxConfirmedTextLength = 10;
 constexpr size_t kMaxTextBeforeCursorLength = 50;
@@ -239,8 +239,7 @@ SuggestionStatus PersonalInfoSuggester::HandleKeyEvent(
 }
 
 bool PersonalInfoSuggester::Suggest(const std::u16string& text,
-                                    size_t cursor_pos,
-                                    size_t anchor_pos) {
+                                    size_t cursor_pos) {
   // |text| could be very long, we get at most |kMaxTextBeforeCursorLength|
   // characters before cursor.
   int start_pos = cursor_pos >= kMaxTextBeforeCursorLength

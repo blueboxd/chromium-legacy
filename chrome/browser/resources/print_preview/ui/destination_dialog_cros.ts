@@ -27,17 +27,16 @@ import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialo
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {EventTracker} from 'chrome://resources/js/event_tracker.m.js';
 import {ListPropertyUpdateMixin} from 'chrome://resources/js/list_property_update_mixin.js';
-import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {WebUIListenerMixin} from 'chrome://resources/js/web_ui_listener_mixin.js';
-import {beforeNextRender, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {beforeNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {Destination, GooglePromotedDestinationId} from '../data/destination.js';
 import {DestinationStore, DestinationStoreEventType} from '../data/destination_store.js';
 import {PrintServerStore, PrintServerStoreEventType} from '../data/print_server_store.js';
 import {DestinationSearchBucket, MetricsContext} from '../metrics.js';
 import {NativeLayerImpl} from '../native_layer.js';
-import {PrintServer, PrintServersConfig} from '../native_layer_cros.js';
 
+import {getTemplate} from './destination_dialog_cros.html.js';
 import {PrintPreviewDestinationListItemElement} from './destination_list_item.js';
 import {PrintPreviewSearchBoxElement} from './print_preview_search_box.js';
 import {PrintPreviewProvisionalDestinationResolverElement} from './provisional_destination_resolver.js';
@@ -65,7 +64,7 @@ export class PrintPreviewDestinationDialogCrosElement extends
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -151,13 +150,13 @@ export class PrintPreviewDestinationDialogCrosElement extends
   private initialized_: boolean = false;
   private printServerStore_: PrintServerStore|null = null;
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
 
     this.tracker_.removeAll();
   }
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.addEventListener('keydown', e => this.onKeydown_(e as KeyboardEvent));

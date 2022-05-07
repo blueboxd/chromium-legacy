@@ -22,10 +22,10 @@ export enum State {
   EXPERT = 'expert',
   FPS_30 = 'fps-30',
   FPS_60 = 'fps-60',
-  /* eslint-disable camelcase */
+  /* eslint-disable @typescript-eslint/naming-convention */
   GRID_3x3 = 'grid-3x3',
   GRID_4x4 = 'grid-4x4',
-  /* eslint-enable camelcase */
+  /* eslint-enable @typescript-eslint/naming-convention */
   GRID_GOLDEN = 'grid-golden',
   GRID = 'grid',
   HAS_BACK_CAMERA = 'has-back-camera',
@@ -40,7 +40,6 @@ export enum State {
   MIRROR = 'mirror',
   MODE_SWITCHING = 'mode-switching',
   MULTI_CAMERA = 'multi-camera',
-  MULTI_FPS = 'multi-fps',
   NO_RESOLUTION_SETTINGS = 'no-resolution-settings',
   PLAYING_RESULT_VIDEO = 'playing-result-video',
   PRINT_PERFORMANCE_LOGS = 'print-performance-logs',
@@ -72,7 +71,7 @@ export enum State {
   USE_FAKE_CAMERA = 'use-fake-camera',
 }
 
-export type StateUnion = State|Mode|ViewName|PerfEvent;
+export type StateUnion = Mode|PerfEvent|State|ViewName;
 
 const stateValues = new Set<StateUnion>(
     [State, Mode, ViewName, PerfEvent].flatMap((s) => Object.values(s)));
@@ -91,6 +90,7 @@ const allObservers = new Map<StateUnion, Set<StateObserver>>();
 
 /**
  * Adds observer function to be called on any state change.
+ *
  * @param state State to be observed.
  * @param observer Observer function called with newly changed value.
  */
@@ -105,6 +105,7 @@ export function addObserver(state: StateUnion, observer: StateObserver): void {
 
 /**
  * Adds one-time observer function to be called on any state change.
+ *
  * @param state State to be observed.
  * @param observer Observer function called with newly changed value.
  */
@@ -119,6 +120,7 @@ export function addOneTimeObserver(
 
 /**
  * Removes observer function to be called on state change.
+ *
  * @param state State to remove observer from.
  * @param observer Observer function to be removed.
  * @return Whether the observer is in the set and is removed successfully or
@@ -135,6 +137,7 @@ export function removeObserver(
 
 /**
  * Checks if the specified state exists.
+ *
  * @param state State to be checked.
  * @return Whether the state exists.
  */
@@ -145,6 +148,7 @@ export function get(state: StateUnion): boolean {
 /**
  * Sets the specified state on or off. Optionally, pass the information for
  * performance measurement.
+ *
  * @param state State to be set.
  * @param val True to set the state on, false otherwise.
  * @param perfInfo Optional information of this state for performance
@@ -158,7 +162,7 @@ export function set(
   }
 
   document.body.classList.toggle(state, val);
-  const observers = allObservers.get(state) || [];
+  const observers = allObservers.get(state) ?? [];
   for (const observer of observers) {
     observer(val, perfInfo);
   }

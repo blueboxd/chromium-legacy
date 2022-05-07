@@ -8,11 +8,14 @@ import("//tools/polymer/html_to_js.gni")
 import("//tools/typescript/ts_library.gni")
 import("//ui/webui/resources/tools/generate_grd.gni")
 
+assert(!is_android && !is_ios)
+
 preprocess_folder_tmp = "$root_gen_dir/ui/webui/resources/preprocessed/cr_components/app_management_tmp"
 preprocess_folder =
     "$root_gen_dir/ui/webui/resources/preprocessed/cr_components/app_management"
 
 web_component_files = [
+  "file_handling_item.ts",
   "icons.ts",
   "more_permissions_item.ts",
   "permission_item.ts",
@@ -41,8 +44,60 @@ mojom("mojo_bindings") {
   webui_module_path = "/"
 
   public_deps = [
-    "//components/services/app_service/public/mojom",
     "//mojo/public/mojom/base",
+    "//url/mojom:url_mojom_gurl",
+  ]
+
+  cpp_typemaps = [
+    {
+      types = [
+        {
+          mojom = "app_management.mojom.AppType"
+          cpp = "::apps::AppType"
+        },
+        {
+          mojom = "app_management.mojom.PermissionType"
+          cpp = "::apps::PermissionType"
+        },
+        {
+          mojom = "app_management.mojom.Permission"
+          cpp = "::apps::PermissionPtr"
+          move_only = true
+        },
+        {
+          mojom = "app_management.mojom.InstallReason"
+          cpp = "::apps::InstallReason"
+        },
+        {
+          mojom = "app_management.mojom.InstallSource"
+          cpp = "::apps::InstallSource"
+        },
+        {
+          mojom = "app_management.mojom.WindowMode"
+          cpp = "::apps::WindowMode"
+        },
+        {
+          mojom = "app_management.mojom.RunOnOsLoginMode"
+          cpp = "::apps::RunOnOsLoginMode"
+        },
+        {
+          mojom = "app_management.mojom.RunOnOsLogin"
+          cpp = "::apps::RunOnOsLoginPtr"
+          move_only = true
+        },
+      ]
+      traits_headers = [
+        "//ui/webui/resources/cr_components/app_management/app_management_mojom_traits.h",
+        "//components/services/app_service/public/cpp/app_types.h",
+        "//components/services/app_service/public/cpp/permission.h",
+        "//components/services/app_service/public/cpp/run_on_os_login_types.h",
+      ]
+      traits_sources = [ "//ui/webui/resources/cr_components/app_management/app_management_mojom_traits.cc" ]
+      traits_public_deps = [
+        "//components/services/app_service/public/cpp:app_types",
+        "//components/services/app_service/public/cpp:run_on_os_login",
+      ]
+    },
   ]
 }
 
@@ -102,4 +157,17 @@ generate_grd("build_grdp") {
   deps = [ ":build_ts" ]
   manifest_files = [ "$target_gen_dir/tsconfig.manifest" ]
   resource_path_prefix = "cr_components/app_management"
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "app_management_mojom_traits_unittests.cc" ]
+
+  deps = [
+    ":mojo_bindings",
+    "//base/test:test_support",
+    "//chrome/test:test_support",
+    "//mojo/public/cpp/test_support:test_utils",
+    "//testing/gtest",
+  ]
 }

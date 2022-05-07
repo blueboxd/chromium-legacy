@@ -15,7 +15,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 
-namespace chromeos {
+namespace ash {
 namespace ime {
 
 // Handles rule-based input methods such as Arabic and Vietnamese.
@@ -74,6 +74,6 @@ class AssociatedRuleBasedEngine : public InputEngine,
 };
 
 }  // namespace ime
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_IME_ASSOCIATED_RULE_BASED_ENGINE_H_

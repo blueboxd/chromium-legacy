@@ -178,6 +178,11 @@ StatusBox.prototype = {
       this.setLabelAndShow_('.managed-by', status.enterpriseDomainManager);
     }
 
+    if (status.timeSinceLastFetchAttempt) {
+      this.setLabelAndShow_(
+          '.time-since-last-fetch-attempt', status.timeSinceLastFetchAttempt);
+    }
+
     if (status.timeSinceLastRefresh) {
       this.setLabelAndShow_(
           '.time-since-last-refresh', status.timeSinceLastRefresh);
@@ -231,7 +236,7 @@ PolicyConflict.prototype = {
                                            'levelMandatory');
     this.querySelector('.source').textContent =
         loadTimeData.getString(conflict.source);
-    this.querySelector('.value.row .value').textContent = conflict.value;
+    this.querySelector('.value').textContent = conflict.value;
     this.querySelector('.name').textContent = loadTimeData.getString(row_label);
   }
 };
@@ -256,10 +261,10 @@ PolicyRow.prototype = {
    */
   decorate() {
     const toggle = this.querySelector('.policy.row .toggle');
-    toggle.addEventListener('click', this.toggleExpanded_.bind(this));
+    toggle.addEventListener('click', () => this.toggleExpanded_());
 
     const copy = this.querySelector('.copy-value');
-    copy.addEventListener('click', this.copyValue_.bind(this));
+    copy.addEventListener('click', () => this.copyValue_());
   },
 
   /** @param {Policy} policy */

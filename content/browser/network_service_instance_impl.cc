@@ -63,7 +63,7 @@
 #include "base/win/security_util.h"
 #include "base/win/sid.h"
 #include "base/win/windows_version.h"
-#include "sandbox/policy/features.h"
+#include "sandbox/features.h"
 #elif BUILDFLAG(IS_ANDROID)
 #include "content/common/android/cpu_affinity_setter.h"
 #endif  // BUILDFLAG(IS_WIN)
@@ -168,7 +168,7 @@ std::unique_ptr<network::NetworkService>& GetLocalNetworkService() {
 // called from the IO thread.
 const base::Feature kNetworkServiceDedicatedThread {
   "NetworkServiceDedicatedThread",
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
       base::FEATURE_DISABLED_BY_DEFAULT
 #else
       base::FEATURE_ENABLED_BY_DEFAULT
@@ -365,7 +365,7 @@ bool MaybeGrantAccessToDataPath(const SandboxParameters& sandbox_params,
     return false;
 #if BUILDFLAG(IS_WIN)
   // On platforms that don't support the LPAC sandbox, do nothing.
-  if (!sandbox::policy::features::IsWinNetworkServiceSandboxSupported())
+  if (!sandbox::features::IsAppContainerSandboxSupported())
     return true;
   DCHECK(!sandbox_params.lpac_capability_name.empty());
   auto ac_sids = base::win::Sid::FromNamedCapabilityVector(
@@ -1115,8 +1115,8 @@ void FlushNetworkServiceInstanceForTesting() {
 }
 
 network::NetworkConnectionTracker* GetNetworkConnectionTracker() {
-  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (!g_network_connection_tracker) {
     g_network_connection_tracker = new network::NetworkConnectionTracker(
         base::BindRepeating(&BindNetworkChangeManagerReceiver));
@@ -1139,6 +1139,8 @@ CreateNetworkConnectionTrackerAsyncGetter() {
 
 void SetNetworkConnectionTrackerForTesting(
     network::NetworkConnectionTracker* network_connection_tracker) {
+  DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::UI) ||
+         BrowserThread::CurrentlyOn(BrowserThread::UI));
   if (g_network_connection_tracker != network_connection_tracker) {
     DCHECK(!g_network_connection_tracker || !network_connection_tracker);
     g_network_connection_tracker = network_connection_tracker;
@@ -1221,7 +1223,9 @@ GetNewCertVerifierServiceRemote(
 void RunInProcessCertVerifierServiceFactory(
     mojo::PendingReceiver<cert_verifier::mojom::CertVerifierServiceFactory>
         receiver) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
+  // See the comment in GetCertVerifierServiceFactory() for the thread-affinity
+  // of the CertVerifierService.
   DCHECK(!BrowserThread::IsThreadInitialized(BrowserThread::IO) ||
          BrowserThread::CurrentlyOn(BrowserThread::IO));
 #else
@@ -1257,10 +1261,11 @@ GetCertVerifierServiceFactory() {
   if (!factory_remote_storage.is_bound() ||
       !factory_remote_storage.is_connected()) {
     factory_remote_storage.reset();
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    // ChromeOS's in-process CertVerifierService should run on the IO thread
-    // because it interacts with IO-bound NSS and ChromeOS user slots.
-    // See for example InitializeNSSForChromeOSUser().
+#if BUILDFLAG(IS_CHROMEOS)
+    // In-process CertVerifierService in Ash and Lacros should run on the IO
+    // thread because it interacts with IO-bound NSS and ChromeOS user slots.
+    // See for example InitializeNSSForChromeOSUser() or
+    // CertDbInitializerIOImpl.
     GetIOThreadTaskRunner({})->PostTask(
         FROM_HERE,
         base::BindOnce(&RunInProcessCertVerifierServiceFactory,

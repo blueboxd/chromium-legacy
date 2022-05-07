@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/compositor_frame_transition_directive.h"
@@ -70,6 +71,15 @@ SurfaceSavedFrame::SurfaceSavedFrame(
 SurfaceSavedFrame::~SurfaceSavedFrame() {
   if (directive_finished_callback_)
     std::move(directive_finished_callback_).Run(directive_.sequence_id());
+}
+
+base::flat_set<SharedElementResourceId> SurfaceSavedFrame::GetEmptyResourceIds()
+    const {
+  base::flat_set<SharedElementResourceId> result;
+  for (auto& shared_element : directive_.shared_elements())
+    if (shared_element.render_pass_id.is_null())
+      result.insert(shared_element.shared_element_resource_id);
+  return result;
 }
 
 bool SurfaceSavedFrame::IsValid() const {
@@ -278,11 +288,12 @@ bool SurfaceSavedFrame::IsSharedElementRenderPass(
 }
 
 size_t SurfaceSavedFrame::ExpectedResultCount() const {
-  // Start with 1 for the root render pass.
-  size_t count = copy_root_render_pass_ ? 1 : 0;
+  base::flat_set<CompositorRenderPassId> ids;
   for (auto& shared_element : directive_.shared_elements())
-    count += !shared_element.render_pass_id.is_null();
-  return count;
+    if (!shared_element.render_pass_id.is_null())
+      ids.insert(shared_element.render_pass_id);
+  // Add 1 if we need to copy root render pass.
+  return ids.size() + copy_root_render_pass_;
 }
 
 void SurfaceSavedFrame::NotifyCopyOfOutputComplete(

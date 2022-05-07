@@ -9,8 +9,8 @@
 #             mountainlion sierra
 #         win win7 win8 win10 ]
 # Devices
-# tags: [ android-nexus-5 android-nexus-5x android-nexus-9 android-pixel-2
-#             android-pixel-4 android-pixel-6 android-shield-android-tv
+# tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
+#             android-pixel-6 android-shield-android-tv
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
 # Platform
@@ -96,6 +96,9 @@ crbug.com/1084794 [ chromeos ] GpuProcess_swiftshader_for_webgl [ Skip ]
 # Seems to kill the system UI/otherwise make the device unusable.
 crbug.com/1294065 [ android android-shield-android-tv ] GpuProcess_visibility [ Skip ]
 
+# Passes, but then causes crash in the test that runs in the same WebEngine instance.
+crbug.com/1284820 [ fuchsia ] GpuProcess_video [ Skip ]
+
 ###################
 # Failures/Flakes #
 ###################
@@ -113,8 +116,10 @@ crbug.com/1099576 [ mac intel ] GpuProcess_mac_webgl_backgrounded_high_performan
 
 # Flakey/slow tests using clang_rt.
 crbug.com/1261260 [ android android-nexus-5x ] GpuProcess_webgpu_iframe_removed [ Failure ]
-crbug.com/1261260 [ android android-nexus-9 ] GpuProcess_webgpu_iframe_removed [ Failure ]
 crbug.com/1261260 [ android android-shield-android-tv ] GpuProcess_webgpu_iframe_removed [ Failure ]
+
+# Flaky Vulkan Loader Timeout
+crbug.com/1275738 [ linux angle-swiftshader ] GpuProcess_disable_gpu [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

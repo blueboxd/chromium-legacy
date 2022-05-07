@@ -26,7 +26,6 @@
 #include "chrome/browser/ui/views/flying_indicator.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
-#include "chrome/browser/ui/views/user_education/feature_promo_colors.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/aura/window.h"
@@ -530,7 +529,8 @@ void WebUITabCounterButton::UpdateColors() {
           : gfx::kPlaceholderColor;
   const SkColor current_text_color =
       GetProperty(kHasInProductHelpPromoKey)
-          ? GetFeaturePromoHighlightColorForToolbar(theme_provider)
+          ? theme_provider->GetColor(
+                ThemeProperties::COLOR_TOOLBAR_FEATURE_PROMO_HIGHLIGHT)
           : normal_text_color;
 
   appearing_label_->SetEnabledColor(current_text_color);
@@ -575,14 +575,14 @@ void WebUITabCounterButton::Init() {
       WEBUI_TAB_COUNTER_CXMENU_CLOSE_TAB,
       l10n_util::GetStringUTF16(
           IDS_WEBUI_TAB_STRIP_TAB_COUNTER_CXMENU_CLOSE_TAB),
-      ui::ImageModel::FromImageSkia(gfx::CreateVectorIcon(
-          vector_icons::kCloseIcon, gfx::kFaviconSize, SK_ColorGRAY)));
+      ui::ImageModel::FromVectorIcon(vector_icons::kCloseIcon,
+                                     ui::kColorMenuIcon, gfx::kFaviconSize));
   menu_model_->AddSeparator(ui::MenuSeparatorType::NORMAL_SEPARATOR);
   menu_model_->AddItemWithIcon(
       WEBUI_TAB_COUNTER_CXMENU_NEW_TAB,
       l10n_util::GetStringUTF16(IDS_WEBUI_TAB_STRIP_TAB_COUNTER_CXMENU_NEW_TAB),
-      ui::ImageModel::FromImageSkia(
-          gfx::CreateVectorIcon(kAddIcon, gfx::kFaviconSize, SK_ColorGRAY)));
+      ui::ImageModel::FromVectorIcon(kAddIcon, ui::kColorMenuIcon,
+                                     gfx::kFaviconSize));
   menu_runner_ = std::make_unique<views::MenuRunner>(
       menu_model_.get(), views::MenuRunner::HAS_MNEMONICS |
                              views::MenuRunner::CONTEXT_MENU |

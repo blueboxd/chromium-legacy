@@ -10,7 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 
-namespace chromeos {
+namespace ash {
 namespace ime {
 
 SystemEngine::SystemEngine(ImeCrosPlatform* platform,
@@ -58,4 +58,4 @@ bool SystemEngine::IsConnected() {
 }
 
 }  // namespace ime
-}  // namespace chromeos
+}  // namespace ash

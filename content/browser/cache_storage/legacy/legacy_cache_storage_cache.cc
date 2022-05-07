@@ -333,7 +333,7 @@ bool FindDuplicateOperations(
 }
 
 GURL RemoveQueryParam(const GURL& url) {
-  url::Replacements<char> replacements;
+  GURL::Replacements replacements;
   replacements.ClearQuery();
   return url.ReplaceComponents(replacements);
 }
@@ -2502,8 +2502,8 @@ void LegacyCacheStorageCache::CreateBackend(ErrorCallback callback) {
 
   DCHECK(scheduler_->IsRunningExclusiveOperation());
   int rv = disk_cache::CreateCacheBackend(
-      cache_type, net::CACHE_BACKEND_SIMPLE, path_, max_bytes,
-      disk_cache::ResetHandling::kNeverReset, nullptr, backend,
+      cache_type, net::CACHE_BACKEND_SIMPLE, /*file_operations=*/nullptr, path_,
+      max_bytes, disk_cache::ResetHandling::kNeverReset, nullptr, backend,
       base::BindOnce(&LegacyCacheStorageCache::DeleteBackendCompletedIO,
                      weak_ptr_factory_.GetWeakPtr()),
       std::move(split_callback.first));

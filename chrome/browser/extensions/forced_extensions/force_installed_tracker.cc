@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/forced_extensions/force_installed_tracker.h"
 
 #include "base/bind.h"
+#include "base/observer_list.h"
 #include "base/values.h"
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
@@ -206,6 +207,8 @@ void ForceInstalledTracker::OnExtensionInstallationFailed(
       item->second.status == ExtensionStatus::kReady)
     return;
   ChangeExtensionStatus(extension_id, ExtensionStatus::kFailed);
+  for (auto& obs : observers_)
+    obs.OnForceInstalledExtensionFailed(extension_id, reason);
   MaybeNotifyObservers();
 }
 

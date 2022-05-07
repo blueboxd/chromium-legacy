@@ -41,7 +41,7 @@ blink_python_runner("make_generated_permissions_policy_helper") {
   inputs = scripts_for_json5_files + [
              "../../renderer/build/scripts/make_policy_helper_public.py",
              "../../renderer/core/permissions_policy/permissions_policy_features.json5",
-             "../../renderer/build/scripts/templates/policy_helper.cc.tmpl",
+             "../../renderer/build/scripts/templates/policy_helper_public.cc.tmpl",
            ]
   outputs = [ "$root_gen_dir/third_party/blink/public/common/permissions_policy/policy_helper_public.cc" ]
 
@@ -109,6 +109,7 @@ source_set("headers") {
     "action_after_pagehide.h",
     "associated_interfaces/associated_interface_provider.h",
     "associated_interfaces/associated_interface_registry.h",
+    "attribution_reporting/constants.h",
     "blob/blob_utils.h",
     "bluetooth/web_bluetooth_device_id.h",
     "bluetooth/web_bluetooth_device_id_mojom_traits.h",
@@ -134,6 +135,7 @@ source_set("headers") {
     "fetch/fetch_api_request_headers_mojom_traits.h",
     "forcedark/forcedark_switches.h",
     "frame/event_page_show_persisted.h",
+    "frame/fenced_frame_sandbox_flags.h",
     "frame/frame_ad_evidence.h",
     "frame/frame_owner_element_type.h",
     "frame/frame_policy.h",
@@ -259,6 +261,8 @@ source_set("headers") {
     "service_worker/service_worker_status_code.h",
     "service_worker/service_worker_type_converters.h",
     "service_worker/service_worker_types.h",
+    "shared_storage/shared_storage_mojom_traits.h",
+    "shared_storage/shared_storage_utils.h",
     "sms/webotp_constants.h",
     "sms/webotp_service_outcome.h",
     "storage_key/storage_key.h",

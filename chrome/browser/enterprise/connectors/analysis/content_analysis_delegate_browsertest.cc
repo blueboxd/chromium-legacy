@@ -828,9 +828,10 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
   CreateFilesForTest({"large.doc"}, {std::string()}, &data);
 
   // Write data to the file in chunks to avoid memory allocation errors.
-  constexpr int64_t kLargeSize = 3ll * 1024ll * 1024ll * 1024ll;
+  constexpr int64_t kChunkSize = 50 * 1024 * 1024;  // 100 MB
+  constexpr int64_t kLargeSize = 42 * kChunkSize;   // ~2.1 GB, just over maxint
   int64_t total_size = 0;
-  std::string chunk = std::string(48 * 1024 * 1024, 'a');
+  std::string chunk = std::string(kChunkSize, 'a');
   base::File file(created_file_paths()[0],
                   base::File::FLAG_OPEN | base::File::FLAG_WRITE);
   while (total_size != kLargeSize) {
@@ -845,10 +846,10 @@ IN_PROC_BROWSER_TEST_P(ContentAnalysisDelegateBlockingSettingBrowserTest,
   validator.ExpectUnscannedFileEvent(
       /*url*/ "about:blank",
       /*filename*/ created_file_paths()[0].AsUTF8Unsafe(),
-      // python3 -c "print('a' * (3 * 1024 * 1024 * 1024), end='')" |\
+      // python3 -c "print('a' * (42 * 50 * 1024 * 1024), end='')" |\
       // sha256sum |  tr '[:lower:]' '[:upper:]'
       /*sha*/
-      "EFC8F27580ADA5D86CFC4451A10A142364DE63A6D70F778F1AC47B284F9D50AA",
+      "E061612733D5D991F3BD676A51F77B1F0C824282909B7C1C89BD1612FC52E073",
       /*trigger*/ SafeBrowsingPrivateEventRouter::kTriggerFileUpload,
       /*reason*/ "FILE_TOO_LARGE",
       /*mimetypes*/ DocMimeTypes(),

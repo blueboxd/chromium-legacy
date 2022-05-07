@@ -15,9 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Encapsulates metadata for a pending request for a connection to a remote
 // device. Every PendingConnectionRequestBase starts out active (i.e., there
@@ -119,8 +117,6 @@ class PendingConnectionRequestBase
   base::WeakPtrFactory<PendingConnectionRequestBase> weak_ptr_factory_{this};
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PENDING_CONNECTION_REQUEST_BASE_H_

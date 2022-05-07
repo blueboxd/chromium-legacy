@@ -29,17 +29,14 @@ class CaptionsHandler : public SettingsPageUIHandler,
   void OnJavascriptDisallowed() override;
 
  private:
-  void HandleLiveCaptionSectionReady(base::Value::ConstListView args);
-  void HandleOpenSystemCaptionsDialog(base::Value::ConstListView args);
+  void HandleLiveCaptionSectionReady(const base::Value::List& args);
+  void HandleOpenSystemCaptionsDialog(const base::Value::List& args);
 
   // SodaInstaller::Observer overrides:
-  void OnSodaInstalled() override;
-  void OnSodaLanguagePackInstalled(speech::LanguageCode language_code) override;
-  void OnSodaError() override;
-  void OnSodaLanguagePackError(speech::LanguageCode language_code) override;
-  void OnSodaProgress(int combined_progress) override;
-  void OnSodaLanguagePackProgress(int language_progress,
-                                  speech::LanguageCode language_code) override;
+  void OnSodaInstalled(speech::LanguageCode language_code) override;
+  void OnSodaError(speech::LanguageCode language_code) override;
+  void OnSodaProgress(speech::LanguageCode language_code,
+                      int progress) override;
 
   raw_ptr<PrefService> prefs_;
   bool soda_available_ = true;

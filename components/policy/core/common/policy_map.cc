@@ -140,6 +140,24 @@ PolicyMap::Entry PolicyMap::Entry::DeepCopy() const {
   return copy;
 }
 
+const base::Value* PolicyMap::Entry::value(base::Value::Type value_type) const {
+  const base::Value* value = value_unsafe();
+  return value && value->type() == value_type ? value : nullptr;
+}
+
+base::Value* PolicyMap::Entry::value(base::Value::Type value_type) {
+  base::Value* value = value_unsafe();
+  return value && value->type() == value_type ? value : nullptr;
+}
+
+const base::Value* PolicyMap::Entry::value_unsafe() const {
+  return base::OptionalOrNullptr(value_);
+}
+
+base::Value* PolicyMap::Entry::value_unsafe() {
+  return base::OptionalOrNullptr(value_);
+}
+
 base::Value* PolicyMap::Entry::value() {
   return base::OptionalOrNullptr(value_);
 }
@@ -164,8 +182,8 @@ bool PolicyMap::Entry::Equals(const PolicyMap::Entry& other) const {
                                  // They have to update when sources change.
       message_ids_ == other.message_ids_ &&
       is_default_value_ == other.is_default_value_ &&
-      ((!value_ && !other.value()) ||
-       (value_ && other.value() && *value_ == *other.value())) &&
+      ((!value_ && !other.value_unsafe()) ||
+       (value_ && other.value_unsafe() && *value_ == *other.value_unsafe())) &&
       ExternalDataFetcher::Equals(external_data_fetcher.get(),
                                   other.external_data_fetcher.get());
   return equals;
@@ -196,9 +214,9 @@ void PolicyMap::Entry::AddConflictingPolicy(Entry&& conflict) {
   std::move(conflict.conflicts.begin(), conflict.conflicts.end(),
             std::back_inserter(conflicts));
 
-  bool is_value_equal = (!this->value() && !conflict.value()) ||
-                        (this->value() && conflict.value() &&
-                         *this->value() == *conflict.value());
+  bool is_value_equal = (!this->value_unsafe() && !conflict.value_unsafe()) ||
+                        (this->value_unsafe() && conflict.value_unsafe() &&
+                         *this->value_unsafe() == *conflict.value_unsafe());
 
   ConflictType type =
       is_value_equal ? ConflictType::Supersede : ConflictType::Override;
@@ -307,6 +325,28 @@ PolicyMap::Entry* PolicyMap::GetMutable(const std::string& policy) {
   auto entry = map_.find(policy);
   return entry != map_.end() && !entry->second.ignored() ? &entry->second
                                                          : nullptr;
+}
+
+const base::Value* PolicyMap::GetValue(const std::string& policy,
+                                       base::Value::Type value_type) const {
+  auto* entry = Get(policy);
+  return entry ? entry->value(value_type) : nullptr;
+}
+
+base::Value* PolicyMap::GetMutableValue(const std::string& policy,
+                                        base::Value::Type value_type) {
+  auto* entry = GetMutable(policy);
+  return entry ? entry->value(value_type) : nullptr;
+}
+
+const base::Value* PolicyMap::GetValueUnsafe(const std::string& policy) const {
+  auto* entry = Get(policy);
+  return entry ? entry->value_unsafe() : nullptr;
+}
+
+base::Value* PolicyMap::GetMutableValueUnsafe(const std::string& policy) {
+  auto* entry = GetMutable(policy);
+  return entry ? entry->value_unsafe() : nullptr;
 }
 
 const base::Value* PolicyMap::GetValue(const std::string& policy) const {
@@ -446,7 +486,8 @@ void PolicyMap::MergePolicy(const std::string& policy_name,
       higher_policy.source != conflicting_policy.source &&
       conflicting_policy.source == POLICY_SOURCE_ENTERPRISE_DEFAULT;
   if (!overwriting_default_policy) {
-    policy->value() && *other_policy_copy.value() == *policy->value()
+    policy->value_unsafe() &&
+            *other_policy_copy.value_unsafe() == *policy->value_unsafe()
         ? higher_policy.AddMessage(MessageType::kInfo,
                                    IDS_POLICY_CONFLICT_SAME_VALUE)
         : higher_policy.AddMessage(MessageType::kWarning,
@@ -615,16 +656,18 @@ const base::flat_set<std::string>& PolicyMap::GetDeviceAffiliationIds() const {
 
 void PolicyMap::UpdateStoredComputedMetapolicies() {
   cloud_policy_overrides_platform_policy_ =
-      GetValue(key::kCloudPolicyOverridesPlatformPolicy) &&
-      GetValue(key::kCloudPolicyOverridesPlatformPolicy)
-          ->GetIfBool()
-          .value_or(false);
+      GetValue(key::kCloudPolicyOverridesPlatformPolicy,
+               base::Value::Type::BOOLEAN) &&
+      GetValue(key::kCloudPolicyOverridesPlatformPolicy,
+               base::Value::Type::BOOLEAN)
+          ->GetBool();
 
   cloud_user_policy_overrides_cloud_machine_policy_ =
-      GetValue(key::kCloudUserPolicyOverridesCloudMachinePolicy) &&
-      GetValue(key::kCloudUserPolicyOverridesCloudMachinePolicy)
-          ->GetIfBool()
-          .value_or(false);
+      GetValue(key::kCloudUserPolicyOverridesCloudMachinePolicy,
+               base::Value::Type::BOOLEAN) &&
+      GetValue(key::kCloudUserPolicyOverridesCloudMachinePolicy,
+               base::Value::Type::BOOLEAN)
+          ->GetBool();
 }
 
 void PolicyMap::UpdateStoredUserAffiliation() {

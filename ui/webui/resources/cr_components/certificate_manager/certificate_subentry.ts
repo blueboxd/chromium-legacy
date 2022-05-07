@@ -20,7 +20,7 @@ import {CrLazyRenderElement} from '../../cr_elements/cr_lazy_render/cr_lazy_rend
 import {CrPolicyIndicatorType} from '../../cr_elements/policy/cr_policy_indicator_behavior.m.js';
 import {I18nMixin} from '../../js/i18n_mixin.js';
 
-import {CertificateAction, CertificateActionEvent, CertificateActionEventDetail} from './certificate_manager_types.js';
+import {CertificateAction, CertificateActionEvent} from './certificate_manager_types.js';
 import {CertificatesBrowserProxy, CertificatesBrowserProxyImpl, CertificatesError, CertificateSubnode, CertificateType} from './certificates_browser_proxy.js';
 
 export interface CertificateSubentryElement {
@@ -153,6 +153,12 @@ export class CertificateSubentryElement extends CertificateSubentryElementBase {
       CrPolicyIndicatorType {
     return model.policy ? CrPolicyIndicatorType.USER_POLICY :
                           CrPolicyIndicatorType.NONE;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'certificate-subentry': CertificateSubentryElement;
   }
 }
 

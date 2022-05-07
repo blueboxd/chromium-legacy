@@ -14,7 +14,7 @@
 #include "ui/base/clipboard/clipboard_constants.h"
 #include "ui/base/clipboard/clipboard_format_type.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
-#include "url/origin.h"
+#include "url/gurl.h"
 
 namespace ui {
 
@@ -66,9 +66,9 @@ TEST(WaylandExchangeDataProviderTest, ExtractPickledData) {
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
 TEST(WaylandExchangeDataProviderTest, AddAndExtractDataTransferEndpoint) {
   std::string kExpectedEncodedDte =
-      R"({"endpoint_type":"url","url_origin":"https://www.google.com"})";
-  const DataTransferEndpoint expected_dte = ui::DataTransferEndpoint(
-      url::Origin::Create(GURL("https://www.google.com")));
+      R"({"endpoint_type":"url","url":"https://www.google.com/","url_origin":"https://www.google.com"})";
+  const DataTransferEndpoint expected_dte =
+      ui::DataTransferEndpoint(GURL("https://www.google.com"));
 
   WaylandExchangeDataProvider provider;
   std::string extracted;
@@ -80,8 +80,7 @@ TEST(WaylandExchangeDataProviderTest, AddAndExtractDataTransferEndpoint) {
   provider.AddData(ToClipboardData(kExpectedEncodedDte),
                    kMimeTypeDataTransferEndpoint);
   DataTransferEndpoint* actual_dte = provider.GetSource();
-  EXPECT_TRUE(
-      expected_dte.GetOrigin()->IsSameOriginWith(*actual_dte->GetOrigin()));
+  EXPECT_TRUE(expected_dte.IsSameURLWith(*actual_dte));
 
   std::vector<std::string> mime_types = provider.BuildMimeTypesList();
   EXPECT_THAT(mime_types, ::testing::Contains(kMimeTypeDataTransferEndpoint));

@@ -21,19 +21,19 @@
 namespace {
 
 // Contains base64 random key encrypted with DPAPI.
-const char kOsCryptEncryptedKeyPrefName[] = "os_crypt.encrypted_key";
+constexpr char kOsCryptEncryptedKeyPrefName[] = "os_crypt.encrypted_key";
 
 // AEAD key length in bytes.
-const size_t kKeyLength = 256 / 8;
+constexpr size_t kKeyLength = 256 / 8;
 
 // AEAD nonce length in bytes.
-const size_t kNonceLength = 96 / 8;
+constexpr size_t kNonceLength = 96 / 8;
 
 // Version prefix for data encrypted with profile bound key.
-const char kEncryptionVersionPrefix[] = "v10";
+constexpr char kEncryptionVersionPrefix[] = "v10";
 
 // Key prefix for a key encrypted with DPAPI.
-const char kDPAPIKeyPrefix[] = "DPAPI";
+constexpr char kDPAPIKeyPrefix[] = "DPAPI";
 
 // Use mock key instead of a real encryption key. Used for testing.
 bool g_use_mock_key = false;
@@ -64,7 +64,7 @@ bool EncryptStringWithDPAPI(const std::string& plaintext,
   input.cbData = static_cast<DWORD>(plaintext.length());
 
   DATA_BLOB output;
-  BOOL result =
+  const BOOL result =
       CryptProtectData(&input, L"", nullptr, nullptr, nullptr, 0, &output);
   if (!result) {
     PLOG(ERROR) << "Failed to encrypt";
@@ -87,8 +87,8 @@ bool DecryptStringWithDPAPI(const std::string& ciphertext,
   input.cbData = static_cast<DWORD>(ciphertext.length());
 
   DATA_BLOB output;
-  BOOL result = CryptUnprotectData(&input, nullptr, nullptr, nullptr, nullptr,
-                                   0, &output);
+  const BOOL result = CryptUnprotectData(&input, nullptr, nullptr, nullptr,
+                                         nullptr, 0, &output);
   if (!result) {
     PLOG(ERROR) << "Failed to decrypt";
     return false;
@@ -115,14 +115,56 @@ const std::string& GetEncryptionKeyInternal() {
 
 }  // namespace
 
+namespace OSCrypt {
+bool EncryptString16(const std::u16string& plaintext, std::string* ciphertext) {
+  return OSCryptImpl::EncryptString16(plaintext, ciphertext);
+}
+bool DecryptString16(const std::string& ciphertext, std::u16string* plaintext) {
+  return OSCryptImpl::DecryptString16(ciphertext, plaintext);
+}
+bool EncryptString(const std::string& plaintext, std::string* ciphertext) {
+  return OSCryptImpl::EncryptString(plaintext, ciphertext);
+}
+bool DecryptString(const std::string& ciphertext, std::string* plaintext) {
+  return OSCryptImpl::DecryptString(ciphertext, plaintext);
+}
+void RegisterLocalPrefs(PrefRegistrySimple* registry) {
+  OSCryptImpl::RegisterLocalPrefs(registry);
+}
+InitResult InitWithExistingKey(PrefService* local_state) {
+  return OSCryptImpl::InitWithExistingKey(local_state);
+}
+bool Init(PrefService* local_state) {
+  return OSCryptImpl::Init(local_state);
+}
+std::string GetRawEncryptionKey() {
+  return OSCryptImpl::GetRawEncryptionKey();
+}
+void SetRawEncryptionKey(const std::string& key) {
+  OSCryptImpl::SetRawEncryptionKey(key);
+}
+bool IsEncryptionAvailable() {
+  return OSCryptImpl::IsEncryptionAvailable();
+}
+void UseMockKeyForTesting(bool use_mock) {
+  OSCryptImpl::UseMockKeyForTesting(use_mock);
+}
+void SetLegacyEncryptionForTesting(bool legacy) {
+  OSCryptImpl::SetLegacyEncryptionForTesting(legacy);
+}
+void ResetStateForTesting() {
+  OSCryptImpl::ResetStateForTesting();
+}
+}  // namespace OSCrypt
+
 // static
-bool OSCrypt::EncryptString16(const std::u16string& plaintext,
+bool OSCryptImpl::EncryptString16(const std::u16string& plaintext,
                               std::string* ciphertext) {
   return EncryptString(base::UTF16ToUTF8(plaintext), ciphertext);
 }
 
 // static
-bool OSCrypt::DecryptString16(const std::string& ciphertext,
+bool OSCryptImpl::DecryptString16(const std::string& ciphertext,
                               std::u16string* plaintext) {
   std::string utf8;
   if (!DecryptString(ciphertext, &utf8))
@@ -133,14 +175,14 @@ bool OSCrypt::DecryptString16(const std::string& ciphertext,
 }
 
 // static
-bool OSCrypt::EncryptString(const std::string& plaintext,
+bool OSCryptImpl::EncryptString(const std::string& plaintext,
                             std::string* ciphertext) {
   if (g_use_legacy)
     return EncryptStringWithDPAPI(plaintext, ciphertext);
 
   crypto::Aead aead(crypto::Aead::AES_256_GCM);
 
-  auto key = GetEncryptionKeyInternal();
+  const auto key = GetEncryptionKeyInternal();
   aead.Init(&key);
 
   // Note: can only check these once AEAD is initialized.
@@ -159,7 +201,7 @@ bool OSCrypt::EncryptString(const std::string& plaintext,
 }
 
 // static
-bool OSCrypt::DecryptString(const std::string& ciphertext,
+bool OSCryptImpl::DecryptString(const std::string& ciphertext,
                             std::string* plaintext) {
   if (!base::StartsWith(ciphertext, kEncryptionVersionPrefix,
                         base::CompareCase::SENSITIVE))
@@ -171,31 +213,31 @@ bool OSCrypt::DecryptString(const std::string& ciphertext,
   aead.Init(&key);
 
   // Obtain the nonce.
-  std::string nonce =
+  const std::string nonce =
       ciphertext.substr(sizeof(kEncryptionVersionPrefix) - 1, kNonceLength);
   // Strip off the versioning prefix before decrypting.
-  std::string raw_ciphertext =
+  const std::string raw_ciphertext =
       ciphertext.substr(kNonceLength + (sizeof(kEncryptionVersionPrefix) - 1));
 
   return aead.Open(raw_ciphertext, nonce, std::string(), plaintext);
 }
 
 // static
-void OSCrypt::RegisterLocalPrefs(PrefRegistrySimple* registry) {
+void OSCryptImpl::RegisterLocalPrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(kOsCryptEncryptedKeyPrefName, "");
 }
 
 // static
-bool OSCrypt::Init(PrefService* local_state) {
+bool OSCryptImpl::Init(PrefService* local_state) {
   // Try to pull the key from the local state.
   switch (InitWithExistingKey(local_state)) {
-    case kSuccess:
+    case OSCrypt::kSuccess:
       return true;
-    case kKeyDoesNotExist:
+    case OSCrypt::kKeyDoesNotExist:
       break;
-    case kInvalidKeyFormat:
+    case OSCrypt::kInvalidKeyFormat:
       return false;
-    case kDecryptionFailed:
+    case OSCrypt::kDecryptionFailed:
       break;
   }
 
@@ -218,13 +260,13 @@ bool OSCrypt::Init(PrefService* local_state) {
 }
 
 // static
-OSCrypt::InitResult OSCrypt::InitWithExistingKey(PrefService* local_state) {
+OSCrypt::InitResult OSCryptImpl::InitWithExistingKey(PrefService* local_state) {
   DCHECK(GetEncryptionKeyFactory().empty()) << "Key already exists.";
   // Try and pull the key from the local state.
   if (!local_state->HasPrefPath(kOsCryptEncryptedKeyPrefName))
-    return kKeyDoesNotExist;
+    return OSCrypt::kKeyDoesNotExist;
 
-  std::string base64_encrypted_key =
+  const std::string base64_encrypted_key =
       local_state->GetString(kOsCryptEncryptedKeyPrefName);
   std::string encrypted_key_with_header;
 
@@ -233,10 +275,10 @@ OSCrypt::InitResult OSCrypt::InitWithExistingKey(PrefService* local_state) {
   if (!base::StartsWith(encrypted_key_with_header, kDPAPIKeyPrefix,
                         base::CompareCase::SENSITIVE)) {
     NOTREACHED() << "Invalid key format.";
-    return kInvalidKeyFormat;
+    return OSCrypt::kInvalidKeyFormat;
   }
 
-  std::string encrypted_key =
+  const std::string encrypted_key =
       encrypted_key_with_header.substr(sizeof(kDPAPIKeyPrefix) - 1);
   std::string key;
   // This DPAPI decryption can fail if the user's password has been reset
@@ -244,15 +286,15 @@ OSCrypt::InitResult OSCrypt::InitWithExistingKey(PrefService* local_state) {
   if (!DecryptStringWithDPAPI(encrypted_key, &key)) {
     base::UmaHistogramSparse("OSCrypt.Win.KeyDecryptionError",
                              ::GetLastError());
-    return kDecryptionFailed;
+    return OSCrypt::kDecryptionFailed;
   }
 
   GetEncryptionKeyFactory().assign(key);
-  return kSuccess;
+  return OSCrypt::kSuccess;
 }
 
 // static
-void OSCrypt::SetRawEncryptionKey(const std::string& raw_key) {
+void OSCryptImpl::SetRawEncryptionKey(const std::string& raw_key) {
   DCHECK(!g_use_mock_key) << "Mock key in use.";
   DCHECK(!raw_key.empty()) << "Bad key.";
   DCHECK(GetEncryptionKeyFactory().empty()) << "Key already set.";
@@ -260,27 +302,27 @@ void OSCrypt::SetRawEncryptionKey(const std::string& raw_key) {
 }
 
 // static
-std::string OSCrypt::GetRawEncryptionKey() {
+std::string OSCryptImpl::GetRawEncryptionKey() {
   return GetEncryptionKeyInternal();
 }
 
 // static
-bool OSCrypt::IsEncryptionAvailable() {
+bool OSCryptImpl::IsEncryptionAvailable() {
   return !GetEncryptionKeyFactory().empty();
 }
 
 // static
-void OSCrypt::UseMockKeyForTesting(bool use_mock) {
+void OSCryptImpl::UseMockKeyForTesting(bool use_mock) {
   g_use_mock_key = use_mock;
 }
 
 // static
-void OSCrypt::SetLegacyEncryptionForTesting(bool legacy) {
+void OSCryptImpl::SetLegacyEncryptionForTesting(bool legacy) {
   g_use_legacy = legacy;
 }
 
 // static
-void OSCrypt::ResetStateForTesting() {
+void OSCryptImpl::ResetStateForTesting() {
   g_use_legacy = false;
   g_use_mock_key = false;
   GetEncryptionKeyFactory().clear();

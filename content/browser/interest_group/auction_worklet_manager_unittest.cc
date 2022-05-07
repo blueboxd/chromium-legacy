@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/check.h"
-#include "base/cxx17_backports.h"
 #include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
@@ -128,7 +127,8 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
       const absl::optional<std::string>& auction_signals_json,
       const absl::optional<std::string>& per_buyer_signals_json,
       const absl::optional<base::TimeDelta> per_buyer_timeout,
-      const url::Origin& seller_origin,
+      const url::Origin& browser_signal_seller_origin,
+      const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
       auction_worklet::mojom::BiddingBrowserSignalsPtr bidding_browser_signals,
       base::Time auction_start_time,
       GenerateBidCallback generate_bid_callback) override {
@@ -143,16 +143,18 @@ class MockBidderWorklet : public auction_worklet::mojom::BidderWorklet {
     }
   }
 
-  void ReportWin(const std::string& interest_group_name,
-                 const absl::optional<std::string>& auction_signals_json,
-                 const absl::optional<std::string>& per_buyer_signals_json,
-                 const std::string& seller_signals_json,
-                 const GURL& browser_signal_render_url,
-                 double browser_signal_bid,
-                 const url::Origin& browser_signal_seller_origin,
-                 uint32_t browser_signal_data_version,
-                 bool browser_signal_has_data_version,
-                 ReportWinCallback report_win_callback) override {
+  void ReportWin(
+      const std::string& interest_group_name,
+      const absl::optional<std::string>& auction_signals_json,
+      const absl::optional<std::string>& per_buyer_signals_json,
+      const std::string& seller_signals_json,
+      const GURL& browser_signal_render_url,
+      double browser_signal_bid,
+      const url::Origin& browser_signal_seller_origin,
+      const absl::optional<url::Origin>& browser_signal_top_level_seller_origin,
+      uint32_t browser_signal_data_version,
+      bool browser_signal_has_data_version,
+      ReportWinCallback report_win_callback) override {
     NOTREACHED();
   }
 
@@ -259,10 +261,13 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
                double bid,
                blink::mojom::AuctionAdConfigNonSharedParamsPtr
                    auction_ad_config_non_shared_params,
+               auction_worklet::mojom::ComponentAuctionOtherSellerPtr
+                   browser_signals_other_seller,
                const url::Origin& browser_signal_interest_group_owner,
                const GURL& browser_signal_render_url,
                const std::vector<GURL>& browser_signal_ad_components,
                uint32_t browser_signal_bidding_duration_msecs,
+               const absl::optional<base::TimeDelta> seller_timeout,
                ScoreAdCallback score_ad_callback) override {
     NOTREACHED();
   }
@@ -277,6 +282,8 @@ class MockSellerWorklet : public auction_worklet::mojom::SellerWorklet {
 
   void ReportResult(blink::mojom::AuctionAdConfigNonSharedParamsPtr
                         auction_ad_config_non_shared_params,
+                    auction_worklet::mojom::ComponentAuctionOtherSellerPtr
+                        browser_signals_other_seller,
                     const url::Origin& browser_signal_interest_group_owner,
                     const GURL& browser_signal_render_url,
                     double browser_signal_bid,
@@ -1300,7 +1307,7 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletUrlRequestProtection) {
        "application/json"},
   };
 
-  for (size_t i = 0; i < base::size(kAllowedUrls); ++i) {
+  for (size_t i = 0; i < std::size(kAllowedUrls); ++i) {
     network::ResourceRequest request;
     request.url = kAllowedUrls[i].url;
     request.headers.SetHeader(net::HttpRequestHeaders::kAccept,
@@ -1331,7 +1338,7 @@ TEST_F(AuctionWorkletManagerTest, BidderWorkletUrlRequestProtection) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   bidder_worklet->url_loader_factory().FlushForTesting();
   EXPECT_FALSE(bidder_worklet->url_loader_factory().is_connected());
-  EXPECT_EQ(base::size(kAllowedUrls),
+  EXPECT_EQ(std::size(kAllowedUrls),
             url_loader_factory_.pending_requests()->size());
   EXPECT_EQ("Unexpected request", TakeBadMessage());
 }
@@ -1360,7 +1367,7 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletUrlRequestProtection) {
        "application/json"},
   };
 
-  for (size_t i = 0; i < base::size(kAllowedUrls); ++i) {
+  for (size_t i = 0; i < std::size(kAllowedUrls); ++i) {
     network::ResourceRequest request;
     request.url = kAllowedUrls[i].url;
     request.headers.SetHeader(net::HttpRequestHeaders::kAccept,
@@ -1391,7 +1398,7 @@ TEST_F(AuctionWorkletManagerTest, SellerWorkletUrlRequestProtection) {
       net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   seller_worklet->url_loader_factory().FlushForTesting();
   EXPECT_FALSE(seller_worklet->url_loader_factory().is_connected());
-  EXPECT_EQ(base::size(kAllowedUrls),
+  EXPECT_EQ(std::size(kAllowedUrls),
             url_loader_factory_.pending_requests()->size());
   EXPECT_EQ("Unexpected request", TakeBadMessage());
 }

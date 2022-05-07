@@ -26,6 +26,7 @@
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gl/gl_bindings.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
@@ -55,6 +56,7 @@ base::Lock& GetLock() {
 
 // We expect GetLock() to be acquired before accessing these variables.
 TestGpuServiceHolder* g_holder = nullptr;
+bool g_disallow_feature_list_overrides = true;
 bool g_should_register_listener = true;
 bool g_registered_listener = false;
 
@@ -149,9 +151,33 @@ void TestGpuServiceHolder::DoNotResetOnTestExit() {
   g_should_register_listener = false;
 }
 
+TestGpuServiceHolder::ScopedAllowRacyFeatureListOverrides::
+    ScopedAllowRacyFeatureListOverrides() {
+  base::AutoLock locked(GetLock());
+
+  // This must be called before GetInstance() is ever called.
+  DCHECK(!g_holder);
+  DCHECK(g_disallow_feature_list_overrides);
+  g_disallow_feature_list_overrides = false;
+}
+
+TestGpuServiceHolder::ScopedAllowRacyFeatureListOverrides::
+    ~ScopedAllowRacyFeatureListOverrides() {
+  base::AutoLock locked(GetLock());
+
+  DCHECK(!g_disallow_feature_list_overrides);
+  g_disallow_feature_list_overrides = true;
+}
+
 TestGpuServiceHolder::TestGpuServiceHolder(
     const gpu::GpuPreferences& gpu_preferences)
     : gpu_thread_("GPUMainThread"), io_thread_("GPUIOThread") {
+  if (g_disallow_feature_list_overrides) {
+    disallow_feature_overrides_.emplace(
+        "FeatureList overrides must happen before the GPU service thread has "
+        "been started.");
+  }
+
   base::Thread::Options gpu_thread_options;
 #if defined(USE_OZONE)
     gpu_thread_options.message_pump_type = ui::OzonePlatform::GetInstance()
@@ -243,6 +269,20 @@ void TestGpuServiceHolder::InitializeOnGpuThread(
       /*needs_more_info=*/nullptr);
   gpu_feature_info.status_values[gpu::GPU_FEATURE_TYPE_GPU_RASTERIZATION] =
       gpu::kGpuFeatureStatusEnabled;
+
+  // On MacOS, the default texture target for native GpuMemoryBuffers is
+  // GL_TEXTURE_RECTANGLE_ARB. This is due to CGL's requirements for creating
+  // a GL surface. However, when ANGLE is used on top of SwiftShader or Metal,
+  // it's necessary to use GL_TEXTURE_2D instead.
+  // TODO(crbug.com/1056312): The proper behavior is to check the config
+  // parameter set by the EGL_ANGLE_iosurface_client_buffer extension
+#if BUILDFLAG(IS_MAC)
+  if (gl::GetGLImplementation() == gl::kGLImplementationEGLANGLE &&
+      (gl::GetANGLEImplementation() == gl::ANGLEImplementation::kSwiftShader ||
+       gl::GetANGLEImplementation() == gl::ANGLEImplementation::kMetal)) {
+    gpu::SetMacOSSpecificTextureTarget(GL_TEXTURE_2D);
+  }
+#endif  // BUILDFLAG(IS_MAC)
 
   // TODO(rivr): Investigate why creating a GPUInfo and GpuFeatureInfo from
   // the command line causes the test SkiaOutputSurfaceImplTest.SubmitPaint to

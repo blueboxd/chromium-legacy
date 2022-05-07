@@ -319,6 +319,12 @@
   <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_INVALID" desc="Label informing the user that the code used to install an eSIM profile is invalid.">
     Invalid code. Please try again.
   </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_INPUT_SUBTITLE" desc="Subtitle for input informing the user that the code used to install an eSIM profile must follow a specific format.">
+    Your entry should have the format LPA:1$&lt;smdp address&gt;$&lt;activation code&gt;
+  </message>
+  <message name="IDS_CELLULAR_SETUP_ESIM_PAGE_SCAN_QR_CODE_INPUT_ERROR" desc="Error label for input informing the user that the code used to install an eSIM profile is invalid and must follow a specific format.">
+    Invalid code. Your entry should have the format LPA:1$&lt;smdp address&gt;$&lt;activation code&gt;
+  </message>
   <message name="IDS_CELLULAR_SETUP_ESTABLISH_NETWORK_CONNECTION" desc="Message, informing user that a network connection is being established during cellular setup">
     Establishing network connection ...
   </message>
@@ -481,7 +487,7 @@
     Welcome to your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph>
   </message>
   <message name="IDS_WELCOME_SCREEN_GREETING_CLOUD_READY" desc="Greeting message on the OOBE welcome screen">
-    Welcome to <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph>
+    Welcome to <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph>
   </message>
   <message name="IDS_WELCOME_SCREEN_GREETING_SUBTITLE" desc="Greeting message on the OOBE welcome screen">
     Fast. Secure. Effortless.
@@ -731,10 +737,10 @@
   </message>
   <if expr="reven">
     <message name="IDS_OOBE_EULA_IFRAME_LABEL" desc="Accessibility label on an iframe with full Chrome OS Terms text">
-      Google CloudReady 2.0 Terms contents
+      Google ChromeOS Flex Terms contents
     </message>
     <message name="IDS_OOBE_EULA_ADDITIONAL_TERMS" desc="Text of the Link to Google Chrome and Chrome OS additional terms">
-      Google Chrome and CloudReady 2.0 Additional Terms
+      Google Chrome and ChromeOS Flex Additional Terms
     </message>
   </if>
   <if expr="not reven">
@@ -1094,50 +1100,50 @@
   </message>
 
   <!-- Strings for OS trial screen-->
-  <message name="IDS_OS_TRIAL_TITLE" desc="Title of the install or try screen, the first screen of the CloudReady 2.0 Installation flow">
-    Start using <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph>
+  <message name="IDS_OS_TRIAL_TITLE" desc="Title of the install or try screen, the first screen of the ChromeOS Flex Installation flow">
+    Start using <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph>
   </message>
-  <message name="IDS_OS_TRIAL_SUBTITLE" desc="Subtitle of the install or try screen, the first screen of the CloudReady 2.0 Installation flow">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>For the best experience, install <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> to your internal disk. You can also install it later from the login screen.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+  <message name="IDS_OS_TRIAL_SUBTITLE" desc="Subtitle of the install or try screen, the first screen of the ChromeOS Flex Installation flow">
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>For the best experience, install <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> to your internal disk. You can also install it later from the login screen.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>If you're not ready to install, you can run from USB to try it out. This will keep your existing OS and data, but you may see storage and performance limits.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
-  <message name="IDS_OS_TRIAL_INSTALL_TITLE" desc="Title of the try option in the install or try screen, the first screen of the CloudReady 2.0 Installation flow.">
-    Install <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph>
+  <message name="IDS_OS_TRIAL_INSTALL_TITLE" desc="Title of the try option in the install or try screen, the first screen of the ChromeOS Flex Installation flow.">
+    Install <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph>
   </message>
-  <message name="IDS_OS_TRIAL_INSTALL_SUBTITLE" desc="Subtitle of the try option in the install or try screen, the first screen of the CloudReady 2.0 Installation flow">
-    Convert this device into a <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> device.
+  <message name="IDS_OS_TRIAL_INSTALL_SUBTITLE" desc="Subtitle of the try option in the install or try screen, the first screen of the ChromeOS Flex Installation flow">
+    Convert this device into a <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> device.
   </message>
-  <message name="IDS_OS_TRIAL_TRY_TITLE" desc="Title of the install option in the install or try screen, the first screen of the CloudReady 2.0 Installation flow">
+  <message name="IDS_OS_TRIAL_TRY_TITLE" desc="Title of the install option in the install or try screen, the first screen of the ChromeOS Flex Installation flow">
     Try it first
   </message>
-  <message name="IDS_OS_TRIAL_TRY_SUBTITLE" desc="Subtitle of the install option in the install or try screen, the first screen of the CloudReady 2.0 Installation flow">
-    Keep your OS and run <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> from USB.
+  <message name="IDS_OS_TRIAL_TRY_SUBTITLE" desc="Subtitle of the install option in the install or try screen, the first screen of the ChromeOS Flex Installation flow">
+    Keep your OS and run <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> from USB.
   </message>
-  <message name="IDS_OS_TRIAL_NEXT_BUTTON" desc="Text of the next button in the install or try screen, the first screen of the CloudReady 2.0 Installation flow">
+  <message name="IDS_OS_TRIAL_NEXT_BUTTON" desc="Text of the next button in the install or try screen, the first screen of the ChromeOS Flex Installation flow">
     Next
   </message>
 
   <!-- Strings for OS install -->
   <message name="IDS_OS_INSTALL_SCREEN_INTRO_TITLE" desc="Title of the introduction page in the OS install screen.">
-    Install <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph>
+    Install <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph>
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_INTRO_SUBTITLE" desc="Subtitle text of the OS install screen's introduction step.">
-    Installing <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> will overwrite all data on your device.
+    Installing <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> will overwrite all data on your device.
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_INTRO_CONTENT_0" desc="First part of body text of the OS install screen's introduction step.">
-    Before starting, make sure you have a backup of your data. Installing <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> will overwrite your hard drive. Learn more at g.co/CR2/InstallGuide.
+    Before starting, make sure you have a backup of your data. Installing <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> will overwrite your hard drive. Learn more at g.co/flex/InstallGuide.
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_INTRO_CONTENT_1" desc="Second part of body text of the OS install screen's introduction step.">
     Installation takes a few easy steps. You’ll have another chance to confirm before changes are made to your computer.
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_INTRO_FOOTER" desc="Footer text of the OS install screen's introduction step.">
-    Google isn’t responsible for any data loss, and <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> may not work on uncertified models. Learn more at g.co/CR2/InstallGuide.
+    Google isn’t responsible for any data loss, and <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> may not work on uncertified models. Learn more at g.co/flex/InstallGuide.
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_INTRO_NEXT_BUTTON" desc="Text of the next button on the introduction page of the OS install screen">
-    Install <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph>
+    Install <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph>
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_CONFIRM_TITLE" desc="Title of the confirmation dialog of the OS install screen">
-    Install <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> and erase hard drive?
+    Install <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> and erase hard drive?
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_CONFIRM_BODY" desc="Body text of the OS install screen's confirmation dialog">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Installation <ph name="BEGIN_BOLD">&lt;b&gt;</ph>will erase your entire hard drive<ph name="END_BOLD">&lt;/b&gt;</ph>. Make sure your data is backed up.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
@@ -1147,7 +1153,7 @@
     Install
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_IN_PROGRESS_TITLE" desc="Title of the in-progress page of the OS install screen">
-    Installing <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph>
+    Installing <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph>
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_IN_PROGRESS_SUBTITLE" desc="Subtitle of the in-progress page of the OS install screen">
     Make sure your device is plugged in, and don’t turn it off. Installation may take up to 20 minutes. Your device will automatically shut down when installation is complete.
@@ -1156,14 +1162,14 @@
     Couldn’t complete installation
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_ERROR_FAILED_SUBTITLE" desc="Subtitle of the error page of the OS install screen for general failure.">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Something went wrong and <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> couldn’t be installed.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>For more help, visit: g.co/CR2/InstallErrors.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Something went wrong and <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> couldn’t be installed.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>For more help, visit: g.co/flex/InstallErrors.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_ERROR_VIEW_LOGS" desc="Label for an actionable link that opens dialog with installation logs.">
     View logs
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_ERROR_NO_DEST_SUBTITLE" desc="Subtitle of the error page of the OS install screen when no valid destination for installation was found.">
-    The installer couldn’t find a valid destination to install <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph>.
+    The installer couldn’t find a valid destination to install <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph>.
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_ERROR_NO_DEST_CONTENT" desc="Content of the error page of the OS install screen when no valid destination for installation was found.">
     <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Try these troubleshooting steps:
@@ -1174,13 +1180,13 @@
     <ph name="LIST_ITEM">&lt;li&gt;</ph>Make sure you're using a certified model and check install notes
     <ph name="END_LIST">&lt;/ul&gt;</ph>
     <ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>For more help, visit: g.co/CR2/InstallErrors.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>For more help, visit: g.co/flex/InstallErrors.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_SUCCESS_TITLE" desc="Title of the success page of the OS install screen">
     Installation complete
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_SUCCESS_SUBTITLE" desc="Subtitle of the success page of the OS install screen">
-    Your device will shut down in <ph name="TIME_LEFT">$1<ex>60 seconds</ex></ph>. Remove the USB before turning your device back on. Then you can start using <ph name="DEVICE_OS">$2<ex>CloudReady 2.0</ex></ph>.
+    Your device will shut down in <ph name="TIME_LEFT">$1<ex>60 seconds</ex></ph>. Remove the USB before turning your device back on. Then you can start using <ph name="DEVICE_OS">$2<ex>ChromeOS Flex</ex></ph>.
   </message>
   <message name="IDS_OS_INSTALL_SCREEN_SERVICE_LOGS_TITLE" desc="Title of service logs dialog of the OS install screen">
     Service logs
@@ -1237,13 +1243,13 @@
   </message>
   <if expr="reven">
     <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_SUBTITLE_2" desc="Alternate subtitle of the dialog that explains Chrome Sync and privacy options on first login for non-split.">
-      Your saved preferences and activity will be ready on any CloudReady 2.0 device when you sign in with your Google Account. You can choose what to sync in Settings.
+      Your saved preferences and activity will be ready on any ChromeOS Flex device when you sign in with your Google Account. You can choose what to sync in Settings.
     </message>
     <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_NAME" desc="Title of the 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-      CloudReady 2.0 settings sync
+      ChromeOS Flex settings sync
     </message>
     <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_OS_SYNC_DESCRIPTION" desc="Description of 'Settings sync' section of the sync confirmation dialog that is displayed on the first user log in.">
-      Your apps, settings, and other customizations will be synced across all CloudReady 2.0 devices signed in with your Google Account.
+      Your apps, settings, and other customizations will be synced across all ChromeOS Flex devices signed in with your Google Account.
     </message>
   </if>
   <if expr="not reven">
@@ -1801,7 +1807,7 @@
   </message>
   <if expr="reven">
     <message name="IDS_EULA_TPM_DESCRIPTION" desc="Dialog box text">
-      Your computer contains a Trusted Platform Module (TPM) security device, which is used to implement many critical security features in CloudReady 2.0. Visit the Chromebook Help Center to learn more: https://support.google.com/chromebook/?p=tpm
+      Your computer contains a Trusted Platform Module (TPM) security device, which is used to implement many critical security features in ChromeOS Flex. Visit the Chromebook Help Center to learn more: https://support.google.com/chromebook/?p=tpm
     </message>
   </if>
   <if expr="not reven">
@@ -1817,7 +1823,7 @@
   </message>
   <if expr="reven">
     <message name="IDS_EULA_SECURE_MODULE_DESCRIPTION" desc="Description of what a secure module does in the eula page.">
-      Your computer contains a secure module, which is used to implement many critical security features in CloudReady 2.0. Visit the Chromebook Help Center to learn more: https://support.google.com/chromebook/?p=sm
+      Your computer contains a secure module, which is used to implement many critical security features in ChromeOS Flex. Visit the Chromebook Help Center to learn more: https://support.google.com/chromebook/?p=sm
     </message>
   </if>
   <if expr="not reven">
@@ -1845,7 +1851,7 @@
   </message>
   <if expr="reven">
     <message name="IDS_ENABLE_DEBUGGING_SETUP_MESSAGE" desc="Setup message in dialog for enabling debugging features.">
-      You are enabling CloudReady 2.0 debugging features which will set up sshd daemon and enable booting from USB drives.
+      You are enabling ChromeOS Flex debugging features which will set up sshd daemon and enable booting from USB drives.
     </message>
   </if>
   <if expr="not reven">
@@ -1878,7 +1884,7 @@
     <message name="IDS_ENABLE_DEBUGGING_HELP" desc="Help content of the enable debugging features dialog.">
       <ph name="BEGIN_H3">&lt;h3&gt;</ph>Debugging Features<ph name="END_H3">&lt;/h3&gt;</ph>
       <ph name="BR">&lt;br&gt;</ph>
-      You can enable the debugging features on your CloudReady 2.0 Device in order to install and test custom code on your device.  This will allow you to:<ph name="BR">&lt;br&gt;</ph>
+      You can enable the debugging features on your ChromeOS Flex Device in order to install and test custom code on your device.  This will allow you to:<ph name="BR">&lt;br&gt;</ph>
       <ph name="BEGIN_LIST">&lt;ul&gt;</ph>
         <ph name="LIST_ITEM">&lt;li&gt;</ph>Remove rootfs verification so you can modify OS files
         <ph name="LIST_ITEM">&lt;li&gt;</ph>Enable SSH access to the device using the standard test keys so you can use tools such as <ph name="BEGIN_CODE">&lt;span style=&quot;color:grey;font-family:monospace&quot;&gt;</ph>&apos;cros flash&apos;<ph name="END_CODE">&lt;/span&gt;</ph> to access the device
@@ -1999,7 +2005,7 @@
   </message>
   <if expr="reven">
     <message name="IDS_WRONG_HWID_SCREEN_MESSAGE_FIRST_PART" desc="Warning message shown on screen notifying about malformed hardware ID. First paragraph.">
-      Unfortunately, your computer is configured with a malformed hardware ID. This prevents CloudReady 2.0 from updating with the latest security fixes and your computer <ph name="BEGIN_BOLD">&lt;b&gt;</ph>may be vulnerable to malicious attacks<ph name="END_BOLD">&lt;/b&gt;</ph>.
+      Unfortunately, your computer is configured with a malformed hardware ID. This prevents ChromeOS Flex from updating with the latest security fixes and your computer <ph name="BEGIN_BOLD">&lt;b&gt;</ph>may be vulnerable to malicious attacks<ph name="END_BOLD">&lt;/b&gt;</ph>.
     </message>
   </if>
   <if expr="not reven">
@@ -2305,12 +2311,12 @@
     Trusted Platform Module (TPM) detected
   </message>
   <message name="IDS_LOGIN_ERROR_ENROLLMENT_TPM_FAILURE_SUBTITLE" desc="Subtitile of the screen notifying user about TPM ownership error.">
-    <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> detected an active TPM which can store your data more securely.
+    <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> detected an active TPM which can store your data more securely.
   </message>
   <message name="IDS_LOGIN_ERROR_ENROLLMENT_TPM_FAILURE_CONTENT" desc="Steps that can help users to properly setup TPM manually.">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Before enrolling you need to clear the TPM so <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> can take ownership of the device.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>Before enrolling you need to clear the TPM so <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> can take ownership of the device.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
     <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can also turn off the TPM device entirely. Your data will still be stored safely with software encryption, but certain security features such as hardware-backed certificates will be disabled.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>You can change your TPM settings by rebooting and entering the system BIOS/UEFI settings. Steps vary based on the device model. For more info, open the <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> documentation on a separate device before you reboot: g.co/CR2/TPMHelp.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>You can change your TPM settings by rebooting and entering the system BIOS/UEFI settings. Steps vary based on the device model. For more info, open the <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> documentation on a separate device before you reboot: g.co/flex/TPMHelp.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_LOGIN_ERROR_TPM_FAILURE_REBOOT_BUTTON" desc="Label on button that restarts device.">
     Restart
@@ -2687,7 +2693,7 @@
   </message>
   <if expr="reven">
     <message name="IDS_FILEMANAGER_APP_DESCRIPTION" desc="Description for the File Manager app.">
-      The Files app provides quick access to files that you've saved on Google Drive, external storage, or your CloudReady 2.0 device.
+      The Files app provides quick access to files that you've saved on Google Drive, external storage, or your ChromeOS Flex device.
     </message>
   </if>
   <if expr="not reven">
@@ -2849,7 +2855,7 @@
 
   <!-- Strings for the enterprise enrollment page -->
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_CLOUD_READY_NOT_ALLOWED" desc="Error message shown on the enrollment screen if enrollment is not allowed because of OS installation flow.">
-    Enrollment is only supported after you install <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph>.
+    Enrollment is only supported after you install <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph>.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_FAILED" desc="Error message shown on the enrollment screen upon failed device registration.">
     Error when registering the device with the server: <ph name="CLIENT_ERROR">$1<ex>Failed to connect to the server</ex></ph>.
@@ -4184,15 +4190,15 @@
 
   <!-- HW data collection screen -->
   <message name="IDS_HW_DATA_COLLECTION_TITLE" desc="Title of the hardware data collection notice screen.">
-    <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> hardware data collection
+    <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> hardware data collection
   </message>
   <message name="IDS_HW_DATA_COLLECTION_CONTENT" desc="Content of the hardware data collection notice screen.">
-    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>To provide the best experience, <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> collects hardware data about devices and shares it with Google to determine which updates should be delivered. Optionally, you can allow Google to use this data for additional purposes like support and improvements to the <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> experience and service.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can log in on this device and visit the CLOUDREADY_HARDWARE_INFO section in chrome://system to see the data sent to Google for update filtering, as well as any other instances where you choose to share data with Google.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
-    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>For more details on data <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph> may share with Google, and how it is used visit g.co/CR2/HWDataCollection.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH1">&lt;p&gt;</ph>To provide the best experience, <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> collects hardware data about devices and shares it with Google to determine which updates should be delivered. Optionally, you can allow Google to use this data for additional purposes like support and improvements to the <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> experience and service.<ph name="END_PARAGRAPH1">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH2">&lt;p&gt;</ph>You can log in on this device and visit the CHROMEOSFLEX_HARDWARE_INFO section in chrome://system to see the data sent to Google for update filtering, as well as any other instances where you choose to share data with Google.<ph name="END_PARAGRAPH2">&lt;/p&gt;</ph>
+    <ph name="BEGIN_PARAGRAPH3">&lt;p&gt;</ph>For more details on data <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph> may share with Google, and how it is used visit g.co/flex/HWDataCollection.<ph name="END_PARAGRAPH3">&lt;/p&gt;</ph>
   </message>
   <message name="IDS_HW_DATA_COLLECTION_USAGE_INFO" desc="Checkbox description for additional hardware data usage. This message is followed by a 'Learn more' link.">
-    Let Google use your hardware data to help improve <ph name="DEVICE_OS">$1<ex>CloudReady 2.0</ex></ph>. If you decline, this data is still sent to Google to determine proper updates, but is not stored or used otherwise. Learn more at g.co/CR2/HWDataCollection.
+    Let Google use your hardware data to help improve <ph name="DEVICE_OS">$1<ex>ChromeOS Flex</ex></ph>. If you decline, this data is still sent to Google to determine proper updates, but is not stored or used otherwise. Learn more at g.co/flex/HWDataCollection.
   </message>
   <message name="IDS_HW_DATA_COLLECTION_ACCEPT_AND_CONTINUE_BUTTON_TEXT" desc="Label on a button on the hardware data collection notice screen to accept the terms and continue.">
     Accept and continue
@@ -4372,41 +4378,6 @@
     Searching for networks...
   </message>
 
-  <!-- Screenshot notification -->
-  <message name="IDS_SCREENSHOT_NOTIFICATION_TITLE_SUCCESS" desc="The title of the notification when a screenshot was taken.">
-    Screenshot taken
-  </message>
-  <message name="IDS_SCREENSHOT_NOTIFICATION_TITLE_DISABLED" desc="The title of the notification when taking a screenshot failed because screenshots are disabled.">
-    Can't capture content
-  </message>
-  <message name="IDS_SCREENSHOT_NOTIFICATION_TITLE_DISABLED_BY_DLP" desc="The title of the notification when taking a screenshot failed because screenshots are disabled because of confidential content.">
-    Can't capture confidential content
-  </message>
-  <message name="IDS_SCREENSHOT_NOTIFICATION_TITLE_FAIL" desc="The title of the notification when taking a screenshot failed.">
-    An error occurred
-  </message>
-  <message name="IDS_SCREENSHOT_NOTIFICATION_TEXT_SUCCESS" desc="The text of the notification when a screenshot was taken. If clicked, the screenshot file is displayed in the Files app.">
-    Show in folder
-  </message>
-  <message name="IDS_SCREENSHOT_NOTIFICATION_TEXT_DISABLED" desc="The text of the notification when taking a screenshot failed because screenshots are disabled by administrator policy.">
-    Administrator policy disables screen capture
-  </message>
-  <message name="IDS_SCREENSHOT_NOTIFICATION_TEXT_DISABLED_BY_DLP" desc="The text of the notification when taking a screenshot failed because screenshots are disabled because of confidential content.">
-    Administrator policy disables screen capture when confidential content is visible
-  </message>
-  <message name="IDS_SCREENSHOT_NOTIFICATION_TEXT_FAIL" desc="The text of the notification when taking a screenshot failed.">
-    Failed to save screenshot
-  </message>
-  <message name="IDS_SCREENSHOT_NOTIFICATION_NOTIFIER_NAME" desc="The name of screenshot notifier that is a system component">
-    Screenshot
-  </message>
-  <message name="IDS_SCREENSHOT_NOTIFICATION_BUTTON_COPY_TO_CLIPBOARD" desc="The button label for the screenshot notification which copies the screenshot image to clipboard on click.">
-    Copy to clipboard
-  </message>
-  <message name="IDS_SCREENSHOT_NOTIFICATION_BUTTON_ANNOTATE" desc="The label for the screenshot notification button that opens the note-taking app to annotate the screenshot.">
-    Annotate image
-  </message>
-
   <!-- HaTS Strings -->
   <message name="IDS_HATS_NOTIFICATION_TITLE" desc="The title of the notification for Happiness Tracking Survey.">
     Help us improve Chromebooks
@@ -4541,12 +4512,6 @@
   <message name="IDS_CROSTINI_INSTALLER_SETUP_CONTAINER_MESSAGE" desc="Text shown in the Crostini installer dialog when the container inside the VM is being set up">
     This process may take a few minutes. Setting up the Linux container.
   </message>
-  <message name="IDS_CROSTINI_INSTALLER_FETCH_SSH_KEYS_MESSAGE" desc="Text shown in the Crostini installer dialog when fetching ssh keys">
-    This process may take a few minutes. Setting up the Linux container.
-  </message>
-  <message name="IDS_CROSTINI_INSTALLER_MOUNT_CONTAINER_MESSAGE" desc="Text shown in the Crostini installer dialog when doing sshfs mount of container">
-    This process may take a few minutes. Setting up the Linux container.
-  </message>
   <message name="IDS_CROSTINI_INSTALLER_RETRY_BUTTON" desc="Retry button of the Crostini installer dialog that starts the install steps again.">
     Retry
   </message>
@@ -4567,10 +4532,10 @@
   </message>
   <if expr="reven">
     <message name="IDS_CROSTINI_INSTALLER_NEED_UPDATE_TITLE" desc="Title shown in the Crostini installer dialog when the VM fails to install because the device must be updated">
-      CloudReady 2.0 update required
+      ChromeOS Flex update required
     </message>
     <message name="IDS_CROSTINI_INSTALLER_NEED_UPDATE_ERROR" desc="Text shown in the Crostini installer dialog when the VM fails to install because the device must be updated first">
-      To finish setting up Linux, update CloudReady 2.0 and try again.
+      To finish setting up Linux, update ChromeOS Flex and try again.
     </message>
   </if>
   <if expr="not reven">
@@ -4669,7 +4634,7 @@
     Upgrade Linux
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BODY" desc="Description for the Crostini upgrader, a dialog for upgrading Linux.">
-    Backing up files is recommended in case the upgrade cannot be completed. Starting the upgrade will cause Linux to shut down. Please save open files before proceeding.
+    For the best performance, upgrade to the latest version. Backing up your files is recommended in case the upgrade can’t be completed. Once the upgrade begins, Linux will shut down. Save open files before continuing. <ph name="LINK_START">&lt;a href="$1" target="_top"&gt;</ph>Learn more<ph name="LINK_END">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_CROSTINI_UPGRADER_UPGRADE_BUTTON" desc="Label for the button in the Crostini upgrader dialog to begin upgrading Linux.">
     Upgrade
@@ -4678,85 +4643,76 @@
     Done
   </message>
     <message name="IDS_CROSTINI_UPGRADER_RESTORE_BUTTON" desc="Label for the button in the Crostini upgrader dialog to restore a backup if there was an error upgrading Linux.">
-    Restore
+    Restore backup
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKING_UP_TITLE" desc="Title of the Crostini upgrader when the container backup is in progress.">
     Backing up Linux apps and files
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKING_UP_MESSAGE" desc="Text shown by the Crostini upgrader when the container backup is in progress.">
-    This may take up to 30 minutes.
+    This may take up to 30 minutes
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKUP_ERROR_TITLE" desc="Title of the Crostini upgrader when the container backup fails.">
-    Backing up failed
+    Can't back up Linux apps and files
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKUP_ERROR_MESSAGE" desc="Text shown by the Crostini upgrader when the container backup fails.">
-    Backing up Linux apps and files failed. This can happen if your device doesn't have enough free storage space. Try freeing some space on your device, or picking a different location to back up to.
+    You may not have enough free storage on your device or selected backup location. Try freeing up space or picking a different location.
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKUP_SUCCEEDED_TITLE" desc="Title of the Crostini upgrader when the container backup completed successfully, prior to the main upgrade.">
-    Backing up complete
-  </message>
-  <message name="IDS_CROSTINI_UPGRADER_BACKUP_SUCCEEDED_MESSAGE" desc="Text shown by the Crostini upgrader when the container backup completed successfully, prior to the main upgrade.">
-    Linux apps and files have been successfully backed up. Upgrade will begin shortly.
+    Backup complete
   </message>
   <message name="IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_TITLE" desc="Title of the Crostini upgrader when the upgrade prechecks failed.">
-    Error starting upgrade
+    Can't start upgrade
   </message>
   <message name="IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_NETWORK" desc="Text shown by the Crostini upgrader when the upgrade did not start because there was no network connection.">
-    A network connection is required to upgrade Linux. Please connect to the internet and try again.
+    You need a network connection to upgrade Linux. Connect to the internet and try again.
   </message>
   <message name="IDS_CROSTINI_UPGRADER_PRECHECKS_FAILED_POWER" desc="Text shown by the Crostini upgrader when the upgrade did not start because there wasn't enough power.">
-    Upgrading Linux can drain your battery significantly. Please connect your device to a charger and try again.
+    Your device needs to be plugged in. Upgrading Linux can drain your battery significantly. Connect your device to a charger and try again.
+  </message>
+  <message name="IDS_CROSTINI_UPGRADER_TRY_AGAIN_BUTTON" desc="Try again button for the Crostini upgrader dialog that retries a failed step.">
+    Try again
   </message>
   <message name="IDS_CROSTINI_UPGRADER_UPGRADING_TITLE" desc="Title of the Crostini upgrader when the upgrade is in progress.">
     Upgrading Linux
   </message>
   <message name="IDS_CROSTINI_UPGRADER_UPGRADING" desc="Text shown by the Crostini upgrader when the upgrade is in progress.">
-    This may take up to 30 minutes.
+    This may take up to 30 minutes
   </message>
   <message name="IDS_CROSTINI_UPGRADER_SUCCEEDED_TITLE" desc="Title of the Crostini upgrader when the upgrade is finished successfully.">
-    Upgrade complete
-  </message>
-  <message name="IDS_CROSTINI_UPGRADER_SUCCEEDED" desc="Text shown by the Crostini upgrader when the upgrade is finished successfully.">
-    Linux has been successfully upgraded.
+    Linux upgrade complete
   </message>
   <message name="IDS_CROSTINI_UPGRADER_RESTORE_TITLE" desc="Title of the Crostini upgrader when the container upgrade fails and restore of a backup is in progress.">
     Restoring Linux
   </message>
   <message name="IDS_CROSTINI_UPGRADER_RESTORE_ERROR_TITLE" desc="Title of the Crostini upgrader when restoring from backup fails.">
-    Restore failed
+    Couldn’t restore Linux backup
   </message>
   <message name="IDS_CROSTINI_UPGRADER_RESTORE_ERROR_MESSAGE" desc="Text shown by the Crostini upgrader when restoring from backup fails fails.">
-    Restoring your Linux backup failed. This may be because Linux doesn't have enough disk space. You can change how much disk space Linux has and try to restore your backup again in the OS Settings.
+    Linux may not have enough disk space. You can increase your Linux disk space and try to restore again in <ph name="LINK_START">&lt;a href="chrome://os-settings/crostini/details" target="_top"&gt;</ph>Settings<ph name="LINK_END">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_CROSTINI_UPGRADER_RESTORE_SUCCEEDED_TITLE" desc="Title of the Crostini upgrader when the upgrade failed but the restore of a backup completed successfully.">
-    Restore complete
-  </message>
-  <message name="IDS_CROSTINI_UPGRADER_RESTORE_SUCCEEDED_MESSAGE" desc="Text shown by the Crostini upgrader when the upgrade failed but the restore of a backup completed successfully..">
-    Linux backup has been successfully restored.
+    Linux backup restored
   </message>
   <message name="IDS_CROSTINI_UPGRADER_ERROR_TITLE" desc="Title of the Crostini upgrader when an error occurs.">
-    Error upgrading Linux
+    Couldn't upgrade Linux
   </message>
   <message name="IDS_CROSTINI_UPGRADER_CANCELING_TITLE" desc="Title of the Crostini upgrader when the upgrade is canceled.">
-    Cancelling Linux upgrade
-  </message>
-  <message name="IDS_CROSTINI_UPGRADER_CANCELING" desc="Text shown in the Crostini upgrader dialog when the upgrade is canceled.">
-    This window will close after cancellation is complete.
+    Canceling Linux upgrade
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKUP_CHECKBOX_MESSAGE" desc="Text shown in the Crostini upgrader dialog next to the backup checkbox.">
-    Back up my apps and files to My Files folder before upgrading Linux.
+    Back up apps and files to Files &gt; My files before the upgrade.
   </message>
   <message name="IDS_CROSTINI_UPGRADER_BACKUP_CHANGE_LOCATION" desc="Text shown in the Crostini upgrader dialog next to the backup checkbox with a link enabling the user to change the location to which files are backed up.">
     Change location
   </message>
   <message name="IDS_CROSTINI_UPGRADER_RESTORE_MESSAGE" desc="Title of the Crostini upgrader when the container upgrade fails and restore of a backup is in progress.">
-    Linux files and apps are being restored to their backed up state.
+    Your backed up Linux files and apps are being restored
   </message>
   <message name="IDS_CROSTINI_UPGRADER_LOG_FILE_ERROR" desc="A message shown in the Crostini upgrader that says which file the upgrade log messages have been stored in, shown after an error.">
-    Something went wrong and the Linux upgrade has failed. More information on the failure can be found in the logs. The logs have been saved in <ph name="LOG_FILE">$1<ex>upgrade_container.log</ex></ph>
+    Something went wrong. Linux may only be partially upgraded. Review logs for more information. Logs have been saved in Files &gt; My files &gt; <ph name="LOG_FILE">$1<ex>upgrade_container.log</ex></ph>
   </message>
   <message name="IDS_CROSTINI_UPGRADER_LOG_FILE_SUCCESS" desc="A message shown in the Crostini upgrader that says which file the upgrade log messages have been stored in, shown on success.">
-    The upgrade has finished successfully. For detailed upgrade information, the logs have been saved in <ph name="LOG_FILE">$1<ex>upgrade_container.log</ex></ph>
+    For detailed upgrade information, the logs have been saved in Files &gt; My files &gt; <ph name="LOG_FILE">$1<ex>upgrade_container.log</ex></ph>
   </message>
   <message name="IDS_CROSTINI_UPGRADER_NOT_NOW" desc="Text on the button to defer performing the upgrade">
     Not now
@@ -5118,10 +5074,10 @@
   <message name="IDS_ECHE_APP_SCREEN_LOCK_NOTIFICATION_MESSAGE" desc="Message for the notification shown when screen lock is not enabled while using app stream of EcheApp.">
     Set a pin or password on this Chromebook to protect access to your phone’s apps.
   </message>
-  <message name="IDS_ECHE_APP_DISABLED_BY_PHONE_NOTIFICATION_TITLE" translateable="false" desc="Title for notification shown when the apps streaming settigs is disabled on phone while using app stream of EcheApp.">
+  <message name="IDS_ECHE_APP_DISABLED_BY_PHONE_NOTIFICATION_TITLE" desc="Title for notification shown when the apps streaming settigs is disabled on phone while using app stream of EcheApp.">
     Could not launch <ph name="APP_NAME">$1<ex>the app</ex></ph>
   </message>
-  <message name="IDS_ECHE_APP_DISABLED_BY_PHONE_NOTIFICATION_MESSAGE" translateable="false" desc="Message for the notification shown when the apps streaming settings is disabled on phony while using app stream of EcheApp.">
+  <message name="IDS_ECHE_APP_DISABLED_BY_PHONE_NOTIFICATION_MESSAGE" desc="Message for the notification shown when the apps streaming settings is disabled on phone while using app stream of EcheApp.">
     Enable apps streaming settings from your phone.
   </message>
   <message name="IDS_ECHE_APP_NOTIFICATION_OPEN_AGAIN_BUTTON" desc="Label for the inactivity notification button of EcheApp to open open.">
@@ -5241,13 +5197,13 @@
   </message>
   <if expr="reven">
     <message name="IDS_OOBE_CHROMEVOX_HINT_TEXT" desc="Text content in the ChromeVox hint dialog, asking the user if they would like to activate ChromeVox.">
-      Do you want to activate ChromeVox, the built-in screen reader for CloudReady 2.0?
+      Do you want to activate ChromeVox, the built-in screen reader for ChromeOS Flex?
     </message>
     <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_LAPTOP" desc="The string spoken when the ChromeVox hint is activated when the device is in laptop mode." is_accessibility_with_no_ui="true">
-      Do you want to activate ChromeVox, the built-in screen reader for CloudReady 2.0? If so, press the space bar.
+      Do you want to activate ChromeVox, the built-in screen reader for ChromeOS Flex? If so, press the space bar.
     </message>
     <message name="IDS_OOBE_CHROMEVOX_HINT_ANNOUNCEMENT_TEXT_TABLET" desc="The string spoken when the ChromeVox hint is activated when the device is in tablet mode." is_accessibility_with_no_ui="true">
-      Do you want to activate ChromeVox, the built-in screen reader for CloudReady 2.0? If so, press and hold both volume keys for five seconds.
+      Do you want to activate ChromeVox, the built-in screen reader for ChromeOS Flex? If so, press and hold both volume keys for five seconds.
     </message>
   </if>
   <if expr="not reven">
@@ -5602,8 +5558,8 @@
     Camera &amp; microphone
   </message>
   <if expr="reven">
-    <message name="IDS_CHROME_OS_NOTIFICATION_SOURCE" desc="The name of the source of a CloudReady 2.0 notification">
-      CloudReady 2.0
+    <message name="IDS_CHROME_OS_NOTIFICATION_SOURCE" desc="The name of the source of a ChromeOS Flex notification">
+      ChromeOS Flex
     </message>
   </if>
   <if expr="not reven">
@@ -5787,80 +5743,100 @@ Permissions you've already given to apps may apply to this account. You can cont
   <message name="IDS_EDU_LOGIN_PARENT_SIGNIN_PASSWORD_HIDE" desc="A tool tip on a button that hides the saved password that is being shown.">
     Hide password
   </message>
-
-  <!-- Borealis strings -->
-  <!-- TODO(danielng): Add string descriptions and remove translateable tags
-       when strings are finalized. -->
-  <message name="IDS_BOREALIS_APP_NAME" desc="" translateable="false">
-    Borealis
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_CONFIRMATION_TITLE" desc="" translateable="false">
-    Set up <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_CONFIRMATION_MESSAGE" desc="" translateable="false">
-    Set up Borealis on your device.
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_INSTALL_BUTTON" desc="" translateable="false">
-    Install
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_ENVIRONMENT_SETTING_TITLE" desc="" translateable="false">
-    Setting up <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>...
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_ERROR_TITLE" desc="" translateable="false">
-    Setup couldn't complete
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_FINISHED_TITLE" desc="" translateable="false">
-    Setup complete
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_IMPORTING_MESSAGE" desc="" translateable="false">
-    Configuring the virtual machine. This may take a few minutes.
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_IMPORTED_MESSAGE" desc="" translateable="false">
-    <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph> is ready to use.
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_ERROR_MESSAGE" desc="" translateable="false">
-    Something went wrong.
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_RETRY_BUTTON" desc="" translateable="false">
-    Retry
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_LAUNCH_BUTTON" desc="" translateable="false">
-    Launch
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_NOT_ALLOWED_TITLE" desc="" translateable="false">
-    <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph> needs permission to run
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_NOT_ALLOWED_MESSAGE" desc="" translateable="false">
-    <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph> isn't allowed on this device. Contact your administrator. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_OFFLINE_MESSAGE" desc="" translateable="false">
-    Your device is offline, please connect to the internet and try again.
-  </message>
-  <message name="IDS_BOREALIS_DLC_INTERNAL_FAILED_MESSAGE" desc="" translateable="false">
-    Something went wrong. Ensure that your device is up to date and please try again.
-  </message>
-  <message name="IDS_BOREALIS_DLC_BUSY_FAILED_MESSAGE" desc="" translateable="false">
-    Something went wrong. Please wait a few minutes and run <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph> again.
-  </message>
-  <message name="IDS_BOREALIS_DLC_NEED_REBOOT_FAILED_MESSAGE" desc="" translateable="false">
-    Please restart your device to use <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>.
-  </message>
-  <message name="IDS_BOREALIS_DLC_NEED_UPDATE_FAILED_MESSAGE" desc="" translateable="false">
-    Please ensure that your device is up to date and try again.
-  </message>
-  <message name="IDS_BOREALIS_INSUFFICIENT_DISK_SPACE_MESSAGE" desc="" translateable="false">
-      Your device is low on storage. To increase free space, delete files from device.
-  </message>
-  <message name="IDS_BOREALIS_GENERIC_ERROR_MESSAGE" desc="" translateable="false">
-      Couldn't install <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>. Please try again later. Error code: <ph name="ERROR_CODE">$2<ex>7</ex></ph>.
-  </message>
-  <message name="IDS_BOREALIS_INSTALLER_IN_PROGRESS_ERROR_MESSAGE" desc="" translateable="false">
-      Couldn't install <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph>. Another process is already trying to install <ph name="APP_NAME">$1<ex>BOREALIS</ex></ph> or hasn't finished cancelling. Please try again later.
-  </message>
   <!--
     IDS_EDU_LOGIN_INFO_* strings END
     ==================================================================================
   -->
+
+  <!-- Borealis strings -->
+  <!-- TODO(danielng): Add string descriptions and remove translateable tags
+       when strings are finalized. -->
+  <message name="IDS_BOREALIS_APP_NAME" desc="Name of app, noun, video game distribution service" translateable="false">
+    Steam
+  </message>
+  <message name="IDS_BOREALIS_CREDITS_PLACEHOLDER" desc="Shown to users who navigate to about://borealis-credits when the real credits file can't be shown (e.g. because borealis is not running)" translateable="false">
+    Steam is either not installed or not running. Please run Steam to view credits.
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_CONFIRMATION_TITLE" desc="Title for installer for Steam (noun, name of app).">
+    Welcome to Steam for Chromebook
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_CONFIRMATION_MESSAGE" desc="Body for installer for Steam (noun, name of app).">
+    Let’s get started
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_INSTALL_BUTTON" desc="Button on installer to install Steam (noun, name of app).">
+    Install
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_ENVIRONMENT_SETTING_TITLE" desc="Title for installer while Steam (noun, name of app) is installing.">
+    Setting up Steam
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_ERROR_TITLE" desc="Title for installer when Steam (noun, name of app) fails to install.">
+    There was a problem with Steam setup
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_FINISHED_TITLE" desc="Title for installer when installation for Steam (noun, name of app) completes succesfully.">
+    You’re all set!
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_IMPORTING_MESSAGE" desc="Body for Steam (noun, name of app) installer while Steam is installing.">
+    This may take a few minutes
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_IMPORTED_MESSAGE" desc="Title for Steam (noun, name of app) installer when installation suceeded.">
+    Enjoy your gaming on your Chromebook
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_RETRY_BUTTON" desc="Button for Steam (noun, name of app) installer to retry after failing.">
+    Retry
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_LAUNCH_BUTTON" desc="Button in Steam (noun, name of app) installer to launch Steam.">
+    Launch
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_NOT_ALLOWED_TITLE" desc="Title for Steam (noun, name of app) installer when it does not have permission to install.">
+    Steam does not have permission to run
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_NOT_ALLOWED_MESSAGE" desc="Body for Steam (noun, name of app) installer when it does not have permission to install. Error code is an integer.">
+    Steam isn't allowed on this device. Contact your administrator to get permission 
+    Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_OFFLINE_MESSAGE" desc="Body for Steam (noun, name of app)  installer when installation fails due to being offline.">
+    Please ensure that your device is connected to the internet.
+  </message>
+  <message name="IDS_BOREALIS_DLC_INTERNAL_FAILED_MESSAGE" desc="Body for Steam (noun, name of app) installer when installation fails due to device being out of date.">
+    Ensure that your device is up to date and please try again
+  </message>
+  <message name="IDS_BOREALIS_DLC_BUSY_FAILED_MESSAGE" desc="Body for Steam (noun, name of app) installer when installation fails with suggestion to try again.">
+    Please wait a few minutes and run Steam again
+  </message>
+  <message name="IDS_BOREALIS_DLC_NEED_REBOOT_FAILED_MESSAGE" desc="Body for Steam (noun, name of app) installer when a restart is needed.">
+    Please restart your device to use Steam
+  </message>
+  <message name="IDS_BOREALIS_DLC_NEED_UPDATE_FAILED_MESSAGE" desc="Body for Steam (noun, name of app) installer when installation fails due to device being out of date.">
+    Please ensure that your device is up to date and try again
+  </message>
+  <message name="IDS_BOREALIS_INSUFFICIENT_DISK_SPACE_TITLE" desc="Title for Steam (noun, name of app) installer when installation fails due to low space.">
+    Your available device storage is too low to finish setup
+  </message>
+  <message name="IDS_BOREALIS_INSUFFICIENT_DISK_SPACE_MESSAGE" desc="Body for Steam (noun, name of app) installer when installation fails due to low space.">
+    To increase free space, delete files from device
+  </message>
+  <message name="IDS_BOREALIS_GENERIC_ERROR_MESSAGE" desc="Body for Steam (noun, name of app) installer when installation fails. Error code is an integer.">
+    If the problem persists, try restarting your device 
+    Error code: <ph name="ERROR_CODE">$1<ex>7</ex></ph>.
+  </message>
+  <message name="IDS_BOREALIS_INSTALLER_IN_PROGRESS_ERROR_MESSAGE" desc="Body for Steam (noun, name of app) when installation fails due to another process already running.">
+    Another Steam setup is running. Please wait for it to complete before running setup again.
+  </message>
+  <message name="IDS_BOREALIS_CLIENT_UNINSTALL_CONFIRM_BODY" desc="Confirmation dialog for uninstalling Steam (name of app).">
+      Any games and apps installed via Steam will also be removed from this device
+  </message>
+  <message name="IDS_BOREALIS_APPLICATION_UNINSTALL_CONFIRM_BODY" desc="Confirmation dialog for uninstalling a game.">
+      Data associated with this app may be removed from this device
+  </message>
+  <message name="IDS_BOREALIS_FEEDBACK_NOTIFICATION_TITLE" desc="Title shown in notification that prompts users for feedback">
+    How was your gameplay experience?
+  </message>
+  <message name="IDS_BOREALIS_FEEDBACK_NOTIFICATION_MESSAGE" desc="Message shown in notification that prompts users for feedback">
+    Help us improve gaming on Chromebooks
+  </message>
+  <message name="IDS_BOREALIS_FEEDBACK_NOTIFICATION_SOURCE" desc="Source of notification that prompts users for feedback">
+    Chromebook Gaming
+  </message>
 
   <!-- TPM firmware auto-update notifications -->
   <message name="IDS_TPM_AUTO_UPDATE_PLANNED_NOTIFICATION_TITLE" desc="Title for the notification informing the user that local data will be deleted.">

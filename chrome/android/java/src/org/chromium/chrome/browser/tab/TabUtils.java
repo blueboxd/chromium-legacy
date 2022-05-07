@@ -12,6 +12,7 @@ import android.graphics.Rect;
 import android.view.Display;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.base.ApplicationStatus;
 import org.chromium.chrome.R;
@@ -33,7 +34,10 @@ import org.chromium.url.GURL;
  */
 public class TabUtils {
     private static final String REQUEST_DESKTOP_SCREEN_WIDTH_PARAM = "screen_width_dp";
-
+    @VisibleForTesting
+    static final float TABLET_LANDSCAPE_TAB_THUMBNAIL_ASPECT_RATIO = 1.33f;
+    @VisibleForTesting
+    static final float TAB_THUMBNAIL_ASPECT_RATIO = 0.85f;
     // Do not instantiate this class.
     private TabUtils() {}
 

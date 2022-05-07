@@ -23,7 +23,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
-namespace chromeos {
+namespace ash {
 namespace ime {
 
 class FieldTrialParamsRetriever {
@@ -93,9 +93,7 @@ class ImeService : public mojom::ImeService,
   // ImeCrosPlatform overrides:
   const char* GetImeBundleDir() override;
   const char* GetImeUserHomeDir() override;
-  // To be deprecated soon. Do not make a call on it anymore.
-  const char* GetImeGlobalDir() override;
-
+  void Unused3() override;
   void Unused2() override;
   int SimpleDownloadToFileV2(const char* url,
                              const char* file_path,
@@ -134,6 +132,6 @@ class ImeService : public mojom::ImeService,
 };
 
 }  // namespace ime
-}  // namespace chromeos
+}  // namespace ash
 
 #endif  // ASH_SERVICES_IME_IME_SERVICE_H_

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "ash/app_list/app_list_controller_impl.h"
@@ -16,9 +17,9 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/app_list/views/app_list_nudge_controller.h"
 #include "ash/app_list/views/app_list_toast_view.h"
+#include "ash/app_list/views/app_list_view_util.h"
 #include "ash/app_list/views/continue_task_view.h"
 #include "ash/bubble/bubble_utils.h"
-#include "ash/constants/ash_pref_names.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller_impl.h"
@@ -26,12 +27,11 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "base/check.h"
 #include "base/strings/string_util.h"
-#include "components/prefs/pref_registry_simple.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/scoped_user_pref_update.h"
 #include "extensions/common/constants.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
+#include "ui/views/animation/animation_builder.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
@@ -41,12 +41,8 @@
 
 namespace ash {
 namespace {
-
-// A flag to enable/disable the privacy toast for test.
-bool g_nudge_accepted_for_test = false;
-
 // Header paddings in dips.
-constexpr int kHeaderHorizontalPadding = 12;
+constexpr gfx::Insets kHeaderPadding(0, 12, 4, 12);
 
 // Suggested tasks layout constants.
 constexpr size_t kMinFilesForContinueSectionClamshellMode = 3;
@@ -57,14 +53,20 @@ constexpr size_t kPrivacyIconSizeClamshell = 60;
 constexpr size_t kPrivacyIconSizeTablet = 48;
 
 // Privacy toast interior margin
-constexpr gfx::Insets kPrivacyToastInteriorMargin(12, 12, 12, 16);
+constexpr gfx::Insets kPrivacyToastInteriorMarginClamshell(12, 12, 12, 16);
 
 // Delay before marking the privacy notice as swhon.
 const base::TimeDelta kPrivacyNoticeShownDelay = base::Seconds(6);
 
-// Privacy notice dictionary pref keys.
-const char kPrivacyNoticeAcceptedKey[] = "accepted";
-const char kPrivacyNoticeShownKey[] = "shown";
+// Animation constants.
+constexpr base::TimeDelta kDismissToastAnimationDuration =
+    base::Milliseconds(200);
+constexpr base::TimeDelta kShowSuggestionsAnimationDuration =
+    base::Milliseconds(300);
+
+// The vertical inside padding between this view and its parent. Taken from
+// AppListBubbleAppsPage.
+constexpr int kVerticalPaddingFromParent = 16;
 
 std::unique_ptr<views::Label> CreateContinueLabel(const std::u16string& text) {
   auto label = std::make_unique<views::Label>(text);
@@ -72,16 +74,8 @@ std::unique_ptr<views::Label> CreateContinueLabel(const std::u16string& text) {
   return label;
 }
 
-PrefService* GetActiveUserPrefService() {
-  if (!Shell::HasInstance())
-    return nullptr;
-
-  DCHECK(Shell::Get()->session_controller()->IsActiveUserSessionStarted());
-
-  auto* pref_service =
-      Shell::Get()->session_controller()->GetActivePrefService();
-  DCHECK(pref_service);
-  return pref_service;
+void CleanupLayer(views::View* view) {
+  view->DestroyLayer();
 }
 
 }  // namespace
@@ -110,8 +104,7 @@ ContinueSectionView::ContinueSectionView(AppListViewDelegate* view_delegate,
     continue_label_ = AddChildView(CreateContinueLabel(
         l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_CONTINUE_SECTION_LABEL)));
     continue_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    continue_label_->SetBorder(
-        views::CreateEmptyBorder(gfx::Insets(0, kHeaderHorizontalPadding)));
+    continue_label_->SetBorder(views::CreateEmptyBorder(kHeaderPadding));
   }
 
   suggestions_container_ =
@@ -129,12 +122,6 @@ ContinueSectionView::~ContinueSectionView() {
   AppListModelProvider::Get()->RemoveObserver(this);
   if (Shell::HasInstance() && Shell::Get()->app_list_controller())
     Shell::Get()->app_list_controller()->RemoveObserver(this);
-}
-
-void ContinueSectionView::OnActiveAppListModelsChanged(
-    AppListModel* model,
-    SearchModel* search_model) {
-  UpdateSuggestionTasks();
 }
 
 size_t ContinueSectionView::GetTasksSuggestionsCount() const {
@@ -162,7 +149,7 @@ void ContinueSectionView::UpdateSuggestionTasks() {
 
 void ContinueSectionView::OnSearchResultContainerResultsChanged() {
   MaybeCreatePrivacyNotice();
-  UpdateElementsVisibility();
+  MaybeAnimateOutPrivacyNotice();
 }
 
 bool ContinueSectionView::HasMinimumFilesToShow() const {
@@ -172,19 +159,24 @@ bool ContinueSectionView::HasMinimumFilesToShow() const {
 }
 
 bool ContinueSectionView::ShouldShowPrivacyNotice() const {
+  if (!nudge_controller_)
+    return false;
+
   // Don't show the privacy notice if the reorder nudge is showing.
-  if (nudge_controller_ &&
-      nudge_controller_->current_nudge() ==
-          AppListNudgeController::NudgeType::kReorderNudge) {
+  if (nudge_controller_->current_nudge() ==
+      AppListNudgeController::NudgeType::kReorderNudge) {
     return false;
   }
 
   return HasMinimumFilesToShow() &&
-         !(IsPrivacyNoticeAccepted() || IsPrivacyNoticeShown());
+         !(nudge_controller_->IsPrivacyNoticeAccepted() ||
+           nudge_controller_->WasPrivacyNoticeShown());
 }
 
 bool ContinueSectionView::ShouldShowFilesSection() const {
-  return HasMinimumFilesToShow() && !ShouldShowPrivacyNotice() &&
+  return HasMinimumFilesToShow() &&
+         (nudge_controller_->IsPrivacyNoticeAccepted() ||
+          nudge_controller_->WasPrivacyNoticeShown()) &&
          !privacy_toast_;
 }
 
@@ -198,10 +190,11 @@ void ContinueSectionView::SetShownInBackground(bool shown_in_background) {
 
   // If the privacy notice becomes active again, restart the
   // `privacy_notice_shown_timer_`.
-  if (!shown_in_background && !IsPrivacyNoticeShown() && privacy_toast_) {
+  if (!shown_in_background && !nudge_controller_->WasPrivacyNoticeShown() &&
+      privacy_toast_) {
     privacy_notice_shown_timer_.Start(
         FROM_HERE, kPrivacyNoticeShownDelay,
-        base::BindOnce(&ContinueSectionView::MarkPrivacyNoticeShown,
+        base::BindOnce(&ContinueSectionView::OnPrivacyNoticeShowTimerDone,
                        base::Unretained(this)));
   }
 }
@@ -211,27 +204,119 @@ void ContinueSectionView::SetNudgeController(
   nudge_controller_ = nudge_controller;
 }
 
-void ContinueSectionView::MarkPrivacyNoticeAccepted() {
-  {
-    DictionaryPrefUpdate privacy_pref_update(
-        GetActiveUserPrefService(), prefs::kLauncherFilesPrivacyNotice);
-    privacy_pref_update->SetBoolKey(kPrivacyNoticeAcceptedKey, true);
+void ContinueSectionView::OnPrivacyToastAcknowledged() {
+  if (nudge_controller_) {
+    nudge_controller_->SetPrivacyNoticeAcceptedPref(true);
+    nudge_controller_->SetPrivacyNoticeShown(false);
   }
+
+  // Keep the privacy notice view for the dismiss animation in clamshell mode.
+  if (tablet_mode_) {
+    RemovePrivacyNotice();
+  } else {
+    AnimateDismissToast(
+        base::BindRepeating(&ContinueSectionView::AnimateShowContinueSection,
+                            weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void ContinueSectionView::AnimateDismissToast(base::RepeatingClosure callback) {
+  DCHECK(!tablet_mode_);
+
+  PrepareForLayerAnimation(privacy_toast_);
+
+  views::AnimationBuilder animation_builder;
+  animation_builder.OnEnded(std::move(callback));
+  animation_builder.OnAborted(std::move(callback));
+
+  animation_builder
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetOpacity(privacy_toast_, 0, gfx::Tween::LINEAR)
+      .SetDuration(kDismissToastAnimationDuration);
+}
+
+void ContinueSectionView::AnimateSlideLauncherContent(int vertical_offset) {
+  RemovePrivacyNotice();
+  // The sibling views from this should slide down the total of the height
+  // difference to make room for the continue section suggestions and title.
+  for (views::View* view : parent()->children()) {
+    if (view == this)
+      continue;
+    const bool create_layer = PrepareForLayerAnimation(view);
+    auto cleanup = create_layer ? base::BindRepeating(&CleanupLayer, view)
+                                : base::DoNothing();
+    StartSlideInAnimation(view, vertical_offset, base::Milliseconds(300),
+                          gfx::Tween::ACCEL_40_DECEL_100_3, cleanup);
+  }
+}
+
+void ContinueSectionView::AnimateShowContinueSection() {
+  DCHECK(!tablet_mode_);
+
+  const int height_difference =
+      privacy_toast_->GetPreferredSize().height() -
+      (suggestions_container_->GetPreferredSize().height() +
+       continue_label_->GetPreferredSize().height());
+  const gfx::Tween::Type animation_tween = gfx::Tween::ACCEL_40_DECEL_100_3;
+
+  // The initial position for the launcher continue section should be right
+  // below the search divider.
+  gfx::Transform initial_transform;
+  initial_transform.Translate(0, -kVerticalPaddingFromParent);
+
+  PrepareForLayerAnimation(continue_label_);
+  continue_label_->SetVisible(true);
+  continue_label_->layer()->SetOpacity(0);
+  continue_label_->layer()->SetTransform(initial_transform);
+
+  PrepareForLayerAnimation(suggestions_container_);
+  suggestions_container_->layer()->SetTransform(initial_transform);
+
+  privacy_toast_->DestroyLayer();
+  privacy_toast_->SetVisible(false);
+
+  suggestions_container_->AnimateSlideInSuggestions(
+      height_difference + kVerticalPaddingFromParent,
+      kShowSuggestionsAnimationDuration, animation_tween);
+
+  AnimateSlideLauncherContent(height_difference);
+
+  auto cleanup = base::BindRepeating(&CleanupLayer, continue_label_);
+
+  views::AnimationBuilder animation_builder;
+  animation_builder.OnEnded(cleanup);
+  animation_builder.OnAborted(cleanup);
+
+  animation_builder
+      .SetPreemptionStrategy(
+          ui::LayerAnimator::IMMEDIATELY_ANIMATE_TO_NEW_TARGET)
+      .Once()
+      .SetOpacity(continue_label_, 1.0, animation_tween)
+      .SetTransform(continue_label_, gfx::Transform(), animation_tween)
+      .SetTransform(suggestions_container_, gfx::Transform(), animation_tween)
+      .SetDuration(kShowSuggestionsAnimationDuration);
+}
+
+void ContinueSectionView::RemovePrivacyNotice() {
   if (privacy_toast_) {
     RemoveChildViewT(privacy_toast_);
     privacy_toast_ = nullptr;
   }
-  nudge_controller_->SetPrivacyNoticeShown(false);
   UpdateElementsVisibility();
 }
 
-void ContinueSectionView::MarkPrivacyNoticeShown() {
-  DictionaryPrefUpdate privacy_pref_update(GetActiveUserPrefService(),
-                                           prefs::kLauncherFilesPrivacyNotice);
-  privacy_pref_update->SetBoolKey(kPrivacyNoticeShownKey, true);
+void ContinueSectionView::OnPrivacyNoticeShowTimerDone() {
+  if (!nudge_controller_)
+    return;
+
+  nudge_controller_->SetPrivacyNoticeShownPref(true);
 }
 
 void ContinueSectionView::MaybeCreatePrivacyNotice() {
+  DCHECK(nudge_controller_);
+
   if (!ShouldShowPrivacyNotice()) {
     // Reset the nudge controller state if privacy notice shouldn't be showing.
     if (nudge_controller_->current_nudge() ==
@@ -251,30 +336,33 @@ void ContinueSectionView::MaybeCreatePrivacyNotice() {
   // shown, which will keep the user from seeing the nudge again.
   privacy_notice_shown_timer_.Start(
       FROM_HERE, kPrivacyNoticeShownDelay,
-      base::BindOnce(&ContinueSectionView::MarkPrivacyNoticeShown,
+      base::BindOnce(&ContinueSectionView::OnPrivacyNoticeShowTimerDone,
                      base::Unretained(this)));
 
   const int privacy_toast_text_id =
       tablet_mode_ ? IDS_ASH_LAUNCHER_CONTINUE_SECTION_PRIVACY_TEXT_TABLET
                    : IDS_ASH_LAUNCHER_CONTINUE_SECTION_PRIVACY_TEXT;
+
   privacy_toast_ = AddChildView(
       AppListToastView::Builder(
           l10n_util::GetStringUTF16(privacy_toast_text_id))
           .SetButton(l10n_util::GetStringUTF16(
                          IDS_ASH_LAUNCHER_CONTINUE_SECTION_PRIVACY_BUTTON),
                      base::BindRepeating(
-                         &ContinueSectionView::MarkPrivacyNoticeAccepted,
+                         &ContinueSectionView::OnPrivacyToastAcknowledged,
                          base::Unretained(this)))
           .SetStyleForTabletMode(tablet_mode_)
           .SetThemingIcons(&kContinueFilesDarkIcon, &kContinueFilesLightIcon)
           .SetIconSize(tablet_mode_ ? kPrivacyIconSizeTablet
                                     : kPrivacyIconSizeClamshell)
+          .SetIconBackground(true)
           .Build());
   privacy_toast_->SetProperty(
       views::kFlexBehaviorKey,
       views::FlexSpecification(views::MinimumFlexSizeRule::kScaleToMinimum,
                                views::MaximumFlexSizeRule::kScaleToMaximum));
-  privacy_toast_->UpdateInteriorMargins(kPrivacyToastInteriorMargin);
+  if (!tablet_mode_)
+    privacy_toast_->UpdateInteriorMargins(kPrivacyToastInteriorMarginClamshell);
 }
 
 bool ContinueSectionView::FirePrivacyNoticeShownTimerForTest() {
@@ -283,6 +371,19 @@ bool ContinueSectionView::FirePrivacyNoticeShownTimerForTest() {
 
   privacy_notice_shown_timer_.FireNow();
   return true;
+}
+
+void ContinueSectionView::MaybeAnimateOutPrivacyNotice() {
+  if (Shell::HasInstance() && Shell::Get()->app_list_controller() &&
+      Shell::Get()->app_list_controller()->IsVisible() && !tablet_mode_ &&
+      privacy_toast_ && !ShouldShowPrivacyNotice()) {
+    AnimateDismissToast(
+        base::BindRepeating(&ContinueSectionView::AnimateSlideLauncherContent,
+                            weak_ptr_factory_.GetWeakPtr(),
+                            privacy_toast_->GetPreferredSize().height()));
+    return;
+  }
+  UpdateElementsVisibility();
 }
 
 void ContinueSectionView::UpdateElementsVisibility() {
@@ -294,33 +395,40 @@ void ContinueSectionView::UpdateElementsVisibility() {
     continue_label_->SetVisible(show_files_section);
 }
 
-bool ContinueSectionView::IsPrivacyNoticeAccepted() const {
-  if (g_nudge_accepted_for_test)
-    return true;
-
-  const PrefService* prefs = GetActiveUserPrefService();
-  if (!prefs)
-    return false;
-
-  const base::Value* result = prefs->Get(prefs::kLauncherFilesPrivacyNotice)
-                                  ->FindKey(kPrivacyNoticeAcceptedKey);
-  if (!result || !result->is_bool())
-    return false;
-
-  return result->GetBool();
+void ContinueSectionView::AddedToWidget() {
+  GetFocusManager()->AddFocusChangeListener(this);
 }
 
-bool ContinueSectionView::IsPrivacyNoticeShown() const {
-  const PrefService* prefs = GetActiveUserPrefService();
-  if (!prefs)
-    return false;
+void ContinueSectionView::RemovedFromWidget() {
+  GetFocusManager()->RemoveFocusChangeListener(this);
+}
 
-  const base::Value* result = prefs->Get(prefs::kLauncherFilesPrivacyNotice)
-                                  ->FindKey(kPrivacyNoticeShownKey);
-  if (!result || !result->is_bool())
-    return false;
+void ContinueSectionView::OnDidChangeFocus(views::View* focused_before,
+                                           views::View* focused_now) {
+  // Tablet mode does not have a scrollable container or continue label.
+  if (tablet_mode_)
+    return;
+  // Nothing to do if views are losing focus.
+  if (!focused_now)
+    return;
+  // If a child of the privacy toast gained focus (e.g. the OK button) then
+  // ensure the whole toast is visible.
+  if (privacy_toast_ && privacy_toast_->Contains(focused_now)) {
+    privacy_toast_->ScrollViewToVisible();
+    return;
+  }
+  // If a suggested task gained focus then ensure the continue label is visible
+  // so the user knows what this section is.
+  if (suggestions_container_->Contains(focused_now)) {
+    DCHECK(continue_label_);
+    continue_label_->ScrollViewToVisible();
+  }
+}
 
-  return result->GetBool();
+void ContinueSectionView::OnActiveAppListModelsChanged(
+    AppListModel* model,
+    SearchModel* search_model) {
+  UpdateSuggestionTasks();
 }
 
 void ContinueSectionView::OnAppListVisibilityChanged(bool shown,
@@ -332,7 +440,7 @@ void ContinueSectionView::OnAppListVisibilityChanged(bool shown,
 
   // Update the nudge type in nudge controller if the privacy notice is
   // considered shown and will not be shown again.
-  if (!shown && IsPrivacyNoticeShown() &&
+  if (!shown && nudge_controller_->WasPrivacyNoticeShown() &&
       nudge_controller_->current_nudge() ==
           AppListNudgeController::NudgeType::kPrivacyNotice) {
     nudge_controller_->SetPrivacyNoticeShown(false);
@@ -346,11 +454,6 @@ void ContinueSectionView::OnAppListVisibilityChanged(bool shown,
   if (shown)
     MaybeCreatePrivacyNotice();
   UpdateElementsVisibility();
-}
-
-// static
-void ContinueSectionView::SetPrivacyNoticeAcceptedForTest(bool is_disabled) {
-  g_nudge_accepted_for_test = is_disabled;
 }
 
 BEGIN_METADATA(ContinueSectionView, views::View)

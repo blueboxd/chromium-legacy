@@ -15,13 +15,17 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/web_applications/externally_managed_app_registration_task.h"
+#include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_install_finalizer.h"
 #include "chrome/browser/web_applications/web_app_install_manager.h"
 #include "chrome/browser/web_applications/web_app_install_utils.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
+#include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "chrome/browser/web_applications/web_app_ui_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "components/webapps/browser/install_result_code.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
 
@@ -83,7 +87,10 @@ void ExternallyManagedAppManagerImpl::UninstallApps(
         url, ConvertExternalInstallSourceToUninstallSource(install_source),
         base::BindOnce(
             [](const UninstallCallback& callback, const GURL& app_url,
-               bool uninstalled) { callback.Run(app_url, uninstalled); },
+               webapps::UninstallResultCode code) {
+              callback.Run(app_url,
+                           code == webapps::UninstallResultCode::kSuccess);
+            },
             callback, url));
   }
 }
@@ -122,10 +129,12 @@ ExternallyManagedAppManagerImpl::CreateInstallationTask(
 
 std::unique_ptr<ExternallyManagedAppRegistrationTaskBase>
 ExternallyManagedAppManagerImpl::StartRegistration(GURL install_url) {
-  return std::make_unique<ExternallyManagedAppRegistrationTask>(
-      install_url, url_loader_.get(), web_contents_.get(),
+  ExternallyManagedAppRegistrationTask::RegistrationCallback callback =
       base::BindOnce(&ExternallyManagedAppManagerImpl::OnRegistrationFinished,
-                     weak_ptr_factory_.GetWeakPtr(), install_url));
+                     weak_ptr_factory_.GetWeakPtr(), install_url);
+  return std::make_unique<ExternallyManagedAppRegistrationTask>(
+      std::move(install_url), url_loader_.get(), web_contents_.get(),
+      std::move(callback));
 }
 
 void ExternallyManagedAppManagerImpl::OnRegistrationFinished(
@@ -193,7 +202,16 @@ void ExternallyManagedAppManagerImpl::MaybeStartNext() {
         return;
       }
 
-      // Otherwise no need to do anything.
+      // Otherwise add install source before returning the result.
+      // TODO: Investigate re-install of the app instead at all times.
+      // https://crbug.com/1300321
+      {
+        ScopedRegistryUpdate update(sync_bridge());
+        WebApp* app_to_update = update->UpdateApp(app_id.value());
+        app_to_update->AddSource(InferSourceFromMetricsInstallSource(
+            ConvertExternalInstallSourceToInstallSource(
+                install_options.install_source)));
+      }
       std::move(front->callback)
           .Run(install_options.install_url,
                ExternallyManagedAppManager::InstallResult(

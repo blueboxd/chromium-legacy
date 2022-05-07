@@ -27,6 +27,7 @@
 #include "third_party/blink/renderer/core/inspector/node_content_visibility_state.h"
 #include "third_party/blink/renderer/core/layout/hit_test_location.h"
 #include "third_party/blink/renderer/core/layout/layout_view.h"
+#include "third_party/blink/renderer/core/layout/ng/flex/layout_ng_flexible_box.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/cursors.h"
@@ -253,8 +254,13 @@ bool SearchingForNodeTool::HandleMouseMove(const WebMouseEvent& event) {
                   (WebInputEvent::kControlKey | WebInputEvent::kMetaKey);
 
   contrast_info_ = FetchContrast(node);
-  if (hovered_node_changed)
+  if (hovered_node_changed) {
+    if (auto* flexbox =
+            DynamicTo<LayoutNGFlexibleBox>(node->GetLayoutObject())) {
+      flexbox->SetNeedsLayoutForDevtools();
+    }
     NodeHighlightRequested(node);
+  }
   return true;
 }
 
@@ -347,6 +353,9 @@ NodeHighlightTool::NodeHighlightTool(
   std::tie(node_, content_visibility_state_) =
       DetermineContentVisibilityState(node);
   contrast_info_ = FetchContrast(node_);
+  if (auto* flexbox = DynamicTo<LayoutNGFlexibleBox>(node->GetLayoutObject())) {
+    flexbox->SetNeedsLayoutForDevtools();
+  }
 }
 
 String NodeHighlightTool::GetOverlayName() {

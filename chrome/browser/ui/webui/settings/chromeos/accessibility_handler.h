@@ -31,35 +31,29 @@ class AccessibilityHandler : public ::settings::SettingsPageUIHandler,
   void OnJavascriptDisallowed() override;
 
   // Callback which updates if startup sound is enabled. Visible for testing.
-  void HandleManageA11yPageReady(base::Value::ConstListView args);
+  void HandleManageA11yPageReady(const base::Value::List& args);
 
  private:
   friend class AccessibilityHandlerTest;
 
   // Callback for the messages to show settings for ChromeVox or
   // Select To Speak.
-  void HandleShowChromeVoxSettings(base::Value::ConstListView args);
-  void HandleShowSelectToSpeakSettings(base::Value::ConstListView args);
-  void HandleSetStartupSoundEnabled(base::Value::ConstListView args);
+  void HandleShowChromeVoxSettings(const base::Value::List& args);
+  void HandleShowSelectToSpeakSettings(const base::Value::List& args);
+  void HandleSetStartupSoundEnabled(const base::Value::List& args);
   void HandleRecordSelectedShowShelfNavigationButtonsValue(
-      base::Value::ConstListView args);
-  void HandleShowChromeVoxTutorial(base::Value::ConstListView args);
+      const base::Value::List& args);
+  void HandleShowChromeVoxTutorial(const base::Value::List& args);
 
   void OpenExtensionOptionsPage(const char extension_id[]);
 
   void MaybeAddSodaInstallerObserver();
-  void OnSodaInstallSucceeded();
-  void OnSodaInstallProgress(int progress, speech::LanguageCode language_code);
-  void OnSodaInstallFailed(speech::LanguageCode language_code);
 
   // SodaInstaller::Observer:
-  void OnSodaInstalled() override;
-  void OnSodaLanguagePackInstalled(speech::LanguageCode language_code) override;
-  void OnSodaProgress(int progress) override {}
-  void OnSodaLanguagePackProgress(int language_progress,
-                                  speech::LanguageCode language_code) override;
-  void OnSodaError() override;
-  void OnSodaLanguagePackError(speech::LanguageCode language_code) override;
+  void OnSodaInstalled(speech::LanguageCode language_code) override;
+  void OnSodaProgress(speech::LanguageCode language_code,
+                      int progress) override;
+  void OnSodaError(speech::LanguageCode language_code) override;
 
   void MaybeAddDictationLocales();
   speech::LanguageCode GetDictationLocale();

@@ -12,9 +12,7 @@
 #include "base/containers/flat_map.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Schedules requests for shared resources. When requested connections require
 // using a system resouce which is limited (e.g., a limited number of Bluetooth
@@ -70,13 +68,6 @@ class SharedResourceScheduler {
   base::flat_map<DeviceIdPair, ConnectionPriority> request_to_priority_map_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash::secure_channel {
-using ::chromeos::secure_channel::SharedResourceScheduler;
-}
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_SHARED_RESOURCE_SCHEDULER_H_

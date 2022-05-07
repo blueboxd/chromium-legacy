@@ -52,7 +52,7 @@ namespace {
 
 bool IconInfosContainIconURL(const std::vector<apps::IconInfo>& icon_infos,
                              const GURL& url) {
-  for (apps::IconInfo info : icon_infos) {
+  for (const apps::IconInfo& info : icon_infos) {
     if (info.url.EqualsIgnoringRef(url))
       return true;
   }
@@ -354,6 +354,9 @@ ExternalInstallOptions WebAppPolicyManager::ParseInstallPolicyEntry(
   ExternalInstallOptions install_options{
       install_gurl, user_display_mode, ExternalInstallSource::kExternalPolicy};
 
+  // TODO(dmurph): Store expected os integration state in the database so
+  // this doesn't re-apply when we already have it done.
+  // https://crbug.com/1295044
   install_options.add_to_applications_menu = true;
   install_options.add_to_desktop =
       create_desktop_shortcut ? create_desktop_shortcut->GetBool() : false;
@@ -606,6 +609,9 @@ void WebAppPolicyManager::PopulateDisabledWebAppsIdsLists() {
         break;
       case policy::SystemFeature::kCanvas:
         disabled_web_apps_.insert(web_app::kCanvasAppId);
+        break;
+      case policy::SystemFeature::kCrosh:
+        disabled_system_apps_.insert(SystemAppType::CROSH);
         break;
     }
   }

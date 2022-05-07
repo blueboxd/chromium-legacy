@@ -7,13 +7,21 @@
 
 namespace features {
 
-// Enable code space compaction when finalizing a full GC with stack
+// Enable code space compaction when finalizing a full GC with stack.
 const base::Feature kV8CompactCodeSpaceWithStack{
     "V8CompactCodeSpaceWithStack", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable compaction when finalizing a full GC with stack.
 const base::Feature kV8CompactWithStack{"V8CompactWithStack",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Enables compaction of maps in a full GC.
+const base::Feature kV8CompactMaps{"V8CompactMaps",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables a separate heap space for all map objects.
+const base::Feature kV8UseMapSpace{"V8UseMapSpace",
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables optimization of JavaScript in V8.
 const base::Feature kV8OptimizeJavascript{"V8OptimizeJavascript",
@@ -34,10 +42,6 @@ const base::Feature kV8OffThreadFinalization{"V8OffThreadFinalization",
 // Enables lazy feedback allocation in V8.
 const base::Feature kV8LazyFeedbackAllocation{"V8LazyFeedbackAllocation",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
-
-// Enables concurrent inlining in TurboFan.
-const base::Feature kV8ConcurrentInlining{"V8ConcurrentInlining",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables per-context marking worklists in V8 GC.
 const base::Feature kV8PerContextMarkingWorklist{
@@ -91,7 +95,7 @@ const base::Feature kV8ShortBuiltinCalls{"V8ShortBuiltinCalls",
 
 // Enables fast API calls in TurboFan.
 const base::Feature kV8TurboFastApiCalls{"V8TurboFastApiCalls",
-                                         base::FEATURE_DISABLED_BY_DEFAULT};
+                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Artificially delays script execution.
 const base::Feature kV8ScriptAblation{"V8ScriptAblation",

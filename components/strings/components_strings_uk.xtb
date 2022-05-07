@@ -458,6 +458,7 @@
 <translation id="2310021320168182093">Chou2 (конверт)</translation>
 <translation id="2316887270356262533">Звільняє менше 1 Мб. Деякі сайти можуть завантажуватися повільніше під час наступного відвідування.</translation>
 <translation id="2317259163369394535">Для сайту <ph name="DOMAIN" /> потрібно ввести ім’я користувача та пароль.</translation>
+<translation id="2318594867107319532">Остання позначка часу для правила:</translation>
 <translation id="2328651992442742497">Дозволено (за умовчанням)</translation>
 <translation id="2329182534073751090">розміщення вікон</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, діє до <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -492,6 +493,7 @@
 <translation id="2430968933669123598">"Керувати обліковим записом Google"; натисніть Enter, щоб керувати своєю інформацією, конфіденційністю й безпекою в обліковому записі Google</translation>
 <translation id="2436186046335138073">Дозволити обробнику <ph name="HANDLER_HOSTNAME" /> відкривати всі посилання протоколу <ph name="PROTOCOL" />?</translation>
 <translation id="2438874542388153331">Пробити чотири отвори праворуч</translation>
+<translation id="2448295565072560657">Периферійні пристрої, які підключені до цього пристрою, коли ви ввійшли в обліковий запис</translation>
 <translation id="2450021089947420533">Сеанси</translation>
 <translation id="2463739503403862330">Заповнити</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -499,6 +501,7 @@
 <translation id="2465688316154986572">Скріпити</translation>
 <translation id="2465914000209955735">Керувати завантаженими файлами в Chrome</translation>
 <translation id="2466004615675155314">Показати інформацію з Інтернету</translation>
+<translation id="2467272921457885625">Характеристики та статистика апаратного забезпечення пристрою (наприклад, історія використання ЦП чи оперативної пам’яті)</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />провести діагностику мережі<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">Порядок від 1 до N</translation>
 <translation id="2470767536994572628">Коли ви редагуєте примітки, документ переходить у режим перегляду по одній сторінці, а також відновлюється його початкова орієнтація</translation>
@@ -525,6 +528,7 @@
 <translation id="2539524384386349900">Визначити</translation>
 <translation id="2540701853218677861">Історію входу в обліковий запис і виходу з нього на пристрої, зокрема позначки часу та невдалі спроби</translation>
 <translation id="2541219929084442027">Сторінки, які ви переглядали в анонімному режимі, не реєструються в історії веб-переглядача чи пошуку та не залишають файлів cookie. Коли ви закриваєте всі анонімні вкладки, зберігаються лише завантажені файли й створені закладки.</translation>
+<translation id="2544546346215446551">Адміністратор перезапустив ваш пристрій</translation>
 <translation id="2544644783021658368">Один документ</translation>
 <translation id="2546283357679194313">Файли cookie та дані із сайтів</translation>
 <translation id="254947805923345898">Недійсне значення правила.</translation>
@@ -939,7 +943,6 @@
 <translation id="385051799172605136">Назад</translation>
 <translation id="3858027520442213535">Оновити дату й час</translation>
 <translation id="3858860766373142691">Назва</translation>
-<translation id="3879224246272917991">Статистику пристрою, як-от використання ЦП чи оперативної пам’яті, і технічні характеристики апаратного забезпечення</translation>
 <translation id="3881478300875776315">Показати менше рядків</translation>
 <translation id="3884278016824448484">Конфліктуючий ідентифікатор пристрою</translation>
 <translation id="3885155851504623709">Цивільний округ</translation>
@@ -974,6 +977,7 @@
 <translation id="3990250421422698716">Поступове зміщення</translation>
 <translation id="3996311196211510766">Сайт <ph name="ORIGIN" /> просить, щоб правило джерела
     застосовувалося до всіх його запитів, однак наразі це неможливо.</translation>
+<translation id="4006465311664329701">Способи оплати, пропозиції й адреси з Google Pay</translation>
 <translation id="4009243425692662128">Контент сторінок, які ви друкуєте, надсилається на аналіз на платформу Google Cloud або стороннім сервісам. Наприклад, його можуть сканувати на наявність конфіденційних даних.</translation>
 <translation id="4010758435855888356">Дозволити доступ до пам’яті?</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Документ PDF містить {COUNT} сторінку}one{Документ PDF містить {COUNT} сторінку}few{Документ PDF містить {COUNT} сторінки}many{Документ PDF містить {COUNT} сторінок}other{Документ PDF містить {COUNT} сторінки}}</translation>
@@ -1253,6 +1257,7 @@
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />; натисніть Tab, а потім – Enter, щоб швидко створити нову таблицю Google</translation>
 <translation id="4825507807291741242">Потужний</translation>
 <translation id="483241715238664915">Увімкнути попередження</translation>
+<translation id="4834250788637067901">Способи оплати, пропозиції й адреси з Google Pay</translation>
 <translation id="4838327282952368871">Мрійливий</translation>
 <translation id="4840250757394056958">Переглянути історію Chrome</translation>
 <translation id="484462545196658690">Автоматично</translation>
@@ -1380,7 +1385,6 @@
 <translation id="5205222826937269299">Укажіть ім’я</translation>
 <translation id="5209518306177824490">Відбиток SHA-1</translation>
 <translation id="5209670883520018268">Лоток 20</translation>
-<translation id="5215116848420601511">Способи оплати й адреси, пов’язані з Google Pay</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="521659676233207110">Лоток 13</translation>
 <translation id="5216942107514965959">Останнє відвідування: сьогодні</translation>
@@ -1659,6 +1663,7 @@
 <translation id="6157754950574419155">Видалити всю історію</translation>
 <translation id="6157877588268064908">Укажіть адресу, щоб переглянути способи відправлення та вимоги.</translation>
 <translation id="6165508094623778733">Докладніше</translation>
+<translation id="6167577165590485365">Остання спроба отримання:</translation>
 <translation id="6169916984152623906">Тепер ви можете переглядати вміст анонімно. Інші користувачі вашого пристрою не бачитимуть дані про вашу активність. Однак завантаження та закладки зберігатимуться.</translation>
 <translation id="6177128806592000436">Ваше з’єднання з цим сайтом не захищене</translation>
 <translation id="6180316780098470077">Інтервал між повторними спробами</translation>
@@ -2293,7 +2298,6 @@
 <translation id="8241712895048303527">Блокувати на цьому сайті</translation>
 <translation id="8242426110754782860">Продовжити</translation>
 <translation id="8249296373107784235">Скасувати</translation>
-<translation id="8249320324621329438">Востаннє отримано:</translation>
 <translation id="8253091569723639551">Потрібно вказати платіжну адресу</translation>
 <translation id="8257387598443225809">Цей додаток створено для мобільних пристроїв</translation>
 <translation id="825929999321470778">Показати всі збережені паролі</translation>
@@ -2497,7 +2501,6 @@
 <translation id="8975012916872825179">Номери телефонів, електронні адреси, адреси доставки тощо</translation>
 <translation id="8975263830901772334">Назви файлів, які ви друкуєте</translation>
 <translation id="8978053250194585037">Функція безпечного перегляду від Google нещодавно <ph name="BEGIN_LINK" />виявила фішинг<ph name="END_LINK" /> на сайті <ph name="SITE" />. Фішингові сайти видають себе за інші сайти, щоб ошукати вас.</translation>
-<translation id="8983003182662520383">Способи оплати й адреси, пов’язані з Google Pay</translation>
 <translation id="8983369100812962543">Тепер ви можете змінювати розмір додатка</translation>
 <translation id="8987245424886630962"><ph name="VIEW_CHROME_HISTORY_FOCUSED_FRIENDLY_MATCH_TEXT" />; натисніть Tab, а потім – Enter, щоб переглянути історію веб-перегляду в Chrome</translation>
 <translation id="8987927404178983737">Місяць</translation>

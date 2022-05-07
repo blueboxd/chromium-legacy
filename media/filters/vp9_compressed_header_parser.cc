@@ -4,7 +4,6 @@
 
 #include "media/filters/vp9_compressed_header_parser.h"
 
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 
 namespace media {
@@ -48,7 +47,7 @@ Vp9Prob InvRemapProb(uint8_t delta_prob, uint8_t prob) {
   uint8_t v = delta_prob;
   DCHECK_GE(m, 1);
   DCHECK_LE(m, kVp9MaxProb);
-  DCHECK_LT(v, base::size(inv_map_table));
+  DCHECK_LT(v, std::size(inv_map_table));
   v = inv_map_table[v];
   m--;
   if ((m << 1) <= kVp9MaxProb) {
@@ -61,6 +60,22 @@ Vp9Prob InvRemapProb(uint8_t delta_prob, uint8_t prob) {
 }  // namespace
 
 Vp9CompressedHeaderParser::Vp9CompressedHeaderParser() = default;
+
+// 6.3 Compressed header syntax
+bool Vp9CompressedHeaderParser::Parse(const uint8_t* stream,
+                                      off_t frame_size,
+                                      Vp9FrameHeader* fhdr) {
+  have_frame_context_ = true;
+  return ParseInternal(stream, frame_size, fhdr);
+}
+
+bool Vp9CompressedHeaderParser::ParseNoContext(const uint8_t* stream,
+                                               off_t frame_size,
+                                               Vp9FrameHeader* fhdr) {
+  have_frame_context_ = false;
+  memset(&fhdr->frame_context, 0, sizeof(fhdr->frame_context));
+  return ParseInternal(stream, frame_size, fhdr);
+}
 
 // 6.3.1 Tx mode syntax
 void Vp9CompressedHeaderParser::ReadTxMode(Vp9FrameHeader* fhdr) {
@@ -93,9 +108,16 @@ uint8_t Vp9CompressedHeaderParser::DecodeTermSubexp() {
 // 6.3.3 Diff update prob syntax
 void Vp9CompressedHeaderParser::DiffUpdateProb(Vp9Prob* prob) {
   const Vp9Prob kUpdateProb = 252;
-  if (reader_.ReadBool(kUpdateProb)) {
+  const bool must_update_probabilities = reader_.ReadBool(kUpdateProb);
+
+  if (!must_update_probabilities)
+    return;
+
+  if (have_frame_context_) {
     uint8_t delta_prob = DecodeTermSubexp();
     *prob = InvRemapProb(delta_prob, *prob);
+  } else {
+    *prob = DecodeTermSubexp();
   }
 }
 
@@ -254,9 +276,9 @@ void Vp9CompressedHeaderParser::UpdateMvProbArray(Vp9Prob (&prob_array)[N]) {
 }
 
 // 6.3 Compressed header syntax
-bool Vp9CompressedHeaderParser::Parse(const uint8_t* stream,
-                                      off_t frame_size,
-                                      Vp9FrameHeader* fhdr) {
+bool Vp9CompressedHeaderParser::ParseInternal(const uint8_t* stream,
+                                              off_t frame_size,
+                                              Vp9FrameHeader* fhdr) {
   DVLOG(2) << "Vp9CompressedHeaderParser::Parse";
   if (!reader_.Initialize(stream, frame_size))
     return false;

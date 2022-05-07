@@ -11,9 +11,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Concrete ClientConnectionParameters implementation, which utilizes a
 // mojo::Remote<ConnectionDelegate>.
@@ -64,8 +62,6 @@ class ClientConnectionParametersImpl : public ClientConnectionParameters {
   mojo::Remote<mojom::ConnectionDelegate> connection_delegate_remote_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_CLIENT_CONNECTION_PARAMETERS_IMPL_H_

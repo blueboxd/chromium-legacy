@@ -27,7 +27,7 @@ void PersonalizationHubHandler::RegisterMessages() {
 }
 
 void PersonalizationHubHandler::HandleOpenPersonalizationHub(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(0U, args.size());
   web_app::LaunchSystemWebAppAsync(Profile::FromWebUI(web_ui()),
                                    web_app::SystemAppType::PERSONALIZATION);

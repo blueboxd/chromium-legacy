@@ -44,6 +44,7 @@
 <translation id="3344973607274501920">Chromium kon nie jou wagwoorde nagaan nie. Probeer jou internetverbinding nagaan.</translation>
 <translation id="3472200483164753384">Nie gesteun in Chromium Kanarie nie</translation>
 <translation id="3639997914391704523">Chromium kan jou wagwoorde nagaan as jy met jou Google-rekening aanmeld.</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" /> het Chromium gebruik en het boekmerke, wagwoorde en ander instellings op hierdie toestel gelos.</translation>
 <translation id="3805899903892079518">Chromium het nie toegang tot jou foto's of video's nie. Aktiveer toegang in iOS-instellings &gt; Privacy &gt; Photos.</translation>
 <translation id="4043291146360695975">Wagwoorde word slegs op hierdie toestel in Wagwoordbestuurder gestoor.</translation>
 <translation id="4099085513035183040">Nie op Chromium Beta gesteun nie</translation>
@@ -55,6 +56,15 @@
 <translation id="4828317641996116749">Chromium kon nie alle wagwoorde nagaan nie. Probeer later weer.</translation>
 <translation id="4985291216379576555">Chromium kan nie vanlyn vir opdaterings kyk nie</translation>
 <translation id="4999538639245140991">Omdat jy afmeld uit 'n rekening wat deur <ph name="SIGNOUT_MANAGED_DOMAIN" /> bestuur word, sal jou Chromium-data op hierdie toestel uitgevee word. Jou data sal in jou Google-rekening bly.</translation>
+<translation id="5039881550736388123">Wanneer dit aan is:
+<ph name="BEGIN_INDENT" />  • Help dit om Chromium beter te maak vir mense wat dit gebruik soos wat jy dit gebruik.<ph name="END_INDENT" />
+
+Dinge om te oorweeg:
+<ph name="BEGIN_INDENT" />  • Inligting oor jou gebruik van Chromium word aan Google gestuur, maar dit word nie aan jou verbind nie.
+
+  • As Chromium omval, kan besonderhede oor die omval sekere persoonlike inligting insluit.
+
+  • As jy sinkronisering aanskakel, kan maatstawwe inligting insluit oor URL'e wat jy besoek.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Meld by Chromium aan</translation>
 <translation id="5224391634244552924">Geen gestoorde wagwoorde nie. Chromium kan jou wagwoorde nagaan wanneer jy hulle stoor.</translation>
 <translation id="5308226104666789935">Chromium kan nie vir opdaterings kyk nie</translation>
@@ -65,6 +75,7 @@
 <translation id="5777187867430702742">Chromium-bladsy</translation>
 <translation id="5862307444128926510">Welkom by Chromium</translation>
 <translation id="5945387852661427312">Jy meld tans aan met 'n rekening wat deur <ph name="DOMAIN" /> bestuur word en gee sy administrateur beheer oor jou Chromium-data. Jou data sal permanent met hierdie rekening verbind word. As jy uit Chromium afmeld, sal jou data van hierdie toestel af uitgevee word, maar dit sal steeds in jou Google-rekening geberg word.</translation>
+<translation id="5983312940147103417">Maak Chromium beter</translation>
 <translation id="602807004951640891">Deur Chromium te gebruik, stem jy in tot die <ph name="BEGIN_LINK_TOS" />diensbepalings<ph name="END_LINK_TOS" />.</translation>
 <translation id="6119647025869519954">Om Chromium jou verstekblaaier te maak:
 1. Maak Instellings oop

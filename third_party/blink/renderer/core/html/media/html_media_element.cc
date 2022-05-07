@@ -109,7 +109,6 @@
 #include "third_party/blink/renderer/core/loader/mixed_content_checker.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
-#include "third_party/blink/renderer/core/peerconnection/execution_context_metronome_provider.h"
 #include "third_party/blink/renderer/platform/audio/audio_bus.h"
 #include "third_party/blink/renderer/platform/audio/audio_source_provider_client.h"
 #include "third_party/blink/renderer/platform/bindings/exception_messages.h"
@@ -522,12 +521,10 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tag_name,
           this,
           &HTMLMediaElement::OnRemovedFromDocumentTimerFired),
       progress_event_timer_(
-          GetExecutionContextMetronomeProvider(),
           document.GetTaskRunner(TaskType::kInternalMedia),
           WTF::BindRepeating(&HTMLMediaElement::ProgressEventTimerFired,
                              WrapWeakPersistent(this))),
       playback_progress_timer_(
-          GetExecutionContextMetronomeProvider(),
           document.GetTaskRunner(TaskType::kInternalMedia),
           WTF::BindRepeating(&HTMLMediaElement::PlaybackProgressTimerFired,
                              WrapWeakPersistent(this))),
@@ -3921,17 +3918,6 @@ void HTMLMediaElement::ContextDestroyed() {
   removed_from_document_timer_.Stop();
 }
 
-scoped_refptr<MetronomeProvider>
-HTMLMediaElement::GetExecutionContextMetronomeProvider() const {
-  ExecutionContext* execution_context = GetExecutionContext();
-  if (!execution_context || execution_context->IsContextDestroyed()) {
-    // It's possible to create an element of a detached document.
-    return nullptr;
-  }
-  return ExecutionContextMetronomeProvider::From(*execution_context)
-      .metronome_provider();
-}
-
 bool HTMLMediaElement::HasPendingActivity() const {
   const auto result = HasPendingActivityInternal();
   // TODO(dalecurtis): Replace c-style casts in followup patch.
@@ -4747,26 +4733,6 @@ void HTMLMediaElement::ReportCurrentTimeToMediaSource() {
   // See MediaSourceAttachment::OnElementTimeUpdate() for why the attachment
   // needs our currentTime.
   media_source_attachment_->OnElementTimeUpdate(currentTime());
-}
-
-WebMediaPlayerClient::Features HTMLMediaElement::GetFeatures() {
-  WebMediaPlayerClient::Features features;
-
-  features.id = FastGetAttribute(html_names::kIdAttr);
-  features.width = FastGetAttribute(html_names::kWidthAttr);
-
-  if (auto* parent = parentElement())
-    features.parent_id = parent->FastGetAttribute(html_names::kIdAttr);
-
-  features.alt_text = AltText();
-  features.is_page_visible = GetDocument().IsPageVisible();
-  features.is_in_main_frame = GetDocument().IsInMainFrame();
-
-  const KURL& url = GetDocument().Url();
-  features.url_host = url.Host();
-  features.url_path = url.GetPath();
-
-  return features;
 }
 
 HTMLMediaElement::OpenerContextObserver::OpenerContextObserver(

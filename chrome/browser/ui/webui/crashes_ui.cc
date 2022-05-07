@@ -97,18 +97,18 @@ class CrashesDOMHandler : public WebUIMessageHandler {
   void OnUploadListAvailable();
 
   // Asynchronously fetches the list of crashes. Called from JS.
-  void HandleRequestCrashes(base::Value::ConstListView args);
+  void HandleRequestCrashes(const base::Value::List& args);
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // Asynchronously triggers crash uploading. Called from JS.
-  void HandleRequestUploads(base::Value::ConstListView args);
+  void HandleRequestUploads(const base::Value::List& args);
 #endif
 
   // Sends the recent crashes list JS.
   void UpdateUI();
 
   // Asynchronously requests a user triggered upload. Called from JS.
-  void HandleRequestSingleCrashUpload(base::Value::ConstListView args);
+  void HandleRequestSingleCrashUpload(const base::Value::List& args);
 
   scoped_refptr<UploadList> upload_list_;
   bool list_available_;
@@ -145,7 +145,7 @@ void CrashesDOMHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
-void CrashesDOMHandler::HandleRequestCrashes(base::Value::ConstListView args) {
+void CrashesDOMHandler::HandleRequestCrashes(const base::Value::List& args) {
   AllowJavascript();
   if (first_load_) {
     first_load_ = false;
@@ -159,7 +159,7 @@ void CrashesDOMHandler::HandleRequestCrashes(base::Value::ConstListView args) {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-void CrashesDOMHandler::HandleRequestUploads(base::Value::ConstListView args) {
+void CrashesDOMHandler::HandleRequestUploads(const base::Value::List& args) {
   chromeos::DebugDaemonClient* debugd_client =
       chromeos::DBusThreadManager::Get()->GetDebugDaemonClient();
   DCHECK(debugd_client);
@@ -235,7 +235,7 @@ void CrashesDOMHandler::UpdateUI() {
 }
 
 void CrashesDOMHandler::HandleRequestSingleCrashUpload(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   // Only allow manual uploads if crash uploads aren’t disabled by policy.
   if (!ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled() &&
       IsMetricsReportingPolicyManaged()) {

@@ -7,6 +7,7 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/privacy_sandbox/privacy_sandbox_settings_delegate.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
@@ -18,9 +19,9 @@ PrivacySandboxSettingsFactory* PrivacySandboxSettingsFactory::GetInstance() {
   return base::Singleton<PrivacySandboxSettingsFactory>::get();
 }
 
-PrivacySandboxSettings* PrivacySandboxSettingsFactory::GetForProfile(
-    Profile* profile) {
-  return static_cast<PrivacySandboxSettings*>(
+privacy_sandbox::PrivacySandboxSettings*
+PrivacySandboxSettingsFactory::GetForProfile(Profile* profile) {
+  return static_cast<privacy_sandbox::PrivacySandboxSettings*>(
       GetInstance()->GetServiceForBrowserContext(profile, true));
 }
 
@@ -33,7 +34,8 @@ KeyedService* PrivacySandboxSettingsFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  return new PrivacySandboxSettings(
+  return new privacy_sandbox::PrivacySandboxSettings(
+      std::make_unique<PrivacySandboxSettingsDelegate>(profile),
       HostContentSettingsMapFactory::GetForProfile(profile),
       CookieSettingsFactory::GetForProfile(profile).get(), profile->GetPrefs(),
       profile->IsIncognitoProfile());

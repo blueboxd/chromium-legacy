@@ -12,18 +12,29 @@ namespace blink {
 
 struct NGFlexBreakTokenData final : NGBlockBreakTokenData {
   NGFlexBreakTokenData(const NGBlockBreakTokenData* break_token_data,
-                       const Vector<NGFlexLine>& flex_lines,
+                       const HeapVector<NGFlexLine>& flex_lines,
                        const Vector<EBreakBetween>& row_break_between,
-                       LayoutUnit intrinsic_block_size)
+                       LayoutUnit intrinsic_block_size,
+                       bool broke_before_row)
       : NGBlockBreakTokenData(kFlexBreakTokenData, break_token_data),
         flex_lines(flex_lines),
         row_break_between(row_break_between),
-        intrinsic_block_size(intrinsic_block_size) {}
+        intrinsic_block_size(intrinsic_block_size),
+        broke_before_row(broke_before_row) {}
 
-  Vector<NGFlexLine> flex_lines;
+  void Trace(Visitor* visitor) const override {
+    visitor->Trace(flex_lines);
+    NGBlockBreakTokenData::Trace(visitor);
+  }
+
+  HeapVector<NGFlexLine> flex_lines;
   // |row_break_between| is only used in the case of row flex containers.
   Vector<EBreakBetween> row_break_between;
   LayoutUnit intrinsic_block_size;
+  // |broke_before_row| is only used in the case of row flex containers. If this
+  // is true, that means that the next row to be processed had broken before,
+  // as represented by a break before its first child.
+  bool broke_before_row = false;
 };
 
 template <>

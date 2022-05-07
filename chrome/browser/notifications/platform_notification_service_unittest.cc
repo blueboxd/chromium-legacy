@@ -9,7 +9,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/utf_string_conversions.h"
@@ -40,6 +39,7 @@
 #include "third_party/blink/public/mojom/notifications/notification.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "url/gurl.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -200,8 +200,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayPersistentThenClose) {
 TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
   std::vector<int> vibration_pattern(
       kNotificationVibrationPattern,
-      kNotificationVibrationPattern +
-          base::size(kNotificationVibrationPattern));
+      kNotificationVibrationPattern + std::size(kNotificationVibrationPattern));
 
   PlatformNotificationData data;
   data.title = u"My notification's title";
@@ -233,8 +232,7 @@ TEST_F(PlatformNotificationServiceTest, DisplayNonPersistentPropertiesMatch) {
 TEST_F(PlatformNotificationServiceTest, DisplayPersistentPropertiesMatch) {
   std::vector<int> vibration_pattern(
       kNotificationVibrationPattern,
-      kNotificationVibrationPattern +
-          base::size(kNotificationVibrationPattern));
+      kNotificationVibrationPattern + std::size(kNotificationVibrationPattern));
   PlatformNotificationData data;
   data.title = u"My notification's title";
   data.body = u"Hello, world!";

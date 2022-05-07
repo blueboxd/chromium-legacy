@@ -23,7 +23,7 @@ chromium-metrics-reviews@google.com.
 <histograms>
 
 <histogram name="WebAudio.AudioBuffer.Length" units="frames"
-    expires_after="2022-06-30">
+    expires_after="2022-09-11">
   <owner>hongchan@chromium.org</owner>
   <summary>
     The length (in frames) requested by createBuffer(). Recorded for every call
@@ -32,8 +32,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.AudioBuffer.NumberOfChannels" units="units"
-    expires_after="2022-04-17">
+    expires_after="2022-06-30">
   <owner>hongchan@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
     The number of channels requested by createBuffer(). Recorded for every call
     to createBuffer(). Probably many (tens or hundreds) per page.
@@ -41,8 +42,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.AudioBuffer.SampleRate384kHz" units="Hz"
-    expires_after="2022-06-26">
+    expires_after="2022-06-30">
   <owner>hongchan@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
     The sample rate (in Hz) requested by createBuffer(). Recorded for every call
     to createBuffer(). Probably many (tens or hundreds) per page.
@@ -50,8 +52,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.AudioBuffer.SampleRateRatio384kHz" units="units"
-    expires_after="2022-06-26">
+    expires_after="2022-06-30">
   <owner>hongchan@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
     The ratio of the buffer sample rate from createBuffer() to the context
     sample rate. This indicates if the buffer needs to be resampled. Recorded
@@ -70,7 +73,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.AudioContext.HardwareSampleRate" units="Hz"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>hongchan@chromium.org</owner>
   <summary>
     The hardware sample rate (in Hz) used by an AudioContext. Recorded for every
@@ -79,7 +82,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.AudioContext.latencyHintCategory" units="units"
-    expires_after="2022-06-30">
+    expires_after="2022-09-11">
   <owner>hongchan@chromium.org</owner>
   <summary>
     If provided, the latencyHint option category of &quot;interactive&quot;,
@@ -91,7 +94,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.AudioContext.latencyHintMilliSeconds" units="ms"
-    expires_after="2022-06-30">
+    expires_after="2022-09-11">
   <owner>hongchan@chromium.org</owner>
   <summary>
     If the latencyHint is provided and is a floating-point number, the value in
@@ -101,8 +104,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.AudioContext.MaxChannelsAvailable" units="units"
-    expires_after="2022-06-12">
+    expires_after="2022-06-30">
   <owner>hongchan@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
     The maximum number of (hardware) channels available in an AudioContext.
     Recorded for every WebAudio AudioContext that is created; probably only one
@@ -111,8 +115,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.AudioContextOptions.sampleRate" units="Hz"
-    expires_after="2022-06-26">
+    expires_after="2022-06-30">
   <owner>hongchan@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
     The sample rate requested by developer to be used as the sample rate when
     constructing an AudioContext with an AudioContextOptions dictionary. This is
@@ -151,7 +156,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.AudioDestination.HardwareOutputLatency" units="ms"
-    expires_after="2022-06-30">
+    expires_after="2022-09-11">
   <owner>hongchan@chromium.org</owner>
   <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
@@ -172,8 +177,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.Autoplay.CrossOrigin" enum="WebAudioAutoplayStatus"
-    expires_after="2022-04-24">
+    expires_after="2022-06-30">
   <owner>hongchan@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
     The autoplay status of an AudioContext when destroyed in a cross-origin
     frame.
@@ -190,8 +196,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.BiquadFilter.Type" enum="BiquadFilterType"
-    expires_after="2022-05-01">
+    expires_after="2022-06-30">
   <owner>hongchan@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
     The type of the BiquadFilterNode. Recorded each time the type is set. This
     recorded once (to lowpass) when a biquad filter is created and also recorded
@@ -201,7 +208,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.ConvolverNode.ImpulseResponseLength" units="ms"
-    expires_after="2022-06-30">
+    expires_after="2022-09-11">
   <owner>hongchan@chromium.org</owner>
   <summary>
     The duration in millisec of impulse responses for a ConvolverNode. Recorded
@@ -230,8 +237,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.PannerNode.PanningModel" enum="PanningModelType"
-    expires_after="2022-04-24">
+    expires_after="2022-06-30">
   <owner>hongchan@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
     The panning model for the PannerNode. Recorded once with the default value
     at creation and once again whenver it is changed. Once changed, it is
@@ -242,7 +250,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.PushPullFIFO.UnderflowGlitches" enum="Boolean"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>hongchan@chromium.org</owner>
   <summary>
     Captures if WebAudio caused glitches or not due to the FIFO underflow. It is
@@ -252,8 +260,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="WebAudio.PushPullFIFO.UnderflowPercentage" units="%"
-    expires_after="2022-04-17">
+    expires_after="2022-06-30">
   <owner>hongchan@chromium.org</owner>
+  <owner>src/third_party/blink/renderer/modules/webaudio/OWNERS</owner>
   <summary>
     Percentage of FIFO underflow happened due to the the missed deadline of
     WebAudio rendering engine. It is recorded when PushPullFIFO is destroyed.

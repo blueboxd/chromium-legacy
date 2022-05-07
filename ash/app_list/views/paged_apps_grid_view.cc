@@ -89,12 +89,14 @@ constexpr int kPaddingBetweenPages = 48;
 
 // Vertical padding between the apps grid pages in cardified state.
 constexpr int kCardifiedPaddingBetweenPages = 12;
+constexpr int kCardifiedPaddingBetweenPagesProdLauncher = 8;
 
 // Horizontal padding of the apps grid page in cardified state.
 constexpr int kCardifiedHorizontalPadding = 16;
 
 // The radius of the corner of the background cards in the apps grid.
 constexpr int kBackgroundCardCornerRadius = 12;
+constexpr int kBackgroundCardCornerRadiusProdLauncher = 16;
 
 // The opacity for the background cards when hidden.
 constexpr float kBackgroundCardOpacityHide = 0.0f;
@@ -110,6 +112,16 @@ constexpr int kMinVerticalPaddingBetweenTiles = 8;
 // The maximum amount of space that should exist vetically between two app
 // tiles in the root grid.
 constexpr int kMaxVerticalPaddingBetweenTiles = 96;
+
+// The amount of vetical space between the edge of the background card and the
+// closest app tile.
+constexpr int kBackgroundCardVerticalPadding = 8;
+
+// The amount of horizontal space between the edge of the background card and
+// the closest app tile.
+constexpr int kBackgroundCardHorizontalPadding = 16;
+
+constexpr int kBackgroundCardBorderStrokeWidth = 1.0f;
 
 int GetFadeoutMaskHeight() {
   // The fadeout mask layer is shown only if background blur is enabled - if
@@ -145,6 +157,62 @@ class CardifiedAnimationObserver : public ui::ImplicitAnimationObserver {
 
 }  // namespace
 
+class PagedAppsGridView::BackgroundCardLayer : public ui::Layer,
+                                               public ui::LayerDelegate {
+ public:
+  BackgroundCardLayer() : Layer(ui::LAYER_TEXTURED) {
+    SetFillsBoundsOpaquely(false);
+    set_delegate(this);
+  }
+
+  BackgroundCardLayer(const BackgroundCardLayer&) = delete;
+  BackgroundCardLayer& operator=(const BackgroundCardLayer&) = delete;
+  ~BackgroundCardLayer() override = default;
+
+  void SetIsActivePage(bool is_active_page) {
+    is_active_page_ = is_active_page;
+    SchedulePaint(parent()->bounds());
+  }
+
+ private:
+  // ui::LayerDelegate:
+  void OnPaintLayer(const ui::PaintContext& context) override {
+    ui::PaintRecorder recorder(context, size());
+    gfx::Canvas* canvas = recorder.canvas();
+    gfx::RectF card_size((gfx::SizeF(size())));
+    const int corner_radius = features::IsProductivityLauncherEnabled()
+                                  ? kBackgroundCardCornerRadiusProdLauncher
+                                  : kBackgroundCardCornerRadius;
+
+    // Draw a solid rounded rect as the background.
+    cc::PaintFlags flags;
+    auto* color_provider = AppListColorProvider::Get();
+    SkColor fill_color =
+        is_active_page_ ? color_provider->GetGridBackgroundCardActiveColor()
+                        : color_provider->GetGridBackgroundCardInactiveColor();
+    flags.setColor(fill_color);
+    flags.setStyle(cc::PaintFlags::kFill_Style);
+    flags.setAntiAlias(true);
+    canvas->DrawRoundRect(card_size, corner_radius, flags);
+
+    if (features::IsProductivityLauncherEnabled() && is_active_page_) {
+      // Draw a border around the active page.
+      flags.setColor(SK_ColorWHITE);
+      flags.setAlpha(0x66);
+      flags.setStyle(cc::PaintFlags::kStroke_Style);
+      flags.setStrokeWidth(kBackgroundCardBorderStrokeWidth);
+      flags.setAntiAlias(true);
+      card_size.Inset(gfx::InsetsF(kBackgroundCardBorderStrokeWidth / 2.0f));
+      canvas->DrawRoundRect(card_size, corner_radius, flags);
+    }
+  }
+
+  void OnDeviceScaleFactorChanged(float old_device_scale_factor,
+                                  float new_device_scale_factor) override {}
+
+  bool is_active_page_ = false;
+};
+
 PagedAppsGridView::PagedAppsGridView(
     ContentsView* contents_view,
     AppListA11yAnnouncer* a11y_announcer,
@@ -162,6 +230,8 @@ PagedAppsGridView::PagedAppsGridView(
       is_productivity_launcher_enabled_(
           features::IsProductivityLauncherEnabled()) {
   DCHECK(contents_view_);
+
+  SetEventTargeter(std::make_unique<views::ViewTargeter>(this));
 
   view_structure_.Init(
       (IsInFolder() || features::IsProductivityLauncherEnabled())
@@ -239,11 +309,12 @@ void PagedAppsGridView::UpdateOpacity(bool restore_opacity,
   // since the creation/destruction of the layer requires to repaint the parent
   // view (i.e. this class).
   if (restore_opacity) {
-    // If drag is in progress, layers are still required, so just update the
-    // opacity (the layers will be deleted when drag operation completes).
-    if (items_need_layer_for_drag_) {
+    // If item layers are still required (e.g. during drag), only update the
+    // opacity (the layers will be deleted when they are no longer needed).
+    if (ItemViewsRequireLayers()) {
       for (const auto& entry : view_model()->entries()) {
-        if (!IsViewHiddenForDrag(entry.view) && entry.view->layer())
+        if (!IsViewHiddenForDrag(entry.view) &&
+            !IsViewHiddenForFolderReorder(entry.view) && entry.view->layer())
           entry.view->layer()->SetOpacity(1.0f);
       }
       return;
@@ -496,6 +567,13 @@ void PagedAppsGridView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   AppsGridView::GetAccessibleNodeData(node_data);
 }
 
+void PagedAppsGridView::OnThemeChanged() {
+  views::View::OnThemeChanged();
+
+  for (auto& card : background_cards_)
+    card.get()->SchedulePaint(card->parent()->bounds());
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // AppsGridView:
 
@@ -503,7 +581,7 @@ gfx::Size PagedAppsGridView::GetTileViewSize() const {
   const AppListConfig* config = app_list_config();
   return gfx::ScaleToRoundedSize(
       gfx::Size(config->grid_tile_width(), config->grid_tile_height()),
-      (cardified_state_ ? kCardifiedScale : 1.0f));
+      (cardified_state_ ? GetAppsGridCardifiedScale() : 1.0f));
 }
 
 gfx::Insets PagedAppsGridView::GetTilePadding(int page) const {
@@ -517,6 +595,12 @@ gfx::Size PagedAppsGridView::GetTileGridSize() const {
 }
 
 int PagedAppsGridView::GetPaddingBetweenPages() const {
+  if (features::IsProductivityLauncherEnabled()) {
+    return cardified_state_ ? kCardifiedPaddingBetweenPagesProdLauncher +
+                                  2 * kBackgroundCardVerticalPadding
+                            : kPaddingBetweenPages;
+  }
+
   // In cardified state, padding between pages should be fixed and it should
   // include background card padding.
   return cardified_state_
@@ -591,13 +675,18 @@ int PagedAppsGridView::GetMaxRowsInPage(int page) const {
 }
 
 gfx::Vector2d PagedAppsGridView::GetGridCenteringOffset(int page) const {
-  const int y_offset = page == 0 ? GetTotalTopPaddingOnFirstPage() : 0;
+  int y_offset = page == 0 ? GetTotalTopPaddingOnFirstPage() : 0;
   if (!cardified_state_)
     return gfx::Vector2d(0, y_offset);
-  const gfx::Rect bounds = GetContentsBounds();
+
+  // The grid's y is set to start below the gradient mask, so subtract
+  // this in centering the cardified state between gradient masks.
+  y_offset -= margin_for_gradient_mask_;
+  const gfx::Rect contents_bounds = GetContentsBounds();
   const gfx::Size grid_size = GetTileGridSizeForPage(page);
-  return gfx::Vector2d((bounds.width() - grid_size.width()) / 2,
-                       (bounds.height() + y_offset - grid_size.height()) / 2);
+  return gfx::Vector2d(
+      (contents_bounds.width() - grid_size.width()) / 2,
+      (contents_bounds.height() + y_offset - grid_size.height()) / 2);
 }
 
 void PagedAppsGridView::UpdatePaging() {
@@ -853,6 +942,16 @@ void PagedAppsGridView::OnImplicitAnimationsCompleted() {
   RemoveAllBackgroundCards();
 }
 
+bool PagedAppsGridView::DoesIntersectRect(const views::View* target,
+                                          const gfx::Rect& rect) const {
+  gfx::Rect target_bounds(target->GetLocalBounds());
+  if (features::IsProductivityLauncherEnabled() && GetSelectedPage() == 0) {
+    // Allow events to pass to the continue section and recent apps.
+    target_bounds.Inset(0, first_page_offset_, 0, 0);
+  }
+  return target_bounds.Intersects(rect);
+}
+
 bool PagedAppsGridView::FirePageFlipTimerForTest() {
   if (!page_flip_timer_.IsRunning())
     return false;
@@ -869,6 +968,12 @@ gfx::Rect PagedAppsGridView::GetBackgroundCardBoundsForTesting(
   views::View::ConvertPointToTarget(items_container(), this,
                                     &origin_in_apps_grid);
   return gfx::Rect(origin_in_apps_grid, bounds_in_items_container.size());
+}
+
+ui::Layer* PagedAppsGridView::GetBackgroundCardLayerForTesting(
+    size_t card_index) const {
+  DCHECK_LT(card_index, background_cards_.size());
+  return background_cards_[card_index].get();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1148,11 +1253,7 @@ void PagedAppsGridView::AnimateCardifiedState() {
       const bool is_active_page =
           background_cards_[pagination_model_.selected_page()] ==
           background_card;
-      auto* color_provider = AppListColorProvider::Get();
-      background_card->SetColor(
-          is_active_page
-              ? color_provider->GetGridBackgroundCardActiveColor()
-              : color_provider->GetGridBackgroundCardInactiveColor());
+      background_card->SetIsActivePage(is_active_page);
     } else {
       background_card->SetOpacity(kBackgroundCardOpacityHide);
     }
@@ -1186,33 +1287,49 @@ void PagedAppsGridView::RecenterItemsContainer() {
 gfx::Rect PagedAppsGridView::BackgroundCardBounds(int new_page_index) {
   // The size of the grid excluding the outer padding.
   const gfx::Size grid_size = GetTileGridSizeForPage(new_page_index);
+
   // The size for the background card that will be displayed. The outer padding
-  // of the grid need to be added.
-  const int vertical_tile_padding = new_page_index == 0
-                                        ? first_page_vertical_tile_padding_
-                                        : vertical_tile_padding_;
-  const gfx::Size background_card_size =
-      grid_size + gfx::Size(2 * horizontal_tile_padding_,
-                            2 * std::max(kMinVerticalPaddingBetweenTiles,
-                                         vertical_tile_padding));
+  // of the grid needs to be added.
+  gfx::Size background_card_size;
+  if (features::IsProductivityLauncherEnabled()) {
+    background_card_size =
+        grid_size + gfx::Size(2 * kBackgroundCardHorizontalPadding,
+                              2 * kBackgroundCardVerticalPadding);
+  } else {
+    const int vertical_tile_padding = new_page_index == 0
+                                          ? first_page_vertical_tile_padding_
+                                          : vertical_tile_padding_;
+    background_card_size =
+        grid_size + gfx::Size(2 * horizontal_tile_padding_,
+                              2 * std::max(kMinVerticalPaddingBetweenTiles,
+                                           vertical_tile_padding));
+  }
 
   // Add a padding on the sides to make space for pagination preview, but make
   // sure the padding doesn't exceed the tile padding (otherwise the background
   // bounds would clip the apps grid bounds).
   const int extra_padding_for_cardified_state =
-      std::min(horizontal_tile_padding_, kCardifiedHorizontalPadding);
+      features::IsProductivityLauncherEnabled()
+          ? 0
+          : std::min(horizontal_tile_padding_, kCardifiedHorizontalPadding);
   const int horizontal_padding =
       (GetContentsBounds().width() - background_card_size.width()) / 2 +
       extra_padding_for_cardified_state;
 
-  int y_offset =
-      std::max(new_page_index == 0 ? GetTotalTopPaddingOnFirstPage() : 0,
-               GetFadeoutMaskHeight());
-  // The vertical padding should account for the fadeout mask.
-  const int vertical_padding =
-      y_offset + (GetContentsBounds().height() - y_offset -
-                  background_card_size.height()) /
-                     2;
+  int y_offset = new_page_index == 0 ? GetTotalTopPaddingOnFirstPage() : 0;
+  if (features::IsProductivityLauncherEnabled()) {
+    // Subtract the amount that the apps grid view is offset by to accommodate
+    // for the top gradient mask. This will visually center the background card
+    // between the top and bottom gradient masks.
+    y_offset -= margin_for_gradient_mask_;
+  } else {
+    y_offset = std::max(y_offset, GetFadeoutMaskHeight());
+  }
+
+  int vertical_padding = y_offset + (GetContentsBounds().height() - y_offset -
+                                     background_card_size.height()) /
+                                        2;
+
   const int padding_between_pages = GetPaddingBetweenPages();
   // The space that each page occupies in the items container. This is the size
   // of the grid without outer padding plus the padding between pages.
@@ -1227,13 +1344,10 @@ gfx::Rect PagedAppsGridView::BackgroundCardBounds(int new_page_index) {
 }
 
 void PagedAppsGridView::AppendBackgroundCard() {
-  background_cards_.push_back(
-      std::make_unique<ui::Layer>(ui::LAYER_SOLID_COLOR));
+  background_cards_.push_back(std::make_unique<BackgroundCardLayer>());
   ui::Layer* current_layer = background_cards_.back().get();
   current_layer->SetBounds(BackgroundCardBounds(background_cards_.size() - 1));
   current_layer->SetVisible(true);
-  current_layer->SetRoundedCornerRadius(
-      gfx::RoundedCornersF(kBackgroundCardCornerRadius));
   items_container()->layer()->Add(current_layer);
 }
 
@@ -1263,13 +1377,10 @@ void PagedAppsGridView::SetHighlightedBackgroundCard(int new_highlighted_page) {
     return;
 
   if (new_highlighted_page != highlighted_page_) {
-    auto* color_provider = AppListColorProvider::Get();
-    background_cards_[highlighted_page_]->SetColor(
-        color_provider->GetGridBackgroundCardInactiveColor());
+    background_cards_[highlighted_page_]->SetIsActivePage(false);
     if (static_cast<int>(background_cards_.size()) == new_highlighted_page)
       AppendBackgroundCard();
-    background_cards_[new_highlighted_page]->SetColor(
-        color_provider->GetGridBackgroundCardActiveColor());
+    background_cards_[new_highlighted_page]->SetIsActivePage(true);
 
     highlighted_page_ = new_highlighted_page;
   }
@@ -1287,8 +1398,9 @@ void PagedAppsGridView::UpdateTilePadding() {
   gfx::Size content_size = GetContentsBounds().size();
   const gfx::Size tile_size = GetTileViewSize();
   if (cardified_state_) {
-    content_size = gfx::ScaleToRoundedSize(content_size, kCardifiedScale) -
-                   gfx::Size(2 * kCardifiedHorizontalPadding, 0);
+    content_size =
+        gfx::ScaleToRoundedSize(content_size, GetAppsGridCardifiedScale()) -
+        gfx::Size(2 * kCardifiedHorizontalPadding, 0);
     content_size.set_width(
         std::max(content_size.width(), cols() * tile_size.width()));
     content_size.set_height(
@@ -1329,6 +1441,12 @@ void PagedAppsGridView::UpdateTilePadding() {
     first_page_vertical_tile_padding_ =
         calculate_tile_padding(content_size.height(), max_rows_on_first_page_,
                                tile_size.height(), first_page_offset_);
+  }
+
+  if (!cardified_state_ && unscaled_first_page_vertical_tile_padding_ !=
+                               first_page_vertical_tile_padding_) {
+    unscaled_first_page_vertical_tile_padding_ =
+        first_page_vertical_tile_padding_;
   }
 }
 
@@ -1400,6 +1518,12 @@ int PagedAppsGridView::GetTotalTopPaddingOnFirstPage() const {
   // apps.
   return first_page_offset_ +
          (shown_under_recent_apps_ ? 2 * first_page_vertical_tile_padding_ : 0);
+}
+
+void PagedAppsGridView::StackCardsAtBottom() {
+  for (size_t i = 0; i < background_cards_.size(); ++i) {
+    items_container()->layer()->StackAtBottom(background_cards_[i].get());
+  }
 }
 
 }  // namespace ash

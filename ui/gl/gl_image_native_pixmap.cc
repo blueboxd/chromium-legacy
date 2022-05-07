@@ -6,7 +6,6 @@
 
 #include <vector>
 
-#include "base/cxx17_backports.h"
 #include "base/files/scoped_file.h"
 #include "build/build_config.h"
 #include "ui/gfx/buffer_format_util.h"
@@ -158,11 +157,14 @@ bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
 
     if (format_ == gfx::BufferFormat::YUV_420_BIPLANAR ||
         format_ == gfx::BufferFormat::YVU_420) {
-      // TODO(b/220336463): setting this to EGL_ITU_REC601_EXT always is not
-      // correct. We need to plumb enough information so that we can determine
-      // the right value for this attribute.
+      // TODO(b/220336463): setting these attributes to EGL_ITU_REC601_EXT and
+      // EGL_YUV_NARROW_RANGE_EXT always is not necessarily correct. We need to
+      // plumb enough information so that we can determine the right values for
+      // these attributes.
       attrs.push_back(EGL_YUV_COLOR_SPACE_HINT_EXT);
       attrs.push_back(EGL_ITU_REC601_EXT);
+      attrs.push_back(EGL_SAMPLE_RANGE_HINT_EXT);
+      attrs.push_back(EGL_YUV_NARROW_RANGE_EXT);
     }
 
     if (plane_ == gfx::BufferPlane::DEFAULT) {
@@ -186,7 +188,7 @@ bool GLImageNativePixmap::Initialize(scoped_refptr<gfx::NativePixmap> pixmap) {
         uint64_t modifier = pixmap->GetBufferFormatModifier();
         if (has_dma_buf_import_modifier &&
             modifier != gfx::NativePixmapHandle::kNoModifier) {
-          DCHECK(attrs_plane < base::size(kLinuxDrmModifiers));
+          DCHECK(attrs_plane < std::size(kLinuxDrmModifiers));
           attrs.push_back(kLinuxDrmModifiers[attrs_plane]);
           attrs.push_back(modifier & 0xffffffff);
           attrs.push_back(kLinuxDrmModifiers[attrs_plane] + 1);

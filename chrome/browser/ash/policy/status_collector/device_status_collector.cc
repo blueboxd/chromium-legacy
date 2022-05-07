@@ -4,11 +4,10 @@
 
 #include "chrome/browser/ash/policy/status_collector/device_status_collector.h"
 
-#include <sys/types.h>
-#include <unistd.h>
-
 #include <stddef.h>
 #include <stdint.h>
+#include <sys/types.h>
+#include <unistd.h>
 
 #include <algorithm>
 #include <cstdio>
@@ -27,7 +26,6 @@
 #include "ash/constants/ash_features.h"
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -1510,7 +1508,6 @@ class DeviceStatusCollectorState : public StatusCollectorState {
       return;
     em::StatefulPartitionInfo* stateful_partition_info =
         response_params_.device_status->mutable_stateful_partition_info();
-    DCHECK_GE(hdsi.available_space(), 0);
     DCHECK_GE(hdsi.total_space(), hdsi.available_space());
     stateful_partition_info->CopyFrom(hdsi);
     SetDeviceStatusReported();
@@ -2331,14 +2328,14 @@ bool DeviceStatusCollector::GetNetworkConfiguration(
   for (device = device_list.begin(); device != device_list.end(); ++device) {
     // Determine the type enum constant for |device|.
     size_t type_idx = 0;
-    for (; type_idx < base::size(kDeviceTypeMap); ++type_idx) {
+    for (; type_idx < std::size(kDeviceTypeMap); ++type_idx) {
       if ((*device)->type() == kDeviceTypeMap[type_idx].type_string)
         break;
     }
 
     // If the type isn't in |kDeviceTypeMap|, the interface is not relevant for
     // reporting. This filters out VPN devices.
-    if (type_idx >= base::size(kDeviceTypeMap))
+    if (type_idx >= std::size(kDeviceTypeMap))
       continue;
 
     em::NetworkInterface* interface = status->add_network_interfaces();
@@ -2423,7 +2420,7 @@ bool DeviceStatusCollector::GetNetworkStatus(
     em::NetworkState::ConnectionState connection_state_enum =
         em::NetworkState::UNKNOWN;
     const std::string connection_state_string(state->connection_state());
-    for (size_t i = 0; i < base::size(kConnectionStateMap); ++i) {
+    for (size_t i = 0; i < std::size(kConnectionStateMap); ++i) {
       if (connection_state_string == kConnectionStateMap[i].state_string) {
         connection_state_enum = kConnectionStateMap[i].state_constant;
         break;
@@ -2975,7 +2972,7 @@ bool DeviceStatusCollector::IsReportingHardwareData() const {
   return report_power_status_ || report_storage_status_ ||
          report_audio_status_ || report_board_status_ || report_memory_info_ ||
          report_cpu_info_ || report_backlight_info_ || report_bluetooth_info_ ||
-         report_fan_info_ || report_vpd_info_ || report_system_info_ ||
+         report_fan_info_ || report_vpd_info_ || report_system_info_ || report_boot_mode_ ||
          report_version_info_;
 }
 bool DeviceStatusCollector::IsReportingUsers() const {

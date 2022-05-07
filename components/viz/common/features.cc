@@ -53,8 +53,14 @@ const base::Feature kUseMultipleOverlays{"UseMultipleOverlays",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
 const char kMaxOverlaysParam[] = "max_overlays";
 
-const base::Feature kDelegatedCompositing{"DelegatedCompositing",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kDelegatedCompositing {
+  "DelegatedCompositing",
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+      base::FEATURE_ENABLED_BY_DEFAULT
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 const base::Feature kVideoDetectorIgnoreNonVideos{
     "VideoDetectorIgnoreNonVideos", base::FEATURE_ENABLED_BY_DEFAULT};
@@ -63,16 +69,8 @@ const base::Feature kSimpleFrameRateThrottling{
     "SimpleFrameRateThrottling", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Use the SkiaRenderer.
-const base::Feature kUseSkiaRenderer {
-  "UseSkiaRenderer",
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID) ||           \
-    BUILDFLAG(IS_CHROMEOS_LACROS) || BUILDFLAG(IS_LINUX) || \
-    BUILDFLAG(IS_FUCHSIA) || BUILDFLAG(IS_MAC)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kUseSkiaRenderer{"UseSkiaRenderer",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Kill-switch to disable de-jelly, even if flags/properties indicate it should
 // be enabled.
@@ -148,6 +146,9 @@ const base::Feature kWebViewVulkanIntermediateBuffer{
 const base::Feature kUseSurfaceLayerForVideoDefault{
     "UseSurfaceLayerForVideoDefault", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kWebViewNewInvalidateHeuristic{
+    "WebViewNewInvalidateHeuristic", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Historically media on android hardcoded SRGB color space because of lack of
 // color space support in surface control. This controls if we want to use real
 // color space in DisplayCompositor.
@@ -197,7 +198,7 @@ bool IsAdpfEnabled() {
 
 bool IsClipPrewalkDamageEnabled() {
   static constexpr base::Feature kClipPrewalkDamage{
-      "ClipPrewalkDamage", base::FEATURE_DISABLED_BY_DEFAULT};
+      "ClipPrewalkDamage", base::FEATURE_ENABLED_BY_DEFAULT};
 
   return base::FeatureList::IsEnabled(kClipPrewalkDamage);
 }
@@ -224,14 +225,6 @@ bool IsSimpleFrameRateThrottlingEnabled() {
 }
 
 bool IsUsingSkiaRenderer() {
-#if BUILDFLAG(IS_ANDROID)
-  // We don't support KitKat. Check for it before looking at the feature flag
-  // so that KitKat doesn't show up in Control or Enabled experiment group.
-  if (base::android::BuildInfo::GetInstance()->sdk_int() <=
-      base::android::SDK_VERSION_KITKAT)
-    return false;
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   // TODO(https://crbug.com/1145180): SkiaRenderer isn't supported on Chrome
   // OS boards that still use the legacy video decoder.
@@ -314,6 +307,10 @@ bool ShouldUsePlatformDelegatedInk() {
 
 #if BUILDFLAG(IS_ANDROID)
 bool UseSurfaceLayerForVideo() {
+  // SurfaceLayer video should work fine with new heuristic.
+  if (base::FeatureList::IsEnabled(kWebViewNewInvalidateHeuristic))
+    return true;
+
   // Allow enabling UseSurfaceLayerForVideo if webview is using surface control.
   if (::features::IsAndroidSurfaceControlEnabled()) {
     return true;

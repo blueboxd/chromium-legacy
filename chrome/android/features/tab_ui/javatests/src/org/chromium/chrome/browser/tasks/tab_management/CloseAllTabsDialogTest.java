@@ -81,7 +81,8 @@ public class CloseAllTabsDialogTest {
         navigateToCloseAllTabsDialog(selector);
         onViewWaiting(withId(org.chromium.chrome.test.R.id.positive_button)).perform(click());
 
-        assertEquals(0, selector.getModel(mIsIncognito).getCount());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { assertEquals(0, selector.getModel(mIsIncognito).getCount()); });
     }
 
     /**
@@ -97,7 +98,8 @@ public class CloseAllTabsDialogTest {
         navigateToCloseAllTabsDialog(selector);
         onViewWaiting(withId(org.chromium.chrome.test.R.id.negative_button)).perform(click());
 
-        assertEquals(1, selector.getModel(mIsIncognito).getCount());
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { assertEquals(1, selector.getModel(mIsIncognito).getCount()); });
     }
 
     private void navigateToCloseAllTabsDialog(TabModelSelector selector) {
@@ -107,9 +109,7 @@ public class CloseAllTabsDialogTest {
         assertEquals(1, selector.getModel(mIsIncognito).getCount());
 
         // Open the AppMenu in the Tab Switcher and ensure it shows.
-        onViewWaiting(withId(org.chromium.chrome.test.R.id.tab_switcher_button))
-                .check(matches(isDisplayed()))
-                .perform(click());
+        TabUiTestHelper.enterTabSwitcher(mActivityTestRule.getActivity());
         onViewWaiting(withId(org.chromium.chrome.test.R.id.tab_switcher_toolbar))
                 .check(matches(isDisplayed()));
         TestThreadUtils.runOnUiThreadBlocking(() -> {

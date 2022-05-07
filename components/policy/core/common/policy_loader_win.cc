@@ -34,6 +34,7 @@
 #include "base/path_service.h"
 #include "base/scoped_native_library.h"
 #include "base/strings/string_util.h"
+#include "base/syslog_logging.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/threading/scoped_thread_priority.h"
 #include "base/values.h"
@@ -84,7 +85,7 @@ void ParsePolicy(const RegistryDict* gpo_dict,
   std::unique_ptr<base::Value> policy_value(gpo_dict->ConvertToJSON(schema));
   const base::DictionaryValue* policy_dict = nullptr;
   if (!policy_value->GetAsDictionary(&policy_dict) || !policy_dict) {
-    LOG(WARNING) << "Root policy object is not a dictionary!";
+    SYSLOG(WARNING) << "Root policy object is not a dictionary!";
     return;
   }
 
@@ -181,6 +182,8 @@ void CollectEnterpriseUMAs() {
                             base::win::IsDeviceRegisteredWithManagement());
   base::UmaHistogramBoolean("EnterpriseCheck.IsEnterpriseUser",
                             base::IsMachineExternallyManaged());
+  base::UmaHistogramBoolean("EnterpriseCheck.IsJoinedToAzureAD",
+                            base::win::IsJoinedToAzureAD());
 
   std::wstring machine_name;
   if (GetName(
@@ -294,7 +297,7 @@ std::unique_ptr<PolicyBundle> PolicyLoaderWin::Load() {
   std::unique_ptr<PolicyBundle> bundle(new PolicyBundle());
   PolicyMap* chrome_policy =
       &bundle->Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()));
-  for (size_t i = 0; i < base::size(kScopes); ++i) {
+  for (size_t i = 0; i < std::size(kScopes); ++i) {
     PolicyScope scope = kScopes[i].scope;
     PolicyLoadStatusUmaReporter status;
     RegistryDict gpo_dict;
@@ -353,7 +356,7 @@ void PolicyLoaderWin::Load3rdPartyPolicy(const RegistryDict* gpo_dict,
       {POLICY_LEVEL_RECOMMENDED, kKeyRecommended},
   };
 
-  for (size_t i = 0; i < base::size(k3rdPartyDomains); i++) {
+  for (size_t i = 0; i < std::size(k3rdPartyDomains); i++) {
     const char* name = k3rdPartyDomains[i].name;
     const PolicyDomain domain = k3rdPartyDomains[i].domain;
     const RegistryDict* domain_dict = gpo_dict->GetKey(name);
@@ -373,7 +376,7 @@ void PolicyLoaderWin::Load3rdPartyPolicy(const RegistryDict* gpo_dict,
       Schema schema = *schema_from_map;
 
       // Parse policy.
-      for (size_t j = 0; j < base::size(kLevels); j++) {
+      for (size_t j = 0; j < std::size(kLevels); j++) {
         const RegistryDict* policy_dict =
             component->second->GetKey(kLevels[j].path);
         if (!policy_dict)

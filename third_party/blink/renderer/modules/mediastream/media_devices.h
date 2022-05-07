@@ -20,6 +20,8 @@
 #include "third_party/blink/renderer/modules/mediastream/media_stream_track.h"
 #include "third_party/blink/renderer/modules/mediastream/user_media_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/collection_support/heap_vector.h"
 #include "third_party/blink/renderer/platform/mojo/heap_mojo_receiver.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cancellable_task.h"
@@ -60,6 +62,10 @@ class MODULES_EXPORT MediaDevices final
                                      UserMediaRequest::MediaType,
                                      const MediaStreamConstraints*,
                                      ExceptionState&);
+
+  ScriptPromise getDisplayMediaSet(ScriptState*,
+                                   const MediaStreamConstraints*,
+                                   ExceptionState&);
 
   ScriptPromise getDisplayMedia(ScriptState*,
                                 const MediaStreamConstraints*,

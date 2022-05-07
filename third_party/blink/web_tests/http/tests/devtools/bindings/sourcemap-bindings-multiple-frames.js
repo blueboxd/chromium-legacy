@@ -20,12 +20,12 @@
 
   TestRunner.markStep('detachFrame1');
   await BindingsTestRunner.detachFrame('frame1', '_test_detachFrame1.js');
-  await TestRunner.evaluateInPageAnonymously('GCController.collectAll()');
+  await BindingsTestRunner.GC();
   snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
   TestRunner.markStep('detachFrame2');
   await BindingsTestRunner.detachFrame('frame2', '_test_detachFrame2.js');
-  await TestRunner.evaluateInPageAnonymously('GCController.collectAll()');
+  await BindingsTestRunner.GC();
   snapshot = BindingsTestRunner.dumpWorkspace(snapshot);
 
   TestRunner.completeTest();

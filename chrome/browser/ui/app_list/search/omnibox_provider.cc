@@ -37,6 +37,10 @@ namespace {
 
 using chromeos::string_matching::TokenizedString;
 
+// Some omnibox answers overtrigger on short queries. This controls the minimum
+// query length before they are displayed.
+constexpr size_t kMinQueryLengthForCommonAnswers = 4u;
+
 bool IsDriveUrl(const GURL& url) {
   // Returns true if the |url| points to a Drive Web host.
   const std::string& host = url.host();
@@ -49,6 +53,25 @@ bool IsAnswer(const AutocompleteMatch& match) {
          match.type == AutocompleteMatchType::CALCULATOR;
 }
 
+// Some answer result types overtrigger on short queries. Returns true if an
+// answer should be filtered.
+bool ShouldFilterAnswer(const AutocompleteMatch& match,
+                        const std::u16string& query) {
+  // TODO(crbug.com/1258415): Move this to the filtering ranker once more
+  // detailed result subtype info is exposed by ChromeSearchResult.
+  if (query.size() >= kMinQueryLengthForCommonAnswers || !match.answer) {
+    return false;
+  }
+
+  switch (match.answer.value().type()) {
+    case SuggestionAnswer::ANSWER_TYPE_DICTIONARY:
+    case SuggestionAnswer::ANSWER_TYPE_TRANSLATION:
+      return true;
+    default:
+      return false;
+  }
+}
+
 int ProviderTypes() {
   // We use all the default providers except for the document provider, which
   // suggests Drive files on enterprise devices. This is disabled to avoid
@@ -57,7 +80,7 @@ int ProviderTypes() {
                   ~AutocompleteProvider::TYPE_DOCUMENT;
   if (ash::features::IsProductivityLauncherEnabled() &&
       base::GetFieldTrialParamByFeatureAsBool(
-          ash::features::kProductivityLauncher, "enable_open_tab", false)) {
+          ash::features::kProductivityLauncher, "enable_open_tab", true)) {
     providers |= AutocompleteProvider::TYPE_OPEN_TAB;
   }
   return providers;
@@ -107,7 +130,8 @@ OmniboxProvider::~OmniboxProvider() {}
 
 void OmniboxProvider::Start(const std::u16string& query) {
   ClearResultsSilently();
-  last_query_.emplace(query, TokenizedString::Mode::kCamelCase);
+  last_query_ = query;
+  last_tokenized_query_.emplace(query, TokenizedString::Mode::kCamelCase);
 
   controller_->Stop(false);
   query_finished_ = false;
@@ -164,14 +188,15 @@ void OmniboxProvider::PopulateFromACResult(const AutocompleteResult& result) {
       continue;
     }
 
-    if (!is_zero_state_input_ && IsAnswer(match)) {
+    if (!is_zero_state_input_ && IsAnswer(match) &&
+        !ShouldFilterAnswer(match, last_query_)) {
       new_results.emplace_back(std::make_unique<OmniboxAnswerResult>(
-          profile_, list_controller_, controller_.get(), match));
+          profile_, list_controller_, controller_.get(), match, last_query_));
     } else if (match.type == AutocompleteMatchType::OPEN_TAB) {
-      DCHECK(last_query_.has_value());
+      DCHECK(last_tokenized_query_.has_value());
       new_results.emplace_back(std::make_unique<OpenTabResult>(
-          profile_, list_controller_, &favicon_cache_, last_query_.value(),
-          match));
+          profile_, list_controller_, &favicon_cache_,
+          last_tokenized_query_.value(), match));
     } else {
       list_results.emplace_back(std::make_unique<OmniboxResult>(
           profile_, list_controller_, controller_.get(), &favicon_cache_,

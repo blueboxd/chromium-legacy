@@ -11,9 +11,9 @@
 #include "base/test/values_test_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
-#include "build/build_config.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
+#include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -32,19 +32,10 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
+#include "services/network/test/test_network_connection_tracker.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
-
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-#include "content/public/browser/network_service_instance.h"
-#include "services/network/public/cpp/network_connection_tracker.h"
-#endif
-
-#if BUILDFLAG(IS_FUCHSIA)
-#include "content/public/browser/network_service_instance.h"
-#include "services/network/test/test_network_connection_tracker.h"
-#endif
 
 namespace content {
 
@@ -89,6 +80,7 @@ struct ExpectedReportWaiter {
   GURL expected_url;
   base::Value expected_body;
   std::string source_debug_key;
+  std::string trigger_debug_key;
   std::unique_ptr<net::test_server::ControllableHttpResponse> response;
 
   bool HasRequest() { return !!response->http_request(); }
@@ -126,6 +118,12 @@ struct ExpectedReportWaiter {
       base::ExpectDictStringValue(source_debug_key, body, "source_debug_key");
     }
 
+    if (trigger_debug_key.empty()) {
+      EXPECT_FALSE(body.FindStringKey("trigger_debug_key"));
+    } else {
+      base::ExpectDictStringValue(trigger_debug_key, body, "trigger_debug_key");
+    }
+
     // Clear the port as it is assigned by the EmbeddedTestServer at runtime.
     replace_host.SetPortStr("");
 
@@ -136,52 +134,11 @@ struct ExpectedReportWaiter {
   }
 };
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-class ConnectionWaiter
-    : public network::NetworkConnectionTracker::NetworkConnectionObserver {
- public:
-  static void WaitUntilOnline() {
-    ConnectionWaiter waiter;
-    waiter.run_loop_.Run();
-  }
-
-  ~ConnectionWaiter() override {
-    content::GetNetworkConnectionTracker()->RemoveNetworkConnectionObserver(
-        this);
-  }
-
- private:
-  ConnectionWaiter() {
-    content::GetNetworkConnectionTracker()->AddNetworkConnectionObserver(this);
-  }
-
-  // network::NetworkConnectionTracker::NetworkConnectionObserver:
-  void OnConnectionChanged(network::mojom::ConnectionType type) override {
-    if (!content::GetNetworkConnectionTracker()->IsOffline())
-      run_loop_.Quit();
-  }
-
-  base::RunLoop run_loop_;
-};
-#endif
-
 }  // namespace
 
 class AttributionsBrowserTest : public ContentBrowserTest {
  public:
-  AttributionsBrowserTest() {
-    AttributionManagerImpl::RunInMemoryForTesting();
-
-#if BUILDFLAG(IS_FUCHSIA)
-    // Fuchsia's network connection tracker always seems to indicate offline in
-    // these tests, so override the tracker with a test one, which defaults to
-    // online. See crbug.com/1285057 for details.
-    network_connection_tracker_ =
-        network::TestNetworkConnectionTracker::CreateInstance();
-    content::SetNetworkConnectionTrackerForTesting(
-        network::TestNetworkConnectionTracker::GetInstance());
-#endif
-  }
+  AttributionsBrowserTest() { AttributionManagerImpl::RunInMemoryForTesting(); }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitch(switches::kConversionsDebugMode);
@@ -189,12 +146,17 @@ class AttributionsBrowserTest : public ContentBrowserTest {
     // Sets up the blink runtime feature for ConversionMeasurement.
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
-
-    // Sets up support for event sources.
-    command_line->AppendSwitch(switches::kEnableBlinkTestFeatures);
   }
 
   void SetUpOnMainThread() override {
+    // These tests don't cover online/offline behavior; that is covered by
+    // `AttributionManagerImpl`'s unit tests. Here we use a fake tracker that
+    // always indicates online. See crbug.com/1285057 for details.
+    network_connection_tracker_ =
+        network::TestNetworkConnectionTracker::CreateInstance();
+    SetNetworkConnectionTrackerForTesting(nullptr);
+    SetNetworkConnectionTrackerForTesting(network_connection_tracker_.get());
+
     host_resolver()->AddRule("*", "127.0.0.1");
 
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
@@ -203,14 +165,10 @@ class AttributionsBrowserTest : public ContentBrowserTest {
     net::test_server::RegisterDefaultHandlers(https_server_.get());
     https_server_->ServeFilesFromSourceDirectory("content/test/data");
     SetupCrossSiteRedirector(https_server_.get());
+  }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    // On ChromeOS the connection type comes from a fake Shill service, which
-    // is configured with a fake ethernet connection asynchronously. Wait for
-    // the connection type to be available to avoid getting notified of the
-    // connection change halfway through the test. See crrev.com/c/1684295.
-    ConnectionWaiter::WaitUntilOnline();
-#endif
+  void TearDownOnMainThread() override {
+    SetNetworkConnectionTrackerForTesting(nullptr);
   }
 
   WebContents* web_contents() { return shell()->web_contents(); }
@@ -220,10 +178,8 @@ class AttributionsBrowserTest : public ContentBrowserTest {
  private:
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 
-#if BUILDFLAG(IS_FUCHSIA)
   std::unique_ptr<network::TestNetworkConnectionTracker>
       network_connection_tracker_;
-#endif
 };
 
 // Verifies that storage initialization does not hang when initialized in a
@@ -236,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*attribution_destination=*/"https://b.test",
       /*source_event_id=*/"1", /*source_type=*/"navigation",
       /*trigger_data=*/"7", https_server());
@@ -276,7 +232,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*body=*/base::Value(), https_server());
   ASSERT_TRUE(https_server()->Start());
 
@@ -313,7 +269,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*attribution_destination=*/"https://b.test",
       /*source_event_id=*/"1", /*source_type=*/"navigation",
       /*trigger_data=*/"7", https_server());
@@ -350,7 +306,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
                        ImpressionFromCrossOriginSubframe_ReportSent) {
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*attribution_destination=*/"https://b.test",
       /*source_event_id=*/"1", /*source_type=*/"navigation",
       /*trigger_data=*/"7", https_server());
@@ -398,7 +354,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
                        ImpressionOnNoOpenerNavigation_ReportSent) {
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*attribution_destination=*/"https://b.test",
       /*source_event_id=*/"1", /*source_type=*/"navigation",
       /*trigger_data=*/"7", https_server());
@@ -438,7 +394,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*attribution_destination=*/"https://b.test",
       /*source_event_id=*/"1", /*source_type=*/"navigation",
       /*trigger_data=*/"7", https_server());
@@ -482,7 +438,7 @@ IN_PROC_BROWSER_TEST_F(
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*attribution_destination=*/"https://b.test",
       /*source_event_id=*/"1", /*source_type=*/"navigation",
       /*trigger_data=*/"7", https_server());
@@ -532,7 +488,7 @@ IN_PROC_BROWSER_TEST_F(
     MultipleImpressionsPerConversion_ReportSentWithAttribution) {
   ExpectedReportWaiter expected_report(
       GURL("https://d.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*attribution_destination=*/"https://b.test",
       /*source_event_id=*/"2", /*source_type=*/"navigation",
       /*trigger_data=*/"7", https_server());
@@ -591,7 +547,7 @@ IN_PROC_BROWSER_TEST_F(
   // Report will be sent for the impression with highest priority.
   ExpectedReportWaiter expected_report(
       GURL("https://d.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*attribution_destination=*/"https://b.test",
       /*source_event_id=*/"1", /*source_type=*/"navigation",
       /*trigger_data=*/"7", https_server());
@@ -654,7 +610,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*body=*/base::Value(), https_server());
   ASSERT_TRUE(https_server()->Start());
 
@@ -696,53 +652,11 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
-                       EventSourceImpressionConversion_ReportSent) {
-  // Expected reports must be registered before the server starts.
-  // 123 in the `registerConversion` call below is sanitized to 1 in
-  // the report's `trigger_data`.
-  ExpectedReportWaiter expected_report(
-      GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
-      /*attribution_destination=*/"https://b.test",
-      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
-      https_server());
-  ASSERT_TRUE(https_server()->Start());
-
-  GURL impression_url = https_server()->GetURL(
-      "a.test", "/attribution_reporting/page_with_impression_creator.html");
-  EXPECT_TRUE(NavigateToURL(web_contents(), impression_url));
-
-  // Create an anchor tag with impression attributes.
-  GURL conversion_url = https_server()->GetURL(
-      "b.test", "/attribution_reporting/page_with_conversion_redirect.html");
-  EXPECT_TRUE(
-      ExecJs(web_contents(),
-             JsReplace(R"(
-    createImpressionTag({id: 'link',
-                        url: $1,
-                        data: '7',
-                        destination: $2,
-                        registerAttributionSource: true});)",
-                       conversion_url, url::Origin::Create(conversion_url))));
-
-  EXPECT_TRUE(NavigateToURL(web_contents(), conversion_url));
-
-  // Register a conversion with the original page as the reporting origin.
-  EXPECT_TRUE(
-      ExecJs(web_contents(), JsReplace(R"(registerConversion({data: 0,
-                                       origin: $1,
-                                       eventSourceTriggerData: 123});)",
-                                       url::Origin::Create(impression_url))));
-
-  expected_report.WaitForReport();
-}
-
-IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
                        EventSourceImpressionWithDebugKeyConversion_ReportSent) {
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*attribution_destination=*/"https://b.test",
       /*source_event_id=*/"5", /*source_type=*/"event", /*trigger_data=*/"1",
       https_server());
@@ -762,9 +676,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
       "a.test",
       "/attribution_reporting/register_source_headers_debug_key.html");
 
-  EXPECT_TRUE(
-      ExecJs(web_contents(),
-             JsReplace("createAttributionSourceImg($1);", register_url)));
+  EXPECT_TRUE(ExecJs(web_contents(),
+                     JsReplace("createAttributionSrcImg($1);", register_url)));
 
   GURL conversion_url = https_server()->GetURL(
       "b.test", "/attribution_reporting/page_with_conversion_redirect.html");
@@ -780,61 +693,39 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
-                       EventSourceImpressionTwoConversions_OneReportSent) {
+                       SourceAndDebugCookieRegisteredInSameResponse) {
   // Expected reports must be registered before the server starts.
-  // 123 in the `registerConversion` call below is sanitized to 1 in
-  // the report's `trigger_data`.
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*attribution_destination=*/"https://b.test",
-      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
+      /*source_event_id=*/"5", /*source_type=*/"event", /*trigger_data=*/"1",
       https_server());
-  ExpectedReportWaiter expected_report_not_sent(
-      GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
-      /*body=*/base::Value(), https_server());
+  expected_report.source_debug_key = "789";
   ASSERT_TRUE(https_server()->Start());
 
   GURL impression_url = https_server()->GetURL(
       "a.test", "/attribution_reporting/page_with_impression_creator.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), impression_url));
 
-  // Create an anchor tag with impression attributes.
+  GURL register_url = https_server()->GetURL(
+      "a.test",
+      "/attribution_reporting/register_source_headers_debug_key_cookie.html");
+
+  EXPECT_TRUE(ExecJs(web_contents(),
+                     JsReplace("createAttributionSrcImg($1);", register_url)));
+
   GURL conversion_url = https_server()->GetURL(
       "b.test", "/attribution_reporting/page_with_conversion_redirect.html");
-  EXPECT_TRUE(
-      ExecJs(web_contents(),
-             JsReplace(R"(
-    createImpressionTag({id: 'link',
-                        url: $1,
-                        data: '7',
-                        destination: $2,
-                        registerAttributionSource: true});)",
-                       conversion_url, url::Origin::Create(conversion_url))));
-
   EXPECT_TRUE(NavigateToURL(web_contents(), conversion_url));
 
-  // Register two conversions with the original page as the reporting origin.
-  for (int i = 0; i < 2; i++) {
-    EXPECT_TRUE(
-        ExecJs(web_contents(), JsReplace(R"(registerConversion({data: 0,
+  EXPECT_TRUE(
+      ExecJs(web_contents(), JsReplace(R"(registerConversion({data: 0,
                                        origin: $1,
-                                       eventSourceTriggerData: 123});)",
-                                         url::Origin::Create(impression_url))));
-  }
+                                       eventSourceTriggerData: 1});)",
+                                       url::Origin::Create(impression_url))));
 
   expected_report.WaitForReport();
-
-  // Since we want to verify that a report _isn't_ sent, we can't really wait on
-  // any event here. The best thing we can do is just impose a short delay and
-  // verify the browser didn't send anything. Worst case, this should start
-  // flakily failing if the logic breaks.
-  base::RunLoop run_loop;
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(100));
-  run_loop.Run();
-  EXPECT_FALSE(expected_report_not_sent.HasRequest());
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
@@ -844,9 +735,9 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   // the report's `trigger_data`.
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
-      /*attribution_destination=*/"https://b.test",
-      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
+           "report-event-attribution"),
+      /*attribution_destination=*/"https://d.test",
+      /*source_event_id=*/"5", /*source_type=*/"event", /*trigger_data=*/"1",
       https_server());
   ASSERT_TRUE(https_server()->Start());
 
@@ -854,19 +745,18 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
       "a.test", "/attribution_reporting/page_with_impression_creator.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), impression_url));
 
-  GURL conversion_url = https_server()->GetURL(
-      "b.test", "/attribution_reporting/page_with_conversion_redirect.html");
-  EXPECT_TRUE(
-      ExecJs(web_contents(), JsReplace(R"(
-              window.attributionReporting.registerAttributionSource({
-                attributionSourceEventId: "7",
-                attributionDestination: $1,
-              });)",
-                                       url::Origin::Create(conversion_url))));
+  GURL register_url = https_server()->GetURL(
+      "a.test", "/attribution_reporting/register_source_headers.html");
 
+  EXPECT_TRUE(ExecJs(
+      web_contents(),
+      JsReplace("window.attributionReporting.registerAttributionSource($1);",
+                register_url)));
+
+  GURL conversion_url = https_server()->GetURL(
+      "d.test", "/attribution_reporting/page_with_conversion_redirect.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), conversion_url));
 
-  // Register a conversion with the original page as the reporting origin.
   EXPECT_TRUE(
       ExecJs(web_contents(), JsReplace(R"(registerConversion({data: 0,
                                        origin: $1,
@@ -877,18 +767,113 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
+                       AttributionSrcSourceAndTrigger_ReportSent) {
+  // Expected reports must be registered before the server starts.
+  ExpectedReportWaiter expected_report(
+      GURL("https://a.test/.well-known/attribution-reporting/"
+           "report-event-attribution"),
+      /*attribution_destination=*/"https://d.test",
+      /*source_event_id=*/"5", /*source_type=*/"event", /*trigger_data=*/"1",
+      https_server());
+  expected_report.trigger_debug_key = "789";
+  ASSERT_TRUE(https_server()->Start());
+
+  EXPECT_TRUE(NavigateToURL(
+      web_contents(),
+      https_server()->GetURL(
+          "a.test", "/set-cookie?ar_debug=1;HttpOnly;Secure;SameSite=None")));
+
+  EXPECT_TRUE(NavigateToURL(
+      web_contents(),
+      https_server()->GetURL(
+          "b.test",
+          "/attribution_reporting/page_with_impression_creator.html")));
+
+  EXPECT_TRUE(ExecJs(
+      web_contents(),
+      JsReplace("createAttributionSrcImg($1);",
+                https_server()->GetURL(
+                    "a.test",
+                    "/attribution_reporting/register_source_headers.html"))));
+
+  EXPECT_TRUE(NavigateToURL(
+      web_contents(),
+      https_server()->GetURL(
+          "d.test",
+          "/attribution_reporting/page_with_impression_creator.html")));
+
+  EXPECT_TRUE(ExecJs(
+      web_contents(),
+      JsReplace(
+          "createAttributionSrcImg($1);",
+          https_server()->GetURL("a.test",
+                                 "/attribution_reporting/"
+                                 "register_trigger_headers_all_params.html"))));
+
+  expected_report.WaitForReport();
+}
+
+IN_PROC_BROWSER_TEST_F(
+    AttributionsBrowserTest,
+    AttributionSrcSourceAndNonAttributionSrcTrigger_ReportSent) {
+  // Expected reports must be registered before the server starts.
+  ExpectedReportWaiter expected_report(
+      GURL("https://a.test/.well-known/attribution-reporting/"
+           "report-event-attribution"),
+      /*attribution_destination=*/"https://d.test",
+      /*source_event_id=*/"5", /*source_type=*/"event", /*trigger_data=*/"1",
+      https_server());
+  expected_report.trigger_debug_key = "789";
+  ASSERT_TRUE(https_server()->Start());
+
+  EXPECT_TRUE(NavigateToURL(
+      web_contents(),
+      https_server()->GetURL(
+          "a.test", "/set-cookie?ar_debug=1;HttpOnly;Secure;SameSite=None")));
+
+  EXPECT_TRUE(NavigateToURL(
+      web_contents(),
+      https_server()->GetURL(
+          "b.test",
+          "/attribution_reporting/page_with_impression_creator.html")));
+
+  EXPECT_TRUE(ExecJs(
+      web_contents(),
+      JsReplace("createAttributionSrcImg($1);",
+                https_server()->GetURL(
+                    "a.test",
+                    "/attribution_reporting/register_source_headers.html"))));
+
+  EXPECT_TRUE(NavigateToURL(
+      web_contents(),
+      https_server()->GetURL(
+          "d.test",
+          "/attribution_reporting/page_with_conversion_redirect.html")));
+
+  EXPECT_TRUE(ExecJs(
+      web_contents(),
+      JsReplace(
+          "createTrackingPixel($1);",
+          https_server()->GetURL("a.test",
+                                 "/attribution_reporting/"
+                                 "register_trigger_headers_all_params.html"))));
+
+  expected_report.WaitForReport();
+}
+
+IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
                        ImpressionConversionWithDedupKey_Deduped) {
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report1(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*attribution_destination=*/"https://b.test",
       /*source_event_id=*/"1", /*source_type=*/"navigation",
       /*trigger_data=*/"7", https_server());
   // 12 below is sanitized to 4 here by `SanitizeTriggerData()`.
   ExpectedReportWaiter expected_report2(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
+           "report-event-attribution"),
       /*attribution_destination=*/"https://b.test",
       /*source_event_id=*/"1", /*source_type=*/"navigation",
       /*trigger_data=*/"4", https_server());
@@ -953,131 +938,11 @@ class AttributionsPrerenderBrowserTest : public AttributionsBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
-                       NoImpressionRegisteredOnPrerender) {
-  ExpectedReportWaiter expected_report(
-      GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
-      /*attribution_destination=*/"https://b.test",
-      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
-      https_server());
-  ASSERT_TRUE(https_server()->Start());
-
-  // Navigate to a starting page in the same origin.
-  const GURL kInitialUrl = https_server()->GetURL("a.test", "/empty.html");
-  {
-    auto url_loader_interceptor =
-        content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
-            kBaseDataDir, kInitialUrl.DeprecatedGetOriginAsURL());
-    EXPECT_TRUE(NavigateToURL(web_contents(), kInitialUrl));
-  }
-
-  // Pre-render a page with a impression creator.
-  const GURL kImpressionUrl = https_server()->GetURL(
-      "a.test", "/attribution_reporting/page_with_impression_creator.html");
-  int host_id = prerender_helper_.AddPrerender(kImpressionUrl);
-  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
-
-  prerender_helper_.WaitForPrerenderLoadCompletion(kImpressionUrl);
-  content::RenderFrameHost* prerender_rfh =
-      prerender_helper_.GetPrerenderedMainFrameHost(host_id);
-
-  const GURL kConversionUrl = https_server()->GetURL(
-      "b.test", "/attribution_reporting/page_with_conversion_redirect.html");
-
-  // Register impression during pre-rendering for the target conversion url.
-  EXPECT_TRUE(
-      ExecJs(prerender_rfh, JsReplace(R"(
-              window.attributionReporting.registerAttributionSource({
-                attributionSourceEventId: "7",
-                attributionDestination: $1,
-              });)",
-                                      url::Origin::Create(kConversionUrl))));
-
-  // Navigate to the conversion url.
-  EXPECT_TRUE(NavigateToURL(web_contents(), kConversionUrl));
-
-  // Register a conversion with the original page as the reporting origin.
-  EXPECT_TRUE(
-      ExecJs(web_contents(), JsReplace(R"(registerConversion({data: 0,
-                                       origin: $1,
-                                       eventSourceTriggerData: 123});)",
-                                       url::Origin::Create(kImpressionUrl))));
-
-  // Verify that registering a conversion had no effect on reports, as the
-  // impressions were never passed to the conversion URL, as the page was only
-  // pre-rendered.
-  base::RunLoop run_loop;
-  base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(100));
-  EXPECT_FALSE(expected_report.HasRequest());
-}
-
-IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
-                       ImpressionRegisteredOnActivatedPrerender) {
-  ExpectedReportWaiter expected_report(
-      GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
-      /*attribution_destination=*/"https://b.test",
-      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
-      https_server());
-  ASSERT_TRUE(https_server()->Start());
-
-  // Navigate to a starting page in the same origin.
-  const GURL kInitialUrl = https_server()->GetURL("a.test", "/empty.html");
-  {
-    auto url_loader_interceptor =
-        content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
-            kBaseDataDir, kInitialUrl.DeprecatedGetOriginAsURL());
-    EXPECT_TRUE(NavigateToURL(web_contents(), kInitialUrl));
-  }
-
-  // Pre-render a page with a impression creator.
-  const GURL kImpressionUrl = https_server()->GetURL(
-      "a.test", "/attribution_reporting/page_with_impression_creator.html");
-  int host_id = prerender_helper_.AddPrerender(kImpressionUrl);
-  content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
-
-  prerender_helper_.WaitForPrerenderLoadCompletion(kImpressionUrl);
-  content::RenderFrameHost* prerender_rfh =
-      prerender_helper_.GetPrerenderedMainFrameHost(host_id);
-
-  const GURL kConversionUrl = https_server()->GetURL(
-      "b.test", "/attribution_reporting/page_with_conversion_redirect.html");
-
-  // Register impression during pre-rendering for the target conversion url.
-  EXPECT_TRUE(
-      ExecJs(prerender_rfh, JsReplace(R"(
-              window.attributionReporting.registerAttributionSource({
-                attributionSourceEventId: "7",
-                attributionDestination: $1,
-              });)",
-                                      url::Origin::Create(kConversionUrl))));
-
-  // Navigate to pre-rendered page, bringing it to the fore.
-  prerender_helper_.NavigatePrimaryPage(kImpressionUrl);
-  ASSERT_EQ(kImpressionUrl, web_contents()->GetLastCommittedURL());
-
-  // Navigate to the conversion url.
-  EXPECT_TRUE(NavigateToURL(web_contents(), kConversionUrl));
-
-  // Register a conversion with the original page as the reporting origin.
-  EXPECT_TRUE(
-      ExecJs(web_contents(), JsReplace(R"(registerConversion({data: 0,
-                                       origin: $1,
-                                       eventSourceTriggerData: 123});)",
-                                       url::Origin::Create(kImpressionUrl))));
-
-  // Confirm that reports work as expected, and impressions were retrieved from
-  // the pre-rendered page, once it became a primary page.
-  expected_report.WaitForReport();
-}
-
-IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
                        NoConversionsOnPrerender) {
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
-      /*attribution_destination=*/"https://b.test",
+           "report-event-attribution"),
+      /*attribution_destination=*/"https://d.test",
       /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
       https_server());
   ASSERT_TRUE(https_server()->Start());
@@ -1087,20 +952,17 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
       "a.test", "/attribution_reporting/page_with_impression_creator.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), kImpressionUrl));
 
-  const GURL kConversionUrl = https_server()->GetURL(
-      "b.test", "/attribution_reporting/page_with_conversion_redirect.html");
-
   // Register impression for the target conversion url.
-  EXPECT_TRUE(
-      ExecJs(web_contents(), JsReplace(R"(
-                window.attributionReporting.registerAttributionSource({
-                  attributionSourceEventId: "7",
-                  attributionDestination: $1,
-                });)",
-                                       url::Origin::Create(kConversionUrl))));
+  GURL register_url = https_server()->GetURL(
+      "a.test", "/attribution_reporting/register_source_headers.html");
+
+  EXPECT_TRUE(ExecJs(
+      web_contents(),
+      JsReplace("window.attributionReporting.registerAttributionSource($1);",
+                register_url)));
 
   // Navigate to a starting same origin page with the conversion url.
-  const GURL kEmptyUrl = https_server()->GetURL("b.test", "/empty.html");
+  const GURL kEmptyUrl = https_server()->GetURL("d.test", "/empty.html");
   {
     auto url_loader_interceptor =
         content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
@@ -1109,6 +971,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   }
 
   // Pre-render the conversion url.
+  const GURL kConversionUrl = https_server()->GetURL(
+      "d.test", "/attribution_reporting/page_with_conversion_redirect.html");
   int host_id = prerender_helper_.AddPrerender(kConversionUrl);
   content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
 
@@ -1130,6 +994,7 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   base::RunLoop run_loop;
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, run_loop.QuitClosure(), base::Milliseconds(100));
+  run_loop.Run();
   EXPECT_FALSE(expected_report.HasRequest());
 }
 
@@ -1137,9 +1002,9 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
                        ConversionsRegisteredOnActivatedPrerender) {
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
-           "report-attribution"),
-      /*attribution_destination=*/"https://b.test",
-      /*source_event_id=*/"7", /*source_type=*/"event", /*trigger_data=*/"1",
+           "report-event-attribution"),
+      /*attribution_destination=*/"https://d.test",
+      /*source_event_id=*/"5", /*source_type=*/"event", /*trigger_data=*/"1",
       https_server());
   ASSERT_TRUE(https_server()->Start());
 
@@ -1149,18 +1014,16 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   EXPECT_TRUE(NavigateToURL(web_contents(), kImpressionUrl));
 
   // Register impression for the target conversion url.
-  const GURL kConversionUrl = https_server()->GetURL(
-      "b.test", "/attribution_reporting/page_with_conversion_redirect.html");
-  EXPECT_TRUE(
-      ExecJs(web_contents(), JsReplace(R"(
-                window.attributionReporting.registerAttributionSource({
-                  attributionSourceEventId: "7",
-                  attributionDestination: $1,
-                });)",
-                                       url::Origin::Create(kConversionUrl))));
+  GURL register_url = https_server()->GetURL(
+      "a.test", "/attribution_reporting/register_source_headers.html");
+
+  EXPECT_TRUE(ExecJs(
+      web_contents(),
+      JsReplace("window.attributionReporting.registerAttributionSource($1);",
+                register_url)));
 
   // Navigate to a starting same origin page with the conversion url.
-  const GURL kEmptyUrl = https_server()->GetURL("b.test", "/empty.html");
+  const GURL kEmptyUrl = https_server()->GetURL("d.test", "/empty.html");
   {
     auto url_loader_interceptor =
         content::URLLoaderInterceptor::ServeFilesFromDirectoryAtOrigin(
@@ -1169,6 +1032,8 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   }
 
   // Pre-render the conversion url.
+  const GURL kConversionUrl = https_server()->GetURL(
+      "d.test", "/attribution_reporting/page_with_conversion_redirect.html");
   int host_id = prerender_helper_.AddPrerender(kConversionUrl);
   content::test::PrerenderHostObserver host_observer(*web_contents(), host_id);
 

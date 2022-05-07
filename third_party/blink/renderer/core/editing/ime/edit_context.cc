@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/editing/ime/edit_context.h"
 
+#include "base/trace_event/trace_event.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_range.h"
@@ -17,6 +18,7 @@
 #include "third_party/blink/renderer/core/editing/ime/text_update_event.h"
 #include "third_party/blink/renderer/core/editing/state_machines/backward_grapheme_boundary_state_machine.h"
 #include "third_party/blink/renderer/core/editing/state_machines/forward_grapheme_boundary_state_machine.h"
+#include "third_party/blink/renderer/core/event_target_names.h"
 #include "third_party/blink/renderer/core/events/composition_event.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -110,8 +112,8 @@ bool EditContext::DispatchCompositionStartEvent(const String& text) {
 
 void EditContext::DispatchCharacterBoundsUpdateEvent(uint32_t range_start,
                                                      uint32_t range_end) {
-  auto* event =
-      MakeGarbageCollected<CharacterBoundsUpdateEvent>(range_start, range_end);
+  auto* event = MakeGarbageCollected<CharacterBoundsUpdateEvent>(
+      event_type_names::kCharacterboundsupdate, range_start, range_end);
   DispatchEvent(*event);
 }
 
@@ -121,8 +123,8 @@ void EditContext::DispatchTextUpdateEvent(const String& text,
                                           uint32_t new_selection_start,
                                           uint32_t new_selection_end) {
   TextUpdateEvent* event = MakeGarbageCollected<TextUpdateEvent>(
-      text, update_range_start, update_range_end, new_selection_start,
-      new_selection_end);
+      event_type_names::kTextupdate, text, update_range_start, update_range_end,
+      new_selection_start, new_selection_end);
   DispatchEvent(*event);
 }
 
@@ -182,12 +184,14 @@ void EditContext::DispatchTextFormatEvent(
                            underline_style, underline_thickness));
   }
 
-  TextFormatUpdateEvent* event =
-      MakeGarbageCollected<TextFormatUpdateEvent>(text_formats);
+  TextFormatUpdateEvent* event = MakeGarbageCollected<TextFormatUpdateEvent>(
+      event_type_names::kTextformatupdate, text_formats);
   DispatchEvent(*event);
 }
 
 void EditContext::Focus() {
+  TRACE_EVENT0("ime", "EditContext::Focus");
+
   EditContext* current_active_edit_context =
       GetInputMethodController().GetActiveEditContext();
   if (current_active_edit_context && current_active_edit_context != this) {
@@ -200,6 +204,8 @@ void EditContext::Focus() {
 }
 
 void EditContext::Blur() {
+  TRACE_EVENT0("ime", "EditContext::Blur");
+
   if (GetInputMethodController().GetActiveEditContext() != this)
     return;
   // Clean up the state of the |this| EditContext.
@@ -210,6 +216,9 @@ void EditContext::Blur() {
 void EditContext::updateSelection(uint32_t start,
                                   uint32_t end,
                                   ExceptionState& exception_state) {
+  TRACE_EVENT2("ime", "EditContext::updateSelection", "start",
+               std::to_string(start), "end", std::to_string(end));
+
   // Following this spec:
   // https://html.spec.whatwg.org/C/#dom-textarea/input-setselectionrange
   if (start > end) {
@@ -240,18 +249,29 @@ void EditContext::updateCharacterBounds(
     HeapVector<Member<DOMRect>>& character_bounds) {
   character_bounds_range_start_ = static_cast<uint32_t>(range_start);
 
+  TRACE_EVENT1("ime", "EditContext::updateCharacterBounds", "range_start, size",
+               std::to_string(range_start) + ", " +
+                   std::to_string(character_bounds.size()));
+
   character_bounds_.Clear();
   std::for_each(character_bounds.begin(), character_bounds.end(),
-                [this](const auto& bound) {
-                  character_bounds_.push_back(bound->ToEnclosingRect());
+                [this](const auto& bounds) {
+                  auto result_bounds = bounds->ToEnclosingRect();
+                  TRACE_EVENT1("ime", "EditContext::updateCharacterBounds",
+                               "charBounds", result_bounds.ToString());
+                  character_bounds_.push_back(result_bounds);
                 });
 }
 
 void EditContext::updateControlBounds(DOMRect* control_bounds) {
+  TRACE_EVENT1("ime", "EditContext::updateControlBounds", "control_bounds",
+               control_bounds->ToEnclosingRect().ToString());
   control_bounds_ = control_bounds->ToEnclosingRect();
 }
 
 void EditContext::updateSelectionBounds(DOMRect* selection_bounds) {
+  TRACE_EVENT1("ime", "EditContext::updateSelectionBounds", "selection_bounds",
+               selection_bounds->ToEnclosingRect().ToString());
   selection_bounds_ = selection_bounds->ToEnclosingRect();
 }
 
@@ -259,6 +279,10 @@ void EditContext::updateText(uint32_t start,
                              uint32_t end,
                              const String& new_text,
                              ExceptionState& exception_state) {
+  TRACE_EVENT2("ime", "EditContext::updateText", "start, end",
+               std::to_string(start) + ", " + std::to_string(end), "new_text",
+               new_text);
+
   // Following this spec:
   // https://html.spec.whatwg.org/C/#dom-textarea/input-setrangetext
   if (start > end) {
@@ -279,6 +303,7 @@ String EditContext::text() const {
 }
 
 void EditContext::setText(const String& text) {
+  TRACE_EVENT1("ime", "EditContext::setText", "text", text);
   text_ = text;
 }
 
@@ -288,6 +313,8 @@ uint32_t EditContext::selectionStart() const {
 
 void EditContext::setSelectionStart(uint32_t selection_start,
                                     ExceptionState& exception_state) {
+  TRACE_EVENT1("ime", "EditContext::setSelectionStart", "start",
+               std::to_string(selection_start));
   // Following this spec:
   // https://html.spec.whatwg.org/C/#dom-textarea/input-setselectionrange
   selection_start_ = std::min(selection_end_, selection_start);
@@ -303,6 +330,9 @@ uint32_t EditContext::characterBoundsRangeStart() const {
 
 void EditContext::setSelectionEnd(uint32_t selection_end,
                                   ExceptionState& exception_state) {
+  TRACE_EVENT1("ime", "EditContext::setSelectionEnd", "end",
+               std::to_string(selection_end));
+
   // Following this spec:
   // https://html.spec.whatwg.org/C/#dom-textarea/input-setselectionrange
   selection_end_ = std::min(selection_end, text_.length());
@@ -429,6 +459,10 @@ void EditContext::GetLayoutBounds(gfx::Rect* control_bounds,
       control_bounds_, DomWindow()->GetFrame()->DevicePixelRatio());
   *selection_bounds = gfx::ScaleToEnclosingRect(
       selection_bounds_, DomWindow()->GetFrame()->DevicePixelRatio());
+
+  TRACE_EVENT2("ime", "EditContext::GetLayoutBounds", "control",
+               control_bounds->ToString(), "selection",
+               selection_bounds->ToString());
 }
 
 bool EditContext::SetComposition(
@@ -437,6 +471,11 @@ bool EditContext::SetComposition(
     const WebRange& replacement_range,
     int selection_start,
     int selection_end) {
+  TRACE_EVENT2(
+      "ime", "EditContext::SetComposition", "start, end",
+      std::to_string(selection_start) + ", " + std::to_string(selection_end),
+      "text", text.Utf8());
+
   if (!text.IsEmpty() && !has_composition_) {
     if (!DispatchCompositionStartEvent(text))
       return false;
@@ -473,6 +512,11 @@ bool EditContext::SetCompositionFromExistingText(
     int composition_start,
     int composition_end,
     const WebVector<ui::ImeTextSpan>& ime_text_spans) {
+  TRACE_EVENT1("ime", "EditContext::SetCompositionFromExistingText",
+               "start, end",
+               std::to_string(composition_start) + ", " +
+                   std::to_string(composition_end));
+
   if (composition_start < 0 || composition_end < 0)
     return false;
 
@@ -507,6 +551,8 @@ bool EditContext::SetCompositionFromExistingText(
 }
 
 bool EditContext::InsertText(const WebString& text) {
+  TRACE_EVENT1("ime", "EditContext::InsertText", "text", text.Utf8());
+
   String update_text(text);
   text_ = text_.Substring(0, selection_start_) + update_text +
           text_.Substring(selection_end_);
@@ -588,6 +634,12 @@ bool EditContext::CommitText(const WebString& text,
                              const WebVector<ui::ImeTextSpan>& ime_text_spans,
                              const WebRange& replacement_range,
                              int relative_caret_position) {
+  TRACE_EVENT2("ime", "EditContext::CommitText", "range, ralative_caret",
+               "(" + std::to_string(replacement_range.StartOffset()) + "," +
+                   std::to_string(replacement_range.EndOffset()) + ")" + ", " +
+                   std::to_string(relative_caret_position),
+               "text", text.Utf8());
+
   // Fire textupdate and textformatupdate events to JS.
   // ime_text_spans can have multiple format updates so loop through and fire
   // events accordingly.
@@ -628,6 +680,8 @@ bool EditContext::CommitText(const WebString& text,
 
 bool EditContext::FinishComposingText(
     ConfirmCompositionBehavior selection_behavior) {
+  TRACE_EVENT0("ime", "EditContext::FinishComposingText");
+
   String text;
   if (has_composition_) {
     text = text_.Substring(composition_range_start_, composition_range_end_);
@@ -648,6 +702,8 @@ bool EditContext::FinishComposingText(
 }
 
 void EditContext::ExtendSelectionAndDelete(int before, int after) {
+  TRACE_EVENT1("ime", "EditContext::ExtendSelectionAndDelete", "before, afters",
+               std::to_string(before) + ", " + std::to_string(after));
   String text;
   before = std::min(before, static_cast<int>(selection_start_));
   after = std::min(after, static_cast<int>(text_.length()));
@@ -761,14 +817,20 @@ bool EditContext::GetCompositionCharacterBounds(WebVector<gfx::Rect>& bounds) {
   if (static_cast<int>(character_bounds_.size()) != composition_range.length())
     return false;
 
+  TRACE_EVENT1("ime", "EditContext::GetCompositionCharacterBounds", "size",
+               std::to_string(character_bounds_.size()));
+
   bounds.Clear();
   std::for_each(
       character_bounds_.begin(), character_bounds_.end(),
       [&bounds, this](auto& bound_in_css_pixels) {
         // EditContext's coordinates are in CSS pixels, which need to be
         // converted to physical pixels before return.
-        bounds.push_back(gfx::ScaleToEnclosingRect(
-            bound_in_css_pixels, DomWindow()->GetFrame()->DevicePixelRatio()));
+        auto result_bounds = gfx::ScaleToEnclosingRect(
+            bound_in_css_pixels, DomWindow()->GetFrame()->DevicePixelRatio());
+        bounds.push_back(result_bounds);
+        TRACE_EVENT1("ime", "EditContext::GetCompositionCharacterBounds",
+                     "charBounds", result_bounds.ToString());
       });
 
   return true;

@@ -19,9 +19,7 @@
 #include "chromeos/components/multidevice/remote_device_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 namespace {
 
@@ -474,6 +472,4 @@ TEST_F(SecureChannelNearbyConnectionManagerImplTest,
   EXPECT_TRUE(WasChannelHandledByDisconnector(fake_secure_channel));
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

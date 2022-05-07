@@ -9,6 +9,7 @@
 
 #include "ash/components/tether/active_host.h"
 #include "ash/components/tether/connection_preserver.h"
+#include "ash/services/device_sync/public/cpp/device_sync_client.h"
 #include "ash/services/secure_channel/public/cpp/client/client_channel.h"
 #include "ash/services/secure_channel/public/cpp/client/connection_attempt.h"
 #include "ash/services/secure_channel/public/cpp/client/secure_channel_client.h"
@@ -18,7 +19,6 @@
 #include "base/unguessable_token.h"
 // TODO(https://crbug.com/1164001): move to forward declaration
 #include "chromeos/network/network_state_handler.h"
-#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 
 namespace ash {
 
@@ -59,8 +59,7 @@ class ConnectionPreserverImpl
  protected:
   // secure_channel::ConnectionAttempt::Delegate:
   void OnConnectionAttemptFailure(
-      chromeos::secure_channel::mojom::ConnectionAttemptFailureReason reason)
-      override;
+      secure_channel::mojom::ConnectionAttemptFailureReason reason) override;
   void OnConnection(
       std::unique_ptr<secure_channel::ClientChannel> channel) override;
 

@@ -244,8 +244,7 @@ class ExistingUserControllerTest : public policy::DevicePolicyCrosBrowserTest {
     EXPECT_CALL(*mock_login_display_host_, GetSigninUI())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_signin_ui_.get()));
-    EXPECT_CALL(*mock_login_display_host_, OnPreferencesChanged()).Times(1);
-    EXPECT_CALL(*mock_login_display_, Init(_, true, true, true)).Times(1);
+    EXPECT_CALL(*mock_login_display_, Init(_, true)).Times(1);
   }
 
   void SetUpOnMainThread() override {
@@ -478,9 +477,7 @@ class ExistingUserControllerPublicSessionTest
     EXPECT_CALL(*mock_login_display_host_, GetSigninUI())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_signin_ui_.get()));
-    EXPECT_CALL(*mock_login_display_host_.get(), OnPreferencesChanged())
-        .Times(AnyNumber());
-    EXPECT_CALL(*mock_login_display_, Init(_, _, _, _)).Times(AnyNumber());
+    EXPECT_CALL(*mock_login_display_, Init(_, _)).Times(AnyNumber());
   }
 
   void TearDownOnMainThread() override {
@@ -964,7 +961,8 @@ class ExistingUserControllerActiveDirectoryTest
 
   void ExpectLoginAllowlistFailure() {
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(false)).Times(2);
-    EXPECT_CALL(*mock_login_display_, ShowAllowlistCheckFailedError()).Times(1);
+    EXPECT_CALL(*mock_login_display_host_, ShowAllowlistCheckFailedError())
+        .Times(1);
     EXPECT_CALL(*mock_login_display_, SetUIEnabled(true)).Times(1);
   }
 
@@ -1034,8 +1032,7 @@ class ExistingUserControllerActiveDirectoryUserAllowlistTest
     EXPECT_CALL(*mock_login_display_host_, GetSigninUI())
         .Times(AnyNumber())
         .WillRepeatedly(Return(mock_signin_ui_.get()));
-    EXPECT_CALL(*mock_login_display_host_, OnPreferencesChanged()).Times(1);
-    EXPECT_CALL(*mock_login_display_, Init(_, true, true, false)).Times(1);
+    EXPECT_CALL(*mock_login_display_, Init(_, true)).Times(1);
   }
 };
 

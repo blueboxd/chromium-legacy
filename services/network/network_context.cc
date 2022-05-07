@@ -83,6 +83,7 @@
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/cookie_manager.h"
 #include "services/network/cors/cors_url_loader_factory.h"
+#include "services/network/disk_cache/mojo_backend_file_operations_factory.h"
 #include "services/network/host_resolver.h"
 #include "services/network/http_auth_cache_copier.h"
 #include "services/network/http_server_properties_pref_delegate.h"
@@ -537,6 +538,12 @@ NetworkContext::NetworkContext(
       std::move(url_loader_factory_for_cert_net_fetcher_receiver));
 
   SetBlockTrustTokens(params_->block_trust_tokens);
+
+  if (params_ && params_->http_cache_file_operations_factory) {
+    http_cache_file_operations_factory_ =
+        base::MakeRefCounted<MojoBackendFileOperationsFactory>(
+            std::move(params_->http_cache_file_operations_factory));
+  }
 }
 
 NetworkContext::NetworkContext(
@@ -2044,9 +2051,7 @@ void NetworkContext::AddAuthCacheEntry(
           ->GetSession()
           ->http_auth_cache();
   http_auth_cache->Add(
-      // TODO(https://crbug.com/): Convert AuthCredentials::challenger field to
-      // a SchemeHostPort.
-      challenge.challenger.GetTupleOrPrecursorTupleIfOpaque(),
+      challenge.challenger,
       challenge.is_proxy ? net::HttpAuth::AUTH_PROXY
                          : net::HttpAuth::AUTH_SERVER,
       challenge.realm, net::HttpAuth::StringToScheme(challenge.scheme),
@@ -2706,9 +2711,8 @@ GURL NetworkContext::GetHSTSRedirect(const GURL& original_url) {
     return original_url;
   }
 
-  url::Replacements<char> replacements;
-  const char kNewScheme[] = "https";
-  replacements.SetScheme(kNewScheme, url::Component(0, strlen(kNewScheme)));
+  GURL::Replacements replacements;
+  replacements.SetSchemeStr("https");
   return original_url.ReplaceComponents(replacements);
 }
 

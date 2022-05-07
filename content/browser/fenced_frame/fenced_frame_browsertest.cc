@@ -25,7 +25,9 @@
 #include "content/shell/browser/shell_browser_context.h"
 #include "content/shell/browser/shell_content_browser_client.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "mojo/public/cpp/test_support/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "net/test/embedded_test_server/controllable_http_response.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
@@ -41,7 +43,10 @@ class FencedFrameBrowserTest : public ContentBrowserTest {
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     ContentBrowserTest::SetUpOnMainThread();
-    ASSERT_TRUE(embedded_test_server()->Start());
+
+    https_server()->AddDefaultHandlers(GetTestDataFilePath());
+    https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+    SetupCrossSiteRedirector(https_server());
   }
 
   WebContentsImpl* web_contents() {
@@ -56,17 +61,21 @@ class FencedFrameBrowserTest : public ContentBrowserTest {
     return fenced_frame_test_helper_;
   }
 
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
  private:
   test::FencedFrameTestHelper fenced_frame_test_helper_;
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
 
 // Tests that the renderer can create a <fencedframe> that results in a
 // browser-side content::FencedFrame also being created.
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, CreateFromScriptAndDestroy) {
-  const GURL main_url = embedded_test_server()->GetURL(
-      "fencedframe.test", "/fenced_frames/title1.html");
-  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
-                                         "fencedframe.test", "/title1.html")));
+  ASSERT_TRUE(https_server()->Start());
+  const GURL main_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
+  EXPECT_TRUE(
+      NavigateToURL(shell(), https_server()->GetURL("c.test", "/title1.html")));
   RenderFrameHostImplWrapper primary_rfh(primary_main_frame_host());
   RenderFrameHostImplWrapper fenced_frame_rfh(
       fenced_frame_test_helper().CreateFencedFrame(primary_rfh.get(),
@@ -102,8 +111,9 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, CreateFromScriptAndDestroy) {
 }
 
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, CreateFromParser) {
-  const GURL top_level_url = embedded_test_server()->GetURL(
-      "fencedframe.test", "/fenced_frames/basic.html");
+  ASSERT_TRUE(https_server()->Start());
+  const GURL top_level_url =
+      https_server()->GetURL("c.test", "/fenced_frames/basic.html");
   EXPECT_TRUE(NavigateToURL(shell(), top_level_url));
 
   // The fenced frame is set-up synchronously, so it should exist immediately.
@@ -117,8 +127,8 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, CreateFromParser) {
 }
 
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, Navigation) {
-  const GURL main_url =
-      embedded_test_server()->GetURL("fencedframe.test", "/title1.html");
+  ASSERT_TRUE(https_server()->Start());
+  const GURL main_url = https_server()->GetURL("c.test", "/title1.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   // WebContentsObservers should not be notified of commits happening
@@ -132,8 +142,8 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, Navigation) {
 
   RenderFrameHostImpl* primary_rfh = primary_main_frame_host();
 
-  const GURL fenced_frame_url = embedded_test_server()->GetURL(
-      "fencedframe.test", "/fenced_frames/title1.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
   RenderFrameHost* fenced_frame_rfh =
       fenced_frame_test_helper().CreateFencedFrame(primary_rfh,
                                                    fenced_frame_url);
@@ -148,14 +158,14 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, Navigation) {
 }
 
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, AboutBlankNavigation) {
-  const GURL main_url =
-      embedded_test_server()->GetURL("a.test", "/title1.html");
+  ASSERT_TRUE(https_server()->Start());
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
 
   RenderFrameHostImpl* primary_rfh = primary_main_frame_host();
 
-  const GURL fenced_frame_url = embedded_test_server()->GetURL(
-      "fencedframe.test", "/fenced_frames/title1.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
   fenced_frame_test_helper().CreateFencedFrame(primary_rfh, fenced_frame_url);
 
   std::vector<FencedFrame*> fenced_frames = primary_rfh->GetFencedFrames();
@@ -171,24 +181,24 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, AboutBlankNavigation) {
   // We can't use `NavigateFrameInFencedFrameTree` because that navigates
   // from the inner frame tree and we want the navigation to occur from
   // the outer frame tree.
+  TestFrameNavigationObserver observer(fenced_frame->GetInnerRoot());
   EXPECT_TRUE(
       ExecJs(primary_rfh,
              "document.querySelector('fencedframe').src = 'about:blank';"));
+  observer.Wait();
 
-  fenced_frame->WaitForDidStopLoadingForTesting();
   EXPECT_TRUE(!fenced_frame->GetInnerRoot()->IsErrorDocument());
-
   EXPECT_EQ("null", EvalJs(fenced_frame->GetInnerRoot(), "self.origin;"));
 }
 
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, FrameIteration) {
-  const GURL main_url =
-      embedded_test_server()->GetURL("fencedframe.test", "/title1.html");
+  ASSERT_TRUE(https_server()->Start());
+  const GURL main_url = https_server()->GetURL("c.test", "/title1.html");
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
   RenderFrameHostImplWrapper primary_rfh(primary_main_frame_host());
 
-  const GURL fenced_frame_url = embedded_test_server()->GetURL(
-      "fencedframe.test", "/fenced_frames/title1.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
   RenderFrameHostImplWrapper fenced_frame_rfh(
       fenced_frame_test_helper().CreateFencedFrame(primary_rfh.get(),
                                                    fenced_frame_url));
@@ -217,15 +227,132 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, FrameIteration) {
   EXPECT_TRUE(visited_fenced_frame_frame_tree);
 }
 
+namespace {
+
+// Intercepts calls to RenderFramHostImpl's CreateFencedFrame mojo method, and
+// connects a NavigationDelayer which delays the FencedFrameOwnerHost's
+// Navigate mojo method.
+class NavigationDelayerInterceptor
+    : public mojom::FrameHostInterceptorForTesting {
+ public:
+  explicit NavigationDelayerInterceptor(RenderFrameHostImpl* render_frame_host,
+                                        base::TimeDelta duration)
+      : render_frame_host_(render_frame_host),
+        duration_(duration),
+        impl_(render_frame_host_->frame_host_receiver_for_testing()
+                  .SwapImplForTesting(this)) {}
+
+  ~NavigationDelayerInterceptor() override = default;
+
+  mojom::FrameHost* GetForwardingInterface() override { return impl_; }
+
+  void CreateFencedFrame(
+      mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
+          pending_receiver,
+      CreateFencedFrameCallback callback) override {
+    mojo::PendingAssociatedRemote<blink::mojom::FencedFrameOwnerHost>
+        original_remote;
+
+    GetForwardingInterface()->CreateFencedFrame(
+        original_remote.InitWithNewEndpointAndPassReceiver(),
+        std::move(callback));
+    std::vector<FencedFrame*> fenced_frames =
+        render_frame_host_->GetFencedFrames();
+    ASSERT_FALSE(fenced_frames.empty());
+    navigate_interceptor_ = std::make_unique<NavigationDelayer>(
+        std::move(original_remote), std::move(pending_receiver),
+        fenced_frames.back(), duration_);
+  }
+
+ private:
+  class NavigationDelayer : public blink::mojom::FencedFrameOwnerHost {
+   public:
+    explicit NavigationDelayer(
+        mojo::PendingAssociatedRemote<blink::mojom::FencedFrameOwnerHost>
+            original_remote,
+        mojo::PendingAssociatedReceiver<blink::mojom::FencedFrameOwnerHost>
+            receiver,
+        FencedFrame* fenced_frame,
+        base::TimeDelta duration)
+        : original_remote_(std::move(original_remote)),
+          fenced_frame_(fenced_frame),
+          duration_(duration) {
+      receiver_.Bind(std::move(receiver));
+    }
+
+    ~NavigationDelayer() override = default;
+
+    void Navigate(const GURL& url,
+                  base::TimeTicks navigation_start_time) override {
+      base::PlatformThread::Sleep(duration_);
+      fenced_frame_->Navigate(url, navigation_start_time);
+    }
+
+   private:
+    mojo::AssociatedRemote<blink::mojom::FencedFrameOwnerHost> original_remote_;
+    mojo::AssociatedReceiver<blink::mojom::FencedFrameOwnerHost> receiver_{
+        this};
+    raw_ptr<FencedFrame> fenced_frame_;
+    const base::TimeDelta duration_;
+  };
+
+  raw_ptr<RenderFrameHostImpl> render_frame_host_;
+  std::unique_ptr<NavigationDelayer> navigate_interceptor_;
+  const base::TimeDelta duration_;
+  raw_ptr<mojom::FrameHost> impl_;
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, NavigationStartTime) {
+  ASSERT_TRUE(https_server()->Start());
+  const GURL main_url = https_server()->GetURL("a.test", "/title1.html");
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  RenderFrameHostImpl* primary_rfh = primary_main_frame_host();
+
+  const GURL fenced_frame_url =
+      https_server()->GetURL("a.test", "/fenced_frames/title1.html");
+  constexpr char kAddFencedFrameScript[] = R"({
+    const fenced_frame = document.createElement('fencedframe');
+    fenced_frame.src = $1;
+    document.body.appendChild(fenced_frame);
+  })";
+
+  const int delay_in_milliseconds = 1000;
+
+  // The UI thread of the browser process will sleep |delay_in_milliseconds|
+  // just before handing FencedFrameOwnerHost's Navigate mojo method.
+  NavigationDelayerInterceptor interceptor(
+      primary_rfh, base::Milliseconds(delay_in_milliseconds));
+
+  EXPECT_TRUE(
+      ExecJs(primary_rfh, JsReplace(kAddFencedFrameScript, fenced_frame_url)));
+  std::vector<FencedFrame*> fenced_frames = primary_rfh->GetFencedFrames();
+  ASSERT_EQ(1U, fenced_frames.size());
+  FencedFrame* fenced_frame = fenced_frames[0];
+  WaitForLoadStop(web_contents());
+
+  // The duration between navigationStart (measured in the renderer process) and
+  // requestStart (measured in the browser process due to PlzNavigate) must be
+  // greater than or equal to |delay_in_milliseconds|.
+  EXPECT_GE(EvalJs(fenced_frame->GetInnerRoot(),
+                   "performance.timing.requestStart - "
+                   "performance.timing.navigationStart")
+                .ExtractInt(),
+            delay_in_milliseconds);
+}
+
 // Test that ensures we can post from an cross origin iframe into the
 // fenced frame root.
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, CrossOriginMessagePost) {
-  const GURL main_url = embedded_test_server()->GetURL(
-      "fencedframe.test", "/fenced_frames/title1.html");
+  ASSERT_TRUE(https_server()->Start());
+  const GURL main_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
   const GURL cross_origin_iframe_url =
-      embedded_test_server()->GetURL("b.com", "/fenced_frames/title1.html");
-  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
-                                         "fencedframe.test", "/title1.html")));
+      https_server()->GetURL("b.com", "/fenced_frames/title1.html");
+  EXPECT_TRUE(
+      NavigateToURL(shell(), https_server()->GetURL("c.test", "/title1.html")));
   RenderFrameHostImplWrapper primary_rfh(primary_main_frame_host());
   RenderFrameHostImplWrapper fenced_frame_rfh(
       fenced_frame_test_helper().CreateFencedFrame(primary_rfh.get(),
@@ -269,6 +396,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, CrossOriginMessagePost) {
 // for fenced frames as it is only invoked for primary main frames.
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
                        DocumentOnLoadCompletedInPrimaryMainFrame) {
+  ASSERT_TRUE(https_server()->Start());
   // Initialize a MockWebContentsObserver to ensure that
   // DocumentOnLoadCompletedInPrimaryMainFrame is only invoked for primary main
   // RenderFrameHosts.
@@ -280,8 +408,8 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
   EXPECT_CALL(web_contents_observer,
               DocumentOnLoadCompletedInPrimaryMainFrame())
       .Times(1);
-  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
-                                         "fencedframe.test", "/title1.html")));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), https_server()->GetURL("c.test", "/title1.html")));
   RenderFrameHostImplWrapper primary_rfh(primary_main_frame_host());
 
   // Once the fenced frame complets loading, it shouldn't result in
@@ -289,8 +417,8 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
   EXPECT_CALL(web_contents_observer,
               DocumentOnLoadCompletedInPrimaryMainFrame())
       .Times(0);
-  const GURL fenced_frame_url = embedded_test_server()->GetURL(
-      "fencedframe.test", "/fenced_frames/title1.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
   RenderFrameHostImplWrapper inner_fenced_frame_rfh(
       fenced_frame_test_helper().CreateFencedFrame(primary_rfh.get(),
                                                    fenced_frame_url));
@@ -304,6 +432,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
 // fenced frames as it is only invoked for primary main frames.
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
                        PrimaryMainDocumentElementAvailable) {
+  ASSERT_TRUE(https_server()->Start());
   // Initialize a MockWebContentsObserver to ensure that
   // PrimaryMainDocumentElementAvailable is only invoked for primary main
   // RenderFrameHosts.
@@ -315,16 +444,16 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
   // PrimaryMainDocumentElementAvailable once.
   EXPECT_CALL(web_contents_observer, PrimaryMainDocumentElementAvailable())
       .Times(1);
-  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
-                                         "fencedframe.test", "/title1.html")));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), https_server()->GetURL("c.test", "/title1.html")));
   RenderFrameHostImplWrapper primary_rfh(primary_main_frame_host());
 
   // Once the fenced frame completes loading, it shouldn't result in
   // invoking PrimaryMainDocumentElementAvailable.
   EXPECT_CALL(web_contents_observer, PrimaryMainDocumentElementAvailable())
       .Times(0);
-  const GURL fenced_frame_url = embedded_test_server()->GetURL(
-      "fencedframe.test", "/fenced_frames/title1.html");
+  const GURL fenced_frame_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
   RenderFrameHostImplWrapper inner_fenced_frame_rfh(
       fenced_frame_test_helper().CreateFencedFrame(primary_rfh.get(),
                                                    fenced_frame_url));
@@ -337,8 +466,9 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
 // viewport behaviors like zoom-out-to-fit-content or parsing the viewport
 // <meta>.
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, ViewportSettings) {
-  const GURL top_level_url = embedded_test_server()->GetURL(
-      "fencedframe.test", "/fenced_frames/viewport.html");
+  ASSERT_TRUE(https_server()->Start());
+  const GURL top_level_url =
+      https_server()->GetURL("c.test", "/fenced_frames/viewport.html");
   EXPECT_TRUE(NavigateToURL(shell(), top_level_url));
 
   RenderFrameHostImplWrapper primary_rfh(primary_main_frame_host());
@@ -346,7 +476,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, ViewportSettings) {
   ASSERT_EQ(1ul, fenced_frames.size());
   FencedFrame* fenced_frame = fenced_frames.back();
 
-  fenced_frame->WaitForDidStopLoadingForTesting();
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
 
   // Ensure various dimensions and properties in the fenced frame
   // match the dimensions of the <fencedframe> in the parent and do
@@ -370,14 +500,14 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, ViewportSettings) {
 // Test that FrameTree::CollectNodesForIsLoading doesn't include inner
 // WebContents nodes.
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, NodesForIsLoading) {
-  GURL url_a(embedded_test_server()->GetURL("a.com", "/page_with_iframe.html"));
-  GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  GURL fenced_frame_url(embedded_test_server()->GetURL(
-      "fencedframe.test", "/fenced_frames/title1.html"));
+  ASSERT_TRUE(https_server()->Start());
+  GURL url_a(https_server()->GetURL("c.test", "/page_with_iframe.html"));
+  GURL url_b(https_server()->GetURL("c.test", "/title1.html"));
+  GURL fenced_frame_url(
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html"));
 
   // 1. Navigate to an initial primary page.
-  EXPECT_TRUE(NavigateToURL(shell(), embedded_test_server()->GetURL(
-                                         "a.com", "/page_with_iframe.html")));
+  EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImplWrapper primary_rfh(primary_main_frame_host());
   FrameTree& primary_frame_tree = web_contents()->GetPrimaryFrameTree();
 
@@ -439,10 +569,10 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, NodesForIsLoading) {
 
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
                        NoErrorPageOnEmptyFrameHttpError) {
-  const GURL kInitialUrl(
-      embedded_test_server()->GetURL("a.com", "/title1.html"));
+  ASSERT_TRUE(https_server()->Start());
+  const GURL kInitialUrl(https_server()->GetURL("c.test", "/title1.html"));
   const GURL kEmpty404Url(
-      embedded_test_server()->GetURL("a.com", "/fenced_frames/empty404.html"));
+      https_server()->GetURL("c.test", "/fenced_frames/empty404.html"));
 
   // Load an initial page.
   EXPECT_TRUE(NavigateToURL(shell(), kInitialUrl));
@@ -459,6 +589,141 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest,
       EvalJs(fenced_frame_rfh.get(), "document.body.textContent;")
           .ExtractString();
   EXPECT_EQ(contents, std::string());
+}
+
+// Test that when the documents inside the fenced frame tree are loading, then
+// `WebContents::IsLoading`, `FrameTree::IsLoading`, and
+// `FrameTreeNode::IsLoading` should return true. Primary `FrameTree::IsLoading`
+// value should reflect the loading state of descendant fenced frames.
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, IsLoading) {
+  // Create a HTTP response to control fenced frame navigation.
+  net::test_server::ControllableHttpResponse fenced_frame_response(
+      https_server(), "/fenced_frames/title2.html");
+  ASSERT_TRUE(https_server()->Start());
+
+  // Navigate to primary url.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), https_server()->GetURL("c.test", "/title1.html")));
+  RenderFrameHostImpl* fenced_frame_parent_rfh = primary_main_frame_host();
+
+  // Create a fenced frame for fenced_frame_url.
+  const GURL fenced_frame_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title2.html");
+  fenced_frame_test_helper().CreateFencedFrameAsync(fenced_frame_parent_rfh,
+                                                    fenced_frame_url);
+
+  std::vector<FencedFrame*> fenced_frames =
+      fenced_frame_parent_rfh->GetFencedFrames();
+  EXPECT_EQ(fenced_frames.size(), 1ul);
+  FencedFrame* fenced_frame = fenced_frames.back();
+
+  RenderFrameHostImplWrapper inner_fenced_frame_rfh(
+      fenced_frame->GetInnerRoot());
+  FrameTreeNode* fenced_frame_root_node =
+      inner_fenced_frame_rfh->frame_tree_node();
+  FrameTree* fenced_frame_tree = fenced_frame_root_node->frame_tree();
+
+  // All WebContents::IsLoading, FrameTree::IsLoading, and
+  // FrameTreeNode::IsLoading should return true when the fenced frame is
+  // loading along with primary FrameTree::IsLoading as we check for inner frame
+  // trees loading state.
+  EXPECT_TRUE(web_contents()->IsLoading());
+  EXPECT_TRUE(primary_main_frame_host()->frame_tree()->IsLoading());
+  EXPECT_TRUE(fenced_frame_root_node->IsLoading());
+  EXPECT_TRUE(fenced_frame_tree->IsLoading());
+
+  // Complete the fenced frame response and finish fenced frame navigation.
+  fenced_frame_response.WaitForRequest();
+  fenced_frame_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "Supports-Loading-Mode: fenced-frame\r\n"
+      "\r\n");
+  fenced_frame_response.Done();
+
+  // Check that all the above loading states should return false once the fenced
+  // frame stops loading.
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+  EXPECT_FALSE(web_contents()->IsLoading());
+  EXPECT_FALSE(primary_main_frame_host()->frame_tree()->IsLoading());
+  EXPECT_FALSE(fenced_frame_root_node->IsLoading());
+  EXPECT_FALSE(fenced_frame_tree->IsLoading());
+}
+
+// Test that when the documents inside the fenced frame tree are loading,
+// WebContentsObserver::DidStartLoading is fired and when document stops loading
+// WebContentsObserver::DidStopLoading is fired. In this test primary page
+// completed loading before fenced frame starts loading and we test the loading
+// state in the end when both primary page and fenced frame completed loading.
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, DidStartAndDidStopLoading) {
+  // Create a HTTP response to control fenced frame navigation.
+  net::test_server::ControllableHttpResponse fenced_frame_response(
+      https_server(), "/fenced_frames/title2.html");
+  ASSERT_TRUE(https_server()->Start());
+
+  // Navigate to primary url.
+  EXPECT_TRUE(
+      NavigateToURL(shell(), https_server()->GetURL("c.test", "/title1.html")));
+  EXPECT_FALSE(web_contents()->IsLoading());
+  RenderFrameHostImpl* fenced_frame_parent_rfh = primary_main_frame_host();
+  EXPECT_EQ(fenced_frame_parent_rfh->GetFencedFrames().size(), 0ul);
+
+  // Initialize a MockWebContentsObserver and ensure that
+  // DidStartLoading and DidStopLoading are invoked.
+  testing::NiceMock<MockWebContentsObserver> web_contents_observer(
+      web_contents());
+  testing::InSequence s;
+
+  // Create a fenced frame for fenced_frame_url. This will result in invoking
+  // DidStartLoading callback once.
+  EXPECT_CALL(web_contents_observer, DidStartLoading()).Times(1);
+  const GURL fenced_frame_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title2.html");
+  fenced_frame_test_helper().CreateFencedFrameAsync(fenced_frame_parent_rfh,
+                                                    fenced_frame_url);
+  std::vector<FencedFrame*> fenced_frames =
+      fenced_frame_parent_rfh->GetFencedFrames();
+  EXPECT_EQ(fenced_frame_parent_rfh->GetFencedFrames().size(), 1ul);
+  EXPECT_TRUE(web_contents()->IsLoading());
+
+  // Complete the fenced frame response and finish fenced frame navigation.
+  fenced_frame_response.WaitForRequest();
+  fenced_frame_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "Supports-Loading-Mode: fenced-frame\r\n"
+      "\r\n");
+  fenced_frame_response.Done();
+
+  // Once the fenced frame stops loading, this should result in invoking
+  // the DidStopLoading callback once.
+  EXPECT_CALL(web_contents_observer, DidStopLoading()).Times(1);
+  EXPECT_TRUE(WaitForLoadStop(web_contents()));
+}
+
+// Ensure that WebContentsObserver::LoadProgressChanged is not invoked when
+// there is a change in load state of fenced frame as LoadProgressChanged is
+// attributed to only primary main frame load progress change.
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, LoadProgressChanged) {
+  ASSERT_TRUE(https_server()->Start());
+  const GURL fenced_frame_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
+  const GURL main_url = https_server()->GetURL("c.test", "/title1.html");
+
+  // Navigate to primary url.
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  RenderFrameHostImplWrapper primary_rfh(primary_main_frame_host());
+
+  // Initialize a MockWebContentsObserver and ensure that LoadProgressChanged is
+  // not invoked for fenced frames.
+  testing::NiceMock<MockWebContentsObserver> web_contents_observer(
+      web_contents());
+
+  // Create a fenced frame for fenced_frame_url. This shouldn't call
+  // LoadProgressChanged.
+  EXPECT_CALL(web_contents_observer, LoadProgressChanged(testing::_)).Times(0);
+  fenced_frame_test_helper().CreateFencedFrame(primary_rfh.get(),
+                                               fenced_frame_url);
 }
 
 namespace {
@@ -524,8 +789,8 @@ static std::string TestParamToString(
   return out;
 }
 
-const char* kSameOriginHostName = "a.example";
-const char* kCrossOriginHostName = "b.example";
+const char* kSameOriginHostName = "a.test";
+const char* kCrossOriginHostName = "b.test";
 
 const char* GetHostNameForFrameType(FrameTypeWithOrigin type) {
   switch (type) {
@@ -574,7 +839,11 @@ class FencedFrameNestedFrameBrowserTest
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
     ContentBrowserTest::SetUpOnMainThread();
-    ASSERT_TRUE(embedded_test_server()->Start());
+
+    https_server()->AddDefaultHandlers(GetTestDataFilePath());
+    https_server()->SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
+    SetupCrossSiteRedirector(https_server());
+    ASSERT_TRUE(https_server()->Start());
   }
 
   WebContentsImpl* web_contents() {
@@ -583,7 +852,7 @@ class FencedFrameNestedFrameBrowserTest
 
   RenderFrameHostImpl* LoadNestedFrame() {
     const GURL main_url =
-        embedded_test_server()->GetURL(kSameOriginHostName, "/title1.html");
+        https_server()->GetURL(kSameOriginHostName, "/title1.html");
     EXPECT_TRUE(NavigateToURL(shell(), main_url));
     RenderFrameHostImpl* frame =
         static_cast<RenderFrameHostImpl*>(web_contents()->GetMainFrame());
@@ -603,11 +872,13 @@ class FencedFrameNestedFrameBrowserTest
     return false;
   }
 
+  net::EmbeddedTestServer* https_server() { return &https_server_; }
+
  private:
   RenderFrameHostImpl* CreateFrame(RenderFrameHostImpl* parent,
                                    FrameTypeWithOrigin type,
                                    int depth) {
-    const GURL url = embedded_test_server()->GetURL(
+    const GURL url = https_server()->GetURL(
         GetHostNameForFrameType(type),
         "/fenced_frames/title1.html?depth=" + base::NumberToString(depth));
 
@@ -651,6 +922,7 @@ class FencedFrameNestedFrameBrowserTest
 
   std::unique_ptr<test::FencedFrameTestHelper> fenced_frame_helper_;
   base::test::ScopedFeatureList feature_list_;
+  net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
 };
 
 IN_PROC_BROWSER_TEST_P(FencedFrameNestedFrameBrowserTest,
@@ -662,6 +934,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameNestedFrameBrowserTest,
 // Tests that NavigationHandle::GetNavigatingFrameType() returns the correct
 // type.
 IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, NavigationHandleFrameType) {
+  ASSERT_TRUE(https_server()->Start());
   {
     DidFinishNavigationObserver observer(
         web_contents(),
@@ -671,8 +944,7 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, NavigationHandleFrameType) {
                     FrameType::kPrimaryMainFrame);
         }));
     EXPECT_TRUE(NavigateToURL(
-        shell(),
-        embedded_test_server()->GetURL("fencedframe.test", "/title1.html")));
+        shell(), https_server()->GetURL("c.test", "/title1.html")));
   }
 
   {
@@ -693,14 +965,14 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, NavigationHandleFrameType) {
             });
         })();
         })";
-    EXPECT_TRUE(ExecJs(
-        primary_main_frame_host(),
-        JsReplace(kAddIframeScript, embedded_test_server()->GetURL(
-                                        "fencedframe.test", "/empty.html"))));
+    EXPECT_TRUE(
+        ExecJs(primary_main_frame_host(),
+               JsReplace(kAddIframeScript,
+                         https_server()->GetURL("c.test", "/empty.html"))));
   }
   {
-    const GURL fenced_frame_url = embedded_test_server()->GetURL(
-        "fencedframe.test", "/fenced_frames/title1.html");
+    const GURL fenced_frame_url =
+        https_server()->GetURL("c.test", "/fenced_frames/title1.html");
     RenderFrameHostImplWrapper fenced_frame_rfh(
         fenced_frame_test_helper().CreateFencedFrame(primary_main_frame_host(),
                                                      fenced_frame_url));
@@ -714,6 +986,55 @@ IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, NavigationHandleFrameType) {
         }));
     fenced_frame_test_helper().NavigateFrameInFencedFrameTree(
         fenced_frame_rfh.get(), fenced_frame_url);
+  }
+}
+
+// Tests that an unload/beforeunload event handler won't be set from
+// fenced frames.
+IN_PROC_BROWSER_TEST_F(FencedFrameBrowserTest, UnloadHandler) {
+  ASSERT_TRUE(https_server()->Start());
+  const GURL main_url =
+      https_server()->GetURL("c.test", "/fenced_frames/title1.html");
+  EXPECT_TRUE(
+      NavigateToURL(shell(), https_server()->GetURL("c.test", "/title1.html")));
+  RenderFrameHostImplWrapper primary_rfh(primary_main_frame_host());
+  RenderFrameHostImplWrapper fenced_frame_rfh(
+      fenced_frame_test_helper().CreateFencedFrame(primary_rfh.get(),
+                                                   main_url));
+
+  const char* kConsolePattern =
+      "unload/beforeunload handlers are prohibited in fenced frames.";
+  {
+    WebContentsConsoleObserver console_observer(web_contents());
+    console_observer.SetPattern(kConsolePattern);
+    EXPECT_TRUE(ExecJs(fenced_frame_rfh.get(),
+                       "window.addEventListener('beforeunload', (e) => {});"));
+    console_observer.Wait();
+    EXPECT_EQ(1u, console_observer.messages().size());
+  }
+  {
+    WebContentsConsoleObserver console_observer(web_contents());
+    console_observer.SetPattern(kConsolePattern);
+    EXPECT_TRUE(ExecJs(fenced_frame_rfh.get(),
+                       "window.addEventListener('unload', (e) => {});"));
+    console_observer.Wait();
+    EXPECT_EQ(1u, console_observer.messages().size());
+  }
+  {
+    WebContentsConsoleObserver console_observer(web_contents());
+    console_observer.SetPattern(kConsolePattern);
+    EXPECT_TRUE(ExecJs(fenced_frame_rfh.get(),
+                       "window.onbeforeunload = function(e){};"));
+    console_observer.Wait();
+    EXPECT_EQ(1u, console_observer.messages().size());
+  }
+  {
+    WebContentsConsoleObserver console_observer(web_contents());
+    console_observer.SetPattern(kConsolePattern);
+    EXPECT_TRUE(
+        ExecJs(fenced_frame_rfh.get(), "window.onunload = function(e){};"));
+    console_observer.Wait();
+    EXPECT_EQ(1u, console_observer.messages().size());
   }
 }
 

@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/memory/safe_ref.h"
 #include "base/supports_user_data.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/frame_type.h"
@@ -29,9 +30,13 @@
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
 #include "third_party/blink/public/mojom/loader/referrer.mojom.h"
-#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
+#include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom-forward.h"
 #include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/base/page_transition_types.h"
+
+#if BUILDFLAG(IS_ANDROID)
+#include "base/android/scoped_java_ref.h"
+#endif
 
 class GURL;
 
@@ -42,6 +47,7 @@ class ProxyServer;
 }  // namespace net
 
 namespace content {
+class CommitDeferringCondition;
 struct GlobalRenderFrameHostId;
 struct GlobalRequestID;
 class NavigationEntry;
@@ -117,10 +123,15 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // constant over the navigation lifetime.
   virtual bool IsInPrerenderedMainFrame() = 0;
 
-  // Prerender2
+  // Prerender2:
   // Returns true if this navigation will activate a prerendered page. It is
   // only meaningful to call this after BeginNavigation().
   virtual bool IsPrerenderedPageActivation() = 0;
+
+  // FencedFrame:
+  // Returns true if the navigation is taking place in a frame in a fenced frame
+  // tree.
+  virtual bool IsInFencedFrameTree() = 0;
 
   // Returns the type of the frame in which this navigation is taking place.
   virtual FrameType GetNavigatingFrameType() const = 0;
@@ -530,6 +541,9 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   virtual PrerenderTriggerType GetPrerenderTriggerType() = 0;
   virtual std::string GetPrerenderEmbedderHistogramSuffix() = 0;
 
+  // Returns a SafeRef to this handle.
+  virtual base::SafeRef<NavigationHandle> GetSafeRef() = 0;
+
   // Testing methods ----------------------------------------------------------
   //
   // The following methods should be used exclusively for writing unit tests.
@@ -547,6 +561,16 @@ class CONTENT_EXPORT NavigationHandle : public base::SupportsUserData {
   // Returns whether this navigation is currently deferred.
   virtual bool IsDeferredForTesting() = 0;
   virtual bool IsCommitDeferringConditionDeferredForTesting() = 0;
+
+#if BUILDFLAG(IS_ANDROID)
+  // Returns a reference to NavigationHandle Java counterpart.
+  virtual const base::android::JavaRef<jobject>& GetJavaNavigationHandle() = 0;
+#endif
+
+  // Returns the CommitDeferringCondition that is currently preventing this
+  // navigation from committing, or nullptr if the navigation isn't currently
+  // blocked on a CommitDeferringCondition.
+  virtual CommitDeferringCondition* GetCommitDeferringConditionForTesting() = 0;
 };
 
 }  // namespace content

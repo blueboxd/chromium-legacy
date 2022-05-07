@@ -12,11 +12,12 @@ import './strings.m.js';
 import {MouseHoverableMixin} from 'chrome://resources/cr_elements/mouse_hoverable_mixin.js';
 import {getFaviconForPageURL} from 'chrome://resources/js/icon.js';
 import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
-import {get as deepGet, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {get as deepGet, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {ariaLabel, TabData, TabItemType} from './tab_data.js';
 import {colorName} from './tab_group_color_helper.js';
 import {Tab} from './tab_search.mojom-webui.js';
+import {getTemplate} from './tab_search_item.html.js';
 import {highlightText, tabHasMediaAlerts} from './tab_search_utils.js';
 import {TabAlertState} from './tabs.mojom-webui.js';
 
@@ -37,7 +38,7 @@ export class TabSearchItem extends TabSearchItemBase {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -99,7 +100,7 @@ export class TabSearchItem extends TabSearchItemBase {
   }
 
   private isOpenTabAndHasMediaAlert_(tabData: TabData): boolean {
-    return tabData.type == TabItemType.OPEN_TAB &&
+    return tabData.type === TabItemType.OPEN_TAB &&
         tabHasMediaAlerts(tabData.tab as Tab);
   }
 
@@ -153,11 +154,9 @@ export class TabSearchItem extends TabSearchItemBase {
         });
 
     // Show chrome:// if it's a chrome internal url
-    let secondaryLabel = data.hostname;
     const protocol = new URL(data.tab.url.url).protocol;
     if (protocol === 'chrome:') {
       this.$.secondaryText.prepend(document.createTextNode('chrome://'));
-      secondaryLabel = `chrome://${secondaryLabel}`;
     }
 
     if (data.tabGroup) {

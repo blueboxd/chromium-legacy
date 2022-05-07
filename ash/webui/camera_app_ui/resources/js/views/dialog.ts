@@ -12,8 +12,10 @@ import {DialogEnterOptions, View} from './view.js';
  * Creates the Dialog view controller.
  */
 export class Dialog extends View {
-  private positiveButton: HTMLButtonElement;
+  private readonly positiveButton: HTMLButtonElement;
+
   private negativeButton: HTMLButtonElement|null;
+
   private messageHolder: HTMLElement;
 
   /**
@@ -43,7 +45,8 @@ export class Dialog extends View {
     }
   }
 
-  entering({message, cancellable = false}: DialogEnterOptions = {}): void {
+  override entering({message, cancellable = false}: DialogEnterOptions = {}):
+      void {
     if (message !== undefined) {
       this.messageHolder.textContent = assertString(message);
     }

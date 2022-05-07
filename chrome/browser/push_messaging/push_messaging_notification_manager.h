@@ -16,8 +16,8 @@
 #include "chrome/browser/push_messaging/budget_database.h"
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chrome/browser/ash/android_sms/android_sms_app_manager.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #endif
 
 class GURL;
@@ -96,8 +96,7 @@ class PushMessagingNotificationManager {
   bool ShouldSkipUserVisibleOnlyRequirements(const GURL& origin);
 
   void SetTestMultiDeviceSetupClient(
-      chromeos::multidevice_setup::MultiDeviceSetupClient*
-          multidevice_setup_client);
+      ash::multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client);
 
   void SetTestAndroidSmsAppManager(
       ash::android_sms::AndroidSmsAppManager* android_sms_app_manager);
@@ -109,7 +108,7 @@ class PushMessagingNotificationManager {
   BudgetDatabase budget_database_;
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  chromeos::multidevice_setup::MultiDeviceSetupClient*
+  ash::multidevice_setup::MultiDeviceSetupClient*
       test_multidevice_setup_client_ = nullptr;
 
   ash::android_sms::AndroidSmsAppManager* test_android_sms_app_manager_ =

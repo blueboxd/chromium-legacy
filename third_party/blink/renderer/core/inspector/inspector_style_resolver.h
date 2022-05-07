@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_INSPECTOR_INSPECTOR_STYLE_RESOLVER_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/css/css_rule.h"
 #include "third_party/blink/renderer/core/css/css_rule_list.h"
 #include "third_party/blink/renderer/core/css/css_style_declaration.h"
 #include "third_party/blink/renderer/core/css/css_value.h"
@@ -31,6 +32,19 @@ struct CORE_EXPORT InspectorCSSMatchedRules
   }
 };
 
+// Contains matched pseudos for an element.
+struct CORE_EXPORT InspectorCSSMatchedPseudoElements
+    : public GarbageCollected<InspectorCSSMatchedPseudoElements> {
+ public:
+  Member<Element> element;
+  HeapVector<Member<InspectorCSSMatchedRules>> pseudo_element_rules;
+
+  void Trace(Visitor* visitor) const {
+    visitor->Trace(element);
+    visitor->Trace(pseudo_element_rules);
+  }
+};
+
 // Resolves style rules for an element.
 class CORE_EXPORT InspectorStyleResolver {
   STACK_ALLOCATED();
@@ -40,12 +54,16 @@ class CORE_EXPORT InspectorStyleResolver {
   RuleIndexList* MatchedRules() const;
   HeapVector<Member<InspectorCSSMatchedRules>> PseudoElementRules();
   HeapVector<Member<InspectorCSSMatchedRules>> ParentRules();
+  HeapVector<Member<InspectorCSSMatchedPseudoElements>>
+  ParentPseudoElementRules();
 
  private:
   Element* element_;
   RuleIndexList* matched_rules_;
   HeapVector<Member<InspectorCSSMatchedRules>> parent_rules_;
   HeapVector<Member<InspectorCSSMatchedRules>> pseudo_element_rules_;
+  HeapVector<Member<InspectorCSSMatchedPseudoElements>>
+      parent_pseudo_element_rules_;
 };
 
 }  // namespace blink

@@ -144,10 +144,6 @@ void WebRuntimeFeatures::EnableAdTagging(bool enable) {
   RuntimeEnabledFeatures::SetAdTaggingEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableAllowActivationDelegationAttr(bool enable) {
-  RuntimeEnabledFeatures::SetAllowActivationDelegationAttrEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableCacheInlineScriptCode(bool enable) {
   RuntimeEnabledFeatures::SetCacheInlineScriptCodeEnabled(enable);
 }
@@ -194,6 +190,10 @@ void WebRuntimeFeatures::EnableDevicePosture(bool enable) {
 
 void WebRuntimeFeatures::EnableRemoveMobileViewportDoubleTap(bool enable) {
   RuntimeEnabledFeatures::SetRemoveMobileViewportDoubleTapEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableZeroCopyTabCapture(bool enable) {
+  RuntimeEnabledFeatures::SetZeroCopyTabCaptureEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableFencedFrames(bool enable) {
@@ -635,16 +635,16 @@ void WebRuntimeFeatures::EnableRestrictGamepadAccess(bool enable) {
   RuntimeEnabledFeatures::SetRestrictGamepadAccessEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableParseUrlProtocolHandler(bool enable) {
-  RuntimeEnabledFeatures::SetParseUrlProtocolHandlerEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableWebAppManifestId(bool enable) {
   RuntimeEnabledFeatures::SetWebAppManifestIdEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableWebID(bool enable) {
-  RuntimeEnabledFeatures::SetWebIDEnabled(enable);
+void WebRuntimeFeatures::EnableFedCm(bool enable) {
+  RuntimeEnabledFeatures::SetFedCmEnabled(enable);
+}
+
+void WebRuntimeFeatures::EnableFedCmIdpSignout(bool enable) {
+  RuntimeEnabledFeatures::SetFedCmIdpSignoutEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableTargetBlankImpliesNoOpener(bool enable) {

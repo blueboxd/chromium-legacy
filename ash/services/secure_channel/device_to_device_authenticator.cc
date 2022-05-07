@@ -9,6 +9,7 @@
 
 #include "ash/services/secure_channel/authenticator.h"
 #include "ash/services/secure_channel/connection.h"
+#include "ash/services/secure_channel/device_to_device_initiator_helper.h"
 #include "ash/services/secure_channel/device_to_device_secure_context.h"
 #include "ash/services/secure_channel/secure_context.h"
 #include "ash/services/secure_channel/wire_message.h"
@@ -19,9 +20,7 @@
 #include "chromeos/components/multidevice/logging/logging.h"
 #include "chromeos/components/multidevice/secure_message_delegate.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 namespace {
 
@@ -261,6 +260,4 @@ void DeviceToDeviceAuthenticator::OnSendCompleted(const Connection& connection,
   }
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

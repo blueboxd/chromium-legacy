@@ -7,23 +7,23 @@
 
 #include <memory>
 
+// TODO(https://crbug.com/1164001): move to forward declaration.
+#include "ash/services/device_sync/public/cpp/device_sync_client.h"
 #include "ash/services/secure_channel/public/cpp/client/client_channel.h"
 #include "ash/services/secure_channel/public/cpp/client/connection_attempt.h"
 #include "ash/services/secure_channel/public/cpp/client/connection_manager.h"
-#include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
-#include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "base/time/default_clock.h"
-#include "base/timer/timer.h"
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 
-namespace chromeos {
+namespace base {
+class Clock;
+class OneShotTimer;
+}  // namespace base
+
+namespace ash {
 
 namespace multidevice_setup {
 class MultiDeviceSetupClient;
-}  // namespace multidevice_setup
+}
 
 namespace secure_channel {
 
@@ -31,15 +31,14 @@ class SecureChannelClient;
 
 // ConnectionManager implementation which utilizes SecureChannelClient to
 // establish a connection to a multidevice host.
-class ConnectionManagerImpl
-    : public ConnectionManager,
-      public secure_channel::ConnectionAttempt::Delegate,
-      public secure_channel::ClientChannel::Observer {
+class ConnectionManagerImpl : public ConnectionManager,
+                              public ConnectionAttempt::Delegate,
+                              public ClientChannel::Observer {
  public:
   ConnectionManagerImpl(
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
       device_sync::DeviceSyncClient* device_sync_client,
-      secure_channel::SecureChannelClient* secure_channel_client,
+      SecureChannelClient* secure_channel_client,
       const std::string& feature_name,
       const std::string& metric_name_result,
       const std::string& metric_name_latency,
@@ -88,7 +87,7 @@ class ConnectionManagerImpl
   ConnectionManagerImpl(
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
       device_sync::DeviceSyncClient* device_sync_client,
-      secure_channel::SecureChannelClient* secure_channel_client,
+      SecureChannelClient* secure_channel_client,
       std::unique_ptr<base::OneShotTimer> timer,
       const std::string& feature_name,
       const std::string& metrics_name_result,
@@ -96,13 +95,12 @@ class ConnectionManagerImpl
       const std::string& metrics_name_duration,
       base::Clock* clock);
 
-  // secure_channel::ConnectionAttempt::Delegate:
+  // ConnectionAttempt::Delegate:
   void OnConnectionAttemptFailure(
-      secure_channel::mojom::ConnectionAttemptFailureReason reason) override;
-  void OnConnection(
-      std::unique_ptr<secure_channel::ClientChannel> channel) override;
+      mojom::ConnectionAttemptFailureReason reason) override;
+  void OnConnection(std::unique_ptr<ClientChannel> channel) override;
 
-  // secure_channel::ClientChannel::Observer:
+  // ClientChannel::Observer:
   void OnDisconnected() override;
   void OnMessageReceived(const std::string& payload) override;
 
@@ -111,23 +109,15 @@ class ConnectionManagerImpl
 
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
   device_sync::DeviceSyncClient* device_sync_client_;
-  secure_channel::SecureChannelClient* secure_channel_client_;
-  std::unique_ptr<chromeos::secure_channel::ConnectionAttempt>
-      connection_attempt_;
-  std::unique_ptr<chromeos::secure_channel::ClientChannel> channel_;
+  SecureChannelClient* secure_channel_client_;
+  std::unique_ptr<ConnectionAttempt> connection_attempt_;
+  std::unique_ptr<ClientChannel> channel_;
   std::unique_ptr<base::OneShotTimer> timer_;
   const std::string feature_name_;
   std::unique_ptr<MetricsRecorder> metrics_recorder_;
   base::WeakPtrFactory<ConnectionManagerImpl> weak_ptr_factory_{this};
 };
 
-}  // namespace secure_channel
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when it moved to ash.
-namespace ash {
-namespace secure_channel {
-using ::chromeos::secure_channel::ConnectionManagerImpl;
 }  // namespace secure_channel
 }  // namespace ash
 

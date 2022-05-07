@@ -20,6 +20,7 @@
 <translation id="1181037720776840403">Eltávolítás</translation>
 <translation id="1195447618553298278">Ismeretlen hiba.</translation>
 <translation id="1196959502276349371">Verzió: <ph name="VERSION" /></translation>
+<translation id="1199355487114804640">Lejátszás/szünet</translation>
 <translation id="1201402288615127009">Tovább</translation>
 <translation id="1204296502688602597">DNS várakozási ideje</translation>
 <translation id="123124571410524056">Portál valószínűsíthető</translation>
@@ -43,6 +44,7 @@
 <translation id="1413240736185167732">Sikertelen – Szűrőhiba</translation>
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">Rendelkezem kulcspárral</translation>
+<translation id="1423591390236870726">Nem lett megnyomva a következő gomb: <ph name="KEY_NAME" /></translation>
 <translation id="1435763214710588005">Minden hónapban automatikusan visszaállítja az adathasználatot a kiválasztott napon</translation>
 <translation id="1442433966118452622">Kép forrása</translation>
 <translation id="1451536289672181509">Az eszköz egy billentyűzet.</translation>
@@ -54,6 +56,7 @@
 <translation id="1499900233129743732">A(z) <ph name="MANAGER" /> kezeli ezt a felhasználót, és távolról kezelheti a beállításokat, illetve figyelheti a felhasználói tevékenységeket.</translation>
 <translation id="150962533380566081">Érvénytelen PUK-kód.</translation>
 <translation id="1510238584712386396">Indító</translation>
+<translation id="152892567002884378">Hangerő növelése</translation>
 <translation id="155865706765934889">Érintőpad</translation>
 <translation id="1565038567006703504">Nem sikerült frissíteni a következőt: <ph name="DEVICE_NAME" /></translation>
 <translation id="1567064801249837505">Albumok</translation>
@@ -76,17 +79,21 @@
 <translation id="175763766237925754">Jó (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="1758018619400202187">EAP-TLS</translation>
 <translation id="1759842336958782510">Chrome</translation>
+<translation id="1768959921651994223">Hitelesítés típusa</translation>
 <translation id="1782199038061388045">Fordítás</translation>
 <translation id="1792647875738159689">Beolvasás megszakítása…</translation>
 <translation id="1807246157184219062">Világos</translation>
 <translation id="1827738518074806965">Galéria</translation>
 <translation id="1851218745569890714">Videokonferencia</translation>
+<translation id="1852934301711881861">ChromeOS Flex telepítése</translation>
+<translation id="1856388568474281774">Lefelé nyíl</translation>
 <translation id="1874612839560830905">MTU</translation>
 <translation id="1887850431809612466">Hardver ellenőrzése</translation>
 <translation id="1905710495812624430">Elérte az engedélyezett kísérletek maximális számát.</translation>
 <translation id="1908234395526491708">Hibás UDP-kérelmek.</translation>
 <translation id="1930797645656624981">Chrome OS beviteli módszere szolgáltatás</translation>
 <translation id="1947737735496445907">Sikeres nyomtatás</translation>
+<translation id="1951012854035635156">Segéd</translation>
 <translation id="1979103255016296513">Esedékes a jelszó frissítése</translation>
 <translation id="1999615961760456652">Hitelesítési portál</translation>
 <translation id="2006864819935886708">Kapcsolódási hiba</translation>
@@ -94,21 +101,26 @@
 <translation id="2016697457005847575">Problémamegoldási lépések kipróbálása</translation>
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">További beállítások</translation>
+<translation id="2085089206770112532">Kijelző fényerejének csökkentése</translation>
 <translation id="2104796393919810494">Javítás befejezve</translation>
 <translation id="2105810540595158374">Az eszköz egy kontroller.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, verzió: <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="TOTAL_MEMORY" />/<ph name="AVAILABLE_MEMORY" /> GB áll rendelkezésre.</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
+<translation id="2152882202543497059"><ph name="NUMBER" /> fotó</translation>
 <translation id="2157959690810728433">VÁRAKOZIK</translation>
 <translation id="2158971754079422508"><ph name="DESC_TEXT" />: Újra</translation>
 <translation id="2161394479394250669">Nyomtatási feladat megszakítása</translation>
 <translation id="2180197493692062006">Hiba történt. Próbálja meg újra megnyitni az alkalmazást.</translation>
+<translation id="2201770616342964496">Helyi identitás</translation>
 <translation id="2209788852729124853">Forgalomszámlálók visszaállítása</translation>
 <translation id="2212733584906323460">Névfeloldás</translation>
 <translation id="2217935453350629363">Jelenlegi sebesség</translation>
 <translation id="2224337661447660594">Nincs internet</translation>
+<translation id="222447520299472966">Legalább egy Művészeti albumot ki kell választani</translation>
 <translation id="2230005943220647148">Celsius</translation>
 <translation id="2230051135190148440">CHAP</translation>
+<translation id="2240366984605217732">Kiosztásváltó</translation>
 <translation id="225692081236532131">Aktiválás állapota</translation>
 <translation id="2287186687001756809">Nem található kép. Fotók hozzáadásához ugorjon a következőre: <ph name="LINK" />.</translation>
 <translation id="2307344026739914387">Jelenlegi kulcspár használata</translation>
@@ -126,6 +138,7 @@
 <translation id="2446553403094072641">Lebegőpontos pontosság</translation>
 <translation id="2448312741937722512">Típus</translation>
 <translation id="2461822463642141190">Jelenlegi</translation>
+<translation id="2493126929778606526">A legjobb, automatikusan kiválasztott fotók</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
 <translation id="2505327257735685095">A jelenlegi háttérkép frissítése</translation>
 <translation id="2517472476991765520">Keresés</translation>
@@ -136,6 +149,7 @@
 <translation id="2585245331261708204">A Chrome OS újdonságai</translation>
 <translation id="2619761439309613843">Napi frissítés</translation>
 <translation id="2620436844016719705">Rendszer</translation>
+<translation id="2640549051766135490">A következő album kiválasztva: <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="2695514675076754339">Adja meg a nyolcjegyű feloldási kódot</translation>
 <translation id="2712812801627182647">TLS-hitelesítési kulcs</translation>
 <translation id="2740531572673183784">OK</translation>
@@ -147,6 +161,7 @@
 <translation id="2859243502336719778">Kritikus frissítés</translation>
 <translation id="2860473693272905224">Helyezze az újabb oldalt a szkennerre</translation>
 <translation id="2872961005593481000">Leállítás</translation>
+<translation id="2874939134665556319">Előző szám</translation>
 <translation id="2878387241690264070"><ph name="RATE" /> lemerítve <ph name="NUM_SECONDS" /> másodperc alatt.</translation>
 <translation id="291142119251986300">Nem jóváhagyott komponensek</translation>
 <translation id="2926057806159140518">Adja meg felhasználónevét és jelszavát, vagy olvassa be QR-kódját.</translation>
@@ -180,11 +195,13 @@
 <translation id="3340011300870565703">Jobb fülhallgató akkumulátorszintje: <ph name="BATTERY_PERCENTAGE" />%.</translation>
 <translation id="3368922792935385530">Kapcsolódva</translation>
 <translation id="3369013195428705271">Biztosan törli a nyomtatási előzményeket? A folyamatban lévő nyomtatási feladatok nem szakadnak meg.</translation>
+<translation id="3413935475507503304">A frissítéssel való folytatáshoz kattintson a Tovább lehetőségre.</translation>
 <translation id="3434107140712555581"><ph name="BATTERY_PERCENTAGE" />%</translation>
 <translation id="3435738964857648380">Biztonság</translation>
 <translation id="3456078764689556234"><ph name="PRINTED_PAGES" /> oldal kinyomtatva (összesen ennyiből: <ph name="TOTAL_PAGES" />).</translation>
 <translation id="345898999683440380"><ph name="PAGE_NUM" />. oldal beolvasása… <ph name="PERCENTAGE_VALUE" />% kész.</translation>
 <translation id="3459509316159669723">Nyomtatás</translation>
+<translation id="346539236881580388">Új kép készítése</translation>
 <translation id="3484914941826596830">A firmware frissítése közben ne húzza ki a külső eszközt, és ne kapcsolja ki számítógépét. Ezt az ablakot kis méretre állíthatja. A frissítés eltarthat néhány percig, és előfordulhat, hogy közben nem működik a külső eszköz.</translation>
 <translation id="3486220673238053218">definíció</translation>
 <translation id="3488065109653206955">Részben aktiválva</translation>
@@ -195,9 +212,11 @@
 <translation id="357889014807611375">mért adatforgalmú Wi-Fi</translation>
 <translation id="3583278742022654445">Gyenge jelerősség. Próbáljon közelebb helyezkedni a Wi-Fi-jelforráshoz.</translation>
 <translation id="3595596368722241419">Akkumulátor feltöltve</translation>
+<translation id="3600339377155080675">Képernyőtükrözés</translation>
 <translation id="3603829704940252505">Avatar</translation>
 <translation id="360565022852130722">A Wi-Fi-hálózat gyenge protokollal (WEP 802.1x) van biztosítva</translation>
 <translation id="3606583719724308068">Hosszú a várakozási idő a HTTPS-protokollt használó webhelyekhez való csatlakozáskor</translation>
+<translation id="3632579075709132555">Az Adatvédelmi képernyő kapcsolója</translation>
 <translation id="3689839747745352263">Teszt: <ph name="TEST_NAME" /></translation>
 <translation id="370665806235115550">Betöltés...</translation>
 <translation id="3708186454126126312">Korábban csatlakoztatva</translation>
@@ -226,8 +245,10 @@
 <translation id="4003384961948020559">Sikertelen – Megtelt a kimenet</translation>
 <translation id="4034824040120875894">Nyomtató</translation>
 <translation id="4044093238444069296">Nem lehet csatlakozni átjáróhoz</translation>
+<translation id="4046123991198612571">Következő szám</translation>
 <translation id="404928562651467259">FIGYELMEZTETÉS</translation>
 <translation id="409427325554347132">Tesztadatok mentése</translation>
+<translation id="4110686435123617899">A következő album kiválasztása: <ph name="TITLE" /> <ph name="DESC" /></translation>
 <translation id="4111761024568264522">USB-érintőpad</translation>
 <translation id="4131410914670010031">Fekete-fehér</translation>
 <translation id="4140251671072434548">Visszáru-engedélyezés szerverfeloldásának végrehajtása</translation>
@@ -242,16 +263,18 @@
 <translation id="4238516577297848345">Nincsenek folyamatban lévő nyomtatási feladatok</translation>
 <translation id="4239069858505860023">GPRS</translation>
 <translation id="4244962993387259361">Legalább 500 MB szabad tárhely szükséges memóriateszt futtatásához. Tárhely felszabadításához lépjen a Beállítások &gt; Tárhelykezelő menübe.</translation>
+<translation id="4250229828105606438">Képernyőkép</translation>
 <translation id="4258281355379922695">HTTP várakozási idő</translation>
 <translation id="4271957103967917607">Teljes képernyős nézet</translation>
 <translation id="4275799948641988986">A javítást követően ki fogja használni az eszközt?</translation>
+<translation id="4289540628985791613">Áttekintés</translation>
 <translation id="4297501883039923494">Leállt – Ismeretlen hiba</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> kép</translation>
+<translation id="4333390807948134856">A következő gomb van megnyomva: <ph name="KEY_NAME" /></translation>
 <translation id="4378373042927530923">Nem fut</translation>
 <translation id="4378551569595875038">Kapcsolódás…</translation>
 <translation id="4382484599443659549">PDF</translation>
 <translation id="439429847087949098">A(z) <ph name="DEVICE_NAME" /> újraindítása</translation>
-<translation id="4418498623216225764">Perifériák frissítése</translation>
 <translation id="4425149324548788773">Saját meghajtó</translation>
 <translation id="4428374560396076622"><ph name="NETWORK_NAME" /> kikapcsolva</translation>
 <translation id="4429881212383817840">A Kerberos-jegy hamarosan lejár</translation>
@@ -263,9 +286,11 @@
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4483049906298469269">Nem sikerült a nem alapértelmezett hálózati átjáró pingelése</translation>
 <translation id="4485626319513081846">Akkor válassza ezt a lehetőséget, ha az eszközt újraértékesítik vagy felújítják új ügyfél számára történő értékesítéshez.</translation>
+<translation id="4503223151711056411">Balra nyíl</translation>
 <translation id="4511264077854731334">Portál</translation>
 <translation id="4521826082652183069">Tárgy alternatív neve – egyezés</translation>
 <translation id="4536864596629708641">IP-konfiguráció</translation>
+<translation id="4546131424594385779">Ismétlődő videó létrehozása</translation>
 <translation id="4548483925627140043">A jel nem található</translation>
 <translation id="4556753742174065117">Minden firmware naprakész</translation>
 <translation id="455835558791489930"><ph name="CHARGE_VALUE" /> mAh-s akkumulátor</translation>
@@ -273,22 +298,25 @@
 <translation id="4562494484721939086">Nincs szolgáltatás</translation>
 <translation id="458794348635939462">Nem sikerült az összes gazdagép feloldása</translation>
 <translation id="4593212453765072419">Proxyhitelesítés szükséges</translation>
+<translation id="4609350030397390689">Billentyűzet fényerejének csökkentése</translation>
 <translation id="4627232916386272576"><ph name="DOCUMENT_TITLE" />, <ph name="PRINTER_NAME" />, <ph name="CREATION_TIME" />, <ph name="PRINTED_PAGE_NUMBER" />. oldal az összesen <ph name="TOTAL_PAGE_NUMBER" /> oldalból A nyomtatási feladat törléséhez nyomja meg az Enter billentyűt.</translation>
+<translation id="4627645661474370390">Távoli identitás</translation>
 <translation id="463791356324567266">Beolvasás megszakítása…</translation>
 <translation id="4646949265910132906">Biztonságos Wi-Fi-kapcsolat</translation>
+<translation id="4650608062294027130">Jobb oldali Shift</translation>
 <translation id="4654549501020883054">Minden nap más</translation>
 <translation id="4665014895760275686">Gyártó</translation>
 <translation id="467510802200863975">A jelszavak nem egyeznek</translation>
 <translation id="467715984478005772">Tűzfal valószínűsíthető</translation>
 <translation id="4691278870498629773">Leállt – Hiányzó tálca</translation>
 <translation id="469379815867856270">Jelerősség</translation>
-<translation id="4707579418881001319">L2TP/IPSec + felhasználói tanúsítvány</translation>
 <translation id="4731797938093519117">Szülői hozzáférés</translation>
 <translation id="473775607612524610">Frissítés</translation>
 <translation id="4744944742468440486">A kiválasztott elemhez kapcsolódó információ</translation>
 <translation id="475869545581454722">Chrome OS-jelszó módosítva</translation>
 <translation id="4773299976671772492">Leállítva</translation>
 <translation id="4782311465517282004">A szövegre jobb egérgombbal kattintva, illetve a szöveget lenyomva tartva hozzáférhet a definíciókhoz, a fordításokhoz és az átváltott mértékegységekhez.</translation>
+<translation id="4791000909649665275"><ph name="NUMBER" /> fotó</translation>
 <translation id="4793756956024303490">Tömörítési algoritmus</translation>
 <translation id="4794140124556169553">CPU-teszt futtatása befolyásolhatja a rendszer teljesítményét.</translation>
 <translation id="4808449224298348341">Nyomtatási feladat (<ph name="DOCUMENT_TITLE" />) megszakítva</translation>
@@ -327,12 +355,14 @@
 <translation id="5051044138948155788">Ez az egy oldal van csak. A művelet végrehajtása esetén a beolvasás indítóképernyőjére jut.</translation>
 <translation id="5088172560898466307">Szerver gépneve</translation>
 <translation id="5089810972385038852">Állam</translation>
+<translation id="5090362543162270857">IPsec (IKEv2)</translation>
 <translation id="5142961317498132443">Hitelesítés</translation>
 <translation id="5154917547274118687">Memória</translation>
 <translation id="5160857336552977725">Jelentkezzen be <ph name="DEVICE_TYPE" /> eszközén</translation>
 <translation id="5166918508782100047">Gyors válaszok beállításai</translation>
 <translation id="5168185087976003268">Akkumulátor egészsége</translation>
 <translation id="5170568018924773124">Megjelenítés mappában</translation>
+<translation id="5190187232518914472">Élje át újra kedvenc emlékeit. Albumok létrehozásához és szerkesztéséhez lépjen a <ph name="LINK_BEGIN" />Google Fotók<ph name="LINK_END" /> alkalmazásba.</translation>
 <translation id="5212543919916444558">Nem találok semmi olyat a képernyőn, amellyel kapcsolatban segíthetnék.
 Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="5212593641110061691">„Tabloid” méret</translation>
@@ -371,8 +401,11 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="554517032089923082">GTC</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">Újbóli beolvasás</translation>
+<translation id="5583640892426849032">Backspace</translation>
+<translation id="5600027863942488546">A következő gomb tesztelve: <ph name="KEY_NAME" /></translation>
 <translation id="5620281292257375798">Csak belső</translation>
 <translation id="5649768706273821470">Meghallgatás</translation>
+<translation id="5655283760733841251">Billentyűzet fényerejének növelése</translation>
 <translation id="5669267381087807207">Aktiválás</translation>
 <translation id="5670702108860320605">BSSID</translation>
 <translation id="5691511426247308406">Család</translation>
@@ -380,6 +413,8 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="5707900041990977207"><ph name="TOTAL_PAGES" />/<ph name="CURRENT_PAGE" /></translation>
 <translation id="5733298426544876109">A(z) <ph name="DEVICE_NAME" /> frissítése</translation>
 <translation id="5760715441271661976">Portál állapota</translation>
+<translation id="576835345334454681">Kijelző fényerejének növelése</translation>
+<translation id="57838592816432529">Némítás</translation>
 <translation id="5784136236926853061">Hosszú HTTP várakozási idő</translation>
 <translation id="5832805196449965646">Személy hozzáadása</translation>
 <translation id="583281660410589416">Ismeretlen</translation>
@@ -387,6 +422,7 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="5849570051105887917">Otthoni szolgáltató kódja</translation>
 <translation id="5860033963881614850">Kikapcsolva</translation>
 <translation id="5866840822086176774">Nagyon erős</translation>
+<translation id="588258955323874662">Teljes képernyő</translation>
 <translation id="5895138241574237353">Újraindítás</translation>
 <translation id="5916084858004523819">Letiltva</translation>
 <translation id="5916664084637901428">Be</translation>
@@ -408,6 +444,7 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="6104112872696127344">Beolvasás megszakítva</translation>
 <translation id="6106186594183574873">A befejezéshez adja meg régi jelszavát</translation>
 <translation id="6108689792487843350">Az átjáró nem érhető el</translation>
+<translation id="6113701710518389813">Felfelé nyíl</translation>
 <translation id="6122191549521593678">Online</translation>
 <translation id="6137767437444130246">Felhasználói tanúsítvány</translation>
 <translation id="6146993107019042706">A befejezéshez adja meg új jelszavát</translation>
@@ -421,12 +458,14 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="6232017090690406397">Akkumulátor</translation>
 <translation id="6235460611964961764">Adathasználat manuális visszaállítása</translation>
 <translation id="6243280677745499710">Jelenleg beállított</translation>
+<translation id="6275224645089671689">Jobbra nyíl</translation>
 <translation id="6278428485366576908">Téma</translation>
 <translation id="6280912520669706465">ARC</translation>
 <translation id="6302401976930124515">Teszt (<ph name="TEST_NAME" />) megszakítva</translation>
 <translation id="6319207335391420837">Firmware telepítése a következőre: <ph name="DEVICE_NAME" /></translation>
 <translation id="6325525973963619867">Nem sikerült</translation>
 <translation id="6340526405444716530">Személyre szabás</translation>
+<translation id="6348738456043757611">Felhasználónév és jelszó</translation>
 <translation id="636850387210749493">Vállalat rögzítése</translation>
 <translation id="6379086450106841622">Érintőképernyő</translation>
 <translation id="6388847657025262518">A szkenner dokumentumadagolója beragadt. Ellenőrizze az adagolót, és próbálja újra.</translation>
@@ -449,18 +488,23 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="6566314079205407217">Többoldalas keresés</translation>
 <translation id="6574762126505704998">Kitöltés</translation>
 <translation id="6575134580692778371">Nincs konfigurálva</translation>
+<translation id="6579509898032828423">E fotó használata</translation>
 <translation id="6596816719288285829">IP-cím</translation>
 <translation id="6618744767048954150">Ellenőrzés folyamatban</translation>
 <translation id="6620487321149975369">A nyomtatási feladatok láthatók az előzmények között, ha nem távolítják el őket manuálisan</translation>
 <translation id="6643016212128521049">Törlés</translation>
 <translation id="6647510110698214773">Titkosítási algoritmus</translation>
+<translation id="6650062777702288430">Kana/alfanumerikus karakterek kapcsolója</translation>
 <translation id="6657585470893396449">Jelszó</translation>
+<translation id="6659594942844771486">Lap</translation>
 <translation id="6692996468359469499">Információk kérése a kiválasztott elemmel kapcsolatban</translation>
 <translation id="6704062477274546131">DNS-feloldás</translation>
+<translation id="6723839937902243910">Energiaellátás</translation>
 <translation id="6747215703636344499">Leállt – Megtelt a kimenet</translation>
 <translation id="6749473226660745022">Fotók</translation>
 <translation id="6753452347192452143">Az eszköz egy számítógép.</translation>
 <translation id="6756731097889387912">Nem sikerült a beolvasás megszakítása.</translation>
+<translation id="6760706756348334449">Hangerő csökkentése</translation>
 <translation id="6766275201586212568">Sikertelen DNS-feloldások</translation>
 <translation id="6768237774506518020">Magas hibaarány DNS-feloldásnál</translation>
 <translation id="680983167891198932">Kulcs</translation>
@@ -495,6 +539,7 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="7175037578838465313"><ph name="NAME" /> konfigurálása</translation>
 <translation id="7177485034254901881">Ezt a(z) <ph name="DEVICE_TYPE" /> eszközt a(z) <ph name="MANAGER" /> kezeli. A rendszergazdák távolról konfigurálhatják az eszközt.</translation>
 <translation id="7180611975245234373">Frissítés</translation>
+<translation id="7212734716605298123">Firmware-frissítések külső eszközökhöz</translation>
 <translation id="7216409898977639127">Mobilszolgáltató</translation>
 <translation id="7271040990581020067">A szkenner jelenleg használatban van. Próbálja újra később.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
@@ -513,6 +558,7 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="7427315641433634153">MSCHAP</translation>
 <translation id="7435977162516949853">{NUMBER_OF_PAGES,plural, =1{Szkennelés kész. 1 oldal beolvasva}other{Szkennelés kész. {NUMBER_OF_PAGES} oldal beolvasva}}</translation>
 <translation id="7469648432129124067">Portál észlelve</translation>
+<translation id="7481312909269577407">Előre</translation>
 <translation id="7487067081878637334">Technológia</translation>
 <translation id="7490813197707563893">MAC-cím</translation>
 <translation id="7497215489070763236">Szerver CA tanúsítványa</translation>
@@ -541,7 +587,6 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="780301667611848630">Köszönöm, nem</translation>
 <translation id="7805768142964895445">Állapot</translation>
 <translation id="7819857487979277519">PSK (WPA vagy RSN)</translation>
-<translation id="7835501727204647447">CloudReady telepítése</translation>
 <translation id="7846634333498149051">Billentyűzet</translation>
 <translation id="7856267634822906833">Bluetooth-érintőképernyő</translation>
 <translation id="7881066108824108340">DNS</translation>
@@ -567,6 +612,7 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="8132480444149501833">Forgalomszámlálók kérése</translation>
 <translation id="8138405288920084977">LTEAdvanced</translation>
 <translation id="8143951647992294073"><ph name="TOPIC_SOURCE" /> <ph name="TOPIC_SOURCE_DESC" /> kiválasztása</translation>
+<translation id="8179976553408161302">Enter</translation>
 <translation id="8206859287963243715">Mobil</translation>
 <translation id="8208861521865154048">Előnyök</translation>
 <translation id="8217675307824400706">Csatlakozás</translation>
@@ -607,7 +653,9 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="8660881923941176839">font</translation>
 <translation id="8662671328352114214">Csatlakozás <ph name="TYPE" />-hálózatra</translation>
 <translation id="8675354002693747642">Előre megosztott kulcs</translation>
+<translation id="8677859815076891398">Nincs album. Hozzon létre albumot a <ph name="LINK_BEGIN" />Google Fotókban<ph name="LINK_END" />.</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> A funkció kezeléséhez használja a balra és jobbra nyilakat.</translation>
+<translation id="8712637175834984815">Sikerült</translation>
 <translation id="871560550817059752">Sikertelen – Kifogyott a tinta</translation>
 <translation id="8723108084122415655">A nem alapértelmezett hálózat túllépi a várakozási idő határértékét</translation>
 <translation id="8726019395068607495">Leállt – Nyitva van a nyomtató fedele</translation>
@@ -648,6 +696,7 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="9062831201344759865">A DNS-feloldás várakozási ideje túl hosszú</translation>
 <translation id="9073281213608662541">PAP</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9082718469794970195">E videó használata</translation>
 <translation id="9087578468327036362">Bejelentheti ezt a lekérdezést.</translation>
 <translation id="9088306295921699330">Jelenleg felhasznált</translation>
 <translation id="9095415590198785865">Az eszköznek ugyanaz lesz a tulajdonosa</translation>
@@ -658,10 +707,10 @@ Koppintson a mikrofonra, és kérdezzen tőlem.</translation>
 <translation id="9122602430962285795">Az újracsatlakozáshoz nyissa meg a Beállításokat.</translation>
 <translation id="9126720536733509015">Több oldal mentése egy PDF-be</translation>
 <translation id="9137526406337347448">Google Services</translation>
+<translation id="9138630967333032450">Bal oldali Shift</translation>
 <translation id="9149391708638971077">Memóriateszt futtatása</translation>
 <translation id="9173638680043580060">Kevesebb mint 1 perc van hátra</translation>
 <translation id="917720651393141712">Tesztmérkőzés</translation>
-<translation id="9190063653747922532">L2TP/IPSec + előre megosztott kulcs</translation>
 <translation id="9204237731135241582">Nem lehet csatlakozni az átjáróhoz androidos alkalmazásokról</translation>
 <translation id="9211490828691860325">Az összes asztal</translation>
 <translation id="939519157834106403">SSID</translation>

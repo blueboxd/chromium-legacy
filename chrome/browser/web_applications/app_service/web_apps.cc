@@ -245,7 +245,8 @@ void WebApps::PublishWebApps(std::vector<apps::AppPtr> apps) {
   }
 
   std::vector<apps::mojom::AppPtr> mojom_apps;
-  for (apps::AppPtr& app : apps) {
+  mojom_apps.reserve(apps.size());
+  for (const apps::AppPtr& app : apps) {
     mojom_apps.push_back(apps::ConvertAppToMojomApp(app));
   }
 
@@ -262,6 +263,7 @@ void WebApps::PublishWebApps(std::vector<apps::AppPtr> apps) {
   }
   for (auto& subscriber : subscribers_) {
     std::vector<apps::mojom::AppPtr> cloned_apps;
+    cloned_apps.reserve(mojom_apps.size());
     for (const auto& app : mojom_apps)
       cloned_apps.push_back(app.Clone());
     subscriber->OnApps(std::move(cloned_apps),
@@ -393,12 +395,12 @@ void WebApps::GetMenuModel(const std::string& app_id,
                            IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW, &menu_items);
     }
   } else {
-    apps::CreateOpenNewSubmenu(menu_type,
-                               publisher_helper().GetWindowMode(app_id) ==
-                                       apps::mojom::WindowMode::kBrowser
-                                   ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
-                                   : IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW,
-                               &menu_items);
+    apps::CreateOpenNewSubmenu(
+        menu_type,
+        publisher_helper().GetWindowMode(app_id) == apps::WindowMode::kBrowser
+            ? IDS_APP_LIST_CONTEXT_MENU_NEW_TAB
+            : IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW,
+        &menu_items);
   }
 
   if (app_id == crostini::kCrostiniTerminalSystemAppId) {

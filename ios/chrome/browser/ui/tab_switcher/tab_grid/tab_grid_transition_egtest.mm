@@ -7,7 +7,6 @@
 
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/chrome/test/earl_grey/chrome_earl_grey_ui.h"
@@ -42,6 +41,8 @@ void ShowTabViewController() {
 void SelectTab(NSString* title) {
   [[EarlGrey
       selectElementWithMatcher:grey_allOf(grey_accessibilityLabel(title),
+                                          grey_ancestor(grey_kindOfClassName(
+                                              @"GridCell")),
                                           grey_accessibilityTrait(
                                               UIAccessibilityTraitStaticText),
                                           nil)] performAction:grey_tap()];

@@ -12,6 +12,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_set.h"
 #include "base/memory/raw_ptr.h"
 #include "base/time/time.h"
 #include "components/autofill/core/browser/autofill_client.h"
@@ -42,12 +43,6 @@ extern const int kMaxBucketsCount;
 
 class AutofillMetrics {
  public:
-  enum class MeasurementTime {
-    kFillTimeBeforeSecurityPolicy,
-    kFillTimeAfterSecurityPolicy,
-    kSubmissionTime,
-  };
-
   enum AutofillProfileAction {
     EXISTING_PROFILE_USED,
     EXISTING_PROFILE_UPDATED,
@@ -1795,18 +1790,27 @@ class AutofillMetrics {
   static void LogNumberOfFramesWithAutofilledCreditCardFields(
       size_t num_frames);
 
-  // Logs the Autofill.CreditCard.SeamlessFills metric. See the enum for
-  // details. Note that this function does not check whether the form contains a
-  // credit card field.
-  // Returns the emitted metric, if any.
-  static absl::optional<CreditCardSeamlessFillMetric>
-  LogCreditCardSeamlessFills(const ServerFieldTypeSet& autofilled_types,
-                             MeasurementTime measurement_time);
+  struct LogCreditCardSeamlessnessParam {
+    const FormStructure& form;
+    const base::flat_set<FieldGlobalId>& newly_filled_fields;
+    const base::flat_set<FieldGlobalId>& safe_fields;
+    bool only_newly_filled_fields = false;    // "Fillable" vs "Fills"
+    bool only_after_security_policy = false;  // "Before" vs "After"
+  };
 
-  // Logs the Autofill.CreditCard.NumberFills metric.
-  static void LogCreditCardNumberFills(
-      const ServerFieldTypeSet& autofilled_types,
-      MeasurementTime measurement_time);
+  // Logs one variant of Autofill.CreditCard.Seamless{Fillable,Fills}.
+  // AtFillTime{Before,After}SecurityPolicy metrics, depending on the parameter
+  // `p`. Returns the emitted metric, if any.
+  //
+  // In addition, logs Autofill.CreditCard.Number{Fillable,Fills}.
+  // AtFillTime{Before,After}SecurityPolicy.
+  static absl::optional<CreditCardSeamlessFillMetric>
+  LogCreditCardSeamlessnessAtFillTime(const LogCreditCardSeamlessnessParam& p);
+
+  // Logs Autofill.CreditCard.SeamlessFills.AtSubmissionTime and
+  // Autofill.CreditCard.NumberFills.AtSubmissionTime.
+  static void LogCreditCardSeamlessnessAtSubmissionTime(
+      const ServerFieldTypeSet& autofilled_types);
 
   // This should be called when determining the heuristic types for a form's
   // fields.
@@ -1928,11 +1932,24 @@ class AutofillMetrics {
       size_t number_of_accepted_fields,
       size_t number_of_corrected_fields);
 
+  // Logs the number of autofilled fields with unrecognized autocomplete
+  // attribute at submission time.
+  static void
+  LogNumberOfAutofilledFieldsWithAutocompleteUnrecognizedAtSubmission(
+      size_t number_of_accepted_fields,
+      size_t number_of_corrected_fields);
+
   // Logs the type of a profile import.
   static void LogProfileImportType(AutofillProfileImportType import_type);
 
   // Logs the type of a profile import that are used for the silent updates.
   static void LogSilentUpdatesProfileImportType(
+      AutofillProfileImportType import_type);
+
+  // Logs the type of profile import used for a silent update, which was only
+  // possible after an invalid phone number was removed.
+  // TODO(crbug.com/1298424): Cleanup when launched.
+  static void LogSilentUpdatesWithRemovedPhoneNumberProfileImportType(
       AutofillProfileImportType import_type);
 
   // Logs the user decision for importing a new profile.
@@ -1943,6 +1960,12 @@ class AutofillMetrics {
   // country.
   // TODO(crbug.com/1297032): Cleanup when launched.
   static void LogNewProfileWithComplementedCountryImportDecision(
+      AutofillClient::SaveAddressProfileOfferUserDecision decision);
+
+  // Logs the user decision for importing a new profile, which was only possible
+  // after an invalid phone number was removed.
+  // TODO(crbug.com/1298424): Cleanup when launched.
+  static void LogNewProfileWithRemovedPhoneNumberImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
   // Logs that a specific type was edited in a save prompt.
@@ -1963,6 +1986,12 @@ class AutofillMetrics {
   // complemented country.
   // TODO(crbug.com/1297032): Cleanup when launched.
   static void LogProfileUpdateWithComplementedCountryImportDecision(
+      AutofillClient::SaveAddressProfileOfferUserDecision decision);
+
+  // Logs the user decision for updating an existing profile, which was only
+  // possible after an invalid phone number was removed.
+  // TODO(crbug.com/1298424): Cleanup when launched.
+  static void LogProfileUpdateWithRemovedPhoneNumberImportDecision(
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
 
   // Logs that a specific type changed in a profile update that received the
@@ -1988,6 +2017,15 @@ class AutofillMetrics {
   static void LogUpdateProfileNumberOfAffectedFields(
       int number_of_affected_fields,
       AutofillClient::SaveAddressProfileOfferUserDecision decision);
+
+  // Records if at least one setting-inaccessible field was removed on import.
+  static void LogRemovedSettingInaccessibleFields(bool did_remove);
+
+  // Records that |field| was removed in a profile of |country| on import,
+  // because |field| is inaccessible in the |country|-specific settings.
+  static void LogRemovedSettingInaccessibleField(
+      const std::string& country_code,
+      ServerFieldType field);
 
   // Logs when the virtual card metadata for one card have been updated.
   static void LogVirtualCardMetadataSynced(bool existing_card);

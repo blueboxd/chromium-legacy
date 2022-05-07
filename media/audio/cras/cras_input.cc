@@ -5,9 +5,9 @@
 #include "media/audio/cras/cras_input.h"
 
 #include <math.h>
+
 #include <algorithm>
 
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
@@ -134,6 +134,18 @@ inline bool CrasInputStream::UseCrasAgc() const {
   return params_.effects() & AudioParameters::AUTOMATIC_GAIN_CONTROL;
 }
 
+inline bool CrasInputStream::DspBasedAecIsAllowed() const {
+  return params_.effects() & AudioParameters::ALLOW_DSP_ECHO_CANCELLER;
+}
+
+inline bool CrasInputStream::DspBasedNsIsAllowed() const {
+  return params_.effects() & AudioParameters::ALLOW_DSP_NOISE_SUPPRESSION;
+}
+
+inline bool CrasInputStream::DspBasedAgcIsAllowed() const {
+  return params_.effects() & AudioParameters::ALLOW_DSP_AUTOMATIC_GAIN_CONTROL;
+}
+
 void CrasInputStream::Start(AudioInputCallback* callback) {
   DCHECK(client_);
   DCHECK(callback);
@@ -153,7 +165,7 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
     CRAS_CH_SL,
     CRAS_CH_SR
   };
-  static_assert(base::size(kChannelMap) == CHANNELS_MAX + 1,
+  static_assert(std::size(kChannelMap) == CHANNELS_MAX + 1,
                 "kChannelMap array size should match");
 
   // If already playing, stop before re-starting.
@@ -197,12 +209,12 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
   // Initialize channel layout to all -1 to indicate that none of
   // the channels is set in the layout.
   int8_t layout[CRAS_CH_MAX];
-  for (size_t i = 0; i < base::size(layout); ++i)
+  for (size_t i = 0; i < std::size(layout); ++i)
     layout[i] = -1;
 
   // Converts to CRAS defined channels. ChannelOrder will return -1
   // for channels that are not present in params_.channel_layout().
-  for (size_t i = 0; i < base::size(kChannelMap); ++i) {
+  for (size_t i = 0; i < std::size(kChannelMap); ++i) {
     layout[kChannelMap[i]] = ChannelOrder(params_.channel_layout(),
                                           static_cast<Channels>(i));
   }
@@ -217,14 +229,24 @@ void CrasInputStream::Start(AudioInputCallback* callback) {
     return;
   }
 
-  if (UseCrasAec())
+  if (UseCrasAec()) {
     libcras_stream_params_enable_aec(stream_params);
+  }
 
   if (UseCrasNs())
     libcras_stream_params_enable_ns(stream_params);
 
   if (UseCrasAgc())
     libcras_stream_params_enable_agc(stream_params);
+
+  if (DspBasedAecIsAllowed())
+    libcras_stream_params_allow_aec_on_dsp(stream_params);
+
+  if (DspBasedNsIsAllowed())
+    libcras_stream_params_allow_ns_on_dsp(stream_params);
+
+  if (DspBasedAgcIsAllowed())
+    libcras_stream_params_allow_agc_on_dsp(stream_params);
 
   // Adding the stream will start the audio callbacks.
   if (libcras_client_add_pinned_stream(client_, pin_device_, &stream_id_,

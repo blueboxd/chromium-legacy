@@ -111,18 +111,13 @@ using base::StartsWith;
 using base::TimeTicks;
 using mojom::SubmissionSource;
 
-constexpr int kCreditCardSigninPromoImpressionLimit = 3;
-
 namespace {
 
-const size_t kMaxRecentFormSignaturesToRemember = 3;
+constexpr size_t kMaxRecentFormSignaturesToRemember = 3;
 
-// Time to wait, in ms, after a dynamic form change before triggering a refill.
+// Time to wait after a dynamic form change before triggering a refill.
 // This is used for sites that change multiple things consecutively.
-const size_t kWaitTimeForDynamicFormsMs = 200;
-
-// The time limit, in ms, between a fill and when a refill can happen.
-const int kLimitBeforeRefillMs = 1000;
+constexpr base::TimeDelta kWaitTimeForDynamicForms = base::Milliseconds(200);
 
 // Returns whether the |field| is predicted as being any kind of name.
 bool IsNameType(const AutofillField& field) {
@@ -441,10 +436,10 @@ BrowserAutofillManager::BrowserAutofillManager(
           std::make_unique<AutofillSuggestionGenerator>(client,
                                                         personal_data_)) {
   address_form_event_logger_ = std::make_unique<AddressFormEventLogger>(
-      driver->IsInMainFrame(), form_interactions_ukm_logger(), client);
+      driver->IsInAnyMainFrame(), form_interactions_ukm_logger(), client);
   credit_card_form_event_logger_ = std::make_unique<CreditCardFormEventLogger>(
-      driver->IsInMainFrame(), form_interactions_ukm_logger(), personal_data_,
-      client);
+      driver->IsInAnyMainFrame(), form_interactions_ukm_logger(),
+      personal_data_, client);
 
   credit_card_access_manager_ = std::make_unique<CreditCardAccessManager>(
       driver, client, personal_data_, credit_card_form_event_logger_.get());
@@ -522,6 +517,7 @@ PopupType BrowserAutofillManager::GetPopupType(const FormData& form,
     case FieldTypeGroup::kCompany:
     case FieldTypeGroup::kPhoneHome:
     case FieldTypeGroup::kPhoneBilling:
+    case FieldTypeGroup::kBirthdateField:
       return FormHasAddressField(form) ? PopupType::kAddresses
                                        : PopupType::kPersonalInformation;
 
@@ -978,6 +974,9 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
       case SuppressReason::kAutocompleteOff:
         LogSuppressReason(log_manager(), "autocomplete=off");
         return;
+      case SuppressReason::kAutocompleteUnrecognized:
+        LogSuppressReason(log_manager(), "autocomplete=unrecognized");
+        return;
     }
 
     if (!suggestions.empty()) {
@@ -997,23 +996,49 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
     }
   }
 
-  // If there are no Autofill suggestions, consider showing Autocomplete
-  // suggestions. We will not show Autocomplete suggestions for a field that
-  // specifies autocomplete=off (or an unrecognized type), a field for which we
-  // will show the credit card signin promo, a field that we think is a
-  // credit card expiration, cvc or number, or on forms displayed on secure
-  // (i.e. HTTPS) sites that submit insecurely (over HTTP).
-  if (suggestions.empty() && !ShouldShowCreditCardSigninPromo(form, field) &&
-      field.should_autocomplete &&
-      !(context.focused_field &&
-        (autofill::data_util::IsCreditCardExpirationType(
-             context.focused_field->Type().GetStorableType()) ||
-         context.focused_field->Type().html_type() == HTML_TYPE_UNRECOGNIZED ||
-         context.focused_field->Type().GetStorableType() ==
-             CREDIT_CARD_NUMBER ||
-         context.focused_field->Type().GetStorableType() ==
-             CREDIT_CARD_VERIFICATION_CODE)) &&
-      context.suppress_reason != SuppressReason::kInsecureForm) {
+  auto ShouldOfferAutocomplete = [&] {
+    // Do not offer autocomplete if one of the following:
+    //  * There are already suggestions.
+    //  * Credit card sign-in promo is offered.
+    //  * Autocomplete for the field is disabled.
+    if (!suggestions.empty() || ShouldShowCreditCardSigninPromo(form, field) ||
+        !field.should_autocomplete) {
+      return false;
+    }
+
+    // Do not offer autocomplete suggestions for credit card number, cvc and
+    // expiration date related fields.
+    ServerFieldType server_type =
+        context.focused_field ? context.focused_field->Type().GetStorableType()
+                              : UNKNOWN_TYPE;
+    if (data_util::IsCreditCardExpirationType(server_type) ||
+        server_type == CREDIT_CARD_VERIFICATION_CODE ||
+        server_type == CREDIT_CARD_NUMBER) {
+      return false;
+    }
+
+    // Do not offer autocomplete suggestions if popups are suppressed due to an
+    // unrecognized autocomplete attribute. Note that in the context of
+    // Autofill, the popup for credit card related fields is not getting
+    // suppressed due to an unrecognized autocomplete attribute.
+    if (context.suppress_reason == SuppressReason::kAutocompleteUnrecognized) {
+      return false;
+    }
+
+    // Therefore, we check the attribute explicitly.
+    if (context.focused_field &&
+        context.focused_field->Type().html_type() == HTML_TYPE_UNRECOGNIZED) {
+      return false;
+    }
+
+    // Finally, check that the scheme is secure.
+    if (context.suppress_reason == SuppressReason::kInsecureForm) {
+      return false;
+    }
+    return true;
+  };
+
+  if (ShouldOfferAutocomplete()) {
     // Suggestions come back asynchronously, so the SingleFieldFormFillRouter
     // will handle sending the results back to the renderer.
     single_field_form_fill_router_->OnGetSingleFieldSuggestions(
@@ -1590,11 +1615,11 @@ void BrowserAutofillManager::Reset() {
   DCHECK(!pending_form_data_);
   AutofillManager::Reset();
   address_form_event_logger_ = std::make_unique<AddressFormEventLogger>(
-      driver()->IsInMainFrame(), form_interactions_ukm_logger(),
+      driver()->IsInAnyMainFrame(), form_interactions_ukm_logger(),
       unsafe_client());
   credit_card_form_event_logger_ = std::make_unique<CreditCardFormEventLogger>(
-      driver()->IsInMainFrame(), form_interactions_ukm_logger(), personal_data_,
-      unsafe_client());
+      driver()->IsInAnyMainFrame(), form_interactions_ukm_logger(),
+      personal_data_, unsafe_client());
   credit_card_access_manager_ = std::make_unique<CreditCardAccessManager>(
       driver(), unsafe_client(), personal_data_,
       credit_card_form_event_logger_.get());
@@ -1718,15 +1743,10 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
   base::flat_map<ServerFieldType, size_t> type_count;
   type_count.reserve(form_structure->field_count());
 
-  // Maps those fields to their field type that BrowserAutofillManager can and
-  // wants to fill. This is passed on to ContentAutofillRouter, which may
-  // disallow filling some fields according to the security policy for filling
-  // across frames (e.g., credit card numbers are not allowed to be filled
-  // across origins). See AutofillDriver::FillOrPreviewForm() for details.
-  base::flat_map<FieldGlobalId, ServerFieldType>
-      field_types_to_be_filled_before_security_policy;
-  field_types_to_be_filled_before_security_policy.reserve(
-      form_structure->field_count());
+  // Contains those fields that BrowserAutofillManager can and wants to fill.
+  // This is used for logging in CreditCardFormEventLogger.
+  base::flat_set<FieldGlobalId> newly_filled_fields;
+  newly_filled_fields.reserve(form_structure->field_count());
 
   for (size_t i = 0; i < form_structure->field_count(); ++i) {
     std::string field_number = base::StringPrintf("Field %zu", i);
@@ -1747,7 +1767,7 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
 
     // TODO(crbug/1203667#c9): Skip if the form has changed in the meantime,
     // which may happen with refills.
-    if (!form_structure->field(i)->SameFieldAs(result.fields[i]))
+    if (form_structure->field(i)->global_id() != result.fields[i].global_id())
       continue;
 
     AutofillField* cached_field = form_structure->field(i);
@@ -1879,15 +1899,14 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
     // Fill the non-empty value from |profile_or_credit_card| into the |result|
     // form, which will be sent to the renderer. FillFieldWithValue() may also
     // fill a field if it had been autofilled or manually filled before, and
-    // also returns true in such a case.
+    // also returns true in such a case; however, such fields don't reach this
+    // code.
     bool is_newly_autofilled = FillFieldWithValue(
         cached_field, profile_or_credit_card, &result.fields[i], should_notify,
         optional_cvc ? *optional_cvc : kEmptyCvc,
         data_util::DetermineGroups(*form_structure), action, &failure_to_fill);
-    if (is_newly_autofilled) {
-      FieldGlobalId field_id = result.fields[i].global_id();
-      field_types_to_be_filled_before_security_policy[field_id] = field_type;
-    }
+    if (is_newly_autofilled)
+      newly_filled_fields.insert(result.fields[i].global_id());
 
     bool has_value_after = !result.fields[i].value.empty();
     bool is_autofilled_after = result.fields[i].is_autofilled;
@@ -1915,11 +1934,13 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
                          << std::move(buffer);
   }
 
-  base::flat_map<FieldGlobalId, ServerFieldType>
-      field_types_filled_after_security_policy;
-  field_types_filled_after_security_policy = driver()->FillOrPreviewForm(
-      query_id, action, result, field.origin,
-      field_types_to_be_filled_before_security_policy);
+  auto field_types = base::MakeFlatMap<FieldGlobalId, ServerFieldType>(
+      *form_structure, {}, [](const auto& field) {
+        return std::make_pair(field->global_id(),
+                              field->Type().GetStorableType());
+      });
+  std::vector<FieldGlobalId> safe_fields = driver()->FillOrPreviewForm(
+      query_id, action, result, field.origin, field_types);
 
   // Call OnDidFillSuggestion() to log the metrics.
   if (action == mojom::RendererFormDataAction::kFill && !is_refill) {
@@ -1929,9 +1950,8 @@ void BrowserAutofillManager::FillOrPreviewDataModelForm(
       // `absl::get<CreditCard*>(profile_or_credit_card)` to correctly indicate
       // whether the user filled the form using a masked card suggestion.
       credit_card_form_event_logger_->OnDidFillSuggestion(
-          credit_card_, *form_structure, *autofill_field,
-          field_types_to_be_filled_before_security_policy,
-          field_types_filled_after_security_policy, sync_state_);
+          credit_card_, *form_structure, *autofill_field, newly_filled_fields,
+          base::flat_set<FieldGlobalId>(std::move(safe_fields)), sync_state_);
     }
 
     if (!is_credit_card) {
@@ -2116,7 +2136,7 @@ void BrowserAutofillManager::OnFormProcessed(
 
     // Start a new timer to trigger refill.
     filling_context->on_refill_timer.Start(
-        FROM_HERE, base::Milliseconds(kWaitTimeForDynamicFormsMs),
+        FROM_HERE, kWaitTimeForDynamicForms,
         base::BindRepeating(&BrowserAutofillManager::TriggerRefill,
                             weak_ptr_factory_.GetWeakPtr(), form));
   }
@@ -2502,14 +2522,12 @@ bool BrowserAutofillManager::ShouldTriggerRefill(
   base::TimeTicks now = AutofillTickClock::NowTicks();
   base::TimeDelta delta = now - filling_context->original_fill_time;
 
-  if (filling_context->attempted_refill &&
-      delta.InMilliseconds() < kLimitBeforeRefillMs) {
+  if (filling_context->attempted_refill && delta < kLimitBeforeRefill) {
     address_form_event_logger_->OnSubsequentRefillAttempt(sync_state_,
                                                           form_structure);
   }
 
-  return !filling_context->attempted_refill &&
-         delta.InMilliseconds() < kLimitBeforeRefillMs;
+  return !filling_context->attempted_refill && delta < kLimitBeforeRefill;
 }
 
 void BrowserAutofillManager::TriggerRefill(const FormData& form) {
@@ -2612,6 +2630,16 @@ void BrowserAutofillManager::GetAvailableSuggestions(
                             &context->focused_field) &&
       // Don't send suggestions or track forms that should not be parsed.
       context->form_structure->ShouldBeParsed();
+
+  // Do not offer suggestions for fields that have an unrecognized autocomplete
+  // attribute, unless those are credit card fields.
+  if (context->focused_field &&
+      context->focused_field
+          ->ShouldSuppressPromptDueToUnrecognizedAutocompleteAttribute()) {
+    context->suppress_reason = SuppressReason::kAutocompleteUnrecognized;
+    suggestions->clear();
+    return;
+  }
 
   // Log interactions of forms that are autofillable.
   if (got_autofillable_form) {
@@ -2782,6 +2810,7 @@ FormEventLoggerBase* BrowserAutofillManager::GetEventFormLogger(
     case FieldTypeGroup::kAddressBilling:
     case FieldTypeGroup::kPhoneHome:
     case FieldTypeGroup::kPhoneBilling:
+    case FieldTypeGroup::kBirthdateField:
       return address_form_event_logger_.get();
     case FieldTypeGroup::kCreditCard:
       return credit_card_form_event_logger_.get();

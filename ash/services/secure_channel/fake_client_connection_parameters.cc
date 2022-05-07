@@ -5,9 +5,7 @@
 #include "ash/services/secure_channel/fake_client_connection_parameters.h"
 #include "base/bind.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 FakeClientConnectionParameters::FakeClientConnectionParameters(
     const std::string& feature,
@@ -71,6 +69,4 @@ void FakeClientConnectionParametersObserver::OnConnectionRequestCanceled() {
     std::move(closure_for_next_callback_).Run();
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

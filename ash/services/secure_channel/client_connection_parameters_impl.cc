@@ -7,9 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // static
 ClientConnectionParametersImpl::Factory*
@@ -71,6 +69,4 @@ void ClientConnectionParametersImpl::OnConnectionDelegateRemoteDisconnected() {
   NotifyConnectionRequestCanceled();
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

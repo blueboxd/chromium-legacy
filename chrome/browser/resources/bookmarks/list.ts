@@ -90,7 +90,7 @@ export class BookmarksListElement extends BookmarksListElementBase {
   private selectedItems_: Set<string>;
   private boundOnHighlightItems_: (p1: CustomEvent) => void;
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener('click', () => this.deselectItems_());
     this.addEventListener('contextmenu', e => this.onContextMenu_(e));
@@ -99,7 +99,7 @@ export class BookmarksListElement extends BookmarksListElementBase {
         e => this.onOpenCommandMenu_(e as CustomEvent<OpenCommandMenuDetail>));
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     const list = this.$.list;
@@ -125,7 +125,7 @@ export class BookmarksListElement extends BookmarksListElementBase {
         document, 'import-ended', () => this.onImportEnded_());
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
 
     this.eventTracker_.remove(document, 'highlight-items');
@@ -140,7 +140,8 @@ export class BookmarksListElement extends BookmarksListElementBase {
    * allows the iron-list to delete sublists of items which preserves scroll and
    * focus on incremental update.
    */
-  private async onDisplayedIdsChanged_(newValue: string[], oldValue: string[]) {
+  private async onDisplayedIdsChanged_(
+      newValue: string[], _oldValue: string[]) {
     const updatedList = newValue.map(id => ({id: id}));
     let skipFocus = false;
     let selectIndex = -1;

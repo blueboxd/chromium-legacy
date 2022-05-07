@@ -987,7 +987,8 @@
   },
   "chromeos-amd64-generic-lacros-builder-perf": {
     "additional_compile_targets": [
-      "chrome"
+      "chrome",
+      "lacros_version_metadata"
     ],
     "isolated_scripts": [
       {
@@ -1616,7 +1617,7 @@
           "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 2
+          "shards": 5
         },
         "trigger_script": {
           "args": [
@@ -1668,7 +1669,7 @@
           "ignore_task_failure": false,
           "io_timeout": 21600,
           "service_account": "chrome-tester@chops-service-accounts.iam.gserviceaccount.com",
-          "shards": 46
+          "shards": 40
         },
         "trigger_script": {
           "args": [

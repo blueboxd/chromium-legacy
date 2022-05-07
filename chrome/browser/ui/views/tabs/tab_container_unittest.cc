@@ -21,8 +21,11 @@ class TabContainerTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::SetUp();
 
     tab_strip_controller_ = std::make_unique<FakeBaseTabStripController>();
-    tab_container_ =
-        std::make_unique<TabContainer>(tab_strip_controller_.get());
+    tab_container_ = std::make_unique<TabContainer>(
+        tab_strip_controller_.get(), nullptr /*hover_card_controller*/,
+        nullptr /*drag_context*/, nullptr /*scroll_contents_view*/);
+    tab_container_->SetAvailableWidthCallback(
+        base::BindRepeating([]() { return 500; }));
     tab_controller_ = std::make_unique<FakeTabController>();
   }
 

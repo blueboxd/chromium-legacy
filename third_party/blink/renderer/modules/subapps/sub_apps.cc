@@ -9,11 +9,14 @@
 #include "base/check.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_throw_dom_exception.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
+#include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/platform/bindings/exception_code.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/persistent.h"
@@ -31,21 +34,37 @@ namespace {
 // We get called back from the SubAppsService mojo service (inside the browser
 // process), pass on the result to the calling context.
 void OnAddSubApp(ScriptPromiseResolver* resolver, SubAppsServiceResult result) {
+  DCHECK(resolver);
+  ScriptState* resolver_script_state = resolver->GetScriptState();
+  if (!IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
+                                     resolver_script_state)) {
+    return;
+  }
+  ScriptState::Scope script_state_scope(resolver_script_state);
   if (result == SubAppsServiceResult::kSuccess) {
     resolver->Resolve();
   } else {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kOperationError, "Unable to add given sub-app."));
+    resolver->Reject(V8ThrowDOMException::CreateOrDie(
+        resolver_script_state->GetIsolate(), DOMExceptionCode::kOperationError,
+        "Unable to add given sub-app."));
   }
 }
 
 void OnListSubApp(ScriptPromiseResolver* resolver,
                   SubAppsServiceListResultPtr result) {
+  DCHECK(resolver);
+  ScriptState* resolver_script_state = resolver->GetScriptState();
+  if (!IsInParallelAlgorithmRunnable(resolver->GetExecutionContext(),
+                                     resolver_script_state)) {
+    return;
+  }
+  ScriptState::Scope script_state_scope(resolver_script_state);
   if (result->code == SubAppsServiceResult::kSuccess) {
     resolver->Resolve(result->sub_app_ids);
   } else {
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kOperationError, "Unable to list sub-apps."));
+    resolver->Reject(V8ThrowDOMException::CreateOrDie(
+        resolver_script_state->GetIsolate(), DOMExceptionCode::kOperationError,
+        "Unable to list sub-apps."));
   }
 }
 
@@ -54,7 +73,9 @@ void OnListSubApp(ScriptPromiseResolver* resolver,
 // static
 const char SubApps::kSupplementName[] = "SubApps";
 
-SubApps::SubApps(Navigator& navigator) : Supplement<Navigator>(navigator) {}
+SubApps::SubApps(Navigator& navigator)
+    : Supplement<Navigator>(navigator),
+      service_(navigator.GetExecutionContext()) {}
 
 // static
 SubApps* SubApps::subApps(Navigator& navigator) {
@@ -69,19 +90,25 @@ SubApps* SubApps::subApps(Navigator& navigator) {
 void SubApps::Trace(Visitor* visitor) const {
   ScriptWrappable::Trace(visitor);
   Supplement<Navigator>::Trace(visitor);
+  visitor->Trace(service_);
 }
 
-mojo::Remote<mojom::blink::SubAppsService>& SubApps::GetService() {
+HeapMojoRemote<mojom::blink::SubAppsService>& SubApps::GetService() {
   if (!service_.is_bound()) {
-    GetSupplementable()
-        ->GetExecutionContext()
-        ->GetBrowserInterfaceBroker()
-        .GetInterface(service_.BindNewPipeAndPassReceiver());
+    auto* context = GetSupplementable()->GetExecutionContext();
+    context->GetBrowserInterfaceBroker().GetInterface(
+        service_.BindNewPipeAndPassReceiver(
+            context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     // In case the other endpoint gets disconnected, we want to reset our end of
     // the pipe as well so that we don't remain connected to a half-open pipe.
-    service_.reset_on_disconnect();
+    service_.set_disconnect_handler(
+        WTF::Bind(&SubApps::OnConnectionError, WrapWeakPersistent(this)));
   }
   return service_;
+}
+
+void SubApps::OnConnectionError() {
+  service_.reset();
 }
 
 ScriptPromise SubApps::add(ScriptState* script_state,
@@ -140,10 +167,12 @@ bool SubApps::CheckPreconditionsMaybeThrow(ExceptionState& exception_state) {
     return false;
   }
 
-  if (!navigator->DomWindow()->GetFrame()->IsMainFrame()) {
+  if (!navigator->DomWindow()->GetFrame()->IsMainFrame() ||
+      navigator->DomWindow()->GetFrame()->GetPage()->IsPrerendering() ||
+      navigator->DomWindow()->GetFrame()->IsInFencedFrameTree()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kInvalidStateError,
-        "API is only supported in top-level browsing contexts.");
+        "API is only supported in primary top-level browsing contexts.");
     return false;
   }
 

@@ -70,6 +70,8 @@
 #include "third_party/blink/renderer/core/loader/back_forward_cache_loader_helper_impl.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/loader/fetch/client_hints_preferences.h"
 #include "third_party/blink/renderer/platform/loader/fetch/loader_freeze_mode.h"
@@ -80,6 +82,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
+#include "third_party/perfetto/include/perfetto/tracing/traced_value_forward.h"
 #include "ui/gfx/geometry/transform.h"
 
 namespace base {
@@ -97,6 +100,7 @@ namespace blink {
 
 class AdTracker;
 class AttributionSrcLoader;
+class AnchorElementInteractionTracker;
 class AssociatedInterfaceProvider;
 class BrowserInterfaceBrokerProxy;
 class Color;
@@ -637,7 +641,7 @@ class CORE_EXPORT LocalFrame final
       mojom::blink::UserActivationNotificationType notification_type);
   void AddInspectorIssue(mojom::blink::InspectorIssueInfoPtr);
   void SaveImageAt(const gfx::Point& window_point);
-  void AdvanceFocusInForm(mojom::blink::FocusType focus_type);
+  void AdvanceFocusForIME(mojom::blink::FocusType focus_type);
   void PostMessageEvent(
       const absl::optional<RemoteFrameToken>& source_frame_token,
       const String& source_origin,
@@ -725,13 +729,15 @@ class CORE_EXPORT LocalFrame final
   // Invokes on first paint, this method could be invoked multiple times, refer
   // to FrameFirstPaint.
   void OnFirstPaint(bool text_painted, bool image_painted);
-  void IncrementNavigationCounter() { navigation_counter_++; }
-  uint32_t GetNavigationCounter() { return navigation_counter_; }
+  void IncrementNavigationId() { navigation_id_++; }
+  uint32_t GetNavigationId() { return navigation_id_; }
 
 #if BUILDFLAG(IS_MAC)
   void ResetTextInputHostForTesting();
   void RebindTextInputHostForTesting();
 #endif
+
+  void WriteIntoTrace(perfetto::TracedValue ctx) const;
 
  private:
   friend class FrameNavigationDisabler;
@@ -874,6 +880,7 @@ class CORE_EXPORT LocalFrame final
   // use the instance owned by their local root.
   Member<SmoothScrollSequencer> smooth_scroll_sequencer_;
   Member<ContentCaptureManager> content_capture_manager_;
+  Member<AnchorElementInteractionTracker> anchor_element_interaction_tracker_;
 
   InterfaceRegistry* const interface_registry_;
 
@@ -960,7 +967,7 @@ class CORE_EXPORT LocalFrame final
   bool notified_color_scheme_ = false;
   // Tracks the number of times this document has been retrieved from the
   // bfcache.
-  uint32_t navigation_counter_ = 0;
+  uint32_t navigation_id_ = 1;
 };
 
 inline FrameLoader& LocalFrame::Loader() const {

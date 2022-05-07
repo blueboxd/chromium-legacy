@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/public/platform/media/multi_buffer_data_source.h"
+#include "third_party/blink/renderer/platform/media/multi_buffer_data_source.h"
 
 #include <stddef.h>
 #include <stdint.h>
@@ -11,7 +11,6 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,9 +21,9 @@
 #include "media/base/mock_filters.h"
 #include "media/base/test_helpers.h"
 #include "services/network/public/mojom/fetch_api.mojom.h"
-#include "third_party/blink/public/platform/media/buffered_data_source_host_impl.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/web_url_response.h"
+#include "third_party/blink/renderer/platform/media/buffered_data_source_host_impl.h"
 #include "third_party/blink/renderer/platform/media/multi_buffer_reader.h"
 #include "third_party/blink/renderer/platform/media/resource_multi_buffer_data_provider.h"
 #include "third_party/blink/renderer/platform/media/testing/mock_resource_fetch_context.h"
@@ -915,7 +914,7 @@ TEST_F(MultiBufferDataSourceTest, StopDuringRead) {
   InitializeWith206Response();
 
   uint8_t buffer[256];
-  data_source_->Read(kDataSize, base::size(buffer), buffer,
+  data_source_->Read(kDataSize, std::size(buffer), buffer,
                      base::BindOnce(&MultiBufferDataSourceTest::ReadCallback,
                                     base::Unretained(this)));
 

@@ -29,7 +29,6 @@
 #include "ash/app_list/views/paged_apps_grid_view.h"
 #include "ash/app_list/views/scrollable_apps_grid_view.h"
 #include "ash/constants/ash_features.h"
-#include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/test/layer_animation_stopped_waiter.h"
 #include "base/callback.h"
@@ -428,13 +427,20 @@ void AppListTestApi::AddReorderAnimationCallback(
   GetTopLevelAppsGridView()->AddReorderCallbackForTest(std::move(callback));
 }
 
+void AppListTestApi::AddFadeOutAnimationStartClosure(
+    base::OnceClosure closure) {
+  DCHECK(features::IsLauncherAppSortEnabled());
+  GetTopLevelAppsGridView()->AddFadeOutAnimationStartClosureForTest(
+      std::move(closure));
+}
+
 bool AppListTestApi::HasAnyWaitingReorderDoneCallback() const {
   DCHECK(features::IsLauncherAppSortEnabled());
   return GetTopLevelAppsGridView()->HasAnyWaitingReorderDoneCallbackForTest();
 }
 
 void AppListTestApi::DisableAppListNudge(bool disable) {
-  AppListNudgeController::SetNudgeDisabledForTest(disable);
+  AppListNudgeController::SetReorderNudgeDisabledForTest(disable);
 }
 
 void AppListTestApi::ReorderItemInRootByDragAndDrop(int source_index,

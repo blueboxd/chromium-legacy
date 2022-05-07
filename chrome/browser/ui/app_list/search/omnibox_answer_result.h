@@ -26,7 +26,8 @@ class OmniboxAnswerResult : public ChromeSearchResult,
   OmniboxAnswerResult(Profile* profile,
                       AppListControllerDelegate* list_controller,
                       AutocompleteController* autocomplete_controller,
-                      const AutocompleteMatch& match);
+                      const AutocompleteMatch& match,
+                      const std::u16string& query);
   ~OmniboxAnswerResult() override;
 
   OmniboxAnswerResult(const OmniboxAnswerResult&) = delete;
@@ -48,12 +49,14 @@ class OmniboxAnswerResult : public ChromeSearchResult,
   void FetchImage(const GURL& url);
 
   bool IsCalculatorResult() const;
+  bool IsDictionaryResult() const;
   bool IsWeatherResult() const;
 
   Profile* profile_;
   AppListControllerDelegate* list_controller_;
   AutocompleteController* autocomplete_controller_;
   AutocompleteMatch match_;
+  const std::u16string query_;
   std::unique_ptr<BitmapFetcher> bitmap_fetcher_;
 
   base::WeakPtrFactory<OmniboxAnswerResult> weak_factory_{this};

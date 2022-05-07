@@ -12,6 +12,8 @@
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_tile_layout_util.h"
 #include "ios/chrome/browser/ui/elements/self_sizing_table_view.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_constants.h"
+#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion.h"
+#import "ios/chrome/browser/ui/omnibox/popup/content_providing.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_accessibility_identifier_constants.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_row_cell.h"
 #include "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
@@ -151,7 +153,7 @@ const CGFloat kTopAndBottomPadding = 8.0;
 
 #pragma mark - AutocompleteResultConsumer
 
-- (void)updateMatches:(NSArray<id<AutocompleteSuggestion>>*)result
+- (void)updateMatches:(NSArray<id<AutocompleteSuggestionGroup>>*)result
         withAnimation:(BOOL)animation {
   self.forwardsScrollEvents = NO;
   // Reset highlight state.
@@ -159,6 +161,11 @@ const CGFloat kTopAndBottomPadding = 8.0;
     [self unhighlightRowAtIndexPath:self.highlightedIndexPath];
     self.highlightedIndexPath = nil;
   }
+
+  // This view controller does not support multiple sections yet. Multi-section
+  // support only exists in the Swift version of the popup.
+  DCHECK(result.count == 1)
+      << "OmniboxPopupRow assumes there's only one suggestion group.";
 
   self.currentResult = result;
 
@@ -195,7 +202,8 @@ const CGFloat kTopAndBottomPadding = 8.0;
     // autocomplete text is set again (in case the user exited the inline
     // autocomplete).
     [self.delegate autocompleteResultConsumer:self
-                              didHighlightRow:self.highlightedIndexPath.row];
+                              didHighlightRow:self.highlightedIndexPath.row
+                                    inSection:0];
     return;
   }
 
@@ -206,7 +214,8 @@ const CGFloat kTopAndBottomPadding = 8.0;
   [self highlightRowAtIndexPath:self.highlightedIndexPath];
 
   [self.delegate autocompleteResultConsumer:self
-                            didHighlightRow:self.highlightedIndexPath.row];
+                            didHighlightRow:self.highlightedIndexPath.row
+                                  inSection:0];
 }
 
 - (void)highlightPreviousSuggestion {
@@ -223,7 +232,8 @@ const CGFloat kTopAndBottomPadding = 8.0;
     // autocomplete text is set again (in case the user exited the inline
     // autocomplete).
     [self.delegate autocompleteResultConsumer:self
-                              didHighlightRow:self.highlightedIndexPath.row];
+                              didHighlightRow:self.highlightedIndexPath.row
+                                    inSection:0];
     return;
   }
 
@@ -235,7 +245,8 @@ const CGFloat kTopAndBottomPadding = 8.0;
   [self highlightRowAtIndexPath:self.highlightedIndexPath];
 
   [self.delegate autocompleteResultConsumer:self
-                            didHighlightRow:self.highlightedIndexPath.row];
+                            didHighlightRow:self.highlightedIndexPath.row
+                                  inSection:0];
 }
 
 - (void)keyCommandReturn {
@@ -270,27 +281,31 @@ const CGFloat kTopAndBottomPadding = 8.0;
 - (void)tableView:(UITableView*)tableView
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-  DCHECK_LT((NSUInteger)indexPath.row, self.currentResult.count);
+  DCHECK_LT((NSUInteger)indexPath.row,
+            self.currentResult[indexPath.section].suggestions.count);
   NSUInteger row = indexPath.row;
 
   // Crash reports tell us that |row| is sometimes indexed past the end of
   // the results array. In those cases, just ignore the request and return
   // early. See b/5813291.
-  if (row >= self.currentResult.count)
+  if (row >= self.currentResult[indexPath.section].suggestions.count)
     return;
-  [self.delegate autocompleteResultConsumer:self didSelectRow:row];
+  [self.delegate autocompleteResultConsumer:self
+                               didSelectRow:row
+                                  inSection:indexPath.section];
 }
 
 #pragma mark - Table view data source
 
 - (NSInteger)numberOfSectionsInTableView:(UITableView*)tableView {
-  return 1;
+  DCHECK_EQ(1U, (NSUInteger)self.currentResult.count);
+  return self.currentResult.count;
 }
 
 - (NSInteger)tableView:(UITableView*)tableView
     numberOfRowsInSection:(NSInteger)section {
-  DCHECK_EQ(0, section);
-  return self.currentResult.count;
+  DCHECK_EQ(0U, (NSUInteger)section);
+  return self.currentResult[section].suggestions.count;
 }
 
 - (BOOL)tableView:(UITableView*)tableView
@@ -300,20 +315,24 @@ const CGFloat kTopAndBottomPadding = 8.0;
   // iOS doesn't check -numberOfRowsInSection before checking
   // -canEditRowAtIndexPath in a reload call. If |indexPath.row| is too large,
   // simple return |NO|.
-  if ((NSUInteger)indexPath.row >= self.currentResult.count)
+  if ((NSUInteger)indexPath.row >=
+      self.currentResult[indexPath.section].suggestions.count)
     return NO;
 
-  return [self.currentResult[indexPath.row] supportsDeletion];
+  return [self.currentResult[indexPath.section].suggestions[indexPath.row]
+      supportsDeletion];
 }
 
 - (void)tableView:(UITableView*)tableView
     commitEditingStyle:(UITableViewCellEditingStyle)editingStyle
      forRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
-  DCHECK_LT((NSUInteger)indexPath.row, self.currentResult.count);
+  DCHECK_LT((NSUInteger)indexPath.row,
+            self.currentResult[indexPath.section].suggestions.count);
   if (editingStyle == UITableViewCellEditingStyleDelete) {
     [self.delegate autocompleteResultConsumer:self
-                      didSelectRowForDeletion:indexPath.row];
+                      didSelectRowForDeletion:indexPath.row
+                                    inSection:indexPath.section];
   }
 }
 
@@ -354,7 +373,8 @@ const CGFloat kTopAndBottomPadding = 8.0;
 - (void)trailingButtonTapped:(id)sender {
   NSUInteger row = [sender tag];
   [self.delegate autocompleteResultConsumer:self
-                 didTapTrailingButtonForRow:row];
+                 didTapTrailingButtonForRow:row
+                                  inSection:0];
 }
 
 - (void)setSemanticContentAttribute:
@@ -404,16 +424,19 @@ const CGFloat kTopAndBottomPadding = 8.0;
         cellForRowAtIndexPath:(NSIndexPath*)indexPath {
   DCHECK_EQ(0U, (NSUInteger)indexPath.section);
 
-  DCHECK_LT((NSUInteger)indexPath.row, self.currentResult.count);
+  DCHECK_LT((NSUInteger)indexPath.row,
+            self.currentResult[indexPath.section].suggestions.count);
   OmniboxPopupRowCell* cell = [self.tableView
       dequeueReusableCellWithIdentifier:OmniboxPopupRowCellReuseIdentifier
                            forIndexPath:indexPath];
   cell.faviconRetriever = self.faviconRetriever;
   cell.imageRetriever = self.imageRetriever;
-  [cell setupWithAutocompleteSuggestion:self.currentResult[indexPath.row]
+  [cell setupWithAutocompleteSuggestion:self.currentResult[indexPath.section]
+                                            .suggestions[indexPath.row]
                               incognito:self.incognito];
   cell.showsSeparator =
-      (NSUInteger)indexPath.row < self.currentResult.count - 1;
+      (NSUInteger)indexPath.row <
+      self.currentResult[indexPath.section].suggestions.count - 1;
   cell.delegate = self;
 
   return cell;
@@ -424,7 +447,8 @@ const CGFloat kTopAndBottomPadding = 8.0;
 - (void)trailingButtonTappedForCell:(OmniboxPopupRowCell*)cell {
   NSIndexPath* indexPath = [self.tableView indexPathForCell:cell];
   [self.delegate autocompleteResultConsumer:self
-                 didTapTrailingButtonForRow:indexPath.row];
+                 didTapTrailingButtonForRow:indexPath.row
+                                  inSection:indexPath.section];
 }
 
 #pragma mark - keyboard events
@@ -436,6 +460,14 @@ const CGFloat kTopAndBottomPadding = 8.0;
   self.keyboardHeight = CurrentKeyboardHeight(keyboardFrameValue);
   if (self.tableView.contentSize.height > 0)
     [self updateContentInsetForKeyboard];
+}
+
+#pragma mark - ContentProviding
+
+- (BOOL)hasContent {
+  // The table view is a |SelfSizingTableView|, so its intrinsic content size
+  // can tell whether it has content.
+  return self.view.intrinsicContentSize.height > 0;
 }
 
 @end

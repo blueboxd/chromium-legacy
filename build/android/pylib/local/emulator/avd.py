@@ -17,6 +17,7 @@ import threading
 from google.protobuf import text_format  # pylint: disable=import-error
 
 from devil.android import device_utils
+from devil.android import settings
 from devil.android.sdk import adb_wrapper
 from devil.android.tools import system_app
 from devil.utils import cmd_helper
@@ -25,6 +26,10 @@ from py_utils import tempfile_ext
 from pylib import constants
 from pylib.local.emulator import ini
 from pylib.local.emulator.proto import avd_pb2
+
+# A common root directory to store the CIPD packages for creating or starting
+# the emulator instance, e.g. emulator binary, system images, AVDs.
+COMMON_CIPD_ROOT = os.path.join(constants.DIR_SOURCE_ROOT, '.android_emulator')
 
 _ALL_PACKAGES = object()
 _DEFAULT_AVDMANAGER_PATH = os.path.join(
@@ -44,7 +49,8 @@ _DEFAULT_GPU_MODE = 'swiftshader_indirect'
 # This is the default name used by the emulator binary.
 _DEFAULT_SNAPSHOT_NAME = 'default_boot'
 
-# Set long press timeout for clicking to 1000ms.
+# crbug.com/1275767: Set long press timeout to 1000ms to reduce the flakiness
+# caused by click being incorrectly interpreted as longclick.
 _LONG_PRESS_TIMEOUT = '1000'
 
 # The snapshot name to load/save when writable_system=True
@@ -193,10 +199,10 @@ class AvdConfig:
     self.avd_proto_path = avd_proto_path
     self._config = _Load(avd_proto_path)
 
-    self._emulator_home = os.path.join(constants.DIR_SOURCE_ROOT,
+    self._emulator_home = os.path.join(COMMON_CIPD_ROOT,
                                        self._config.avd_package.dest_path)
     self._emulator_sdk_root = os.path.join(
-        constants.DIR_SOURCE_ROOT, self._config.emulator_package.dest_path)
+        COMMON_CIPD_ROOT, self._config.emulator_package.dest_path)
     self._emulator_path = os.path.join(self._emulator_sdk_root, 'emulator',
                                        'emulator')
 
@@ -359,20 +365,16 @@ class AvdConfig:
       if privileged_apk_tuples:
         system_app.InstallPrivilegedApps(instance.device, privileged_apk_tuples)
 
-      # Skip network disabling on pre-N for now since the svc commands fail
-      # on Marshmallow.
-      if instance.device.build_version_sdk > 23:
-        # Always disable the network to prevent built-in system apps from
-        # updating themselves, which could take over package manager and
-        # cause shell command timeout.
-        # Use svc as this also works on the images with build type "user".
-        logging.info('Disabling the network in emulator.')
-        instance.device.RunShellCommand(['svc', 'wifi', 'disable'],
-                                        check_return=True)
-        instance.device.RunShellCommand(['svc', 'data', 'disable'],
-                                        check_return=True)
+      # Always disable the network to prevent built-in system apps from
+      # updating themselves, which could take over package manager and
+      # cause shell command timeout.
+      logging.info('Disabling the network.')
+      settings.ConfigureContentSettings(instance.device,
+                                        settings.NETWORK_DISABLED_SETTINGS)
 
       if snapshot:
+        # Reboot so that changes like disabling network can take effect.
+        instance.device.Reboot()
         instance.SaveSnapshot()
 
       instance.Stop()
@@ -491,7 +493,7 @@ class AvdConfig:
         pkgs_by_dir[pkg.dest_path].append(pkg)
 
     for pkg_dir, pkgs in pkgs_by_dir.items():
-      cipd_root = os.path.join(constants.DIR_SOURCE_ROOT, pkg_dir)
+      cipd_root = os.path.join(COMMON_CIPD_ROOT, pkg_dir)
       yield cipd_root, pkgs
 
   def _InstallCipdPackages(self, packages):
@@ -638,7 +640,11 @@ class _AvdInstance:
             gpu_mode=_DEFAULT_GPU_MODE,
             wipe_data=False,
             debug_tags=None):
-    """Starts the emulator running an instance of the given AVD."""
+    """Starts the emulator running an instance of the given AVD.
+
+    Note when ensure_system_settings is True, the program will wait until the
+    emulator is fully booted, and then update system settings.
+    """
     is_slow_start = False
     # Force to load system snapshot if detected.
     if self.HasSystemSnapshot():
@@ -736,13 +742,12 @@ class _AvdInstance:
         # pylint: disable=W0707
         raise AvdException('Emulator failed to start: %s' % str(e))
 
-    assert self.device is not None, '`instance.device` not initialized.'
-    self.device.WaitUntilFullyBooted(timeout=120 if is_slow_start else 30)
-
     # Set the system settings in "Start" here instead of setting in "Create"
     # because "Create" is used during AVD creation, and we want to avoid extra
     # turn-around on rolling AVD.
     if ensure_system_settings:
+      assert self.device is not None, '`instance.device` not initialized.'
+      self.device.WaitUntilFullyBooted(timeout=120 if is_slow_start else 30)
       _EnsureSystemSettings(self.device)
 
   def Stop(self):

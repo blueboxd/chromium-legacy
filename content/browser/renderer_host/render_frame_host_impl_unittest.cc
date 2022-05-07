@@ -4,6 +4,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/renderer_host/navigation_controller_impl.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
@@ -110,6 +111,64 @@ TEST_F(RenderFrameHostImplTest, ExpectedMainWorldOrigin) {
   // fact, FindLatestNavigationRequestThatIsStillCommitting might possibly be
   // removed entirely once we swap on all document changes.
   EXPECT_EQ(initial_rfh, main_rfh());
+}
+
+// Ensures that IsolationInfo's SiteForCookies is empty and
+// that it correctly generates a StorageKey with a kCrossSite
+// AncestorChainBit when frames are nested in an A->B->A
+// configuration.
+TEST_F(RenderFrameHostImplTest, CrossSiteAncestorInFrameTree) {
+  // Enable 3p partitioning to accurately test AncestorChainBit.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      blink::features::kThirdPartyStoragePartitioning);
+
+  // Load site A into the main frame.
+  GURL parent_url = GURL("https://parent.example.test/");
+  NavigationSimulator::CreateRendererInitiated(parent_url, main_rfh())
+      ->Commit();
+
+  // Create a child RenderFrameHost and navigate it to site B to establish A->B.
+  auto* child_rfh_1 = static_cast<TestRenderFrameHost*>(
+      content::RenderFrameHostTester::For(main_test_rfh())
+          ->AppendChild("child:a->b"));
+  GURL child_url_1 = GURL("https://child.example.com");
+  child_rfh_1 = static_cast<TestRenderFrameHost*>(
+      NavigationSimulator::NavigateAndCommitFromDocument(child_url_1,
+                                                         child_rfh_1));
+
+  // Create a child RenderFrameHost in the existing child RenderFrameHost and
+  // navigate it to site A to establish A->B->A.
+  auto* child_rfh_2 = static_cast<TestRenderFrameHost*>(
+      content::RenderFrameHostTester::For(child_rfh_1)
+          ->AppendChild("child:a->b->a"));
+  child_rfh_2 = static_cast<TestRenderFrameHost*>(
+      NavigationSimulator::NavigateAndCommitFromDocument(parent_url,
+                                                         child_rfh_2));
+
+  // Constructing expected values.
+  url::Origin expected_final_origin = url::Origin::Create(parent_url);
+  blink::StorageKey expected_final_storage_key =
+      blink::StorageKey::CreateWithOptionalNonce(
+          expected_final_origin, net::SchemefulSite(expected_final_origin),
+          nullptr, blink::mojom::AncestorChainBit::kCrossSite);
+  // Set should contain the set of sites between the current and top frame.
+  std::set<net::SchemefulSite> party_context = {
+      net::SchemefulSite(child_url_1)};
+  net::IsolationInfo expected_final_isolation_info = net::IsolationInfo::Create(
+      net::IsolationInfo::RequestType::kOther, expected_final_origin,
+      expected_final_origin, net::SiteForCookies(), party_context);
+
+  EXPECT_EQ(expected_final_origin, child_rfh_2->GetLastCommittedOrigin());
+  EXPECT_EQ(expected_final_storage_key, child_rfh_2->storage_key());
+  EXPECT_TRUE(expected_final_isolation_info.IsEqualForTesting(
+      child_rfh_2->GetIsolationInfoForSubresources()));
+  EXPECT_EQ(expected_final_isolation_info.network_isolation_key(),
+            child_rfh_2->GetNetworkIsolationKey());
+  EXPECT_TRUE(expected_final_isolation_info.site_for_cookies().IsEquivalent(
+      child_rfh_2->ComputeSiteForCookies()));
+  EXPECT_TRUE(expected_final_isolation_info.IsEqualForTesting(
+      child_rfh_2->GetPendingIsolationInfoForSubresources()));
 }
 
 // Test the IsolationInfo and related fields of a request during the various
@@ -381,8 +440,9 @@ class FakeLocalFrameWithBeforeUnload : public content::FakeLocalFrame {
 // unload handler present.
 TEST_F(RenderFrameHostImplTest, BeforeUnloadNotSentToRenderer) {
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      features::kAvoidUnnecessaryBeforeUnloadCheck);
+  scoped_feature_list.InitWithFeatures(
+      {features::kAvoidUnnecessaryBeforeUnloadCheckPostTask},
+      {features::kAvoidUnnecessaryBeforeUnloadCheckSync});
   FakeLocalFrameWithBeforeUnload local_frame(contents()->GetMainFrame());
   auto simulator = NavigationSimulatorImpl::CreateBrowserInitiated(
       GURL("https://example.com/simple.html"), contents());
@@ -407,7 +467,7 @@ TEST_F(RenderFrameHostImplTest, BeforeUnloadNotSentToRenderer) {
 TEST_F(RenderFrameHostImplTest, BeforeUnloadSentToRenderer) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.InitAndDisableFeature(
-      features::kAvoidUnnecessaryBeforeUnloadCheck);
+      features::kAvoidUnnecessaryBeforeUnloadCheckPostTask);
   FakeLocalFrameWithBeforeUnload local_frame(contents()->GetMainFrame());
   auto simulator = NavigationSimulatorImpl::CreateBrowserInitiated(
       GURL("https://example.com/simple.html"), contents());
@@ -474,7 +534,7 @@ TEST_F(RenderFrameHostImplTest, TransitionWhileShowLoadingUi) {
   EXPECT_TRUE(contents()->ShouldShowLoadingUI());
 }
 
-TEST_F(RenderFrameHostImplTest, CalculateTopLevelOriginForStorageKey) {
+TEST_F(RenderFrameHostImplTest, CalculateStorageKey) {
   // Register extension scheme for testing.
   url::ScopedSchemeRegistryForTests scoped_registry;
   url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
@@ -503,16 +563,22 @@ TEST_F(RenderFrameHostImplTest, CalculateTopLevelOriginForStorageKey) {
       NavigationSimulator::NavigateAndCommitFromDocument(grandchild_url,
                                                          grandchild_frame));
 
-  // Root frame is an extension but it has no host permissions yet so we should
-  // use the actual root as top level frame.
-  EXPECT_EQ(url::Origin::Create(initial_url_ext),
-            grandchild_frame->CalculateTopLevelOriginForStorageKey(
-                grandchild_frame->GetLastCommittedOrigin()));
+  // With no host permissions the grandchild document should have a cross-site
+  // storage key with the `initial_url_ext` as it's top level origin.
+  blink::StorageKey expected_grandchild_no_permissions_storage_key =
+      blink::StorageKey::CreateWithOptionalNonce(
+          grandchild_frame->GetLastCommittedOrigin(),
+          net::SchemefulSite(url::Origin::Create(initial_url_ext)), nullptr,
+          blink::mojom::AncestorChainBit::kCrossSite);
+
+  EXPECT_EQ(expected_grandchild_no_permissions_storage_key,
+            grandchild_frame->CalculateStorageKey(
+                grandchild_frame->GetLastCommittedOrigin(), nullptr));
 
   // Give extension host permissions to `grandchild_frame`. Since
   // `grandchild_frame` is not the root non-extension frame
-  // `CalculateTopLevelOriginForStorageKey` should still return the extension
-  // root frame.
+  // `CalculateStorageKey` should still create a storage key that has the
+  // extension as the `top_level_site`.
   std::vector<network::mojom::CorsOriginPatternPtr> patterns;
   base::RunLoop run_loop;
   patterns.push_back(network::mojom::CorsOriginPattern::New(
@@ -524,14 +590,15 @@ TEST_F(RenderFrameHostImplTest, CalculateTopLevelOriginForStorageKey) {
                                main_rfh()->GetLastCommittedOrigin(),
                                std::move(patterns), {}, run_loop.QuitClosure());
   run_loop.Run();
-  EXPECT_EQ(url::Origin::Create(initial_url_ext),
-            grandchild_frame->CalculateTopLevelOriginForStorageKey(
-                grandchild_frame->GetLastCommittedOrigin()));
 
-  // Now give extension host permissions to `child_frame`. Since `child_frame`
-  // is the root non-extension frame, granting host permissions to
-  // `child_origin` should cause `CalculateTopLevelOriginForStorageKey`
-  // to return the `child_origin`.
+  EXPECT_EQ(expected_grandchild_no_permissions_storage_key,
+            grandchild_frame->CalculateStorageKey(
+                grandchild_frame->GetLastCommittedOrigin(), nullptr));
+
+  // Now give extension host permissions to `child_frame`. Since the root
+  // extension rfh has host permissions to`child_frame` calling
+  // `CalculateStorageKey` should create a storage key with the `child_origin`
+  // as the `top_level_site`.
   base::RunLoop run_loop_update;
   std::vector<network::mojom::CorsOriginPatternPtr> patterns2;
   patterns2.push_back(network::mojom::CorsOriginPattern::New(
@@ -543,9 +610,108 @@ TEST_F(RenderFrameHostImplTest, CalculateTopLevelOriginForStorageKey) {
       main_rfh()->GetBrowserContext(), main_rfh()->GetLastCommittedOrigin(),
       std::move(patterns2), {}, run_loop_update.QuitClosure());
   run_loop_update.Run();
-  EXPECT_EQ(url::Origin::Create(child_url),
-            grandchild_frame->CalculateTopLevelOriginForStorageKey(
-                grandchild_frame->GetLastCommittedOrigin()));
+
+  // Child host should now have a storage key that is same site and uses the
+  // `child_origin` as the `top_level_site`.
+  blink::StorageKey expected_child_with_permissions_storage_key =
+      blink::StorageKey::CreateWithOptionalNonce(
+          child_frame->GetLastCommittedOrigin(),
+          net::SchemefulSite(child_frame->GetLastCommittedOrigin()), nullptr,
+          blink::mojom::AncestorChainBit::kSameSite);
+  EXPECT_EQ(expected_child_with_permissions_storage_key,
+            child_frame->CalculateStorageKey(
+                child_frame->GetLastCommittedOrigin(), nullptr));
+
+  blink::StorageKey expected_grandchild_with_permissions_storage_key =
+      blink::StorageKey::CreateWithOptionalNonce(
+          grandchild_frame->GetLastCommittedOrigin(),
+          net::SchemefulSite(child_frame->GetLastCommittedOrigin()), nullptr,
+          blink::mojom::AncestorChainBit::kCrossSite);
+  EXPECT_EQ(expected_grandchild_with_permissions_storage_key,
+            grandchild_frame->CalculateStorageKey(
+                grandchild_frame->GetLastCommittedOrigin(), nullptr));
+}
+
+TEST_F(RenderFrameHostImplTest,
+       CalculateStorageKeyWhenPassedOriginIsNotCurrentFrame) {
+  // Register extension scheme for testing.
+  url::ScopedSchemeRegistryForTests scoped_registry;
+  url::AddStandardScheme("chrome-extension", url::SCHEME_WITH_HOST);
+
+  GURL initial_url_ext = GURL("chrome-extension://initial.example.test/");
+  NavigationSimulator::CreateRendererInitiated(initial_url_ext, main_rfh())
+      ->Commit();
+
+  // Create a child frame and navigate to `child_url`.
+  auto* child_frame = static_cast<TestRenderFrameHost*>(
+      content::RenderFrameHostTester::For(main_test_rfh())
+          ->AppendChild("child"));
+
+  GURL child_url = GURL("https://childframe.com");
+  child_frame = static_cast<TestRenderFrameHost*>(
+      NavigationSimulator::NavigateAndCommitFromDocument(child_url,
+                                                         child_frame));
+
+  // Give extension host permissions to `child_url`.
+  std::vector<network::mojom::CorsOriginPatternPtr> patterns;
+  base::RunLoop run_loop;
+  patterns.push_back(network::mojom::CorsOriginPattern::New(
+      "https", "childframe.com", 0,
+      network::mojom::CorsDomainMatchMode::kAllowSubdomains,
+      network::mojom::CorsPortMatchMode::kAllowAnyPort,
+      network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority));
+  CorsOriginPatternSetter::Set(main_rfh()->GetBrowserContext(),
+                               main_rfh()->GetLastCommittedOrigin(),
+                               std::move(patterns), {}, run_loop.QuitClosure());
+  run_loop.Run();
+
+  // The top level document has host permssions to the child_url so the top
+  // level document should be excluded from storage key calculations and a first
+  // party, same-site storage key is expected.
+  blink::StorageKey expected_child_with_permissions_storage_key =
+      blink::StorageKey::CreateWithOptionalNonce(
+          child_frame->GetLastCommittedOrigin(),
+          net::SchemefulSite(child_frame->GetLastCommittedOrigin()), nullptr,
+          blink::mojom::AncestorChainBit::kSameSite);
+  EXPECT_EQ(expected_child_with_permissions_storage_key,
+            child_frame->CalculateStorageKey(
+                child_frame->GetLastCommittedOrigin(), nullptr));
+
+  // CalculateStorageKey is called with an origin that the top level document
+  // does not have host permissions to. A cross-site storage key is expected and
+  // the top level document's site should be used in the storage key
+  // calculation.
+  GURL no_host_permissions_url = GURL("https://noHostPermissions.com/");
+  blink::StorageKey expected_storage_key_no_permissions =
+      blink::StorageKey::CreateWithOptionalNonce(
+          url::Origin::Create(no_host_permissions_url),
+          net::SchemefulSite(url::Origin::Create(initial_url_ext)), nullptr,
+          blink::mojom::AncestorChainBit::kCrossSite);
+  EXPECT_EQ(expected_storage_key_no_permissions,
+            child_frame->CalculateStorageKey(
+                url::Origin::Create(no_host_permissions_url), nullptr));
+}
+
+TEST_F(RenderFrameHostImplTest, NoBeforeUnloadCheckForBrowserInitiated) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAvoidUnnecessaryBeforeUnloadCheckSync);
+  contents()->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(
+          GURL("https://example.com/navigation.html")));
+  EXPECT_FALSE(
+      contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
+}
+
+TEST_F(RenderFrameHostImplTest, BeforeUnloadCheckForBrowserInitiated) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      features::kAvoidUnnecessaryBeforeUnloadCheckSync);
+  contents()->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(
+          GURL("https://example.com/navigation.html")));
+  EXPECT_TRUE(
+      contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
 }
 
 class RenderFrameHostImplThirdPartyStorageTest

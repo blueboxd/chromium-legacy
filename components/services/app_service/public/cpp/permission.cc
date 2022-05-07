@@ -6,6 +6,17 @@
 
 namespace apps {
 
+APP_ENUM_TO_STRING(PermissionType,
+                   kUnknown,
+                   kCamera,
+                   kLocation,
+                   kMicrophone,
+                   kNotifications,
+                   kContacts,
+                   kStorage,
+                   kPrinting)
+APP_ENUM_TO_STRING(TriState, kAllow, kBlock, kAsk)
+
 PermissionValue::PermissionValue(bool bool_value) : bool_value(bool_value) {}
 
 PermissionValue::PermissionValue(TriState tristate_value)
@@ -37,7 +48,7 @@ std::unique_ptr<PermissionValue> PermissionValue::Clone() const {
   return nullptr;
 }
 
-bool PermissionValue::IsPermissionEnabled() {
+bool PermissionValue::IsPermissionEnabled() const {
   if (tristate_value.has_value()) {
     return tristate_value.value() == TriState::kAllow;
   } else if (bool_value.has_value()) {
@@ -74,12 +85,43 @@ PermissionPtr Permission::Clone() const {
                                       is_managed);
 }
 
+bool Permission::IsPermissionEnabled() const {
+  return value && value->IsPermissionEnabled();
+}
+
+std::string Permission::ToString() const {
+  std::stringstream out;
+  out << " permission type: " << EnumToString(permission_type);
+  out << " value: " << std::endl;
+  if (value && value->bool_value.has_value()) {
+    out << " bool_value: " << (value->bool_value.value() ? "true" : "false");
+  }
+  if (value && value->tristate_value.has_value()) {
+    out << " tristate_value: " << EnumToString(value->tristate_value.value());
+  }
+  out << " is_managed: " << (is_managed ? "true" : "false") << std::endl;
+  return out.str();
+}
+
 Permissions ClonePermissions(const Permissions& source_permissions) {
   Permissions permissions;
   for (const auto& permission : source_permissions) {
     permissions.push_back(permission->Clone());
   }
   return permissions;
+}
+
+bool IsEqual(const Permissions& source, const Permissions& target) {
+  if (source.size() != target.size()) {
+    return false;
+  }
+
+  for (int i = 0; i < static_cast<int>(source.size()); i++) {
+    if (*source[i] != *target[i]) {
+      return false;
+    }
+  }
+  return true;
 }
 
 PermissionType ConvertMojomPermissionTypeToPermissionType(

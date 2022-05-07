@@ -9,8 +9,8 @@
 #             mountainlion sierra
 #         win win7 win8 win10 ]
 # Devices
-# tags: [ android-nexus-5 android-nexus-5x android-nexus-9 android-pixel-2
-#             android-pixel-4 android-pixel-6 android-shield-android-tv
+# tags: [ android-nexus-5 android-nexus-5x android-pixel-2 android-pixel-4
+#             android-pixel-6 android-shield-android-tv
 #         chromeos-board-amd64-generic chromeos-board-kevin chromeos-board-eve
 #         fuchsia-board-astro fuchsia-board-sherlock fuchsia-board-qemu-x64 ]
 # Platform
@@ -160,111 +160,6 @@ crbug.com/1047573 [ mac nvidia ] Pixel_WebGLHighToLowPower [ Skip ]
 crbug.com/1048892 [ mac nvidia ] Pixel_OffscreenCanvasIBRCWebGLHighPerfMain [ Skip ]
 crbug.com/1048892 [ mac nvidia ] Pixel_OffscreenCanvasIBRCWebGLHighPerfWorker [ Skip ]
 
-# SkiaRenderer Dawn doesn't support accelerated canvas, webgl, video, or
-# direct composition.
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_Canvas2DTabSwitch [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_CanvasLowLatency2D [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_CanvasLowLatency2DDrawImage [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_CanvasLowLatency2DImageData [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_CanvasLowLatencyWebGL [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_CanvasLowLatencyWebGLDrawImage [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_CanvasLowLatencyWebGLRoundedCorners [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_CanvasLowLatencyWebGLOccluded [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_OffscreenCanvas2DResizeOnWorker [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_ScissorTestWithPreserveDrawingBuffer [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_Video_BackdropFilter [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_Video_Context_Loss_MP4 [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_Video_Context_Loss_VP9 [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_Video_Media_Stream_Incompatible_Stride [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_Video_MP4_Rounded_Corner [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_WebGL2_ClearBufferfv_Result_Displayed [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_WebGLCopyImage [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_WebGLReadPixelsTabSwitch [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_WebGLWebCodecsBreakoutBoxDisplaysFrame [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_WebGL_PremultipliedAlpha_False [ Skip ]
-crbug.com/1021566 [ linux skia-renderer-dawn ] Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_Canvas2DTabSwitch [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_CanvasLowLatency2D [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_CanvasLowLatency2DDrawImage [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_CanvasLowLatency2DImageData [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_CanvasLowLatencyWebGL [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_CanvasLowLatencyWebGLDrawImage [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_CanvasLowLatencyWebGLRoundedCorners [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_CanvasLowLatencyWebGLOccluded [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_OffscreenCanvas2DResizeOnWorker [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_ScissorTestWithPreserveDrawingBuffer [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_Video_BackdropFilter [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_Video_Context_Loss_MP4 [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_Video_Context_Loss_VP9 [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_Video_Media_Stream_Incompatible_Stride [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_Video_MP4_DXVA [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_Video_MP4_Rounded_Corner [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_Video_VP9_DXVA [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_WebGL2_ClearBufferfv_Result_Displayed [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_WebGLCopyImage [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_WebGLReadPixelsTabSwitch [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_WebGLWebCodecsBreakoutBoxDisplaysFrame [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_WebGL_PremultipliedAlpha_False [ Skip ]
-crbug.com/1021566 [ win skia-renderer-dawn ] Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_2DCanvasWebGL [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_Canvas2DRedBox [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_Canvas2DRedBoxScrgbLinear [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_Canvas2DUntagged [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Underlay [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Underlay_DXVA [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Underlay_Fullsize [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_BackdropFilter [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_Disable_Overlays [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_MP4 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_MP4_DXVA [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_MP4_FourColors_Rot_180 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_MP4_FourColors_Rot_270 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_MP4_FourColors_Rot_90 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_MP4_Fullsize [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_MP4_Rounded_Corner [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_MP4_NV12 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_MP4_YUY2 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_MP4_BGRA [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_MP4_VP_SCALING [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_VP9 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_VP9_DXVA [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_VP9_Fullsize [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_VP9_I420A [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_VP9_NV12 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_VP9_YUY2 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_VP9_BGRA [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_DirectComposition_Video_VP9_VP_SCALING [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_OffscreenCanvasAccelerated2D [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_OffscreenCanvasAccelerated2DWorker [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_OffscreenCanvasIBRCWebGLMain [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_OffscreenCanvasIBRCWebGLWorker [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_OffscreenCanvasTransferAfterStyleResize [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_OffscreenCanvasTransferToImageBitmap [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_OffscreenCanvasTransferToImageBitmapWorker [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_OffscreenCanvasWebGLDefault [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_OffscreenCanvasWebGLDefaultWorker [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_OffscreenCanvasWebglResizeOnWorker [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_RepeatedWebGLTo2D [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_Video_MP4 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_Video_VP9 [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_WebGLGreenTriangle_AA_Alpha [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_WebGLGreenTriangle_AA_NoAlpha [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_WebGLGreenTriangle_NoAA_Alpha [ Skip ]
-crbug.com/1021566 [ skia-renderer-dawn ] Pixel_WebGLGreenTriangle_NoAA_NoAlpha [ Skip ]
-
 # DirectComposition tests are not expected to work properly on Windows 7.
 crbug.com/1086758 [ win7 ] Pixel_DirectComposition* [ Skip ]
 
@@ -276,15 +171,11 @@ crbug.com/1129879 [ fuchsia ] Pixel_Video_Media_Stream_Incompatible_Stride [ Ski
 
 # WebGPU is only supported on Win10, Mac, and Linux+SkiaRenderer+Vulkan.
 crbug.com/976495 [ linux skia-renderer-gl ] Pixel_WebGPU* [ Skip ]
-crbug.com/976495 [ linux skia-renderer-dawn ] Pixel_WebGPU* [ Skip ]
 crbug.com/976495 [ linux skia-renderer-disabled ] Pixel_WebGPU* [ Skip ]
 crbug.com/976497 [ android ] Pixel_WebGPU* [ Skip ]
 crbug.com/852089 [ chromeos ] Pixel_WebGPU* [ Skip ]
 crbug.com/852089 [ fuchsia ] Pixel_WebGPU* [ Skip ]
 crbug.com/852089 [ win7 ] Pixel_WebGPU* [ Skip ]
-
-# WebGPU pixel tests fail on Win10+SkiaRenderer+Dawn.
-crbug.com/1213920 [ win10 skia-renderer-dawn ] Pixel_WebGPU* [ Failure ]
 
 ###############################
 # Temporary Skip Expectations #
@@ -293,14 +184,28 @@ crbug.com/1213920 [ win10 skia-renderer-dawn ] Pixel_WebGPU* [ Failure ]
 # point. This is for things like tests that fail in a way that negatively and
 # significantly impacts other tests, e.g. killing the test device.
 
-# WebGPU pixel tests crash on mac asan bots.
-crbug.com/1213170 [ mac asan ] Pixel_WebGPUImport* [ Skip ]
-crbug.com/1213170 [ mac asan ] Pixel_WebGPUCanvas* [ Skip ]
+# WebGPU pixel tests crash on multiple mac fyi  bots.
+crbug.com/1213170 [ mac asan intel-0x3e9b ] Pixel_WebGPUImport* [ Skip ]
+crbug.com/1213170 [ mac asan intel-0xd26 ] Pixel_WebGPUImport* [ Skip ]
+crbug.com/1213170 [ mac amd-0x679e ] Pixel_WebGPUImport* [ Skip ]
+crbug.com/1213170 [ mac nvidia-0xfe9 ] Pixel_WebGPUImport* [ Skip ]
+
+crbug.com/1213170 [ mac asan intel-0x3e9b ] Pixel_WebGPUCanvas* [ Skip ]
+crbug.com/1213170 [ mac asan intel-0xd26 ] Pixel_WebGPUCanvas2DDrawImage [ Skip ]
+crbug.com/1213170 [ mac nvidia-0xfe9 ] Pixel_WebGPUCanvas* [ Skip ]
+
 crbug.com/1213170 [ mac asan ] Pixel_WebGPUWebGL* [ Skip ]
-crbug.com/1213170 [ mac asan ] Pixel_WebGPUCopyExternalImage* [ Skip ]
+crbug.com/1213170 [ mac asan intel-0x3e9b ] Pixel_WebGPUCopyExternalImage* [ Skip ]
+crbug.com/1213170 [ mac asan intel-0xd26 ] Pixel_WebGPUCopyExternalImage* [ Skip ]
+crbug.com/1213170 [ mac nvidia-0xfe9 ] Pixel_WebGPUCopyExternalImage* [ Skip ]
+crbug.com/1213170 [ mac nvidia-0xfe9 ] Pixel_WebGPUWebGLTexImage2D [ Skip ]
 
 # WebGPU pixel tests fail on Linux+SkiaRenderer+Vulkan
 crbug.com/1213657 [ linux skia-renderer-vulkan ] Pixel_WebGPU* [ Skip ]
+
+crbug.com/1298943 [ chromeos skia-renderer-gl chromeos-board-amd64-generic ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Skip ]
+
+crbug.com/1299016 [ chromeos chromeos-board-kevin passthrough skia-renderer-disabled ] Pixel_CanvasDisplaySRGBAccelerated2D [ Skip ]
 
 ###################
 # Failures/Flakes #
@@ -333,6 +238,11 @@ crbug.com/1307317 [ android android-chromium android-nexus-5x ] Pixel_PrecisionR
 crbug.com/883500 [ android android-chromium android-nexus-5x ] Pixel_BackgroundImage [ RetryOnFailure ]
 crbug.com/1065514 [ android android-chromium android-nexus-5x ] Pixel_WebGLReadPixelsTabSwitch [ RetryOnFailure ]
 crbug.com/1278885 [ android android-chromium android-nexus-5x skia-renderer-gl ] Pixel_OffscreenCanvasTransferToImageBitmap [ RetryOnFailure ]
+crbug.com/1302406 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4 [ RetryOnFailure ]
+crbug.com/1302406 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_Rounded_Corner [ RetryOnFailure ]
+crbug.com/1302406 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_FourColors_Rot_270 [ RetryOnFailure ]
+crbug.com/1302406 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
+crbug.com/1302406 [ android android-chromium android-nexus-5x ] Pixel_Video_MP4_FourColors_Rot_180 [ RetryOnFailure ]
 
 # Mark all webview tests as RetryOnFailure due to Nexus 5x driver bug.
 crbug.com/950932 [ android-webview-instrumentation android-nexus-5x ] * [ RetryOnFailure ]
@@ -352,9 +262,6 @@ crbug.com/974380 [ win ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorke
 # Producing blank images on Macmini and Macbook Pro
 crbug.com/974380 [ mac ] Pixel_OffscreenCanvasUnaccelerated2DGPUCompositingWorker [ Failure ]
 
-# Flaky test on SkiaRenderer vulkan android bot.
-crbug.com/1252081 [ android skia-renderer-vulkan android-chromium ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
-
 # Producing incorrect image on Win10 Intel HD 630 and UHD 630 w/ 26.20.100.6912
 # or later drivers.
 crbug.com/997313 [ win intel-0x5912 skia-renderer-gl ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
@@ -368,29 +275,8 @@ crbug.com/1176918 [ android android-pixel-4 android-webview-instrumentation skia
 # always run on Windows RS3 or above.
 crbug.com/1066979 [ win ] Pixel_Canvas2DRedBoxHdr10 [ Failure ]
 
-crbug.com/1170369 [ linux skia-renderer-dawn ] Pixel_WebGLPreservedAfterTabSwitch [ Failure ]
-crbug.com/1170369 [ win skia-renderer-dawn ] Pixel_WebGLPreservedAfterTabSwitch [ Failure ]
-
-# Failure on dawn_pixel_skia_gold_test on Linux. However they are currently detecting
-# skia-renderer-disabled. We will need to update these expectations after fixing the detections.
-crbug.com/1240840 [ linux skia-renderer-disabled ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Failure ]
-crbug.com/1240840 [ linux skia-renderer-disabled ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Failure ]
-crbug.com/1240840 [ linux skia-renderer-disabled ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Failure ]
-crbug.com/1240840 [ linux skia-renderer-disabled ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Failure ]
-crbug.com/1240840 [ linux skia-renderer-dawn ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Failure ]
-crbug.com/1240840 [ linux skia-renderer-dawn ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Failure ]
-crbug.com/1240840 [ linux skia-renderer-dawn ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Failure ]
-crbug.com/1240840 [ linux skia-renderer-dawn ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Failure ]
-crbug.com/1240840 [ win skia-renderer-dawn ] Pixel_OffscreenCanvasWebGLSoftwareCompositing [ Failure ]
-crbug.com/1240840 [ win skia-renderer-dawn ] Pixel_OffscreenCanvasWebGLSoftwareCompositingWorker [ Failure ]
-crbug.com/1240840 [ win skia-renderer-dawn ] Pixel_RepeatedWebGLTo2D_SoftwareCompositing [ Failure ]
-crbug.com/1240840 [ win skia-renderer-dawn ] Pixel_WebGLReadPixelsTabSwitch_SoftwareCompositing [ Failure ]
-
-# Failure of dawn_pixel_skia_gold_test on win dawn
-crbug.com/1228694 [ win skia-renderer-dawn ] Pixel_CSS3DBlueBox [ Failure ]
-
-# Flakes on Linux SkiaRenderer Dawn.
-crbug.com/1200898 [ linux skia-renderer-dawn ] Pixel_BackgroundImage [ RetryOnFailure ]
+# Failure on win10 capturing a VideoFrame from unaccelerated OffscreenCanvas clears the source canvas
+crbug.com/1300550 [ win ] Pixel_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas [ Failure ]
 
 # Flakes on gpu-fyi-try-chromeos-kevin and Fuchsia x64, produces notably different image.
 crbug.com/1086687 [ chromeos chromeos-board-kevin ] Pixel_PrecisionRoundedCorner [ Failure ]
@@ -453,6 +339,10 @@ crbug.com/1295076 [ fuchsia fuchsia-chrome ] Pixel_CanvasDisplaySRGBAccelerated2
 # Pixel_WebGPUImportVideoFrame hangs on Windows FYI bots
 crbug.com/1274796 [ win skia-renderer-gl ] Pixel_WebGPUImportVideoFrame [ Failure ]
 
+# Crashes on gpu-fyi-win10-nvidia-rel-32
+crbug.com/1300670 [ win nvidia-0x2184 passthrough ] Pixel_WebGPUImportVideoFrameUnaccelerated [ Failure ]
+crbug.com/1300670 [ win nvidia-0x2184 passthrough ] Pixel_WebGPUImportVideoFrameOffscreenCanvas [ Failure ]
+
 # Pixel_Video_Media_Stream_Incompatible_Stride flakes with SkiaRenderer GL
 crbug.com/1213542 [ skia-renderer-gl linux nvidia-0x1cb3 ] Pixel_Video_Media_Stream_Incompatible_Stride [ RetryOnFailure ]
 crbug.com/1213542 [ skia-renderer-gl linux nvidia-0x2184 passthrough ] Pixel_Video_Media_Stream_Incompatible_Stride [ RetryOnFailure ]
@@ -460,12 +350,15 @@ crbug.com/1213542 [ skia-renderer-gl mac intel-0x3e9b no-passthrough ] Pixel_Vid
 crbug.com/1213542 [ skia-renderer-gl mac amd-0x6821 passthrough ] Pixel_Video_Media_Stream_Incompatible_Stride [ RetryOnFailure ]
 
 # Flaky on Pixel 4 Android WebView
-crbug.com/1278893 [ android android-pixel-4 android-webview-instrumentation skia-renderer-gl ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ RetryOnFailure ]
 crbug.com/1285084 [ android android-pixel-4 android-webview-instrumentation skia-renderer-gl ] Pixel_CSS3DBlueBox [ RetryOnFailure ]
+crbug.com/1273033 [ android android-pixel-4 android-webview-instrumentation skia-renderer-gl ] Pixel_OffscreenCanvasTransferBeforeStyleResize [ Failure ]
 
 # Flaky failures on Win10 AMD RX 5500 XT
 crbug.com/1288134 [ win10 amd-0x7340 skia-renderer-gl ] Pixel_DirectComposition_Video_VP9_YUY2 [ Failure ]
 crbug.com/1288134 [ win10 amd-0x7340 skia-renderer-gl ] Pixel_DirectComposition_Video_VP9_BGRA [ Failure ]
+
+# Pixel 4 Flaky Failures - Passthrough, WebView and Validating
+crbug.com/1273033 [ android android-pixel-4 ] Pixel_OffscreenCanvasWebGLPaintAfterResize [ Failure ]
 
 # Pixel 6 failures.
 crbug.com/1286915 [ android android-pixel-6 ] Pixel_CanvasLowLatencyWebGLAlphaFalse [ Failure ]
@@ -486,6 +379,9 @@ crbug.com/1290953 [ android android-nexus-5x android-webview-instrumentation ] P
 crbug.com/1290953 [ android android-pixel-4 android-webview-instrumentation ] Pixel_CanvasLowLatency2D [ Failure ]
 crbug.com/1290953 [ android android-pixel-4 android-webview-instrumentation ] Pixel_CanvasLowLatency2DDrawImage [ Failure ]
 crbug.com/1290953 [ android android-pixel-4 android-webview-instrumentation ] Pixel_CanvasLowLatency2DImageData [ Failure ]
+
+# Flaky incorrect rendering on Windows Nvidia 1660
+crbug.com/1181126 [ win10 nvidia-0x2184 ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ RetryOnFailure ]
 
 #######################################################################
 # Automated Entries After This Point - Do Not Manually Add Below Here #

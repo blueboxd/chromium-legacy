@@ -96,13 +96,13 @@ if (include_js_tests) {
       "media_internals/media_internals_ui_browsertest.js",
       "net_internals/net_internals_browsertest.js",
       "ntp4.js",
+      "privacy_sandbox/privacy_sandbox_dialog_browsertest.js",
       "resources/webui_resources_browsertest.js",
       "sandboxstatus_browsertest.js",
       "settings/a11y/a11y_browsertest.js",
       "settings/cr_settings_browsertest.js",
       "settings/privacy_sandbox_browsertest.js",
       "settings/settings_idle_load_browsertest.js",
-      "support_tool/support_tool_browsertest.js",
       "text_defaults_browsertest.js",
       "webui_resource_async_browsertest.js",
       "whats_new/whats_new_browsertest.js",
@@ -197,6 +197,7 @@ if (include_js_tests) {
       sources += [
         "access_code_cast/access_code_cast_browsertest.js",
         "commander/commander_browsertest.js",
+        "support_tool/support_tool_browsertest.js",
       ]
     }
     if (is_cfm) {
@@ -272,6 +273,7 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/ambient_mode_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/ambient_mode_photos_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/apps_page_test.m.js",
+        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/app_details_item_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/app_detail_view_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/app_item_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/app_management_page_tests.m.js",
@@ -326,7 +328,6 @@ if (include_js_tests) {
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/kerberos_accounts_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/kerberos_page_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/keyboard_shortcut_banner_test.m.js",
-        "$root_gen_dir/chrome/test/data/webui/settings/chromeos/localized_link_test.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/manage_accessibility_page_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_feature_item_tests.m.js",
         "$root_gen_dir/chrome/test/data/webui/settings/chromeos/multidevice_feature_toggle_tests.m.js",
@@ -447,6 +448,7 @@ if (include_js_tests) {
       "engagement/site_engagement_browsertest.js",
       "media/media_engagement_browsertest.js",
       "media/media_history_webui_browsertest.js",
+      "metrics_reporter/metrics_reporter_browsertest.js",
       "new_tab_page/new_tab_page_browsertest.js",
       "read_later/read_later_browsertest.js",
       "read_later/side_panel/side_panel_browsertest.js",
@@ -497,9 +499,8 @@ if (is_chromeos_ash) {
 group("closure_compile") {
   deps = [
     ":closure_compile_local",
-    "cr_components:closure_compile",
     "inline_login:closure_compile",
-    "js/cr:closure_compile",
+    "js/cr/ui:closure_compile",
     "media_router:closure_compile",
 
     # TODO(crbug.com/1000989): Add page specific targets here.
@@ -619,7 +620,9 @@ generate_grd("build_grd") {
     "downloads:build_grdp",
     "history:build_grdp",
     "js:build_grdp",
+    "metrics_reporter:build_grdp",
     "new_tab_page:build_grdp",
+    "privacy_sandbox:build_grdp",
     "read_later:build_grdp",
     "settings:build_grdp",
     "tab_search:build_grdp",
@@ -635,9 +638,11 @@ generate_grd("build_grd") {
     "$target_gen_dir/history/resources.grdp",
     "$target_gen_dir/new_tab_page/resources.grdp",
     "$target_gen_dir/read_later/resources.grdp",
+    "$target_gen_dir/metrics_reporter/resources.grdp",
     "$target_gen_dir/settings/resources.grdp",
     "$target_gen_dir/tab_search/resources.grdp",
     "$target_gen_dir/web_ui_test_mojo_resources.grdp",
+    "$target_gen_dir/privacy_sandbox/resources.grdp",
   ]
 
   if (enable_extensions) {
@@ -656,8 +661,14 @@ generate_grd("build_grd") {
   }
 
   if (!is_android) {
-    deps += [ "whats_new:build_grdp" ]
-    grdp_files += [ "$target_gen_dir/whats_new/resources.grdp" ]
+    deps += [
+      "support_tool:build_grdp",
+      "whats_new:build_grdp",
+    ]
+    grdp_files += [
+      "$target_gen_dir/whats_new/resources.grdp",
+      "$target_gen_dir/support_tool/resources.grdp",
+    ]
   }
 
   if (!is_chromeos_ash && !is_android) {

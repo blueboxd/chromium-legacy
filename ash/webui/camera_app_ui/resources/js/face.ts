@@ -12,6 +12,7 @@ const RECT_COLOR = 'rgba(249, 171, 0, 0.8)';
 /**
  * Rotates the given coordinates in [0, 1] square space by the given
  * orientation.
+ *
  * @return The rotated [x, y].
  */
 function rotate(x: number, y: number, orientation: number): [number, number] {
@@ -24,8 +25,9 @@ function rotate(x: number, y: number, orientation: number): [number, number] {
       return [1.0 - x, 1.0 - y];
     case 270:
       return [1.0 - y, x];
+    default:
+      assertNotReached('Unexpected orientation');
   }
-  assertNotReached('Unexpected orientation');
 }
 
 /**
@@ -33,9 +35,11 @@ function rotate(x: number, y: number, orientation: number): [number, number] {
  */
 export class FaceOverlay {
   private readonly canvas = dom.get('#preview-face-overlay', HTMLCanvasElement);
+
   private readonly ctx: CanvasRenderingContext2D;
 
   /**
+   * @param activeArraySize The active array size of the device.
    * @param orientation Counter-clockwise angles to apply rotation to
    *     the face rectangles.
    */
@@ -49,6 +53,7 @@ export class FaceOverlay {
   /**
    * Shows the given rectangles on overlay. The old rectangles would be
    * cleared, if any.
+   *
    * @param rects An array of [x1, y1, x2, y2] to represent rectangles in the
    *     coordinate system of active array in sensor.
    */

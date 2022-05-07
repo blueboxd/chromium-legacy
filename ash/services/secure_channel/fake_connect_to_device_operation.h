@@ -10,9 +10,7 @@
 #include "base/callback.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Fake ConnectToDeviceOperation implementation
 template <typename FailureDetailType>
@@ -74,8 +72,6 @@ class FakeConnectToDeviceOperation
   base::OnceClosure cancel_callback_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_CONNECT_TO_DEVICE_OPERATION_H_

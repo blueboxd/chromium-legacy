@@ -40,6 +40,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/containers/adapters.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_conversions.h"
@@ -689,6 +691,7 @@ void NavigationControllerImpl::Restore(
   needs_reload_ = true;
   needs_reload_type_ = NeedsReloadType::kRestoreSession;
   entries_.reserve(entries->size());
+  int index = 0;
   for (auto& entry : *entries) {
     if (entry->GetURL().is_empty()) {
       // We're trying to restore an entry with an empty URL (e.g. from
@@ -702,6 +705,7 @@ void NavigationControllerImpl::Restore(
     }
     entries_.push_back(
         NavigationEntryImpl::FromNavigationEntry(std::move(entry)));
+    index++;
   }
 
   // At this point, the |entries| is full of empty scoped_ptrs, so it can be
@@ -2425,8 +2429,8 @@ void NavigationControllerImpl::DeleteNavigationEntries(
     PruneAllButLastCommitted();
   } else {
     // Do the deletion in reverse to preserve indices.
-    for (auto it = delete_indices.rbegin(); it != delete_indices.rend(); ++it) {
-      RemoveEntryAtIndex(*it);
+    for (const auto& index : base::Reversed(delete_indices)) {
+      RemoveEntryAtIndex(index);
     }
     BroadcastHistoryOffsetAndLength();
   }
@@ -2603,7 +2607,8 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
     const std::string& extra_headers,
     network::mojom::SourceLocationPtr source_location,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
-    const absl::optional<blink::Impression>& impression) {
+    const absl::optional<blink::Impression>& impression,
+    base::TimeTicks navigation_start_time) {
   if (is_renderer_initiated)
     DCHECK(initiator_origin.has_value());
 
@@ -2731,7 +2736,8 @@ void NavigationControllerImpl::NavigateFromFrameProxy(
       CreateNavigationRequestFromLoadParams(
           node, params, override_user_agent, should_replace_current_entry,
           false /* has_user_gesture */, std::move(source_location),
-          ReloadType::NONE, entry.get(), frame_entry.get());
+          ReloadType::NONE, entry.get(), frame_entry.get(),
+          navigation_start_time);
 
   if (!request)
     return;
@@ -3406,11 +3412,19 @@ base::WeakPtr<NavigationHandle> NavigationControllerImpl::NavigateWithoutEntry(
   // navigation_ui_data should only be present for main frame navigations.
   DCHECK(node->IsMainFrame() || !params.navigation_ui_data);
 
+  // This will be used to set the Navigation Timing API navigationStart
+  // parameter for browser navigations in new tabs (intents, tabs opened through
+  // "Open link in new tab"). If the navigation must wait on the current
+  // RenderFrameHost to execute its BeforeUnload event, the navigation start
+  // will be updated when the BeforeUnload ack is received.
+  const auto navigation_start_time = base::TimeTicks::Now();
+
   std::unique_ptr<NavigationRequest> request =
       CreateNavigationRequestFromLoadParams(
           node, params, override_user_agent, should_replace_current_entry,
           params.has_user_gesture, network::mojom::SourceLocation::New(),
-          reload_type, pending_entry_, pending_entry_->GetFrameEntry(node));
+          reload_type, pending_entry_, pending_entry_->GetFrameEntry(node),
+          navigation_start_time);
 
   // If the navigation couldn't start, return immediately and discard the
   // pending NavigationEntry.
@@ -3566,7 +3580,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     network::mojom::SourceLocationPtr source_location,
     ReloadType reload_type,
     NavigationEntryImpl* entry,
-    FrameNavigationEntry* frame_entry) {
+    FrameNavigationEntry* frame_entry,
+    base::TimeTicks navigation_start_time) {
   DCHECK_EQ(-1, GetIndexOfEntry(entry));
   DCHECK(frame_entry);
   // All renderer-initiated navigations must have an initiator_origin.
@@ -3630,13 +3645,6 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
     return nullptr;
   }
 
-  // This will be used to set the Navigation Timing API navigationStart
-  // parameter for browser navigations in new tabs (intents, tabs opened through
-  // "Open link in new tab"). If the navigation must wait on the current
-  // RenderFrameHost to execute its BeforeUnload event, the navigation start
-  // will be updated when the BeforeUnload ack is received.
-  base::TimeTicks navigation_start = base::TimeTicks::Now();
-
   // Look for a pending commit that is to another document in this
   // FrameTreeNode. If one exists, then the last committed URL will not be the
   // current URL by the time this navigation commits.
@@ -3667,7 +3675,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
                                       params.referrer.policy),
           params.transition_type, navigation_type, download_policy,
           should_replace_current_entry, params.base_url_for_data_url,
-          navigation_start,
+          navigation_start_time,
           params.load_type == LOAD_TYPE_HTTP_POST ? "POST" : "GET",
           params.post_data, std::move(source_location),
           params.started_from_context_menu, has_user_gesture,
@@ -3709,6 +3717,7 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           node->pending_frame_policy(),
           std::vector<std::string>() /* force_enabled_origin_trials */,
           false /* origin_agent_cluster */,
+          true /* origin_agent_cluster_left_as_default */,
           std::vector<
               network::mojom::WebClientHintsType>() /* enabled_client_hints */,
           false /* is_cross_browsing_instance */, nullptr /* old_page_info */,
@@ -3747,6 +3756,8 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
       params.impression, params.is_pdf);
   navigation_request->set_from_download_cross_origin_redirect(
       params.from_download_cross_origin_redirect);
+  navigation_request->set_force_new_browsing_instance(
+      params.force_new_browsing_instance);
   return navigation_request;
 }
 

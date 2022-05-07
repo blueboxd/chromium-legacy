@@ -80,6 +80,14 @@ struct Config {
   // follow accelerator.
   int webfeed_accelerator_recent_visit_history_days = 14;
 
+  // Configuration for PersistentKeyValueStore (personalizing feed for unsigned
+  // users). How many MID entities to persist per URL.
+  size_t max_mid_entities_per_url_entry = 5;
+  // How many URL entries to store in the cache. The size of the cache is
+  // enforced at browser startup, but can exceed |max_url_entries_in_cache|
+  // temporarily while the browser is running.
+  size_t max_url_entries_in_cache = 50;
+
   // Configuration for `PersistentKeyValueStore`.
 
   // Maximum total database size before items are evicted.
@@ -89,18 +97,13 @@ struct Config {
 
   // Until we get the new list contents API working, keep using FeedQuery.
   // TODO(crbug/1152592): remove this when new endpoint is tested enough.
+  // Set using snippets-internals, or the --webfeed-legacy-feedquery switch.
   bool use_feed_query_requests_for_web_feeds = false;
 
   // Set of optional capabilities included in requests. See
   // CreateFeedQueryRequest() for required capabilities.
   base::flat_set<feedwire::Capability> experimental_capabilities = {
-      feedwire::Capability::DISMISS_COMMAND,
-      feedwire::Capability::INFINITE_FEED,
       feedwire::Capability::MATERIAL_NEXT_BASELINE,
-      feedwire::Capability::PREFETCH_METADATA,
-      feedwire::Capability::REQUEST_SCHEDULE,
-      feedwire::Capability::UI_THEME_V2,
-      feedwire::Capability::UNDO_FOR_DISMISS_COMMAND,
       feedwire::Capability::CONTENT_LIFETIME,
   };
 

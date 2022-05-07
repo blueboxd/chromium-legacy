@@ -7,8 +7,10 @@
 
 #include <stdint.h>
 
+#include <vector>
+
+#include "content/browser/attribution_reporting/attribution_filter_data.h"
 #include "content/common/content_export.h"
-#include "net/base/schemeful_site.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/origin.h"
 
@@ -18,11 +20,12 @@ namespace content {
 // the renderer and is now being used by the browser process.
 class CONTENT_EXPORT AttributionTrigger {
  public:
-  // Represents the potential outcomes from attempting to register a trigger.
+  // Represents the potential event-level outcomes from attempting to register
+  // a trigger.
   //
   // These values are persisted to logs. Entries should not be renumbered and
   // numeric values should never be reused.
-  enum class Result {
+  enum class EventLevelResult {
     kSuccess = 0,
     // The report was stored successfully, but it replaced an existing report
     // with a lower priority.
@@ -35,71 +38,99 @@ class CONTENT_EXPORT AttributionTrigger {
     kPriorityTooLow = 7,
     kDroppedForNoise = 8,
     kExcessiveReportingOrigins = 9,
-    kMaxValue = kExcessiveReportingOrigins,
+    kNoMatchingSourceFilterData = 10,
+    kMaxValue = kNoMatchingSourceFilterData,
+  };
+
+  struct CONTENT_EXPORT EventTriggerData {
+    // Data associated with trigger.
+    // Will be sanitized to a lower entropy by the `AttributionStorageDelegate`
+    // before storage.
+    uint64_t data;
+
+    // Priority specified in conversion redirect. Used to prioritize which
+    // reports to send among multiple different reports for the same attribution
+    // source. Defaults to 0 if not provided.
+    int64_t priority;
+
+    // Key specified in conversion redirect for deduplication against existing
+    // conversions with the same source. If absent, no deduplication is
+    // performed.
+    absl::optional<uint64_t> dedup_key;
+
+    // The filters used to determine whether this `EventTriggerData'`s fields
+    // are used.
+    AttributionFilterData filters;
+
+    // The negated filters used to determine whether this `EventTriggerData'`s
+    // fields are used.
+    AttributionFilterData not_filters;
+
+    EventTriggerData(uint64_t data,
+                     int64_t priority,
+                     absl::optional<uint64_t> dedup_key,
+                     AttributionFilterData filters,
+                     AttributionFilterData not_filters);
   };
 
   // Should only be created with values that the browser process has already
-  // validated. At creation time, |trigger_data_| should already be stripped
-  // to a lower entropy. |conversion_destination| should be filled by a
-  // navigation origin known by the browser process.
+  // validated. |conversion_destination| should be filled by a navigation origin
+  // known by the browser process.
+  AttributionTrigger(url::Origin destination_origin,
+                     url::Origin reporting_origin,
+                     AttributionFilterData filters,
+                     absl::optional<uint64_t> debug_key,
+                     std::vector<EventTriggerData> event_triggers);
+
+  // Should only be created with values that the browser process has already
+  // validated. |trigger_data| and |event_source_trigger_data| will be sanitized
+  // to a lower entropy by the `AttributionStorageDelegate` before storage.
+  // |conversion_destination| should be filled by a navigation origin known by
+  // the browser process.
+  //
+  // TODO(apaseltiner): Remove this constructor once the old
+  // trigger-registration API surface is removed.
   AttributionTrigger(uint64_t trigger_data,
-                     net::SchemefulSite conversion_destination,
+                     url::Origin destination_origin,
                      url::Origin reporting_origin,
                      uint64_t event_source_trigger_data,
                      int64_t priority,
                      absl::optional<uint64_t> dedup_key,
                      absl::optional<uint64_t> debug_key);
+
   AttributionTrigger(const AttributionTrigger& other);
   AttributionTrigger& operator=(const AttributionTrigger& other);
   AttributionTrigger(AttributionTrigger&& other);
   AttributionTrigger& operator=(AttributionTrigger&& other);
   ~AttributionTrigger();
 
-  uint64_t trigger_data() const { return trigger_data_; }
-
-  const net::SchemefulSite& conversion_destination() const {
-    return conversion_destination_;
-  }
+  const url::Origin& destination_origin() const { return destination_origin_; }
 
   const url::Origin& reporting_origin() const { return reporting_origin_; }
 
-  uint64_t event_source_trigger_data() const {
-    return event_source_trigger_data_;
-  }
+  const AttributionFilterData& filters() const { return filters_; }
 
-  int64_t priority() const { return priority_; }
-
-  const absl::optional<uint64_t>& dedup_key() const { return dedup_key_; }
-
-  const absl::optional<uint64_t>& debug_key() const { return debug_key_; }
+  absl::optional<uint64_t> debug_key() const { return debug_key_; }
 
   void ClearDebugKey() { debug_key_ = absl::nullopt; }
 
- private:
-  // Data associated with trigger.
-  uint64_t trigger_data_;
+  const std::vector<EventTriggerData>& event_triggers() const {
+    return event_triggers_;
+  }
 
-  // Schemeful site that this conversion event occurred on.
-  net::SchemefulSite conversion_destination_;
+ private:
+  // Origin that this conversion event occurred on.
+  url::Origin destination_origin_;
 
   // Origin of the conversion redirect url, and the origin that will receive any
   // reports.
   url::Origin reporting_origin_;
 
-  // Event source trigger data specified in conversion redirect. Defaults to 0
-  // if not provided.
-  uint64_t event_source_trigger_data_;
-
-  // Priority specified in conversion redirect. Used to prioritize which reports
-  // to send among multiple different reports for the same attribution source.
-  // Defaults to 0 if not provided.
-  int64_t priority_;
-
-  // Key specified in conversion redirect for deduplication against existing
-  // conversions with the same source. If absent, no deduplication is performed.
-  absl::optional<uint64_t> dedup_key_;
+  AttributionFilterData filters_;
 
   absl::optional<uint64_t> debug_key_;
+
+  std::vector<EventTriggerData> event_triggers_;
 };
 
 }  // namespace content

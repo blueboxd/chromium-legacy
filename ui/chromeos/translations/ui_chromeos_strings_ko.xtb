@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">'<ph name="FILE_NAME" />'의 이름을 변경할 수 없습니다. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">영어(미국, 드보락 키보드)</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - 호스트</translation>
+<translation id="1521655867290435174">Google Sheets</translation>
 <translation id="1538729222189715449">Linux 파일을 여는 중...</translation>
 <translation id="1547964879613821194">영어(캐나다)</translation>
 <translation id="1556189134700913550">모두 적용</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">인증서가 네트워크에 의해 거부됨</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" />에 추가</translation>
 <translation id="255937426064304553">영어(미국 국제)</translation>
-<translation id="2562685439590298522">문서도구</translation>
 <translation id="2563185590376525700">개구리</translation>
 <translation id="2578394532502990878">타밀어(표음)</translation>
 <translation id="2579959351793446050">오리야어</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">영어(미국) 확장</translation>
 <translation id="290843123675549676">마라타어</translation>
 <translation id="2923240520113693977">에스토니아어</translation>
-<translation id="2925966894897775835">스프레드시트</translation>
 <translation id="2938685643439809023">몽고어</translation>
-<translation id="2943400156390503548">프레젠테이션</translation>
 <translation id="2943503720238418293">더 짧은 이름을 입력해 주세요.</translation>
 <translation id="2949781154072577687"><ph name="DRIVE_NAME" />을(를) 포맷 중...</translation>
 <translation id="2951236788251446349">해파리</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032">네트워크 <ph name="NETWORK_COUNT" />개 중 <ph name="NETWORK_INDEX" />번째, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />%, 관리자가 관리함, 세부정보</translation>
 <translation id="4387004326333427325">인증서가 원격으로 거부됨</translation>
 <translation id="4394214039309501350">외부 링크</translation>
+<translation id="4401287888955153199">모두 추출</translation>
 <translation id="4418686080762064601">파일의 바로가기 만들기</translation>
 <translation id="4425149324548788773">내 드라이브</translation>
 <translation id="4439427728133035643">네트워크 <ph name="NETWORK_INDEX" />/<ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, 신호 강도 <ph name="SIGNAL_STRENGTH" />%, 연결</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">파일을 오프라인에서 사용할 수 있도록 설정</translation>
 <translation id="4658782175094886150">눈 맞는 사람</translation>
 <translation id="4669606053856530811">이 항목을 '<ph name="SOURCE_NAME" />'의 멤버와 공유하지 않으면 이 팀의 멤버가 항목에 더 이상 액세스할 수 없게 됩니다.</translation>
+<translation id="467809019005607715">Google Slides</translation>
 <translation id="4690246192099372265">스웨덴어</translation>
 <translation id="4693155481716051732">초밥</translation>
 <translation id="4694604912444486114">원숭이</translation>
@@ -658,6 +658,7 @@
 <translation id="6732801395666424405">인증서를 로드하지 못했습니다.</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" />[<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">폴더 1개 선택됨</translation>
+<translation id="6755827872271341378">ChromeOS Flex 기기</translation>
 <translation id="6790428901817661496">재생</translation>
 <translation id="6795884519221689054">판다</translation>
 <translation id="6806699711453372963">Linux 공유 관리</translation>
@@ -735,6 +736,7 @@
 <translation id="7343393116438664539">베트남어(텔렉스)</translation>
 <translation id="7359359531237882347">항목 <ph name="NUMBER_OF_ITEMS" />개 복사 중...</translation>
 <translation id="7375951387215729722">파일 목록이 <ph name="COLUMN_NAME" /> 기준 내림차순으로 정렬되어 있습니다.</translation>
+<translation id="7402503521691663770">ChromeOS Flex 기기</translation>
 <translation id="7408870451288633753">체코어</translation>
 <translation id="7417453074306512035">에티오피아어 키보드</translation>
 <translation id="7417705661718309329">Google 지도</translation>
@@ -950,6 +952,7 @@
 <translation id="9172592259078059678">구자라트어(음역)</translation>
 <translation id="9173120999827300720">영어(미국, 국제 키보드)</translation>
 <translation id="9174050671906956834">30일 후 휴지통에 있는 항목이 완전히 삭제됩니다.</translation>
+<translation id="9183302530794969518">Google Docs</translation>
 <translation id="9189836632794948435">카자흐어</translation>
 <translation id="9213073329713032541">설치가 시작되었습니다.</translation>
 <translation id="9219103736887031265">이미지</translation>

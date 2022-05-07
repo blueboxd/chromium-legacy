@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/color/omnibox_color_mixer.h"
 
 #include "chrome/browser/ui/color/chrome_color_id.h"
+#include "chrome/browser/ui/color/chrome_color_provider_utils.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_mixer.h"
 #include "ui/color/color_provider.h"
@@ -13,9 +14,29 @@
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 
+namespace {
+
+// The contrast for omnibox colors in high contrast mode.
+constexpr float kOmniboxHighContrastRatio = 6.0f;
+
+}  // namespace
+
 void AddOmniboxColorMixer(ui::ColorProvider* provider,
                           const ui::ColorProviderManager::Key& key) {
   ui::ColorMixer& mixer = provider->AddMixer();
+
+  const bool high_contrast_custom_handling = ShouldApplyHighContrastColors(key);
+  const float contrast_ratio = high_contrast_custom_handling
+                                   ? kOmniboxHighContrastRatio
+                                   : color_utils::kMinimumReadableContrastRatio;
+  // Selected colors will use inverted base colors in high contrast mode.
+  const auto selected_background_color =
+      high_contrast_custom_handling
+          ? ui::ContrastInvert(kColorOmniboxBackground)
+          : kColorOmniboxBackground;
+  const auto selected_text_color = high_contrast_custom_handling
+                                       ? ui::ContrastInvert(kColorOmniboxText)
+                                       : kColorOmniboxText;
 
   // Omnibox background colors.
   mixer[kColorOmniboxBackground] =
@@ -26,7 +47,7 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider,
   // Omnibox text colors.
   mixer[kColorOmniboxText] = ui::GetResultingPaintColor(
       ui::FromTransformInput(), kColorOmniboxBackground);
-  mixer[kColorOmniboxResultsTextSelected] = {kColorOmniboxText};
+  mixer[kColorOmniboxResultsTextSelected] = {selected_text_color};
   mixer[kColorOmniboxKeywordSelected] = ui::SelectBasedOnDarkInput(
       kColorOmniboxBackground, gfx::kGoogleGrey100, kColorOmniboxResultsUrl);
 
@@ -37,7 +58,7 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider,
   mixer[kColorOmniboxBubbleOutlineExperimentalKeywordMode] = {
       kColorOmniboxKeywordSelected};
 
-  // Results background colors.
+  // Results background and button colors.
   mixer[kColorOmniboxResultsBackground] =
       ui::GetColorWithMaxContrast(kColorOmniboxText);
   mixer[kColorOmniboxResultsBackgroundHovered] = ui::BlendTowardMaxContrast(
@@ -45,13 +66,20 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider,
   mixer[kColorOmniboxResultsBackgroundSelected] = ui::BlendTowardMaxContrast(
       ui::GetColorWithMaxContrast(kColorOmniboxResultsTextSelected),
       gfx::kGoogleGreyAlpha200);
+  mixer[kColorOmniboxResultsButtonBorder] = ui::BlendTowardMaxContrast(
+      kColorOmniboxBackground, gfx::kGoogleGreyAlpha400);
+  mixer[kColorOmniboxResultsButtonInkDrop] =
+      ui::GetColorWithMaxContrast(kColorOmniboxResultsBackgroundHovered);
+  mixer[kColorOmniboxResultsButtonInkDropSelected] =
+      ui::GetColorWithMaxContrast(kColorOmniboxResultsBackgroundSelected);
 
   // Results icon colors.
   {
-    const auto results_icon = [](ui::ColorId text_id,
-                                 ui::ColorId background_id) {
+    const auto results_icon = [contrast_ratio](ui::ColorId text_id,
+                                               ui::ColorId background_id) {
       return ui::BlendForMinContrast(ui::DeriveDefaultIconColor(text_id),
-                                     background_id);
+                                     background_id, absl::nullopt,
+                                     contrast_ratio);
     };
     mixer[kColorOmniboxResultsIcon] =
         results_icon(kColorOmniboxText, kColorOmniboxResultsBackground);
@@ -62,12 +90,14 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider,
 
   // Dimmed text colors.
   {
-    const auto blend_with_clamped_contrast = [](ui::ColorId foreground_id,
-                                                ui::ColorId background_id) {
-      return ui::BlendForMinContrast(
-          foreground_id, foreground_id,
-          ui::BlendForMinContrast(background_id, background_id));
-    };
+    const auto blend_with_clamped_contrast =
+        [contrast_ratio](ui::ColorId foreground_id, ui::ColorId background_id) {
+          return ui::BlendForMinContrast(
+              foreground_id, foreground_id,
+              ui::BlendForMinContrast(background_id, background_id,
+                                      absl::nullopt, contrast_ratio),
+              contrast_ratio);
+        };
     mixer[kColorOmniboxResultsTextDimmed] = blend_with_clamped_contrast(
         kColorOmniboxText, kColorOmniboxResultsBackgroundHovered);
     mixer[kColorOmniboxResultsTextDimmedSelected] =
@@ -77,28 +107,75 @@ void AddOmniboxColorMixer(ui::ColorProvider* provider,
         kColorOmniboxText, kColorOmniboxBackgroundHovered);
   }
 
-  // Results URL colors.
+  // Other results text colors.
   {
-    const auto url_color = [](ui::ColorId id) {
+    const auto negative_color = [contrast_ratio](
+                                    ui::ColorId background,
+                                    ui::ColorTransform dark_selector) {
       return ui::BlendForMinContrast(
-          gfx::kGoogleBlue500, id,
-          ui::SelectBasedOnDarkInput(kColorOmniboxBackground,
-                                     gfx::kGoogleBlue050, gfx::kGoogleBlue900));
+          // Like kColorAlertHighSeverity, but toggled on `dark_selector`.
+          ui::SelectBasedOnDarkInput(dark_selector, gfx::kGoogleRed300,
+                                     gfx::kGoogleRed600),
+          background, absl::nullopt, contrast_ratio);
     };
-    mixer[kColorOmniboxResultsUrl] =
-        url_color(kColorOmniboxResultsBackgroundHovered);
-    mixer[kColorOmniboxResultsUrlSelected] =
-        url_color(kColorOmniboxResultsBackgroundSelected);
+    const auto positive_color = [contrast_ratio](
+                                    ui::ColorId background,
+                                    ui::ColorTransform dark_selector) {
+      return ui::BlendForMinContrast(
+          // Like kColorAlertLowSeverity, but toggled on `dark_selector`.
+          ui::SelectBasedOnDarkInput(dark_selector, gfx::kGoogleGreen300,
+                                     gfx::kGoogleGreen700),
+          background, absl::nullopt, contrast_ratio);
+    };
+    const auto secondary_color = [contrast_ratio](
+                                     ui::ColorId background,
+                                     ui::ColorTransform dark_selector) {
+      return ui::BlendForMinContrast(
+          // Like kColorDisabledForeground, but toggled on `dark_selector`.
+          ui::BlendForMinContrast(
+              gfx::kGoogleGrey600,
+              ui::SelectBasedOnDarkInput(dark_selector,
+                                         SkColorSetRGB(0x29, 0x2A, 0x2D),
+                                         SK_ColorWHITE),
+              ui::SelectBasedOnDarkInput(dark_selector, gfx::kGoogleGrey200,
+                                         gfx::kGoogleGrey900)),
+          background, absl::nullopt, contrast_ratio);
+    };
+    const auto url_color = [contrast_ratio](ui::ColorId background,
+                                            ui::ColorTransform dark_selector) {
+      return ui::BlendForMinContrast(
+          gfx::kGoogleBlue500, background,
+          ui::SelectBasedOnDarkInput(dark_selector, gfx::kGoogleBlue050,
+                                     gfx::kGoogleBlue900),
+          contrast_ratio);
+    };
+
+    mixer[kColorOmniboxResultsTextNegative] = negative_color(
+        kColorOmniboxResultsBackgroundHovered, kColorOmniboxBackground);
+    mixer[kColorOmniboxResultsTextNegativeSelected] = negative_color(
+        kColorOmniboxResultsBackgroundSelected, selected_background_color);
+    mixer[kColorOmniboxResultsTextPositive] = positive_color(
+        kColorOmniboxResultsBackgroundHovered, kColorOmniboxBackground);
+    mixer[kColorOmniboxResultsTextPositiveSelected] = positive_color(
+        kColorOmniboxResultsBackgroundSelected, selected_background_color);
+    mixer[kColorOmniboxResultsTextSecondary] = secondary_color(
+        kColorOmniboxResultsBackgroundHovered, kColorOmniboxBackground);
+    mixer[kColorOmniboxResultsTextSecondarySelected] = secondary_color(
+        kColorOmniboxResultsBackgroundSelected, selected_background_color);
+    mixer[kColorOmniboxResultsUrl] = url_color(
+        kColorOmniboxResultsBackgroundHovered, kColorOmniboxBackground);
+    mixer[kColorOmniboxResultsUrlSelected] = url_color(
+        kColorOmniboxResultsBackgroundSelected, selected_background_color);
   }
 
   // Security chip colors.
   {
-    const auto security_chip_color = [](SkColor dark_input,
-                                        SkColor light_input) {
+    const auto security_chip_color = [contrast_ratio](SkColor dark_input,
+                                                      SkColor light_input) {
       return ui::BlendForMinContrast(
           ui::SelectBasedOnDarkInput(kColorOmniboxBackground, dark_input,
                                      light_input),
-          kColorOmniboxBackgroundHovered);
+          kColorOmniboxBackgroundHovered, absl::nullopt, contrast_ratio);
     };
 
     mixer[kColorOmniboxSecurityChipDangerous] =

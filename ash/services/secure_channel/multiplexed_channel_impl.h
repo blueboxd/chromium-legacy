@@ -19,9 +19,7 @@
 #include "ash/services/secure_channel/single_client_proxy.h"
 #include "base/callback.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Concrete MultiplexedChannel, which uses an AuthenticatedChannel for its
 // underlying communication channel. Each client added to the channel is tracked
@@ -103,13 +101,6 @@ class MultiplexedChannelImpl : public MultiplexedChannel,
       id_to_proxy_map_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash::secure_channel {
-using ::chromeos::secure_channel::MultiplexedChannelImpl;
-}
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_MULTIPLEXED_CHANNEL_IMPL_H_

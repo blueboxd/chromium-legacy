@@ -65,13 +65,10 @@ class ClientTagBasedRemoteUpdateHandler {
   // Gets the entity for the given tag hash, or null if there isn't one.
   ProcessorEntity* GetEntityForTagHash(const ClientTagHash& tag_hash);
 
-  // Create an entity in the entity tracker for |storage_key|.
-  // |storage_key| must not exist in the entity tracker.
-  ProcessorEntity* CreateEntity(const std::string& storage_key,
-                                const EntityData& data);
-
-  // Version of the above that generates a tag for |data|.
-  ProcessorEntity* CreateEntity(const EntityData& data);
+  // Creates an entity in the entity tracker for |storage_key| queried from the
+  // bridge for the given |update|. Provided |storage_key| (if any, i.e. if
+  // non-empty) must not exist in the entity tracker.
+  ProcessorEntity* CreateEntity(const UpdateResponseData& update);
 
   // The model type this object syncs.
   const ModelType type_;

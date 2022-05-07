@@ -20,12 +20,13 @@
 #include "base/rand_util.h"
 #include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "components/cbor/values.h"
 #include "components/cbor/writer.h"
+#include "content/browser/aggregation_service/aggregation_service_features.h"
 #include "content/browser/aggregation_service/public_key.h"
-#include "content/public/common/content_features.h"
 #include "services/network/public/cpp/is_potentially_trustworthy.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/hpke.h"
@@ -46,17 +47,16 @@ using DpfParameters = distributed_point_functions::DpfParameters;
 constexpr char kHistogramValue[] = "histogram";
 constexpr char kOperationKey[] = "operation";
 
-std::vector<url::Origin> GetDefaultProcessingOrigins(
-    AggregationServicePayloadContents::ProcessingType processing_type) {
-  switch (processing_type) {
-    case AggregationServicePayloadContents::ProcessingType::kTwoParty:
-      // TODO(crbug.com/1295705): Update default processing origins.
-      return {url::Origin::Create(GURL("https://server1.example.com")),
-              url::Origin::Create(GURL("https://server2.example.com"))};
-    case AggregationServicePayloadContents::ProcessingType::kSingleServer:
-      return {url::Origin::Create(GURL(
-          features::kPrivacySandboxAggregationServiceTrustedServerOriginParam
-              .Get()))};
+std::vector<GURL> GetDefaultProcessingUrls(
+    AggregationServicePayloadContents::AggregationMode aggregation_mode) {
+  switch (aggregation_mode) {
+    case AggregationServicePayloadContents::AggregationMode::kTeeBased:
+      return {
+          GURL(kPrivacySandboxAggregationServiceTrustedServerUrlParam.Get())};
+    case AggregationServicePayloadContents::AggregationMode::
+        kExperimentalPoplar:
+      // TODO(crbug.com/1295705): Update default processing urls.
+      return {GURL("https://server1.example"), GURL("https://server2.example")};
   }
 }
 
@@ -81,8 +81,10 @@ std::vector<DpfKey> GenerateDpfKeys(
     const AggregationServicePayloadContents& contents) {
   DCHECK_EQ(contents.operation,
             AggregationServicePayloadContents::Operation::kHistogram);
-  DCHECK_EQ(contents.processing_type,
-            AggregationServicePayloadContents::ProcessingType::kTwoParty);
+  DCHECK_EQ(
+      contents.aggregation_mode,
+      AggregationServicePayloadContents::AggregationMode::kExperimentalPoplar);
+  DCHECK_EQ(contents.contributions.size(), 1u);
 
   // absl::StatusOr is not allowed in the codebase, but this minimal usage is
   // necessary to interact with //third_party/distributed_point_functions/.
@@ -97,9 +99,10 @@ std::vector<DpfKey> GenerateDpfKeys(
   // We want the same beta, no matter which prefix length is used.
   absl::StatusOr<std::pair<DpfKey, DpfKey>> status_or_dpf_keys =
       dpf->GenerateKeysIncremental(
-          /*alpha=*/contents.bucket,
+          /*alpha=*/contents.contributions[0].bucket,
           /*beta=*/std::vector<absl::uint128>(
-              AggregatableReport::kBucketDomainBitLength, contents.value));
+              AggregatableReport::kBucketDomainBitLength,
+              contents.contributions[0].value));
   if (!status_or_dpf_keys.ok()) {
     return {};
   }
@@ -111,10 +114,11 @@ std::vector<DpfKey> GenerateDpfKeys(
   return dpf_keys;
 }
 
-// Returns a vector with a serialized CBOR map for each processing origin. See
+// Returns a vector with a serialized CBOR map for each processing url. See
 // the AggregatableReport documentation for more detail on the expected format.
 // Returns an empty vector in case of error.
-std::vector<std::vector<uint8_t>> ConstructUnencryptedTwoPartyPayloads(
+std::vector<std::vector<uint8_t>>
+ConstructUnencryptedExperimentalPoplarPayloads(
     const AggregationServicePayloadContents& payload_contents) {
   std::vector<DpfKey> dpf_keys = GenerateDpfKeys(payload_contents);
   if (dpf_keys.empty()) {
@@ -162,18 +166,20 @@ std::vector<uint8_t> EncodeBucketForPayload(absl::uint128 bucket) {
 // Returns a vector with a serialized CBOR map. See the AggregatableReport
 // documentation for more detail on the expected format. Returns an empty
 // vector in case of error.
-// Note that a vector is returned to match the two party case.
-std::vector<std::vector<uint8_t>> ConstructUnencryptedSingleServerPayload(
+// Note that a vector is returned to match the `kExperimentalPoplar` case.
+std::vector<std::vector<uint8_t>> ConstructUnencryptedTeeBasedPayload(
     const AggregationServicePayloadContents& payload_contents) {
   cbor::Value::MapValue value;
   value.emplace(kOperationKey, kHistogramValue);
 
-  // TODO(crbug.com/1272030): Support multiple contributions in one payload.
   cbor::Value::ArrayValue data;
-  cbor::Value::MapValue data_map;
-  data_map.emplace("bucket", EncodeBucketForPayload(payload_contents.bucket));
-  data_map.emplace("value", payload_contents.value);
-  data.push_back(cbor::Value(std::move(data_map)));
+  for (AggregationServicePayloadContents::HistogramContribution contribution :
+       payload_contents.contributions) {
+    cbor::Value::MapValue data_map;
+    data_map.emplace("bucket", EncodeBucketForPayload(contribution.bucket));
+    data_map.emplace("value", contribution.value);
+    data.push_back(cbor::Value(std::move(data_map)));
+  }
   value.emplace("data", std::move(data));
 
   absl::optional<std::vector<uint8_t>> unencrypted_payload =
@@ -186,7 +192,7 @@ std::vector<std::vector<uint8_t>> ConstructUnencryptedSingleServerPayload(
   return {std::move(unencrypted_payload.value())};
 }
 
-// Encrypts the `plaintext` with HPKE using the processing origin's
+// Encrypts the `plaintext` with HPKE using the processing url's
 // `public_key`. Returns empty vector if the encryption fails.
 std::vector<uint8_t> EncryptWithHpke(
     const std::vector<uint8_t>& plaintext,
@@ -240,13 +246,24 @@ std::vector<uint8_t> EncryptWithHpke(
 
 AggregationServicePayloadContents::AggregationServicePayloadContents(
     Operation operation,
-    absl::uint128 bucket,
-    int value,
-    ProcessingType processing_type)
+    std::vector<AggregationServicePayloadContents::HistogramContribution>
+        contributions,
+    AggregationMode aggregation_mode)
     : operation(operation),
-      bucket(bucket),
-      value(value),
-      processing_type(processing_type) {}
+      contributions(std::move(contributions)),
+      aggregation_mode(aggregation_mode) {}
+
+AggregationServicePayloadContents::AggregationServicePayloadContents(
+    const AggregationServicePayloadContents& other) = default;
+AggregationServicePayloadContents& AggregationServicePayloadContents::operator=(
+    const AggregationServicePayloadContents& other) = default;
+AggregationServicePayloadContents::AggregationServicePayloadContents(
+    AggregationServicePayloadContents&& other) = default;
+AggregationServicePayloadContents& AggregationServicePayloadContents::operator=(
+    AggregationServicePayloadContents&& other) = default;
+
+AggregationServicePayloadContents::~AggregationServicePayloadContents() =
+    default;
 
 AggregatableReportSharedInfo::AggregatableReportSharedInfo(
     base::Time scheduled_report_time,
@@ -308,39 +325,48 @@ std::string AggregatableReportSharedInfo::SerializeAsJson() const {
 absl::optional<AggregatableReportRequest> AggregatableReportRequest::Create(
     AggregationServicePayloadContents payload_contents,
     AggregatableReportSharedInfo shared_info) {
-  std::vector<url::Origin> processing_origins =
-      GetDefaultProcessingOrigins(payload_contents.processing_type);
-  return CreateInternal(std::move(processing_origins),
-                        std::move(payload_contents), std::move(shared_info));
+  std::vector<GURL> processing_urls =
+      GetDefaultProcessingUrls(payload_contents.aggregation_mode);
+  return CreateInternal(std::move(processing_urls), std::move(payload_contents),
+                        std::move(shared_info));
 }
 
 // static
 absl::optional<AggregatableReportRequest>
 AggregatableReportRequest::CreateForTesting(
-    std::vector<url::Origin> processing_origins,
+    std::vector<GURL> processing_urls,
     AggregationServicePayloadContents payload_contents,
     AggregatableReportSharedInfo shared_info) {
-  return CreateInternal(std::move(processing_origins),
-                        std::move(payload_contents), std::move(shared_info));
+  return CreateInternal(std::move(processing_urls), std::move(payload_contents),
+                        std::move(shared_info));
 }
 
 // static
 absl::optional<AggregatableReportRequest>
 AggregatableReportRequest::CreateInternal(
-    std::vector<url::Origin> processing_origins,
+    std::vector<GURL> processing_urls,
     AggregationServicePayloadContents payload_contents,
     AggregatableReportSharedInfo shared_info) {
-  if (!AggregatableReport::IsNumberOfProcessingOriginsValid(
-          processing_origins.size(), payload_contents.processing_type)) {
+  if (!AggregatableReport::IsNumberOfProcessingUrlsValid(
+          processing_urls.size(), payload_contents.aggregation_mode)) {
     return absl::nullopt;
   }
 
-  if (!base::ranges::all_of(processing_origins,
-                            network::IsOriginPotentiallyTrustworthy)) {
+  if (!base::ranges::all_of(processing_urls,
+                            network::IsUrlPotentiallyTrustworthy)) {
     return absl::nullopt;
   }
 
-  if (payload_contents.value < 0) {
+  if (!AggregatableReport::IsNumberOfHistogramContributionsValid(
+          payload_contents.contributions.size(),
+          payload_contents.aggregation_mode)) {
+    return absl::nullopt;
+  }
+
+  if (base::ranges::any_of(
+          payload_contents.contributions,
+          [](const AggregationServicePayloadContents::HistogramContribution&
+                 contribution) { return contribution.value < 0; })) {
     return absl::nullopt;
   }
 
@@ -348,20 +374,25 @@ AggregatableReportRequest::CreateInternal(
     return absl::nullopt;
   }
 
-  // Ensure the ordering of origins is deterministic. This is required for
-  // AggregatableReport construction later.
-  base::ranges::sort(processing_origins);
+  if (!base::ranges::all_of(shared_info.privacy_budget_key,
+                            &base::IsAsciiPrintable<char>)) {
+    return absl::nullopt;
+  }
 
-  return AggregatableReportRequest(std::move(processing_origins),
+  // Ensure the ordering of urls is deterministic. This is required for
+  // AggregatableReport construction later.
+  base::ranges::sort(processing_urls);
+
+  return AggregatableReportRequest(std::move(processing_urls),
                                    std::move(payload_contents),
                                    std::move(shared_info));
 }
 
 AggregatableReportRequest::AggregatableReportRequest(
-    std::vector<url::Origin> processing_origins,
+    std::vector<GURL> processing_urls,
     AggregationServicePayloadContents payload_contents,
     AggregatableReportSharedInfo shared_info)
-    : processing_origins_(std::move(processing_origins)),
+    : processing_urls_(std::move(processing_urls)),
       payload_contents_(std::move(payload_contents)),
       shared_info_(std::move(shared_info)) {}
 
@@ -432,23 +463,25 @@ absl::optional<AggregatableReport>
 AggregatableReport::Provider::CreateFromRequestAndPublicKeys(
     AggregatableReportRequest report_request,
     std::vector<PublicKey> public_keys) const {
-  const size_t num_processing_origins = public_keys.size();
-  DCHECK_EQ(num_processing_origins, report_request.processing_origins().size());
+  const size_t num_processing_urls = public_keys.size();
+  DCHECK_EQ(num_processing_urls, report_request.processing_urls().size());
 
-  // The origins must be sorted so we can ensure the ordering (and assignment of
-  // DpfKey parties for two-party processing types) is deterministic.
-  DCHECK(base::ranges::is_sorted(report_request.processing_origins()));
+  // The urls must be sorted so we can ensure the ordering (and assignment of
+  // DpfKey parties for the `kExperimentalPoplar` aggregation mode) is
+  // deterministic.
+  DCHECK(base::ranges::is_sorted(report_request.processing_urls()));
 
   std::vector<std::vector<uint8_t>> unencrypted_payloads;
 
-  switch (report_request.payload_contents().processing_type) {
-    case AggregationServicePayloadContents::ProcessingType::kTwoParty: {
-      unencrypted_payloads = ConstructUnencryptedTwoPartyPayloads(
+  switch (report_request.payload_contents().aggregation_mode) {
+    case AggregationServicePayloadContents::AggregationMode::kTeeBased: {
+      unencrypted_payloads = ConstructUnencryptedTeeBasedPayload(
           report_request.payload_contents());
       break;
     }
-    case AggregationServicePayloadContents::ProcessingType::kSingleServer: {
-      unencrypted_payloads = ConstructUnencryptedSingleServerPayload(
+    case AggregationServicePayloadContents::AggregationMode::
+        kExperimentalPoplar: {
+      unencrypted_payloads = ConstructUnencryptedExperimentalPoplarPayloads(
           report_request.payload_contents());
       break;
     }
@@ -463,17 +496,14 @@ AggregatableReport::Provider::CreateFromRequestAndPublicKeys(
       kDomainSeparationPrefix + sizeof(kDomainSeparationPrefix));
 
   std::string encoded_shared_info =
-      report_request.shared_info_.SerializeAsJson();
+      report_request.shared_info().SerializeAsJson();
   authenticated_info.insert(authenticated_info.end(),
                             encoded_shared_info.begin(),
                             encoded_shared_info.end());
 
-  // To avoid unnecessary copies, we move the processing origins and shared info
-  // from the `report_request`'s private members. Note that the request object
-  // is destroyed at the end of this method.
   std::vector<AggregatableReport::AggregationServicePayload> encrypted_payloads;
-  DCHECK_EQ(unencrypted_payloads.size(), num_processing_origins);
-  for (size_t i = 0; i < num_processing_origins; ++i) {
+  DCHECK_EQ(unencrypted_payloads.size(), num_processing_urls);
+  for (size_t i = 0; i < num_processing_urls; ++i) {
     std::vector<uint8_t> encrypted_payload =
         g_disable_encryption_for_testing_tool_
             ? unencrypted_payloads[i]
@@ -527,13 +557,28 @@ base::Value::DictStorage AggregatableReport::GetAsJson() const {
 }
 
 // static
-bool AggregatableReport::IsNumberOfProcessingOriginsValid(
+bool AggregatableReport::IsNumberOfProcessingUrlsValid(
     size_t number,
-    AggregationServicePayloadContents::ProcessingType processing_type) {
-  switch (processing_type) {
-    case AggregationServicePayloadContents::ProcessingType::kTwoParty:
+    AggregationServicePayloadContents::AggregationMode aggregation_mode) {
+  switch (aggregation_mode) {
+    case AggregationServicePayloadContents::AggregationMode::kTeeBased:
+      return number == 1u;
+    case AggregationServicePayloadContents::AggregationMode::
+        kExperimentalPoplar:
       return number == 2u;
-    case AggregationServicePayloadContents::ProcessingType::kSingleServer:
+  }
+}
+
+// static
+bool AggregatableReport::IsNumberOfHistogramContributionsValid(
+    size_t number,
+    AggregationServicePayloadContents::AggregationMode aggregation_mode) {
+  // Note: APIs using the aggregation service may impose their own limits.
+  switch (aggregation_mode) {
+    case AggregationServicePayloadContents::AggregationMode::kTeeBased:
+      return number >= 1u;
+    case AggregationServicePayloadContents::AggregationMode::
+        kExperimentalPoplar:
       return number == 1u;
   }
 }

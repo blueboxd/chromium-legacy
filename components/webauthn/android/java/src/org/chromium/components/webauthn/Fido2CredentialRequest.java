@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.IBinder;
 import android.os.Parcel;
 import android.os.SystemClock;
 import android.util.Pair;
@@ -39,6 +38,7 @@ import org.chromium.url.Origin;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.List;
 
 /**
  * Uses the Google Play Services Fido2 APIs.
@@ -123,8 +123,12 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
         args.writeInt(1); // This indicates that the following options are present.
 
         try {
-            Fido2Api.appendBrowserMakeCredentialOptionsToParcel(options,
-                    Uri.parse(convertOriginToString(origin)), /* clientDataHash= */ null, args);
+            if (mSupportLevel == WebAuthenticationDelegate.Support.BROWSER) {
+                Fido2Api.appendBrowserMakeCredentialOptionsToParcel(options,
+                        Uri.parse(convertOriginToString(origin)), /* clientDataHash= */ null, args);
+            } else {
+                Fido2Api.appendMakeCredentialOptionsToParcel(options, args);
+            }
         } catch (NoSuchAlgorithmException e) {
             returnErrorAndResetCallback(AuthenticatorStatus.ALGORITHM_UNSUPPORTED);
             return;
@@ -198,18 +202,30 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
             }
         }
 
-        Fido2ApiCall call = new Fido2ApiCall(ContextUtils.getApplicationContext(), mSupportLevel);
-        Parcel args = call.start();
-        Fido2ApiCall.PendingIntentResult result = new Fido2ApiCall.PendingIntentResult(call);
-        args.writeStrongBinder(result);
-        args.writeInt(1); // This indicates that the following options are present.
-        Fido2Api.appendBrowserGetAssertionOptionsToParcel(
-                options, Uri.parse(callerOriginString), clientDataHash, args);
+        if (options.isConditional) {
+            Fido2ApiCall call =
+                    new Fido2ApiCall(ContextUtils.getApplicationContext(), mSupportLevel);
+            Parcel args = call.start();
+            Fido2ApiCall.WebAuthnCredentialDetailsListResult result =
+                    new Fido2ApiCall.WebAuthnCredentialDetailsListResult();
+            args.writeStrongBinder(result);
+            args.writeString(options.relyingPartyId);
 
-        Task<PendingIntent> task = call.run(
-                Fido2ApiCall.METHOD_BROWSER_SIGN, Fido2ApiCall.TRANSACTION_SIGN, args, result);
-        task.addOnSuccessListener(this::onGotPendingIntent);
-        task.addOnFailureListener(this::onBinderCallException);
+            // For use in the lambda expression.
+            final byte[] finalClientDataHash = clientDataHash;
+
+            Task<List<WebAuthnCredentialDetails>> task =
+                    call.run(Fido2ApiCall.METHOD_BROWSER_GETCREDENTIALS,
+                            Fido2ApiCall.TRANSACTION_GETCREDENTIALS, args, result);
+            task.addOnSuccessListener(
+                    (credentials)
+                            -> onWebAuthnCredentialDetailsListReceived(frameHost, options,
+                                    callerOriginString, finalClientDataHash, credentials));
+            task.addOnFailureListener(this::onBinderCallException);
+            return;
+        }
+
+        dispatchGetAssertionRequest(options, callerOriginString, clientDataHash, null);
     }
 
     public void handleIsUserVerifyingPlatformAuthenticatorAvailableRequest(
@@ -232,7 +248,7 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
         args.writeStrongBinder(result);
 
         Task<Boolean> task = call.run(Fido2ApiCall.METHOD_BROWSER_ISUVPAA,
-                IBinder.FIRST_CALL_TRANSACTION + 2, args, result);
+                Fido2ApiCall.TRANSACTION_ISUVPAA, args, result);
         task.addOnSuccessListener((isUVPAA) -> {
             callback.onIsUserVerifyingPlatformAuthenticatorAvailableResponse(isUVPAA);
         });
@@ -242,6 +258,40 @@ public class Fido2CredentialRequest implements Callback<Pair<Integer, Intent>> {
     private boolean apiAvailable() {
         return ExternalAuthUtils.getInstance().canUseGooglePlayServices(
                 new UserRecoverableErrorHandler.Silent());
+    }
+
+    private void onWebAuthnCredentialDetailsListReceived(RenderFrameHost frameHost,
+            PublicKeyCredentialRequestOptions options, String callerOriginString,
+            byte[] clientDataHash, List<WebAuthnCredentialDetails> credentials) {
+        // TODO(kenrb): Call frameHost.onCredentialsDetailsListReceived with
+        // dispatchGetAssertionRequest as a callback.
+        // i.e.:
+        //   frameHost.onCredentialsDetailsListReceived(credentials,
+        //       (selectedCredential) -> dispatchGetAssertionRequest(options,
+        //                                                           callerOriginString,
+        //                                                           clientDataHash,
+        //                                                           selectedCredentialId));
+    }
+
+    private void dispatchGetAssertionRequest(PublicKeyCredentialRequestOptions options,
+            String callerOriginString, byte[] clientDataHash, byte[] credentialId) {
+        Fido2ApiCall call = new Fido2ApiCall(ContextUtils.getApplicationContext(), mSupportLevel);
+        Parcel args = call.start();
+        Fido2ApiCall.PendingIntentResult result = new Fido2ApiCall.PendingIntentResult(call);
+        args.writeStrongBinder(result);
+        args.writeInt(1); // This indicates that the following options are present.
+
+        if (mSupportLevel == WebAuthenticationDelegate.Support.BROWSER) {
+            Fido2Api.appendBrowserGetAssertionOptionsToParcel(
+                    options, Uri.parse(callerOriginString), clientDataHash, args);
+        } else {
+            Fido2Api.appendGetAssertionOptionsToParcel(options, args);
+        }
+
+        Task<PendingIntent> task = call.run(
+                Fido2ApiCall.METHOD_BROWSER_SIGN, Fido2ApiCall.TRANSACTION_SIGN, args, result);
+        task.addOnSuccessListener(this::onGotPendingIntent);
+        task.addOnFailureListener(this::onBinderCallException);
     }
 
     // Handles a PendingIntent from the GMSCore FIDO library.

@@ -1,9 +1,0 @@
-include_rules = [
-  "+components/proximity_auth/logging/logging.h",
-  '+components/keyed_service/core',
-  "+components/session_manager/core",
-  "+components/sync_preferences/testing_pref_service_syncable.h",
-  "+components/variations",
-  "+mojo/public/cpp/bindings",
-  "+third_party/securemessage",
-]

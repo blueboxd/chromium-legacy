@@ -69,7 +69,7 @@ class OriginTest : public ::testing::Test {
     return Origin::Nonce(nonce);
   }
 
-  absl::optional<base::UnguessableToken> GetNonce(const Origin& origin) {
+  const base::UnguessableToken* GetNonce(const Origin& origin) {
     return origin.GetNonceForSerialization();
   }
 
@@ -172,6 +172,7 @@ TEST_F(OriginTest, OpaqueOriginComparison) {
   EXPECT_LT(opaque_a, url::Origin::Create(GURL("http://www.google.com")));
   EXPECT_LT(opaque_b, url::Origin::Create(GURL("http://www.google.com")));
 
+  EXPECT_EQ(opaque_b, url::Origin::Resolve(GURL(), opaque_b));
   EXPECT_EQ(opaque_b, url::Origin::Resolve(GURL("about:blank"), opaque_b));
   EXPECT_EQ(opaque_b, url::Origin::Resolve(GURL("about:srcdoc"), opaque_b));
   EXPECT_EQ(opaque_b,
@@ -363,7 +364,7 @@ TEST_F(OriginTest, UnsafelyCreateUniqueOnInvalidInput) {
       << "UnsafelyCreateOpaqueOriginWithoutNormalization, so long as it is "
       << "the canonical form of the invalid tuple.";
   EXPECT_TRUE(anonymous_opaque->opaque());
-  EXPECT_EQ(GetNonce(anonymous_opaque.value()), token);
+  EXPECT_EQ(*GetNonce(anonymous_opaque.value()), token);
   EXPECT_EQ(anonymous_opaque->GetTupleOrPrecursorTupleIfOpaque(),
             url::SchemeHostPort());
 }

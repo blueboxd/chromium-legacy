@@ -52,7 +52,6 @@ import("//third_party/blink/renderer/core/offscreencanvas/build.gni")
 import("//third_party/blink/renderer/core/origin_trials/build.gni")
 import("//third_party/blink/renderer/core/page/build.gni")
 import("//third_party/blink/renderer/core/paint/build.gni")
-import("//third_party/blink/renderer/core/peerconnection/build.gni")
 import("//third_party/blink/renderer/core/permissions_policy/build.gni")
 import("//third_party/blink/renderer/core/resize_observer/build.gni")
 import("//third_party/blink/renderer/core/script/build.gni")
@@ -250,8 +249,6 @@ component("core") {
   sources += rebase_path(blink_core_sources_origin_trials, "", "origin_trials")
   sources += rebase_path(blink_core_sources_page, "", "page")
   sources += rebase_path(blink_core_sources_paint, "", "paint")
-  sources +=
-      rebase_path(blink_core_sources_peerconnection, "", "peerconnection")
   sources +=
       rebase_path(blink_core_sources_resize_observer, "", "resize_observer")
   sources +=
@@ -1276,6 +1273,7 @@ source_set("unit_tests") {
     "fetch/request_test.cc",
     "fetch/response_test.cc",
     "fragment_directive/css_selector_fragment_anchor_test.cc",
+    "fragment_directive/same_block_word_iterator_test.cc",
     "fragment_directive/text_fragment_anchor_metrics_test.cc",
     "fragment_directive/text_fragment_anchor_test.cc",
     "fragment_directive/text_fragment_finder_test.cc",
@@ -1284,6 +1282,8 @@ source_set("unit_tests") {
     "fragment_directive/text_fragment_selector_generator_test.cc",
     "fragment_directive/text_fragment_selector_test.cc",
     "frame/ad_tracker_test.cc",
+    "frame/anchor_element_listener_test.cc",
+    "frame/attribution_response_parsing_test.cc",
     "frame/browser_controls_test.cc",
     "frame/child_frame_compositing_helper_test.cc",
     "frame/csp/content_security_policy_test.cc",
@@ -1349,7 +1349,6 @@ source_set("unit_tests") {
     "loader/cookie_jar_unittest.cc",
     "loader/document_load_timing_test.cc",
     "loader/document_loader_test.cc",
-    "loader/font_preload_manager_test.cc",
     "loader/frame_fetch_context_test.cc",
     "loader/frame_loader_test.cc",
     "loader/frame_resource_fetcher_properties_test.cc",
@@ -1367,6 +1366,7 @@ source_set("unit_tests") {
     "loader/prerender_test.cc",
     "loader/programmatic_scroll_test.cc",
     "loader/progress_tracker_test.cc",
+    "loader/render_blocking_resource_manager_test.cc",
     "loader/resource/css_style_sheet_resource_test.cc",
     "loader/resource/font_resource_test.cc",
     "loader/resource/image_resource_test.cc",
@@ -1393,6 +1393,7 @@ source_set("unit_tests") {
     "page/drag_controller_test.cc",
     "page/drag_image_test.cc",
     "page/focus_controller_test.cc",
+    "page/focusgroup_controller_test.cc",
     "page/named_pages_mapper_test.cc",
     "page/page_popup_client_test.cc",
     "page/plugin_data_test.cc",
@@ -1430,6 +1431,7 @@ source_set("unit_tests") {
     "paint/largest_contentful_paint_calculator_test.cc",
     "paint/link_highlight_impl_test.cc",
     "paint/ng/ng_box_fragment_painter_test.cc",
+    "paint/ng/ng_highlight_overlay_test.cc",
     "paint/ng/ng_text_fragment_painter_test.cc",
     "paint/nine_piece_image_grid_test.cc",
     "paint/object_paint_invalidator_test.cc",
@@ -1841,4 +1843,24 @@ fuzzer_test("permissions_policy_fuzzer") {
   ]
   dict = "//third_party/blink/renderer/core/permissions_policy/permissions_policy.dict"
   seed_corpus = "//third_party/blink/renderer/core/permissions_policy/permissions_policy_corpus"
+}
+
+fuzzer_test("attribution_source_registration_fuzzer") {
+  sources = [ "frame/attribution_source_registration_fuzzer.cc" ]
+  deps = [
+    ":core",
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
+  seed_corpus = "//third_party/blink/renderer/core/frame/attribution_src/attribution_source_registration_corpus"
+}
+
+fuzzer_test("attribution_event_trigger_data_fuzzer") {
+  sources = [ "frame/attribution_event_trigger_data_fuzzer.cc" ]
+  deps = [
+    ":core",
+    "//third_party/blink/renderer/platform:blink_fuzzer_test_support",
+  ]
+  dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
+  seed_corpus = "//third_party/blink/renderer/core/frame/attribution_src/attribution_event_trigger_data_corpus"
 }

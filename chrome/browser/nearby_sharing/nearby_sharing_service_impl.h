@@ -43,6 +43,7 @@
 #include "chrome/browser/nearby_sharing/power_client.h"
 #include "chrome/browser/nearby_sharing/share_target.h"
 #include "chrome/browser/nearby_sharing/transfer_metadata.h"
+#include "chrome/browser/nearby_sharing/wifi_network_configuration/wifi_network_configuration_handler.h"
 #include "chrome/browser/ui/webui/nearby_share/public/mojom/nearby_share_settings.mojom.h"
 #include "chrome/services/sharing/public/proto/wire_format.pb.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -61,7 +62,7 @@ class PrefService;
 class Profile;
 
 namespace NearbySharingServiceUnitTests {
-class NearbySharingServiceImplTest;
+class NearbySharingServiceImplTestBase;
 }
 
 // All methods should be called from the same sequence that created the service.
@@ -86,7 +87,8 @@ class NearbySharingServiceImpl
       Profile* profile,
       std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager,
       ash::nearby::NearbyProcessManager* process_manager,
-      std::unique_ptr<PowerClient> power_client);
+      std::unique_ptr<PowerClient> power_client,
+      std::unique_ptr<WifiNetworkConfigurationHandler> wifi_network_handler);
   ~NearbySharingServiceImpl() override;
 
   // NearbySharingService:
@@ -152,7 +154,7 @@ class NearbySharingServiceImpl
   }
 
  private:
-  friend class NearbySharingServiceUnitTests::NearbySharingServiceImplTest;
+  friend class NearbySharingServiceUnitTests::NearbySharingServiceImplTestBase;
 
   // nearby_share::mojom::NearbyShareSettingsObserver:
   void OnEnabledChanged(bool enabled) override;
@@ -412,6 +414,15 @@ class NearbySharingServiceImpl
   void AbortAndCloseConnectionIfNecessary(const TransferMetadata::Status status,
                                           const ShareTarget& share_target);
 
+  // The method is responsible for updating visibility reminder timer:
+  // 1) Stops the timer if the feature flag is disabled OR Nearby Share is
+  // disabled OR visibility is changed to 'Hidden"; 2) Restart the timer and
+  // update the timestamp if we force it to update OR it's past 180 days since
+  // last time we updated it.
+  void UpdateVisibilityReminderTimer(bool reset_timestamp);
+  void OnVisibilityReminderTimerFired();
+  base::TimeDelta GetTimeUntilNextVisibilityReminder();
+
   PrefService* prefs_ = nullptr;
   Profile* profile_;
   std::unique_ptr<NearbyConnectionsManager> nearby_connections_manager_;
@@ -419,6 +430,7 @@ class NearbySharingServiceImpl
   std::unique_ptr<ash::nearby::NearbyProcessManager::NearbyProcessReference>
       process_reference_;
   std::unique_ptr<PowerClient> power_client_;
+  std::unique_ptr<WifiNetworkConfigurationHandler> wifi_network_handler_;
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   // Advertiser which is non-null when we are attempting to share and
   // broadcasting Fast Initiation advertisements.
@@ -548,6 +560,9 @@ class NearbySharingServiceImpl
   // Used to prevent the "Device nearby is sharing" notification from appearing
   // immediately after a completed share.
   base::OneShotTimer fast_initiation_scanner_cooldown_timer_;
+
+  // Used to control when to show visibility reminder notification to users.
+  base::OneShotTimer visibility_reminder_timer_;
 
   // Available free disk space for testing. Using real disk space can introduce
   // flakiness in tests.

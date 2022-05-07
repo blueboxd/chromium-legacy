@@ -4,7 +4,9 @@
 
 #include "ash/capture_mode/capture_mode_bar_view.h"
 #include "ash/capture_mode/capture_mode_camera_controller.h"
+#include "ash/capture_mode/capture_mode_constants.h"
 #include "ash/capture_mode/capture_mode_controller.h"
+#include "ash/capture_mode/capture_mode_menu_group.h"
 #include "ash/capture_mode/capture_mode_session.h"
 #include "ash/capture_mode/capture_mode_session_test_api.h"
 #include "ash/capture_mode/capture_mode_settings_test_api.h"
@@ -15,15 +17,19 @@
 #include "ash/capture_mode/fake_video_source_provider.h"
 #include "ash/capture_mode/test_capture_mode_delegate.h"
 #include "ash/constants/ash_features.h"
+#include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/capture_mode/capture_mode_test_api.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "base/files/file_path.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/system_monitor.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 
@@ -40,6 +46,22 @@ TestCaptureModeDelegate* GetTestDelegate() {
 
 CaptureModeCameraController* GetCameraController() {
   return CaptureModeController::Get()->camera_controller();
+}
+
+// Returns the current root window where the current capture activities are
+// hosted in.
+aura::Window* GetCurrentRoot() {
+  auto* controller = CaptureModeController::Get();
+  if (controller->IsActive())
+    return controller->capture_mode_session()->current_root();
+
+  if (controller->is_recording_in_progress()) {
+    return controller->video_recording_watcher_for_testing()
+        ->window_being_recorded()
+        ->GetRootWindow();
+  }
+
+  return Shell::GetPrimaryRootWindow();
 }
 
 // Defines a waiter for the camera devices change notifications.
@@ -166,6 +188,77 @@ class CaptureModeCameraTest : public AshTestBase {
                 GetEventGenerator());
   }
 
+  void DragPreviewToPoint(views::Widget* preview_widget,
+                          const gfx::Point& screen_location,
+                          bool by_touch_gestures = false,
+                          bool drop = true) {
+    DCHECK(preview_widget);
+    auto* event_generator = GetEventGenerator();
+    event_generator->set_current_screen_location(
+        preview_widget->GetWindowBoundsInScreen().CenterPoint());
+    if (by_touch_gestures) {
+      event_generator->PressTouch();
+      // Move the touch by an enough amount in X to make sure it generates a
+      // serial of gesture scroll events instead of a fling event.
+      event_generator->MoveTouchBy(50, 0);
+      event_generator->MoveTouch(screen_location);
+      if (drop)
+        event_generator->ReleaseTouch();
+    } else {
+      event_generator->PressLeftButton();
+      event_generator->MoveMouseTo(screen_location);
+      if (drop)
+        event_generator->ReleaseLeftButton();
+    }
+  }
+
+  // Verifies that the camera preview is placed on the correct position based on
+  // current preview snap position and the given `confine_bounds_in_screen`.
+  void VerifyPreviewAlignment(const gfx::Rect& confine_bounds_in_screen) {
+    auto* camera_controller = GetCameraController();
+    const auto* preview_widget = camera_controller->camera_preview_widget();
+    DCHECK(preview_widget);
+    const gfx::Rect camera_preview_bounds =
+        preview_widget->GetWindowBoundsInScreen();
+
+    switch (camera_controller->camera_preview_snap_position()) {
+      case CameraPreviewSnapPosition::kTopLeft: {
+        gfx::Point expect_origin = confine_bounds_in_screen.origin();
+        expect_origin.Offset(capture_mode::kSpaceBetweenCameraPreviewAndEdges,
+                             capture_mode::kSpaceBetweenCameraPreviewAndEdges);
+        EXPECT_EQ(expect_origin, camera_preview_bounds.origin());
+        break;
+      }
+      case CameraPreviewSnapPosition::kBottomLeft: {
+        const gfx::Point expect_bottom_left =
+            gfx::Point(confine_bounds_in_screen.x() +
+                           capture_mode::kSpaceBetweenCameraPreviewAndEdges,
+                       confine_bounds_in_screen.bottom() -
+                           capture_mode::kSpaceBetweenCameraPreviewAndEdges);
+        EXPECT_EQ(expect_bottom_left, camera_preview_bounds.bottom_left());
+        break;
+      }
+      case CameraPreviewSnapPosition::kBottomRight: {
+        const gfx::Point expect_bottom_right =
+            gfx::Point(confine_bounds_in_screen.right() -
+                           capture_mode::kSpaceBetweenCameraPreviewAndEdges,
+                       confine_bounds_in_screen.bottom() -
+                           capture_mode::kSpaceBetweenCameraPreviewAndEdges);
+        EXPECT_EQ(expect_bottom_right, camera_preview_bounds.bottom_right());
+        break;
+      }
+      case CameraPreviewSnapPosition::kTopRight: {
+        const gfx::Point expect_top_right =
+            gfx::Point(confine_bounds_in_screen.right() -
+                           capture_mode::kSpaceBetweenCameraPreviewAndEdges,
+                       confine_bounds_in_screen.y() +
+                           capture_mode::kSpaceBetweenCameraPreviewAndEdges);
+        EXPECT_EQ(expect_top_right, camera_preview_bounds.top_right());
+        break;
+      }
+    }
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::SystemMonitor system_monitor_;
@@ -270,6 +363,28 @@ TEST_F(CaptureModeCameraTest, SelectedCameraBecomesAvailable) {
   camera_controller->SetSelectedCamera(CameraId());
   EXPECT_FALSE(camera_controller->selected_camera().is_valid());
   EXPECT_FALSE(camera_controller->camera_preview_widget());
+}
+
+TEST_F(CaptureModeCameraTest, SelectingDifferentCameraCreatesNewPreviewWidget) {
+  AddDefaultCamera();
+  const std::string device_id = "/dev/video0";
+  const std::string display_name = "Integrated Webcam";
+  const std::string model_id = "0123:4567";
+  AddFakeCamera(device_id, display_name, model_id);
+
+  StartCaptureSession(CaptureModeSource::kFullscreen, CaptureModeType::kVideo);
+  auto* camera_controller = GetCameraController();
+  EXPECT_FALSE(camera_controller->camera_preview_widget());
+
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+  auto* current_preview_widget = camera_controller->camera_preview_widget();
+  EXPECT_TRUE(current_preview_widget);
+
+  // Selecting a different camera should result in the recreation of the preview
+  // widget.
+  camera_controller->SetSelectedCamera(CameraId(model_id, 1));
+  EXPECT_TRUE(camera_controller->camera_preview_widget());
+  EXPECT_NE(current_preview_widget, camera_controller->camera_preview_widget());
 }
 
 TEST_F(CaptureModeCameraTest, MultipleCamerasOfTheSameModel) {
@@ -654,13 +769,14 @@ TEST_F(CaptureModeCameraTest, CameraPreviewWidgetBounds) {
   const auto* preview_widget = camera_controller->camera_preview_widget();
   EXPECT_TRUE(preview_widget);
 
-  // When snap position is `kBottomRight` and capture source is `kFullscreen`,
-  // the preview should at the bottom right corner of screen.
+  // Verifies the camera preview's alignment with `kBottomRight` snap position
+  // and `kFullscreen` capture source.
   const auto* capture_mode_session = controller->capture_mode_session();
-  const gfx::Rect screen_bounds =
-      capture_mode_session->current_root()->GetBoundsInScreen();
-  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().bottom_right(),
-            screen_bounds.bottom_right());
+  const gfx::Rect work_area =
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(capture_mode_session->current_root())
+          .work_area();
+  VerifyPreviewAlignment(work_area);
 
   // Switching to `kRegion` without capture region set, the preview widget
   // should not be shown.
@@ -668,45 +784,48 @@ TEST_F(CaptureModeCameraTest, CameraPreviewWidgetBounds) {
   EXPECT_TRUE(controller->user_capture_region().IsEmpty());
   EXPECT_FALSE(preview_widget->IsVisible());
 
-  // The preview should be shown at the bottom right corner of the capture
-  // region when it is set.
+  // Verifies the camera preview's alignment with `kBottomRight` snap position
+  // and `kRegion` capture source.
   const gfx::Rect capture_region(10, 20, 300, 200);
   controller->SetUserCaptureRegion(capture_region, /*by_user=*/true);
-  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().bottom_right(),
-            capture_region.bottom_right());
+  VerifyPreviewAlignment(capture_region);
 
-  // Switching back to `kFullscreen`, the preview should be shown at the bottom
-  // right of the screen again.
+  // Verifies the camera preview's alignment after switching back to
+  // `kFullscreen.`
   controller->SetSource(CaptureModeSource::kFullscreen);
-  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().bottom_right(),
-            screen_bounds.bottom_right());
+  VerifyPreviewAlignment(work_area);
 
-  // Switching back to `kRegion`, the preview should be shown at the bottom
-  // right of the current capture region again.
+  // Verifies the camera preview's alignment with `kBottomLeft` snap position
+  // and `kRegion` capture source.
   controller->SetSource(CaptureModeSource::kRegion);
-  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().bottom_right(),
-            capture_region.bottom_right());
-
-  // Update the snap position should update the preview to the corresponding
-  // position.
   camera_controller->SetCameraPreviewSnapPosition(
       CameraPreviewSnapPosition::kBottomLeft);
-  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().bottom_left(),
-            capture_region.bottom_left());
+  VerifyPreviewAlignment(capture_region);
+
+  // Verifies the camera preview's alignment with `kTopLeft` snap position
+  // and `kRegion` capture source.
+  camera_controller->SetCameraPreviewSnapPosition(
+      CameraPreviewSnapPosition::kTopLeft);
+  VerifyPreviewAlignment(capture_region);
+
+  // Verifies the camera preview's alignment with `kTopRight` snap position
+  // and `kRegion` capture source.
+  camera_controller->SetCameraPreviewSnapPosition(
+      CameraPreviewSnapPosition::kTopRight);
+  VerifyPreviewAlignment(capture_region);
 
   // Set capture region to empty, the preview should be hidden again.
   controller->SetUserCaptureRegion(gfx::Rect(), /*by_user=*/true);
   EXPECT_FALSE(preview_widget->IsVisible());
 
-  // Switching to `kWindow` and start the video recording. The preview should
-  // stay at the bottom left corner of the recording window's bounds.
+  // Verifies the camera preview's alignment with `kTopRight` snap position and
+  // `kWindow` capture source.
   StartRecordingFromSource(CaptureModeSource::kWindow);
   const auto* window_being_recorded =
       controller->video_recording_watcher_for_testing()
           ->window_being_recorded();
   DCHECK(window_being_recorded);
-  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen().bottom_left(),
-            window_being_recorded->GetBoundsInScreen().bottom_left());
+  VerifyPreviewAlignment(window_being_recorded->GetBoundsInScreen());
 }
 
 TEST_F(CaptureModeCameraTest, MultiDisplayCameraPreviewWidgetBounds) {
@@ -753,7 +872,7 @@ TEST_F(CaptureModeCameraTest, MultiDisplayCameraPreviewWidgetBounds) {
   // should be inside the window that is being recorded inside the second
   // display.
   window()->SetBoundsInScreen(
-      gfx::Rect(900, 0, 300, 200),
+      gfx::Rect(900, 0, 400, 300),
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           Shell::GetAllRootWindows()[1]));
   StartRecordingFromSource(CaptureModeSource::kWindow);
@@ -763,5 +882,505 @@ TEST_F(CaptureModeCameraTest, MultiDisplayCameraPreviewWidgetBounds) {
   EXPECT_TRUE(window_being_recorded->GetBoundsInScreen().Contains(
       preview_widget->GetWindowBoundsInScreen()));
 }
+
+// Tests that switching from `kImage` to `kVideo` with capture source `kWindow`,
+// and capture window is already selected before the switch, the camera preview
+// widget should be positioned and parented correctly.
+TEST_F(CaptureModeCameraTest, CameraPreviewWidgetAfterTypeSwitched) {
+  auto* controller =
+      StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kImage);
+  auto* camera_controller = GetCameraController();
+  GetEventGenerator()->MoveMouseToCenterOf(window());
+
+  AddDefaultCamera();
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+
+  controller->SetType(CaptureModeType::kVideo);
+  const auto* camera_preview_widget =
+      camera_controller->camera_preview_widget();
+  EXPECT_TRUE(camera_preview_widget);
+  auto* parent = camera_preview_widget->GetNativeWindow()->parent();
+  const auto* selected_window =
+      controller->capture_mode_session()->GetSelectedWindow();
+  ASSERT_EQ(parent, selected_window);
+
+  // Verify that camera preview is at the bottom right corner of the window.
+  VerifyPreviewAlignment(selected_window->GetBoundsInScreen());
+}
+
+// Tests that audio and camera menu groups should be hidden from the settings
+// menu when there's a video recording in progress.
+TEST_F(CaptureModeCameraTest,
+       AudioAndCameraMenuGroupsAreHiddenWhenVideoRecordingInProgress) {
+  auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
+                                         CaptureModeType::kVideo);
+  auto* camera_controller = controller->camera_controller();
+  StartVideoRecordingImmediately();
+  EXPECT_TRUE(controller->is_recording_in_progress());
+
+  // Verify there's no camera preview created, since we don't select any camera.
+  EXPECT_FALSE(camera_controller->camera_preview_widget());
+
+  // Check capture session is shut down after the video recording starts.
+  EXPECT_FALSE(controller->IsActive());
+
+  // Start a new session, check the type should be switched automatically to
+  // kImage.
+  controller->Start(CaptureModeEntryType::kQuickSettings);
+  EXPECT_EQ(CaptureModeType::kImage, controller->type());
+
+  // Verify there's no camera preview created after a new session started.
+  EXPECT_FALSE(camera_controller->camera_preview_widget());
+
+  OpenSettingsView();
+  // Check the audio and camera menu groups are hidden from the settings.
+  CaptureModeSettingsTestApi test_api_new;
+  EXPECT_FALSE(test_api_new.GetCameraMenuGroup());
+  EXPECT_FALSE(test_api_new.GetAudioInputMenuGroup());
+  EXPECT_TRUE(test_api_new.GetSaveToMenuGroup());
+}
+
+// Verify that starting a new capture session and updating capture source won't
+// affect the current camera preview when there's a video recording is progress.
+TEST_F(CaptureModeCameraTest,
+       CameraPreviewNotChangeWhenVideoRecordingInProgress) {
+  auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
+                                         CaptureModeType::kVideo);
+  auto* camera_controller = controller->camera_controller();
+  AddDefaultCamera();
+  OpenSettingsView();
+
+  // Select the default camera for video recording.
+  CaptureModeSettingsTestApi test_api;
+  ClickOnView(test_api.GetCameraOption(kCameraDevicesBegin),
+              GetEventGenerator());
+  StartVideoRecordingImmediately();
+
+  // Check that the camera preview is created.
+  const auto* camera_preview_widget =
+      camera_controller->camera_preview_widget();
+  EXPECT_TRUE(camera_preview_widget);
+
+  auto* preview_window = camera_preview_widget->GetNativeWindow();
+  auto* parent = preview_window->parent();
+
+  // Start a new capture session, and set capture source to `kFullscreen`,
+  // verify the camera preview and its parent are not changed.
+  controller->Start(CaptureModeEntryType::kQuickSettings);
+  controller->SetSource(CaptureModeSource::kFullscreen);
+  EXPECT_EQ(preview_window,
+            camera_controller->camera_preview_widget()->GetNativeWindow());
+  EXPECT_EQ(
+      parent,
+      camera_controller->camera_preview_widget()->GetNativeWindow()->parent());
+
+  // Update capture source to `kRegion` and set the user capture region, verify
+  // the camera preview and its parent are not changed.
+  controller->SetSource(CaptureModeSource::kRegion);
+  controller->SetUserCaptureRegion({100, 100, 200, 300}, /*by_user=*/true);
+  EXPECT_EQ(preview_window,
+            camera_controller->camera_preview_widget()->GetNativeWindow());
+  EXPECT_EQ(
+      parent,
+      camera_controller->camera_preview_widget()->GetNativeWindow()->parent());
+
+  // Update capture source to `kWindow` and move mouse on top the `window`,
+  // verify that the camera preview and its parent are not changed.
+  controller->SetSource(CaptureModeSource::kWindow);
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseToCenterOf(window());
+  EXPECT_EQ(preview_window,
+            camera_controller->camera_preview_widget()->GetNativeWindow());
+  EXPECT_EQ(
+      parent,
+      camera_controller->camera_preview_widget()->GetNativeWindow()->parent());
+}
+
+// Tests that changing the folder while there's a video recording in progress
+// doesn't change the folder where the video being recorded will be saved to.
+// It will only affect the image to be captured.
+TEST_F(CaptureModeCameraTest, ChangeFolderWhileVideoRecordingInProgress) {
+  auto* controller = StartCaptureSession(CaptureModeSource::kFullscreen,
+                                         CaptureModeType::kVideo);
+  StartVideoRecordingImmediately();
+
+  // While the video recording is in progress, start a new capture session and
+  // update the save-to folder to the custom folder.
+  controller->Start(CaptureModeEntryType::kQuickSettings);
+  controller->SetCustomCaptureFolder(
+      CreateCustomFolderInUserDownloadsPath("test"));
+
+  // Perform the image capture. Verify that the image is saved to the custom
+  // folder.
+  controller->PerformCapture();
+  const base::FilePath& saved_image_file = WaitForCaptureFileToBeSaved();
+  EXPECT_EQ(controller->GetCustomCaptureFolder(), saved_image_file.DirName());
+
+  // End the video recoring and verify the video is still saved to the default
+  // downloads folder.
+  controller->EndVideoRecording(EndRecordingReason::kStopRecordingButton);
+  const base::FilePath& saved_video_file = WaitForCaptureFileToBeSaved();
+  EXPECT_EQ(controller->delegate_for_testing()->GetUserDefaultDownloadsFolder(),
+            saved_video_file.DirName());
+}
+
+// Tests multiple scenarios to trigger selected window updates at located
+// position. Camera preview's native window should be added to the ignore
+// windows and no crash should happen in these cases.
+TEST_F(CaptureModeCameraTest,
+       UpdateSelectedWindowAtPositionWithCameraPreviewIgnored) {
+  auto* controller =
+      StartCaptureSession(CaptureModeSource::kWindow, CaptureModeType::kVideo);
+  AddDefaultCamera();
+  auto* camera_controller = GetCameraController();
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+  auto* event_generator = GetEventGenerator();
+  event_generator->MoveMouseToCenterOf(window());
+  EXPECT_TRUE(camera_controller->camera_preview_widget());
+
+  // No camera preview when it is in `kImage`.
+  controller->SetType(CaptureModeType::kImage);
+  event_generator->MoveMouseToCenterOf(window());
+  EXPECT_FALSE(camera_controller->camera_preview_widget());
+
+  // The native window of camera preview widget should be ignored from the
+  // candidates of the selected window. So moving the mouse to be on top of the
+  // camera preview should not cause any crash or selected window changes.
+  controller->SetType(CaptureModeType::kVideo);
+  const auto* camera_preview_widget =
+      camera_controller->camera_preview_widget();
+  const auto* capture_mode_session = controller->capture_mode_session();
+  event_generator->MoveMouseToCenterOf(
+      camera_preview_widget->GetNativeWindow());
+  EXPECT_EQ(window(), capture_mode_session->GetSelectedWindow());
+  EXPECT_TRUE(window()->IsVisible());
+  EXPECT_TRUE(camera_preview_widget->IsVisible());
+
+  // Hide `window_` with camera preview on should not cause any crash and
+  // selected window should be updated to nullptr.
+  window()->Hide();
+  EXPECT_FALSE(window()->IsVisible());
+  EXPECT_FALSE(camera_preview_widget->IsVisible());
+  EXPECT_FALSE(capture_mode_session->GetSelectedWindow());
+
+  // Reshow `window_` without hovering over it should not set the selected
+  // window. Camera preview should still be hidden as its parent hasn't been set
+  // to `window_` yet.
+  const auto* preview_native_window = camera_preview_widget->GetNativeWindow();
+  window()->Show();
+  EXPECT_TRUE(window()->IsVisible());
+  EXPECT_FALSE(camera_preview_widget->IsVisible());
+  EXPECT_FALSE(capture_mode_session->GetSelectedWindow());
+  EXPECT_EQ(preview_native_window->parent(),
+            preview_native_window->GetRootWindow()->GetChildById(
+                kShellWindowId_UnparentedContainer));
+
+  // Hovering over `window_` should set it to the selected window, camera
+  // preview widget should be reparented to it as well. And the camera preview
+  // widget should be visible now.
+  event_generator->MoveMouseToCenterOf(window());
+  EXPECT_EQ(preview_native_window->parent(),
+            capture_mode_session->GetSelectedWindow());
+  EXPECT_TRUE(camera_preview_widget->IsVisible());
+  EXPECT_EQ(window(), capture_mode_session->GetSelectedWindow());
+}
+
+class CaptureModeCameraPreviewTest
+    : public CaptureModeCameraTest,
+      public testing::WithParamInterface<CaptureModeSource> {
+ public:
+  CaptureModeCameraPreviewTest() = default;
+  CaptureModeCameraPreviewTest(const CaptureModeCameraPreviewTest&) = delete;
+  CaptureModeCameraPreviewTest& operator=(const CaptureModeCameraPreviewTest&) =
+      delete;
+  ~CaptureModeCameraPreviewTest() override = default;
+
+  void StartCaptureSessionWithParam() {
+    auto* controller = CaptureModeController::Get();
+    const gfx::Rect capture_region(10, 20, 1300, 750);
+    controller->SetUserCaptureRegion(capture_region, /*by_user=*/true);
+    // Set the window's bounds big enough here to make sure after display
+    // rotation, the event is located on top of `window_`.
+    // TODO(conniekxu): investigate why the position of the event received is
+    // different than the position we pass.
+    window()->SetBounds({30, 40, 1300, 750});
+
+    StartCaptureSession(GetParam(), CaptureModeType::kVideo);
+    if (GetParam() == CaptureModeSource::kWindow)
+      GetEventGenerator()->MoveMouseToCenterOf(window());
+  }
+
+  // Based on the `CaptureModeSource`, it returns the current capture region's
+  // bounds in screen.
+  gfx::Rect GetCaptureBoundsInScreen() {
+    auto* controller = CaptureModeController::Get();
+    auto* root = GetCurrentRoot();
+
+    switch (GetParam()) {
+      case CaptureModeSource::kFullscreen:
+        return display::Screen::GetScreen()
+            ->GetDisplayNearestWindow(root)
+            .work_area();
+
+      case CaptureModeSource::kRegion: {
+        auto* recording_watcher =
+            controller->video_recording_watcher_for_testing();
+        gfx::Rect capture_region =
+            controller->is_recording_in_progress()
+                ? recording_watcher->GetEffectivePartialRegionBounds()
+                : controller->user_capture_region();
+        wm::ConvertRectToScreen(root, &capture_region);
+        return capture_region;
+      }
+
+      case CaptureModeSource::kWindow:
+        return window()->GetBoundsInScreen();
+    }
+  }
+
+  // Returns the cursor type when cursor is on top of the current capture
+  // surface.
+  ui::mojom::CursorType GetCursorTypeOnCaptureSurface() {
+    DCHECK(CaptureModeController::Get()->IsActive());
+
+    switch (GetParam()) {
+      case CaptureModeSource::kFullscreen:
+      case CaptureModeSource::kWindow:
+        return ui::mojom::CursorType::kCustom;
+      case CaptureModeSource::kRegion:
+        return ui::mojom::CursorType::kMove;
+    }
+  }
+};
+
+// Tests that camera preview's bounds is updated after display rotations with
+// two use cases, when capture session is active and when there's a video
+// recording in progress.
+TEST_P(CaptureModeCameraPreviewTest, DisplayRotation) {
+  StartCaptureSessionWithParam();
+  auto* camera_controller = GetCameraController();
+  AddDefaultCamera();
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+
+  // Verify that the camera preview should be at the bottom right corner of
+  // capture bounds.
+  VerifyPreviewAlignment(GetCaptureBoundsInScreen());
+
+  // Rotate the primary display by 90 degrees. Verify that the camera preview is
+  // still at the bottom right corner of capture bounds.
+  Shell::Get()->display_manager()->SetDisplayRotation(
+      WindowTreeHostManager::GetPrimaryDisplayId(), display::Display::ROTATE_90,
+      display::Display::RotationSource::USER);
+  VerifyPreviewAlignment(GetCaptureBoundsInScreen());
+
+  // Start video recording, verify camera preview's bounds is updated after
+  // display rotations when there's a video recording in progress.
+  StartVideoRecordingImmediately();
+  EXPECT_FALSE(CaptureModeController::Get()->IsActive());
+
+  // Rotate the primary display by 180 degrees. Verify that the camera preview
+  // is still at the bottom right corner of capture bounds.
+  Shell::Get()->display_manager()->SetDisplayRotation(
+      WindowTreeHostManager::GetPrimaryDisplayId(),
+      display::Display::ROTATE_180, display::Display::RotationSource::USER);
+  VerifyPreviewAlignment(GetCaptureBoundsInScreen());
+
+  // Rotate the primary display by 270 degrees. Verify that the camera preview
+  // is still at the bottom right corner of capture bounds.
+  Shell::Get()->display_manager()->SetDisplayRotation(
+      WindowTreeHostManager::GetPrimaryDisplayId(),
+      display::Display::ROTATE_270, display::Display::RotationSource::USER);
+  VerifyPreviewAlignment(GetCaptureBoundsInScreen());
+}
+
+// Tests that when camera preview is being dragged, at the end of the drag, it
+// should be snapped to the correct snap position. It tests two use cases, when
+// capture session is active and when there's a video recording in progress
+// including drag to snap by mouse and by touch.
+TEST_P(CaptureModeCameraPreviewTest, CameraPreviewDragToSnap) {
+  StartCaptureSessionWithParam();
+  auto* camera_controller = GetCameraController();
+  AddDefaultCamera();
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+  auto* preview_widget = camera_controller->camera_preview_widget();
+  const gfx::Point capture_bounds_center_point =
+      GetCaptureBoundsInScreen().CenterPoint();
+
+  // Verify that by default the snap position should be `kBottomRight` and
+  // camera preview is placed at the correct position.
+  EXPECT_EQ(CameraPreviewSnapPosition::kBottomRight,
+            camera_controller->camera_preview_snap_position());
+  VerifyPreviewAlignment(GetCaptureBoundsInScreen());
+
+  // Drag and drop camera preview by mouse to the top right of the
+  // `capture_bounds_center_point`, verify that camera preview is snapped to the
+  // top right with correct position.
+  DragPreviewToPoint(preview_widget, {capture_bounds_center_point.x() + 20,
+                                      capture_bounds_center_point.y() - 20});
+  EXPECT_EQ(CameraPreviewSnapPosition::kTopRight,
+            camera_controller->camera_preview_snap_position());
+  VerifyPreviewAlignment(GetCaptureBoundsInScreen());
+
+  // Now drag and drop camera preview by touch to the top left of the center
+  // point, verify that camera preview is snapped to the top left with correct
+  // position.
+  DragPreviewToPoint(preview_widget,
+                     {capture_bounds_center_point.x() - 20,
+                      capture_bounds_center_point.y() - 20},
+                     /*by_touch_gestures=*/true);
+  EXPECT_EQ(CameraPreviewSnapPosition::kTopLeft,
+            camera_controller->camera_preview_snap_position());
+  VerifyPreviewAlignment(GetCaptureBoundsInScreen());
+
+  // Start video recording, verify camera preview is snapped to the correct snap
+  // position at the end of drag when there's a video recording in progress.
+  StartVideoRecordingImmediately();
+  EXPECT_FALSE(CaptureModeController::Get()->IsActive());
+
+  // Drag and drop camera preview by mouse to the bottom left of the center
+  // point, verify that camera preview is snapped to the bottom left with
+  // correct position.
+  DragPreviewToPoint(preview_widget, {capture_bounds_center_point.x() - 20,
+                                      capture_bounds_center_point.y() + 20});
+  EXPECT_EQ(CameraPreviewSnapPosition::kBottomLeft,
+            camera_controller->camera_preview_snap_position());
+  VerifyPreviewAlignment(GetCaptureBoundsInScreen());
+
+  // Now drag and drop camera preview by touch to the bottom right of the center
+  // point, verify that camera preview is snapped to the bottom right with
+  // correct position.
+  DragPreviewToPoint(preview_widget,
+                     {capture_bounds_center_point.x() + 20,
+                      capture_bounds_center_point.y() + 20},
+                     /*by_touch_gestures=*/true);
+  EXPECT_EQ(CameraPreviewSnapPosition::kBottomRight,
+            camera_controller->camera_preview_snap_position());
+  VerifyPreviewAlignment(GetCaptureBoundsInScreen());
+}
+
+TEST_P(CaptureModeCameraPreviewTest, CameraPreviewDragToSnapOnMultipleDisplay) {
+  UpdateDisplay("800x700,801+0-800x700");
+
+  const gfx::Point point_in_second_display = gfx::Point(1000, 500);
+  auto* event_generator = GetEventGenerator();
+  MoveMouseToAndUpdateCursorDisplay(point_in_second_display, event_generator);
+
+  // Start capture mode on the second display.
+  StartCaptureSessionWithParam();
+  auto* camera_controller = GetCameraController();
+  AddDefaultCamera();
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+  auto* preview_widget = camera_controller->camera_preview_widget();
+  const gfx::Point capture_bounds_center_point =
+      GetCaptureBoundsInScreen().CenterPoint();
+
+  // Drag and drop camera preview by mouse to the top right of the
+  // `capture_bounds_center_point`, verify that camera preview is snapped to the
+  // top right with correct position.
+  DragPreviewToPoint(preview_widget, {capture_bounds_center_point.x() + 20,
+                                      capture_bounds_center_point.y() - 20});
+  EXPECT_EQ(CameraPreviewSnapPosition::kTopRight,
+            camera_controller->camera_preview_snap_position());
+  VerifyPreviewAlignment(GetCaptureBoundsInScreen());
+}
+
+// Tests that when there's a video recording is in progress, start a new
+// capture session will make camera preview not draggable.
+TEST_P(CaptureModeCameraPreviewTest,
+       DragPreviewInNewCaptureSessionWhileVideoRecordingInProgress) {
+  StartCaptureSessionWithParam();
+  auto* camera_controller = GetCameraController();
+  AddDefaultCamera();
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+  auto* preview_widget = camera_controller->camera_preview_widget();
+  const gfx::Point capture_bounds_center_point =
+      GetCaptureBoundsInScreen().CenterPoint();
+
+  StartVideoRecordingImmediately();
+  EXPECT_FALSE(CaptureModeController::Get()->IsActive());
+  // Start a new capture session while a video recording is in progress.
+  auto* controller = CaptureModeController::Get();
+  controller->Start(CaptureModeEntryType::kQuickSettings);
+
+  const gfx::Rect preview_bounds_in_screen_before_drag =
+      preview_widget->GetWindowBoundsInScreen();
+  const auto snap_position_before_drag =
+      camera_controller->camera_preview_snap_position();
+  // Verify by default snap position is `kBottomRight`.
+  EXPECT_EQ(snap_position_before_drag, CameraPreviewSnapPosition::kBottomRight);
+
+  // Try to drag camera preview by mouse without dropping it, verify camera
+  // preview is not draggable and its position is not changed.
+  DragPreviewToPoint(preview_widget,
+                     {preview_bounds_in_screen_before_drag.x() + 20,
+                      preview_bounds_in_screen_before_drag.y() + 20},
+                     /*by_touch_gestures=*/false,
+                     /*drop=*/false);
+  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen(),
+            preview_bounds_in_screen_before_drag);
+
+  // Try to drag and drop camera preview by touch to the top left of the current
+  // capture bounds' center point, verity it's not moved. Also verify the snap
+  // position is not updated.
+  DragPreviewToPoint(preview_widget,
+                     {capture_bounds_center_point.x() - 20,
+                      capture_bounds_center_point.y() - 20},
+                     /*by_touch_gestures=*/true);
+  EXPECT_EQ(preview_widget->GetWindowBoundsInScreen(),
+            preview_bounds_in_screen_before_drag);
+  EXPECT_EQ(camera_controller->camera_preview_snap_position(),
+            snap_position_before_drag);
+}
+
+// Tests that when mouse event is on top of camera preview, cursor type should
+// be updated accordingly.
+TEST_P(CaptureModeCameraPreviewTest, CursorTypeUpdates) {
+  StartCaptureSessionWithParam();
+  auto* camera_controller = GetCameraController();
+  AddDefaultCamera();
+  camera_controller->SetSelectedCamera(CameraId(kDefaultCameraModelId, 1));
+
+  auto* preview_widget = camera_controller->camera_preview_widget();
+  const gfx::Rect preview_bounds_in_screen =
+      preview_widget->GetWindowBoundsInScreen();
+  const gfx::Point camera_preview_center_point =
+      preview_bounds_in_screen.CenterPoint();
+  const gfx::Point camera_preview_origin_point =
+      preview_bounds_in_screen.origin();
+  auto* event_generator = GetEventGenerator();
+
+  // Verify that moving mouse on camera preview will update the cursor type to
+  // `kPointer`.
+  auto* cursor_manager = Shell::Get()->cursor_manager();
+  event_generator->MoveMouseTo(camera_preview_center_point);
+  EXPECT_EQ(cursor_manager->GetCursor(), ui::mojom::CursorType::kPointer);
+
+  // Move mouse from camera preview to capture surface, verify cursor type is
+  // updated to the correct type of the current capture source.
+  event_generator->MoveMouseTo({camera_preview_origin_point.x() - 10,
+                                camera_preview_origin_point.y() - 10});
+  EXPECT_EQ(cursor_manager->GetCursor(), GetCursorTypeOnCaptureSurface());
+
+  // Drag camera preview, verify that cursor type is updated to `kPointer`.
+  DragPreviewToPoint(preview_widget,
+                     {camera_preview_center_point.x() - 10,
+                      camera_preview_center_point.y() - 10},
+                     /*by_touch_gestures=*/false,
+                     /*drop=*/false);
+  EXPECT_EQ(cursor_manager->GetCursor(), ui::mojom::CursorType::kPointer);
+
+  // Continue dragging and then drop camera preview, make sure cursor's position
+  // is outside of camera preview after it's snapped. Verify cursor type is
+  // updated to the correct type of the current capture source.
+  DragPreviewToPoint(preview_widget, {camera_preview_origin_point.x() - 20,
+                                      camera_preview_origin_point.y() - 20});
+  EXPECT_EQ(cursor_manager->GetCursor(), GetCursorTypeOnCaptureSurface());
+}
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         CaptureModeCameraPreviewTest,
+                         testing::Values(CaptureModeSource::kFullscreen,
+                                         CaptureModeSource::kRegion,
+                                         CaptureModeSource::kWindow));
 
 }  // namespace ash

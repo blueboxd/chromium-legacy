@@ -17,8 +17,6 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
@@ -89,10 +87,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest, FrameTreeShape) {
   // Frame tree:
   //   Site-A Root -- Site-A frame1
   //              \-- Site-A frame2
-  WindowedNotificationObserver observer1(
-      content::NOTIFICATION_LOAD_STOP,
-      content::Source<NavigationController>(
-          &shell()->web_contents()->GetController()));
+  LoadStopObserver observer1(shell()->web_contents());
   EXPECT_TRUE(NavigateToURL(shell(), base_url.Resolve("frames-X-X.html")));
   observer1.Wait();
   ASSERT_EQ(2U, root->child_count());
@@ -699,12 +694,14 @@ IN_PROC_BROWSER_TEST_F(FrameTreeBrowserTest,
             root->current_frame_host()->active_sandbox_flags());
   EXPECT_EQ(network::mojom::WebSandboxFlags::kNone,
             root->child_at(0)->effective_frame_policy().sandbox_flags);
-  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
-                ~network::mojom::WebSandboxFlags::kScripts &
-                ~network::mojom::WebSandboxFlags::kAutomaticFeatures &
-                ~network::mojom::WebSandboxFlags::kPopups &
-                ~network::mojom::WebSandboxFlags::kPointerLock,
-            root->child_at(0)->active_sandbox_flags());
+  EXPECT_EQ(
+      network::mojom::WebSandboxFlags::kAll &
+          ~network::mojom::WebSandboxFlags::kAutomaticFeatures &
+          ~network::mojom::WebSandboxFlags::kPointerLock &
+          ~network::mojom::WebSandboxFlags::kPopups &
+          ~network::mojom::WebSandboxFlags::kScripts &
+          ~network::mojom::WebSandboxFlags::kTopNavigationToCustomProtocols,
+      root->child_at(0)->active_sandbox_flags());
   EXPECT_EQ(root->child_at(0)->active_sandbox_flags(),
             root->child_at(0)->current_frame_host()->active_sandbox_flags());
   EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
@@ -877,19 +874,14 @@ class FencedFrameTreeBrowserTest
       RenderFrameHostImpl* fenced_frame_rfh,
       const std::string& script,
       net::Error expected_net_error_code = net::OK) {
-    FencedFrameNavigationObserver observer(fenced_frame_rfh);
+    TestFrameNavigationObserver observer(fenced_frame_rfh);
     EXPECT_TRUE(ExecJs(target_rfh, script));
-    observer.Wait(expected_net_error_code);
+    observer.Wait();
+    EXPECT_EQ(observer.last_net_error_code(), expected_net_error_code);
   }
 
-  void WaitForDidStopLoadingForTesting(RenderFrameHostImpl* fenced_frame_rfh) {
-    FencedFrame* fenced_frame =
-        GetMatchingFencedFrameInOuterFrameTree(fenced_frame_rfh);
-    fenced_frame->WaitForDidStopLoadingForTesting();
-  }
-
-  void AddIframeInFencedFrame(FrameTreeNode* fenced_frame,
-                              unsigned int child_index) {
+  FrameTreeNode* AddIframeInFencedFrame(FrameTreeNode* fenced_frame,
+                                        unsigned int child_index) {
     EXPECT_TRUE(
         ExecJs(fenced_frame,
                "var iframe_within_ff = document.createElement('iframe');"
@@ -898,6 +890,7 @@ class FencedFrameTreeBrowserTest
     auto* iframe = fenced_frame->child_at(child_index);
     EXPECT_FALSE(iframe->IsFencedFrameRoot());
     EXPECT_TRUE(iframe->IsInFencedFrameTree());
+    return iframe;
   }
 
   // Navigates the element created in AddIframeInFencedFrame.
@@ -1013,6 +1006,14 @@ class FencedFrameTreeBrowserTest
     EXPECT_TRUE(https_server_.ShutdownAndWaitUntilComplete());
   }
 
+  WebContentsImpl* web_contents() {
+    return static_cast<WebContentsImpl*>(shell()->web_contents());
+  }
+
+  RenderFrameHostImpl* primary_main_frame_host() {
+    return web_contents()->GetMainFrame();
+  }
+
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
   base::Lock requests_lock_;
@@ -1106,7 +1107,7 @@ IN_PROC_BROWSER_TEST_P(
       https_server()->GetURL("a.test", "/fenced_frames/title1.html");
   std::string navigate_urn_script = JsReplace("f.src = $1;", urn_uuid.spec());
 
-  FencedFrameNavigationObserver observer(
+  TestFrameNavigationObserver observer(
       fenced_frame_root_node->current_frame_host());
 
   EXPECT_EQ(urn_uuid.spec(), EvalJs(root, navigate_urn_script));
@@ -1131,7 +1132,7 @@ IN_PROC_BROWSER_TEST_P(
 
   EXPECT_FALSE(url_mapping.HasObserverForTesting(urn_uuid, request));
 
-  observer.Wait(net::OK);
+  observer.Wait();
 
   EXPECT_EQ(
       mapped_url,
@@ -1166,7 +1167,7 @@ IN_PROC_BROWSER_TEST_P(
   const GURL urn_uuid = url_mapping.GeneratePendingMappedURN();
   std::string navigate_urn_script = JsReplace("f.src = $1;", urn_uuid.spec());
 
-  FencedFrameNavigationObserver observer(
+  TestFrameNavigationObserver observer(
       fenced_frame_root_node->current_frame_host());
 
   EXPECT_EQ(urn_uuid.spec(), EvalJs(root, navigate_urn_script));
@@ -1191,7 +1192,8 @@ IN_PROC_BROWSER_TEST_P(
 
   EXPECT_FALSE(url_mapping.HasObserverForTesting(urn_uuid, request));
 
-  observer.Wait(net::ERR_INVALID_URL);
+  observer.Wait();
+  EXPECT_EQ(observer.last_net_error_code(), net::ERR_INVALID_URL);
 }
 
 IN_PROC_BROWSER_TEST_P(
@@ -1224,7 +1226,7 @@ IN_PROC_BROWSER_TEST_P(
       https_server()->GetURL("a.test", "/fenced_frames/title1.html");
   std::string navigate_urn_script = JsReplace("f.src = $1;", urn_uuid.spec());
 
-  FencedFrameNavigationObserver observer(
+  TestFrameNavigationObserver observer(
       fenced_frame_root_node->current_frame_host());
 
   EXPECT_EQ(urn_uuid.spec(), EvalJs(root, navigate_urn_script));
@@ -1253,7 +1255,7 @@ IN_PROC_BROWSER_TEST_P(
 
   EXPECT_FALSE(url_mapping.HasObserverForTesting(urn_uuid, request));
 
-  observer.Wait(net::OK);
+  observer.Wait();
 
   EXPECT_EQ(
       new_url,
@@ -1797,6 +1799,98 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest, CheckSecFetchDestHeader) {
   EXPECT_TRUE(CheckAndClearSecFetchDestHeader(iframe_url, "fencedframe"));
 }
 
+namespace {
+class TestJavaScriptDialogManager : public JavaScriptDialogManager,
+                                    public WebContentsDelegate {
+ public:
+  TestJavaScriptDialogManager() = default;
+  ~TestJavaScriptDialogManager() override = default;
+  // WebContentsDelegate overrides
+  JavaScriptDialogManager* GetJavaScriptDialogManager(
+      WebContents* source) override {
+    return this;
+  }
+
+  // JavaScriptDialogManager overrides
+  void RunJavaScriptDialog(WebContents* web_contents,
+                           RenderFrameHost* render_frame_host,
+                           JavaScriptDialogType dialog_type,
+                           const std::u16string& message_text,
+                           const std::u16string& default_prompt_text,
+                           DialogClosedCallback callback,
+                           bool* did_suppress_message) override {}
+  void RunBeforeUnloadDialog(WebContents* web_contents,
+                             RenderFrameHost* render_frame_host,
+                             bool is_reload,
+                             DialogClosedCallback callback) override {}
+  void CancelDialogs(WebContents* web_contents, bool reset_state) override {
+    cancel_dialogs_called_ = true;
+  }
+
+  bool cancel_dialogs_called() { return cancel_dialogs_called_; }
+
+ private:
+  bool cancel_dialogs_called_ = false;
+};
+}  // namespace
+
+// Test that navigation in fenced frame happens regardless of dialogs.
+// It should also keep the dialogs as-is.
+IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest, ShouldIgnoreJsDialog) {
+  GURL main_url(https_server()->GetURL("a.test", "/hello.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetPrimaryFrameTree()
+                            .root();
+
+  EXPECT_TRUE(ExecJs(root,
+                     "var fenced_frame = document.createElement('fencedframe');"
+                     "document.body.appendChild(fenced_frame);"));
+
+  EXPECT_EQ(1U, root->child_count());
+
+  FrameTreeNode* fenced_frame_root_node =
+      GetFencedFrameRootNode(root->child_at(0));
+
+  {
+    // Navigate the fenced frame.
+    GURL fenced_frame_url(
+        https_server()->GetURL("a.test", "/fenced_frames/title1.html"));
+    std::string navigate_script =
+        JsReplace("fenced_frame.src = $1;", fenced_frame_url.spec());
+    NavigateFrameInsideFencedFrameTreeAndWaitForFinishedLoad(
+        fenced_frame_root_node, fenced_frame_url, navigate_script);
+    EXPECT_TRUE(
+        CheckAndClearSecFetchDestHeader(fenced_frame_url, "fencedframe"));
+  }
+
+  // Setup test dialog manager and create dialog.
+  TestJavaScriptDialogManager dialog_manager;
+  web_contents()->SetDelegate(&dialog_manager);
+  web_contents()->RunJavaScriptDialog(web_contents()->GetMainFrame(), u"", u"",
+                                      JAVASCRIPT_DIALOG_TYPE_ALERT, false,
+                                      base::NullCallback());
+
+  {
+    // Navigate fenced frame.
+    const GURL new_url =
+        https_server()->GetURL("a.test", "/fenced_frames/empty.html");
+    std::string navigate_script =
+        JsReplace("fenced_frame.src = $1;", new_url.spec());
+    NavigateFrameInsideFencedFrameTreeAndWaitForFinishedLoad(
+        fenced_frame_root_node, new_url, navigate_script);
+  }
+
+  // We should not dismiss dialogs when the fenced frame's subframe navigates
+  // and swaps its RFH.
+  EXPECT_FALSE(dialog_manager.cancel_dialogs_called());
+
+  // Clean up test dialog manager.
+  web_contents()->SetDelegate(nullptr);
+  web_contents()->SetJavaScriptDialogManagerForTesting(nullptr);
+}
+
 // An observer class that asserts the page transition always is
 // `ui::PageTransition::PAGE_TRANSITION_AUTO_SUBFRAME`.
 class AlwaysAutoSubframeNavigationObserver : public WebContentsObserver {
@@ -1978,7 +2072,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest,
     EXPECT_EQ(root->navigator().controller().GetEntryCount(),
               fenced_frame->navigator().controller().GetEntryCount());
   } else {
-    WaitForDidStopLoadingForTesting(fenced_frame->current_frame_host());
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
     EXPECT_EQ(1, fenced_frame->navigator().controller().GetEntryCount());
   }
   EXPECT_EQ(fenced_frame_url_1,
@@ -2029,7 +2123,7 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest,
     EXPECT_EQ(fenced_frame_url_2,
               fenced_frame->current_frame_host()->GetLastCommittedURL());
   } else {
-    WaitForDidStopLoadingForTesting(fenced_frame->current_frame_host());
+    EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
     EXPECT_EQ(1, fenced_frame->navigator().controller().GetEntryCount());
     EXPECT_EQ(fenced_frame_url_1,
               fenced_frame->current_frame_host()->GetLastCommittedURL());
@@ -2134,6 +2228,233 @@ IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest,
     EXPECT_EQ(fenced_frame_mode.value(),
               FrameTreeNode::FencedFrameMode::kOpaque);
   }
+}
+
+IN_PROC_BROWSER_TEST_P(FencedFrameTreeBrowserTest, FenceUserActivation) {
+  // This test exercises browser-side user activation in the following layout:
+  // A: Top-level page    (origin 1)
+  //   B: fencedframe     (origin 1)
+  //     C1: iframe       (origin 1)
+  //       D: fencedframe (origin 1)
+  //         E1: iframe   (origin 1)
+  //         E2: iframe   (origin 2)
+  //     C2: iframe       (origin 2)
+  //   F: fencedframe     (origin 1)
+  //     G: iframe        (origin 1)
+  //
+  // See the design document for more details on intended semantics:
+  // https://docs.google.com/document/d/1WnIhXOFycoje_sEoZR3Mo0YNSR2Ki7LABIC_HEWFaog/
+
+  // Chrome disallows navigation to a URL in a frame that has more than one
+  // ancestor with that URL, so I have to circumvent it with query params.
+  const GURL kOrigin1Url =
+      https_server()->GetURL("a.test", "/fenced_frames/empty.html");
+  const GURL kOrigin1Url2 =
+      https_server()->GetURL("a.test", "/fenced_frames/empty.html?");
+  const GURL kOrigin1Url3 =
+      https_server()->GetURL("a.test", "/fenced_frames/empty.html??");
+  const GURL kOrigin2Url =
+      https_server()->GetURL("b.test", "/fenced_frames/empty.html");
+
+  // Navigate the top-level page.
+  EXPECT_TRUE(NavigateToURL(shell(), kOrigin1Url));
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  auto* nodeA = static_cast<WebContentsImpl*>(shell()->web_contents())
+                    ->GetPrimaryFrameTree()
+                    .root();
+  ASSERT_NE(nullptr, nodeA);
+
+  // Construct the children described above.
+  auto* nodeB = AddNestedFencedFrame(nodeA, 0);
+  ASSERT_NE(nullptr, nodeB);
+  NavigateNestedFencedFrame(nodeB, kOrigin1Url);
+
+  auto* nodeC1 = AddIframeInFencedFrame(nodeB, 0);
+  ASSERT_NE(nullptr, nodeC1);
+  NavigateIframeInFencedFrame(nodeC1, kOrigin1Url2);
+
+  auto* nodeD = AddNestedFencedFrame(nodeC1, 0);
+  ASSERT_NE(nullptr, nodeD);
+  NavigateNestedFencedFrame(nodeD, kOrigin1Url2);
+
+  auto* nodeE1 = AddIframeInFencedFrame(nodeD, 0);
+  ASSERT_NE(nullptr, nodeE1);
+  NavigateIframeInFencedFrame(nodeE1, kOrigin1Url3);
+
+  auto* nodeE2 = AddIframeInFencedFrame(nodeD, 1);
+  ASSERT_NE(nullptr, nodeE2);
+  NavigateIframeInFencedFrame(nodeE2, kOrigin2Url);
+
+  auto* nodeC2 = AddIframeInFencedFrame(nodeB, 1);
+  ASSERT_NE(nullptr, nodeC2);
+  NavigateIframeInFencedFrame(nodeC2, kOrigin2Url);
+
+  auto* nodeF = AddNestedFencedFrame(nodeA, 1);
+  ASSERT_NE(nullptr, nodeF);
+  NavigateNestedFencedFrame(nodeF, kOrigin1Url);
+
+  auto* nodeG = AddIframeInFencedFrame(nodeF, 0);
+  ASSERT_NE(nullptr, nodeG);
+  NavigateIframeInFencedFrame(nodeG, kOrigin1Url2);
+
+  // Now that the layout is set up, perform the actual user activation tests.
+  std::vector<FrameTreeNode*> nodes = {nodeA,  nodeB,  nodeC1, nodeD, nodeE1,
+                                       nodeE2, nodeC2, nodeF,  nodeG};
+
+  // Create some helper functions so we can express the user activation
+  // notification test cases more concisely.
+  auto ClearAll = [&nodes]() {
+    // User activation can only be cleared per frame tree in MPArch, so we'll
+    // do it from every node just to be safe.
+    for (auto* node : nodes) {
+      node->current_frame_host()->UpdateUserActivationState(
+          blink::mojom::UserActivationUpdateType::kClearActivation,
+          blink::mojom::UserActivationNotificationType::kNone);
+    }
+    for (auto* node : nodes) {
+      EXPECT_FALSE(node->HasStickyUserActivation());
+      EXPECT_FALSE(node->HasTransientUserActivation());
+    }
+  };
+
+  auto Activate = [](FrameTreeNode* node) {
+    node->UpdateUserActivationState(
+        blink::mojom::UserActivationUpdateType::kNotifyActivation,
+        blink::mojom::UserActivationNotificationType::kTest);
+  };
+
+  auto EXPECT_STICKY = [&nodes](std::vector<bool> should_be_activated) {
+    ASSERT_EQ(nodes.size(), should_be_activated.size());
+    for (size_t i = 0; i < nodes.size(); ++i) {
+      if (should_be_activated[i]) {
+        EXPECT_TRUE(nodes[i]->HasStickyUserActivation());
+        EXPECT_TRUE(nodes[i]->HasTransientUserActivation());
+      } else {
+        EXPECT_FALSE(nodes[i]->HasStickyUserActivation());
+        EXPECT_FALSE(nodes[i]->HasTransientUserActivation());
+      }
+    }
+  };
+
+  // Activate A, and check that no other frames are activated.
+  ClearAll();  // Clear all user activations before we start.
+  Activate(nodeA);
+  EXPECT_STICKY({true /*A*/, false /*B*/, false /*C1*/, false /*D*/,
+                 false /*E1*/, false /*E2*/, false /*C2*/, false /*F*/,
+                 false /*G*/});
+
+  // Activate B, and check that only B and C1 are activated.
+  ClearAll();
+  Activate(nodeB);
+  EXPECT_STICKY({false /*A*/, true /*B*/, true /*C1*/, false /*D*/,
+                 false /*E1*/, false /*E2*/, false /*C2*/, false /*F*/,
+                 false /*G*/});
+
+  // Activate C1, and check that only B and C1 are activated.
+  ClearAll();
+  Activate(nodeC1);
+  EXPECT_STICKY({false /*A*/, true /*B*/, true /*C1*/, false /*D*/,
+                 false /*E1*/, false /*E2*/, false /*C2*/, false /*F*/,
+                 false /*G*/});
+
+  // Activate C2, and check that only B and C2 are activated.
+  ClearAll();
+  Activate(nodeC2);
+  EXPECT_STICKY({false /*A*/, true /*B*/, false /*C1*/, false /*D*/,
+                 false /*E1*/, false /*E2*/, true /*C2*/, false /*F*/,
+                 false /*G*/});
+
+  // Activate D, and check that only D and E1 are activated.
+  ClearAll();
+  Activate(nodeD);
+  EXPECT_STICKY({false /*A*/, false /*B*/, false /*C1*/, true /*D*/,
+                 true /*E1*/, false /*E2*/, false /*C2*/, false /*F*/,
+                 false /*G*/});
+
+  // Activate E1, and check that only D and E1 are activated.
+  ClearAll();
+  Activate(nodeE1);
+  EXPECT_STICKY({false /*A*/, false /*B*/, false /*C1*/, true /*D*/,
+                 true /*E1*/, false /*E2*/, false /*C2*/, false /*F*/,
+                 false /*G*/});
+
+  // Activate E2, and check that only D and E2 are activated.
+  ClearAll();
+  Activate(nodeE2);
+  EXPECT_STICKY({false /*A*/, false /*B*/, false /*C1*/, true /*D*/,
+                 false /*E1*/, true /*E2*/, false /*C2*/, false /*F*/,
+                 false /*G*/});
+
+  // Activating F and G is equivalent to activating B and C1, so we omit them.
+
+  // Create some helper functions so we can express the user activation
+  // consumption test cases more concisely.
+  auto ActivateAll = [&nodes]() {
+    // Activate every individual frame just to be safe.
+    for (auto* node : nodes) {
+      node->current_frame_host()->UpdateUserActivationState(
+          blink::mojom::UserActivationUpdateType::kNotifyActivation,
+          blink::mojom::UserActivationNotificationType::kTest);
+    }
+    for (auto* node : nodes) {
+      EXPECT_TRUE(node->HasStickyUserActivation());
+      EXPECT_TRUE(node->HasTransientUserActivation());
+    }
+  };
+
+  auto Consume = [](FrameTreeNode* node) {
+    node->UpdateUserActivationState(
+        blink::mojom::UserActivationUpdateType::kConsumeTransientActivation,
+        blink::mojom::UserActivationNotificationType::kTest);
+  };
+
+  auto EXPECT_TRANSIENT = [&nodes](std::vector<bool> should_be_activated) {
+    ASSERT_EQ(nodes.size(), should_be_activated.size());
+    for (size_t i = 0; i < nodes.size(); ++i) {
+      EXPECT_TRUE(nodes[i]->HasStickyUserActivation());
+      if (should_be_activated[i]) {
+        EXPECT_TRUE(nodes[i]->HasTransientUserActivation());
+      } else {
+        EXPECT_FALSE(nodes[i]->HasTransientUserActivation());
+      }
+    }
+  };
+
+  // These tests are the opposites of the ones above.
+  // Consume A, and check that no other frames are consumed.
+  ActivateAll();  // Activate all frames before we start.
+  Consume(nodeA);
+  EXPECT_TRANSIENT({false /*A*/, true /*B*/, true /*C1*/, true /*D*/,
+                    true /*E1*/, true /*E2*/, true /*C2*/, true /*F*/,
+                    true /*G*/});
+
+  // Consume B, and check that only B, C1, and C2 are consumed.
+  ActivateAll();
+  Consume(nodeB);
+  EXPECT_TRANSIENT({true /*A*/, false /*B*/, false /*C1*/, true /*D*/,
+                    true /*E1*/, true /*E2*/, false /*C2*/, true /*F*/,
+                    true /*G*/});
+
+  // Consume C2, and check that only B, C1, and C2 are consumed.
+  ActivateAll();
+  Consume(nodeC2);
+  EXPECT_TRANSIENT({true /*A*/, false /*B*/, false /*C1*/, true /*D*/,
+                    true /*E1*/, true /*E2*/, false /*C2*/, true /*F*/,
+                    true /*G*/});
+
+  // Consume D, and check that only D, E1, and E2 are consumed.
+  ActivateAll();
+  Consume(nodeD);
+  EXPECT_TRANSIENT({true /*A*/, true /*B*/, true /*C1*/, false /*D*/,
+                    false /*E1*/, false /*E2*/, true /*C2*/, true /*F*/,
+                    true /*G*/});
+
+  // Consume E1, and check that only D, E1, and E2 are consumed.
+  ActivateAll();
+  Consume(nodeE1);
+  EXPECT_TRANSIENT({true /*A*/, true /*B*/, true /*C1*/, false /*D*/,
+                    false /*E1*/, false /*E2*/, true /*C2*/, true /*F*/,
+                    true /*G*/});
 }
 
 INSTANTIATE_TEST_SUITE_P(
@@ -2335,8 +2656,9 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
   // There should not be a proxy for the root's own SiteInstance.
   SiteInstanceImpl* root_instance =
       root->current_frame_host()->GetSiteInstance();
-  EXPECT_FALSE(
-      root->render_manager()->GetRenderFrameProxyHost(root_instance->group()));
+  EXPECT_FALSE(root->current_frame_host()
+                   ->browsing_context_state()
+                   ->GetRenderFrameProxyHost(root_instance->group()));
 
   // Load same-site page into iframe.
   GURL http_url(embedded_test_server()->GetURL("/title1.html"));
@@ -2360,18 +2682,22 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
   EXPECT_NE(shell()->web_contents()->GetMainFrame()->GetProcess(), rph);
 
   // Ensure that the root node has a proxy for the child node's SiteInstance.
-  EXPECT_TRUE(
-      root->render_manager()->GetRenderFrameProxyHost(child_instance->group()));
+  EXPECT_TRUE(root->current_frame_host()
+                  ->browsing_context_state()
+                  ->GetRenderFrameProxyHost(child_instance->group()));
 
   // Also ensure that the child has a proxy for the root node's SiteInstance.
-  EXPECT_TRUE(
-      child->render_manager()->GetRenderFrameProxyHost(root_instance->group()));
+  EXPECT_TRUE(child->current_frame_host()
+                  ->browsing_context_state()
+                  ->GetRenderFrameProxyHost(root_instance->group()));
 
   // The nodes should not have proxies for their own SiteInstance.
-  EXPECT_FALSE(
-      root->render_manager()->GetRenderFrameProxyHost(root_instance->group()));
-  EXPECT_FALSE(child->render_manager()->GetRenderFrameProxyHost(
-      child_instance->group()));
+  EXPECT_FALSE(root->current_frame_host()
+                   ->browsing_context_state()
+                   ->GetRenderFrameProxyHost(root_instance->group()));
+  EXPECT_FALSE(child->current_frame_host()
+                   ->browsing_context_state()
+                   ->GetRenderFrameProxyHost(child_instance->group()));
 
   // Ensure that the RenderViews and RenderFrames are all live.
   EXPECT_TRUE(
@@ -2697,12 +3023,14 @@ IN_PROC_BROWSER_TEST_F(CrossProcessFrameTreeBrowserTest,
       static_cast<WebContentsImpl*>(new_contents)->GetPrimaryFrameTree().root();
   network::mojom::WebSandboxFlags main_frame_sandbox_flags =
       root->current_frame_host()->active_sandbox_flags();
-  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll &
-                ~network::mojom::WebSandboxFlags::kPopups &
-                ~network::mojom::WebSandboxFlags::kPointerLock &
-                ~network::mojom::WebSandboxFlags::kScripts &
-                ~network::mojom::WebSandboxFlags::kAutomaticFeatures,
-            main_frame_sandbox_flags);
+  EXPECT_EQ(
+      network::mojom::WebSandboxFlags::kAll &
+          ~network::mojom::WebSandboxFlags::kAutomaticFeatures &
+          ~network::mojom::WebSandboxFlags::kPointerLock &
+          ~network::mojom::WebSandboxFlags::kPopups &
+          ~network::mojom::WebSandboxFlags::kScripts &
+          ~network::mojom::WebSandboxFlags::kTopNavigationToCustomProtocols,
+      main_frame_sandbox_flags);
 
   EXPECT_EQ(main_frame_sandbox_flags,
             popup_root->effective_frame_policy().sandbox_flags);
@@ -2882,7 +3210,7 @@ IN_PROC_BROWSER_TEST_F(FrameTreeAnonymousIframeBrowserTest,
 }
 
 // This is fenced frames test class differs on from FencedFrameTreeBrowserTest,
-// by testing MPArcg fenced frames exclusively (no ShadowDOM types), through the
+// by testing MPArch fenced frames exclusively (no ShadowDOM types), through the
 // use of FencedFrameTestHelper.
 class MPArchFencedFramesFrameTreeBrowserTest : public FrameTreeBrowserTest {
  public:
@@ -2905,48 +3233,5 @@ class MPArchFencedFramesFrameTreeBrowserTest : public FrameTreeBrowserTest {
  private:
   content::test::FencedFrameTestHelper fenced_frame_helper_;
 };
-
-IN_PROC_BROWSER_TEST_F(MPArchFencedFramesFrameTreeBrowserTest,
-                       UserActivationToOutermostParent) {
-  const GURL kInitialUrl = embedded_test_server()->GetURL("/empty.html");
-  const GURL kFencedFrameUrl =
-      embedded_test_server()->GetURL("/fenced_frames/nested.html");
-
-  // 1. Load starting page.
-  EXPECT_TRUE(NavigateToURL(shell(), kInitialUrl));
-  EXPECT_FALSE(
-      current_frame_host()->frame_tree_node()->HasStickyUserActivation());
-
-  // 2. Load fenced frame into starting page.
-  auto* fenced_frame_rfh = static_cast<RenderFrameHostImpl*>(
-      fenced_frame_test_helper().CreateFencedFrame(current_frame_host(),
-                                                   kFencedFrameUrl));
-  ASSERT_NE(nullptr, fenced_frame_rfh);
-  ASSERT_TRUE(fenced_frame_rfh->frame_tree_node()->child_count());
-  auto* nested_frame_rfh =
-      fenced_frame_rfh->frame_tree_node()->child_at(0)->current_frame_host();
-
-  // 3. Clear the state for all render frame hosts
-  current_frame_host()->UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType::kClearActivation,
-      blink::mojom::UserActivationNotificationType::kNone);
-
-  EXPECT_FALSE(
-      current_frame_host()->frame_tree_node()->HasStickyUserActivation());
-  EXPECT_FALSE(fenced_frame_rfh->frame_tree_node()->HasStickyUserActivation());
-  EXPECT_FALSE(nested_frame_rfh->frame_tree_node()->HasStickyUserActivation());
-
-  // 4. Update the state for the child fenced-frame and check that activation
-  // state has propagated to its parent.
-  fenced_frame_rfh->UpdateUserActivationState(
-      blink::mojom::UserActivationUpdateType::kNotifyActivation,
-      blink::mojom::UserActivationNotificationType::kTest);
-  EXPECT_TRUE(
-      current_frame_host()->frame_tree_node()->HasStickyUserActivation());
-  EXPECT_TRUE(fenced_frame_rfh->frame_tree_node()->HasStickyUserActivation());
-  // State update should not propagate to child nodes, even if they are same
-  // origin.
-  EXPECT_FALSE(nested_frame_rfh->frame_tree_node()->HasStickyUserActivation());
-}
 
 }  // namespace content

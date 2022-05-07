@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/observer_list.h"
 #include "ui/base/models/image_model.h"
 #include "ui/views/view.h"
 
@@ -19,7 +20,7 @@ class SidePanelEntryObserver;
 class SidePanelEntry final {
  public:
   // Note this order matches that of the combobox options in the side panel.
-  enum class Id { kReadingList, kBookmarks, kReaderMode };
+  enum class Id { kReadingList, kBookmarks, kReaderMode, kSideSearch, kLens };
 
   // TODO(pbos): Add an icon ImageModel here.
   SidePanelEntry(Id id,

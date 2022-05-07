@@ -53,6 +53,7 @@ group("js_modules") {
     ":file_watcher",
     ":folder_shortcuts_data_model",
     ":gear_menu_controller",
+    ":guest_os_controller",
     ":holding_space_util",
     ":import_controller",
     ":last_modified_controller",
@@ -129,6 +130,7 @@ js_type_check("closure_compile_jsmodules") {
     ":file_watcher",
     ":folder_shortcuts_data_model",
     ":gear_menu_controller",
+    ":guest_os_controller",
     ":holding_space_util",
     ":import_controller",
     ":last_modified_controller",
@@ -784,6 +786,7 @@ js_unittest("file_transfer_controller_unittest.m") {
     "//ui/file_manager/file_manager/externs/background:import_history",
     "//ui/file_manager/file_manager/externs/background:progress_center",
     "//ui/file_manager/file_manager/foreground/elements:files_toast",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input.m",
     "//ui/webui/resources/js:util.m",
     "//ui/webui/resources/js/cr:ui.m",
     "//ui/webui/resources/js/cr/ui:command.m",
@@ -851,6 +854,17 @@ js_library("gear_menu_controller") {
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/file_manager/file_manager/common/js:volume_manager_types",
     "//ui/file_manager/file_manager/externs:directory_change_event",
+  ]
+}
+
+js_library("guest_os_controller") {
+  deps = [
+    ":directory_model",
+    ":navigation_list_model",
+    "ui:directory_tree",
+    "//ui/file_manager/file_manager/common/js:api",
+    "//ui/file_manager/file_manager/common/js:files_app_entry_types",
+    "//ui/file_manager/file_manager/common/js:util",
   ]
 }
 
@@ -970,7 +984,6 @@ js_library("main_window_component") {
     "//ui/file_manager/file_manager/common/js:dialog_type",
     "//ui/file_manager/file_manager/common/js:metrics",
     "//ui/file_manager/file_manager/common/js:util",
-    "//ui/file_manager/file_manager/common/js:volume_manager_types",
     "//ui/file_manager/file_manager/externs:directory_change_event",
     "//ui/file_manager/file_manager/externs:volume_manager",
   ]

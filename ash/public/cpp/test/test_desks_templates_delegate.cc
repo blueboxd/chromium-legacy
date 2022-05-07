@@ -5,6 +5,7 @@
 #include "ash/public/cpp/test/test_desks_templates_delegate.h"
 
 #include "ash/public/cpp/desk_template.h"
+#include "base/containers/contains.h"
 #include "components/app_restore/app_launch_info.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -17,10 +18,10 @@ TestDesksTemplatesDelegate::TestDesksTemplatesDelegate() = default;
 
 TestDesksTemplatesDelegate::~TestDesksTemplatesDelegate() = default;
 
-std::unique_ptr<app_restore::AppLaunchInfo>
-TestDesksTemplatesDelegate::GetAppLaunchDataForDeskTemplate(
-    aura::Window* window) const {
-  return nullptr;
+void TestDesksTemplatesDelegate::GetAppLaunchDataForDeskTemplate(
+    aura::Window* window,
+    GetAppLaunchDataCallback callback) const {
+  std::move(callback).Run({});
 }
 
 desks_storage::DeskModel* TestDesksTemplatesDelegate::GetDeskModel() {
@@ -50,6 +51,7 @@ void TestDesksTemplatesDelegate::GetIconForAppId(
 
 void TestDesksTemplatesDelegate::LaunchAppsFromTemplate(
     std::unique_ptr<DeskTemplate> desk_template,
+    base::Time time_launch_started,
     base::TimeDelta delay) {}
 
 bool TestDesksTemplatesDelegate::IsWindowSupportedForDeskTemplate(
@@ -59,5 +61,15 @@ bool TestDesksTemplatesDelegate::IsWindowSupportedForDeskTemplate(
 
 void TestDesksTemplatesDelegate::OpenFeedbackDialog(
     const std::string& extra_diagnostics) {}
+
+std::string TestDesksTemplatesDelegate::GetAppShortName(
+    const std::string& app_id) {
+  return std::string();
+}
+
+bool TestDesksTemplatesDelegate::IsAppAvailable(
+    const std::string& app_id) const {
+  return !base::Contains(unavailable_app_ids_, app_id);
+}
 
 }  // namespace ash

@@ -41,7 +41,7 @@ void FakeDataRetriever::CheckInstallabilityAndRetrieveManifest(
 }
 
 void FakeDataRetriever::GetIcons(content::WebContents* web_contents,
-                                 const std::vector<GURL>& icon_urls,
+                                 std::vector<GURL> icon_urls,
                                  bool skip_page_favicons,
                                  GetIconsCallback callback) {
   if (get_icons_delegate_) {
@@ -72,7 +72,7 @@ void FakeDataRetriever::SetManifest(blink::mojom::ManifestPtr manifest,
                                     GURL manifest_url) {
   manifest_ = std::move(manifest);
   is_installable_ = is_installable;
-  manifest_url_ = manifest_url;
+  manifest_url_ = std::move(manifest_url);
 }
 
 void FakeDataRetriever::SetIcons(IconsMap icons_map) {

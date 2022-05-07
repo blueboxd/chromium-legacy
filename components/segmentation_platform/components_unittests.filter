@@ -4,11 +4,13 @@ DummySegmentationPlatformServiceTest.*
 FeatureAggregatorImplTest.*
 FeatureListQueryProcessorTest.*
 HistogramSignalHandlerTest.*
+HistoryDelegateImplTest.*
 MetadataUtilsTest.*
 ModelExecutionManagerFactoryTest.*
 ModelExecutionManagerTest.*
 ModelExecutionSchedulerTest.*
 SegmentationModelExecutorTest.*
+SegmentationPlatformDummyUkmManagerTest.*
 SegmentationPlatformServiceImplEmptyConfigTest.*
 SegmentationPlatformServiceImplMultiClientTest.*
 SegmentationPlatformServiceImplTest.*
@@ -24,4 +26,11 @@ SignalKeyInternalTest.*
 SignalKeyTest.*
 SignalStorageConfigTest.*
 StatsTest.*
+TrainingDataCollectorTest.*
+UkmConfigTest.*
+UkmObserverTest.*
+UrlSignalHandlerTest.*
+UkmDatabaseBackendTest.*
+UkmMetricsTableTest.*
+UkmUrlTableTest.*
 UserActionSignalHandlerTest.*

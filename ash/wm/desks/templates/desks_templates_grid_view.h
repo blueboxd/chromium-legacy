@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/guid.h"
 #include "ui/aura/window_observer.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/animation/bounds_animator.h"
@@ -65,6 +66,9 @@ class DesksTemplatesGridView : public views::View, public aura::WindowObserver {
 
   // Returns whether the given `point_in_screen` intersect with any grid item.
   bool IntersectsWithGridItem(const gfx::Point& point_in_screen);
+
+  // Returns the item view associated with `uuid`.
+  DesksTemplatesItemView* GetItemForUUID(const base::GUID& uuid);
 
   // views::View:
   void Layout() override;

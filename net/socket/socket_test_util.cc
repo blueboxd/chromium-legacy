@@ -17,7 +17,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/compiler_specific.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -294,10 +293,16 @@ MockWriteResult StaticSocketDataProvider::OnWrite(const std::string& data) {
     // Not using mock writes; succeed synchronously.
     return MockWriteResult(SYNCHRONOUS, data.length());
   }
-  EXPECT_FALSE(helper_.AllWriteDataConsumed())
-      << "No more mock data to match write:\nFormatted write data:\n"
-      << printer_->PrintWrite(data) << "Raw write data:\n"
-      << HexDump(data);
+  if (printer_) {
+    EXPECT_FALSE(helper_.AllWriteDataConsumed())
+        << "No more mock data to match write:\nFormatted write data:\n"
+        << printer_->PrintWrite(data) << "Raw write data:\n"
+        << HexDump(data);
+  } else {
+    EXPECT_FALSE(helper_.AllWriteDataConsumed())
+        << "No more mock data to match write:\nRaw write data:\n"
+        << HexDump(data);
+  }
   if (helper_.AllWriteDataConsumed()) {
     return MockWriteResult(SYNCHRONOUS, ERR_UNEXPECTED);
   }
@@ -478,10 +483,16 @@ MockRead SequencedSocketData::OnRead() {
 
 MockWriteResult SequencedSocketData::OnWrite(const std::string& data) {
   CHECK_EQ(IoState::kIdle, write_state_);
-  CHECK(!helper_.AllWriteDataConsumed())
-      << "\nNo more mock data to match write:\nFormatted write data:\n"
-      << printer_->PrintWrite(data) << "Raw write data:\n"
-      << HexDump(data);
+  if (printer_) {
+    CHECK(!helper_.AllWriteDataConsumed())
+        << "\nNo more mock data to match write:\nFormatted write data:\n"
+        << printer_->PrintWrite(data) << "Raw write data:\n"
+        << HexDump(data);
+  } else {
+    CHECK(!helper_.AllWriteDataConsumed())
+        << "\nNo more mock data to match write:\nRaw write data:\n"
+        << HexDump(data);
+  }
 
   NET_TRACE(1, " *** ") << "sequence_number: " << sequence_number_;
   const MockWrite& next_write = helper_.PeekWrite();
@@ -2204,10 +2215,10 @@ const int kSOCKS4TestPort = 80;
 const char kSOCKS4OkRequestLocalHostPort80[] = {0x04, 0x01, 0x00, 0x50, 127,
                                                 0,    0,    1,    0};
 const int kSOCKS4OkRequestLocalHostPort80Length =
-    base::size(kSOCKS4OkRequestLocalHostPort80);
+    std::size(kSOCKS4OkRequestLocalHostPort80);
 
 const char kSOCKS4OkReply[] = {0x00, 0x5A, 0x00, 0x00, 0, 0, 0, 0};
-const int kSOCKS4OkReplyLength = base::size(kSOCKS4OkReply);
+const int kSOCKS4OkReplyLength = std::size(kSOCKS4OkReply);
 
 const char kSOCKS5TestHost[] = "host";
 const int kSOCKS5TestPort = 80;

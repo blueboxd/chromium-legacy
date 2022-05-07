@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/input/boundary_event_dispatcher.h"
 #include "third_party/blink/renderer/core/input/touch_event_manager.h"
 #include "third_party/blink/renderer/core/page/touch_adjustment.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/deque.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 
@@ -243,6 +244,8 @@ class CORE_EXPORT PointerEventManager final
   // filtering on the given event.
   bool ShouldFilterEvent(PointerEvent* pointer_event);
 
+  bool HandleScrollbarTouchDrag(const WebPointerEvent&, Scrollbar*);
+
   // NOTE: If adding a new field to this class please ensure that it is
   // cleared in |PointerEventManager::clear()|.
 
@@ -285,6 +288,8 @@ class CORE_EXPORT PointerEventManager final
   bool skip_touch_filter_all_ = false;
 
   Member<GestureManager> gesture_manager_;
+
+  WeakMember<Scrollbar> captured_scrollbar_;
 };
 
 }  // namespace blink

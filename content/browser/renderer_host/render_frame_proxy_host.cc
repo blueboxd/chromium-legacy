@@ -43,6 +43,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/web_sandbox_flags.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
+#include "third_party/blink/public/common/storage_key/storage_key.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom.h"
 #include "third_party/blink/public/mojom/messaging/transferable_message.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
@@ -50,7 +51,6 @@
 namespace content {
 
 namespace {
-using perfetto::protos::pbzero::ChromeTrackEvent;
 
 RenderFrameProxyHost::TestObserver* g_observer_for_testing = nullptr;
 
@@ -232,7 +232,7 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
     RenderFrameProxyHost* parent_proxy =
         frame_tree_node_->parent()
             ->browsing_context_state()
-            ->GetRenderFrameProxyHost(site_instance_group_.get());
+            ->GetRenderFrameProxyHost(site_instance_group());
     CHECK(parent_proxy);
 
     // Proxies that aren't live in the parent node should not be initialized
@@ -250,11 +250,11 @@ bool RenderFrameProxyHost::InitRenderFrameProxy() {
   if (frame_tree_node_->opener()) {
     opener_frame_token =
         frame_tree_node_->render_manager()->GetOpenerFrameToken(
-            site_instance_group_.get());
+            site_instance_group());
   }
 
   int view_routing_id = GetRenderViewHost()->GetRoutingID();
-  site_instance_group_->agent_scheduling_group().CreateFrameProxy(
+  GetAgentSchedulingGroup().CreateFrameProxy(
       frame_token_, routing_id_, opener_frame_token, view_routing_id,
       parent_routing_id, frame_tree_node_->tree_scope_type(),
       frame_tree_node_->current_replication_state().Clone(),
@@ -365,12 +365,13 @@ void RenderFrameProxyHost::UpdateOpener() {
   // the new opener's proxy exists in this case.
   if (frame_tree_node_->opener()) {
     frame_tree_node_->opener()->render_manager()->CreateOpenerProxies(
-        GetSiteInstance(), frame_tree_node_);
+        GetSiteInstance(), frame_tree_node_,
+        frame_tree_node_->current_frame_host()->browsing_context_state());
   }
 
   auto opener_frame_token =
       frame_tree_node_->render_manager()->GetOpenerFrameToken(
-          site_instance_group_.get());
+          site_instance_group());
   GetAssociatedRemoteFrame()->UpdateOpener(opener_frame_token);
 }
 
@@ -452,7 +453,7 @@ void RenderFrameProxyHost::DidFocusFrame() {
   if (!render_frame_host->IsActive())
     return;
   render_frame_host->delegate()->SetFocusedFrame(frame_tree_node_,
-                                                 GetSiteInstance());
+                                                 site_instance_group());
 }
 
 void RenderFrameProxyHost::CapturePaintPreviewOfCrossProcessSubframe(
@@ -532,8 +533,7 @@ void RenderFrameProxyHost::RouteMessageEvent(
   // performed here once OOPIF support in <webview> is further along.
   SiteInstanceImpl* target_site_instance = target_rfh->GetSiteInstance();
   if (!target_site_instance->IsRelatedSiteInstance(GetSiteInstance()) &&
-      !target_rfh->delegate()->ShouldRouteMessageEvent(target_rfh,
-                                                       GetSiteInstance())) {
+      !target_rfh->delegate()->ShouldRouteMessageEvent(target_rfh)) {
     return;
   }
 
@@ -541,6 +541,7 @@ void RenderFrameProxyHost::RouteMessageEvent(
   // equivalent RenderFrameProxyHost in the target process.
   absl::optional<blink::RemoteFrameToken> translated_source_token;
   ukm::SourceId source_page_ukm_source_id = ukm::kInvalidSourceId;
+  blink::StorageKey source_storage_key;
   if (source_frame_token) {
     RenderFrameHostImpl* source_rfh = RenderFrameHostImpl::FromFrameToken(
         GetProcess()->GetID(), source_frame_token.value());
@@ -581,13 +582,15 @@ void RenderFrameProxyHost::RouteMessageEvent(
       }
 
       source_page_ukm_source_id = source_rfh->GetPageUkmSourceId();
+      source_storage_key = source_rfh->storage_key();
     }
   }
 
   // Record UKM metrics for the postMessage event.
-  post_message_counter_.RecordMessage(source_page_ukm_source_id,
-                                      target_rfh->GetPageUkmSourceId(),
-                                      ukm::UkmRecorder::Get());
+  post_message_counter_.RecordMessage(
+      source_page_ukm_source_id, source_storage_key,
+      target_rfh->GetPageUkmSourceId(), target_rfh->storage_key(),
+      ukm::UkmRecorder::Get());
 
   target_rfh->PostMessageEvent(translated_source_token, source_origin,
                                target_origin, std::move(message));
@@ -677,6 +680,12 @@ void RenderFrameProxyHost::OpenURL(blink::mojom::OpenURLParamsPtr params) {
     download_policy.SetDisallowed(blink::NavigationDownloadType::kSandbox);
   }
 
+  // This will be used to set the Navigation Timing API navigationStart
+  // parameter for renderer navigations in the remote frame. If the navigation
+  // must wait on the current RenderFrameHost to execute its BeforeUnload event,
+  // the navigation start will be updated when the BeforeUnload ack is received.
+  const auto navigation_start_time = base::TimeTicks::Now();
+
   // TODO(lfg, lukasza): Remove |extra_headers| parameter from
   // RequestTransferURL method once both RenderFrameProxyHost and
   // RenderFrameHostImpl call RequestOpenURL from their OnOpenURL handlers.
@@ -692,7 +701,7 @@ void RenderFrameProxyHost::OpenURL(blink::mojom::OpenURLParamsPtr params) {
       params->post_body ? "POST" : "GET", params->post_body,
       params->extra_headers, std::move(blob_url_loader_factory),
       std::move(params->source_location), params->user_gesture,
-      params->impression);
+      params->impression, navigation_start_time);
 }
 
 void RenderFrameProxyHost::UpdateViewportIntersection(

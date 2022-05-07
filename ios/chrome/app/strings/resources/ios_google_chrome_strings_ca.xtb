@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Ajuda a millorar Chrome enviant estadístiques d'ús i informes d'error a Google.</translation>
 <translation id="417201473131094001">No s'admeten a Chrome Canary</translation>
 <translation id="4214277427269650960">Inicia la sessió en aquest lloc web i a Chrome. Pots activar la sincronització més endavant.</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> ha utilitzat Chrome en aquest dispositiu i hi ha deixat adreces d'interès, contrasenyes i altres opcions de configuració.</translation>
 <translation id="424864128008805179">Vols tancar la sessió de Chrome?</translation>
 <translation id="4249068189593983585">Consell de Chrome. Per accedir a més opcions de pestanyes, mantén premut el botó Mostra pestanyes a la barra d'eines, que és a la part inferior o superior de la pantalla.</translation>
 <translation id="4523886039239821078">Alguns complements fan que Chrome falli. Desinstal·la'ls.</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome no ha pogut comprovar totes les contrasenyes. Torna-ho a provar demà o <ph name="BEGIN_LINK" />comprova les contrasenyes desades al teu Compte de Google<ph name="END_LINK" />.</translation>
 <translation id="484033449593719797">No s'admeten a la versió beta de Chrome</translation>
 <translation id="5030102366287574140">Chrome pot ajudar a protegir-te de violacions de les dades, de llocs web no segurs i més.</translation>
+<translation id="5108659628347594808">Millora Chrome</translation>
 <translation id="5119391094379141756">Selecciona Chrome.</translation>
 <translation id="5162467219239570114">Chrome no està actualitzat. Si no hi ha cap actualització disponible a l'<ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, pot ser que el teu dispositiu ja no admeti les versions noves de Chrome.</translation>
 <translation id="5389212809648216794">Google Chrome no pot utilitzar la càmera perquè l'està utilitzant una altra aplicació</translation>
@@ -81,6 +83,13 @@
 <translation id="6709398533399187136">La teva contrasenya ha quedat exposada en una violació de les dades. El gestor de contrasenyes de Google recomana que la canviïs ara.</translation>
 <translation id="6822673484890854830">Chrome no ha pogut comprovar totes les contrasenyes. Torna-ho a provar més tard.</translation>
 <translation id="6964931465519938134">Ara pots utilitzar Chrome cada vegada que toquis enllaços en missatges, documents i altres aplicacions.</translation>
+<translation id="7046845777663074840">Quan aquesta opció està activada:
+<ph name="BEGIN_INDENT" />  • Ajuda a millorar Chrome per a les persones que el fan servir igual que tu.<ph name="END_INDENT" />
+
+Aspectes que cal tenir en compte:
+<ph name="BEGIN_INDENT" />  • S'envia informació a Google sobre l'ús que fas de Chrome, però no es relaciona amb tu.
+  • Si Chrome falla, els detalls sobre el bloqueig poden incloure informació personal.
+  • Si actives la sincronització, les mètriques també poden incloure informació sobre els URL que visites.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Personalitza Chrome</translation>
 <translation id="7124339256045485976">Mantén Chrome actualitzat</translation>
 <translation id="7161390184744336561">Google Chrome no està actualitzat</translation>

@@ -69,8 +69,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     _fromEmail = [fromEmail copy];
     _toEmail = [toEmail copy];
     _shouldClearData = SHOULD_CLEAR_DATA_USER_CHOICE;
-    self.title =
-        l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN);
+    self.title = l10n_util::GetNSString(IDS_IOS_OPTIONS_IMPORT_DATA_TITLE);
     [self setShouldHideDoneButton:YES];
   }
   return self;
@@ -154,7 +153,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (BOOL)tableView:(UITableView*)tableView
     shouldHighlightRowAtIndexPath:(NSIndexPath*)indexPath {
   NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:indexPath.section];
+      [self.tableViewModel sectionIdentifierForSectionIndex:indexPath.section];
   if (sectionIdentifier != SectionIdentifierOptions)
     return NO;
   return YES;
@@ -164,7 +163,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
     didSelectRowAtIndexPath:(NSIndexPath*)indexPath {
   [super tableView:tableView didSelectRowAtIndexPath:indexPath];
   NSInteger sectionIdentifier =
-      [self.tableViewModel sectionIdentifierForSection:indexPath.section];
+      [self.tableViewModel sectionIdentifierForSectionIndex:indexPath.section];
 
   if (sectionIdentifier == SectionIdentifierOptions) {
     // Store the user choice.

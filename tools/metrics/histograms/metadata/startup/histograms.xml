@@ -89,6 +89,18 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Startup.Android.Cold.FirstSafeBrowsingResponseTime.Tabbed"
+    units="ms" expires_after="2022-07-24">
+  <owner>pasko@chromium.org</owner>
+  <owner>xinghuilu@chromium.org</owner>
+  <owner>chrome-safebrowsing-alerts@google.com</owner>
+  <summary>
+    The time it took GmsCore to respond to the first hash-based SafeBrowsing
+    request in the process lifetime. Recorded at the same time as
+    Startup.Android.Cold.TimeToFirstNavigationCommit.Tabbed.
+  </summary>
+</histogram>
+
 <histogram base="true" name="Startup.Android.Cold.TimeToFirstContentfulPaint"
     units="ms" expires_after="2022-07-24">
   <owner>pasko@chromium.org</owner>
@@ -123,7 +135,6 @@ chromium-metrics-reviews@google.com.
   <owner>yfriedman@chromium.org</owner>
   <owner>pasko@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
-  <owner>yashard@chromium.org</owner>
   <owner>chrome-analysis-team@google.com</owner>
   <summary>
     The time from Chrome tabbed activity creation to the moment the Chrome first
@@ -178,7 +189,6 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Startup.Android.Cold.TimeToVisibleContent" units="ms"
     expires_after="2022-08-07">
-  <owner>yashard@chromium.org</owner>
   <owner>ckitagawa@chromium.org</owner>
   <summary>
     Android: The time from the activity creation point to the moment the content
@@ -196,7 +206,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.FeedContentFirstLoadedTime"
-    units="ms" expires_after="2022-06-19">
+    units="ms" expires_after="2022-08-21">
 <!-- Name completed by histogram_suffixes name="JavaStartMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -211,7 +221,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.FeedsLoadingPlaceholderShown.Instant"
-    units="ms" expires_after="2022-07-03">
+    units="ms" expires_after="2022-09-11">
   <owner>hanxi@chromium.org</owner>
   <owner>spdonghao@chromium.org</owner>
   <owner>wychen@chromium.org</owner>
@@ -238,7 +248,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Startup.Android.FirstDrawCompletedTime" units="ms"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
 <!-- Name completed by histogram_suffixes name="JavaStartMode" -->
 
   <owner>hanxi@chromium.org</owner>
@@ -250,7 +260,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Android.GURLEnsureMainDexInitialized" units="ms"
-    expires_after="2021-10-10">
+    expires_after="2023-03-04">
   <owner>mthiesse@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -429,7 +439,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.BrowserMainRunnerImplInitializeLongTime" units="ms"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>robliao@chromium.org</owner>
   <summary>
     The amount of time that elapsed during BrowserMainRunnerImpl::Initialize.
@@ -755,7 +765,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.IOSColdStartType" enum="IOSColdStartType"
-    expires_after="2022-04-01">
+    expires_after="2023-04-01">
   <owner>jlebel@chromium.org</owner>
   <owner>chrome-signin-team@chromium.org</owner>
   <summary>
@@ -899,7 +909,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Startup.Temperature" enum="StartupTemperature"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
 <!-- expires-after: Diagnosis metric for changes in StartupTemperature suffix.
      Shouldn't truly expire but kColdStartHardFaultCountThreshold should be
      surveyed yearly. -->

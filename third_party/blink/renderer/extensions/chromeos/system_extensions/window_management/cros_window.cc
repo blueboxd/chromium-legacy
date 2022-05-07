@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/geometry/dom_point.h"
+#include "third_party/blink/renderer/core/geometry/dom_rect.h"
 #include "third_party/blink/renderer/extensions/chromeos/system_extensions/window_management/cros_window_management.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -74,28 +75,55 @@ bool CrosWindow::setBounds(double x, double y, double width, double height) {
   return true;
 }
 
-bool CrosWindow::setFullscreen(bool value) {
-  return false;
+// TODO(crbug.com/1253318): Refactor to trace errors through return value or
+// otherwise.
+void CrosWindow::setFullscreen(bool fullscreen) {
+  auto* cros_window_management =
+      window_management_->GetCrosWindowManagementOrNull();
+  if (!cros_window_management) {
+    return;
+  }
+  cros_window_management->SetFullscreen(window_->id, fullscreen);
 }
 
-bool CrosWindow::maximize() {
-  return false;
+void CrosWindow::maximize() {
+  auto* cros_window_management =
+      window_management_->GetCrosWindowManagementOrNull();
+  if (!cros_window_management) {
+    return;
+  }
+  cros_window_management->Maximize(window_->id);
 }
 
-bool CrosWindow::minimize() {
-  return false;
+void CrosWindow::minimize() {
+  auto* cros_window_management =
+      window_management_->GetCrosWindowManagementOrNull();
+  if (!cros_window_management) {
+    return;
+  }
+  cros_window_management->Minimize(window_->id);
 }
 
 bool CrosWindow::raise() {
   return false;
 }
 
-bool CrosWindow::focus() {
-  return false;
+void CrosWindow::focus() {
+  auto* cros_window_management =
+      window_management_->GetCrosWindowManagementOrNull();
+  if (!cros_window_management) {
+    return;
+  }
+  cros_window_management->Focus(window_->id);
 }
 
-bool CrosWindow::close() {
-  return false;
+void CrosWindow::close() {
+  auto* cros_window_management =
+      window_management_->GetCrosWindowManagementOrNull();
+  if (!cros_window_management) {
+    return;
+  }
+  cros_window_management->Close(window_->id);
 }
 
 }  // namespace blink

@@ -23,6 +23,7 @@
 #include "chrome/browser/ash/login/ui/login_display_host_common.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_helper.h"
+#include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "components/session_manager/core/session_manager.h"
 #include "components/session_manager/core/session_manager_observer.h"
@@ -56,7 +57,8 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
                               public ui::InputDeviceEventObserver,
                               public views::WidgetRemovalsObserver,
                               public views::WidgetObserver,
-                              public MultiUserWindowManagerObserver {
+                              public MultiUserWindowManagerObserver,
+                              public OobeUI::Observer {
  public:
   LoginDisplayHostWebUI();
 
@@ -80,7 +82,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   void OnStartUserAdding() override;
   void CancelUserAdding() override;
   void OnStartSignInScreen() override;
-  void OnPreferencesChanged() override;
   void OnStartAppLaunch() override;
   void OnBrowserCreated() override;
   void ShowGaiaDialog(const AccountId& prefilled_account) override;
@@ -157,6 +158,12 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
   // MultiUserWindowManagerObserver:
   void OnUserSwitchAnimationFinished() override;
 
+  // OobeUI::Observer:
+  void OnCurrentScreenChanged(OobeScreenId current_screen,
+                              OobeScreenId new_screen) override;
+  void OnDestroyingOobeUI() override;
+
+  // LoginDisplayHostCommon:
   bool IsOobeUIDialogVisible() const override;
 
  private:
@@ -236,9 +243,6 @@ class LoginDisplayHostWebUI : public LoginDisplayHostCommon,
 
   // Login display we are using.
   std::unique_ptr<LoginDisplayWebUI> login_display_;
-
-  // True if the login display is the current screen.
-  bool is_showing_login_ = false;
 
   // Stores status area current visibility to be applied once login WebUI
   // is shown.

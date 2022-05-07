@@ -56,6 +56,7 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
   void SetDisplayEmail(const std::string& email) final;
   void SetDisplayAndGivenName(const std::string& display_name,
                               const std::string& given_name) final;
+  void ShowAllowlistCheckFailedError() final;
   void LoadWallpaper(const AccountId& account_id) final;
   void LoadSigninWallpaper() final;
   bool IsUserAllowlisted(
@@ -123,8 +124,6 @@ class LoginDisplayHostCommon : public LoginDisplayHost,
 
  private:
   void Cleanup();
-  // Callback invoked after the feedback is finished.
-  void OnFeedbackFinished();
   // Set screen, from which WC flow will continue after attempt to show
   // TermsOfServiceScreen.
   void SetScreenAfterManagedTos(OobeScreenId screen_id);

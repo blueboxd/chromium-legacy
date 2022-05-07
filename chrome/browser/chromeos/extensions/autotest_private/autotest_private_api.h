@@ -33,6 +33,10 @@ namespace crostini {
 enum class CrostiniResult;
 }
 
+namespace update_client {
+enum class Error;
+}
+
 namespace extensions {
 
 class AssistantInteractionHelper;
@@ -301,6 +305,16 @@ class AutotestPrivateIsArcProvisionedFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateIsLacrosPrimaryBrowserFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.isLacrosPrimaryBrowser",
+                             AUTOTESTPRIVATE_ISLACROSPRIMARYBROWSER)
+
+ private:
+  ~AutotestPrivateIsLacrosPrimaryBrowserFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateGetArcAppFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.getArcApp",
@@ -318,6 +332,16 @@ class AutotestPrivateGetArcPackageFunction : public ExtensionFunction {
 
  private:
   ~AutotestPrivateGetArcPackageFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateGetCryptohomeRecoveryDataFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getCryptohomeRecoveryData",
+                             AUTOTESTPRIVATE_GETCRYPTOHOMERECOVERYDATA)
+ private:
+  ~AutotestPrivateGetCryptohomeRecoveryDataFunction() override;
   ResponseAction Run() override;
 };
 
@@ -656,6 +680,24 @@ class AutotestPrivateBootstrapMachineLearningServiceFunction
   void OnMojoDisconnect();
 
   mojo::Remote<chromeos::machine_learning::mojom::Model> model_;
+};
+
+class AutotestPrivateLoadSmartDimComponentFunction : public ExtensionFunction {
+ public:
+  AutotestPrivateLoadSmartDimComponentFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.loadSmartDimComponent",
+                             AUTOTESTPRIVATE_LOADSMARTDIMCOMPONENT)
+
+ private:
+  ~AutotestPrivateLoadSmartDimComponentFunction() override;
+  // ExtensionFunction:
+  ResponseAction Run() override;
+
+  void OnComponentUpdatedCallback(update_client::Error error);
+  void TryRespond();
+
+  base::RetainingOneShotTimer timer_;
+  int timer_triggered_count_ = 0;
 };
 
 // Enable/disable the Google Assistant feature. This toggles the Assistant user
@@ -1475,6 +1517,43 @@ class AutotestPrivateResetHoldingSpaceFunction : public ExtensionFunction {
 
  private:
   ~AutotestPrivateResetHoldingSpaceFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateStartLoginEventRecorderDataCollectionFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateStartLoginEventRecorderDataCollectionFunction();
+  DECLARE_EXTENSION_FUNCTION(
+      "autotestPrivate.startLoginEventRecorderDataCollection",
+      AUTOTESTPRIVATE_STARTLOGINEVENTRECORDERDATACOLLECTION)
+
+ private:
+  ~AutotestPrivateStartLoginEventRecorderDataCollectionFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateGetLoginEventRecorderLoginEventsFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateGetLoginEventRecorderLoginEventsFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getLoginEventRecorderLoginEvents",
+                             AUTOTESTPRIVATE_GETLOGINEVENTRECORDERLOGINEVENTS)
+
+ private:
+  ~AutotestPrivateGetLoginEventRecorderLoginEventsFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateAddLoginEventForTestingFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateAddLoginEventForTestingFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.addLoginEventForTesting",
+                             AUTOTESTPRIVATE_ADDLOGINEVENTFORTESTING)
+
+ private:
+  ~AutotestPrivateAddLoginEventForTestingFunction() override;
   ResponseAction Run() override;
 };
 

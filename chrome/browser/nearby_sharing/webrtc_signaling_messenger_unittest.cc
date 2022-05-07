@@ -25,24 +25,6 @@ const char kOAuthToken[] = "oauth_token";
 const char kTestAccount[] = "test@test.test";
 const char kCountryCode[] = "ZZ";
 
-chrome_browser_nearby_sharing_instantmessaging::ReceiveMessagesResponse
-CreateReceiveMessagesResponse(const std::string& msg) {
-  chrome_browser_nearby_sharing_instantmessaging::ReceiveMessagesResponse
-      response;
-  response.mutable_inbox_message()->set_message(msg);
-  return response;
-}
-
-chrome_browser_nearby_sharing_instantmessaging::StreamBody BuildResponseProto(
-    const std::vector<std::string>& messages) {
-  chrome_browser_nearby_sharing_instantmessaging::StreamBody stream_body;
-  for (const auto& msg : messages) {
-    stream_body.add_messages(
-        CreateReceiveMessagesResponse(msg).SerializeAsString());
-  }
-  return stream_body;
-}
-
 class FakeIncomingMessagesListener
     : public sharing::mojom::IncomingMessagesListener {
  public:

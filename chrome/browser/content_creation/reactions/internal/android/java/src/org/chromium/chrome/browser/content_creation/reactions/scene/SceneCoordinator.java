@@ -135,6 +135,8 @@ public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDe
                 mNumReactionsInPosition.add(1);
             }
             addReactionLayoutToScene(reactionLayout, lp);
+            reactionLayout.announceForAccessibility(mActivity.getString(
+                    R.string.lightweight_reactions_reaction_added_announcement));
         });
     }
 
@@ -362,6 +364,8 @@ public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDe
                 newLayoutParams.bottomMargin = oldLayoutParams.bottomMargin - offsetPx;
             }
             addReactionLayoutToScene(newReactionLayout, newLayoutParams);
+            mActiveReaction.announceForAccessibility(mActivity.getString(
+                    R.string.lightweight_reactions_reaction_duplicated_announcement));
         });
     }
 
@@ -434,6 +438,8 @@ public class SceneCoordinator implements SceneEditorDelegate, ToolbarReactionsDe
                     new ReactionGifDrawable(reaction, baseGifImage, Bitmap.Config.ARGB_8888),
                     reaction.localizedName);
             resetReactions(mActiveReaction);
+            mActiveReaction.announceForAccessibility(mActivity.getString(
+                    R.string.lightweight_reactions_reaction_changed_announcement));
         });
     }
 

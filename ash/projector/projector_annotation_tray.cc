@@ -5,9 +5,9 @@
 #include "ash/projector/projector_annotation_tray.h"
 
 #include "ash/constants/ash_features.h"
-#include "ash/fast_ink/laser/laser_pointer_controller.h"
 #include "ash/projector/projector_controller_impl.h"
 #include "ash/projector/ui/projector_color_button.h"
+#include "ash/public/cpp/projector/annotator_tool.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shelf/shelf.h"
@@ -31,19 +31,16 @@ namespace ash {
 namespace {
 
 // Margins between the title view and the edges around it (dp).
-constexpr int kPaddingBetweenTitleAndSeparator = 3;
 constexpr int kPaddingBetweenBottomAndLastTrayItem = 4;
 
 // Width of the bubble itself (dp).
-constexpr int kBubbleWidth = 372;
+constexpr int kBubbleWidth = 242;
 
 // Insets for the views (dp).
-constexpr gfx::Insets kTitleViewPadding(4, 16, 0, 24);
-constexpr gfx::Insets kPenViewPadding(4, 0, 0, 24);
-constexpr gfx::Insets kLaserViewPadding(0, 0, 0, 24);
+constexpr gfx::Insets kPenViewPadding(4, 16, 0, 16);
 
-// Spacing between buttons in the title view (dp).
-constexpr int kTitleViewChildSpacing = 20;
+// Spacing between buttons (dp).
+constexpr int kButtonsPadding = 12;
 
 // Size of menu rows.
 constexpr int kMenuRowHeight = 48;
@@ -55,9 +52,13 @@ constexpr int kColorButtonViewRadius = 28;
 // Colors.
 constexpr SkColor kRedPenColor = SkColorSetRGB(0xEA, 0x43, 0x35);
 constexpr SkColor kYellowPenColor = SkColorSetRGB(0xFB, 0xBC, 0x04);
+constexpr SkColor kBluePenColor = SkColorSetRGB(0x1A, 0x73, 0xE8);
+
+constexpr SkColor kPenColors[] = {kRedPenColor, kBluePenColor, SK_ColorWHITE,
+                                  kYellowPenColor, SK_ColorBLACK};
 
 // TODO(b/201664243): Use AnnotatorToolType.
-enum ProjectorTool { kToolNone, kToolLaser, kToolPen };
+enum ProjectorTool { kToolNone, kToolPen };
 
 ProjectorTool GetCurrentTool() {
   auto* controller = Shell::Get()->projector_controller();
@@ -68,15 +69,13 @@ ProjectorTool GetCurrentTool() {
 
   if (controller->IsAnnotatorEnabled())
     return kToolPen;
-  return controller->IsLaserPointerEnabled() ? kToolLaser : kToolNone;
+  return kToolNone;
 }
 
 const gfx::VectorIcon& GetIconForTool(ProjectorTool tool) {
   switch (tool) {
     case kToolNone:
       return kPaletteTrayIconProjectorIcon;
-    case kToolLaser:
-      return kPaletteModeLaserPointerIcon;
     case kToolPen:
       return kInkPenIcon;
   }
@@ -91,28 +90,39 @@ ProjectorAnnotationTray::ProjectorAnnotationTray(Shelf* shelf)
     : TrayBackgroundView(shelf),
       image_view_(
           tray_container()->AddChildView(std::make_unique<views::ImageView>())),
-      laser_view_(nullptr),
       pen_view_(nullptr) {
   image_view_->SetTooltipText(GetAccessibleNameForTray());
   image_view_->SetHorizontalAlignment(views::ImageView::Alignment::kCenter);
   image_view_->SetVerticalAlignment(views::ImageView::Alignment::kCenter);
   image_view_->SetPreferredSize(gfx::Size(kTrayItemSize, kTrayItemSize));
+  // The default pen color upon creation is red.
+  current_pen_color_ = kRedPenColor;
 }
 
 ProjectorAnnotationTray::~ProjectorAnnotationTray() = default;
 
 bool ProjectorAnnotationTray::PerformAction(const ui::Event& event) {
-  if (bubble_) {
-    CloseBubble();
-  } else {
-    if (GetCurrentTool() == kToolNone) {
-      ShowBubble();
-    } else {
-      DeactivateActiveTool();
-    }
-  }
-
+  ToggleAnnotator();
   return true;
+}
+
+void ProjectorAnnotationTray::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->type() != ui::ET_MOUSE_PRESSED) {
+    return;
+  }
+  if (event->IsRightMouseButton()) {
+    ShowBubble();
+  } else if (event->IsLeftMouseButton()) {
+    ToggleAnnotator();
+  }
+}
+
+void ProjectorAnnotationTray::OnGestureEvent(ui::GestureEvent* event) {
+  if (event->details().type() == ui::ET_GESTURE_LONG_PRESS) {
+    ShowBubble();
+  } else if (event->details().type() == ui::ET_GESTURE_TAP) {
+    ToggleAnnotator();
+  }
 }
 
 void ProjectorAnnotationTray::ClickedOutsideBubble() {
@@ -133,7 +143,6 @@ void ProjectorAnnotationTray::HideBubbleWithView(
 }
 
 void ProjectorAnnotationTray::CloseBubble() {
-  laser_view_ = nullptr;
   pen_view_ = nullptr;
   bubble_.reset();
 
@@ -145,10 +154,6 @@ void ProjectorAnnotationTray::ShowBubble() {
     return;
 
   DCHECK(tray_container());
-
-  // There may still be an active tool if show bubble was called from an
-  // accelerator.
-  DeactivateActiveTool();
 
   TrayBubbleView::InitParams init_params;
   init_params.delegate = this;
@@ -176,38 +181,6 @@ void ProjectorAnnotationTray::ShowBubble() {
     view->layer()->SetFillsBoundsOpaquely(false);
   };
 
-  // Add title.
-  auto* title_view = bubble_view->AddChildView(std::make_unique<views::View>());
-
-  auto box_layout = std::make_unique<views::BoxLayout>(
-      views::BoxLayout::Orientation::kHorizontal, kTitleViewPadding);
-  box_layout->set_cross_axis_alignment(
-      views::BoxLayout::CrossAxisAlignment::kCenter);
-  box_layout->set_minimum_cross_axis_size(kMenuRowHeight);
-  views::BoxLayout* layout_ptr =
-      title_view->SetLayoutManager(std::move(box_layout));
-
-  auto* title_label = title_view->AddChildView(
-      std::make_unique<views::Label>(l10n_util::GetStringUTF16(
-          IDS_ASH_STATUS_AREA_PROJECTOR_ANNOTATION_TRAY_TITLE)));
-  title_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  title_label->SetEnabledColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kTextColorPrimary));
-  TrayPopupUtils::SetLabelFontList(title_label,
-                                   TrayPopupUtils::FontStyle::kPodMenuHeader);
-  layout_ptr->SetFlexForView(title_label, 1, true);
-
-  setup_layered_view(title_view);
-
-  // Add horizontal separator between the title and tools.
-  auto* separator =
-      bubble_view->AddChildView(std::make_unique<views::Separator>());
-  setup_layered_view(separator);
-  separator->SetColor(AshColorProvider::Get()->GetContentLayerColor(
-      AshColorProvider::ContentLayerType::kSeparatorColor));
-  separator->SetBorder(views::CreateEmptyBorder(gfx::Insets(
-      kPaddingBetweenTitleAndSeparator, 0, kMenuSeparatorVerticalPadding, 0)));
-
   // Add drawing tools
   {
     auto* marker_view_container =
@@ -215,72 +188,22 @@ void ProjectorAnnotationTray::ShowBubble() {
 
     auto box_layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kHorizontal, kPenViewPadding,
-        kTitleViewChildSpacing);
+        kButtonsPadding);
     box_layout->set_cross_axis_alignment(
         views::BoxLayout::CrossAxisAlignment::kCenter);
     box_layout->set_minimum_cross_axis_size(kMenuRowHeight);
-    views::BoxLayout* layout_ptr =
-        marker_view_container->SetLayoutManager(std::move(box_layout));
+    marker_view_container->SetLayoutManager(std::move(box_layout));
 
-    SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kButtonIconColor);
-    gfx::ImageSkia icon =
-        CreateVectorIcon(kInkPenIcon, kMenuIconSize, icon_color);
-    pen_view_ = marker_view_container->AddChildView(
-        std::make_unique<HoverHighlightView>(this));
-    pen_view_->AddIconAndLabel(icon, l10n_util::GetStringUTF16(IDS_PEN_BUTTON));
-    layout_ptr->SetFlexForView(pen_view_, 1, true);
-
-    // TODO(b/201664243): Only draw outer circle on hover or selection.
-    marker_view_container->AddChildView(std::make_unique<ProjectorColorButton>(
-        base::BindRepeating(&ProjectorAnnotationTray::OnPenColorPressed,
-                            base::Unretained(this), kRedPenColor),
-        kRedPenColor, kColorButtonColorViewSize, kColorButtonViewRadius,
-        l10n_util::GetStringUTF16(IDS_RED_COLOR_BUTTON)));
-    marker_view_container->AddChildView(std::make_unique<ProjectorColorButton>(
-        base::BindRepeating(&ProjectorAnnotationTray::OnPenColorPressed,
-                            base::Unretained(this), kYellowPenColor),
-        kYellowPenColor, kColorButtonColorViewSize, kColorButtonViewRadius,
-        l10n_util::GetStringUTF16(IDS_YELLOW_COLOR_BUTTON)));
-    marker_view_container->AddChildView(std::make_unique<ProjectorColorButton>(
-        base::BindRepeating(&ProjectorAnnotationTray::OnPenColorPressed,
-                            base::Unretained(this), SK_ColorBLACK),
-        SK_ColorBLACK, kColorButtonColorViewSize, kColorButtonViewRadius,
-        l10n_util::GetStringUTF16(IDS_BLACK_COLOR_BUTTON)));
-    marker_view_container->AddChildView(std::make_unique<ProjectorColorButton>(
-        base::BindRepeating(&ProjectorAnnotationTray::OnPenColorPressed,
-                            base::Unretained(this), SK_ColorWHITE),
-        SK_ColorWHITE, kColorButtonColorViewSize, kColorButtonViewRadius,
-        l10n_util::GetStringUTF16(IDS_WHITE_COLOR_BUTTON)));
-
+    for (SkColor color : kPenColors) {
+      auto* colorButton = marker_view_container->AddChildView(
+          std::make_unique<ProjectorColorButton>(
+              base::BindRepeating(&ProjectorAnnotationTray::OnPenColorPressed,
+                                  base::Unretained(this), color),
+              color, kColorButtonColorViewSize, kColorButtonViewRadius,
+              l10n_util::GetStringUTF16(GetAccessibleNameForColor(color))));
+      colorButton->SetToggled(current_pen_color_ == color);
+    }
     setup_layered_view(marker_view_container);
-  }
-
-  // Add Laser Pointer
-  {
-    auto* laser_view_container =
-        bubble_view->AddChildView(std::make_unique<views::View>());
-
-    auto box_layout = std::make_unique<views::BoxLayout>(
-        views::BoxLayout::Orientation::kHorizontal, kLaserViewPadding,
-        kTitleViewChildSpacing);
-    box_layout->set_cross_axis_alignment(
-        views::BoxLayout::CrossAxisAlignment::kCenter);
-    box_layout->set_minimum_cross_axis_size(kMenuRowHeight);
-    views::BoxLayout* layout_ptr =
-        laser_view_container->SetLayoutManager(std::move(box_layout));
-
-    SkColor icon_color = AshColorProvider::Get()->GetContentLayerColor(
-        AshColorProvider::ContentLayerType::kButtonIconColor);
-    gfx::ImageSkia icon = CreateVectorIcon(kPaletteModeLaserPointerIcon,
-                                           kMenuIconSize, icon_color);
-    laser_view_ = laser_view_container->AddChildView(
-        std::make_unique<HoverHighlightView>(this));
-    laser_view_->AddIconAndLabel(
-        icon, l10n_util::GetStringUTF16(IDS_LASER_POINTER_BUTTON));
-
-    layout_ptr->SetFlexForView(laser_view_, 1, true);
-    setup_layered_view(laser_view_container);
   }
 
   // Show the bubble.
@@ -301,41 +224,70 @@ void ProjectorAnnotationTray::OnThemeChanged() {
   UpdateIcon();
 }
 
-void ProjectorAnnotationTray::OnViewClicked(views::View* sender) {
-  auto* projector_controller = ProjectorControllerImpl::Get();
-  DCHECK(projector_controller);
-
-  if (sender == pen_view_) {
-    projector_controller->OnMarkerPressed();
-  } else if (sender == laser_view_) {
-    projector_controller->OnLaserPointerPressed();
-  }
-
-  CloseBubble();
+void ProjectorAnnotationTray::HideAnnotationTray() {
+  SetVisiblePreferred(false);
   UpdateIcon();
+}
+
+void ProjectorAnnotationTray::ToggleAnnotator() {
+  if (GetCurrentTool() == kToolNone) {
+    EnableAnnotatorTool();
+  } else {
+    DeactivateActiveTool();
+  }
+  if (bubble_) {
+    CloseBubble();
+  }
+  UpdateIcon();
+}
+
+void ProjectorAnnotationTray::EnableAnnotatorTool() {
+  auto* controller = Shell::Get()->projector_controller();
+  DCHECK(controller);
+  controller->OnMarkerPressed();
 }
 
 void ProjectorAnnotationTray::DeactivateActiveTool() {
   auto* controller = Shell::Get()->projector_controller();
   DCHECK(controller);
   controller->ResetTools();
-  UpdateIcon();
 }
 
 void ProjectorAnnotationTray::UpdateIcon() {
-  ProjectorTool tool = GetCurrentTool();
+  const ProjectorTool tool = GetCurrentTool();
   image_view_->SetImage(gfx::CreateVectorIcon(
       GetIconForTool(tool),
       AshColorProvider::Get()->GetContentLayerColor(
           AshColorProvider::ContentLayerType::kIconColorPrimary)));
+  SetIsActive(tool != kToolNone);
 }
 
 void ProjectorAnnotationTray::OnPenColorPressed(SkColor color) {
-  // TODO(b/201664243) Pass the color for the marker.
   auto* projector_controller = ProjectorControllerImpl::Get();
   DCHECK(projector_controller);
-  projector_controller->OnMarkerPressed();
+  AnnotatorTool tool;
+  tool.color = color;
+  projector_controller->SetAnnotatorTool(tool);
+  current_pen_color_ = color;
   CloseBubble();
+  UpdateIcon();
+}
+
+int ProjectorAnnotationTray::GetAccessibleNameForColor(SkColor color) {
+  switch (color) {
+    case kRedPenColor:
+      return IDS_RED_COLOR_BUTTON;
+    case kBluePenColor:
+      return IDS_BLUE_COLOR_BUTTON;
+    case SK_ColorWHITE:
+      return IDS_WHITE_COLOR_BUTTON;
+    case kYellowPenColor:
+      return IDS_YELLOW_COLOR_BUTTON;
+    case SK_ColorBLACK:
+      return IDS_BLACK_COLOR_BUTTON;
+  }
+  NOTREACHED();
+  return IDS_RED_COLOR_BUTTON;
 }
 
 }  // namespace ash

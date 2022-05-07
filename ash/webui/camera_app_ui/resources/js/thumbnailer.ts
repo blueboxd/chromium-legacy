@@ -15,6 +15,7 @@ import {WaitableEvent} from './waitable_event.js';
 
 /**
  * Converts the element to a jpeg blob by drawing it on a canvas.
+ *
  * @param element Source element.
  * @param width Canvas width.
  * @param height Canvas height.
@@ -27,7 +28,7 @@ async function elementToJpegBlob(
   const {canvas, ctx} = newDrawingCanvas({width, height});
   ctx.drawImage(element, 0, 0, width, height);
 
-  /** A one-dimensional pixels array in RGBA order. */
+  /* A one-dimensional pixels array in RGBA order. */
   const data = ctx.getImageData(0, 0, width, height).data;
   if (data.every((byte) => byte === 0)) {
     throw new EmptyThumbnailError();
@@ -38,6 +39,7 @@ async function elementToJpegBlob(
 
 /**
  * Loads the blob into a <video> element.
+ *
  * @throws Thrown when it fails to load video.
  */
 async function loadVideoBlob(blob: Blob): Promise<HTMLVideoElement> {
@@ -103,6 +105,7 @@ async function loadImageBlob(blob: Blob): Promise<HTMLImageElement> {
 
 /**
  * Creates a thumbnail of video by scaling the first frame to the target size.
+ *
  * @param blob Blob of video to be scaled.
  * @param width Target width.
  * @param height Target height. Preserve the aspect ratio if not set.
@@ -119,6 +122,7 @@ async function scaleVideo(
 
 /**
  * Creates a thumbnail of image by scaling it to the target size.
+ *
  * @param blob Blob of image to be scaled.
  * @param width Target width.
  * @param height Target height. Preserve the aspect ratio if not set.
@@ -145,6 +149,7 @@ class NoImageInPdfError extends Error {
 
 /**
  * Gets image embedded in a PDF.
+ *
  * @param blob Blob of PDF.
  * @return Promise resolved to image blob inside PDF.
  */
@@ -155,10 +160,11 @@ async function getImageFromPdf(blob: Blob): Promise<Blob> {
   /**
    * Finds |patterns| in view starting from |i| and moves |i| to end of found
    * pattern index.
+   *
    * @return Returns begin of found pattern index or -1 for no further pattern
    *     is found.
    */
-  const findPattern = (...patterns: number[]): number => {
+  function findPattern(...patterns: number[]): number {
     for (; i + patterns.length < view.length; i++) {
       if (patterns.every((b, index) => b === view[i + index])) {
         const ret = i;
@@ -167,7 +173,7 @@ async function getImageFromPdf(blob: Blob): Promise<Blob> {
       }
     }
     return -1;
-  };
+  }
   // Parse object contains /Subtype /Image name and field from pdf format:
   // <</Name1 /Field1... \n/Name2... >>...<<...>>
   // The jpeg stream will follow the target object with length in field of
@@ -194,6 +200,8 @@ async function getImageFromPdf(blob: Blob): Promise<Blob> {
         case '/Length':
           length = Number(field);
           break;
+        default:
+          // nothing to do.
       }
     }
     if (isImage) {
@@ -222,6 +230,7 @@ const VIDEO_COVER_WIDTH = 240;
 
 /**
  * Extracts image blob from an arbitrary type of blob.
+ *
  * @return Resolved to the image blob.
  */
 export async function extractImageFromBlob(blob: Blob): Promise<Blob> {

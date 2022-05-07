@@ -48,7 +48,6 @@
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/dragdrop/os_exchange_data.h"
 #include "ui/gfx/geometry/rect.h"
-#include "url/origin.h"
 #include "url/url_constants.h"
 
 namespace ash {
@@ -223,7 +222,7 @@ TEST_F(ChromeDataExchangeDelegateTest, GetFilenames) {
   std::vector<ui::FileInfo> files = data_exchange_delegate.GetFilenames(
       ui::EndpointType::kArc,
       Data("\n\tfile:///file1\t\r\n#ignore\r\nfile:///file2\r\n"));
-  EXPECT_EQ(2, files.size());
+  EXPECT_EQ(2u, files.size());
   EXPECT_EQ("/file1", files[0].path.value());
   EXPECT_EQ("", files[0].display_name.value());
   EXPECT_EQ("/file2", files[1].path.value());
@@ -233,81 +232,81 @@ TEST_F(ChromeDataExchangeDelegateTest, GetFilenames) {
   files = data_exchange_delegate.GetFilenames(
       ui::EndpointType::kCrostini,
       Data("file:///mnt/chromeos/MyFiles/shared/file"));
-  EXPECT_EQ(1, files.size());
+  EXPECT_EQ(1u, files.size());
   EXPECT_EQ(shared_path.Append("file"), files[0].path);
 
   // Crostini homedir should be mapped.
   files = data_exchange_delegate.GetFilenames(
       ui::EndpointType::kCrostini, Data("file:///home/testuser/file"));
-  EXPECT_EQ(1, files.size());
+  EXPECT_EQ(1u, files.size());
   EXPECT_EQ(crostini_dir_.Append("file"), files[0].path);
 
   // Crostini internal paths should be mapped.
   files = data_exchange_delegate.GetFilenames(ui::EndpointType::kCrostini,
                                               Data("file:///etc/hosts"));
-  EXPECT_EQ(1, files.size());
+  EXPECT_EQ(1u, files.size());
   EXPECT_EQ("vmfile:termina:/etc/hosts", files[0].path.value());
 
   // Unshared paths should fail.
   files = data_exchange_delegate.GetFilenames(
       ui::EndpointType::kCrostini,
       Data("file:///mnt/chromeos/MyFiles/unshared/file"));
-  EXPECT_EQ(0, files.size());
+  EXPECT_EQ(0u, files.size());
   files = data_exchange_delegate.GetFilenames(
       ui::EndpointType::kCrostini,
       Data("file:///mnt/chromeos/MyFiles/shared/file1\r\n"
            "file:///mnt/chromeos/MyFiles/unshared/file2"));
-  EXPECT_EQ(1, files.size());
+  EXPECT_EQ(1u, files.size());
   EXPECT_EQ(shared_path.Append("file1"), files[0].path);
 
   // file:/path should fail.
   files = data_exchange_delegate.GetFilenames(
       ui::EndpointType::kCrostini, Data("file:/mnt/chromeos/MyFiles/file"));
-  EXPECT_EQ(0, files.size());
+  EXPECT_EQ(0u, files.size());
 
   // file:path should fail.
   files = data_exchange_delegate.GetFilenames(
       ui::EndpointType::kCrostini, Data("file:mnt/chromeos/MyFiles/file"));
-  EXPECT_EQ(0, files.size());
+  EXPECT_EQ(0u, files.size());
 
   // file:// should fail.
   files = data_exchange_delegate.GetFilenames(ui::EndpointType::kCrostini,
                                               Data("file://"));
-  EXPECT_EQ(0, files.size());
+  EXPECT_EQ(0u, files.size());
 
   // file:/// maps to internal root.
   files = data_exchange_delegate.GetFilenames(ui::EndpointType::kCrostini,
                                               Data("file:///"));
-  EXPECT_EQ(1, files.size());
+  EXPECT_EQ(1u, files.size());
   EXPECT_EQ("vmfile:termina:/", files[0].path.value());
 
   // /path should fail.
   files = data_exchange_delegate.GetFilenames(
       ui::EndpointType::kCrostini, Data("/mnt/chromeos/MyFiles/file"));
-  EXPECT_EQ(0, files.size());
+  EXPECT_EQ(0u, files.size());
 
   // Plugin VM shared paths should be mapped.
   files = data_exchange_delegate.GetFilenames(
       ui::EndpointType::kPluginVm, Data("file://ChromeOS/MyFiles/shared/file"));
-  EXPECT_EQ(1, files.size());
+  EXPECT_EQ(1u, files.size());
   EXPECT_EQ(shared_path.Append("file"), files[0].path);
 
   // Plugin VM internal paths should be mapped.
   files = data_exchange_delegate.GetFilenames(
       ui::EndpointType::kPluginVm, Data("file:///C:/WINDOWS/notepad.exe"));
-  EXPECT_EQ(1, files.size());
+  EXPECT_EQ(1u, files.size());
   EXPECT_EQ("vmfile:PvmDefault:C:/WINDOWS/notepad.exe", files[0].path.value());
 
   // Unshared paths should fail.
   files = data_exchange_delegate.GetFilenames(
       ui::EndpointType::kPluginVm,
       Data("file://ChromeOS/MyFiles/unshared/file"));
-  EXPECT_EQ(0, files.size());
+  EXPECT_EQ(0u, files.size());
   files = data_exchange_delegate.GetFilenames(
       ui::EndpointType::kPluginVm,
       Data("file://ChromeOS/MyFiles/shared/file1\r\n"
            "file://ChromeOS/MyFiles/unshared/file2"));
-  EXPECT_EQ(1, files.size());
+  EXPECT_EQ(1u, files.size());
   EXPECT_EQ(shared_path.Append("file1"), files[0].path);
 }
 
@@ -496,10 +495,10 @@ TEST_F(ChromeDataExchangeDelegateTest, ParseFileSystemSources) {
           {{u"fs/tag", u"exo"}, {u"fs/sources", urls}}),
       &pickle);
 
-  ui::DataTransferEndpoint files_app(url::Origin::Create(file_manager_url));
+  ui::DataTransferEndpoint files_app(file_manager_url.Resolve("main.html"));
   std::vector<ui::FileInfo> file_info =
       data_exchange_delegate.ParseFileSystemSources(&files_app, pickle);
-  EXPECT_EQ(2, file_info.size());
+  EXPECT_EQ(2u, file_info.size());
   EXPECT_EQ(shared_path.Append("file1"), file_info[0].path);
   EXPECT_EQ(shared_path.Append("file2"), file_info[1].path);
   EXPECT_EQ(base::FilePath(), file_info[0].display_name);

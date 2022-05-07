@@ -116,7 +116,7 @@ class MultipleProfileDeletionObserver
 
   void Wait() {
     keep_alive_ = std::make_unique<ScopedKeepAlive>(
-        KeepAliveOrigin::PROFILE_HELPER, KeepAliveRestartOption::DISABLED);
+        KeepAliveOrigin::PROFILE_MANAGER, KeepAliveRestartOption::DISABLED);
     loop_.Run();
   }
 
@@ -723,9 +723,8 @@ IN_PROC_BROWSER_TEST_P(ProfileManagerBrowserTest, DeletePasswords) {
   verify_add.Wait();
   EXPECT_EQ(1u, verify_add.GetPasswords().size());
 
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
   base::RunLoop run_loop;
-  profile_manager->ScheduleProfileForDeletion(
+  g_browser_process->profile_manager()->ScheduleProfileForDeletion(
       profile->GetPath(),
       base::BindLambdaForTesting([&run_loop](Profile*) { run_loop.Quit(); }));
   run_loop.Run();

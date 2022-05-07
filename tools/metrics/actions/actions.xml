@@ -7021,6 +7021,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="DesktopFeed.FollowSite">
+  <owner>jianli@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user followed the web feed for the website (Desktop only).
+  </description>
+</action>
+
 <action name="DesktopReadingList.AddItem.FromBookmarkIcon">
   <owner>corising@chromium.org</owner>
   <owner>chrome-desktop-ui-sea@google.com</owner>
@@ -10629,6 +10637,12 @@ should be able to be added at any place in this file.
   <description>
     The user reset the zoom level on a webpage. iOS only.
   </description>
+</action>
+
+<action name="IOS.Permission.Toggled">
+  <owner>ewannpv@chromium.org</owner>
+  <owner>gambard@chromium.org</owner>
+  <description>The user toogled a media permission state.</description>
 </action>
 
 <action name="IOS.ReadingList.MessagesPromptToggle.Off">
@@ -16912,7 +16926,6 @@ should be able to be added at any place in this file.
 
 <action name="MobileCloseAllTabsDialog.Cancelled">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <description>
     Recorded when user cancelled closing all tabs with the cancel button.
@@ -16921,7 +16934,6 @@ should be able to be added at any place in this file.
 
 <action name="MobileCloseAllTabsDialog.CancelledWithTouchOutside">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <description>
     Recorded when user cancelled closing all tabs by tapping outside the dialog.
@@ -16930,7 +16942,6 @@ should be able to be added at any place in this file.
 
 <action name="MobileCloseAllTabsDialog.ClosedAllTabs">
   <owner>ckitagawa@chromium.org</owner>
-  <owner>yashard@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <description>
     Recorded when user closed all tabs from the close all tabs dialog.
@@ -23450,6 +23461,24 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="PageInfo.AdPersonalization.OpenedWithFledgeAndTopics">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>dullweber@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    Page Info Ads personalization subpage opened with FLEDGE and Topics present.
+  </description>
+</action>
+
+<action name="PageInfo.AdPersonalization.OpenedWithTopics">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>dullweber@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    Page Info Ads personalization subpage opened with only Topics present.
+  </description>
+</action>
+
 <action name="PageInfo.OpenedWithAdsPersonalization">
   <owner>olesiamarukhno@google.com</owner>
   <owner>dullweber@chromium.org</owner>
@@ -25999,10 +26028,20 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings.PrivacySandbox.AdPersonalization.SiteRemoved">
+  <owner>dullweber@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User removed a site that was previously in their allowed sites list.
+  </description>
+</action>
+
 <action name="Settings.PrivacySandbox.AdPersonalization.TopicRemoved">
   <owner>dullweber@google.com</owner>
   <owner>sauski@google.com</owner>
-  <description>User removed a topic.</description>
+  <description>
+    User removed a topic that was previously in their allowed topics list.
+  </description>
 </action>
 
 <action name="Settings.PrivacySandbox.ApisDisabled">
@@ -26036,16 +26075,43 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
-<action name="Settings.PrivacySandbox.FlocDisabled">
-  <owner>andzaytsev@google.com</owner>
+<action name="Settings.PrivacySandbox.Consent.Accepted">
+  <owner>harrisonsean@chromium.org</owner>
   <owner>sauski@google.com</owner>
-  <description>User disables FLoC on the privacy sandbox page.</description>
+  <owner>msramek@chromium.org</owner>
+  <description>User accepted the privacy sandbox consent.</description>
 </action>
 
-<action name="Settings.PrivacySandbox.FlocEnabled">
-  <owner>andzaytsev@google.com</owner>
+<action name="Settings.PrivacySandbox.Consent.ClosedNoInteraction">
+  <owner>harrisonsean@chromium.org</owner>
   <owner>sauski@google.com</owner>
-  <description>User enables FLoC on the privacy sandbox page.</description>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    Consent dialog closed with no interaction (e.g. browser shutdown).
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Consent.Declined">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>User declined the privacy sandbox consent.</description>
+</action>
+
+<action name="Settings.PrivacySandbox.Consent.LearnMoreExpanded">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User expanded the Learn More in the Privacy Sandbox Consent.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Consent.Shown">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>User is shown the Privacy Sandbox consent.</description>
 </action>
 
 <action name="Settings.PrivacySandbox.FlocSubpageOpened">
@@ -26055,6 +26121,45 @@ should be able to be added at any place in this file.
     User opens the FLoC subpage by clicking on an element on the privacy sandbox
     page.
   </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Notice.Acknowledged">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>User acknowledged the Privacy Sandbox notice.</description>
+</action>
+
+<action name="Settings.PrivacySandbox.Notice.ClosedNoInteraction">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    Notice dialog closed with no interaction (e.g. browser shutdown).
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Notice.Dismissed">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>User dismissed the Privacy Sandbox notice.</description>
+</action>
+
+<action name="Settings.PrivacySandbox.Notice.OpenedSettings">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User opened settings from the Privacy Sandbox notice.
+  </description>
+</action>
+
+<action name="Settings.PrivacySandbox.Notice.Shown">
+  <owner>harrisonsean@chromium.org</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>User is shown the Privacy Sandbox notice.</description>
 </action>
 
 <action name="Settings.PrivacySandbox.OpenedFromCookiesPageToast">
@@ -26096,17 +26201,19 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Settings.PrivacySandbox.RemovedInterests.SiteAdded">
+  <owner>dullweber@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <description>
+    User added back a site that was previously in their removed sites list.
+  </description>
+</action>
+
 <action name="Settings.PrivacySandbox.RemovedInterests.TopicAdded">
   <owner>dullweber@google.com</owner>
   <owner>sauski@google.com</owner>
-  <description>User added back a topic</description>
-</action>
-
-<action name="Settings.PrivacySandbox.ResetFloc">
-  <owner>andzaytsev@google.com</owner>
-  <owner>sauski@google.com</owner>
   <description>
-    User clicks the reset group button to reset their FLoC cohor identifier.
+    User added back a topic that was previously in their removed topics list.
   </description>
 </action>
 
@@ -26411,6 +26518,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ShareSubmenu.Abandoned">
+  <obsolete>Removed 02/2022.</obsolete>
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <description>
@@ -26420,6 +26528,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ShareSubmenu.CopyLinkSelected">
+  <obsolete>Removed 02/2022.</obsolete>
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <description>
@@ -26428,6 +26537,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ShareSubmenu.QRCodeSelected">
+  <obsolete>Removed 02/2022.</obsolete>
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <description>
@@ -26436,6 +26546,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ShareSubmenu.SendTabToSelfSelected">
+  <obsolete>Removed 02/2022.</obsolete>
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <description>
@@ -26444,6 +26555,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="ShareSubmenu.ThirdPartySelected">
+  <obsolete>Removed 02/2022.</obsolete>
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <description>
@@ -26768,6 +26880,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="SharingQRCode.DialogLaunched.ContextMenuLink">
+  <obsolete>Removed 02/2022.</obsolete>
   <owner>ellyjones@chromium.org</owner>
   <owner>src/chrome/browser/share/OWNERS</owner>
   <description>
@@ -26925,6 +27038,12 @@ should be able to be added at any place in this file.
   <description>
     User unpinned an app item from the shelf on ChromeOS.
   </description>
+</action>
+
+<action name="Shelf_ShutDown">
+  <owner>sherrilin@google.com</owner>
+  <owner>cros-lurs@google.com</owner>
+  <description>User shut down from the shelf shutdown button.</description>
 </action>
 
 <action name="ShowAccessibilitySettings">
@@ -31350,6 +31469,42 @@ should be able to be added at any place in this file.
 <action name="TestAction">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of the metric.</description>
+</action>
+
+<action name="TextFragments.Menu.LearnMoreOpened">
+  <owner>tmartino@chromium.org</owner>
+  <owner>eic@chromium.org</owner>
+  <description>
+    The user selected the &quot;Learn more&quot; option in the Text Fragments
+    popup menu.
+  </description>
+</action>
+
+<action name="TextFragments.Menu.Opened">
+  <owner>tmartino@chromium.org</owner>
+  <owner>eic@chromium.org</owner>
+  <description>
+    The user tapped on a highlighted text fragment, opening the popup menu with
+    additional options.
+  </description>
+</action>
+
+<action name="TextFragments.Menu.Removed">
+  <owner>tmartino@chromium.org</owner>
+  <owner>eic@chromium.org</owner>
+  <description>
+    The user removed a highlighted text fragment from the page using the popup
+    menu.
+  </description>
+</action>
+
+<action name="TextFragments.Menu.Reshared">
+  <owner>tmartino@chromium.org</owner>
+  <owner>eic@chromium.org</owner>
+  <description>
+    The user selected the &quot;Share Highlight&quot; option in the Text
+    Fragments popup menu.
+  </description>
 </action>
 
 <action name="TextToSpeech.Pause">

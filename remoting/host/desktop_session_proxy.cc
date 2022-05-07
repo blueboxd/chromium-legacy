@@ -232,18 +232,9 @@ bool DesktopSessionProxy::OnMessageReceived(const IPC::Message& message) {
 
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(DesktopSessionProxy, message)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_AudioPacket,
-                        OnAudioPacket)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CaptureResult,
-                        OnCaptureResult)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_DisplayChanged,
                         OnDesktopDisplayChanged)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_MouseCursor,
-                        OnMouseCursor)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_CreateSharedBuffer,
-                        OnCreateSharedBuffer)
-    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_ReleaseSharedBuffer,
-                        OnReleaseSharedBuffer)
+    IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_MouseCursor, OnMouseCursor)
     IPC_MESSAGE_HANDLER(ChromotingDesktopNetworkMsg_KeyboardChanged,
                         OnKeyboardChanged)
     IPC_MESSAGE_FORWARD(ChromotingDesktopNetworkMsg_FileResult,
@@ -355,9 +346,8 @@ void DesktopSessionProxy::DetachFromDesktop() {
 
   // Generate fake responses to keep the video capturer in sync.
   while (pending_capture_frame_requests_) {
-    --pending_capture_frame_requests_;
-    video_capturer_->OnCaptureResult(
-        webrtc::DesktopCapturer::Result::ERROR_TEMPORARY, nullptr);
+    OnCaptureResult(mojom::CaptureResult::NewCaptureError(
+        webrtc::DesktopCapturer::Result::ERROR_TEMPORARY));
   }
 
   if (client_session_events_) {
@@ -675,24 +665,17 @@ DesktopSessionProxy::GetSharedBufferCore(int id) {
   }
 }
 
-void DesktopSessionProxy::OnAudioPacket(const std::string& serialized_packet) {
+void DesktopSessionProxy::OnAudioPacket(
+    std::unique_ptr<AudioPacket> audio_packet) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  // Parse a serialized audio packet. No further validation is done since
-  // the message was sent by more privileged process.
-  std::unique_ptr<AudioPacket> packet(new AudioPacket());
-  if (!packet->ParseFromString(serialized_packet)) {
-    LOG(ERROR) << "Failed to parse AudioPacket.";
-    return;
-  }
-
-  // Pass a captured audio packet to |audio_capturer_|.
+  // Pass the captured audio packet to |audio_capturer_|.
   audio_capture_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&IpcAudioCapturer::OnAudioPacket,
-                                audio_capturer_, std::move(packet)));
+                                audio_capturer_, std::move(audio_packet)));
 }
 
-void DesktopSessionProxy::OnCreateSharedBuffer(
+void DesktopSessionProxy::OnSharedMemoryRegionCreated(
     int id,
     base::ReadOnlySharedMemoryRegion region,
     uint32_t size) {
@@ -707,7 +690,7 @@ void DesktopSessionProxy::OnCreateSharedBuffer(
   }
 }
 
-void DesktopSessionProxy::OnReleaseSharedBuffer(int id) {
+void DesktopSessionProxy::OnSharedMemoryRegionReleased(int id) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   // Drop the cached reference to the buffer.
@@ -732,9 +715,7 @@ void DesktopSessionProxy::OnDesktopDisplayChanged(
   }
 }
 
-void DesktopSessionProxy::OnCaptureResult(
-    webrtc::DesktopCapturer::Result result,
-    const SerializedDesktopFrame& serialized_frame) {
+void DesktopSessionProxy::OnCaptureResult(mojom::CaptureResultPtr result) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
   --pending_capture_frame_requests_;
@@ -743,26 +724,27 @@ void DesktopSessionProxy::OnCaptureResult(
     return;
   }
 
-  if (result != webrtc::DesktopCapturer::Result::SUCCESS) {
-    video_capturer_->OnCaptureResult(result, nullptr);
+  if (result->is_capture_error()) {
+    video_capturer_->OnCaptureResult(result->get_capture_error(), nullptr);
     return;
   }
 
-  // Assume that |serialized_frame| is well-formed because it was received from
-  // a more privileged process.
+  // Assume that |desktop_frame| is well-formed because it was received from a
+  // more privileged process.
+  mojom::DesktopFramePtr& desktop_frame = result->get_desktop_frame();
   scoped_refptr<IpcSharedBufferCore> shared_buffer_core =
-      GetSharedBufferCore(serialized_frame.shared_buffer_id);
+      GetSharedBufferCore(desktop_frame->shared_buffer_id);
   CHECK(shared_buffer_core.get());
 
-  std::unique_ptr<webrtc::DesktopFrame> frame(
-      new webrtc::SharedMemoryDesktopFrame(
-          serialized_frame.dimensions, serialized_frame.bytes_per_row,
-          new IpcSharedBuffer(shared_buffer_core)));
-  frame->set_capture_time_ms(serialized_frame.capture_time_ms);
-  frame->set_dpi(serialized_frame.dpi);
-  frame->set_capturer_id(serialized_frame.capturer_id);
+  std::unique_ptr<webrtc::DesktopFrame> frame =
+      std::make_unique<webrtc::SharedMemoryDesktopFrame>(
+          desktop_frame->size, desktop_frame->stride,
+          new IpcSharedBuffer(shared_buffer_core));
+  frame->set_capture_time_ms(desktop_frame->capture_time_ms);
+  frame->set_dpi(desktop_frame->dpi);
+  frame->set_capturer_id(desktop_frame->capturer_id);
 
-  for (const auto& rect : serialized_frame.dirty_region) {
+  for (const auto& rect : desktop_frame->dirty_region) {
     frame->mutable_updated_region()->AddRect(rect);
   }
 

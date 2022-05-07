@@ -9,8 +9,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "base/files/file_path.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "chromeos/ui/base/window_pin_type.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/device/public/mojom/bluetooth_system.mojom-forward.h"
@@ -98,8 +98,8 @@ class ASH_EXPORT ShellDelegate {
 
   // Binds a MultiDeviceSetup receiver for the primary profile.
   virtual void BindMultiDeviceSetup(
-      mojo::PendingReceiver<
-          chromeos::multidevice_setup::mojom::MultiDeviceSetup> receiver) = 0;
+      mojo::PendingReceiver<multidevice_setup::mojom::MultiDeviceSetup>
+          receiver) = 0;
 
   // Returns an interface to the Media Session service, or null if not
   // available.

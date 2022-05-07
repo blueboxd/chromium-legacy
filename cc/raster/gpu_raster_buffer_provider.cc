@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "base/bits.h"
 #include "base/logging.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
@@ -370,17 +371,24 @@ void GpuRasterBufferProvider::RasterBufferImpl::RasterizeSource(
   gpu::raster::MsaaMode msaa_mode = playback_settings.msaa_sample_count > 0
                                         ? gpu::raster::kMSAA
                                         : gpu::raster::kNoMSAA;
-
+  // msaa_sample_count should be 1, 2, 4, 8, 16, 32, 64,
+  // and log2(msaa_sample_count) should be [0,6].
+  // If playback_settings.msaa_sample_count <= 0, the MSAA is not used. It is
+  // equivalent to MSAA sample count 1.
+  uint32_t sample_count =
+      std::clamp(playback_settings.msaa_sample_count, 1, 64);
+  UMA_HISTOGRAM_CUSTOM_COUNTS("Gpu.Rasterization.Raster.MSAASampleCountLog2",
+                              base::bits::Log2Floor(sample_count), 0, 7, 7);
   // With Raw Draw, the framebuffer will be the rasterization target. It cannot
   // support LCD text, so disable LCD text for Raw Draw backings.
   // TODO(penghuang): remove it when GrSlug can be serialized.
   bool is_raw_draw_backing =
       client_->is_using_raw_draw_ && !backing_->overlay_candidate;
   bool use_lcd_text = playback_settings.use_lcd_text && !is_raw_draw_backing;
-  ri->BeginRasterCHROMIUM(raster_source->background_color(),
-                          mailbox_needs_clear,
-                          playback_settings.msaa_sample_count, msaa_mode,
-                          use_lcd_text, color_space_, backing_->mailbox.name);
+  ri->BeginRasterCHROMIUM(
+      raster_source->background_color(), mailbox_needs_clear,
+      playback_settings.msaa_sample_count, msaa_mode, use_lcd_text,
+      playback_settings.visible, color_space_, backing_->mailbox.name);
   gfx::Vector2dF recording_to_raster_scale = transform.scale();
   recording_to_raster_scale.Scale(1 / raster_source->recording_scale_factor());
   gfx::Size content_size = raster_source->GetContentSize(transform.scale());
@@ -394,6 +402,12 @@ void GpuRasterBufferProvider::RasterBufferImpl::RasterizeSource(
       playback_rect, transform.translation(), recording_to_raster_scale,
       raster_source->requires_clear(),
       const_cast<RasterSource*>(raster_source)->max_op_size_hint());
+  UMA_HISTOGRAM_COUNTS_1000(
+      "Gpu.Rasterization.Raster.NumPaintOps",
+      raster_source->GetDisplayItemList()->num_paint_ops());
+  UMA_HISTOGRAM_COUNTS_100(
+      "Gpu.Rasterization.Raster.NumSlowPaths",
+      raster_source->GetDisplayItemList()->num_slow_paths());
   ri->EndRasterCHROMIUM();
 
   // TODO(ericrk): Handle unpremultiply+dither for 4444 cases.

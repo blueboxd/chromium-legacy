@@ -6,6 +6,7 @@
 
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/password_manager/core/browser/leak_detection/bulk_leak_check.h"
 #include "components/password_manager/core/browser/leak_detection/leak_detection_check_factory_impl.h"
@@ -41,9 +42,6 @@ BulkLeakCheckService::MetricsReporter::~MetricsReporter() {
     base::UmaHistogramCounts1000(
         "PasswordManager.BulkCheck.CheckedCredentialsOnErrorOrCanceled",
         credential_count_);
-    base::UmaHistogramCounts100(
-        "PasswordManager.BulkCheck.LeaksFoundOnErrorOrCanceled",
-        leaked_credential_count_);
   } else {
     base::UmaHistogramMediumTimes("PasswordManager.BulkCheck.Time",
                                   timer_since_start_.Elapsed());

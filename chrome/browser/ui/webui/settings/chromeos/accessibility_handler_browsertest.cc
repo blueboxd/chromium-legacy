@@ -51,9 +51,7 @@ class AccessibilityHandlerTest : public InProcessBrowserTest {
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     scoped_feature_list_.InitWithFeatures(
-        {::features::kExperimentalAccessibilityDictationOffline,
-         features::kOnDeviceSpeechRecognition},
-        {});
+        {features::kOnDeviceSpeechRecognition}, {});
   }
 
   void SetUpOnMainThread() override {
@@ -153,9 +151,9 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, OnSodaInstalledNotification) {
   // correct language pack before doing anything.
   soda_installer()->NotifySodaInstalledForTesting();
   AssertWebUICalls(num_calls);
-  soda_installer()->NotifyOnSodaLanguagePackInstalledForTesting(en_us());
+  soda_installer()->NotifySodaInstalledForTesting(en_us());
   AssertWebUICalls(num_calls);
-  soda_installer()->NotifyOnSodaLanguagePackInstalledForTesting(fr_fr());
+  soda_installer()->NotifySodaInstalledForTesting(fr_fr());
   AssertWebUICalls(num_calls + 1);
   ASSERT_TRUE(WasWebUIListenerCalledWithStringArgument(
       "dictation-locale-menu-subtitle-changed",
@@ -167,13 +165,12 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, OnSodaInstalledNotification) {
 // the Dictation locale.
 IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, OnSodaProgressNotification) {
   size_t num_calls = GetNumWebUICalls();
-  // Do not give updates for the SODA binary.
-  soda_installer()->NotifySodaDownloadProgressForTesting(50);
+  soda_installer()->NotifySodaProgressForTesting(50, fr_fr());
   AssertWebUICalls(num_calls);
-  soda_installer()->NotifyOnSodaLanguagePackProgressForTesting(50, fr_fr());
-  AssertWebUICalls(num_calls);
-  soda_installer()->NotifyOnSodaLanguagePackProgressForTesting(50, en_us());
+  soda_installer()->NotifySodaProgressForTesting(50, en_us());
   AssertWebUICalls(num_calls + 1);
+  soda_installer()->NotifySodaProgressForTesting(50);
+  AssertWebUICalls(num_calls + 2);
   ASSERT_TRUE(WasWebUIListenerCalledWithStringArgument(
       "dictation-locale-menu-subtitle-changed",
       "Downloading speech recognition files… 50%"));
@@ -199,11 +196,11 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest,
   size_t num_calls = GetNumWebUICalls();
   // Do nothing if the failed language pack is different than the Dictation
   // locale.
-  soda_installer()->NotifyOnSodaLanguagePackErrorForTesting(fr_fr());
+  soda_installer()->NotifySodaErrorForTesting(fr_fr());
   AssertWebUICalls(num_calls);
   // Fire the correct listener when the language pack matching the Dictation
   // locale fails.
-  soda_installer()->NotifyOnSodaLanguagePackErrorForTesting(en_us());
+  soda_installer()->NotifySodaErrorForTesting(en_us());
   AssertWebUICalls(num_calls + 1);
   ASSERT_TRUE(WasWebUIListenerCalledWithStringArgument(
       "dictation-locale-menu-subtitle-changed",
@@ -287,6 +284,7 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest, DictationLocalesCalculation) {
 IN_PROC_BROWSER_TEST_F(AccessibilityHandlerTest,
                        DictationLocalesOfflineAndInstalled) {
   speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting();
+  speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting(en_us());
   MaybeAddDictationLocales();
   base::Value::ConstListView argument;
   ASSERT_TRUE(

@@ -6,8 +6,10 @@
 #define CHROME_BROWSER_UI_WEBUI_SETTINGS_CHROMEOS_MULTIDEVICE_HANDLER_H_
 
 #include "ash/components/phonehub/camera_roll_manager.h"
-#include "ash/components/phonehub/notification_access_manager.h"
+#include "ash/components/phonehub/multidevice_feature_access_manager.h"
 #include "ash/components/phonehub/notification_access_setup_operation.h"
+#include "ash/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "ash/webui/eche_app_ui/apps_access_manager.h"
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
@@ -15,8 +17,6 @@
 #include "chrome/browser/ash/android_sms/android_sms_service_factory.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "chromeos/components/multidevice/remote_device_ref.h"
-#include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-forward.h"
 #include "components/prefs/pref_change_registrar.h"
 
 class PrefService;
@@ -34,7 +34,7 @@ class MultideviceHandler
       public multidevice_setup::MultiDeviceSetupClient::Observer,
       public multidevice_setup::AndroidSmsPairingStateTracker::Observer,
       public android_sms::AndroidSmsAppManager::Observer,
-      public phonehub::NotificationAccessManager::Observer,
+      public phonehub::MultideviceFeatureAccessManager::Observer,
       public phonehub::NotificationAccessSetupOperation::Delegate,
       public ash::eche_app::AppsAccessManager::Observer,
       public ash::eche_app::AppsAccessSetupOperation::Delegate,
@@ -43,7 +43,8 @@ class MultideviceHandler
   MultideviceHandler(
       PrefService* prefs,
       multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client,
-      phonehub::NotificationAccessManager* notification_access_manager,
+      phonehub::MultideviceFeatureAccessManager*
+          multidevice_feature_access_manager,
       multidevice_setup::AndroidSmsPairingStateTracker*
           android_sms_pairing_state_tracker,
       android_sms::AndroidSmsAppManager* android_sms_app_manager,
@@ -80,8 +81,9 @@ class MultideviceHandler
   void OnAppsStatusChange(
       ash::eche_app::AppsAccessSetupOperation::Status new_status) override;
 
-  // phonehub::NotificationAccessManager::Observer:
+  // phonehub::MultideviceFeatureAccessManager::Observer:
   void OnNotificationAccessChanged() override;
+  void OnCameraRollAccessChanged() override;
 
   // multidevice_setup::AndroidSmsPairingStateTracker::Observer:
   void OnPairingStateChanged() override;
@@ -102,20 +104,20 @@ class MultideviceHandler
   // update (e.g., not due to a getPageContent() request).
   void UpdatePageContent();
 
-  void HandleShowMultiDeviceSetupDialog(base::Value::ConstListView args);
-  void HandleGetPageContent(base::Value::ConstListView args);
-  void HandleSetFeatureEnabledState(base::Value::ConstListView args);
-  void HandleRemoveHostDevice(base::Value::ConstListView args);
-  void HandleRetryPendingHostSetup(base::Value::ConstListView args);
-  void HandleSetUpAndroidSms(base::Value::ConstListView args);
-  void HandleGetSmartLockSignInEnabled(base::Value::ConstListView args);
-  void HandleSetSmartLockSignInEnabled(base::Value::ConstListView args);
-  void HandleGetSmartLockSignInAllowed(base::Value::ConstListView args);
-  void HandleGetAndroidSmsInfo(base::Value::ConstListView args);
-  void HandleAttemptNotificationSetup(base::Value::ConstListView args);
-  void HandleCancelNotificationSetup(base::Value::ConstListView args);
-  void HandleAttemptAppsSetup(base::Value::ConstListView args);
-  void HandleCancelAppsSetup(base::Value::ConstListView args);
+  void HandleShowMultiDeviceSetupDialog(const base::Value::List& args);
+  void HandleGetPageContent(const base::Value::List& args);
+  void HandleSetFeatureEnabledState(const base::Value::List& args);
+  void HandleRemoveHostDevice(const base::Value::List& args);
+  void HandleRetryPendingHostSetup(const base::Value::List& args);
+  void HandleSetUpAndroidSms(const base::Value::List& args);
+  void HandleGetSmartLockSignInEnabled(const base::Value::List& args);
+  void HandleSetSmartLockSignInEnabled(const base::Value::List& args);
+  void HandleGetSmartLockSignInAllowed(const base::Value::List& args);
+  void HandleGetAndroidSmsInfo(const base::Value::List& args);
+  void HandleAttemptNotificationSetup(const base::Value::List& args);
+  void HandleCancelNotificationSetup(const base::Value::List& args);
+  void HandleAttemptAppsSetup(const base::Value::List& args);
+  void HandleCancelAppsSetup(const base::Value::List& args);
 
   void OnSetFeatureStateEnabledResult(const std::string& js_callback_id,
                                       bool success);
@@ -149,7 +151,8 @@ class MultideviceHandler
 
   multidevice_setup::MultiDeviceSetupClient* multidevice_setup_client_;
 
-  phonehub::NotificationAccessManager* notification_access_manager_;
+  phonehub::MultideviceFeatureAccessManager*
+      multidevice_feature_access_manager_;
   std::unique_ptr<phonehub::NotificationAccessSetupOperation>
       notification_access_operation_;
 
@@ -173,9 +176,9 @@ class MultideviceHandler
   base::ScopedObservation<android_sms::AndroidSmsAppManager,
                           android_sms::AndroidSmsAppManager::Observer>
       android_sms_app_manager_observation_{this};
-  base::ScopedObservation<phonehub::NotificationAccessManager,
-                          phonehub::NotificationAccessManager::Observer>
-      notification_access_manager_observation_{this};
+  base::ScopedObservation<phonehub::MultideviceFeatureAccessManager,
+                          phonehub::MultideviceFeatureAccessManager::Observer>
+      multidevice_feature_access_manager_observation_{this};
   base::ScopedObservation<ash::eche_app::AppsAccessManager,
                           ash::eche_app::AppsAccessManager::Observer>
       apps_access_manager_observation_{this};

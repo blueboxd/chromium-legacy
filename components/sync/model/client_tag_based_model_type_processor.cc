@@ -429,19 +429,23 @@ void ClientTagBasedModelTypeProcessor::Put(
       metadata_change_list->ClearMetadata(entity->storage_key());
       entity_tracker_->UpdateOrOverrideStorageKey(data->client_tag_hash,
                                                   storage_key);
+      entity->RecordLocalUpdate(std::move(data));
     } else {
       if (data->creation_time.is_null())
         data->creation_time = base::Time::Now();
       if (data->modification_time.is_null())
         data->modification_time = data->creation_time;
-      entity = CreateEntity(storage_key, *data);
+      entity = entity_tracker_->AddUnsyncedLocal(storage_key, std::move(data));
     }
   } else if (entity->MatchesData(*data)) {
     // Ignore changes that don't actually change anything.
     return;
+  } else {
+    entity->RecordLocalUpdate(std::move(data));
   }
 
-  entity->MakeLocalChange(std::move(data));
+  DCHECK(entity->IsUnsynced());
+
   metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
 
   NudgeForCommitIfNeeded();
@@ -465,7 +469,7 @@ void ClientTagBasedModelTypeProcessor::Delete(
     return;
   }
 
-  if (entity->Delete())
+  if (entity->RecordLocalDeletion())
     metadata_change_list->UpdateMetadata(storage_key, entity->metadata());
   else
     RemoveEntity(entity->storage_key(), metadata_change_list);
@@ -892,8 +896,7 @@ ClientTagBasedModelTypeProcessor::OnFullUpdateReceived(
                   << " for " << ModelTypeToDebugString(type_);
     }
 #endif  // DCHECK_IS_ON()
-    ProcessorEntity* entity = CreateEntity(storage_key, update.entity);
-    entity->RecordAcceptedUpdate(update);
+    ProcessorEntity* entity = entity_tracker_->AddRemote(storage_key, update);
     entity_data.push_back(
         EntityChange::CreateAdd(storage_key, std::move(update.entity)));
     if (!storage_key.empty())
@@ -1015,15 +1018,6 @@ void ClientTagBasedModelTypeProcessor::CommitLocalChanges(
   std::move(callback).Run(std::move(commit_requests));
 }
 
-ProcessorEntity* ClientTagBasedModelTypeProcessor::CreateEntity(
-    const std::string& storage_key,
-    const EntityData& data) {
-  DCHECK(!bridge_->SupportsGetStorageKey() || !storage_key.empty());
-  DCHECK(entity_tracker_);
-  ProcessorEntity* entity_ptr = entity_tracker_->Add(storage_key, data);
-  return entity_ptr;
-}
-
 size_t ClientTagBasedModelTypeProcessor::EstimateMemoryUsage() const {
   using base::trace_event::EstimateMemoryUsage;
   size_t memory_usage = 0;
@@ -1136,24 +1130,23 @@ void ClientTagBasedModelTypeProcessor::MergeDataWithMetadataForDebugging(
     if (entity != nullptr) {
       node->Set("metadata", EntityMetadataToValue(entity->metadata()));
     }
-    all_nodes->Append(std::move(node));
+    all_nodes->Append(base::Value::FromUniquePtrValue(std::move(node)));
   }
 
   // Create a permanent folder for this data type. Since sync server no longer
   // creates root folders, and USS won't migrate root folders from the
   // Directory, we create root folders for each data type here.
-  std::unique_ptr<base::DictionaryValue> rootnode =
-      std::make_unique<base::DictionaryValue>();
+  base::Value::Dict rootnode;
   // Function isTypeRootNode in sync_node_browser.js use PARENT_ID and
   // UNIQUE_SERVER_TAG to check if the node is root node. isChildOf in
   // sync_node_browser.js uses modelType to check if root node is parent of real
   // data node. NON_UNIQUE_NAME will be the name of node to display.
-  rootnode->SetStringKey("PARENT_ID", "r");
-  rootnode->SetStringKey("UNIQUE_SERVER_TAG", type_string);
-  rootnode->SetBoolKey("IS_DIR", true);
-  rootnode->SetStringKey("modelType", type_string);
-  rootnode->SetStringKey("NON_UNIQUE_NAME", type_string);
-  all_nodes->Append(std::move(rootnode));
+  rootnode.Set("PARENT_ID", "r");
+  rootnode.Set("UNIQUE_SERVER_TAG", type_string);
+  rootnode.Set("IS_DIR", true);
+  rootnode.Set("modelType", type_string);
+  rootnode.Set("NON_UNIQUE_NAME", type_string);
+  all_nodes->Append(base::Value(std::move(rootnode)));
 
   std::move(callback).Run(type_, std::move(all_nodes));
 }

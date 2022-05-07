@@ -649,6 +649,7 @@ FormStructure::FormStructure(const FormData& form)
       all_fields_are_passwords_(!form.fields.empty()),
       form_parsed_timestamp_(AutofillTickClock::NowTicks()),
       host_frame_(form.host_frame),
+      version_(form.version),
       unique_renderer_id_(form.unique_renderer_id) {
   // Copy the form fields.
   for (const FormFieldData& field : form.fields) {
@@ -1271,6 +1272,15 @@ void FormStructure::LogQualityMetrics(
   size_t num_edited_autofilled_fields = 0;
   size_t num_of_accepted_autofilled_fields = 0;
   size_t num_of_corrected_autofilled_fields = 0;
+
+  // Count the number of filled (and corrected) fields which used to not get a
+  // type prediction due to autocomplete=unrecognized. Note that credit card
+  // related fields are excluded from this since an unrecognized autocomplete
+  // attribute has no effect for them even if
+  // |kAutofillFillAndImportFromMoreFields| is disabled.
+  size_t num_of_accepted_autofilled_fields_with_autocomplete_unrecognized = 0;
+  size_t num_of_corrected_autofilled_fields_with_autocomplete_unrecognized = 0;
+
   bool did_autofill_all_possible_fields = true;
   bool did_autofill_some_possible_fields = false;
   bool is_for_credit_card = IsCompleteCreditCardForm();
@@ -1335,10 +1345,17 @@ void FormStructure::LogQualityMetrics(
     ++num_detected_field_types;
 
     // Count the number of autofilled and corrected fields.
-    if (field->is_autofilled)
+    if (field->is_autofilled) {
       ++num_of_accepted_autofilled_fields;
-    else if (field->previously_autofilled())
+      if (field->ShouldSuppressPromptDueToUnrecognizedAutocompleteAttribute()) {
+        ++num_of_accepted_autofilled_fields_with_autocomplete_unrecognized;
+      }
+    } else if (field->previously_autofilled()) {
       ++num_of_corrected_autofilled_fields;
+      if (field->ShouldSuppressPromptDueToUnrecognizedAutocompleteAttribute()) {
+        ++num_of_corrected_autofilled_fields_with_autocomplete_unrecognized;
+      }
+    }
 
     if (field->is_autofilled)
       did_autofill_some_possible_fields = true;
@@ -1410,6 +1427,15 @@ void FormStructure::LogQualityMetrics(
           num_of_accepted_autofilled_fields,
           num_of_corrected_autofilled_fields);
 
+      // Log the number of autofilled fields with an unrecognized autocomplete
+      // attribute at submission time.
+      // Note that credit card fields are not counted since they generally
+      // ignore an unrecognized autocompelte attribute.
+      AutofillMetrics::
+          LogNumberOfAutofilledFieldsWithAutocompleteUnrecognizedAtSubmission(
+              num_of_accepted_autofilled_fields_with_autocomplete_unrecognized,
+              num_of_corrected_autofilled_fields_with_autocomplete_unrecognized);
+
       // Unlike the other times, the |submission_time| should always be
       // available.
       DCHECK(!submission_time.is_null());
@@ -1480,12 +1506,8 @@ void FormStructure::LogQualityMetrics(
         frames_of_autofilled_credit_card_fields.size());
 
     if (card_form) {
-      AutofillMetrics::LogCreditCardNumberFills(
-          autofilled_field_types,
-          AutofillMetrics::MeasurementTime::kSubmissionTime);
-      AutofillMetrics::LogCreditCardSeamlessFills(
-          autofilled_field_types,
-          AutofillMetrics::MeasurementTime::kSubmissionTime);
+      AutofillMetrics::LogCreditCardSeamlessnessAtSubmissionTime(
+          autofilled_field_types);
     }
   }
 }
@@ -1652,6 +1674,7 @@ FormData FormStructure::ToFormData() const {
   data.is_form_tag = is_form_tag_;
   data.unique_renderer_id = unique_renderer_id_;
   data.host_frame = host_frame_;
+  data.version = version_;
 
   for (const auto& field : fields_) {
     data.fields.push_back(*field);

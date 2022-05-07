@@ -67,6 +67,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   uint16_t GetAppearance() const override;
   absl::optional<std::string> GetName() const override;
   bool IsPaired() const override;
+#if BUILDFLAG(IS_CHROMEOS)
+  bool IsBonded() const override;
+#endif  // BUILDFLAG(IS_CHROMEOS)
   bool IsConnected() const override;
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
@@ -293,10 +296,6 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceBlueZ
   void OnDisconnectError(ErrorCallback error_callback,
                          const std::string& error_name,
                          const std::string& error_message);
-
-  // Called by dbus:: on successful completion of the D-Bus method to remove the
-  // device.
-  void OnForgetSuccess(base::OnceClosure callback);
 
   // The dbus object path of the device object.
   dbus::ObjectPath object_path_;

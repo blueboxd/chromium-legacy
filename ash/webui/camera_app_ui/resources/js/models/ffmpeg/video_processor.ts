@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 import {assert, assertNotReached} from '../../assert.js';
-import {AsyncJobQueue} from '../../async_job_queue.js';
+import {ClearableAsyncJobQueue} from '../../async_job_queue.js';
 import * as Comlink from '../../lib/comlink.js';
 import runFFmpeg from '../../lib/ffmpeg.js';
 import {WaitableEvent} from '../../waitable_event.js';
@@ -19,8 +19,8 @@ interface FileStream {
 }
 
 /**
- * The set of callbacks for an emulated device in Emscripten. ref:
- * https://emscripten.org/docs/api_reference/Filesystem-API.html#FS.registerDevice
+ * The set of callbacks for an emulated device in Emscripten. Ref:
+ * https://emscripten.org/docs/api_reference/Filesystem-API.html#FS.registerDevice.
  */
 interface FileOps {
   open(stream: FileStream): void;
@@ -117,6 +117,8 @@ class InputDevice {
 
   /**
    * Implements the read() operation for the emulated device.
+   *
+   * @param stream The target stream.
    * @param buffer The destination buffer.
    * @param offset The destination buffer offset.
    * @param length The maximum length to read.
@@ -200,6 +202,8 @@ class OutputDevice {
 
   /**
    * Implements the write() operation for the emulated device.
+   *
+   * @param stream The target stream.
    * @param buffer The source buffer.
    * @param offset The source buffer offset.
    * @param length The maximum length to be write.
@@ -221,7 +225,9 @@ class OutputDevice {
   /**
    * Implements the llseek() operation for the emulated device.
    * Only SEEK_SET (0) is supported as |whence|. Reference:
-   * https://emscripten.org/docs/api_reference/Filesystem-API.html#FS.llseek
+   * https://emscripten.org/docs/api_reference/Filesystem-API.html#FS.llseek.
+   *
+   * @param stream The target stream.
    * @param offset The offset in bytes relative to |whence|.
    * @param whence The reference position to be used.
    * @return The resulting file position.
@@ -275,8 +281,11 @@ declare global {
  */
 class FFMpegVideoProcessor {
   private readonly inputDevice = new InputDevice();
+
   private readonly outputDevice: OutputDevice;
-  private readonly jobQueue = new AsyncJobQueue();
+
+  private readonly jobQueue = new ClearableAsyncJobQueue();
+
   /**
    * @param output The output writer.
    */
@@ -285,6 +294,10 @@ class FFMpegVideoProcessor {
     this.outputDevice = new OutputDevice(output);
 
     const outputFile = `/output.${processorArgs.outputExtension}`;
+
+    // clang-format formats one argument per line, which makes the list harder
+    // to read with comments.
+    // clang-format off
     const args = [
       // Make the procssing pipeline start earlier by shorten the initial
       // analyze durtaion from the default 5s to 1s. This reduce the
@@ -299,8 +312,9 @@ class FFMpegVideoProcessor {
       // do not ask anything
       '-nostdin', '-y',
       // output to file
-      outputFile  // eslint-disable-line comma-dangle
+      outputFile,
     ];
+    // clang-format on
 
     const config = {
       arguments: args,
@@ -311,7 +325,8 @@ class FFMpegVideoProcessor {
       noFSInit: true,  // It would be setup in preRun().
       preRun: () => {
         // The FS property are injected by emscripten at runtime.
-        const fs = (config as unknown as {FS: FS})['FS'];
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const fs = (config as unknown as {FS: FS}).FS;
         assert(fs !== null);
         // 80 is just a random major number that won't collide with other
         // default devices of the Emscripten runtime environment, which uses
@@ -336,7 +351,7 @@ class FFMpegVideoProcessor {
       },
     };
 
-    const initFFmpeg = () => {
+    function initFFmpeg() {
       return new Promise<void>((resolve) => {
         // runFFmpeg() is a special function exposed by Emscripten that will
         // return an object with then(). The function passed into then() would
@@ -345,7 +360,7 @@ class FFMpegVideoProcessor {
         // would cause an infinite loop.
         runFFmpeg(config).then(() => resolve());
       });
-    };
+    }
     this.jobQueue.push(initFFmpeg);
 
     // This is a function to be called by ffmpeg before running read() in C.
@@ -366,6 +381,7 @@ class FFMpegVideoProcessor {
 
   /**
    * Closes the writer. No more write operations are allowed.
+   *
    * @return Resolved when all write operations are finished.
    */
   async close(): Promise<void> {

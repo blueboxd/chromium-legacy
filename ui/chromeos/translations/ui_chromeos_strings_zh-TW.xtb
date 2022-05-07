@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">無法重新命名「<ph name="FILE_NAME" />」。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">英文 (美國) 搭配 Dvorak 鍵盤</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - 主機</translation>
+<translation id="1521655867290435174">Google 試算表</translation>
 <translation id="1538729222189715449">正在開啟 Linux 檔案…</translation>
 <translation id="1547964879613821194">加拿大英文</translation>
 <translation id="1556189134700913550">全部套用</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">網路已拒絕驗證憑證</translation>
 <translation id="2547921442987553570">加入「<ph name="EXTENSION_NAME" />」中</translation>
 <translation id="255937426064304553">美國國際</translation>
-<translation id="2562685439590298522">文件</translation>
 <translation id="2563185590376525700">青蛙</translation>
 <translation id="2578394532502990878">泰米爾文 (拼音)</translation>
 <translation id="2579959351793446050">歐利亞文</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">美式改良</translation>
 <translation id="290843123675549676">馬拉地文</translation>
 <translation id="2923240520113693977">愛沙尼亞</translation>
-<translation id="2925966894897775835">試算表</translation>
 <translation id="2938685643439809023">蒙古語</translation>
-<translation id="2943400156390503548">投影片</translation>
 <translation id="2943503720238418293">請縮短名稱</translation>
 <translation id="2949781154072577687">正在格式化 <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">水母</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，<ph name="NETWORK_PROVIDER_NAME" />，<ph name="CONNECTION_STATUS" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，由系統管理員管理，詳細資料</translation>
 <translation id="4387004326333427325">遠端已拒絕驗證憑證</translation>
 <translation id="4394214039309501350">外部連結</translation>
+<translation id="4401287888955153199">擷取全部</translation>
 <translation id="4418686080762064601">為檔案建立捷徑</translation>
 <translation id="4425149324548788773">我的雲端硬碟</translation>
 <translation id="4439427728133035643">第 <ph name="NETWORK_INDEX" /> 個網路 (共 <ph name="NETWORK_COUNT" /> 個)，<ph name="NETWORK_NAME" />，訊號強度 <ph name="SIGNAL_STRENGTH" />%，連線</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">將檔案設為可離線使用</translation>
 <translation id="4658782175094886150">雪中人</translation>
 <translation id="4669606053856530811">「<ph name="SOURCE_NAME" />」的成員將失去存取權，除非有人與他們共用這些項目。</translation>
+<translation id="467809019005607715">Google 簡報</translation>
 <translation id="4690246192099372265">瑞典文</translation>
 <translation id="4693155481716051732">壽司</translation>
 <translation id="4694604912444486114">猴子</translation>
@@ -658,6 +658,7 @@
 <translation id="6732801395666424405">未載入憑證</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">已選取 1 個資料夾</translation>
+<translation id="6755827872271341378">ChromeOS Flex 裝置</translation>
 <translation id="6790428901817661496">播放</translation>
 <translation id="6795884519221689054">熊貓</translation>
 <translation id="6806699711453372963">管理 Linux 共用設定</translation>
@@ -735,6 +736,7 @@
 <translation id="7343393116438664539">越南文 (Telex)</translation>
 <translation id="7359359531237882347">正在複製 <ph name="NUMBER_OF_ITEMS" /> 個項目...</translation>
 <translation id="7375951387215729722">檔案清單已依<ph name="COLUMN_NAME" />遞減排序。</translation>
+<translation id="7402503521691663770">ChromeOS Flex 裝置</translation>
 <translation id="7408870451288633753">捷克文</translation>
 <translation id="7417453074306512035">衣索比亞文鍵盤</translation>
 <translation id="7417705661718309329">Google 地圖</translation>
@@ -824,6 +826,7 @@
 <translation id="8042602468072383151"><ph name="AUDIO_TYPE" /> 音訊</translation>
 <translation id="8045462269890919536">羅馬尼亞文</translation>
 <translation id="8049184478152619004">輸入個人解鎖金鑰 (PUK)</translation>
+<translation id="807187749540895545">正在擷取 <ph name="FILE_NAME" />…</translation>
 <translation id="8079530767338315840">重複播放</translation>
 <translation id="8087576439476816834">下載，設定檔名稱：<ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">與我共用的項目</translation>
@@ -875,6 +878,7 @@
 <translation id="8484284835977497781">請從最近的相片中選擇。</translation>
 <translation id="8487700953926739672">可離線使用</translation>
 <translation id="8492972329130824181">無法使用家用網路，你必須啟用行動數據漫遊服務才能連線。</translation>
+<translation id="8499098729323186194">正在擷取 <ph name="NUMBER_OF_ITEMS" /> 個項目...</translation>
 <translation id="8521441079177373948">英式配置</translation>
 <translation id="8525306231823319788">全螢幕</translation>
 <translation id="853494022971700746">法文 (法國)</translation>
@@ -950,6 +954,7 @@
 <translation id="9172592259078059678">古吉拉特文 (音譯)</translation>
 <translation id="9173120999827300720">英文 (美國) 搭配國際鍵盤</translation>
 <translation id="9174050671906956834">垃圾桶中的項目會在 30 天後永久刪除。</translation>
+<translation id="9183302530794969518">Google 文件</translation>
 <translation id="9189836632794948435">哈薩克文</translation>
 <translation id="9213073329713032541">已成功啟動安裝程序。</translation>
 <translation id="9219103736887031265">圖片</translation>

@@ -11,9 +11,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Test FilePayloadListener implementation.
 class FakeFilePayloadListener : public mojom::FilePayloadListener {
@@ -45,8 +43,6 @@ class FakeFilePayloadListener : public mojom::FilePayloadListener {
   bool is_connected_ = false;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_FILE_PAYLOAD_LISTENER_H_

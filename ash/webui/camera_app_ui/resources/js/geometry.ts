@@ -112,8 +112,7 @@ export class Vector {
 /**
  * @return Vector points from |start| to |end|.
  */
-export function vectorFromPoints(end: Point, start?: Point): Vector {
-  start = start || ORIGIN;
+export function vectorFromPoints(end: Point, start = ORIGIN): Vector {
   return new Vector(end.x - start.x, end.y - start.y);
 }
 
@@ -189,6 +188,7 @@ export class Box {
   /**
    * Calculates intersection with a ray formed by a start point(inside box) and
    * a pointing direction.
+   *
    * @param pt Start point of the ray.
    * @param dir Direction of the ray.
    * @return The intersection point.
@@ -224,38 +224,36 @@ export class Box {
 
   /**
    * Calculates intersection with segment.
+   *
    * @return Intersections with segment formed by |pt| and |pt2|.
    */
   segmentIntersect(pt: Point, pt2: Point): Point[] {
     /**
      * Intersection point of two line segments in 2 dimensions:
-     * http://paulbourke.net/geometry/pointlineplane/
-     * @param {!Point} pt1
-     * @param {!Point} pt2
-     * @param {!Point} pt3
-     * @param {!Point} pt4
-     * @return {?Point} Intersection of segment pt1, pt2 and segment pt3, pt4.
-     *     Null for no intersection between two segment.
+     * http://paulbourke.net/geometry/pointlineplane/.
+     *
+     * @return Intersection of segment pt1, pt2 and segment pt3, pt4.
+     *     Returns null for no intersection between two segment.
      */
-    const intersect =
-        (pt1: Point, pt2: Point, pt3: Point, pt4: Point): Point|null => {
-          const uDenom = (pt4.y - pt3.y) * (pt2.x - pt1.x) -
-              (pt4.x - pt3.x) * (pt2.y - pt1.y);
-          if (uDenom === 0) {
-            return null;
-          }
-          const ua = ((pt4.x - pt3.x) * (pt1.y - pt3.y) -
-                      (pt4.y - pt3.y) * (pt1.x - pt3.x)) /
-              uDenom;
-          const ub = ((pt2.x - pt1.x) * (pt1.y - pt3.y) -
-                      (pt2.y - pt1.y) * (pt1.x - pt3.x)) /
-              uDenom;
-          if (0 <= ua && ua <= 1 && 0 <= ub && ub <= 1) {
-            return new Point(
-                pt1.x + ua * (pt2.x - pt1.x), pt1.y + ua * (pt2.y - pt1.y));
-          }
-          return null;
-        };
+    function intersect(pt1: Point, pt2: Point, pt3: Point, pt4: Point): Point|
+        null {
+      const uDenom =
+          (pt4.y - pt3.y) * (pt2.x - pt1.x) - (pt4.x - pt3.x) * (pt2.y - pt1.y);
+      if (uDenom === 0) {
+        return null;
+      }
+      const ua = ((pt4.x - pt3.x) * (pt1.y - pt3.y) -
+                  (pt4.y - pt3.y) * (pt1.x - pt3.x)) /
+          uDenom;
+      const ub = ((pt2.x - pt1.x) * (pt1.y - pt3.y) -
+                  (pt2.y - pt1.y) * (pt1.x - pt3.x)) /
+          uDenom;
+      if (0 <= ua && ua <= 1 && 0 <= ub && ub <= 1) {
+        return new Point(
+            pt1.x + ua * (pt2.x - pt1.x), pt1.y + ua * (pt2.y - pt1.y));
+      }
+      return null;
+    }
 
     const cornRD = new Point(this.size.width, this.size.height);
     const cornLD = new Point(0, this.size.height);

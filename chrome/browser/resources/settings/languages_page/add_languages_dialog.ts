@@ -19,7 +19,7 @@ import {CrDialogElement} from 'chrome://resources/cr_elements/cr_dialog/cr_dialo
 import {CrScrollableBehavior} from 'chrome://resources/cr_elements/cr_scrollable_behavior.m.js';
 import {CrSearchFieldElement} from 'chrome://resources/cr_elements/cr_search_field/cr_search_field.js';
 import {FindShortcutMixin, FindShortcutMixinInterface} from 'chrome://resources/cr_elements/find_shortcut_mixin.js';
-import {html, mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {mixinBehaviors, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 import {getTemplate} from './add_languages_dialog.html.js';
 
 export interface SettingsAddLanguagesDialogElement {
@@ -86,14 +86,14 @@ export class SettingsAddLanguagesDialogElement extends
   private disableActionButton_: boolean;
   private filterValue_: string;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     this.$.dialog.showModal();
   }
 
   // Override FindShortcutMixin methods.
-  handleFindShortcut(_modalContextOpen: boolean) {
+  override handleFindShortcut(_modalContextOpen: boolean) {
     // Assumes this is the only open modal.
     const searchInput = this.$.search.getSearchInput();
     (searchInput as unknown as HTMLElementWithScroll).scrollIntoViewIfNeeded();
@@ -104,7 +104,7 @@ export class SettingsAddLanguagesDialogElement extends
   }
 
   // Override FindShortcutMixin methods.
-  searchInputHasFocus() {
+  override searchInputHasFocus() {
     return this.$.search.getSearchInput() ===
         this.$.search.shadowRoot!.activeElement;
   }

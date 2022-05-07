@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/callback_forward.h"
-#include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/internal/execution/model_execution_status.h"
 
 namespace segmentation_platform {
@@ -24,6 +23,10 @@ class ModelExecutionManager {
  public:
   virtual ~ModelExecutionManager() = default;
 
+  // Disallow copy/assign.
+  ModelExecutionManager(const ModelExecutionManager&) = delete;
+  ModelExecutionManager& operator=(const ModelExecutionManager&) = delete;
+
   // The float value is only valid when ModelExecutionStatus == kSuccess.
   using ModelExecutionCallback =
       base::OnceCallback<void(const std::pair<float, ModelExecutionStatus>&)>;
@@ -35,9 +38,11 @@ class ModelExecutionManager {
 
   // Called to execute a given model. This assumes that data has been collected
   // for long enough for each of the individual ML features.
-  virtual void ExecuteModel(
-      optimization_guide::proto::OptimizationTarget segment_id,
-      ModelExecutionCallback callback) = 0;
+  virtual void ExecuteModel(const proto::SegmentInfo& segment_info,
+                            ModelExecutionCallback callback) = 0;
+
+ protected:
+  ModelExecutionManager() = default;
 };
 
 }  // namespace segmentation_platform

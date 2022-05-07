@@ -17,8 +17,12 @@
 #include "base/strings/stringprintf.h"
 #include "media/base/video_types.h"
 #include "media/filters/ivf_parser.h"
+#include "media/gpu/v4l2/test/av1_decoder.h"
+#include "media/gpu/v4l2/test/video_decoder.h"
 #include "media/gpu/v4l2/test/vp9_decoder.h"
 
+using media::v4l2_test::Av1Decoder;
+using media::v4l2_test::VideoDecoder;
 using media::v4l2_test::Vp9Decoder;
 
 namespace {
@@ -30,12 +34,13 @@ constexpr char kUsageMsg[] =
     "           [--v=<log verbosity>]\n"
     "           [--output_path_prefix=<output files path prefix>]\n"
     "           [--md5]\n"
+    "           [--visible]\n"
     "           [--help]\n";
 
 constexpr char kHelpMsg[] =
     "This binary decodes the IVF video in <video> path with specified \n"
     "video <profile> via thinly wrapped v4l2 calls.\n"
-    "Supported codecs: VP9 (profile 0)\n"
+    "Supported codecs: VP9 (profile 0), and AV1 (profile 0)\n"
     "\nThe following arguments are supported:\n"
     "    --video=<path>\n"
     "        Required. Path to IVF-formatted video to decode.\n"
@@ -48,21 +53,29 @@ constexpr char kHelpMsg[] =
     "        result in output files of the form \"test/test_000000.yuv\",\n"
     "       \"test/test_000001.yuv\", etc.\n"
     "    --md5\n"
-    "        Optional. If specified, prints the md5 of each decoded frame\n"
-    "        in I420 format to stdout.\n"
+    "        Optional. If specified, prints the md5 of each decoded (and\n"
+    "        visible, if --visible is specified) frame in I420 format to\n"
+    "        stdout.\n"
+    "    --visible\n"
+    "        Optional. If specified, computes md5 hash values only for\n"
+    "        visible frames.\n"
     "    --help\n"
     "        Display this help message and exit.\n";
 
 }  // namespace
 
 // For stateless API, fourcc |VP9F| is needed instead of |VP90| for VP9 codec.
+// Fourcc |AV1F| is needed instead of |AV10| for AV1 codec.
 // https://www.kernel.org/doc/html/latest/userspace-api/media/v4l/pixfmt-compressed.html
-// Converts fourcc |VP90| from file header to fourcc |VP9F|, which is
-// a format supported on driver.
+// Converts fourcc |VP90| or |AV01| from file header to fourcc |VP9F| or |AV1F|,
+// which is a format supported on driver.
 uint32_t FileFourccToDriverFourcc(uint32_t header_fourcc) {
   if (header_fourcc == V4L2_PIX_FMT_VP9) {
     LOG(INFO) << "OUTPUT format mapped from VP90 to VP9F.";
     return V4L2_PIX_FMT_VP9_FRAME;
+  } else if (header_fourcc == V4L2_PIX_FMT_AV1) {
+    LOG(INFO) << "OUTPUT format mapped from AV01 to AV1F.";
+    return V4L2_PIX_FMT_AV1_FRAME;
   }
 
   return header_fourcc;
@@ -78,7 +91,7 @@ void ComputeAndPrintMd5hash(const std::vector<char>& yuv_plane) {
 
 // Creates the appropriate decoder for |stream|, which points to IVF data.
 // Returns nullptr on failure.
-std::unique_ptr<Vp9Decoder> CreateDecoder(
+std::unique_ptr<VideoDecoder> CreateVideoDecoder(
     const base::MemoryMappedFile& stream) {
   CHECK(stream.IsValid());
 
@@ -95,17 +108,18 @@ std::unique_ptr<Vp9Decoder> CreateDecoder(
   VLOG(1) << "Creating decoder with codec "
           << media::FourccToString(file_header.fourcc);
 
-  LOG_ASSERT(file_header.fourcc == v4l2_fourcc('V', 'P', '9', '0'))
-      << "Codec " << media::FourccToString(file_header.fourcc)
-      << " not supported." << kUsageMsg;
-
   const auto driver_codec_fourcc = FileFourccToDriverFourcc(file_header.fourcc);
 
-  CHECK_EQ(driver_codec_fourcc, V4L2_PIX_FMT_VP9_FRAME)
-      << "Only VP9 is supported, got: "
-      << media::FourccToString(driver_codec_fourcc);
+  if (driver_codec_fourcc == V4L2_PIX_FMT_AV1_FRAME) {
+    return Av1Decoder::Create(std::move(ivf_parser), file_header);
+  } else if (driver_codec_fourcc == V4L2_PIX_FMT_VP9_FRAME) {
+    return Vp9Decoder::Create(std::move(ivf_parser), file_header);
+  }
 
-  return Vp9Decoder::Create(std::move(ivf_parser), file_header);
+  LOG(ERROR) << "Codec " << media::FourccToString(file_header.fourcc)
+             << " not supported.\n"
+             << kUsageMsg;
+  return nullptr;
 }
 
 int main(int argc, char** argv) {
@@ -145,12 +159,11 @@ int main(int argc, char** argv) {
   if (!stream.Initialize(video_path))
     LOG(FATAL) << "Couldn't open file: " << video_path;
 
-  const std::unique_ptr<Vp9Decoder> dec = CreateDecoder(stream);
+  const std::unique_ptr<VideoDecoder> dec = CreateVideoDecoder(stream);
   if (!dec)
     LOG(FATAL) << "Failed to create decoder for file: " << video_path;
 
-  if (!dec->Initialize())
-    LOG(FATAL) << "Initialization for decoding failed.";
+  dec->Initialize();
 
   for (int i = 0; i < n_frames || n_frames == 0; i++) {
     LOG(INFO) << "Frame " << i << "...";
@@ -159,18 +172,20 @@ int main(int argc, char** argv) {
     std::vector<char> u_plane;
     std::vector<char> v_plane;
     gfx::Size size;
-    Vp9Decoder::Result res =
+    const VideoDecoder::Result res =
         dec->DecodeNextFrame(y_plane, u_plane, v_plane, size, i);
-    if (res == Vp9Decoder::kEOStream) {
+    if (res == VideoDecoder::kEOStream) {
       LOG(INFO) << "End of stream.";
       break;
     }
+
+    if (cmd->HasSwitch("visible") && !dec->LastDecodedFrameVisible())
+      continue;
 
     std::vector<char> yuv_plane(y_plane);
     yuv_plane.insert(yuv_plane.end(), u_plane.begin(), u_plane.end());
     yuv_plane.insert(yuv_plane.end(), v_plane.begin(), v_plane.end());
 
-    // TODO(stevecho): md5 computation is not needed for non-displayed frames
     if (cmd->HasSwitch("md5"))
       ComputeAndPrintMd5hash(yuv_plane);
 

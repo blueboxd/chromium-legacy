@@ -133,8 +133,9 @@ class MockTabRestoreServiceClient : public sessions::TabRestoreServiceClient {
   MockTabRestoreServiceClient() = default;
   ~MockTabRestoreServiceClient() override = default;
 
-  MOCK_METHOD6(CreateLiveTabContext,
+  MOCK_METHOD7(CreateLiveTabContext,
                sessions::LiveTabContext*(
+                   sessions::LiveTabContext* existing_context,
                    const std::string& app_name,
                    const gfx::Rect& bounds,
                    ui::WindowShowState show_state,
@@ -540,6 +541,45 @@ TEST_F(TabRestoreServiceImplTest, RestorePinnedAndApp) {
   EXPECT_TRUE(url3_ == tab->navigations[2].virtual_url());
   EXPECT_EQ(2, tab->current_navigation_index);
   EXPECT_TRUE(extension_app_id == tab->extension_app_id);
+}
+
+// Make sure TabRestoreService doesn't create a restored entry.
+TEST_F(TabRestoreServiceImplTest, DontCreateRestoredEntry) {
+  AddThreeNavigations();
+
+  // Have the service record the tab.
+  service_->CreateHistoricalTab(live_tab(), -1);
+  EXPECT_EQ(1U, service_->entries().size());
+
+  // Record the tab's id.
+  Entry* entry = service_->entries().front().get();
+  ASSERT_EQ(sessions::TabRestoreService::TAB, entry->type);
+  SessionID first_id = entry->id;
+
+  // Service record the second tab.
+  service_->CreateHistoricalTab(live_tab(), -1);
+  EXPECT_EQ(2U, service_->entries().size());
+
+  // Record the tab's id.
+  entry = service_->entries().front().get();
+  ASSERT_EQ(sessions::TabRestoreService::TAB, entry->type);
+  SessionID second_id = entry->id;
+
+  service_->Shutdown();
+
+  // Add a restored entry command
+  service_->CreateRestoredEntryCommandForTest(second_id);
+
+  // Recreate the service
+  RecreateService();
+
+  // Only one entry should be created.
+  ASSERT_EQ(1U, service_->entries().size());
+
+  // And verify the entry.
+  entry = service_->entries().front().get();
+  ASSERT_EQ(sessions::TabRestoreService::TAB, entry->type);
+  ASSERT_EQ(first_id, entry->original_id);
 }
 
 // Tests deleting entries.

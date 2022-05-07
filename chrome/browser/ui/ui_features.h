@@ -39,8 +39,6 @@ extern const base::FeatureParam<bool> kChromeWhatsNewUIFeedbackButton;
 extern const base::Feature kChromeWhatsNewInMainMenuNewBadge;
 #endif
 
-extern const base::Feature kCommander;
-
 #if !defined(ANDROID)
 extern const base::Feature kAccessCodeCastUI;
 #endif
@@ -57,6 +55,8 @@ extern const base::Feature kReadLaterNewBadgePromo;
 
 extern const base::Feature kReadLaterAddFromDialog;
 
+extern const base::Feature kQuickCommands;
+
 extern const base::Feature kScrollableTabStrip;
 extern const char kMinimumTabWidthFeatureParameterName[];
 
@@ -71,7 +71,7 @@ extern const base::Feature kSidePanelDragAndDrop;
 extern const base::Feature kSideSearch;
 extern const base::Feature kSideSearchClearCacheWhenClosed;
 extern const base::Feature kSideSearchFeedback;
-extern const base::Feature kSideSearchStatePerTab;
+extern const base::Feature kSideSearchDSESupport;
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 extern const base::Feature kTabGroupsAutoCreate;

@@ -334,10 +334,8 @@ public class AutofillUiUtils {
      */
     public static void updateColorForInputs(@ErrorType int errorType, Context context,
             EditText monthInput, EditText yearInput, EditText cvcInput) {
-        ColorFilter filter =
-                new PorterDuffColorFilter(ApiCompatibilityUtils.getColor(context.getResources(),
-                                                  R.color.input_underline_error_color),
-                        PorterDuff.Mode.SRC_IN);
+        ColorFilter filter = new PorterDuffColorFilter(
+                context.getColor(R.color.input_underline_error_color), PorterDuff.Mode.SRC_IN);
 
         // Decide on what field(s) to apply the filter.
         boolean filterMonth = errorType == ErrorType.EXPIRATION_MONTH
@@ -410,8 +408,8 @@ public class AutofillUiUtils {
         for (LegalMessageLine line : legalMessageLines) {
             SpannableString text = new SpannableString(line.text);
             for (final LegalMessageLine.Link link : line.links) {
-                text.setSpan(new NoUnderlineClickableSpan(context.getResources(),
-                                     view -> onClickCallback.onResult(link.url)),
+                text.setSpan(new NoUnderlineClickableSpan(
+                                     context, view -> onClickCallback.onResult(link.url)),
                         link.start, link.end, Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
             }
             spannableStringBuilder.append(text);
@@ -434,6 +432,6 @@ public class AutofillUiUtils {
         return SpanApplier.applySpans(context.getString(stringResourceId),
                 new SpanApplier.SpanInfo("<link1>", "</link1>",
                         new NoUnderlineClickableSpan(
-                                context.getResources(), view -> onClickCallback.onResult(url))));
+                                context, view -> onClickCallback.onResult(url))));
     }
 }

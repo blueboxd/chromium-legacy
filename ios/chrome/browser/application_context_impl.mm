@@ -16,14 +16,11 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
-#include "base/task/post_task.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
-#include "components/breadcrumbs/core/breadcrumb_manager.h"
 #include "components/breadcrumbs/core/breadcrumb_persistent_storage_manager.h"
-#include "components/breadcrumbs/core/breadcrumb_util.h"
 #include "components/breadcrumbs/core/features.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/timer_update_scheduler.h"
@@ -52,7 +49,6 @@
 #include "ios/chrome/browser/chrome_paths.h"
 #include "ios/chrome/browser/component_updater/ios_component_updater_configurator.h"
 #import "ios/chrome/browser/crash_report/breadcrumbs/application_breadcrumbs_logger.h"
-#include "ios/chrome/browser/crash_report/breadcrumbs/breadcrumb_persistent_storage_util.h"
 #include "ios/chrome/browser/gcm/ios_chrome_gcm_profile_service_factory.h"
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/chrome/browser/ios_chrome_io_thread.h"
@@ -103,8 +99,8 @@ void RequestProxyResolvingSocketFactory(
     ApplicationContextImpl* app_context,
     mojo::PendingReceiver<network::mojom::ProxyResolvingSocketFactory>
         receiver) {
-  base::PostTask(FROM_HERE, {web::WebThread::UI},
-                 base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
+  web::GetUIThreadTaskRunner({})->PostTask(
+      FROM_HERE, base::BindOnce(&RequestProxyResolvingSocketFactoryOnUIThread,
                                 app_context, std::move(receiver)));
 }
 
@@ -160,26 +156,11 @@ void ApplicationContextImpl::PreMainMessageLoopRun() {
   }
 
   if (base::FeatureList::IsEnabled(breadcrumbs::kLogBreadcrumbs)) {
-    breadcrumb_manager_ = std::make_unique<breadcrumbs::BreadcrumbManager>(
-        breadcrumbs::GetStartTime());
-    application_breadcrumbs_logger_ =
-        std::make_unique<ApplicationBreadcrumbsLogger>(
-            breadcrumb_manager_.get());
-
     base::FilePath storage_dir;
     bool result = base::PathService::Get(ios::DIR_USER_DATA, &storage_dir);
     DCHECK(result);
-
-    auto breadcrumb_persistent_storage_manager =
-        std::make_unique<breadcrumbs::BreadcrumbPersistentStorageManager>(
-            storage_dir,
-            breadcrumb_persistent_storage_util::
-                GetOldBreadcrumbPersistentStorageFilePath(storage_dir),
-            breadcrumb_persistent_storage_util::
-                GetOldBreadcrumbPersistentStorageTempFilePath(storage_dir));
-
-    application_breadcrumbs_logger_->SetPersistentStorageManager(
-        std::move(breadcrumb_persistent_storage_manager));
+    application_breadcrumbs_logger_ =
+        std::make_unique<ApplicationBreadcrumbsLogger>(storage_dir);
   }
 }
 
@@ -552,7 +533,6 @@ void ApplicationContextImpl::CreateGCMDriver() {
       GetSharedURLLoaderFactory(),
       GetApplicationContext()->GetNetworkConnectionTracker(), ::GetChannel(),
       IOSChromeGCMProfileServiceFactory::GetProductCategoryForSubtypes(),
-      base::CreateSingleThreadTaskRunner({web::WebThread::UI}),
-      base::CreateSingleThreadTaskRunner({web::WebThread::IO}),
+      web::GetUIThreadTaskRunner({}), web::GetIOThreadTaskRunner({}),
       blocking_task_runner);
 }

@@ -12,10 +12,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "url/gurl.h"
 
-namespace net {
-class HttpResponseHeaders;
-}
-
 class Profile;
 class SearchPrefetchURLLoader;
 
@@ -52,8 +48,9 @@ enum class SearchPrefetchStatus {
 // updating |current_status_|.
 class BaseSearchPrefetchRequest {
  public:
-  BaseSearchPrefetchRequest(const GURL& prefetch_url,
-                            base::OnceClosure report_error_callback);
+  BaseSearchPrefetchRequest(
+      const GURL& prefetch_url,
+      base::OnceCallback<void(bool)> report_error_callback);
   virtual ~BaseSearchPrefetchRequest();
 
   BaseSearchPrefetchRequest(const BaseSearchPrefetchRequest&) = delete;
@@ -75,6 +72,9 @@ class BaseSearchPrefetchRequest {
   // Called when the prefetch encounters an error.
   void ErrorEncountered();
 
+  // Called when the prefetch encounters an error.
+  void ErrorEncounteredUsingFallback();
+
   // Update the status when the request is serveable.
   void MarkPrefetchAsServable();
 
@@ -87,15 +87,12 @@ class BaseSearchPrefetchRequest {
   // The URL for the prefetch request.
   const GURL& prefetch_url() { return prefetch_url_; }
 
-  // Whether the prefetch should be served based on |headers|.
-  bool CanServePrefetchRequest(
-      const scoped_refptr<net::HttpResponseHeaders> headers);
-
   // Starts and begins processing |resource_request|.
   virtual void StartPrefetchRequestInternal(
       Profile* profile,
       std::unique_ptr<network::ResourceRequest> resource_request,
-      const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
+      const net::NetworkTrafficAnnotationTag& traffic_annotation,
+      base::OnceCallback<void(bool)> report_error_callback) = 0;
 
   // Stops the on-going prefetch and should mark |current_status_|
   // appropriately.
@@ -116,7 +113,7 @@ class BaseSearchPrefetchRequest {
   GURL prefetch_url_;
 
   // Called when there is a network/server error on the prefetch request.
-  base::OnceClosure report_error_callback_;
+  base::OnceCallback<void(bool)> report_error_callback_;
 };
 
 #endif  // CHROME_BROWSER_PREFETCH_SEARCH_PREFETCH_BASE_SEARCH_PREFETCH_REQUEST_H_

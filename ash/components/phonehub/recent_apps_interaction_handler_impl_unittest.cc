@@ -6,20 +6,28 @@
 
 #include <memory>
 
-#include "ash/components/phonehub/fake_notification_access_manager.h"
+#include "ash/components/phonehub/fake_multidevice_feature_access_manager.h"
 #include "ash/components/phonehub/notification.h"
 #include "ash/components/phonehub/pref_names.h"
-#include "chromeos/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
-#include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "ash/services/multidevice_setup/public/cpp/fake_multidevice_setup_client.h"
+#include "ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkColor.h"
 
 namespace ash {
 namespace phonehub {
 namespace {
 
-using FeatureState = ::chromeos::multidevice_setup::mojom::FeatureState;
-using HostStatus = ::chromeos::multidevice_setup::mojom::HostStatus;
+using FeatureState = multidevice_setup::mojom::FeatureState;
+using HostStatus = multidevice_setup::mojom::HostStatus;
+
+// Garbage color for the purpose of verification in these tests.
+const SkColor kIconColor = SkColorSetRGB(0x12, 0x34, 0x56);
+const char kIconColorR[] = "icon_color_r";
+const char kIconColorG[] = "icon_color_g";
+const char kIconColorB[] = "icon_color_b";
+const char kIconIsMonochrome[] = "icon_is_monochrome";
 
 class FakeClickHandler : public RecentAppClickObserver {
  public:
@@ -55,7 +63,7 @@ class RecentAppsInteractionHandlerTest : public testing::Test {
         std::make_unique<multidevice_setup::FakeMultiDeviceSetupClient>();
     interaction_handler_ = std::make_unique<RecentAppsInteractionHandlerImpl>(
         &pref_service_, fake_multidevice_setup_client_.get(),
-        &fake_notification_access_manager_);
+        &fake_multidevice_feature_access_manager_);
     interaction_handler_->AddRecentAppClickObserver(&fake_click_handler_);
   }
 
@@ -68,17 +76,45 @@ class RecentAppsInteractionHandlerTest : public testing::Test {
     const char package_name1[] = "com.fakeapp";
     const int64_t expected_user_id1 = 1;
     auto app_metadata1 = Notification::AppMetadata(
-        app_visible_name1, package_name1, gfx::Image(), expected_user_id1);
+        app_visible_name1, package_name1, gfx::Image(),
+        /*icon_color=*/kIconColor, /*icon_is_monochrome=*/true,
+        expected_user_id1);
 
     const char16_t app_visible_name2[] = u"Fake App2";
     const char package_name2[] = "com.fakeapp2";
     const int64_t expected_user_id2 = 2;
     auto app_metadata2 = Notification::AppMetadata(
-        app_visible_name2, package_name2, gfx::Image(), expected_user_id2);
+        app_visible_name2, package_name2, gfx::Image(),
+        /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/false,
+        expected_user_id2);
 
     std::vector<base::Value> app_metadata_value_list;
     app_metadata_value_list.push_back(app_metadata1.ToValue());
     app_metadata_value_list.push_back(app_metadata2.ToValue());
+
+    pref_service_.Set(prefs::kRecentAppsHistory,
+                      base::Value(std::move(app_metadata_value_list)));
+  }
+
+  void SaveLegacyRecentAppToPref() {
+    const char16_t app_visible_name1[] = u"Fake App";
+    const char package_name1[] = "com.fakeapp";
+    const int64_t expected_user_id1 = 1;
+    base::Value app_metadata_value =
+        Notification::AppMetadata(
+            app_visible_name1, package_name1, gfx::Image(),
+            /*icon_color=*/kIconColor, /*icon_is_monochrome=*/false,
+            expected_user_id1)
+            .ToValue();
+
+    // Simulate an un-migrated preference without new fields.
+    EXPECT_TRUE(app_metadata_value.GetDict().Remove(kIconIsMonochrome));
+    EXPECT_TRUE(app_metadata_value.GetDict().Remove(kIconColorR));
+    EXPECT_TRUE(app_metadata_value.GetDict().Remove(kIconColorG));
+    EXPECT_TRUE(app_metadata_value.GetDict().Remove(kIconColorB));
+
+    std::vector<base::Value> app_metadata_value_list;
+    app_metadata_value_list.push_back(std::move(app_metadata_value));
 
     pref_service_.Set(prefs::kRecentAppsHistory,
                       base::Value(std::move(app_metadata_value_list)));
@@ -92,12 +128,12 @@ class RecentAppsInteractionHandlerTest : public testing::Test {
 
   void SetEcheFeatureState(FeatureState feature_state) {
     fake_multidevice_setup_client_->SetFeatureState(
-        chromeos::multidevice_setup::mojom::Feature::kEche, feature_state);
+        multidevice_setup::mojom::Feature::kEche, feature_state);
   }
 
   void SetPhoneHubNotificationsFeatureState(FeatureState feature_state) {
     fake_multidevice_setup_client_->SetFeatureState(
-        chromeos::multidevice_setup::mojom::Feature::kPhoneHubNotifications,
+        multidevice_setup::mojom::Feature::kPhoneHubNotifications,
         feature_state);
   }
 
@@ -107,10 +143,13 @@ class RecentAppsInteractionHandlerTest : public testing::Test {
   }
 
   void SetNotificationAccess(bool enabled) {
-    fake_notification_access_manager_.SetAccessStatusInternal(
-        enabled
-            ? NotificationAccessManager::AccessStatus::kAccessGranted
-            : NotificationAccessManager::AccessStatus::kAvailableButNotGranted);
+    fake_multidevice_feature_access_manager_
+        .SetNotificationAccessStatusInternal(
+            enabled
+                ? MultideviceFeatureAccessManager::AccessStatus::kAccessGranted
+                : MultideviceFeatureAccessManager::AccessStatus::
+                      kAvailableButNotGranted,
+            MultideviceFeatureAccessManager::AccessProhibitedReason::kUnknown);
   }
 
   std::vector<RecentAppsInteractionHandler::UserState> GetDefaultUserStates() {
@@ -146,12 +185,35 @@ class RecentAppsInteractionHandlerTest : public testing::Test {
     const char package_name1[] = "com.fakeapp1";
     const int64_t expected_user_id1 = 1;
     auto app_metadata1 = Notification::AppMetadata(
-        app_visible_name1, package_name1, gfx::Image(), expected_user_id1);
+        app_visible_name1, package_name1, gfx::Image(),
+        /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true,
+        expected_user_id1);
     const char16_t app_visible_name2[] = u"Fake App2";
     const char package_name2[] = "com.fakeapp2";
     const int64_t expected_user_id2 = 2;
     auto app_metadata2 = Notification::AppMetadata(
-        app_visible_name2, package_name2, gfx::Image(), expected_user_id2);
+        app_visible_name2, package_name2, gfx::Image(),
+        /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true,
+        expected_user_id2);
+    handler().NotifyRecentAppAddedOrUpdated(app_metadata1, now);
+    handler().NotifyRecentAppAddedOrUpdated(app_metadata2, now);
+  }
+
+  void GenerateAppMetadataWithDuplicateUserId() {
+    const base::Time now = base::Time::Now();
+    const char16_t app_visible_name1[] = u"Fake App1";
+    const char package_name1[] = "com.fakeapp1";
+    const int64_t expected_user_id = 1;
+    auto app_metadata1 = Notification::AppMetadata(
+        app_visible_name1, package_name1, gfx::Image(),
+        /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true,
+        expected_user_id);
+    const char16_t app_visible_name2[] = u"Fake App2";
+    const char package_name2[] = "com.fakeapp2";
+    auto app_metadata2 = Notification::AppMetadata(
+        app_visible_name2, package_name2, gfx::Image(),
+        /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true,
+        expected_user_id);
     handler().NotifyRecentAppAddedOrUpdated(app_metadata1, now);
     handler().NotifyRecentAppAddedOrUpdated(app_metadata2, now);
   }
@@ -163,7 +225,7 @@ class RecentAppsInteractionHandlerTest : public testing::Test {
   FakeClickHandler fake_click_handler_;
   std::unique_ptr<RecentAppsInteractionHandlerImpl> interaction_handler_;
   TestingPrefServiceSimple pref_service_;
-  FakeNotificationAccessManager fake_notification_access_manager_;
+  FakeMultideviceFeatureAccessManager fake_multidevice_feature_access_manager_;
 };
 
 TEST_F(RecentAppsInteractionHandlerTest, RecentAppsClicked) {
@@ -172,6 +234,7 @@ TEST_F(RecentAppsInteractionHandlerTest, RecentAppsClicked) {
   const int64_t expected_user_id = 1;
   auto expected_app_metadata = Notification::AppMetadata(
       expected_app_visible_name, expected_package_name, gfx::Image(),
+      /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true,
       expected_user_id);
 
   handler().NotifyRecentAppClicked(expected_app_metadata);
@@ -183,14 +246,18 @@ TEST_F(RecentAppsInteractionHandlerTest, RecentAppsUpdated) {
   const char16_t app_visible_name1[] = u"Fake App";
   const char package_name1[] = "com.fakeapp";
   const int64_t expected_user_id1 = 1;
-  auto app_metadata1 = Notification::AppMetadata(
-      app_visible_name1, package_name1, gfx::Image(), expected_user_id1);
+  auto app_metadata1 =
+      Notification::AppMetadata(app_visible_name1, package_name1, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id1);
 
   const char16_t app_visible_name2[] = u"Fake App2";
   const char package_name2[] = "com.fakeapp2";
   const int64_t expected_user_id2 = 2;
-  auto app_metadata2 = Notification::AppMetadata(
-      app_visible_name2, package_name2, gfx::Image(), expected_user_id2);
+  auto app_metadata2 =
+      Notification::AppMetadata(app_visible_name2, package_name2, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id2);
   const base::Time now = base::Time::Now();
 
   handler().NotifyRecentAppAddedOrUpdated(app_metadata1, now);
@@ -212,20 +279,26 @@ TEST_F(RecentAppsInteractionHandlerTest, FetchRecentAppMetadataList) {
   const char16_t app_visible_name1[] = u"Fake App";
   const char package_name1[] = "com.fakeapp";
   const int64_t expected_user_id1 = 1;
-  auto app_metadata1 = Notification::AppMetadata(
-      app_visible_name1, package_name1, gfx::Image(), expected_user_id1);
+  auto app_metadata1 =
+      Notification::AppMetadata(app_visible_name1, package_name1, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id1);
 
   const char16_t app_visible_name2[] = u"Fake App2";
   const char package_name2[] = "com.fakeapp2";
   const int64_t expected_user_id2 = 1;
-  auto app_metadata2 = Notification::AppMetadata(
-      app_visible_name2, package_name2, gfx::Image(), expected_user_id2);
+  auto app_metadata2 =
+      Notification::AppMetadata(app_visible_name2, package_name2, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id2);
 
   const char16_t app_visible_name3[] = u"Fake App3";
   const char package_name3[] = "com.fakeapp3";
   const int64_t expected_user_id3 = 1;
-  auto app_metadata3 = Notification::AppMetadata(
-      app_visible_name3, package_name3, gfx::Image(), expected_user_id3);
+  auto app_metadata3 =
+      Notification::AppMetadata(app_visible_name3, package_name3, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id3);
 
   const base::Time now = base::Time::Now();
   const base::Time next_minute = base::Time::Now() + base::Minutes(1);
@@ -250,20 +323,26 @@ TEST_F(RecentAppsInteractionHandlerTest, FetchRecentAppMetadataList) {
   const char16_t app_visible_name4[] = u"Fake App4";
   const char package_name4[] = "com.fakeapp4";
   const int64_t expected_user_id4 = 1;
-  auto app_metadata4 = Notification::AppMetadata(
-      app_visible_name4, package_name4, gfx::Image(), expected_user_id4);
+  auto app_metadata4 =
+      Notification::AppMetadata(app_visible_name4, package_name4, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id4);
 
   const char16_t app_visible_name5[] = u"Fake App5";
   const char package_name5[] = "com.fakeapp5";
   const int64_t expected_user_id5 = 1;
-  auto app_metadata5 = Notification::AppMetadata(
-      app_visible_name5, package_name5, gfx::Image(), expected_user_id5);
+  auto app_metadata5 =
+      Notification::AppMetadata(app_visible_name5, package_name5, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id5);
 
   const char16_t app_visible_name6[] = u"Fake App6";
   const char package_name6[] = "com.fakeapp6";
   const int64_t expected_user_id6 = 1;
-  auto app_metadata6 = Notification::AppMetadata(
-      app_visible_name6, package_name6, gfx::Image(), expected_user_id6);
+  auto app_metadata6 =
+      Notification::AppMetadata(app_visible_name6, package_name6, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id6);
 
   const base::Time next_two_hour = base::Time::Now() + base::Hours(2);
   const base::Time next_three_hour = base::Time::Now() + base::Hours(3);
@@ -303,6 +382,30 @@ TEST_F(RecentAppsInteractionHandlerTest,
             recent_apps_metadata_result.size());
   EXPECT_EQ(package_name1, recent_apps_metadata_result[0].package_name);
   EXPECT_EQ(package_name2, recent_apps_metadata_result[1].package_name);
+
+  // Check de/serialization of icon metadata
+  EXPECT_TRUE(recent_apps_metadata_result[0].icon_color.has_value());
+  EXPECT_TRUE(*recent_apps_metadata_result[0].icon_color == kIconColor);
+  EXPECT_TRUE(recent_apps_metadata_result[0].icon_is_monochrome);
+  EXPECT_FALSE(recent_apps_metadata_result[1].icon_color.has_value());
+  EXPECT_FALSE(recent_apps_metadata_result[1].icon_is_monochrome);
+}
+
+TEST_F(RecentAppsInteractionHandlerTest,
+       FetchRecentAppMetadataListFromPreferenceBackwardsCompat) {
+  SaveLegacyRecentAppToPref();
+
+  std::vector<RecentAppsInteractionHandler::UserState> user_states =
+      GetDefaultUserStates();
+  handler().set_user_states(user_states);
+
+  std::vector<Notification::AppMetadata> recent_apps_metadata_result =
+      handler().FetchRecentAppMetadataList();
+  EXPECT_EQ(1u, recent_apps_metadata_result.size());
+
+  // Check that new fields are appropriately filled in with safe defaults.
+  EXPECT_FALSE(recent_apps_metadata_result[0].icon_color.has_value());
+  EXPECT_FALSE(recent_apps_metadata_result[0].icon_is_monochrome);
 }
 
 TEST_F(RecentAppsInteractionHandlerTest,
@@ -319,8 +422,10 @@ TEST_F(RecentAppsInteractionHandlerTest,
   const char16_t app_visible_name1[] = u"Fake App";
   const char package_name1[] = "com.fakeapp";
   const int64_t expected_user_id1 = 1;
-  auto app_metadata1 = Notification::AppMetadata(
-      app_visible_name1, package_name1, gfx::Image(), expected_user_id1);
+  auto app_metadata1 =
+      Notification::AppMetadata(app_visible_name1, package_name1, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id1);
 
   handler().NotifyRecentAppAddedOrUpdated(app_metadata1, now);
   SetEcheFeatureState(FeatureState::kDisabledByUser);
@@ -382,8 +487,10 @@ TEST_F(RecentAppsInteractionHandlerTest,
   const char16_t app_visible_name1[] = u"Fake App";
   const char package_name1[] = "com.fakeapp";
   const int64_t expected_user_id1 = 1;
-  auto app_metadata1 = Notification::AppMetadata(
-      app_visible_name1, package_name1, gfx::Image(), expected_user_id1);
+  auto app_metadata1 =
+      Notification::AppMetadata(app_visible_name1, package_name1, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id1);
 
   handler().NotifyRecentAppAddedOrUpdated(app_metadata1, now);
   SetEcheFeatureState(FeatureState::kEnabledByUser);
@@ -398,8 +505,10 @@ TEST_F(RecentAppsInteractionHandlerTest,
   const char16_t app_visible_name1[] = u"Fake App";
   const char package_name1[] = "com.fakeapp";
   const int64_t expected_user_id1 = 1;
-  auto app_metadata1 = Notification::AppMetadata(
-      app_visible_name1, package_name1, gfx::Image(), expected_user_id1);
+  auto app_metadata1 =
+      Notification::AppMetadata(app_visible_name1, package_name1, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id1);
 
   handler().NotifyRecentAppAddedOrUpdated(app_metadata1, now);
   SetEcheFeatureState(FeatureState::kEnabledByUser);
@@ -441,8 +550,10 @@ TEST_F(RecentAppsInteractionHandlerTest,
   const char16_t app_visible_name1[] = u"Fake App";
   const char package_name1[] = "com.fakeapp";
   const int64_t expected_user_id1 = 1;
-  auto app_metadata1 = Notification::AppMetadata(
-      app_visible_name1, package_name1, gfx::Image(), expected_user_id1);
+  auto app_metadata1 =
+      Notification::AppMetadata(app_visible_name1, package_name1, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id1);
   handler().NotifyRecentAppAddedOrUpdated(app_metadata1, now);
 
   EXPECT_EQ(RecentAppsInteractionHandler::RecentAppsUiState::ITEMS_VISIBLE,
@@ -467,8 +578,10 @@ TEST_F(
   const char16_t app_visible_name[] = u"Fake App";
   const char package_name[] = "com.fakeapp";
   const int64_t expected_user_id = 1;
-  auto app_metadata = Notification::AppMetadata(app_visible_name, package_name,
-                                                gfx::Image(), expected_user_id);
+  auto app_metadata =
+      Notification::AppMetadata(app_visible_name, package_name, gfx::Image(),
+                                /*icon_color=*/absl::nullopt,
+                                /*icon_is_monochrome=*/true, expected_user_id);
   handler().NotifyRecentAppAddedOrUpdated(app_metadata, now);
   SetHostStatus(HostStatus::kHostSetButNotYetVerified);
 
@@ -509,6 +622,34 @@ TEST_F(RecentAppsInteractionHandlerTest, ShowRecentAppsOfUserWithQuietModeOn) {
   EXPECT_EQ(recent_apps_metadata_result.size(), 1u);
   EXPECT_EQ(1, recent_apps_metadata_result[0].user_id);
   EXPECT_EQ("com.fakeapp1", recent_apps_metadata_result[0].package_name);
+}
+
+TEST_F(RecentAppsInteractionHandlerTest, ShowRecentAppsWhenGetsEmptyUser) {
+  GenerateDefaultAppMetadata();
+
+  std::vector<RecentAppsInteractionHandler::UserState> user_states;
+  handler().set_user_states(user_states);
+
+  std::vector<Notification::AppMetadata> recent_apps_metadata_result =
+      handler().FetchRecentAppMetadataList();
+
+  EXPECT_EQ(recent_apps_metadata_result.size(), 2u);
+  EXPECT_EQ(1, recent_apps_metadata_result[0].user_id);
+  EXPECT_EQ(2, recent_apps_metadata_result[1].user_id);
+}
+
+TEST_F(RecentAppsInteractionHandlerTest, GetUserIdSet) {
+  GenerateAppMetadataWithDuplicateUserId();
+
+  std::vector<RecentAppsInteractionHandler::UserState> user_states;
+  handler().set_user_states(user_states);
+
+  std::vector<Notification::AppMetadata> recent_apps_metadata_result =
+      handler().FetchRecentAppMetadataList();
+
+  EXPECT_EQ(recent_apps_metadata_result.size(), 2u);
+  EXPECT_EQ(1, recent_apps_metadata_result[0].user_id);
+  EXPECT_EQ(1, recent_apps_metadata_result[1].user_id);
 }
 
 }  // namespace phonehub

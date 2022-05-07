@@ -36,6 +36,7 @@ export interface HistorySyncedDeviceCardElement {
   $: {
     'card-heading': HTMLDivElement,
     'collapse': IronCollapseElement,
+    'collapse-button': HTMLElement,
     'menu-button': HTMLElement,
   };
 }
@@ -84,7 +85,7 @@ export class HistorySyncedDeviceCardElement extends PolymerElement {
   separatorIndexes: Array<number>;
   sessionTag: string;
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener('dom-change', this.notifyFocusUpdate_);
   }

@@ -9,6 +9,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_service.h"
+#include "components/version_info/channel.h"
 #include "third_party/private_membership/src/private_membership_rlwe_client.h"
 
 namespace ash {
@@ -16,13 +17,14 @@ namespace device_activity {
 
 namespace psm_rlwe = private_membership::rlwe;
 
-DailyUseCaseImpl::DailyUseCaseImpl(PrefService* local_state,
-                                   const std::string& psm_device_active_secret)
-    : DeviceActiveUseCase(
-          local_state,
-          psm_device_active_secret,
-          prefs::kDeviceActiveLastKnownDailyPingTimestamp,
-          private_membership::rlwe::RlweUseCase::CROS_FRESNEL_DAILY) {}
+DailyUseCaseImpl::DailyUseCaseImpl(const std::string& psm_device_active_secret,
+                                   version_info::Channel chromeos_channel,
+                                   PrefService* local_state)
+    : DeviceActiveUseCase(psm_device_active_secret,
+                          chromeos_channel,
+                          prefs::kDeviceActiveLastKnownDailyPingTimestamp,
+                          psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY,
+                          local_state) {}
 
 DailyUseCaseImpl::~DailyUseCaseImpl() = default;
 
@@ -46,8 +48,12 @@ ImportDataRequest DailyUseCaseImpl::GenerateImportRequestBody() {
   // Create fresh |DeviceMetadata| object.
   // Note every dimension added to this proto must be approved by privacy.
   DeviceMetadata* device_metadata = import_request.mutable_device_metadata();
-  device_metadata->set_hardware_id(GetFullHardwareClass());
   device_metadata->set_chromeos_version(GetChromeOSVersion());
+  device_metadata->set_chromeos_channel(GetChromeOSChannel());
+
+  // TODO(hirthanan): This is used for debugging purposes until crbug/1289722
+  // has launched.
+  device_metadata->set_hardware_id(GetFullHardwareClass());
 
   return import_request;
 }

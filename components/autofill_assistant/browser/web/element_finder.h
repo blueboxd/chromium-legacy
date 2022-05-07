@@ -23,6 +23,7 @@
 #include "components/autofill_assistant/browser/web/js_filter_builder.h"
 #include "components/autofill_assistant/browser/web/web_controller_worker.h"
 #include "components/autofill_assistant/content/browser/annotate_dom_model_service.h"
+#include "components/autofill_assistant/content/common/autofill_assistant_agent.mojom.h"
 #include "components/autofill_assistant/content/common/node_data.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -266,12 +267,9 @@ class ElementFinder : public WebControllerWorker {
       const DevtoolsClient::ReplyStatus& reply_status,
       std::unique_ptr<runtime::CallFunctionOnResult> result);
 
-  // Helpers for running the annotate DOM model on all frames. The results will
-  // be compared against |result_| and logged to |log_info_|.
-  void DescribeNodeForAnnotateDom();
-  void OnDescribeNodeForAnnotateDom(
-      const DevtoolsClient::ReplyStatus& reply_status,
-      std::unique_ptr<dom::DescribeNodeResult> node_result);
+  // Helpers for running the annotate DOM model on all frames and return
+  // potentially found element(s).
+  // TODO(b/224745206): Additionally add the comparison mode back in later.
   void RunAnnotateDomModel();
   void RunAnnotateDomModelOnFrame(
       const content::GlobalRenderFrameHostId& host_id,
@@ -279,10 +277,13 @@ class ElementFinder : public WebControllerWorker {
   void OnRunAnnotateDomModelOnFrame(
       const content::GlobalRenderFrameHostId& host_id,
       base::OnceCallback<void(std::vector<GlobalBackendNodeId>)> callback,
-      bool success,
+      mojom::NodeDataStatus status,
       const std::vector<NodeData>& node_data);
   void OnRunAnnotateDomModel(
       const std::vector<std::vector<GlobalBackendNodeId>>& all_nodes);
+  void OnResolveNodeForAnnotateDom(
+      const DevtoolsClient::ReplyStatus& reply_status,
+      std::unique_ptr<dom::ResolveNodeResult> result);
 
   const raw_ptr<content::WebContents> web_contents_;
   const raw_ptr<DevtoolsClient> devtools_client_;
@@ -339,16 +340,11 @@ class ElementFinder : public WebControllerWorker {
   // |selector_| contains |SemanticInformation| this is only filled once the
   // backend node id has been resolved.
   Result result_ = Result::EmptyResult();
-  // The backend node id (stable id of DevTools) for the |result_|. Only
-  // filled if the |selector_| contains |SemanticInformation|.
-  // TODO(b/217160707): Always fill this.
-  absl::optional<int> result_backend_node_id_;
-  bool css_result_done_ = false;
 
   // Elements gathered through all frames. Unused if the |selector_| does not
   // contain |SemanticInformation|.
   std::vector<GlobalBackendNodeId> semantic_node_results_;
-  bool semantic_result_done_ = false;
+  std::vector<mojom::NodeDataStatus> node_data_frame_status_;
 
   // Finder for the target of the current proximity filter.
   std::unique_ptr<ElementFinder> proximity_target_filter_;

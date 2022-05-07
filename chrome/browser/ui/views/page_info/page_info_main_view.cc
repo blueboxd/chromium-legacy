@@ -119,10 +119,6 @@ PageInfoMainView::PageInfoMainView(
     about_this_site_section_ = AddChildView(CreateContainerView());
   }
 
-  if (base::FeatureList::IsEnabled(privacy_sandbox::kPrivacySandboxSettings3)) {
-    ads_personalization_section_ = AddChildView(CreateContainerView());
-  }
-
   presenter_->InitializeUiState(this, std::move(initialized_callback));
 }
 
@@ -153,6 +149,12 @@ void PageInfoMainView::EnsureCookieInfo() {
             tooltip, std::u16string(), PageInfoViewFactory::GetLaunchIcon())
             .release();
     site_settings_view_->AddChildView(cookie_button_.get());
+
+    if (base::FeatureList::IsEnabled(
+            privacy_sandbox::kPrivacySandboxSettings3)) {
+      ads_personalization_section_ =
+          site_settings_view_->AddChildView(CreateContainerView());
+    }
   }
 }
 
@@ -432,11 +434,13 @@ void PageInfoMainView::SetPageFeatureInfo(const PageFeatureInfo& info) {
 
 void PageInfoMainView::SetAdPersonalizationInfo(
     const AdPersonalizationInfo& info) {
+  EnsureCookieInfo();
   if (!ads_personalization_section_)
     return;
+
   ads_personalization_section_->RemoveAllChildViews();
 
-  if (!info.has_joined_user_to_interest_group)
+  if (info.is_empty())
     return;
 
   ads_personalization_section_->AddChildView(CreateAdPersonalizationSection());
@@ -566,23 +570,17 @@ PageInfoMainView::CreateAdPersonalizationSection() {
       ->SetLayoutManager(std::make_unique<views::FlexLayout>())
       ->SetOrientation(views::LayoutOrientation::kVertical);
   ads_personalization_section->AddChildView(
-      PageInfoViewFactory::CreateSeparator());
-  // TODO(olesiamarukhno): Use correct icon.
-  // TODO(olesiamarukhno): Use correct strings (title and tooltip).
-  auto* ads_personalization_button = ads_personalization_section->AddChildView(
       std::make_unique<PageInfoHoverButton>(
           base::BindRepeating(
               [](PageInfoMainView* view) {
-                // TODO(olesiamarukhno): Open a subpage.
                 view->navigation_handler_->OpenAdPersonalizationPage();
               },
               this),
-          PageInfoViewFactory::GetSiteSettingsIcon(),
-          /*title_resource_id=*/0, std::u16string(),
+          PageInfoViewFactory::GetAdPersonalizationIcon(),
+          IDS_PAGE_INFO_AD_PERSONALIZATION_HEADER, std::u16string(),
           PageInfoViewFactory::VIEW_ID_PAGE_INFO_AD_PERSONALIZATION_BUTTON,
-          /*tooltip_text=*/std::u16string(), std::u16string(),
-          PageInfoViewFactory::GetOpenSubpageIcon()));
-  ads_personalization_button->SetTitleText(u"Lorem ipsum dolor");
+          l10n_util::GetStringUTF16(IDS_PAGE_INFO_AD_PERSONALIZATION_TOOLTIP),
+          std::u16string(), PageInfoViewFactory::GetOpenSubpageIcon()));
 
   return ads_personalization_section;
 }

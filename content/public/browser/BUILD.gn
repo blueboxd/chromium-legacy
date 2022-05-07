@@ -81,7 +81,6 @@ source_set("browser_sources") {
     "browser_plugin_guest_delegate.h",
     "browser_plugin_guest_manager.cc",
     "browser_plugin_guest_manager.h",
-    "browser_ppapi_host.h",
     "browser_task_traits.cc",
     "browser_task_traits.h",
     "browser_thread.h",
@@ -90,6 +89,7 @@ source_set("browser_sources") {
     "browsing_data_remover.h",
     "browsing_data_remover_delegate.h",
     "browsing_instance_id.h",
+    "browsing_topics_site_data_manager.h",
     "cdm_registry.h",
     "certificate_request_result_type.h",
     "child_process_data.cc",
@@ -166,6 +166,7 @@ source_set("browser_sources") {
     "favicon_status.h",
     "feature_observer_client.h",
     "federated_identity_active_session_permission_context_delegate.h",
+    "federated_identity_api_permission_context_delegate.h",
     "federated_identity_request_permission_context_delegate.h",
     "federated_identity_sharing_permission_context_delegate.h",
     "file_select_listener.h",
@@ -176,6 +177,7 @@ source_set("browser_sources") {
     "file_system_access_write_item.cc",
     "file_system_access_write_item.h",
     "file_url_loader.h",
+    "first_party_sets_handler.h",
     "focused_node_details.h",
     "font_list_async.h",
     "frame_accept_header.cc",
@@ -278,7 +280,6 @@ source_set("browser_sources") {
     "peak_gpu_memory_tracker.h",
     "peer_connection_tracker_host_observer.cc",
     "peer_connection_tracker_host_observer.h",
-    "pepper_vpn_provider_resource_host_proxy.h",
     "per_web_ui_browser_interface_broker.h",
     "permission_controller.h",
     "permission_controller_delegate.cc",
@@ -434,14 +435,6 @@ source_set("browser_sources") {
     "//content:content_implementation",
   ]
 
-  if (enable_plugins) {
-    sources += [
-      "plugin_data_remover.h",
-      "plugin_service.h",
-      "plugin_service_filter.h",
-    ]
-  }
-
   if (is_android) {
     sources += [ "color_chooser.h" ]
   }
@@ -454,6 +447,7 @@ source_set("browser_sources") {
   public_deps = [
     "//base",
     "//build:chromecast_buildflags",
+    "//components/browsing_topics/common:common",
     "//components/download/public/common:public",
     "//components/services/storage/public/mojom",
     "//content/public/common:common_sources",
@@ -499,7 +493,6 @@ source_set("browser_sources") {
     "//media",
     "//media/capture",
     "//net",
-    "//ppapi/c",
     "//services/device/public/cpp/geolocation",
     "//services/metrics/public/cpp:metrics_cpp",
     "//third_party/blink/public/common:buildflags",
@@ -518,6 +511,17 @@ source_set("browser_sources") {
     # include headers from each other.
     "//content/browser",
   ]
+
+  if (enable_plugins) {
+    sources += [
+      "browser_ppapi_host.h",
+      "pepper_vpn_provider_resource_host_proxy.h",
+      "plugin_data_remover.h",
+      "plugin_service.h",
+      "plugin_service_filter.h",
+    ]
+    deps += [ "//ppapi/c" ]
+  }
 
   if (is_chromeos || is_android || is_win || is_chromecast || is_fuchsia) {
     defines = [ "ENABLE_PROTECTED_MEDIA_IDENTIFIER_PERMISSION" ]

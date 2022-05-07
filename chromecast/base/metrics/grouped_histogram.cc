@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "base/check_op.h"
-#include "base/cxx17_backports.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/no_destructor.h"
@@ -90,11 +89,13 @@ const HistogramArgs kHistogramsToGroup[] = {
 // of the form "<metric-name>.<app-name>".
 class GroupedHistogram : public base::Histogram {
  public:
+  // TODO(crbug.com/1300206): min/max parameters are redundant with "ranges"
+  // and can probably be removed.
   GroupedHistogram(const char* metric_to_override,
                    Sample minimum,
                    Sample maximum,
                    const base::BucketRanges* ranges)
-      : Histogram(metric_to_override, minimum, maximum, ranges),
+      : Histogram(metric_to_override, ranges),
         minimum_(minimum),
         maximum_(maximum),
         bucket_count_(ranges->bucket_count()) {}
@@ -169,7 +170,7 @@ void PreregisterHistogram(const char* name,
 } // namespace
 
 void PreregisterAllGroupedHistograms() {
-  for (size_t i = 0; i < base::size(kHistogramsToGroup); ++i) {
+  for (size_t i = 0; i < std::size(kHistogramsToGroup); ++i) {
     PreregisterHistogram(
         kHistogramsToGroup[i].name,
         kHistogramsToGroup[i].minimum,

@@ -17,29 +17,34 @@ namespace {
 
 constexpr const char kValidJson[] =
     R"json({
-      "tap": {
-        "keyboard": [
-          {
-            "name": "Run",
-            "key": "KeyB",
-            "location": [
-              {
-                "type": "position",
-                "anchor_to_target": [
-                  0.8,
-                  0.8
-                ]
-              }
-            ]
-          }
-        ]
-      }
+      "tap": [
+        {
+          "input_sources": [
+            "keyboard"
+          ],
+          "name": "Run",
+          "key": "KeyB",
+          "location": [
+            {
+              "type": "position",
+              "anchor_to_target": [
+                0.8,
+                0.8
+              ]
+            }
+          ]
+        }
+      ]
     })json";
 }  // namespace
 
 class DisplayOverlayControllerTest : public exo::test::ExoTestBase {
  public:
   DisplayOverlayControllerTest() = default;
+
+  gfx::Rect GetInputMappingViewBounds() {
+    return controller_->GetInputMappingViewBoundsForTesting();
+  }
 
  protected:
   std::unique_ptr<input_overlay::test::ArcTestWindow> arc_test_window_;
@@ -69,7 +74,7 @@ class DisplayOverlayControllerTest : public exo::test::ExoTestBase {
 };
 
 TEST_F(DisplayOverlayControllerTest, TestWindowBoundsChange) {
-  auto original_bounds = controller_->GetInputMappingViewBoundsForTesting();
+  auto original_bounds = GetInputMappingViewBounds();
   auto new_bounds = gfx::Rect(original_bounds);
   new_bounds.set_width(new_bounds.size().width() + 50);
   new_bounds.set_height(new_bounds.size().height() + 50);
@@ -77,8 +82,9 @@ TEST_F(DisplayOverlayControllerTest, TestWindowBoundsChange) {
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
   arc_test_window_->SetBounds(display, new_bounds);
   controller_->OnWindowBoundsChanged();
-  auto updated_bounds = controller_->GetInputMappingViewBoundsForTesting();
+  auto updated_bounds = GetInputMappingViewBounds();
   EXPECT_NE(original_bounds, updated_bounds);
 }
+
 }  // namespace input_overlay
 }  // namespace arc

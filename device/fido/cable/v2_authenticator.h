@@ -65,6 +65,8 @@ class Platform {
     NO_BLUETOOTH_PERMISSION = 111,
     QR_URI_ERROR = 112,
     EOF_WHILE_PROCESSING = 113,
+    AUTHENTICATOR_SELECTION_RECEIVED = 114,
+    DISCOVERABLE_CREDENTIALS_REQUEST = 115,
   };
 
   using MakeCredentialCallback =
@@ -122,8 +124,6 @@ class Transport {
 // A Transaction is a handle to an ongoing caBLEv2 transaction with a peer.
 class Transaction {
  public:
-  using CompleteCallback = base::OnceCallback<void()>;
-
   virtual ~Transaction();
 };
 
@@ -136,6 +136,7 @@ std::unique_ptr<Transaction> TransactWithPlaintextTransport(
 // TransactFromQRCode starts a network-based transaction based on the decoded
 // contents of a QR code.
 std::unique_ptr<Transaction> TransactFromQRCode(
+    unsigned protocol_revision,
     std::unique_ptr<Platform> platform,
     network::mojom::NetworkContext* network_context,
     base::span<const uint8_t, kRootSecretSize> root_secret,
@@ -149,6 +150,7 @@ std::unique_ptr<Transaction> TransactFromQRCode(
 // TransactFromFCM starts a network-based transaction based on the decoded
 // contents of a cloud message.
 std::unique_ptr<Transaction> TransactFromFCM(
+    unsigned protocol_revision,
     std::unique_ptr<Platform> platform,
     network::mojom::NetworkContext* network_context,
     base::span<const uint8_t, kRootSecretSize> root_secret,

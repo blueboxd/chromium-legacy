@@ -149,22 +149,6 @@
       custom_copy: true,
       custom_compare: true,
     },
-    {
-      name: "AffectedByPseudoInSubjectHas",
-      field_template: "monotonic_flag",
-      default_value: "false",
-      custom_copy: true,
-      custom_compare: true,
-    },
-    {
-      name: "DynamicRestyleFlagsForSubjectHas",
-      field_template: "primitive",
-      field_group: "*",
-      field_size: 4,
-      default_value: "0",
-      type_name: "unsigned",
-      inherited: true,
-    },
     // A non-inherited property references a variable or @apply is used
     {
       name: "HasVariableReferenceFromNonInheritedProperty",
@@ -1096,6 +1080,18 @@
       default_value: "none",
       field_group: "*",
       computed_style_custom_functions: ["getter", "setter"],
+    },
+    {
+      // We need to go through LayoutObject::SetStyle with
+      // ApplyStyleChanges::kYes if the body changes from being the first body
+      // element to a secondary one because the same style could lead to
+      // different need for scrollbars depending on whether the body element
+      // propagates its scrollbars to the viewport or not. This flag is merely
+      // for making the old and new ComputedStyles different in such a case.
+      name: "IsSecondaryBodyElement",
+      field_template: "monotonic_flag",
+      default_value: "false",
+      field_group: "*",
     },
   ],
 }

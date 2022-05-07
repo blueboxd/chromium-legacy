@@ -44,6 +44,7 @@
 <translation id="3344973607274501920">O Chromium não conseguiu verificar as suas palavras-passe. Experimente verificar a sua ligação à Internet.</translation>
 <translation id="3472200483164753384">Opção não suportada no Chromium Canary.</translation>
 <translation id="3639997914391704523">O Chromium pode verificar as suas palavras-passe quando inicia sessão com a sua Conta Google.</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" /> estava a utilizar o Chromium e deixou marcadores, palavras-passe e outras definições neste dispositivo.</translation>
 <translation id="3805899903892079518">O Chromium não tem acesso aos seus vídeos ou fotos. Ative o acesso nas Definições do iOS &gt; Privacidade &gt; Fotos.</translation>
 <translation id="4043291146360695975">As palavras-passe são guardadas no Gestor de palavras-passe apenas neste dispositivo.</translation>
 <translation id="4099085513035183040">Opção não suportada no Chromium Beta.</translation>
@@ -55,6 +56,15 @@
 <translation id="4828317641996116749">O Chromium não conseguiu verificar todas as palavras-passe. Tente novamente mais tarde.</translation>
 <translation id="4985291216379576555">Está offline. O Chromium não consegue verificar se existem atualizações.</translation>
 <translation id="4999538639245140991">Uma vez que está a terminar sessão numa conta gerida por <ph name="SIGNOUT_MANAGED_DOMAIN" />, os seus dados do Chromium serão eliminados deste dispositivo. Contudo, permanecem na sua Conta Google.</translation>
+<translation id="5039881550736388123">Quando a opção está ativada:
+<ph name="BEGIN_INDENT" />  • Ajude a melhorar o Chromium para as pessoas que o utilizam de forma semelhante à sua.<ph name="END_INDENT" />
+
+Aspetos a considerar:
+<ph name="BEGIN_INDENT" />  • São enviadas à Google informações sobre a sua utilização do Chromium, mas estas não são associadas a si.
+
+  • Se o Chromium falhar, os detalhes sobre a falha podem incluir algumas informações pessoais.
+
+  • Se ativar a sincronização, as métricas também podem incluir informações sobre os URLs que visita.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Inicie sessão no Chromium</translation>
 <translation id="5224391634244552924">Não existem palavras-passe guardadas. O Chromium consegue verificar as suas palavras-passe quando as guarda.</translation>
 <translation id="5308226104666789935">O Chromium não consegue verificar se existem atualizações.</translation>
@@ -65,6 +75,7 @@
 <translation id="5777187867430702742">Página do Chromium</translation>
 <translation id="5862307444128926510">Bem-vindo ao Chromium</translation>
 <translation id="5945387852661427312">Está a iniciar sessão com uma conta gerida por <ph name="DOMAIN" /> e a conceder ao respetivo gestor o controlo dos seus dados do Chromium. Os dados ficarão permanentemente associados a esta conta. Terminar sessão no Chromium elimina os seus dados deste dispositivo, embora permaneçam armazenados na Conta Google.</translation>
+<translation id="5983312940147103417">Melhore o Chromium</translation>
 <translation id="602807004951640891">Ao utilizar o Chromium, aceita os <ph name="BEGIN_LINK_TOS" />Termos de Utilização<ph name="END_LINK_TOS" />.</translation>
 <translation id="6119647025869519954">Para definir o Chromium como o navegador predefinido:
 1. Abra as Definições

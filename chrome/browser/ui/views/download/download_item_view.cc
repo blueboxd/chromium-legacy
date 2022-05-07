@@ -41,8 +41,8 @@
 #include "chrome/browser/safe_browsing/advanced_protection_status_manager_factory.h"
 #include "chrome/browser/safe_browsing/download_protection/download_protection_service.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/tab_modal_confirm_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/chrome_typography.h"
@@ -66,7 +66,6 @@
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/text/bytes_formatting.h"
-#include "ui/base/theme_provider.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/color/color_id.h"
 #include "ui/compositor/layer.h"
@@ -96,6 +95,7 @@
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/highlight_path_generator.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/progress_ring_utils.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/style/typography.h"
 #include "ui/views/vector_icons.h"
@@ -611,8 +611,7 @@ void DownloadItemView::OnPaintBackground(gfx::Canvas* canvas) {
   gfx::Rect rect(width() - 1, 0, 1, height());
   rect.Inset(0, kTopBottomPadding);
   canvas->FillRect(GetMirroredRect(rect),
-                   GetThemeProvider()->GetColor(
-                       ThemeProperties::COLOR_TOOLBAR_VERTICAL_SEPARATOR));
+                   GetColorProvider()->GetColor(kColorToolbarSeparator));
 }
 
 void DownloadItemView::OnPaint(gfx::Canvas* canvas) {
@@ -699,7 +698,7 @@ void DownloadItemView::OnThemeChanged() {
   views::View::OnThemeChanged();
 
   const SkColor background_color =
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_DOWNLOAD_SHELF);
+      GetColorProvider()->GetColor(kColorDownloadShelfBackground);
   SetBackground(views::CreateSolidBackground(background_color));
 
   shelf_->ConfigureButtonForTheme(open_now_button_);
@@ -1064,13 +1063,6 @@ void DownloadItemView::PaintDownloadProgress(
     int percent_done) const {
   const SkColor color = GetColorProvider()->GetColor(ui::kColorThrobber);
 
-  // Draw background.
-  cc::PaintFlags bg_flags;
-  bg_flags.setColor(SkColorSetA(color, 0x33));
-  bg_flags.setStyle(cc::PaintFlags::kFill_Style);
-  bg_flags.setAntiAlias(true);
-  canvas->DrawCircle(bounds.CenterPoint(), bounds.width() / 2, bg_flags);
-
   // Calculate progress.
   SkScalar start_pos = SkIntToScalar(270);  // 12 o'clock
   SkScalar sweep_angle = SkDoubleToScalar(360 * percent_done / 100.0);
@@ -1082,15 +1074,9 @@ void DownloadItemView::PaintDownloadProgress(
     sweep_angle = SkIntToScalar(50);
   }
 
-  // Draw progress.
-  SkPath progress;
-  progress.addArc(gfx::RectFToSkRect(bounds), start_pos, sweep_angle);
-  cc::PaintFlags progress_flags;
-  progress_flags.setColor(color);
-  progress_flags.setStyle(cc::PaintFlags::kStroke_Style);
-  progress_flags.setStrokeWidth(1.7f);
-  progress_flags.setAntiAlias(true);
-  canvas->DrawPath(progress, progress_flags);
+  views::DrawProgressRing(canvas, gfx::RectFToSkRect(bounds),
+                          SkColorSetA(color, 0x33), color,
+                          /*stroke_width=*/1.7f, start_pos, sweep_angle);
 }
 
 ui::ImageModel DownloadItemView::GetIcon() const {
@@ -1281,7 +1267,7 @@ void DownloadItemView::UpdateDropdownButtonImage() {
       dropdown_button_,
       dropdown_pressed_ ? vector_icons::kCaretDownIcon
                         : vector_icons::kCaretUpIcon,
-      GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_TEXT));
+      GetColorProvider()->GetColor(kColorToolbarText));
   dropdown_button_->SizeToPreferredSize();
 }
 

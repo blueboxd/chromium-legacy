@@ -2949,14 +2949,14 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 }
 
 // Check that the internals page contains logs from the renderer.
-// Flaky on linux-bfcache-rel crbug.com/1276313.
-#if BUILDFLAG(IS_LINUX)
-#define MAYBE_InternalsPage_Renderer DISABLED_InternalsPage_Renderer
-#else
-#define MAYBE_InternalsPage_Renderer InternalsPage_Renderer
-#endif
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       MAYBE_InternalsPage_Renderer) {
+                       DISABLED_InternalsPage_Renderer) {
+  // The test is flaky with same-site back/forward cache (which is enabled by
+  // default).
+  // TODO(https://crbug.com/1276313): Investigate and fix this.
+  content::DisableBackForwardCacheForTesting(
+      WebContents(), content::BackForwardCache::TEST_REQUIRES_NO_CACHING);
+
   // Open the internals page.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("chrome://password-manager-internals"),
@@ -4324,7 +4324,7 @@ class MockPrerenderPasswordManagerDriver
                int options,
                const gfx::RectF& bounds),
               (override));
-  MOCK_METHOD(void, ShowTouchToFill, (), (override));
+  MOCK_METHOD(void, ShowTouchToFill, (bool), (override));
   MOCK_METHOD(void,
               CheckSafeBrowsingReputation,
               (const GURL& form_action, const GURL& frame_url),
@@ -4390,9 +4390,10 @@ class MockPrerenderPasswordManagerDriver
           impl_->ShowPasswordSuggestions(text_direction, typed_username,
                                          options, bounds);
         });
-    ON_CALL(*this, ShowTouchToFill).WillByDefault([this]() {
-      impl_->ShowTouchToFill();
-    });
+    ON_CALL(*this, ShowTouchToFill)
+        .WillByDefault([this](bool trigger_submission) {
+          impl_->ShowTouchToFill(trigger_submission);
+        });
     ON_CALL(*this, CheckSafeBrowsingReputation)
         .WillByDefault([this](const GURL& form_action, const GURL& frame_url) {
           impl_->CheckSafeBrowsingReputation(form_action, frame_url);

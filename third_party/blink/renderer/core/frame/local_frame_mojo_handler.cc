@@ -753,7 +753,7 @@ void LocalFrameMojoHandler::AdvanceFocusInFrame(
       focus_type, source_frame, frame_);
 }
 
-void LocalFrameMojoHandler::AdvanceFocusInForm(
+void LocalFrameMojoHandler::AdvanceFocusForIME(
     mojom::blink::FocusType focus_type) {
   auto* focused_frame = GetPage()->GetFocusController().FocusedFrame();
   if (focused_frame != frame_)
@@ -765,7 +765,7 @@ void LocalFrameMojoHandler::AdvanceFocusInForm(
     return;
 
   Element* next_element =
-      GetPage()->GetFocusController().NextFocusableElementInForm(element,
+      GetPage()->GetFocusController().NextFocusableElementForIME(element,
                                                                  focus_type);
   if (!next_element)
     return;
@@ -1151,7 +1151,7 @@ void LocalFrameMojoHandler::GetCanonicalUrlForSharing(
 
 void LocalFrameMojoHandler::SetAppHistoryEntriesForRestore(
     mojom::blink::AppHistoryEntryArraysPtr entry_arrays) {
-  if (AppHistory* app_history = AppHistory::appHistory(*frame_->DomWindow()))
+  if (AppHistory* app_history = AppHistory::navigation(*frame_->DomWindow()))
     app_history->SetEntriesForRestore(entry_arrays);
 }
 

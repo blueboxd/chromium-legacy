@@ -12,7 +12,6 @@
 
 #include "google_apis/google_api_keys_unittest.h"
 
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
 #include "base/test/scoped_command_line.h"
@@ -26,9 +25,10 @@
 // unit_tests, and the Android builders complain about multiply
 // defined symbols (likely they don't do name decoration as well as
 // the Mac and Linux linkers).  Therefore these tests are only built
-// and run on Mac and Linux, which should provide plenty of coverage
+// and run on Mac, Linux and Fuchsia, which should provide plenty of coverage
 // since there are no platform-specific bits in this code.
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_APPLE)
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_APPLE) || \
+    BUILDFLAG(IS_FUCHSIA)
 
 // We need to include everything included by google_api_keys.cc once
 // at global scope so that things like STL and classes from base don't
@@ -68,7 +68,7 @@ GoogleAPIKeysTest::~GoogleAPIKeysTest() {}
 void GoogleAPIKeysTest::SetUp() {
   // Unset all environment variables that can affect these tests,
   // for the duration of the tests.
-  for (size_t i = 0; i < base::size(env_cache_); ++i) {
+  for (size_t i = 0; i < std::size(env_cache_); ++i) {
     EnvironmentCache& cache = env_cache_[i];
     cache.was_set = env_->HasVar(cache.variable_name);
     cache.value.clear();
@@ -81,7 +81,7 @@ void GoogleAPIKeysTest::SetUp() {
 
 void GoogleAPIKeysTest::TearDown() {
   // Restore environment.
-  for (size_t i = 0; i < base::size(env_cache_); ++i) {
+  for (size_t i = 0; i < std::size(env_cache_); ++i) {
     EnvironmentCache& cache = env_cache_[i];
     if (cache.was_set) {
       env_->SetVar(cache.variable_name, cache.value);
@@ -587,3 +587,4 @@ TEST_F(GoogleAPIKeysTest, OverrideAllKeysUsingConfig) {
 }
 
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_APPLE)
+        // || BUILDFLAG(IS_FUCHSIA)

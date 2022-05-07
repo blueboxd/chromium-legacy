@@ -166,7 +166,7 @@ class FakeAppNotificationHandler {
 
   /**
    * @param {string} id
-   * @param {!apps.mojom.Permission} permission
+   * @param {!appManagement.mojom.Permission} permission
    */
   setNotificationPermission(id, permission) {
     return new Promise(resolve => {
@@ -197,12 +197,13 @@ suite('AppsPageTests', function() {
   /**
    * @param {string} id
    * @param {string} title
-   * @param {!apps.mojom.Permission} permission
-   * @param {?apps.mojom.Readiness} readiness
+   * @param {!appManagement.mojom.Permission} permission
+   * @param {?chromeos.settings.appNotification.mojom.Readiness} readiness
    * @return {!chromeos.settings.appNotification.mojom.App}
    */
   function createApp(
-      id, title, permission, readiness = apps.mojom.Readiness.kReady) {
+      id, title, permission,
+      readiness = chromeos.settings.appNotification.mojom.Readiness.kReady) {
     return {
       id: id,
       title: title,
@@ -311,7 +312,8 @@ suite('AppsPageTests', function() {
 
       // Simulate an uninstalled app.
       const app3 = createApp(
-          '2', 'App2', permission2, apps.mojom.Readiness.kUninstalledByUser);
+          '2', 'App2', permission2,
+          chromeos.settings.appNotification.mojom.Readiness.kUninstalledByUser);
       simulateNotificationAppChanged(app3);
       await flushTasks();
       assertEquals('1 apps', rowLink.subLabel);

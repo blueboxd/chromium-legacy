@@ -17,9 +17,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Concrete implementation of ClientChannel.
 class ClientChannelImpl : public ClientChannel,
@@ -111,8 +109,6 @@ class ClientChannelImpl : public ClientChannel,
   base::WeakPtrFactory<ClientChannelImpl> weak_ptr_factory_{this};
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_CLIENT_CHANNEL_IMPL_H_

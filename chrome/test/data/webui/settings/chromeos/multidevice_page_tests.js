@@ -6,7 +6,7 @@
 // #import 'chrome://os-settings/chromeos/os_settings.js';
 
 // #import {TestLifetimeBrowserProxy} from './test_os_lifetime_browser_proxy.m.js';
-// #import {MultiDeviceSettingsMode, MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceBrowserProxyImpl, PhoneHubNotificationAccessStatus, Router, routes, setNearbyShareSettingsForTesting, setContactManagerForTesting} from 'chrome://os-settings/chromeos/os_settings.js';
+// #import {MultiDeviceSettingsMode, MultiDeviceFeature, MultiDeviceFeatureState, MultiDevicePageContentData, MultiDeviceBrowserProxyImpl, PhoneHubFeatureAccessStatus, Router, routes, setNearbyShareSettingsForTesting, setContactManagerForTesting} from 'chrome://os-settings/chromeos/os_settings.js';
 // #import {TestOsResetBrowserProxy} from './test_os_reset_browser_proxy.m.js';
 // #import {assertEquals, assertFalse, assertNotEquals, assertTrue} from '../../chai_assert.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
@@ -86,8 +86,8 @@ suite('Multidevice', function() {
    */
   function setPhoneHubNotificationAccessGranted(accessGranted) {
     const accessState = accessGranted ?
-        settings.PhoneHubNotificationAccessStatus.ACCESS_GRANTED :
-        settings.PhoneHubNotificationAccessStatus.AVAILABLE_BUT_NOT_GRANTED;
+        settings.PhoneHubFeatureAccessStatus.ACCESS_GRANTED :
+        settings.PhoneHubFeatureAccessStatus.AVAILABLE_BUT_NOT_GRANTED;
     setPageContentData(Object.assign(
         {}, multidevicePage.pageContentData,
         {notificationAccessStatus: accessState}));
@@ -170,8 +170,7 @@ suite('Multidevice', function() {
       assertEquals(
           !!accessDialog,
           multidevicePage.pageContentData.notificationAccessStatus ===
-              settings.PhoneHubNotificationAccessStatus
-                  .AVAILABLE_BUT_NOT_GRANTED);
+              settings.PhoneHubFeatureAccessStatus.AVAILABLE_BUT_NOT_GRANTED);
       return;
     }
 
@@ -266,13 +265,13 @@ suite('Multidevice', function() {
   test('Open notification access setup dialog route param', async () => {
     settings.Router.getInstance().navigateTo(
         settings.routes.MULTIDEVICE_FEATURES,
-        new URLSearchParams('showNotificationAccessSetupDialog=true'));
+        new URLSearchParams('showPhonePermissionSetupDialog=true'));
 
     PolymerTest.clearBody();
     browserProxy = new multidevice.TestMultideviceBrowserProxy();
     settings.MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
     browserProxy.data.notificationAccessStatus =
-        settings.PhoneHubNotificationAccessStatus.AVAILABLE_BUT_NOT_GRANTED;
+        settings.PhoneHubFeatureAccessStatus.AVAILABLE_BUT_NOT_GRANTED;
 
     multidevicePage = document.createElement('settings-multidevice-page');
     assertTrue(!!multidevicePage);
@@ -311,13 +310,13 @@ suite('Multidevice', function() {
   test('Open multidevice permissions setup dialog route param', async () => {
     settings.Router.getInstance().navigateTo(
         settings.routes.MULTIDEVICE_FEATURES,
-        new URLSearchParams('showNotificationAccessSetupDialog=true'));
+        new URLSearchParams('showPhonePermissionSetupDialog&mode=1'));
 
     PolymerTest.clearBody();
     browserProxy = new multidevice.TestMultideviceBrowserProxy();
     settings.MultiDeviceBrowserProxyImpl.instance_ = browserProxy;
     browserProxy.data.notificationAccessStatus =
-        settings.PhoneHubNotificationAccessStatus.AVAILABLE_BUT_NOT_GRANTED;
+        settings.PhoneHubFeatureAccessStatus.AVAILABLE_BUT_NOT_GRANTED;
     browserProxy.data.isPhoneHubPermissionsDialogSupported = true;
 
     multidevicePage = document.createElement('settings-multidevice-page');

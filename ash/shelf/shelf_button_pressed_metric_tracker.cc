@@ -7,6 +7,7 @@
 #include "ash/metrics/user_metrics_recorder.h"
 #include "ash/shell.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
 #include "base/time/default_tick_clock.h"
 #include "ui/views/controls/button/button.h"
 
@@ -17,9 +18,7 @@ const char ShelfButtonPressedMetricTracker::
         "Ash.Shelf.TimeBetweenWindowMinimizedAndActivatedActions";
 
 ShelfButtonPressedMetricTracker::ShelfButtonPressedMetricTracker()
-    : tick_clock_(base::DefaultTickClock::GetInstance()),
-      time_of_last_minimize_(base::TimeTicks()),
-      last_minimized_source_button_(nullptr) {}
+    : tick_clock_(base::DefaultTickClock::GetInstance()) {}
 
 ShelfButtonPressedMetricTracker::~ShelfButtonPressedMetricTracker() = default;
 
@@ -48,12 +47,12 @@ void ShelfButtonPressedMetricTracker::ButtonPressed(
 
 void ShelfButtonPressedMetricTracker::RecordButtonPressedSource(
     const ui::Event& event) {
+  // NOTE: These metrics are called "launcher" instead of "shelf" because the
+  // original name of the shelf UI was "launcher".
   if (event.IsMouseEvent()) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        UMA_LAUNCHER_BUTTON_PRESSED_WITH_MOUSE);
+    base::RecordAction(base::UserMetricsAction("Launcher_ButtonPressed_Mouse"));
   } else if (event.IsGestureEvent()) {
-    Shell::Get()->metrics()->RecordUserMetricsAction(
-        UMA_LAUNCHER_BUTTON_PRESSED_WITH_TOUCH);
+    base::RecordAction(base::UserMetricsAction("Launcher_ButtonPressed_Touch"));
   }
 }
 

@@ -40,7 +40,13 @@ FontManager::FontManager(ExecutionContext* context)
 }
 
 ScriptPromise FontManager::query(ScriptState* script_state,
-                                 const QueryOptions* options) {
+                                 const QueryOptions* options,
+                                 ExceptionState& exception_state) {
+  if (!remote_manager_.is_bound()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "FontAccessManager backend went away");
+    return ScriptPromise();
+  }
   DCHECK(options->hasSelect());
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -75,8 +81,9 @@ void FontManager::DidGetEnumerationResponse(
 
   if (mapping.size() > INT_MAX) {
     // Cannot deserialize without overflow.
-    resolver->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kDataError, "Font data exceeds memory limit."));
+    resolver->Reject(V8ThrowDOMException::CreateOrDie(
+        resolver->GetScriptState()->GetIsolate(), DOMExceptionCode::kDataError,
+        "Font data exceeds memory limit."));
     return;
   }
 

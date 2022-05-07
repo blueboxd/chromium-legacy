@@ -21,9 +21,10 @@ import 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
 import {assert} from 'chrome://resources/js/assert_ts.js';
 import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
 import {IronSelectorElement} from 'chrome://resources/polymer/v3_0/iron-selector/iron-selector.js';
-import {calculateSplices, html, PolymerElement, TemplateInstanceBase, templatize} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {calculateSplices, PolymerElement, TemplateInstanceBase, templatize} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {BiMap} from './bimap.js';
+import {getTemplate} from './infinite_list.html.js';
 
 export const NO_SELECTION: number = -1;
 
@@ -48,7 +49,7 @@ export class InfiniteList extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 
   static get properties() {
@@ -104,7 +105,7 @@ export class InfiniteList extends PolymerElement {
     this.selectableIndexToItemIndex_ = null;
   }
 
-  ready() {
+  override ready() {
     super.ready();
     this.ensureTemplatized_();
     this.addEventListener('scroll', () => this.onScroll_());
@@ -125,6 +126,15 @@ export class InfiniteList extends PolymerElement {
         this.updateHeight_();
       }
     }
+  }
+
+  scrollIndexIntoView(index: number) {
+    assert(
+        index >= 0 && index < this.selectableIndexToItemIndex_!.size(),
+        'Index is out of range.');
+    this.ensureSelectableDomItemAvailable_(index);
+    this.getSelectableDomItem_(index)!.scrollIntoView(
+        {behavior: 'smooth', block: 'nearest'});
   }
 
   /**
@@ -251,15 +261,7 @@ export class InfiniteList extends PolymerElement {
 
   private getDomItem_(index: number): HTMLElement|undefined {
     const instance = this.instances_[index];
-    if (instance === undefined) {
-      // TODO(crbug.com/1225247): Remove this after we root cause the issue.
-      console.error(`Unexpected call to non-existing instance index: ${
-          index}. Instance count: ${this.instances_.length}. Item count: ${
-          this.items.length}`);
-      return undefined;
-    }
-
-    return instance.children[0] as HTMLElement;
+    return instance!.children[0] as HTMLElement;
   }
 
   private getSelectableDomItem_(selectableItemIndex: number): HTMLElement

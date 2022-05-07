@@ -10,6 +10,7 @@
 #include "content/browser/attribution_reporting/attribution_host.h"
 #include "content/public/android/content_jni_headers/NavigationHandle_jni.h"
 #include "content/public/browser/navigation_handle.h"
+#include "net/http/http_response_headers.h"
 #include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/common/navigation/impression_mojom_traits.h"
 #include "third_party/blink/public/mojom/conversions/conversions.mojom.h"
@@ -45,6 +46,8 @@ NavigationHandleProxy::NavigationHandleProxy(
       url::GURLAndroid::FromNativeGURL(env, cpp_navigation_handle_->GetURL()),
       url::GURLAndroid::FromNativeGURL(
           env, cpp_navigation_handle_->GetReferrer().url),
+      url::GURLAndroid::FromNativeGURL(
+          env, cpp_navigation_handle_->GetBaseURLForDataURL()),
       cpp_navigation_handle_->IsInPrimaryMainFrame(),
       cpp_navigation_handle_->IsSameDocument(),
       cpp_navigation_handle_->IsRendererInitiated(),
@@ -56,7 +59,8 @@ NavigationHandleProxy::NavigationHandleProxy(
       cpp_navigation_handle_->HasUserGesture(),
       cpp_navigation_handle_->WasServerRedirect(),
       cpp_navigation_handle_->IsExternalProtocol(),
-      cpp_navigation_handle_->GetNavigationId());
+      cpp_navigation_handle_->GetNavigationId(),
+      cpp_navigation_handle_->IsPageActivation());
 }
 
 void NavigationHandleProxy::DidRedirect() {
@@ -78,7 +82,7 @@ void NavigationHandleProxy::DidFinish() {
 
   if (cpp_navigation_handle_->HasCommitted()) {
     // See http://crbug.com/251330 for why it's determined this way.
-    url::Replacements<char> replacements;
+    GURL::Replacements replacements;
     replacements.ClearRef();
     bool urls_same_ignoring_fragment =
         cpp_navigation_handle_->GetURL().ReplaceComponents(replacements) ==

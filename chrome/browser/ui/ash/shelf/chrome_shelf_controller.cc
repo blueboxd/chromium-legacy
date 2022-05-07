@@ -94,6 +94,7 @@
 #include "components/account_id/account_id.h"
 #include "components/app_constants/constants.h"
 #include "components/favicon/content/content_favicon_driver.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync_preferences/pref_service_syncable.h"
@@ -112,7 +113,6 @@
 #include "ui/resources/grit/ui_resources.h"
 
 using app_constants::kChromeAppId;
-using extension_misc::kGmailAppId;
 
 namespace {
 
@@ -394,7 +394,7 @@ bool ChromeShelfController::ShouldSyncItem(const ash::ShelfItem& item) {
   return ItemTypeIsPinned(item);
 }
 
-bool ChromeShelfController::IsPinned(const ash::ShelfID& id) {
+bool ChromeShelfController::IsPinned(const ash::ShelfID& id) const {
   const ash::ShelfItem* item = GetItem(id);
   return item && ItemTypeIsPinned(*item);
 }
@@ -419,7 +419,7 @@ void ChromeShelfController::Close(const ash::ShelfID& id) {
   delegate->Close();
 }
 
-bool ChromeShelfController::IsOpen(const ash::ShelfID& id) {
+bool ChromeShelfController::IsOpen(const ash::ShelfID& id) const {
   const ash::ShelfItem* item = GetItem(id);
   return item && item->status != ash::STATUS_CLOSED;
 }
@@ -518,7 +518,7 @@ std::string ChromeShelfController::GetAppIDForWebContents(
 }
 
 ash::ShelfID ChromeShelfController::GetShelfIDForAppId(
-    const std::string& app_id) {
+    const std::string& app_id) const {
   // If there is no dedicated app item, use the browser shortcut item.
   const ash::ShelfItem* item =
       !app_id.empty() ? GetItem(ash::ShelfID(app_id)) : nullptr;
@@ -1025,7 +1025,7 @@ void ChromeShelfController::OnAppUninstalledPrepared(
                  &is_app_disabled](const apps::AppUpdate& update) {
           show_in_shelf_changed = update.ShowInShelfChanged();
           is_app_disabled =
-              update.Readiness() == apps::mojom::Readiness::kDisabledByPolicy;
+              update.Readiness() == apps::Readiness::kDisabledByPolicy;
         });
     // If the app is hidden and disabled, we need to update the app pin state.
     // We don't remove the pin position from the preferences, in case we want to

@@ -458,6 +458,7 @@
 <translation id="2310021320168182093">Chou2 (ලියුම් කවරය)</translation>
 <translation id="2316887270356262533">1 MB ට වඩා අඩුවෙන් හිස් කරයි. ඔබේ ඊළඟ පිවිසීමේදී සමහර අඩවි වඩාත් සෙමින් පූරණය විය හැකිය.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> හට පරිශීලක නාමයක් සහ මුරපදයක් අවශ්‍යයි.</translation>
+<translation id="2318594867107319532">අවසන් ප්‍රතිපත්ති වේලා මුද්‍රාව:</translation>
 <translation id="2328651992442742497">ඉඩ දේ (පෙරනිමි)</translation>
 <translation id="2329182534073751090">කවුළු තැබීම</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, <ph name="EXPIRATION_DATE_ABBR" /> දින කල් ඉකුත් වේ</translation>
@@ -492,6 +493,7 @@
 <translation id="2430968933669123598">Google ගිණුම කළමනාකරණය කරන්න, ඔබගේ තොරතුරු, පෞද්ගලිකත්වය සහ ආරක්ෂාව කළමනාකරණය කිරීමට Enter ඔබන්න</translation>
 <translation id="2436186046335138073"><ph name="HANDLER_HOSTNAME" /> හට සියලු <ph name="PROTOCOL" /> සබැඳීන් විවෘත කිරීමට ඉඩ දෙන්නද?</translation>
 <translation id="2438874542388153331">දකුණට සිවු වරක් අනින්න</translation>
+<translation id="2448295565072560657">ඔබ පුරා සිටින අතරතුර මෙම උපාංගයට පර්යන්ත උපාංග අමුණා ඇත</translation>
 <translation id="2450021089947420533">සංචාර</translation>
 <translation id="2463739503403862330">සම්පූර්ණ කරන්න</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -499,6 +501,7 @@
 <translation id="2465688316154986572">ස්ටේපල්</translation>
 <translation id="2465914000209955735">Chrome තුළ ඔබ බාගෙන ඇති ගොනු කළමනාකරණය කරන්න</translation>
 <translation id="2466004615675155314">වෙබය වෙතින් තොරතුරු පෙන්වන්න</translation>
+<translation id="2467272921457885625">උපාංග දෘඪාංග පිරිවිතර සහ CPU/RAM භාවිත ඉතිහාසය වැනි සංඛ්‍යාලේඛන</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />ජාල දෝෂහරණ ධාවනය කරමින්<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">1-සිට-N පිළිවෙළ</translation>
 <translation id="2470767536994572628">ඔබ අනුසටහන් සංස්කරණය කරන විට, මෙම ලේඛනය තනි පිටු දසුනකට සහ එහි මුල් කරකැවීමට ආපසු යනු ඇත</translation>
@@ -525,6 +528,7 @@
 <translation id="2539524384386349900">හඳුනාගන්න</translation>
 <translation id="2540701853218677861">වේලා මුද්‍රා සහ අසාර්ථක උත්සාහයන් ඇතුළුව, උපාංග පිරීම්/පිටවීම් ඉතිහාසය</translation>
 <translation id="2541219929084442027">ඔබ ඔබගේ සියලු අප්‍රකට ටැබ වැසූ පසු අප්‍රකට ටැබවල ඔබ බැලූ පිටු ඔබගේ බ්‍රවුසරයෙහි ඉතිහාසය, කුකී ගබඩාව හෝ සෙවීම් ඉතිහාසය අවට නොරැඳෙනු ඇත. ඔබ බාගත් ඕනෑම ගොනුවක් හෝ ඔබ සාදන පිටුසන් තබා ගනු ඇත.</translation>
+<translation id="2544546346215446551">ඔබගේ පරිපාලක විසින් ඔබගේ උපාංගය නැවත ආරම්භ කරන ලදි</translation>
 <translation id="2544644783021658368">තනි ලේඛනය</translation>
 <translation id="2546283357679194313">කුකීස් සහ අඩවි දත්ත</translation>
 <translation id="254947805923345898">ප්‍රතිපත්ති අගය වලංගු නොවේ.</translation>
@@ -939,7 +943,6 @@
 <translation id="385051799172605136">ආපසු</translation>
 <translation id="3858027520442213535">දිනය සහ වේලාව යාවත්කාලීන කරන්න</translation>
 <translation id="3858860766373142691">නම</translation>
-<translation id="3879224246272917991">CPU/RAM භාවිතය වැනි උපාංග සංඛ්‍යාලේඛන සහ දෘඪාංග පිරිවිතර</translation>
 <translation id="3881478300875776315">පේළි අඩුවෙන් පෙන්වන්න</translation>
 <translation id="3884278016824448484">උපාංගය හඳුනා ගැනීම ප්‍රතිවිරුද්ධයි</translation>
 <translation id="3885155851504623709">කෝරලය</translation>
@@ -974,6 +977,7 @@
 <translation id="3990250421422698716">අනුලම්බයේ සෙමින් දුවන්න</translation>
 <translation id="3996311196211510766">මූලාරම්භ ප්‍රතිපත්තිය එය වෙත සියලුම ඉල්ලීම්වලට යෙදීමට <ph name="ORIGIN" /> වෙබ් අඩවිය
     ඉල්ලා ඇති නමුත්, දැනට මෙම ප්‍රතිපත්තිය යෙදිය නොහැක.</translation>
+<translation id="4006465311664329701">Google Pay භාවිතයෙන් ගෙවීමේ ක්‍රම, දීමනා සහ ලිපින</translation>
 <translation id="4009243425692662128">ඔබ මුද්‍රණය කරන පිටුවල අන්තර්ගතය විශ්ලේෂණය සඳහා Google ක්ලවුඩ් හෝ තෙවන පාර්ශ්ව වෙත යවනු ලැබේ. උදාහරණයක් වශයෙන්, සංවේදි දත්ත සඳහා එය ස්කෑන් කරනු ලැබිය හැකිය.</translation>
 <translation id="4010758435855888356">ගබඩා ප්‍රවේශය ඉඩ දෙන්නද?</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} පිටුවක් ඇති PDF ලේඛනය}one{පිටු {COUNT} ක් ඇති PDF ලේඛනය}other{පිටු {COUNT} ක් ඇති PDF ලේඛනය}}</translation>
@@ -1250,6 +1254,7 @@
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, ඉක්මනින් නව Google Sheet එකක් තැනීමට Tab ඔබා අනතුරුව Enter ඔබන්න</translation>
 <translation id="4825507807291741242">ශක්තිසම්පන්න</translation>
 <translation id="483241715238664915">අනතුරු ඇඟවීම් ක්‍රියාත්මක කරන්න</translation>
+<translation id="4834250788637067901">Google Pay භාවිතයෙන් ගෙවීමේ ක්‍රම, දීමනා සහ ලිපින</translation>
 <translation id="4838327282952368871">සිහිනමය</translation>
 <translation id="4840250757394056958">ඔබගේ Chrome ඉතිහාසය බලන්න</translation>
 <translation id="484462545196658690">ස්වයං</translation>
@@ -1377,7 +1382,6 @@
 <translation id="5205222826937269299">නම අවශ්‍යයි</translation>
 <translation id="5209518306177824490">SHA-1 ඇඟිලි සලකුණු</translation>
 <translation id="5209670883520018268">Tray 20</translation>
-<translation id="5215116848420601511">Google Pay භාවිතයෙන් ගෙවීම් ක්‍රම සහ ලිපින</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="521659676233207110">Tray 13</translation>
 <translation id="5216942107514965959">අද අවසන් වරට පිවිසි</translation>
@@ -1656,6 +1660,7 @@
 <translation id="6157754950574419155">ඉතිහාසයෙන් සියල්ල ඉවත් කරන්න</translation>
 <translation id="6157877588268064908">නැව්ගත කිරීමේ ක්‍රම සහ අවශ්‍යතා බැලීමට, ලිපිනයක් තෝරන්න</translation>
 <translation id="6165508094623778733">තව දැන ගන්න</translation>
+<translation id="6167577165590485365">අවසන් ගෙන ඒම උත්සාහ කළේ:</translation>
 <translation id="6169916984152623906">දැන් ඔබට පෞද්ගලිකව බ්‍රවුස් කළ හැකි අතර, මෙම උපාංගය භාවිතා කරන වෙනත් පුද්ගලයින් ඔබේ ක්‍රියාකාරකම් නොදකිනු ඇත. කෙසේ වෙතත්, බාගැනීම් සහ පිටුසන් සුරැකෙනු ඇත.</translation>
 <translation id="6177128806592000436">මෙම අඩවිය වෙත ඔබගේ සම්බන්ධතාවය සුරක්ෂිත නොවේ</translation>
 <translation id="6180316780098470077">යළි උත්සාහ කිරීමේ විරාමය</translation>
@@ -2087,6 +2092,7 @@
 <translation id="7569983096843329377">කළු</translation>
 <translation id="7575207903026901870">යෝජනා බොත්තම ඉවත් කරන්න, මෙම යෝජනාව ඉවත් කිරීමට Enter ඔබන්න</translation>
 <translation id="7578104083680115302">ඔබ Google සමග සුරකින ලද කාඩ්පත් භාවිතයෙන්, විවිධ උපාංග හරහා, අඩවි සහ යෙදුම්වල ගෙවීම් ඉක්මනින් කරන්න.</translation>
+<translation id="7579442726219254162">"<ph name="APPLICATION_ID" />" හි කළමනාකරණය කළ වින්‍යාසය තුළ නොදන්නා "<ph name="VARIABLE" />" විචල්‍යය</translation>
 <translation id="7581199239021537589">පැත්ත 2 රූප Y වැඩ මුරය</translation>
 <translation id="7582602800368606489">ඉක්මනින් Google දින දර්ශනය තුළ නව සිදුවීමක් තනන්න</translation>
 <translation id="7591288787774558753">රහසිගත අන්තර්ගතය බෙදා ගන්නද?</translation>
@@ -2290,7 +2296,6 @@
 <translation id="8241712895048303527">මෙම අඩවිය මත අවහිර කරන්න</translation>
 <translation id="8242426110754782860">ඉදිරියට</translation>
 <translation id="8249296373107784235">අහෝසි කරන්න</translation>
-<translation id="8249320324621329438">ලබාගත් අවසන් වර:</translation>
 <translation id="8253091569723639551">බිල්ගත කිරීමේ ලිපිනය අවශ්‍යයි</translation>
 <translation id="8257387598443225809">මෙම යෙදුම ජංගම සඳහා සැලසුම් කර ඇත.</translation>
 <translation id="825929999321470778">සුරැකි මුරපද සියල්ල පෙන්වන්න</translation>
@@ -2493,7 +2498,6 @@
 <translation id="8975012916872825179">දුරකථන අංක, ඊ-තැපැල් ලිපින, සහ නැව්ගත කිරීමේ ලිපින වැනි තොරතුරු අන්තර්ගත වේ</translation>
 <translation id="8975263830901772334">ඔබ මුද්‍රණ කරන ගොනුවල නම්</translation>
 <translation id="8978053250194585037">Google සුරක්ෂිත බ්‍රවුස් කිරීම විසින් මෑත දී <ph name="SITE" /> මත <ph name="BEGIN_LINK" />තතු බෑමක්<ph name="END_LINK" /> අනාවරණය කර ගෙන ඇත. තතු බෑමේ අඩවි ඔබව රැවටීමට වෙනත් වෙබ් අඩවි මෙන් පෙනී සිටී.</translation>
-<translation id="8983003182662520383">Google Pay භාවිතයෙන් ගෙවීම් ක්‍රම සහ ලිපින</translation>
 <translation id="8983369100812962543">ඔබට දැන් යෙදුම ප්‍රතිප්‍රමාණ කළ හැකිය</translation>
 <translation id="8987245424886630962"><ph name="VIEW_CHROME_HISTORY_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome තුළ ඔබගේ බ්‍රවුස් කිරීමේ ඉතිහාසය බැලීමට Tab ඔබා අනතුරුව Enter ඔබන්න</translation>
 <translation id="8987927404178983737">මාසය</translation>

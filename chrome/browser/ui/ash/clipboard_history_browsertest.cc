@@ -17,6 +17,7 @@
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/path_service.h"
+#include "base/scoped_observation.h"
 #include "base/test/bind.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/ui/ash/clipboard_image_model_request.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chromeos/crosapi/mojom/clipboard_history.mojom.h"
 #include "components/user_manager/user_manager.h"
@@ -36,6 +38,8 @@
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
+#include "ui/base/clipboard/clipboard_non_backed.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/data_transfer_policy/data_transfer_endpoint.h"
 #include "ui/base/data_transfer_policy/data_transfer_policy_controller.h"
@@ -52,6 +56,49 @@ namespace {
 using ImageModelRequestTestParams = ClipboardImageModelRequest::TestParams;
 
 constexpr char kUrlString[] = "https://www.example.com";
+
+// A class which can wait until a matching `ui::ClipboardData` is in the buffer.
+class ClipboardDataWaiter : public ui::ClipboardObserver {
+ public:
+  ClipboardDataWaiter() = default;
+  ClipboardDataWaiter(const ClipboardDataWaiter&) = delete;
+  ClipboardDataWaiter& operator=(const ClipboardDataWaiter&) = delete;
+  ~ClipboardDataWaiter() override = default;
+
+  void WaitFor(const ui::ClipboardData* clipboard_data) {
+    base::AutoReset scoped_data(&clipboard_data_, clipboard_data);
+    if (BufferMatchesClipboardData())
+      return;
+
+    base::ScopedObservation<ui::ClipboardMonitor, ui::ClipboardObserver>
+        clipboard_observer_{this};
+    clipboard_observer_.Observe(ui::ClipboardMonitor::GetInstance());
+
+    base::AutoReset scoped_loop(&run_loop_, std::make_unique<base::RunLoop>());
+    run_loop_->Run();
+  }
+
+ private:
+  // ui::ClipboardObserver:
+  void OnClipboardDataChanged() override {
+    if (BufferMatchesClipboardData())
+      run_loop_->Quit();
+  }
+
+  bool BufferMatchesClipboardData() const {
+    auto* clipboard = ui::ClipboardNonBacked::GetForCurrentThread();
+    ui::DataTransferEndpoint data_dst(ui::EndpointType::kClipboardHistory);
+    const auto* clipboard_data = clipboard->GetClipboardData(&data_dst);
+
+    if ((clipboard_data == nullptr) != (clipboard_data_ == nullptr))
+      return false;
+
+    return clipboard_data == nullptr || *clipboard_data == *clipboard_data_;
+  }
+
+  const ui::ClipboardData* clipboard_data_ = nullptr;
+  std::unique_ptr<base::RunLoop> run_loop_;
+};
 
 // The helper class to wait for the update in the clipboard history item list.
 class ClipboardHistoryItemUpdateWaiter
@@ -227,19 +274,16 @@ void WaitForOperationConfirmed() {
 
 }  // namespace
 
-// Verify clipboard history's features in the multiprofile environment.
-class ClipboardHistoryWithMultiProfileBrowserTest
-    : public ash::LoginManagerTest {
+class ClipboardHistoryBrowserTest : public ash::LoginManagerTest {
  public:
-  ClipboardHistoryWithMultiProfileBrowserTest() : LoginManagerTest() {
-    login_mixin_.AppendRegularUsers(2);
+  ClipboardHistoryBrowserTest() {
+    login_mixin_.AppendRegularUsers(1);
     account_id1_ = login_mixin_.users()[0].account_id;
-    account_id2_ = login_mixin_.users()[1].account_id;
 
     feature_list_.InitAndEnableFeature(chromeos::features::kClipboardHistory);
   }
 
-  ~ClipboardHistoryWithMultiProfileBrowserTest() override = default;
+  ~ClipboardHistoryBrowserTest() override = default;
 
   ui::test::EventGenerator* GetEventGenerator() {
     return event_generator_.get();
@@ -277,19 +321,14 @@ class ClipboardHistoryWithMultiProfileBrowserTest
     Release(key, modifiers);
   }
 
+  // TODO(crbug.com/1304484): Check whether this currently unused function
+  // should have been used or if it can be deleted.
   void WaitUntilItemDeletionCompletes() {
     auto* context_menu = GetContextMenu();
     DCHECK(context_menu);
     base::RunLoop run_loop;
     context_menu->set_item_removal_callback_for_test(run_loop.QuitClosure());
     run_loop.Run();
-  }
-
-  void PasteFromClipboardHistoryMenuAndWait() {
-    ASSERT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
-    ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
-    PressAndRelease(ui::VKEY_RETURN);
-    WaitForOperationConfirmed();
   }
 
   void ShowContextMenuViaAccelerator(bool wait_for_selection) {
@@ -307,9 +346,11 @@ class ClipboardHistoryWithMultiProfileBrowserTest
     return GetContextMenu()->GetMenuItemViewAtForTest(index);
   }
 
+  // TODO(crbug.com/1304484): Check whether this currently unused function
+  // should have been used or if it can be deleted.
   views::MenuItemView* GetMenuItemViewForTest(int index) {
     return const_cast<views::MenuItemView*>(
-        const_cast<const ClipboardHistoryWithMultiProfileBrowserTest*>(this)
+        const_cast<const ClipboardHistoryBrowserTest*>(this)
             ->GetMenuItemViewForIndex(index));
   }
 
@@ -324,7 +365,7 @@ class ClipboardHistoryWithMultiProfileBrowserTest
 
   ash::ClipboardHistoryItemView* GetHistoryItemViewForIndex(int index) {
     return const_cast<ash::ClipboardHistoryItemView*>(
-        const_cast<const ClipboardHistoryWithMultiProfileBrowserTest*>(this)
+        const_cast<const ClipboardHistoryBrowserTest*>(this)
             ->GetHistoryItemViewForIndex(index));
   }
 
@@ -354,10 +395,10 @@ class ClipboardHistoryWithMultiProfileBrowserTest
     ash::LoginManagerTest::SetUpOnMainThread();
     event_generator_ = std::make_unique<ui::test::EventGenerator>(
         ash::Shell::GetPrimaryRootWindow());
+    LoginUser(account_id1_);
   }
 
   AccountId account_id1_;
-  AccountId account_id2_;
   ash::LoginManagerMixin login_mixin_{&mixin_host_};
 
   std::unique_ptr<ui::test::EventGenerator> event_generator_;
@@ -365,67 +406,8 @@ class ClipboardHistoryWithMultiProfileBrowserTest
   base::test::ScopedFeatureList feature_list_;
 };
 
-// Verify that the clipboard data history is recorded as expected in the
-// Multiuser environment.
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
-                       VerifyClipboardHistoryAcrossMultiUser) {
-  LoginUser(account_id1_);
-  EXPECT_TRUE(GetClipboardItems().empty());
-
-  // Store text when the user1 is active.
-  const std::string copypaste_data1("user1_text1");
-  SetClipboardText(copypaste_data1);
-
-  {
-    const std::list<ash::ClipboardHistoryItem>& items = GetClipboardItems();
-    EXPECT_EQ(1u, items.size());
-    EXPECT_EQ(copypaste_data1, items.front().data().text());
-  }
-
-  // Log in as the user2. The clipboard history should be non-empty.
-  ash::UserAddingScreen::Get()->Start();
-  AddUser(account_id2_);
-  EXPECT_FALSE(GetClipboardItems().empty());
-
-  // Store text when the user2 is active.
-  const std::string copypaste_data2("user2_text1");
-  SetClipboardText(copypaste_data2);
-
-  {
-    const std::list<ash::ClipboardHistoryItem>& items = GetClipboardItems();
-    EXPECT_EQ(2u, items.size());
-    EXPECT_EQ(copypaste_data2, items.front().data().text());
-  }
-
-  // Switch to the user1.
-  user_manager::UserManager::Get()->SwitchActiveUser(account_id1_);
-
-  // Store text when the user1 is active.
-  const std::string copypaste_data3("user1_text2");
-  SetClipboardText(copypaste_data3);
-
-  {
-    const std::list<ash::ClipboardHistoryItem>& items = GetClipboardItems();
-    EXPECT_EQ(3u, items.size());
-
-    // Note that items in |data| follow the time ordering. The most recent item
-    // is always the first one.
-    auto it = items.begin();
-    EXPECT_EQ(copypaste_data3, it->data().text());
-
-    std::advance(it, 1u);
-    EXPECT_EQ(copypaste_data2, it->data().text());
-
-    std::advance(it, 1u);
-    EXPECT_EQ(copypaste_data1, it->data().text());
-  }
-}
-
 // Verifies the history menu's ui interaction with the menu item selection.
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
-                       VerifySelectionBehavior) {
-  LoginUser(account_id1_);
-
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, VerifySelectionBehavior) {
   SetClipboardText("A");
   SetClipboardText("B");
   SetClipboardText("C");
@@ -480,10 +462,8 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
 }
 
 // Verifies the selection traversal via the tab key.
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
                        VerifyTabSelectionTraversal) {
-  LoginUser(account_id1_);
-
   SetClipboardText("A");
   SetClipboardText("B");
   ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
@@ -565,10 +545,8 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
 }
 
 // Verifies the tab traversal on the history menu with only one item.
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
                        VerifyTabTraversalOnOneItemMenu) {
-  LoginUser(account_id1_);
-
   SetClipboardText("A");
   ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
 
@@ -601,10 +579,8 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
 
 // Verifies that the history menu is anchored at the cursor's location when
 // not having any textfield.
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
                        ShowHistoryMenuWhenNoTextfieldExists) {
-  LoginUser(account_id1_);
-
   // Close the browser window to ensure that textfield does not exist.
   CloseAllBrowsers();
 
@@ -631,10 +607,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
 }
 
 // Verify the handling of the click cancel event.
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
-                       HandleClickCancelEvent) {
-  LoginUser(account_id1_);
-
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, HandleClickCancelEvent) {
   // Write some things to the clipboard.
   SetClipboardText("A");
   SetClipboardText("B");
@@ -664,10 +637,8 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
 }
 
 // Verifies item deletion through the mouse click at the delete button.
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
                        DeleteItemByClickAtDeleteButton) {
-  LoginUser(account_id1_);
-
   // Write some things to the clipboard.
   SetClipboardText("A");
   SetClipboardText("B");
@@ -691,10 +662,8 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
 }
 
 // Verifies that the selected item should be deleted by the backspace key.
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
-                       DeleteItemViaBackspaceKey) {
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest, DeleteItemViaBackspaceKey) {
   base::HistogramTester histogram_tester;
-  LoginUser(account_id1_);
 
   // Write some things to the clipboard.
   SetClipboardText("A");
@@ -732,10 +701,14 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   EXPECT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
 }
 
-// Flaky: crbug.com/1123542
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
-                       DISABLED_ShouldPasteHistoryAsPlainText) {
-  LoginUser(account_id1_);
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
+                       ShouldPasteHistoryAsPlainText) {
+  // Increase delay interval before restoring the clipboard buffer following
+  // a paste event as this test has exhibited flakiness due to the amount of
+  // time it takes a paste event to reach the web contents under test. Remove
+  // this code when possible (https://crbug.com/1303131).
+  GetClipboardHistoryController()->set_buffer_restoration_delay_for_test(
+      base::Milliseconds(500));
 
   // Create a browser and cache its active web contents.
   auto* browser = CreateBrowser(
@@ -794,6 +767,12 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   SetClipboardTextAndHtml("B", "<span>B</span>");
   SetClipboardTextAndHtml("C", "<span>C</span>");
 
+  // Pasting can result in temporary modification of the clipboard buffer. Cache
+  // the buffer's current `clipboard_data` so state can be verified later.
+  auto* clipboard = ui::ClipboardNonBacked::GetForCurrentThread();
+  ui::DataTransferEndpoint data_dst(ui::EndpointType::kClipboardHistory);
+  ui::ClipboardData clipboard_data(*clipboard->GetClipboardData(&data_dst));
+
   // Open clipboard history and paste the last history item.
   PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
   EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
@@ -815,6 +794,11 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   EXPECT_EQ(last_paste.GetListDeprecated()[1].GetString(),
             "text/html: <span>A</span>");
 
+  // Wait for the clipboard buffer to be restored before performing another
+  // paste. In production, this should happen faster than a user is able to
+  // relaunch clipboard history UI (knock on wood).
+  ClipboardDataWaiter().WaitFor(&clipboard_data);
+
   // Open clipboard history and paste the middle history item as plain text.
   PressAndRelease(ui::KeyboardCode::VKEY_V, ui::EF_COMMAND_DOWN);
   EXPECT_TRUE(GetClipboardHistoryController()->IsMenuShowing());
@@ -833,12 +817,89 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryWithMultiProfileBrowserTest,
   last_paste = GetLastPaste();
   ASSERT_EQ(last_paste.GetListDeprecated().size(), 1u);
   EXPECT_EQ(last_paste.GetListDeprecated()[0].GetString(), "text/plain: A");
+
+  // Verify the clipboard buffer is restored to initial state.
+  ClipboardDataWaiter().WaitFor(&clipboard_data);
 }
 
-class ClipboardHistoryBrowserTest : public InProcessBrowserTest {
+// Verify clipboard history's features in the multiprofile environment.
+class ClipboardHistoryMultiProfileBrowserTest
+    : public ClipboardHistoryBrowserTest {
  public:
-  ClipboardHistoryBrowserTest() = default;
-  ~ClipboardHistoryBrowserTest() override = default;
+  ClipboardHistoryMultiProfileBrowserTest() {
+    login_mixin_.AppendRegularUsers(1);
+    // Previous user was added in base class.
+    EXPECT_EQ(2U, login_mixin_.users().size());
+    account_id2_ = login_mixin_.users()[1].account_id;
+  }
+
+  ~ClipboardHistoryMultiProfileBrowserTest() override = default;
+
+ protected:
+  AccountId account_id2_;
+};
+
+// Verify that the clipboard data history is recorded as expected in the
+// Multiuser environment.
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryMultiProfileBrowserTest,
+                       VerifyClipboardHistoryAcrossMultiUser) {
+  EXPECT_TRUE(GetClipboardItems().empty());
+
+  // Store text when the user1 is active.
+  const std::string copypaste_data1("user1_text1");
+  SetClipboardText(copypaste_data1);
+
+  {
+    const std::list<ash::ClipboardHistoryItem>& items = GetClipboardItems();
+    EXPECT_EQ(1u, items.size());
+    EXPECT_EQ(copypaste_data1, items.front().data().text());
+  }
+
+  // Log in as the user2. The clipboard history should be non-empty.
+  ash::UserAddingScreen::Get()->Start();
+  AddUser(account_id2_);
+  EXPECT_FALSE(GetClipboardItems().empty());
+
+  // Store text when the user2 is active.
+  const std::string copypaste_data2("user2_text1");
+  SetClipboardText(copypaste_data2);
+
+  {
+    const std::list<ash::ClipboardHistoryItem>& items = GetClipboardItems();
+    EXPECT_EQ(2u, items.size());
+    EXPECT_EQ(copypaste_data2, items.front().data().text());
+  }
+
+  // Switch to the user1.
+  user_manager::UserManager::Get()->SwitchActiveUser(account_id1_);
+
+  // Store text when the user1 is active.
+  const std::string copypaste_data3("user1_text2");
+  SetClipboardText(copypaste_data3);
+
+  {
+    const std::list<ash::ClipboardHistoryItem>& items = GetClipboardItems();
+    EXPECT_EQ(3u, items.size());
+
+    // Note that items in |data| follow the time ordering. The most recent item
+    // is always the first one.
+    auto it = items.begin();
+    EXPECT_EQ(copypaste_data3, it->data().text());
+
+    std::advance(it, 1u);
+    EXPECT_EQ(copypaste_data2, it->data().text());
+
+    std::advance(it, 1u);
+    EXPECT_EQ(copypaste_data1, it->data().text());
+  }
+}
+
+// TODO(crbug.com/1304484): Make this class inherit from
+// `ClipboardHistoryBrowserTest` instead if possible.
+class ClipboardHistoryWebContentsBrowserTest : public InProcessBrowserTest {
+ public:
+  ClipboardHistoryWebContentsBrowserTest() = default;
+  ~ClipboardHistoryWebContentsBrowserTest() override = default;
 
   // InProcessBrowserTest:
   void SetUpOnMainThread() override {
@@ -856,7 +917,7 @@ class ClipboardHistoryBrowserTest : public InProcessBrowserTest {
 // show in the clipboard history menu. Switching the auto resize mode is covered
 // in this test case.
 // Flaky: crbug/1224777
-IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
+IN_PROC_BROWSER_TEST_F(ClipboardHistoryWebContentsBrowserTest,
                        DISABLED_VerifyHTMLRendering) {
   // Load the web page which contains images and text.
   ASSERT_TRUE(ui_test_utils::NavigateToURL(
@@ -950,17 +1011,16 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryBrowserTest,
 // to help verify the multipaste menu item's response to the gesture tap and
 // the mouse click.
 class ClipboardHistoryTextfieldBrowserTest
-    : public ClipboardHistoryWithMultiProfileBrowserTest {
+    : public ClipboardHistoryBrowserTest {
  public:
   ClipboardHistoryTextfieldBrowserTest() = default;
   ~ClipboardHistoryTextfieldBrowserTest() override = default;
 
  protected:
-  // ClipboardHistoryWithMultiProfileBrowserTest:
+  // ClipboardHistoryBrowserTest:
   void SetUpOnMainThread() override {
-    ClipboardHistoryWithMultiProfileBrowserTest::SetUpOnMainThread();
+    ClipboardHistoryBrowserTest::SetUpOnMainThread();
 
-    LoginUser(account_id1_);
     CloseAllBrowsers();
 
     // Create a widget containing a single, focusable textfield.
@@ -978,6 +1038,13 @@ class ClipboardHistoryTextfieldBrowserTest
     textfield_->RequestFocus();
     ASSERT_TRUE(textfield_->HasFocus());
     ASSERT_TRUE(textfield_->GetText().empty());
+  }
+
+  void PasteFromClipboardHistoryMenuAndWait() {
+    ASSERT_FALSE(GetClipboardHistoryController()->IsMenuShowing());
+    ShowContextMenuViaAccelerator(/*wait_for_selection=*/true);
+    PressAndRelease(ui::VKEY_RETURN);
+    WaitForOperationConfirmed();
   }
 
   std::unique_ptr<views::Widget> widget_;
@@ -1158,8 +1225,7 @@ IN_PROC_BROWSER_TEST_F(ClipboardHistoryTextfieldBrowserTest,
 class FakeDataTransferPolicyController
     : public ui::DataTransferPolicyController {
  public:
-  FakeDataTransferPolicyController()
-      : allowed_origin_(url::Origin::Create(GURL(kUrlString))) {}
+  FakeDataTransferPolicyController() : allowed_url_(GURL(kUrlString)) {}
   ~FakeDataTransferPolicyController() override = default;
 
   // ui::DataTransferPolicyController:
@@ -1170,10 +1236,10 @@ class FakeDataTransferPolicyController
     if (data_dst && data_dst->type() == ui::EndpointType::kClipboardHistory)
       return true;
 
-    // For other data destinations, only the data from `allowed_origin_`
+    // For other data destinations, only the data from `allowed_url_`
     // should be accessible.
     return data_src && data_src->IsUrlType() &&
-           (*data_src->GetOrigin() == allowed_origin_);
+           (*data_src->GetURL() == allowed_url_);
   }
 
   void PasteIfAllowed(const ui::DataTransferEndpoint* const data_src,
@@ -1187,7 +1253,7 @@ class FakeDataTransferPolicyController
                      base::OnceClosure drop_cb) override {}
 
  private:
-  const url::Origin allowed_origin_;
+  const GURL allowed_url_;
 };
 
 // The browser test equipped with the custom policy controller.
@@ -1209,9 +1275,9 @@ class ClipboardHistoryWithMockDLPBrowserTest
   // Write text into the clipboard buffer and it should be accessible from
   // the multipaste menu.
   void SetClipboardTextWithAccessibleSrc(const std::string& text) {
-    ui::ScopedClipboardWriter(ui::ClipboardBuffer::kCopyPaste,
-                              std::make_unique<ui::DataTransferEndpoint>(
-                                  url::Origin::Create(GURL(kUrlString))))
+    ui::ScopedClipboardWriter(
+        ui::ClipboardBuffer::kCopyPaste,
+        std::make_unique<ui::DataTransferEndpoint>((GURL(kUrlString))))
         .WriteText(base::UTF8ToUTF16(text));
 
     // ClipboardHistory will post a task to process clipboard data in order to

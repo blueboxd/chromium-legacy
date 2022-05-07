@@ -19,7 +19,6 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/file_version_info.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -50,6 +49,7 @@
 #include "base/win/win_util.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
+#include "chrome/browser/enterprise/connectors/device_trust/key_management/core/network/win_key_network_delegate.h"
 #include "chrome/browser/enterprise/connectors/device_trust/key_management/installer/key_rotation_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -225,7 +225,7 @@ void DelayedOverwriteDisplayVersions(const base::FilePath& setup_exe,
   constexpr DWORD kWaitForStartTimeoutMs = 30 * 1000;
   const HANDLE handles[] = {start_event.Get(), writer.Handle()};
   auto wait_result =
-      ::WaitForMultipleObjects(base::size(handles), &handles[0],
+      ::WaitForMultipleObjects(std::size(handles), &handles[0],
                                /*bWaitAll=*/FALSE, kWaitForStartTimeoutMs);
   if (wait_result == WAIT_OBJECT_0) {
     VLOG(1) << "Proceeding after waiting for DisplayVersion overwrite child.";
@@ -364,7 +364,7 @@ std::wstring FindMsiProductId(const InstallerState& installer_state) {
     std::wstring value_name(value_iter.Name());
     if (base::StartsWith(value_name, kMsiProductIdPrefix,
                          base::CompareCase::INSENSITIVE_ASCII)) {
-      return value_name.substr(base::size(kMsiProductIdPrefix) - 1);
+      return value_name.substr(std::size(kMsiProductIdPrefix) - 1);
     }
   }
   return std::wstring();
@@ -1174,7 +1174,9 @@ bool HandleNonInstallCmdLineOptions(installer::ModifyParams& modify_params,
         token && nonce && dm_server_url.is_valid() && is_valid_command &&
                 dm_server_url.SchemeIsHTTPOrHTTPS() &&
                 installer::RotateDeviceTrustKey(
-                    enterprise_connectors::KeyRotationManager::Create(),
+                    enterprise_connectors::KeyRotationManager::Create(
+                        std::make_unique<
+                            enterprise_connectors::WinKeyNetworkDelegate>()),
                     dm_server_url, *token, *nonce)
             ? installer::ROTATE_DTKEY_SUCCESS
             : installer::ROTATE_DTKEY_FAILED;

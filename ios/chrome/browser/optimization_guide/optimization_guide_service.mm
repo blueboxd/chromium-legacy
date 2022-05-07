@@ -12,13 +12,13 @@
 #import "components/optimization_guide/core/hints_processing_util.h"
 #import "components/optimization_guide/core/optimization_guide_constants.h"
 #import "components/optimization_guide/core/optimization_guide_features.h"
+#import "components/optimization_guide/core/optimization_guide_logger.h"
 #import "components/optimization_guide/core/optimization_guide_navigation_data.h"
 #import "components/optimization_guide/core/optimization_guide_permissions_util.h"
 #import "components/optimization_guide/core/optimization_guide_store.h"
 #import "components/optimization_guide/core/optimization_guide_util.h"
 #import "components/optimization_guide/core/top_host_provider.h"
-#import "ios/chrome/browser/application_context.h"
-#import "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/metrics/ios_chrome_metrics_service_accessor.h"
 #import "ios/chrome/browser/optimization_guide/ios_chrome_hints_manager.h"
 #import "ios/chrome/browser/optimization_guide/optimization_guide_service_factory.h"
@@ -31,59 +31,59 @@
 #endif
 
 OptimizationGuideService::OptimizationGuideService(
-    web::BrowserState* browser_state) {
+    leveldb_proto::ProtoDatabaseProvider* proto_db_provider,
+    const base::FilePath& profile_path,
+    bool off_the_record,
+    const std::string& application_locale,
+    base::WeakPtr<optimization_guide::OptimizationGuideStore> hint_store,
+    PrefService* pref_service,
+    BrowserList* browser_list,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
+    : pref_service_(pref_service), off_the_record_(off_the_record) {
   DCHECK(optimization_guide::features::IsOptimizationHintsEnabled());
 
-  ChromeBrowserState* chrome_browser_state =
-      ChromeBrowserState::FromBrowserState(browser_state);
-  DCHECK(chrome_browser_state);
-
-  // TODO(crbug.com/1239388): Handle incognito profile in IOS, the same way its
-  // handled in other platforms.
-  DCHECK(!browser_state->IsOffTheRecord());
-
-  // Regardless of whether the profile is off the record or not, initialize the
-  // Optimization Guide with the database associated with the original profile.
-  auto* proto_db_provider =
-      chrome_browser_state->GetOriginalChromeBrowserState()
-          ->GetProtoDatabaseProvider();
-  base::FilePath profile_path =
-      chrome_browser_state->GetOriginalChromeBrowserState()->GetStatePath();
-
-  // Only create a top host provider from the command line if provided.
-  top_host_provider_ =
-      optimization_guide::CommandLineTopHostProvider::CreateIfEnabled();
-  tab_url_provider_ = std::make_unique<TabUrlProviderImpl>(
-      chrome_browser_state, base::DefaultClock::GetInstance());
-
-  hint_store_ =
-      optimization_guide::features::ShouldPersistHintsToDisk()
-          ? std::make_unique<optimization_guide::OptimizationGuideStore>(
-                proto_db_provider,
-                profile_path.Append(
-                    optimization_guide::kOptimizationGuideHintStore),
-                base::ThreadPool::CreateSequencedTaskRunner(
-                    {base::MayBlock(), base::TaskPriority::BEST_EFFORT}))
-          : nullptr;
-
+  base::WeakPtr<optimization_guide::OptimizationGuideStore>
+      prediction_model_and_features_store;
+  DCHECK(!off_the_record_ || hint_store);
+  if (!off_the_record_) {
+    // Only create a top host provider from the command line if provided.
+    top_host_provider_ =
+        optimization_guide::CommandLineTopHostProvider::CreateIfEnabled();
+    tab_url_provider_ = std::make_unique<TabUrlProviderImpl>(
+        browser_list, base::DefaultClock::GetInstance());
+    hint_store_ =
+        optimization_guide::features::ShouldPersistHintsToDisk()
+            ? std::make_unique<optimization_guide::OptimizationGuideStore>(
+                  proto_db_provider,
+                  profile_path.Append(
+                      optimization_guide::kOptimizationGuideHintStore),
+                  base::ThreadPool::CreateSequencedTaskRunner(
+                      {base::MayBlock(), base::TaskPriority::BEST_EFFORT}))
+            : nullptr;
+    hint_store = hint_store_ ? hint_store_->AsWeakPtr() : nullptr;
+  }
+  optimization_guide_logger_ = std::make_unique<OptimizationGuideLogger>();
   hints_manager_ = std::make_unique<optimization_guide::IOSChromeHintsManager>(
-      browser_state, chrome_browser_state->GetPrefs(),
-      hint_store_ ? hint_store_->AsWeakPtr() : nullptr,
-      top_host_provider_.get(), tab_url_provider_.get(),
-      browser_state->GetSharedURLLoaderFactory());
-
-  bool optimization_guide_fetching_enabled =
-      optimization_guide::IsUserPermittedToFetchFromRemoteOptimizationGuide(
-          browser_state->IsOffTheRecord(), chrome_browser_state->GetPrefs());
-  base::UmaHistogramBoolean("OptimizationGuide.RemoteFetchingEnabled",
-                            optimization_guide_fetching_enabled);
-  IOSChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
-      "SyntheticOptimizationGuideRemoteFetching",
-      optimization_guide_fetching_enabled ? "Enabled" : "Disabled");
+      off_the_record_, application_locale, pref_service, hint_store,
+      top_host_provider_.get(), tab_url_provider_.get(), url_loader_factory,
+      optimization_guide_logger_.get());
 }
 
 OptimizationGuideService::~OptimizationGuideService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+}
+
+void OptimizationGuideService::DoFinalInit() {
+  if (!off_the_record_) {
+    bool optimization_guide_fetching_enabled =
+        optimization_guide::IsUserPermittedToFetchFromRemoteOptimizationGuide(
+            off_the_record_, pref_service_);
+    base::UmaHistogramBoolean("OptimizationGuide.RemoteFetchingEnabled",
+                              optimization_guide_fetching_enabled);
+    IOSChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(
+        "SyntheticOptimizationGuideRemoteFetching",
+        optimization_guide_fetching_enabled ? "Enabled" : "Disabled");
+  }
 }
 
 optimization_guide::HintsManager* OptimizationGuideService::GetHintsManager() {

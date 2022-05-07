@@ -8,6 +8,7 @@
 
 #import "base/notreached.h"
 #include "components/password_manager/core/common/password_manager_features.h"
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
@@ -52,47 +53,48 @@ const CGFloat kBadgeCornerRadius = 5.0;
     self.cellClass = [BadgePopupMenuCell class];
     _badgeType = badgeType;
     switch (badgeType) {
-      case BadgeType::kBadgeTypePasswordSave:
+      case kBadgeTypePasswordSave:
         _actionIdentifier = PopupMenuActionShowSavePasswordOptions;
         _title = l10n_util::GetNSString(
             IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_TITLE);
         break;
-      case BadgeType::kBadgeTypePasswordUpdate:
+      case kBadgeTypePasswordUpdate:
         _actionIdentifier = PopupMenuActionShowUpdatePasswordOptions;
         _title = l10n_util::GetNSString(
             IDS_IOS_PASSWORD_MANAGER_UPDATE_PASSWORD_TITLE);
         break;
-      case BadgeType::kBadgeTypeSaveAddressProfile:
+      case kBadgeTypeSaveAddressProfile:
         _actionIdentifier = PopupMenuActionShowSaveAddressProfileOptions;
-        _title = @"Save Address";
+        _title =
+            l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_ADDRESS_PROMPT_TITLE);
         break;
-      case BadgeType::kBadgeTypeSaveCard:
+      case kBadgeTypeSaveCard:
         _actionIdentifier = PopupMenuActionShowSaveCardOptions;
         _title = l10n_util::GetNSString(IDS_IOS_AUTOFILL_SAVE_CARD);
         break;
-      case BadgeType::kBadgeTypeTranslate:
+      case kBadgeTypeTranslate:
         _actionIdentifier = PopupMenuActionShowTranslateOptions;
         _title = l10n_util::GetNSString(IDS_IOS_TRANSLATE_INFOBAR_MODAL_TITLE);
         break;
-      case BadgeType::kBadgeTypeAddToReadingList:
+      case kBadgeTypeAddToReadingList:
         _actionIdentifier = PopupMenuActionAddToReadingListOptions;
         _title =
             l10n_util::GetNSString(IDS_IOS_READING_LIST_MESSAGES_MODAL_TITLE);
         break;
-      case BadgeType::kBadgeTypePermissionsCamera:
+      case kBadgeTypePermissionsCamera:
         // Falls through.
-      case BadgeType::kBadgeTypePermissionsMicrophone:
+      case kBadgeTypePermissionsMicrophone:
         _actionIdentifier = PopupMenuActionShowPermissionsOptions;
         _title = l10n_util::GetNSString(
             IDS_IOS_PERMISSIONS_INFOBAR_OVERFLOW_POPUP_TITLE);
         break;
-      case BadgeType::kBadgeTypeIncognito:
+      case kBadgeTypeIncognito:
         NOTREACHED() << "A BadgePopupMenuItem should not be an Incognito badge";
         break;
-      case BadgeType::kBadgeTypeOverflow:
+      case kBadgeTypeOverflow:
         NOTREACHED() << "A BadgePopupMenuItem should not be an overflow badge";
         break;
-      case BadgeType::kBadgeTypeNone:
+      case kBadgeTypeNone:
         NOTREACHED() << "A badge should not have kBadgeTypeNone";
         break;
     }
@@ -202,11 +204,26 @@ const CGFloat kBadgeCornerRadius = 5.0;
     _titleLabel.textColor = [UIColor colorNamed:kBlueColor];
     _titleLabel.adjustsFontForContentSizeCategory = YES;
 
+    // ImageView is wrapped inside a wrapper to support symbol image. Doing so
+    // makes sure that the size of the badge stays the same across all cells,
+    // regardless of the badge image being used.
     _badgeView = [[UIImageView alloc] init];
     _badgeView.translatesAutoresizingMaskIntoConstraints = NO;
-    _badgeView.tintColor = [UIColor colorNamed:kBlueColor];
-    _badgeView.backgroundColor = [UIColor colorNamed:kBlueHaloColor];
-    _badgeView.layer.cornerRadius = kBadgeCornerRadius;
+    UIView* badgeWrapperView = [[UIView alloc] init];
+    badgeWrapperView.translatesAutoresizingMaskIntoConstraints = NO;
+    badgeWrapperView.tintColor = [UIColor colorNamed:kBlueColor];
+    badgeWrapperView.backgroundColor = [UIColor colorNamed:kBlueHaloColor];
+    badgeWrapperView.layer.cornerRadius = kBadgeCornerRadius;
+    [badgeWrapperView addSubview:_badgeView];
+
+    [NSLayoutConstraint activateConstraints:@[
+      [badgeWrapperView.widthAnchor
+          constraintEqualToConstant:kCellHeight - 2 * kVerticalMargin],
+      [badgeWrapperView.centerXAnchor
+          constraintEqualToAnchor:_badgeView.centerXAnchor],
+      [badgeWrapperView.centerYAnchor
+          constraintEqualToAnchor:_badgeView.centerYAnchor],
+    ]];
 
     _trailingImageView = [[UIImageView alloc]
         initWithImage:
@@ -216,11 +233,9 @@ const CGFloat kBadgeCornerRadius = 5.0;
     _trailingImageView.tintColor = [UIColor colorNamed:kBlueColor];
 
     [self.contentView addSubview:_titleLabel];
-    [self.contentView addSubview:_badgeView];
+    [self.contentView addSubview:badgeWrapperView];
     [self.contentView addSubview:_trailingImageView];
 
-    // TODO(crbug.com/1293060): Maintain image aspect ratio once we move icon
-    // image file format to SVG from PNG.
     ApplyVisualConstraintsWithMetrics(
         @[
           @"H:|-(margin)-[badge]-(margin)-[text]-(margin)-[gear]-(margin)-|",
@@ -230,7 +245,7 @@ const CGFloat kBadgeCornerRadius = 5.0;
         ],
         @{
           @"text" : _titleLabel,
-          @"badge" : _badgeView,
+          @"badge" : badgeWrapperView,
           @"gear" : _trailingImageView,
         },
         @{

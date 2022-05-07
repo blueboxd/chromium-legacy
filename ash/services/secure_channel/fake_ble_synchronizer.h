@@ -10,9 +10,7 @@
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_advertisement.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Test double for BleSynchronizer.
 class FakeBleSynchronizer : public BleSynchronizerBase {
@@ -50,13 +48,6 @@ class FakeBleSynchronizer : public BleSynchronizerBase {
   void ProcessQueue() override;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash::secure_channel {
-using ::chromeos::secure_channel::FakeBleSynchronizer;
-}
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_BLE_SYNCHRONIZER_H_

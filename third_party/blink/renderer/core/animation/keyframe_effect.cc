@@ -50,11 +50,13 @@
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
+#include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/svg/svg_element.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -126,8 +128,14 @@ KeyframeEffect* KeyframeEffect::Create(
     effect->target_pseudo_ = pseudo;
     if (element) {
       element->GetDocument().UpdateStyleAndLayoutTreeForNode(element);
-      effect->effect_target_ = element->GetPseudoElement(
-          CSSSelectorParser::ParsePseudoElement(pseudo, element));
+      PseudoId pseudo_id =
+          CSSSelectorParser::ParsePseudoElement(pseudo, element);
+      AtomicString pseudo_argument =
+          PseudoElementHasArguments(pseudo_id)
+              ? CSSSelectorParser::ParsePseudoElementArgument(pseudo)
+              : WTF::g_null_atom;
+      effect->effect_target_ =
+          element->GetNestedPseudoElement(pseudo_id, pseudo_argument);
     }
   }
   return effect;
@@ -388,7 +396,9 @@ bool KeyframeEffect::CancelAnimationOnCompositor(
     CompositorAnimation* compositor_animation) {
   if (!HasActiveAnimationsOnCompositor())
     return false;
-  if (!effect_target_ || !effect_target_->GetLayoutObject())
+  // Don't check effect_target_->GetLayoutObject(); we might be here because
+  // it's *just* been set to null.
+  if (!effect_target_)
     return false;
   DCHECK(Model());
   for (const auto& compositor_keyframe_model_id :

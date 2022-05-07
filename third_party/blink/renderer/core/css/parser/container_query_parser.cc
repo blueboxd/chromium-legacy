@@ -19,30 +19,6 @@ using css_parsing_utils::ConsumeIfIdent;
 
 namespace {
 
-bool IsNone(const CSSValue& value) {
-  const auto* ident = DynamicTo<CSSIdentifierValue>(value);
-  return ident && ident->GetValueID() == CSSValueID::kNone;
-}
-
-AtomicString ConsumeContainerName(CSSParserTokenRange& range,
-                                  const CSSParserContext& context) {
-  CSSValue* name =
-      css_parsing_utils::ConsumeSingleContainerName(range, context);
-  if (auto* custom_ident = DynamicTo<CSSCustomIdentValue>(name))
-    return custom_ident->Value();
-  return g_null_atom;
-}
-
-unsigned ConsumeContainerType(CSSParserTokenRange& range) {
-  unsigned result = 0;
-  CSSValue* type = css_parsing_utils::ConsumeContainerType(range);
-  if (!type || IsNone(*type))
-    return kContainerTypeNone;
-  for (const CSSValue* item : To<CSSValueList>(*type))
-    result |= To<CSSIdentifierValue>(*item).ConvertTo<EContainerType>();
-  return result;
-}
-
 // not <func> | <func> [ and <func> ]* | <func> [ or <func> ]*
 //
 // For example, if <func> is a function that can parse <container-query>,
@@ -101,42 +77,6 @@ ContainerQueryParser::ContainerQueryParser(const CSSParserContext& context)
                           context.GetExecutionContext(),
                           MediaQueryParser::SyntaxLevel::kLevel4) {}
 
-absl::optional<ContainerSelector> ContainerQueryParser::ConsumeSelector(
-    CSSParserTokenRange& range) {
-  AtomicString bare_name = ConsumeContainerName(range, context_);
-  if (!bare_name.IsNull())
-    return ContainerSelector(bare_name);
-
-  absl::optional<AtomicString> name;
-  absl::optional<unsigned> type;
-
-  for (int i = 0; i < 2; i++) {
-    if (range.Peek().FunctionId() == CSSValueID::kName && !name) {
-      auto block = range.ConsumeBlock();
-      block.ConsumeWhitespace();
-      range.ConsumeWhitespace();
-      name = ConsumeContainerName(block, context_);
-      if (name->IsNull() || !block.AtEnd())
-        return absl::nullopt;
-      continue;
-    }
-
-    if (range.Peek().FunctionId() == CSSValueID::kType && !type) {
-      auto block = range.ConsumeBlock();
-      block.ConsumeWhitespace();
-      range.ConsumeWhitespace();
-      type = ConsumeContainerType(block);
-      if (!*type || !block.AtEnd())
-        return absl::nullopt;
-      continue;
-    }
-
-    break;
-  }
-
-  return ContainerSelector(name.value_or(g_null_atom), type.value_or(0));
-}
-
 std::unique_ptr<MediaQueryExpNode> ContainerQueryParser::ParseQuery(
     String value) {
   auto tokens = CSSTokenizer(value).TokenizeToEOF();
@@ -153,28 +93,37 @@ std::unique_ptr<MediaQueryExpNode> ContainerQueryParser::ParseQuery(
   return node;
 }
 
+// <container-query> = ( <container-condition> )
+//                   | ( <size-feature> )
+//                   | style( <style-query> )
+//                   | <general-enclosed>
 std::unique_ptr<MediaQueryExpNode> ContainerQueryParser::ConsumeContainerQuery(
     CSSParserTokenRange& range) {
   CSSParserTokenRange original_range = range;
 
-  // ( <container-condition> ) | size( <size-query> )
+  // ( <size-feature> ) | ( <container-condition> )
   if (range.Peek().GetType() == kLeftParenthesisToken) {
-    auto block = range.ConsumeBlock();
+    CSSParserTokenRange block = range.ConsumeBlock();
     block.ConsumeWhitespace();
     range.ConsumeWhitespace();
-    auto condition = ConsumeContainerCondition(block);
+
+    CSSParserTokenRange original_block = block;
+    // <size-feature>
+    std::unique_ptr<MediaQueryExpNode> query =
+        ConsumeFeature(block, SizeFeatureSet());
+    if (query && block.AtEnd())
+      return MediaQueryExpNode::Nested(std::move(query));
+    block = original_block;
+
+    // <container-condition>
+    std::unique_ptr<MediaQueryExpNode> condition =
+        ConsumeContainerCondition(block);
     if (condition && block.AtEnd())
       return MediaQueryExpNode::Nested(std::move(condition));
-  } else if (range.Peek().GetType() == kFunctionToken &&
-             range.Peek().FunctionId() == CSSValueID::kSize) {
-    auto block = range.ConsumeBlock();
-    block.ConsumeWhitespace();
-    range.ConsumeWhitespace();
-    auto query = ConsumeFeatureQuery(block, SizeFeatureSet());
-    if (query && block.AtEnd())
-      return MediaQueryExpNode::Function(std::move(query), "size");
   }
   range = original_range;
+
+  // TODO(crbug.com/1302630): Support style( <style-query> ).
 
   // <general-enclosed>
   return media_query_parser_.ConsumeGeneralEnclosed(range);

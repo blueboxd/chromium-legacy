@@ -1,0 +1,79 @@
+# Copyright 2022 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("feed_management") {
+  sources = [
+    "feed_management_coordinator.h",
+    "feed_management_coordinator.mm",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [
+    ":feed_management_ui",
+    ":follow_management",
+    ":follow_management_ui",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/main:public",
+    "//ios/chrome/browser/ui/coordinators:chrome_coordinators",
+    "//ios/chrome/browser/ui/table_view",
+  ]
+  public_deps = [ ":navigation_delegate" ]
+}
+
+source_set("feed_management_ui") {
+  sources = [
+    "feed_management_follow_delegate.h",
+    "feed_management_view_controller.h",
+    "feed_management_view_controller.mm",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [
+    ":navigation_delegate",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/ui/table_view",
+    "//ios/chrome/browser/ui/table_view/cells",
+    "//ui/base",
+  ]
+}
+
+source_set("navigation_delegate") {
+  sources = [ "feed_management_navigation_delegate.h" ]
+}
+
+source_set("follow_management") {
+  sources = [
+    "follow_management_mediator.h",
+    "follow_management_mediator.mm",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [
+    ":follow_management_ui",
+    "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/net:crurl",
+    "//ios/chrome/browser/ui/favicon:constants",
+    "//ios/chrome/browser/ui/follow",
+    "//ios/chrome/browser/ui/table_view",
+    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/follow",
+  ]
+}
+
+source_set("follow_management_ui") {
+  sources = [
+    "follow_management_view_controller.h",
+    "follow_management_view_controller.mm",
+    "followed_web_channel_item.h",
+    "followed_web_channel_item.mm",
+    "followed_web_channels_data_source.h",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+  deps = [
+    "//base",
+    "//ios/chrome/app/strings:ios_strings_grit",
+    "//ios/chrome/browser/net:crurl",
+    "//ios/chrome/browser/ui/follow",
+    "//ios/chrome/browser/ui/table_view",
+    "//ios/chrome/common/ui/favicon",
+    "//ui/base",
+  ]
+}

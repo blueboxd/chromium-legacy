@@ -4,6 +4,7 @@
 
 module media.mojom;
 
+import "media/mojo/mojom/media_log.mojom";
 import "media/mojo/mojom/media_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
@@ -72,20 +73,23 @@ struct SpatialLayer {
   uint8 num_of_temporal_layers;
 };
 
-// This defines a mojo transport format for media::Bitrate
-struct Bitrate {
-  // See media::Bitrate::Mode
-  [Extensible]
-  enum Mode {
-    [Default] kConstant,
-    kVariable
-  };
+// This defines a mojo transport format for a media::Bitrate of type kConstant.
+// The default target here matches that in media::Bitrate.
+struct ConstantBitrate {
+  uint32 target_bps = 0;
+};
 
-  // The defaults here match those in media::Bitrate (CBR, which has no peak).
-  // Target must be set for all bitrates.
-  Mode mode = kConstant;
-  uint32 target;
-  uint32 peak = 0;
+// This defines a mojo transport format for a media::Bitrate of type kVariable.
+// The default target here matches that in media::Bitrate.
+struct VariableBitrate {
+  uint32 target_bps = 0;
+  uint32 peak_bps;
+};
+
+// This defines a mojo transport format for media::Bitrate.
+union Bitrate {
+  ConstantBitrate constant;
+  VariableBitrate variable;
 };
 
 // This defines a mojo transport format for
@@ -140,7 +144,8 @@ interface VideoEncodeAccelerator {
   // Responded by VideoEncodeAcceleratorClient.RequireBitstreamBuffers().
   [Sync]
   Initialize(VideoEncodeAcceleratorConfig config,
-             pending_associated_remote<VideoEncodeAcceleratorClient> client)
+             pending_associated_remote<VideoEncodeAcceleratorClient> client,
+             pending_remote<MediaLog> media_log)
       => (bool result);
 
   // Encodes a |frame|, being completely done with it after its callback.

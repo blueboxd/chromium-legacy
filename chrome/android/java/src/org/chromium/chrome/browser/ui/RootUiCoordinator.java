@@ -19,7 +19,6 @@ import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.content.res.AppCompatResources;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
 import org.chromium.base.TraceEvent;
@@ -58,6 +57,9 @@ import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.identity_disc.IdentityDiscController;
 import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsController;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthController;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthCoordinatorFactory;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthManager;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
@@ -179,6 +181,12 @@ public class RootUiCoordinator
     private OneshotSupplier<LayoutStateProvider> mLayoutStateProviderOneShotSupplier;
     protected LayoutStateProvider mLayoutStateProvider;
     private LayoutStateProvider.LayoutStateObserver mLayoutStateObserver;
+
+    /**
+     * A controller which is used to show an Incognito re-auth dialog when the feature is
+     * available.
+     */
+    private @Nullable IncognitoReauthController mIncognitoReauthController;
 
     /** A means of providing the theme color to different features. */
     private TopUiThemeColorProvider mTopUiThemeColorProvider;
@@ -542,6 +550,10 @@ public class RootUiCoordinator
             mScrollCaptureManager = null;
         }
 
+        if (mIncognitoReauthController != null) {
+            mIncognitoReauthController.destroy();
+        }
+
         mActivity = null;
     }
 
@@ -671,6 +683,16 @@ public class RootUiCoordinator
                                 .getForLastUsedProfile()
                                 .getSubscriptionsManager());
             });
+        }
+
+        if (IncognitoReauthManager.isIncognitoReauthFeatureAvailable()) {
+            TabModelSelector tabModelSelector = mTabModelSelectorSupplier.get();
+            IncognitoReauthCoordinatorFactory incognitoReauthCoordinatorFactory =
+                    new IncognitoReauthCoordinatorFactory(
+                            mActivity, tabModelSelector, mModalDialogManagerSupplier.get());
+            mIncognitoReauthController = new IncognitoReauthController(tabModelSelector,
+                    mActivityLifecycleDispatcher, mLayoutStateProviderOneShotSupplier,
+                    mProfileSupplier, incognitoReauthCoordinatorFactory);
         }
     }
 
@@ -985,8 +1007,7 @@ public class RootUiCoordinator
                     public void setNavigationBarScrimFraction(float scrimFraction) {}
                 };
         return new ScrimCoordinator(mActivity, delegate, coordinator,
-                ApiCompatibilityUtils.getColor(coordinator.getResources(),
-                        R.color.omnibox_focused_fading_background_color));
+                coordinator.getContext().getColor(R.color.omnibox_focused_fading_background_color));
     }
 
     protected void setLayoutStateProvider(LayoutStateProvider layoutStateProvider) {

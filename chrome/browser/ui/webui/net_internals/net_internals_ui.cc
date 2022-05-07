@@ -83,17 +83,17 @@ class NetInternalsMessageHandler : public content::WebUIMessageHandler {
   // Javascript message handlers:
   //--------------------------------
 
-  void OnReloadProxySettings(base::Value::ConstListView list);
-  void OnClearBadProxies(base::Value::ConstListView list);
-  void OnClearHostResolverCache(base::Value::ConstListView list);
-  void OnDomainSecurityPolicyDelete(base::Value::ConstListView list);
-  void OnHSTSQuery(base::Value::ConstListView list);
-  void OnHSTSAdd(base::Value::ConstListView list);
-  void OnExpectCTQuery(base::Value::ConstListView list);
-  void OnExpectCTAdd(base::Value::ConstListView list);
-  void OnExpectCTTestReport(base::Value::ConstListView list);
-  void OnCloseIdleSockets(base::Value::ConstListView list);
-  void OnFlushSocketPools(base::Value::ConstListView list);
+  void OnReloadProxySettings(const base::Value::List& list);
+  void OnClearBadProxies(const base::Value::List& list);
+  void OnClearHostResolverCache(const base::Value::List& list);
+  void OnDomainSecurityPolicyDelete(const base::Value::List& list);
+  void OnHSTSQuery(const base::Value::List& list);
+  void OnHSTSAdd(const base::Value::List& list);
+  void OnExpectCTQuery(const base::Value::List& list);
+  void OnExpectCTAdd(const base::Value::List& list);
+  void OnExpectCTTestReport(const base::Value::List& list);
+  void OnCloseIdleSockets(const base::Value::List& list);
+  void OnFlushSocketPools(const base::Value::List& list);
 
   raw_ptr<content::WebUI> web_ui_;
   base::WeakPtrFactory<NetInternalsMessageHandler> weak_factory_{this};
@@ -155,22 +155,22 @@ void NetInternalsMessageHandler::OnJavascriptDisallowed() {
 }
 
 void NetInternalsMessageHandler::OnReloadProxySettings(
-    base::Value::ConstListView list) {
+    const base::Value::List& list) {
   GetNetworkContext()->ForceReloadProxyConfig(base::NullCallback());
 }
 
 void NetInternalsMessageHandler::OnClearBadProxies(
-    base::Value::ConstListView list) {
+    const base::Value::List& list) {
   GetNetworkContext()->ClearBadProxiesCache(base::NullCallback());
 }
 
 void NetInternalsMessageHandler::OnClearHostResolverCache(
-    base::Value::ConstListView list) {
+    const base::Value::List& list) {
   GetNetworkContext()->ClearHostCache(/*filter=*/nullptr, base::NullCallback());
 }
 
 void NetInternalsMessageHandler::OnDomainSecurityPolicyDelete(
-    base::Value::ConstListView list) {
+    const base::Value::List& list) {
   // |list| should be: [<domain to query>].
   const std::string* domain = list[0].GetIfString();
   DCHECK(domain);
@@ -182,7 +182,7 @@ void NetInternalsMessageHandler::OnDomainSecurityPolicyDelete(
       *domain, base::BindOnce(&IgnoreBoolCallback));
 }
 
-void NetInternalsMessageHandler::OnHSTSQuery(base::Value::ConstListView list) {
+void NetInternalsMessageHandler::OnHSTSQuery(const base::Value::List& list) {
   const std::string* callback_id = list[0].GetIfString();
   const std::string* domain = list[1].GetIfString();
   DCHECK(callback_id && domain);
@@ -200,7 +200,7 @@ void NetInternalsMessageHandler::ResolveCallbackWithResult(
   ResolveJavascriptCallback(base::Value(callback_id), result);
 }
 
-void NetInternalsMessageHandler::OnHSTSAdd(base::Value::ConstListView list) {
+void NetInternalsMessageHandler::OnHSTSAdd(const base::Value::List& list) {
   DCHECK_GE(2u, list.size());
 
   // |list| should be: [<domain to query>, <STS include subdomains>]
@@ -219,7 +219,7 @@ void NetInternalsMessageHandler::OnHSTSAdd(base::Value::ConstListView list) {
 }
 
 void NetInternalsMessageHandler::OnExpectCTQuery(
-    base::Value::ConstListView list) {
+    const base::Value::List& list) {
   const std::string* callback_id = list[0].GetIfString();
   const std::string* domain = list[1].GetIfString();
   DCHECK(callback_id && domain);
@@ -235,8 +235,7 @@ void NetInternalsMessageHandler::OnExpectCTQuery(
                      weak_factory_.GetWeakPtr(), *callback_id));
 }
 
-void NetInternalsMessageHandler::OnExpectCTAdd(
-    base::Value::ConstListView list) {
+void NetInternalsMessageHandler::OnExpectCTAdd(const base::Value::List& list) {
   // |list| should be: [<domain to add>, <report URI>, <enforce>].
   const std::string* domain = list[0].GetIfString();
   DCHECK(domain);
@@ -261,7 +260,7 @@ void NetInternalsMessageHandler::OnExpectCTAdd(
 }
 
 void NetInternalsMessageHandler::OnExpectCTTestReport(
-    base::Value::ConstListView list) {
+    const base::Value::List& list) {
   const std::string* callback_id = list[0].GetIfString();
   const std::string* report_uri_str = list[1].GetIfString();
   DCHECK(callback_id && report_uri_str);
@@ -286,12 +285,12 @@ void NetInternalsMessageHandler::OnExpectCTTestReportCallback(
 }
 
 void NetInternalsMessageHandler::OnFlushSocketPools(
-    base::Value::ConstListView list) {
+    const base::Value::List& list) {
   GetNetworkContext()->CloseAllConnections(base::NullCallback());
 }
 
 void NetInternalsMessageHandler::OnCloseIdleSockets(
-    base::Value::ConstListView list) {
+    const base::Value::List& list) {
   GetNetworkContext()->CloseIdleConnections(base::NullCallback());
 }
 

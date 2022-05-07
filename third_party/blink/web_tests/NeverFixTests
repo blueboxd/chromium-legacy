@@ -1275,10 +1275,6 @@ external/wpt/entries-api/filesystementry-getParent-manual.html [ Skip ]
 external/wpt/entries-api/filesystemfileentry-attributes-manual.html [ Skip ]
 external/wpt/entries-api/filesystemfileentry-file-manual.html [ Skip ]
 external/wpt/entries-api/filesystemfileentry-getParent-manual.html [ Skip ]
-external/wpt/geolocation-API/getCurrentPosition_permission-manual.html [ Skip ]
-external/wpt/geolocation-API/getCurrentPosition_permission_allow-manual.html [ Skip ]
-external/wpt/geolocation-API/getCurrentPosition_permission_deny-manual.html [ Skip ]
-external/wpt/geolocation-API/watchPosition_permission-manual.html [ Skip ]
 external/wpt/hr-time/unload-manual.html [ Skip ]
 external/wpt/html-media-capture/capture_audio-manual.html [ Skip ]
 external/wpt/html-media-capture/capture_audio_cancel-manual.html [ Skip ]
@@ -1659,14 +1655,14 @@ external/wpt/html/browsers/windows/nested-browsing-contexts/frameElement-sibling
 external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Skip ]
 external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Skip ]
 external/wpt/wasm/serialization/module/share-module-cross-origin-fails.sub.html [ Skip ]
-external/wpt/app-history/navigate-event/cross-window/click-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/app-history/navigate-event/cross-window/click-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/app-history/navigate-event/cross-window/location-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/app-history/navigate-event/cross-window/location-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/app-history/navigate-event/cross-window/open-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/app-history/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/app-history/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
-external/wpt/app-history/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/navigation-api/navigate-event/cross-window/click-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/navigation-api/navigate-event/cross-window/click-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/navigation-api/navigate-event/cross-window/location-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/navigation-api/navigate-event/cross-window/location-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/navigation-api/navigate-event/cross-window/open-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/navigation-api/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/navigation-api/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html [ Skip ]
+external/wpt/navigation-api/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html [ Skip ]
 virtual/not-site-per-process/external/wpt/html/browsers/origin/relaxing-the-same-origin-restriction/* [ Pass ]
 virtual/not-site-per-process/external/wpt/FileAPI/url/multi-global-origin-serialization.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/dom/events/EventListener-incumbent-global-1.sub.html [ Pass ]
@@ -1681,14 +1677,14 @@ virtual/not-site-per-process/external/wpt/html/browsers/windows/nested-browsing-
 virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-domain-success.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/wasm/serialization/module/window-similar-but-cross-origin-success.sub.html [ Pass ]
 virtual/not-site-per-process/external/wpt/wasm/serialization/module/share-module-cross-origin-fails.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/click-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/click-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/location-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/location-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/open-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
-virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/click-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/click-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/location-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/location-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/open-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/open-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/submit-crossdocument-crossorigin-sameorigindomain.sub.html [ Pass ]
+virtual/not-site-per-process/external/wpt/navigation-api/navigate-event/cross-window/submit-samedocument-crossorigin-sameorigindomain.sub.html [ Pass ]
 # ----------------------- origin-keyed agent clusters --------------------
 # Origin-keyed agent clusters web platform tests are for the feature at
 # https://html.spec.whatwg.org/#origin-keyed-agent-clusters. It doesn't make
@@ -1697,7 +1693,7 @@ virtual/not-site-per-process/external/wpt/app-history/navigate-event/cross-windo
 # feature with site isolation enabled, we use a different virtual test suite
 # than not-site-per-process, named no-auto-wpt-origin-isolation.
 external/wpt/html/browsers/origin/origin-keyed-agent-clusters/* [ Skip ]
-virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/* [ Pass ]
+virtual/not-site-per-process/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/* [ Skip ]
 virtual/no-auto-wpt-origin-isolation/external/wpt/html/browsers/origin/origin-keyed-agent-clusters/* [ Pass ]
 # ==== Tests incompatible with the default WPT Origin Isolation end here ==^^
 
@@ -1829,6 +1825,7 @@ external/wpt/webusb/usbDevice_claimInterface-manual.https.html [ Skip ]
 external/wpt/webusb/usbDevice_controlTransferIn-manual.https.html [ Skip ]
 external/wpt/webusb/usbDevice_transferIn-manual.https.html [ Skip ]
 external/wpt/webusb/usbDevice_reset-manual.https.html [ Skip ]
+external/wpt/webusb/usbDevice_forget-manual.https.html [ Skip ]
 wpt_internal/hid/hidDevice_collections-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_loopback-manual.https.html [ Skip ]
 external/wpt/serial/serialPort_loopback_BreakError-manual.https.html [ Skip ]
@@ -1861,9 +1858,12 @@ crbug.com/626703 [ Mac ] external/wpt/html/editing/dnd/events/historical-manual.
 crbug.com/626703 [ Win ] external/wpt/html/editing/dnd/events/historical-manual.html [ Skip ]
 
 # Remove from virtual tests when FontAccess is turned on by default.
-external/wpt/font-access/font_access-blob.tentative.https.window.html [ Skip ]
-external/wpt/font-access/font_access-enumeration.tentative.https.window.html [ Skip ]
-external/wpt/font-access/font_metadata.tentative.https.window.html [ Skip ]
+external/wpt/font-access/font_access_basic.tentative.https.window.html [ Skip ]
+external/wpt/font-access/font_access_blob.tentative.https.window.html [ Skip ]
+external/wpt/font-access/font_access_detached_iframe.tentative.https.window.html [ Skip ]
+external/wpt/font-access/font_access_permission.tentative.https.window.html [ Skip ]
+external/wpt/font-access/font_access_query_select.tentative.https.window.html [ Skip ]
+external/wpt/font-access/font_access_sorted.tentative.https.window.html [ Skip ]
 
 # Remove from virtual tests when ComputePressure is turned on by default.
 crbug.com/1196419 external/wpt/compute-pressure/compute_pressure_arguments.tentative.https.window.html [ Skip ]
@@ -2012,16 +2012,23 @@ crbug.com/626703 [ Mac10.15 ] external/wpt/appmanifest/icons-member/icons-member
 crbug.com/626703 [ Mac10.15 ] external/wpt/appmanifest/start_url-member/start_url-member-pass-manual.html [ Skip ]
 crbug.com/626703 [ Mac11 ] virtual/fsa-incognito/external/wpt/file-system-access/local_FileSystemBaseHandle-postMessage-windows-manual.https.html [ Skip ]
 
+# Virtual test suite shared_array_buffer_on_desktop is platform agnostic
+[ Mac ] virtual/shared_array_buffer_on_desktop/* [ Skip ]
+[ Win ] virtual/shared_array_buffer_on_desktop/* [ Skip ]
+
+# Virtual test suite plz-dedicated-worker is platform agnostic
+[ Mac ] virtual/plz-dedicated-worker/* [ Skip ]
+[ Win ] virtual/plz-dedicated-worker/* [ Skip ]
+
 # The following tests never pass in the default Blink test runner due to forced
 # frame updates, but still pass in the full browser. They are only run in the
 # no-forced-frame-updates virtual test suite.
 external/wpt/html/dom/render-blocking/* [ Skip ]
 virtual/no-forced-frame-updates/external/wpt/html/dom/render-blocking/* [ Pass ]
 
-# The following tests only work if bfcache is enabled for same-origin urls.
-external/wpt/app-history/app-history-entry/entries-after-bfcache.html [ Skip ]
-external/wpt/app-history/app-history-entry/entries-after-bfcache-in-iframe.html [ Skip ]
-external/wpt/app-history/per-entry-events/dispose-after-bfcache.html [ Skip ]
-virtual/bfcache-same-site/external/wpt/app-history/app-history-entry/entries-after-bfcache.html [ Pass ]
-virtual/bfcache-same-site/external/wpt/app-history/app-history-entry/entries-after-bfcache-in-iframe.html [ Pass ]
-virtual/bfcache-same-site/external/wpt/app-history/per-entry-events/dispose-after-bfcache.html [ Pass ]
+# Tests in the virtual/origin-agent-cluster-default suite. These tests
+# require isolation behaviour as in the actual browser and are therefore
+# incompatible with auto-wpt-origin-isolation. Thus they are only run in their
+# virtual test suite.
+wpt_internal/origin-agent-cluster-default/* [ Skip ]
+virtual/origin-agent-cluster-default/wpt_internal/origin-agent-cluster-default/* [ Pass ]

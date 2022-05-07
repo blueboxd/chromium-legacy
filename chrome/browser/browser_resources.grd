@@ -19,23 +19,9 @@
       </if>
       <if expr="chromeos">
         <structure name="IDR_KEYBOARD_UTILS_JS" file="resources\chromeos\keyboard\keyboard_utils.js" flattenhtml="true" type="chrome_html" />
-        <structure name="IDR_ASSISTANT_OPTIN_HTML" file="resources\chromeos\assistant_optin\assistant_optin.html" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
-        <structure name="IDR_ASSISTANT_OPTIN_JS" file="resources\chromeos\assistant_optin\assistant_optin.js" flattenhtml="true" allowexternalscript="true" type="chrome_html" />
       </if>
     </structures>
     <includes>
-      <if expr="is_win or is_macosx or desktop_linux or chromeos or is_fuchsia">
-        <include name="IDR_DISCARDS_DATABASE_TAB_JS" file="${root_gen_dir}\chrome\browser\resources\discards\database_tab.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_DISCARDS_DISCARDS_MAIN_JS" file="${root_gen_dir}\chrome\browser\resources\discards\discards_main.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_DISCARDS_DISCARDS_TAB_JS" file="${root_gen_dir}\chrome\browser\resources\discards\discards_tab.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_DISCARDS_GRAPH_TAB_JS" file="${root_gen_dir}\chrome\browser\resources\discards\graph_tab.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_DISCARDS_HTML" file="resources\discards\discards.html" allowexternalscript="true" type="BINDATA" />
-        <include name="IDR_DISCARDS_JS" file="resources\discards\discards.js" type="BINDATA" />
-        <include name="IDR_DISCARDS_LIFECYCLE_UNIT_STATE_MOJOM_WEBUI_JS" file="${root_gen_dir}\mojom-webui\chrome\browser\resource_coordinator\lifecycle_unit_state.mojom-webui.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_DISCARDS_MOJOM_WEBUI_JS" file="${root_gen_dir}\mojom-webui\chrome\browser\ui\webui\discards\discards.mojom-webui.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_DISCARDS_SITE_DATA_MOJOM_WEBUI_JS" file="${root_gen_dir}\mojom-webui\chrome\browser\ui\webui\discards\site_data.mojom-webui.js" use_base_dir="false" type="BINDATA" />
-        <include name="IDR_DISCARDS_SORTED_TABLE_BEHAVIOR_JS" file="resources\discards\sorted_table_behavior.js" type="BINDATA" />
-      </if>
       <if expr="is_win">
         <include name="IDR_ABOUT_CONFLICTS_HTML" file="resources\conflicts\about_conflicts.html" flattenhtml="true" allowexternalscript="true" type="BINDATA" />
         <include name="IDR_ABOUT_CONFLICTS_JS" file="resources\conflicts\about_conflicts.js" type="BINDATA" />
@@ -108,6 +94,7 @@
         <include name="IDR_INLINE_LOGIN_WELCOME_PAGE_APP_JS" file="${root_gen_dir}\chrome\browser\resources\inline_login\welcome_page_app.js" use_base_dir="false" type ="BINDATA" preprocess="true" />
         <include name="IDR_INLINE_LOGIN_ARC_ACCOUNT_PICKER_APP_JS" file="${root_gen_dir}\chrome\browser\resources\inline_login\arc_account_picker_app.js" use_base_dir="false" type ="BINDATA" preprocess="true" />
         <include name="IDR_INLINE_LOGIN_SIGNIN_BLOCKED_BY_POLICY_PAGE_JS" file="${root_gen_dir}\chrome\browser\resources\inline_login\signin_blocked_by_policy_page.js" use_base_dir="false" type ="BINDATA" preprocess="true" />
+        <include name="IDR_INLINE_LOGIN_ARC_ACCOUNT_PICKER_BROWSER_PROXY_JS" file="resources\inline_login\arc_account_picker_browser_proxy.js" type ="BINDATA" />
       </if>
 
       <include name="IDR_IDENTITY_API_SCOPE_APPROVAL_MANIFEST" file="resources\identity_scope_approval_dialog\manifest.json" type="BINDATA" />
@@ -121,7 +108,7 @@
       <if expr="chromeos_ash">
         <include name="IDR_ORIGIN_MOJO_JS" file="${root_gen_dir}\url\mojom\origin.mojom-lite.js" use_base_dir="false" type="BINDATA"/>
     </if>
-      <if expr="enable_plugins">
+      <if expr="enable_pdf">
         <include name="IDR_PDF_MANIFEST" file="resources\pdf\manifest.json" type="BINDATA" />
       </if>
       <if expr="is_win">

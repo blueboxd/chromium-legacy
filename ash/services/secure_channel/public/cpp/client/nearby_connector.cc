@@ -4,8 +4,7 @@
 
 #include "ash/services/secure_channel/public/cpp/client/nearby_connector.h"
 
-namespace chromeos {
-namespace secure_channel {
+namespace ash::secure_channel {
 
 NearbyConnector::NearbyConnector() = default;
 
@@ -18,5 +17,4 @@ NearbyConnector::GeneratePendingRemote() {
   return pending_remote;
 }
 
-}  // namespace secure_channel
-}  // namespace chromeos
+}  // namespace ash::secure_channel

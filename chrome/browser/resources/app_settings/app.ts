@@ -3,13 +3,16 @@
 // found in the LICENSE file.
 
 import './strings.m.js';
+import 'chrome://resources/cr_elements/cr_dialog/cr_dialog.m.js';
 import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar.js';
+import 'chrome://resources/cr_components/app_management/file_handling_item.js';
 import 'chrome://resources/cr_components/app_management/more_permissions_item.js';
 import 'chrome://resources/cr_components/app_management/run_on_os_login_item.js';
 import 'chrome://resources/cr_components/app_management/permission_item.js';
 import 'chrome://resources/cr_components/app_management/window_mode_item.js';
 import 'chrome://resources/cr_components/app_management/icons.js';
 import 'chrome://resources/cr_components/app_management/uninstall_button.js';
+import 'chrome://resources/cr_components/localized_link/localized_link.js';
 
 import {App} from 'chrome://resources/cr_components/app_management/app_management.mojom-webui.js';
 import {BrowserProxy} from 'chrome://resources/cr_components/app_management/browser_proxy.js';
@@ -30,6 +33,11 @@ export class WebAppSettingsAppElement extends PolymerElement {
   static get properties() {
     return {
       app_: Object,
+      hidden: {
+        type: Boolean,
+        computed: 'appUnready_(app_)',
+        reflectToAttribute: true
+      },
       iconUrl_: {type: String, computed: 'getAppIcon_(app_)'},
       showSearch_: {type: Boolean, value: false, readonly: true},
     };
@@ -39,7 +47,7 @@ export class WebAppSettingsAppElement extends PolymerElement {
   private iconUrl_: string;
   private showSearch_: boolean;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     const urlPath = new URL(document.URL).pathname;
     if (urlPath.length <= 1) {
@@ -68,6 +76,10 @@ export class WebAppSettingsAppElement extends PolymerElement {
 
   private getAppIcon_(app: App|null): string {
     return app ? getAppIcon(app) : '';
+  }
+
+  private appUnready_(app: App|null): Boolean {
+    return !app;
   }
 }
 

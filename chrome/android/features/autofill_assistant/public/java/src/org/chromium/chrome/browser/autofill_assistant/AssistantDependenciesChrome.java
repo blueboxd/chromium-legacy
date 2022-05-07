@@ -6,15 +6,21 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import android.app.Activity;
 import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.Nullable;
 
 import org.chromium.base.lifetime.Destroyable;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityUtils;
 import org.chromium.chrome.browser.app.ChromeActivity;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
+import org.chromium.components.autofill_assistant.AssistantBrowserControlsFactory;
+import org.chromium.components.autofill_assistant.AssistantDependencies;
+import org.chromium.components.autofill_assistant.AssistantSnackbarFactory;
+import org.chromium.components.autofill_assistant.AssistantTabChangeObserver;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetControllerProvider;
 import org.chromium.content_public.browser.WebContents;
@@ -98,6 +104,11 @@ public class AssistantDependenciesChrome
     @Override
     public View getRootView() {
         return mRootView;
+    }
+
+    @Override
+    public ViewGroup getRootViewGroup() {
+        return (ViewGroup) mActivity.findViewById(R.id.coordinator);
     }
 
     @Override

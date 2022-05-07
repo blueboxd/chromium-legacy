@@ -16,7 +16,7 @@
 #include "chrome/common/chrome_features.h"
 #include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/app_update.h"
-#include "components/services/app_service/public/cpp/permission_utils.h"
+#include "components/services/app_service/public/cpp/permission.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
@@ -48,23 +48,22 @@ ArcApplicationNotifierController::GetNotifierList(Profile* profile) {
 
   service->AppRegistryCache().ForEachApp([&notifier_dataset](
                                              const apps::AppUpdate& update) {
-    if (update.AppType() != apps::mojom::AppType::kArc)
+    if (update.AppType() != apps::AppType::kArc)
       return;
 
     for (const auto& permission : update.Permissions()) {
-      if (permission->permission_type !=
-          apps::mojom::PermissionType::kNotifications) {
+      if (permission->permission_type != apps::PermissionType::kNotifications) {
         continue;
       }
-      DCHECK(permission->value->is_bool_value());
+      DCHECK(permission->value->bool_value.has_value());
       // Do not include notifier metadata for system apps.
-      if (update.InstallReason() == apps::mojom::InstallReason::kSystem) {
+      if (update.InstallReason() == apps::InstallReason::kSystem) {
         return;
       }
       notifier_dataset.push_back(NotifierDataset{
           update.AppId() /*app_id*/, update.ShortName() /*app_name*/,
           update.PublisherId() /*publisher_id*/,
-          permission->value->get_bool_value() /*enabled*/});
+          permission->value->bool_value.value() /*enabled*/});
     }
   });
 
@@ -166,12 +165,11 @@ void ArcApplicationNotifierController::OnAppUpdate(
 
   if (update.PermissionsChanged()) {
     for (const auto& permission : update.Permissions()) {
-      if (permission->permission_type ==
-          apps::mojom::PermissionType::kNotifications) {
+      if (permission->permission_type == apps::PermissionType::kNotifications) {
         message_center::NotifierId notifier_id(
             message_center::NotifierType::ARC_APPLICATION, update.AppId());
-        observer_->OnNotifierEnabledChanged(
-            notifier_id, apps_util::IsPermissionEnabled(permission->value));
+        observer_->OnNotifierEnabledChanged(notifier_id,
+                                            permission->IsPermissionEnabled());
       }
     }
   }

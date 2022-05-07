@@ -16,6 +16,13 @@ import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.
 import {TemperatureUnit} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 
+import {setTemperatureUnit} from './ambient_controller.js';
+import {getAmbientProvider} from './ambient_interface_provider.js';
+
+export function inBetween(num: number, minValue: number, maxValue: number) {
+  return minValue <= num && num <= maxValue;
+}
+
 export class AmbientWeatherUnit extends WithPersonalizationStore {
   static get is() {
     return 'ambient-weather-unit';
@@ -35,21 +42,34 @@ export class AmbientWeatherUnit extends WithPersonalizationStore {
         value: TemperatureUnit,
       },
 
-      selectedTemperatureUnit_: {
-        type: TemperatureUnit,
-        value: null,
+      selectedTemperatureUnit: {
+        type: String,
         observer: 'onSelectedTemperatureUnitChanged_',
-      }
+      },
+
+      disabled: Boolean,
     };
   }
 
+  disabled: boolean;
   private temperatureUnit_: TemperatureUnit;
-  private selectedTemperatureUnit_: TemperatureUnit|null;
+  private selectedTemperatureUnit: string;
 
-  private onSelectedTemperatureUnitChanged_(
-      newValue: TemperatureUnit, oldValue: TemperatureUnit) {
-    console.log(oldValue, newValue);
-    // TODO: implementation will be updated in followup CLs.
+  private onSelectedTemperatureUnitChanged_(value: string) {
+    const num = parseInt(value, 10);
+    if (isNaN(num) ||
+        !inBetween(num, TemperatureUnit.MIN_VALUE, TemperatureUnit.MAX_VALUE)) {
+      console.warn('Unexpected temperature unit received', value);
+      return;
+    }
+    setTemperatureUnit(
+        num as TemperatureUnit, getAmbientProvider(), this.getStore());
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'ambient-weather-unit': AmbientWeatherUnit;
   }
 }
 

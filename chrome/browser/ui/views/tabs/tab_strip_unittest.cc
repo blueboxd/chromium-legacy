@@ -20,7 +20,6 @@
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
 #include "chrome/browser/ui/views/tabs/fake_base_tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
-#include "chrome/browser/ui/views/tabs/tab_animation.h"
 #include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_group_highlight.h"
 #include "chrome/browser/ui/views/tabs/tab_group_underline.h"
@@ -188,15 +187,17 @@ class TabStripTestBase : public ChromeViewsTestBase {
 
   void CompleteAnimationAndLayout() {
     // Complete animations and lay out *within the current tabstrip width*.
-    tab_strip_->CompleteAnimationAndLayout();
+    tab_strip_->StopAnimating(true);
     // Resize the tabstrip based on the current tab states.
     tab_strip_parent_->Layout();
   }
 
-  void AnimateToIdealBounds() { tab_strip_->AnimateToIdealBounds(); }
+  void AnimateToIdealBounds() {
+    tab_strip_->tab_container_->AnimateToIdealBounds();
+  }
 
   views::BoundsAnimator* bounds_animator() {
-    return &tab_strip_->bounds_animator_;
+    return &tab_strip_->tab_container_->bounds_animator();
   }
 
   int GetActiveTabWidth() { return tab_strip_->GetActiveTabWidth(); }
@@ -234,7 +235,8 @@ class TabStripTestBase : public ChromeViewsTestBase {
 
   std::vector<TabGroupViews*> ListGroupViews() const {
     std::vector<TabGroupViews*> result;
-    for (auto const& group_view_pair : tab_strip_->group_views_)
+    for (auto const& group_view_pair :
+         tab_strip_->tab_container_->group_views())
       result.push_back(group_view_pair.second.get());
     return result;
   }
@@ -245,7 +247,8 @@ class TabStripTestBase : public ChromeViewsTestBase {
     views::View::Views all_children = GetChildViews();
 
     const int num_tab_slot_views =
-        tab_strip_->GetTabCount() + tab_strip_->group_views_.size();
+        tab_strip_->GetTabCount() +
+        tab_strip_->tab_container_->group_views().size();
 
     return views::View::Views(all_children.begin(),
                               all_children.begin() + num_tab_slot_views);

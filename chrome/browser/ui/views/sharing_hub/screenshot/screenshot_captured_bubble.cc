@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/common/webui_url_constants.h"
 #include "chrome/grit/generated_resources.h"
@@ -21,6 +22,7 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/webui/web_ui_util.h"
+#include "ui/gfx/image/image_skia_rep.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
@@ -57,6 +59,20 @@ ScreenshotCapturedBubble::ScreenshotCapturedBubble(
 }
 
 ScreenshotCapturedBubble::~ScreenshotCapturedBubble() = default;
+
+void ScreenshotCapturedBubble::OnThemeChanged() {
+  LocationBarBubbleDelegateView::OnThemeChanged();
+
+  const int border_radius = ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+      views::Emphasis::kHigh);
+  const auto* const color_provider = GetColorProvider();
+  image_view_->SetBorder(views::CreateRoundedRectBorder(
+      /*thickness=*/2, border_radius,
+      color_provider->GetColor(kColorScreenshotCapturedImageBorder)));
+  image_view_->SetBackground(views::CreateRoundedRectBackground(
+      color_provider->GetColor(kColorScreenshotCapturedImageBackground),
+      border_radius, 2));
+}
 
 void ScreenshotCapturedBubble::Show() {
   ShowForReason(USER_GESTURE);
@@ -103,22 +119,16 @@ void ScreenshotCapturedBubble::Init() {
                   .AddPaddingColumn(views::TableLayout::kFixedSize,
                                     width_padding)
                   .AddRows(1, views::TableLayout::kFixedSize, 0)
-                  .AddChild(
-                      views::Builder<views::ImageView>()
-                          .SetBorder(views::CreateRoundedRectBorder(
-                              /*thickness=*/2, border_radius,
-                              gfx::kGoogleGrey200))
-                          .SetHorizontalAlignment(Alignment::kCenter)
-                          .SetVerticalAlignment(Alignment::kCenter)
-                          .SetImageSize(GetImageSize())
-                          .SetPreferredSize(
-                              GetImageSize() +
-                              gfx::Size(border_radius, border_radius))
-                          .SetBackground(views::CreateRoundedRectBackground(
-                              SK_ColorWHITE, border_radius))
-                          .SetImage(image_.ToImageSkia())
-                          .SetVisible(true)
-                          .CopyAddressTo(&image_view_)));
+                  .AddChild(views::Builder<views::ImageView>()
+                                .SetHorizontalAlignment(Alignment::kCenter)
+                                .SetVerticalAlignment(Alignment::kCenter)
+                                .SetImageSize(GetImageSize())
+                                .SetPreferredSize(
+                                    GetImageSize() +
+                                    gfx::Size(border_radius, border_radius))
+                                .SetImage(image_.ToImageSkia())
+                                .SetVisible(true)
+                                .CopyAddressTo(&image_view_)));
   auto edit_button =
       views::Builder<views::MdTextButton>()
           .SetCallback(

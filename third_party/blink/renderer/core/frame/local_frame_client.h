@@ -40,6 +40,7 @@
 #include "services/network/public/mojom/web_sandbox_flags.mojom-blink-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/loader/loading_behavior_flag.h"
+#include "third_party/blink/public/common/loader/url_loader_factory_bundle.h"
 #include "third_party/blink/public/common/permissions_policy/document_policy_features.h"
 #include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/responsiveness_metrics/user_interaction_latency.h"
@@ -57,7 +58,6 @@
 #include "third_party/blink/public/platform/web_worker_fetch_context.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_history_commit_type.h"
-#include "third_party/blink/public/web/web_local_frame_client.h"
 #include "third_party/blink/public/web/web_manifest_manager.h"
 #include "third_party/blink/public/web/web_navigation_params.h"
 #include "third_party/blink/renderer/core/core_export.h"
@@ -80,6 +80,7 @@
 namespace blink {
 
 class AssociatedInterfaceProvider;
+class BrowserInterfaceBrokerProxy;
 class DocumentLoader;
 class HTMLFencedFrameElement;
 class HTMLFormElement;
@@ -91,7 +92,6 @@ class HistoryItem;
 class KURL;
 class LocalDOMWindow;
 class LocalFrame;
-class WebPluginContainerImpl;
 class RemoteFrame;
 class ResourceError;
 class ResourceRequest;
@@ -103,11 +103,14 @@ class WebLocalFrame;
 class WebMediaPlayer;
 class WebMediaPlayerClient;
 class WebMediaPlayerSource;
+class WebPluginContainerImpl;
 class WebRemotePlaybackClient;
 class WebServiceWorkerProvider;
 class WebSpellCheckPanelHostClient;
 class WebTextCheckClient;
 class ResourceLoadInfoNotifierWrapper;
+enum class SyncCondition;
+struct MobileFriendliness;
 
 class CORE_EXPORT LocalFrameClient : public FrameClient {
  public:
@@ -215,13 +218,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
                                   uint32_t all_call_count,
                                   uint32_t ng_call_count) {}
 
-  // Reports lazy loaded behavior when the frame or image is fully deferred or
-  // if the frame or image is loaded after being deferred. Called every time the
-  // behavior occurs. This does not apply to images that were loaded as
-  // placeholders.
-  virtual void DidObserveLazyLoadBehavior(
-      WebLocalFrameClient::LazyLoadBehavior lazy_load_behavior) {}
-
   // Notifies the observers of the origins for which subresource redirect
   // optimizations can be preloaded.
   virtual void PreloadSubresourceOptimizationsForOrigins(
@@ -241,10 +237,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       std::unique_ptr<PolicyContainer> policy_container,
       std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
 
-  virtual void UpdateDocumentLoader(
-      DocumentLoader* document_loader,
-      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
-
+  virtual String UserAgentOverride() = 0;
   virtual String UserAgent() = 0;
   virtual String FullUserAgent() = 0;
   virtual String ReducedUserAgent() = 0;

@@ -71,6 +71,7 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
     private final @NonNull ObservableSupplier<Profile> mProfileSupplier;
     private final @NonNull Callback<Profile> mProfileChangeCallback;
     private final @NonNull AutocompleteMediator mMediator;
+    private final @NonNull Supplier<ModalDialogManager> mModalDialogManagerSupplier;
     private @Nullable OmniboxSuggestionsDropdown mDropdown;
 
     public AutocompleteCoordinator(@NonNull ViewGroup parent,
@@ -88,6 +89,7 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
             @NonNull ExploreIconProvider exploreIconProvider,
             @NonNull OmniboxPedalDelegate omniboxPedalDelegate) {
         mParent = parent;
+        mModalDialogManagerSupplier = modalDialogManagerSupplier;
         Context context = parent.getContext();
 
         PropertyModel listModel = new PropertyModel(SuggestionListProperties.ALL_KEYS);
@@ -396,7 +398,7 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
      * Sends a zero suggest request to the server in order to pre-populate the result cache.
      */
     public void prefetchZeroSuggestResults() {
-        AutocompleteControllerJni.get().prefetchZeroSuggestResults();
+        mMediator.startPrefetch();
     }
 
     /** @return Suggestions Dropdown view, showing the list of suggestions. */
@@ -415,5 +417,16 @@ public class AutocompleteCoordinator implements UrlFocusChangeListener, UrlTextC
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
     public ModelList getSuggestionModelListForTest() {
         return mMediator.getSuggestionModelListForTest();
+    }
+
+    @VisibleForTesting
+    public @NonNull ModalDialogManager getModalDialogManagerForTest() {
+        assert mModalDialogManagerSupplier.hasValue();
+        return mModalDialogManagerSupplier.get();
+    }
+
+    @VisibleForTesting
+    public void stopAutocompleteForTest(boolean clearResults) {
+        mMediator.stopAutocomplete(clearResults);
     }
 }

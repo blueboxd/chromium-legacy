@@ -13,6 +13,62 @@
 #include "chrome/test/chromedriver/chrome/devtools_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 
+namespace {
+bool IsFencedFrameNode(const base::Value& node) {
+  if (!node.GetIfDict())
+    return false;
+  const std::string* nodeName = node.GetIfDict()->FindString("nodeName");
+  return nodeName && *nodeName == "FENCEDFRAME";
+}
+
+const base::Value* GetFencedFrameUserAgentShadowRoot(const base::Value& node) {
+  DCHECK(IsFencedFrameNode(node));
+  const base::Value* shadow_roots = node.FindListKey("shadowRoots");
+  if (!shadow_roots)
+    return nullptr;
+
+  // Find user-agent shadow root inside fenced frame.
+  for (const base::Value& shadow_root : shadow_roots->GetList()) {
+    const std::string* shadow_root_type =
+        shadow_root.FindStringKey("shadowRootType");
+    if (shadow_root_type && *shadow_root_type == "user-agent") {
+      return &shadow_root;
+    }
+  }
+
+  return nullptr;
+}
+
+// An "incomplete" fenced frame based on ShadowDOM is one that either:
+//   a.) Doesn't have a content frame and doesn't have a ShadowRoot, or...
+//   b.) Does have a ShadowRoot that itself does not have any children attached
+bool IsFencedFrameNodeWithIncompleteShadowDom(const base::Value& node) {
+  if (!IsFencedFrameNode(node))
+    return false;
+
+  const base::Value* ua_shadow_root = GetFencedFrameUserAgentShadowRoot(node);
+  // Fenced frame has a content frame, which means it uses MPArch.
+  if (node.FindStringKey("frameId"))
+    return false;
+
+  // A fenced frame that has been inserted but does not yet have a user agent
+  // ShadowRoot may be an incomplete fenced frame based on ShadowDOM, but we
+  // don't yet have enough information to know. We'll assume it is an incomplete
+  // ShadowDOM fenced frame out of caution.
+  if (!ua_shadow_root)
+    return true;
+
+  // At this point we know that this is a fenced frame based on ShadowDOM, so
+  // now we'll see if it is "incomplete".
+  size_t childNodeCount =
+      ua_shadow_root->FindIntKey("childNodeCount").value_or(0);
+  const base::Value* shadow_root_children =
+      ua_shadow_root->FindListKey("children");
+  return !shadow_root_children ||
+         shadow_root_children->GetList().size() != childNodeCount;
+}
+}  // namespace
+
 DomTracker::DomTracker(DevToolsClient* client) {
   client->AddListener(this);
 }
@@ -39,6 +95,14 @@ Status DomTracker::OnEvent(DevToolsClient* client,
     if (nodes == nullptr)
       return Status(kUnknownError, "DOM.setChildNodes missing 'nodes'");
 
+    if (nodes->is_list()) {
+      for (auto& node : *(nodes->GetIfList())) {
+        if (IsFencedFrameNodeWithIncompleteShadowDom(node)) {
+          return RebuildMapping(client);
+        }
+      }
+    }
+
     if (!ProcessNodeList(*nodes)) {
       std::string json;
       base::JSONWriter::Write(*nodes, &json);
@@ -49,6 +113,9 @@ Status DomTracker::OnEvent(DevToolsClient* client,
     const base::Value* node = params.FindKey("node");
     if (node == nullptr) {
       return Status(kUnknownError, "DOM.childNodeInserted missing 'node'");
+    }
+    if (IsFencedFrameNodeWithIncompleteShadowDom(*node)) {
+      return RebuildMapping(client);
     }
 
     if (!ProcessNode(*node)) {
@@ -118,33 +185,25 @@ bool DomTracker::ProcessNode(const base::Value& node) {
     node_to_frame_map_.insert(std::make_pair(*node_id, frame_id));
   }
 
-  const std::string* node_name = dict->FindStringKey("nodeName");
-  if (node_name && *node_name == "FENCEDFRAME")
+  if (IsFencedFrameNode(node))
     ProcessFencedFrameShadowDom(node);
 
+  bool status = true;
+
+  if (const base::Value* content_document = dict->FindKey("contentDocument"))
+    status = status && ProcessNode(*content_document);
+
   if (const base::Value* children = dict->FindKey("children"))
-    return ProcessNodeList(*children);
-  return true;
+    status = status && ProcessNodeList(*children);
+
+  return status;
 }
 
 // When fenced frames use their shadow-dom implementation, they have an iframe
 // nested inside the shadow dom. We link the frameId of this iframe to the
 // fenced frame element to allow switchToFrame to work correctly.
 void DomTracker::ProcessFencedFrameShadowDom(const base::Value& node) {
-  const base::Value* shadow_roots = node.FindListKey("shadowRoots");
-  if (!shadow_roots)
-    return;
-
-  // Find user-agent shadow root inside fenced frame.
-  const base::Value* ua_shadow_root = nullptr;
-  for (const base::Value& shadow_root : shadow_roots->GetListDeprecated()) {
-    const std::string* shadow_root_type =
-        shadow_root.FindStringKey("shadowRootType");
-    if (shadow_root_type && *shadow_root_type == "user-agent") {
-      ua_shadow_root = &shadow_root;
-      break;
-    }
-  }
+  const base::Value* ua_shadow_root = GetFencedFrameUserAgentShadowRoot(node);
   if (!ua_shadow_root ||
       ua_shadow_root->FindIntKey("childNodeCount").value_or(0) == 0)
     return;
@@ -153,8 +212,9 @@ void DomTracker::ProcessFencedFrameShadowDom(const base::Value& node) {
   const base::Value* iframe_node = nullptr;
   const base::Value* shadow_root_children =
       ua_shadow_root->FindListKey("children");
-  DCHECK(shadow_root_children);
-  for (const base::Value& child : shadow_root_children->GetListDeprecated()) {
+  if (!shadow_root_children)
+    return;
+  for (const base::Value& child : shadow_root_children->GetList()) {
     if (*child.FindStringKey("nodeName") == "IFRAME") {
       iframe_node = &child;
       break;

@@ -15,6 +15,7 @@ goog.provide('AutoScrollHandler');
 
 goog.require('AutomationPredicate');
 goog.require('AutomationUtil');
+goog.require('CommandHandlerInterface');
 goog.require('constants');
 
 goog.scope(function() {
@@ -186,7 +187,8 @@ AutoScrollHandler = class {
           nextRange = cursors.Range.fromNode(scrollable).sync(unit, dir);
           if (unit === cursors.Unit.NODE) {
             nextRange =
-                CommandHandler.skipLabelOrDescriptionFor(nextRange, dir);
+                CommandHandlerInterface.instance.skipLabelOrDescriptionFor(
+                    nextRange, dir);
           }
         } else if (pred) {
           let node;

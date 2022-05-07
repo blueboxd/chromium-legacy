@@ -6,6 +6,7 @@
  -->
 
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          xmlns:tools="http://schemas.android.com/tools"
           package="org.chromium.chromecast.shell">
 
     <uses-sdk android:minSdkVersion="23"/>
@@ -23,7 +24,7 @@
                   android:screenOrientation="landscape"
                   android:taskAffinity=".CastWebContentsActivity"
                   android:supportsPictureInPicture="true"
-                  android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection"
+                  android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|layoutDirection|screenLayout|smallestScreenSize"
                   android:excludeFromRecents="false"
                   android:noHistory="false">
         </activity>

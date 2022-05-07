@@ -21,7 +21,8 @@ import {loadTimeData} from 'chrome://resources/js/load_time_data.m.js';
 import {listenOnce} from 'chrome://resources/js/util.m.js';
 import {Token} from 'chrome://resources/mojo/mojo/public/mojom/base/token.mojom-webui.js';
 import {IronA11yAnnouncer} from 'chrome://resources/polymer/v3_0/iron-a11y-announcer/iron-a11y-announcer.js';
-import {DomRepeatEvent, html, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {DomRepeatEvent, PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import {getTemplate} from './app.html.js';
 
 import {fuzzySearch, FuzzySearchOptions} from './fuzzy_search.js';
 import {InfiniteList, NO_SELECTION, selectorNavigationKeys} from './infinite_list.js';
@@ -161,7 +162,7 @@ export class TabSearchAppElement extends PolymerElement {
         true /*expanded*/);
   }
 
-  ready() {
+  override ready() {
     super.ready();
 
     // Update option values for fuzzy search from feature params.
@@ -187,7 +188,7 @@ export class TabSearchAppElement extends PolymerElement {
     });
   }
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     document.addEventListener(
@@ -205,7 +206,7 @@ export class TabSearchAppElement extends PolymerElement {
     }
   }
 
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
 
     this.listenerIds_.forEach(
@@ -332,11 +333,11 @@ export class TabSearchAppElement extends PolymerElement {
     let text;
     if (this.searchText_.length > 0) {
       text = loadTimeData.getStringF(
-          itemCount == 1 ? 'a11yFoundTabFor' : 'a11yFoundTabsFor', itemCount,
+          itemCount === 1 ? 'a11yFoundTabFor' : 'a11yFoundTabsFor', itemCount,
           this.searchText_);
     } else {
       text = loadTimeData.getStringF(
-          itemCount == 1 ? 'a11yFoundTab' : 'a11yFoundTabs', itemCount);
+          itemCount === 1 ? 'a11yFoundTab' : 'a11yFoundTabs', itemCount);
     }
     return text;
   }
@@ -501,6 +502,15 @@ export class TabSearchAppElement extends PolymerElement {
     this.apiProxy_.saveRecentlyClosedExpandedPref(expanded);
 
     this.updateFilteredTabs_();
+
+    // If a section's title item is the last visible element in the list and the
+    // list's height is at its maximum, it will not be evident to the user that
+    // on expanding the section there are now section tab items available. By
+    // ensuring the first element of the section is visible, we can avoid this
+    // confusion.
+    if (expanded) {
+      this.$.tabsList.scrollIndexIntoView(this.filteredOpenTabsCount_);
+    }
     e.stopPropagation();
   }
 
@@ -719,7 +729,7 @@ export class TabSearchAppElement extends PolymerElement {
   }
 
   static get template() {
-    return html`{__html_template__}`;
+    return getTemplate();
   }
 }
 

@@ -19,7 +19,7 @@ import * as review from './review.js';
 
 /**
  * The maximum number of pixels in the downscaled intent photo result. Reference
- * from GCA: https://goto.google.com/gca-inline-bitmap-max-pixel-num
+ * from GCA: https://goto.google.com/gca-inline-bitmap-max-pixel-num.
  */
 const DOWNSCALE_INTENT_MAX_PIXEL_NUM = 50 * 1024;
 
@@ -70,7 +70,7 @@ export class CameraIntent extends Camera {
   private reviewIntentResult(metricArgs: MetricArgs): Promise<void> {
     return this.prepareReview(async () => {
       const confirmed = await this.review.startReview(new review.OptionGroup({
-        template: review.ButtonGroupTemplate.intent,
+        template: review.ButtonGroupTemplate.INTENT,
         options: [
           new review.Option(
               {
@@ -87,7 +87,7 @@ export class CameraIntent extends Camera {
         ],
       }));
       metrics.sendCaptureEvent({
-        facing: this.facing,
+        facing: this.getFacing(),
         ...metricArgs,
         intentResult: confirmed ? metrics.IntentResultType.CONFIRMED :
                                   metrics.IntentResultType.CANCELED,
@@ -109,7 +109,7 @@ export class CameraIntent extends Camera {
     });
   }
 
-  async onPhotoCaptureDone(pendingPhotoResult: Promise<PhotoResult>):
+  override async onPhotoCaptureDone(pendingPhotoResult: Promise<PhotoResult>):
       Promise<void> {
     await super.onPhotoCaptureDone(pendingPhotoResult);
     const {blob, resolution} = await pendingPhotoResult;
@@ -117,7 +117,7 @@ export class CameraIntent extends Camera {
     await this.reviewIntentResult({resolution});
   }
 
-  async onVideoCaptureDone(videoResult: VideoResult): Promise<void> {
+  override async onVideoCaptureDone(videoResult: VideoResult): Promise<void> {
     await super.onVideoCaptureDone(videoResult);
     assert(this.videoResultFile !== null);
     await this.review.setReviewVideo(this.videoResultFile);

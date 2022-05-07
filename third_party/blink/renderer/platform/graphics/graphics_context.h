@@ -32,7 +32,6 @@
 
 #include "base/dcheck_is_on.h"
 #include "cc/paint/paint_flags.h"
-#include "third_party/blink/public/mojom/frame/color_scheme.mojom-blink-forward.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_filter.h"
 #include "third_party/blink/renderer/platform/graphics/dark_mode_settings.h"
@@ -156,6 +155,9 @@ class PLATFORM_EXPORT GraphicsContext {
   }
 
   DarkModeFilter* GetDarkModeFilter();
+  DarkModeFilter* GetDarkModeFilterForImage(const AutoDarkMode& auto_dark_mode,
+                                            const gfx::RectF& dest,
+                                            const gfx::RectF& src);
 
   void UpdateDarkModeSettingsForTest(const DarkModeSettings&);
 

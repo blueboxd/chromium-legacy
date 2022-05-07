@@ -10,6 +10,7 @@
 
 #include "ash/public/cpp/esim_manager.h"
 #include "ash/public/cpp/network_config_service.h"
+#include "ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "ash/webui/network_ui/network_diagnostics_resource_provider.h"
 #include "ash/webui/network_ui/network_health_resource_provider.h"
 #include "ash/webui/network_ui/traffic_counters_resource_provider.h"
@@ -42,7 +43,6 @@
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/onc/network_onc_utils.h"
-#include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_diagnostics.mojom.h"
 #include "chromeos/services/network_health/public/mojom/network_health.mojom.h"
@@ -177,7 +177,7 @@ class NetworkDiagnosticsMessageHandler : public content::WebUIMessageHandler {
   }
 
  private:
-  void OpenFeedbackDialog(base::Value::ConstListView value) {
+  void OpenFeedbackDialog(const base::Value::List& value) {
     chrome::ShowFeedbackPage(nullptr, chrome::kFeedbackSourceNetworkHealthPage,
                              "" /*description_template*/,
                              "" /*description_template_placeholder*/,
@@ -265,7 +265,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     ResolveJavascriptCallback(base::Value(callback_id), response);
   }
 
-  void GetShillNetworkProperties(base::Value::ConstListView arg_list) {
+  void GetShillNetworkProperties(const base::Value::List& arg_list) {
     CHECK_EQ(2u, arg_list.size());
     std::string callback_id = arg_list[0].GetString();
     std::string guid = arg_list[1].GetString();
@@ -300,7 +300,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     Respond(callback_id, return_arg_list);
   }
 
-  void GetShillDeviceProperties(base::Value::ConstListView arg_list) {
+  void GetShillDeviceProperties(const base::Value::List& arg_list) {
     CHECK_EQ(2u, arg_list.size());
     std::string callback_id = arg_list[0].GetString();
     std::string type = arg_list[1].GetString();
@@ -319,7 +319,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
                        weak_ptr_factory_.GetWeakPtr(), callback_id, type));
   }
 
-  void GetShillEthernetEAP(base::Value::ConstListView arg_list) {
+  void GetShillEthernetEAP(const base::Value::List& arg_list) {
     CHECK_EQ(1u, arg_list.size());
     std::string callback_id = arg_list[0].GetString();
 
@@ -343,7 +343,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     Respond(callback_id, response);
   }
 
-  void OpenCellularActivationUi(base::Value::ConstListView arg_list) {
+  void OpenCellularActivationUi(const base::Value::List& arg_list) {
     CHECK_EQ(1u, arg_list.size());
     std::string callback_id = arg_list[0].GetString();
 
@@ -359,7 +359,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     Respond(callback_id, response);
   }
 
-  void ResetESimCache(base::Value::ConstListView arg_list) {
+  void ResetESimCache(const base::Value::List& arg_list) {
     CellularESimProfileHandler* handler =
         NetworkHandler::Get()->cellular_esim_profile_handler();
     if (!handler)
@@ -370,7 +370,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     handler_impl->ResetESimProfileCache();
   }
 
-  void DisableActiveESimProfile(base::Value::ConstListView arg_list) {
+  void DisableActiveESimProfile(const base::Value::List& arg_list) {
     CellularESimProfileHandler* handler =
         NetworkHandler::Get()->cellular_esim_profile_handler();
     if (!handler)
@@ -381,7 +381,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     handler_impl->DisableActiveESimProfile();
   }
 
-  void ResetEuicc(base::Value::ConstListView arg_list) {
+  void ResetEuicc(const base::Value::List& arg_list) {
     absl::optional<dbus::ObjectPath> euicc_path = GetEuiccResetPath();
     if (!euicc_path)
       return;
@@ -402,21 +402,21 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     }
   }
 
-  void ShowNetworkDetails(base::Value::ConstListView arg_list) {
+  void ShowNetworkDetails(const base::Value::List& arg_list) {
     CHECK_EQ(1u, arg_list.size());
     std::string guid = arg_list[0].GetString();
 
     InternetDetailDialog::ShowDialog(guid);
   }
 
-  void ShowNetworkConfig(base::Value::ConstListView arg_list) {
+  void ShowNetworkConfig(const base::Value::List& arg_list) {
     CHECK_EQ(1u, arg_list.size());
     std::string guid = arg_list[0].GetString();
 
     InternetConfigDialog::ShowDialogForNetworkId(guid);
   }
 
-  void ShowAddNewWifi(base::Value::ConstListView arg_list) {
+  void ShowAddNewWifi(const base::Value::List& arg_list) {
     InternetConfigDialog::ShowDialogForNetworkType(::onc::network_type::kWiFi);
   }
 
@@ -438,7 +438,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     Respond(callback_id, return_arg_list);
   }
 
-  void GetHostname(base::Value::ConstListView arg_list) {
+  void GetHostname(const base::Value::List& arg_list) {
     CHECK_EQ(1u, arg_list.size());
     std::string callback_id = arg_list[0].GetString();
     std::string hostname =
@@ -446,7 +446,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     Respond(callback_id, base::Value(hostname));
   }
 
-  void SetHostname(base::Value::ConstListView arg_list) {
+  void SetHostname(const base::Value::List& arg_list) {
     CHECK_EQ(1u, arg_list.size());
     std::string hostname = arg_list[0].GetString();
     NET_LOG(USER) << "SET HOSTNAME: " << hostname;
@@ -477,7 +477,7 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
     Respond(callback_id, return_arg_list);
   }
 
-  void AddNetwork(base::Value::ConstListView args) {
+  void AddNetwork(const base::Value::List& args) {
     DCHECK(!args.empty());
     std::string onc_type = args[0].GetString();
     InternetConfigDialog::ShowDialogForNetworkType(onc_type);
@@ -716,7 +716,7 @@ void NetworkUI::BindInterface(
 }
 
 void NetworkUI::BindInterface(
-    mojo::PendingReceiver<cellular_setup::mojom::ESimManager> receiver) {
+    mojo::PendingReceiver<ash::cellular_setup::mojom::ESimManager> receiver) {
   ash::GetESimManager(std::move(receiver));
 }
 

@@ -7,6 +7,7 @@
 #include "base/base64.h"
 #include "base/json/json_writer.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "content/browser/webid/fedcm_metrics.h"
 #include "content/public/browser/identity_request_dialog_controller.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
@@ -21,6 +22,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest_icon_selector.h"
@@ -37,11 +39,10 @@ using LoginState = IdentityRequestAccount::LoginState;
 // referenced here.
 
 // fedcm.json configuration keys.
-constexpr char kIdpEndpointKey[] = "idp_endpoint";
 constexpr char kTokenEndpointKey[] = "id_token_endpoint";
 constexpr char kAccountsEndpointKey[] = "accounts_endpoint";
 constexpr char kClientMetadataEndpointKey[] = "client_metadata_endpoint";
-constexpr char kRevokeEndpoint[] = "revoke_endpoint";
+constexpr char kRevocationEndpoint[] = "revocation_endpoint";
 
 // Keys in fedcm.json 'branding' dictionary.
 constexpr char kIdpBrandingBackgroundColor[] = "background_color";
@@ -132,7 +133,8 @@ void AddCsrfHeader(network::ResourceRequest* request) {
 std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
     GURL target_url,
     bool send_referrer,
-    url::Origin initiator) {
+    url::Origin initiator,
+    network::mojom::ClientSecurityStatePtr client_security_state) {
   auto resource_request = std::make_unique<network::ResourceRequest>();
   auto target_origin = url::Origin::Create(target_url);
   auto site_for_cookies = net::SiteForCookies::FromOrigin(target_origin);
@@ -158,6 +160,9 @@ std::unique_ptr<network::ResourceRequest> CreateCredentialedResourceRequest(
   resource_request->trusted_params->isolation_info = net::IsolationInfo::Create(
       net::IsolationInfo::RequestType::kOther, target_origin, target_origin,
       site_for_cookies);
+  DCHECK(client_security_state);
+  resource_request->trusted_params->client_security_state =
+      std::move(client_security_state);
 
   return resource_request;
 }
@@ -176,6 +181,8 @@ absl::optional<content::IdentityRequestAccount> ParseAccount(
   if (!(id && email && name))
     return absl::nullopt;
 
+  RecordApprovedClientsExistence(approved_clients != nullptr);
+
   absl::optional<LoginState> approved_value;
   if (approved_clients) {
     for (const base::Value& entry : approved_clients->GetListDeprecated()) {
@@ -190,6 +197,7 @@ absl::optional<content::IdentityRequestAccount> ParseAccount(
       // kSignUp instead of leaving as nullopt.
       approved_value = LoginState::kSignUp;
     }
+    RecordApprovedClientsSize(approved_clients->GetList().size());
   }
 
   return content::IdentityRequestAccount(
@@ -337,19 +345,36 @@ std::unique_ptr<IdpNetworkRequestManager> IdpNetworkRequestManager::Create(
     return nullptr;
 
   // Use the browser process URL loader factory because it has cross-origin
-  // read blocking disabled.
+  // read blocking disabled. This is safe because even though these are
+  // renderer-initiated fetches, the browser parses the responses and does not
+  // leak the values to the renderer. The renderer should only learn information
+  // when the user selects an account to sign in.
   return std::make_unique<IdpNetworkRequestManager>(
       provider, host->GetLastCommittedOrigin(),
-      host->GetStoragePartition()->GetURLLoaderFactoryForBrowserProcess());
+      host->GetStoragePartition()->GetURLLoaderFactoryForBrowserProcess(),
+      host->BuildClientSecurityState());
 }
 
 IdpNetworkRequestManager::IdpNetworkRequestManager(
     const GURL& provider,
     const url::Origin& relying_party_origin,
-    scoped_refptr<network::SharedURLLoaderFactory> loader_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> loader_factory,
+    network::mojom::ClientSecurityStatePtr client_security_state)
     : provider_(provider),
       relying_party_origin_(relying_party_origin),
-      loader_factory_(loader_factory) {}
+      loader_factory_(loader_factory),
+      client_security_state_(std::move(client_security_state)) {
+  DCHECK(client_security_state_);
+  // If COEP:credentialless was used, this would break FedCM credentialled
+  // requests. We clear the Cross-Origin-Embedder-Policy because FedCM responses
+  // are not really embedded in the page. They do not enter the renderer
+  // process. This is safe because FedCM does not leak any data to the
+  // requesting page except for the final issued token, and we only get that
+  // token if the server is a new FedCM server, on which we can rely to validate
+  // requestors if they want to.
+  client_security_state_->cross_origin_embedder_policy =
+      network::CrossOriginEmbedderPolicy();
+}
 
 IdpNetworkRequestManager::~IdpNetworkRequestManager() = default;
 
@@ -500,7 +525,7 @@ std::string CreateRevokeRequestBody(const std::string& client_id,
 
 void IdpNetworkRequestManager::SendRevokeRequest(const GURL& revoke_url,
                                                  const std::string& client_id,
-                                                 const std::string& account_id,
+                                                 const std::string& hint,
                                                  RevokeCallback callback) {
   DCHECK(!url_loader_);
   DCHECK(!token_request_callback_);
@@ -511,16 +536,13 @@ void IdpNetworkRequestManager::SendRevokeRequest(const GURL& revoke_url,
   if (!client_id.empty())
     revoke_request_body += "client_id=" + client_id;
 
-  if (!account_id.empty()) {
-    if (!revoke_request_body.empty())
-      revoke_request_body += "&";
-    revoke_request_body += "account_id=" + account_id;
-  }
-
-  if (revoke_request_body.empty()) {
+  if (hint.empty()) {
     std::move(revoke_callback_).Run(RevokeResponse::kError);
     return;
   }
+  if (!revoke_request_body.empty())
+    revoke_request_body += "&";
+  revoke_request_body += "hint=" + hint;
 
   url_loader_ = CreateCredentialedUrlLoader(
       revoke_url, /* send_referrer= */ true, revoke_request_body);
@@ -542,7 +564,8 @@ void IdpNetworkRequestManager::SendLogout(const GURL& logout_url,
   logout_callback_ = std::move(callback);
 
   auto resource_request = CreateCredentialedResourceRequest(
-      logout_url, /* send_referrer= */ false, relying_party_origin_);
+      logout_url, /* send_referrer= */ false, relying_party_origin_,
+      client_security_state_.Clone());
   resource_request->headers.SetHeader(net::HttpRequestHeaders::kAccept, "*/*");
 
   auto traffic_annotation = CreateTrafficAnnotation();
@@ -599,11 +622,10 @@ void IdpNetworkRequestManager::OnManifestParsed(
   };
 
   Endpoints endpoints;
-  endpoints.idp = ExtractEndpoint(kIdpEndpointKey);
   endpoints.token = ExtractEndpoint(kTokenEndpointKey);
   endpoints.accounts = ExtractEndpoint(kAccountsEndpointKey);
   endpoints.client_metadata = ExtractEndpoint(kClientMetadataEndpointKey);
-  endpoints.revoke = ExtractEndpoint(kRevokeEndpoint);
+  endpoints.revocation = ExtractEndpoint(kRevocationEndpoint);
 
   const base::Value* idp_metadata_value = response.FindKey(kIdpBrandingKey);
   IdentityProviderMetadata idp_metadata;
@@ -867,6 +889,9 @@ IdpNetworkRequestManager::CreateUncredentialedUrlLoader(
   resource_request->trusted_params = network::ResourceRequest::TrustedParams();
   resource_request->trusted_params->isolation_info =
       net::IsolationInfo::CreateTransient();
+  DCHECK(client_security_state_);
+  resource_request->trusted_params->client_security_state =
+      client_security_state_.Clone();
 
   return network::SimpleURLLoader::Create(std::move(resource_request),
                                           traffic_annotation);
@@ -878,7 +903,8 @@ IdpNetworkRequestManager::CreateCredentialedUrlLoader(
     bool send_referrer,
     absl::optional<std::string> request_body) const {
   auto resource_request = CreateCredentialedResourceRequest(
-      target_url, send_referrer, relying_party_origin_);
+      target_url, send_referrer, relying_party_origin_,
+      client_security_state_.Clone());
   if (request_body) {
     resource_request->method = net::HttpRequestHeaders::kPostMethod;
     resource_request->headers.SetHeader(net::HttpRequestHeaders::kContentType,
@@ -892,6 +918,10 @@ IdpNetworkRequestManager::CreateCredentialedUrlLoader(
   if (request_body)
     loader->AttachStringForUpload(*request_body, kRequestBodyContentType);
   return loader;
+}
+
+bool IdpNetworkRequestManager::IsMockIdpNetworkRequestManager() const {
+  return false;
 }
 
 }  // namespace content

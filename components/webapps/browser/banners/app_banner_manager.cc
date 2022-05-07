@@ -15,6 +15,7 @@
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "components/back_forward_cache/back_forward_cache_disable.h"
@@ -37,6 +38,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/manifest/manifest_util.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/installation/installation.mojom.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -223,16 +225,9 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       SiteEngagementObserver(site_engagement::SiteEngagementService::Get(
           web_contents->GetBrowserContext())),
-      has_maskable_primary_icon_(false),
-      state_(State::INACTIVE),
       manager_(InstallableManager::FromWebContents(web_contents)),
       manifest_(blink::mojom::Manifest::New()),
-      has_sufficient_engagement_(false),
-      load_finished_(false),
-      status_reporter_(std::make_unique<NullStatusReporter>()),
-      install_animation_pending_(false),
-      installable_web_app_check_result_(
-          InstallableWebAppCheckResult::kUnknown) {
+      status_reporter_(std::make_unique<NullStatusReporter>()) {
   DCHECK(manager_);
 
   AppBannerSettingsHelper::UpdateFromFieldTrial();

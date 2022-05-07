@@ -6,21 +6,24 @@ import {assert, assertInstanceof} from '../assert.js';
 import {Facing, Mode} from '../type.js';
 
 import {Camera3DeviceInfo} from './camera3_device_info.js';
+import {CaptureCandidate} from './capture_candidate.js';
 import {DeviceInfoUpdater} from './device_info_updater.js';
 import {CaptureHandler} from './mode/index.js';
 
 export interface ModeConstraints {
-  exact?: Mode;
-  default?: Mode;
+  kind: 'default'|'exact';
+  mode: Mode;
 }
 
 export type CameraViewUI = CaptureHandler;
 
 export class CameraInfo {
-  readonly devicesInfo: Array<MediaDeviceInfo>;
-  readonly camera3DevicesInfo: Array<Camera3DeviceInfo>|null;
+  readonly devicesInfo: MediaDeviceInfo[];
+
+  readonly camera3DevicesInfo: Camera3DeviceInfo[]|null;
 
   private readonly idToDeviceInfo: Map<string, MediaDeviceInfo>;
+
   private readonly idToCamera3DeviceInfo: Map<string, Camera3DeviceInfo>|null;
 
   constructor(updater: DeviceInfoUpdater) {
@@ -51,22 +54,34 @@ export class CameraInfo {
  * camera will be opened with.
  */
 export interface CameraConfig {
-  /**
-   * May be null for device using legacy linux VCD.
-   */
-  deviceId: string|null;
-
-  /**
-   * May be Facing.NOT_SET for device using legacy linux VCD.
-   */
+  deviceId: string;
   facing: Facing;
   mode: Mode;
+  captureCandidate: CaptureCandidate;
+}
+
+/**
+ * The next |CameraConfig| to be tried.
+ */
+export interface CameraConfigCandidate {
+  /**
+   * The only null case is for opening the default facing camera on non-ChromeOS
+   * VCD.
+   */
+  deviceId: string|null;
+  /**
+   * On device using non-ChromeOS VCD, camera facing is unknown before opening
+   * the camera.
+   */
+  facing: Facing|null;
+  mode: Mode;
+  captureCandidate: CaptureCandidate;
 }
 
 export interface CameraUI {
   onUpdateCapability?(cameraInfo: CameraInfo): void;
-  onTryingNewConfig?(config: CameraConfig): void;
-  onUpdateConfig?(config: CameraConfig): void|Promise<void>;
+  onTryingNewConfig?(config: CameraConfigCandidate): void;
+  onUpdateConfig?(config: CameraConfig): Promise<void>|void;
   onCameraUnavailable?(): void;
   onCameraAvailble?(): void;
 }

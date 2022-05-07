@@ -17,17 +17,12 @@
 #include "base/types/strong_alias.h"
 #include "chrome/browser/password_manager/android/password_manager_lifecycle_helper.h"
 #include "chrome/browser/password_manager/android/password_store_android_backend_bridge.h"
+#include "chrome/browser/password_manager/android/password_sync_controller_delegate_android.h"
 #include "components/password_manager/core/browser/password_store_backend.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
-namespace syncer {
-class ModelTypeControllerDelegate;
-}  // namespace syncer
-
 namespace password_manager {
-
-class PasswordSyncControllerDelegateAndroid;
 
 // Android-specific password store backend that delegates every request to
 // Google Mobile Service.
@@ -40,11 +35,15 @@ class PasswordStoreAndroidBackend
     : public PasswordStoreBackend,
       public PasswordStoreAndroidBackendBridge::Consumer {
  public:
-  PasswordStoreAndroidBackend();
+  explicit PasswordStoreAndroidBackend(
+      std::unique_ptr<SyncDelegate> sync_delegate);
   PasswordStoreAndroidBackend(
       base::PassKey<class PasswordStoreAndroidBackendTest>,
       std::unique_ptr<PasswordStoreAndroidBackendBridge> bridge,
-      std::unique_ptr<PasswordManagerLifecycleHelper> lifecycle_helper);
+      std::unique_ptr<PasswordManagerLifecycleHelper> lifecycle_helper,
+      std::unique_ptr<SyncDelegate> sync_delegate,
+      std::unique_ptr<PasswordSyncControllerDelegateAndroid>
+          sync_controller_delegate);
   ~PasswordStoreAndroidBackend() override;
 
  private:
@@ -162,6 +161,7 @@ class PasswordStoreAndroidBackend
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate() override;
   void ClearAllLocalPasswords() override;
+  void OnSyncServiceInitialized(syncer::SyncService* sync_service) override;
 
   // Implements PasswordStoreAndroidBackendBridge::Consumer interface.
   void OnCompleteWithLogins(PasswordStoreAndroidBackendBridge::JobId job_id,
@@ -172,10 +172,8 @@ class PasswordStoreAndroidBackend
   void OnError(PasswordStoreAndroidBackendBridge::JobId job_id,
                AndroidBackendError error) override;
 
-  base::WeakPtr<syncer::ModelTypeControllerDelegate>
-  GetSyncControllerDelegate();
-
-  void QueueNewJob(JobId job_id, JobReturnHandler return_handler);
+  template <typename Callback>
+  void QueueNewJob(JobId job_id, Callback callback, MetricInfix metric_infix);
   JobReturnHandler GetAndEraseJob(JobId job_id);
 
   // Gets logins matching |form|.
@@ -215,14 +213,15 @@ class PasswordStoreAndroidBackend
       PasswordStoreChangeListReply callback);
 
   // Returns the complete list of PasswordForms (regardless of their blocklist
-  // status) from specified storage.
-  void GetAllLoginsForTarget(PasswordStoreOperationTarget target,
-                             LoginsOrErrorReply callback);
+  // status) for |account|.
+  void GetAllLoginsForAccount(
+      PasswordStoreAndroidBackendBridge::Account account,
+      LoginsOrErrorReply callback);
 
-  // Removes |form| from specified storage.
-  void RemoveLoginForTarget(const PasswordForm& form,
-                            PasswordStoreOperationTarget target,
-                            PasswordStoreChangeListReply callback);
+  // Removes |form| from |account|.
+  void RemoveLoginForAccount(const PasswordForm& form,
+                             PasswordStoreAndroidBackendBridge::Account account,
+                             PasswordStoreChangeListReply callback);
 
   // Invoked synchronously by `lifecycle_helper_` when Chrome is foregrounded.
   // This should not cover the initial startup since the registration for the
@@ -246,6 +245,9 @@ class PasswordStoreAndroidBackend
 
   // This object is the proxy to the JNI bridge that performs the API requests.
   std::unique_ptr<PasswordStoreAndroidBackendBridge> bridge_;
+
+  // Delegate to obtain sync status, and syncing account.
+  std::unique_ptr<SyncDelegate> sync_delegate_;
 
   // Delegate to handle sync events.
   std::unique_ptr<PasswordSyncControllerDelegateAndroid>

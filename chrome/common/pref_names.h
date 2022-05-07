@@ -448,7 +448,11 @@ extern const char kPrinterTypeDenyList[];
 extern const char kPrintingAllowedBackgroundGraphicsModes[];
 extern const char kPrintingBackgroundGraphicsDefault[];
 extern const char kPrintingPaperSizeDefault[];
+
+#if BUILDFLAG(ENABLE_PRINTING)
 extern const char kPrintingEnabled[];
+#endif  // BUILDFLAG(ENABLE_PRINTING)
+
 extern const char kPrintHeaderFooter[];
 extern const char kPrintPreviewDisabled[];
 extern const char kPrintPreviewDefaultDestinationSelectionRules[];
@@ -565,10 +569,6 @@ extern const char kStabilityOtherUserCrashCount[];
 extern const char kStabilityKernelCrashCount[];
 extern const char kStabilitySystemUncleanShutdownCount[];
 
-extern const char kStabilityPluginStats[];
-extern const char kStabilityPluginName[];
-extern const char kStabilityPluginCrashes[];
-
 extern const char kBrowserSuppressDefaultBrowserPrompt[];
 
 extern const char kBrowserWindowPlacement[];
@@ -583,6 +583,7 @@ extern const char kDownloadExtensionsToOpen[];
 extern const char kDownloadExtensionsToOpenByPolicy[];
 extern const char kDownloadAllowedURLsForOpenByPolicy[];
 extern const char kDownloadDirUpgraded[];
+extern const char kDownloadLastCompleteTime[];
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS) || \
     BUILDFLAG(IS_MAC)
 extern const char kOpenPdfDownloadInSystemReader[];

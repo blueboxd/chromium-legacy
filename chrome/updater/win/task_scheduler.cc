@@ -48,11 +48,6 @@ const wchar_t kFiveHoursText[] = L"PT5H";
 const wchar_t kFifteenMinutesText[] = L"PT15M";
 const wchar_t kOneDayText[] = L"P1D";
 
-// Names of the folders used to group the scheduled tasks in.
-const wchar_t kTaskCompanyFolder[] = L"\\" COMPANY_SHORTNAME_STRING;
-const wchar_t kTaskSubfolderName[] =
-    L"\\" COMPANY_SHORTNAME_STRING L"\\" PRODUCT_FULLNAME_STRING;
-
 const size_t kNumDeleteTaskRetry = 3;
 const size_t kDeleteRetryDelayInMs = 100;
 
@@ -137,6 +132,20 @@ Microsoft::WRL::ComPtr<ITaskService> GetTaskService() {
 
   PinModule(kV2Library);
   return task_service;
+}
+
+// Name of the company folder used to group the scheduled tasks in. System task
+// folders have a "System" suffix, and User task folders have a "User" suffix.
+std::wstring GetTaskCompanyFolder(UpdaterScope scope) {
+  return base::StrCat({L"\\" COMPANY_SHORTNAME_STRING,
+                       scope == UpdaterScope::kSystem ? L"System " : L"User "});
+}
+
+// Name of the sub-folder that the scheduled tasks are created in, prefixed with
+// the company folder `GetTaskCompanyFolder`.
+std::wstring GetTaskSubfolderName(UpdaterScope scope) {
+  return base::StrCat(
+      {GetTaskCompanyFolder(scope), L"\\" PRODUCT_FULLNAME_STRING});
 }
 
 // A task scheduler class uses the V2 API of the task scheduler.
@@ -369,8 +378,8 @@ class TaskSchedulerV2 final : public TaskScheduler {
     DCHECK(!IsTaskRegistered(task_name));
 
     // Try to delete \\Company\Product first and \\Company second
-    if (DeleteFolderIfEmpty(kTaskSubfolderName))
-      DeleteFolderIfEmpty(kTaskCompanyFolder);
+    if (DeleteFolderIfEmpty(GetTaskSubfolderName(GetUpdaterScope())))
+      DeleteFolderIfEmpty(GetTaskCompanyFolder(GetUpdaterScope()));
 
     return true;
   }
@@ -616,9 +625,12 @@ class TaskSchedulerV2 final : public TaskScheduler {
       return false;
     }
 
-    base::win::ScopedBstr task_xml;
-    task->get_XmlText(task_xml.Receive());
-    VLOG(2) << "Registering Task with XML: " << task_xml.Get();
+    VLOG(2) << "Registering Task with XML: " << [&task]() -> std::wstring {
+      base::win::ScopedBstr task_xml;
+      if (SUCCEEDED(task->get_XmlText(task_xml.Receive())))
+        return task_xml.Get();
+      return L"";
+    }();
 
     Microsoft::WRL::ComPtr<IRegisteredTask> registered_task;
     base::win::ScopedVariant user(user_name.Get());
@@ -642,6 +654,53 @@ class TaskSchedulerV2 final : public TaskScheduler {
 
     VLOG(1) << "Successfully registered: "
             << run_command.GetCommandLineString();
+    return true;
+  }
+
+  bool StartTask(const wchar_t* task_name) override {
+    DCHECK(task_name);
+
+    if (!task_folder_)
+      return false;
+
+    Microsoft::WRL::ComPtr<IRegisteredTask> registered_task;
+    if (!GetTask(task_name, &registered_task)) {
+      LOG(ERROR) << "GetTask failed.";
+      return false;
+    }
+
+    if ([&registered_task]() {
+          Microsoft::WRL::ComPtr<IRunningTaskCollection>
+              running_task_collection;
+          HRESULT hr =
+              registered_task->GetInstances(0, &running_task_collection);
+          if (FAILED(hr)) {
+            LOG(ERROR) << "IRegisteredTask.GetInstances failed. " << std::hex
+                       << hr;
+            return false;
+          }
+
+          long count = 0;  // NOLINT
+          hr = running_task_collection->get_Count(&count);
+          if (FAILED(hr)) {
+            LOG(ERROR) << "IRunningTaskCollection.get_Count failed. "
+                       << std::hex << hr;
+            return false;
+          }
+
+          return count > 0;
+        }()) {
+      // The task is already running.
+      return true;
+    }
+
+    HRESULT hr =
+        registered_task->Run(base::win::ScopedVariant::kEmptyVariant, nullptr);
+    if (FAILED(hr)) {
+      LOG(ERROR) << "IRegisteredTask.Run failed. " << std::hex << hr;
+      return false;
+    }
+
     return true;
   }
 
@@ -944,15 +1003,16 @@ class TaskSchedulerV2 final : public TaskScheduler {
 
     // Try to find the folder first.
     Microsoft::WRL::ComPtr<ITaskFolder> folder;
-    base::win::ScopedBstr company_folder_name(kTaskSubfolderName);
-    hr = root_task_folder->GetFolder(company_folder_name.Get(), &folder);
+    base::win::ScopedBstr task_subfolder_name(
+        GetTaskSubfolderName(GetUpdaterScope()));
+    hr = root_task_folder->GetFolder(task_subfolder_name.Get(), &folder);
 
     // Try creating the folder it wasn't there.
     if (FAILED(hr) && (hr == HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND) ||
                        hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))) {
       // Use default SDDL.
       hr = root_task_folder->CreateFolder(
-          company_folder_name.Get(), base::win::ScopedVariant::kEmptyVariant,
+          task_subfolder_name.Get(), base::win::ScopedVariant::kEmptyVariant,
           &folder);
 
       if (FAILED(hr)) {
@@ -1001,7 +1061,7 @@ class TaskSchedulerV2 final : public TaskScheduler {
 
   // If the task folder specified by |folder_name| is empty, try to delete it.
   // Ignore failures. Returns true if the folder is successfully deleted.
-  bool DeleteFolderIfEmpty(const wchar_t* folder_name) {
+  bool DeleteFolderIfEmpty(const std::wstring& folder_name) {
     // Try deleting if empty. Race conditions here should be handled by the API.
     Microsoft::WRL::ComPtr<ITaskFolder> root_task_folder;
     HRESULT hr = task_service_->GetFolder(base::win::ScopedBstr(L"\\").Get(),
@@ -1088,17 +1148,23 @@ std::unique_ptr<TaskScheduler> TaskScheduler::CreateInstance() {
 TaskScheduler::TaskScheduler() = default;
 
 std::ostream& operator<<(std::ostream& stream,
-                         const TaskScheduler::TaskInfo& t) {
-  std::wstring value =
-      base::StrCat({L"[TaskInfo][name]", t.name, L"[description]",
-                    t.description, L"[exec_actions]"});
-  for (auto exec_action : t.exec_actions)
-    value += base::StrCat({L"[exec_action]", exec_action.value()});
+                         const TaskScheduler::TaskExecAction& t) {
+  return stream << "TaskExecAction: application_path: "
+                << t.application_path.value()
+                << ", working_dir: " << t.working_dir.value()
+                << ", arguments: " << t.arguments;
+}
 
-  value +=
-      base::StrCat({L"[logon_type]", base::StringPrintf(L"0x%x", t.logon_type),
-                    L"[user_id]", t.user_id});
-  return stream << value;
+std::ostream& operator<<(std::ostream& stream,
+                         const TaskScheduler::TaskInfo& t) {
+  stream << "TaskInfo: name: " << t.name << ", description: " << t.description
+         << ", exec_actions: ";
+
+  for (auto exec_action : t.exec_actions)
+    stream << ", exec_action: " << exec_action;
+
+  return stream << ", logon_type: " << base::StringPrintf("0x%x", t.logon_type)
+                << ", user_id: " << t.user_id;
 }
 
 }  // namespace updater

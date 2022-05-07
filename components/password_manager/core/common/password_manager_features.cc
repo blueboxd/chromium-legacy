@@ -6,11 +6,9 @@
 
 #include "build/build_config.h"
 
-namespace password_manager {
-
+namespace password_manager::features {
 // NOTE: It is strongly recommended to use UpperCamelCase style for feature
 //       names, e.g. "MyGreatFeature".
-namespace features {
 
 // Enables Biometrics for the Touch To Fill feature. This only effects Android.
 const base::Feature kBiometricTouchToFill = {"BiometricTouchToFill",
@@ -26,6 +24,10 @@ const base::Feature kDetectFormSubmissionOnFormClear = {
     base::FEATURE_ENABLED_BY_DEFAULT
 #endif
 };
+
+// Enables favicons in Password Manager.
+const base::Feature kEnableFaviconForPasswords{
+    "EnableFaviconForPasswords", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables UI that allows the user to create a strong password even if the field
 // wasn't parsed as a new password field.
@@ -88,6 +90,10 @@ const base::Feature kMuteCompromisedPasswords{
 
 // Enables adding, displaying and modifying extra notes to stored credentials.
 const base::Feature kPasswordNotes{"PasswordNotes",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables sending credentials from the settings UI.
+const base::Feature kSendPasswords{"SendPasswords",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables password leak detection for unauthenticated users.
@@ -213,6 +219,9 @@ const base::Feature kUnifiedPasswordManagerSyncUsingAndroidBackendOnly{
     base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
+const base::Feature kUnifiedPasswordManagerDesktop = {
+    "UnifiedPasswordManagerDesktop", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables support of sending votes on username first flow. The votes are sent
 // on single username forms and are based on user interaction with the save
 // prompt.
@@ -277,6 +286,12 @@ bool IsPasswordScriptsFetchingEnabled() {
          base::FeatureList::IsEnabled(kPasswordDomainCapabilitiesFetching);
 }
 
-}  // namespace features
+#if BUILDFLAG(IS_ANDROID)
+bool UsesUnifiedPasswordManagerUi() {
+  return base::FeatureList::IsEnabled(kUnifiedPasswordManagerAndroid) &&
+         kUpmExperimentVariationParam.Get() !=
+             UpmExperimentVariation::kShadowSyncingUsers;
+}
+#endif  // IS_ANDROID
 
-}  // namespace password_manager
+}  // namespace password_manager::features

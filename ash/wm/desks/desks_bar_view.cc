@@ -976,10 +976,27 @@ void DesksBarView::UpdateDesksTemplatesButtonVisibility() {
   const bool should_show_ui =
       DesksTemplatesPresenter::Get()->should_show_templates_ui();
   const bool is_zero_state = IsZeroState();
+
   zero_state_desks_templates_button_->SetVisible(should_show_ui &&
                                                  is_zero_state);
   expanded_state_desks_templates_button_->SetVisible(should_show_ui &&
                                                      !is_zero_state);
+
+  const int begin_x = GetFirstMiniViewXOffset();
+  Layout();
+
+  if (mini_views_.empty())
+    return;
+
+  // The mini views and new desk button are already laid out in the earlier
+  // `Layout()` call. This call shifts the transforms of the mini views and new
+  // desk button and then animates to the identity transform.
+  PerformDesksTemplatesButtonVisibilityAnimation(
+      mini_views_,
+      is_zero_state
+          ? static_cast<views::View*>(zero_state_new_desk_button_)
+          : static_cast<views::View*>(expanded_state_new_desk_button_),
+      begin_x - GetFirstMiniViewXOffset());
 }
 
 DeskMiniView* DesksBarView::FindMiniViewForDesk(const Desk* desk) const {
@@ -1006,6 +1023,12 @@ void DesksBarView::SwitchToZeroState() {
 
   std::vector<DeskMiniView*> removed_mini_views = mini_views_;
   mini_views_.clear();
+
+  auto* highlight_controller = GetHighlightController();
+  OverviewHighlightableView* view = highlight_controller->highlighted_view();
+  // Reset the highlight if it is highlighted on a descendant of `this`.
+  if (view && Contains(view->GetView()))
+    highlight_controller->ResetHighlightedView();
 
   // Keep current layout until the animation is completed since the animation
   // for going back to zero state is based on the expanded bar's current
@@ -1204,7 +1227,9 @@ int DesksBarView::GetAdjustedUncroppedScrollPosition(int position) const {
 
 void DesksBarView::OnDesksTemplatesButtonPressed() {
   RecordLoadTemplateHistogram();
-  overview_grid_->overview_session()->ShowDesksTemplatesGrids(IsZeroState());
+  overview_grid_->overview_session()->ShowDesksTemplatesGrids(
+      IsZeroState(), base::GUID(),
+      GetWidget()->GetNativeWindow()->GetRootWindow());
 }
 
 void DesksBarView::OnContentsScrolled() {

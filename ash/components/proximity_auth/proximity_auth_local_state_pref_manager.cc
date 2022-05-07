@@ -8,10 +8,10 @@
 #include <vector>
 
 #include "ash/components/proximity_auth/proximity_auth_pref_names.h"
+#include "ash/services/multidevice_setup/public/cpp/prefs.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
@@ -76,7 +76,7 @@ bool ProximityAuthLocalStatePrefManager::IsEasyUnlockAllowed() const {
   const base::Value* user_prefs = GetActiveUserPrefsDictionary();
   if (user_prefs) {
     absl::optional<bool> pref_value = user_prefs->FindBoolKey(
-        chromeos::multidevice_setup::kSmartLockAllowedPrefName);
+        ash::multidevice_setup::kSmartLockAllowedPrefName);
     if (pref_value.has_value()) {
       return pref_value.value();
     }
@@ -89,7 +89,7 @@ bool ProximityAuthLocalStatePrefManager::IsEasyUnlockEnabled() const {
   const base::Value* user_prefs = GetActiveUserPrefsDictionary();
   if (user_prefs) {
     absl::optional<bool> pref_value = user_prefs->FindBoolKey(
-        chromeos::multidevice_setup::kSmartLockEnabledPrefName);
+        ash::multidevice_setup::kSmartLockEnabledPrefName);
     if (pref_value.has_value()) {
       return pref_value.value();
     }
@@ -107,7 +107,7 @@ bool ProximityAuthLocalStatePrefManager::IsChromeOSLoginAllowed() const {
   const base::Value* user_prefs = GetActiveUserPrefsDictionary();
   if (user_prefs) {
     absl::optional<bool> pref_value = user_prefs->FindBoolKey(
-        chromeos::multidevice_setup::kSmartLockSigninAllowedPrefName);
+        ash::multidevice_setup::kSmartLockSigninAllowedPrefName);
     if (pref_value.has_value()) {
       return pref_value.value();
     }

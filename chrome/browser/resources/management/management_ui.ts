@@ -113,7 +113,7 @@ class ManagementUiElement extends ManagementUiElementBase {
   private browserProxy_: ManagementBrowserProxy|null = null;
 
   /** @override */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     document.documentElement.classList.remove('loading');
@@ -282,6 +282,8 @@ class ManagementUiElement extends ManagementUiElementBase {
         return 'management:timelapse';
       case DeviceReportingType.CRD_SESSIONS:
         return 'management:timelapse';
+      case DeviceReportingType.PERIPHERALS:
+        return 'management:usb';
       default:
         return 'cr:computer';
     }

@@ -98,9 +98,7 @@ class ExistingUserController : public LoginDisplay::Delegate,
   bool IsSigninInProgress() const override;
   void Login(const UserContext& user_context,
              const SigninSpecifics& specifics) override;
-  void OnStartEnterpriseEnrollment() override;
   void OnStartKioskEnableScreen() override;
-  void OnStartKioskAutolaunchScreen() override;
   void ResetAutoLoginTimer() override;
 
   void CompleteLogin(const UserContext& user_context);
@@ -202,27 +200,16 @@ class ExistingUserController : public LoginDisplay::Delegate,
   // not localized.
   void ShowError(SigninError error, const std::string& details);
 
-  // Handles result of ownership check and starts enterprise or kiosk enrollment
-  // if applicable.
-  void OnEnrollmentOwnershipCheckCompleted(
-      DeviceSettingsService::OwnershipStatus status);
-
   // Handles result of consumer kiosk configurability check and starts
   // enable kiosk screen if applicable.
   void OnConsumerKioskAutoLaunchCheckCompleted(
       KioskAppManager::ConsumerKioskAutoLaunchStatus status);
-
-  // Enters the enterprise enrollment screen.
-  void ShowEnrollmentScreen();
 
   // Shows privacy notification in case of auto lunch managed guest session.
   void ShowAutoLaunchManagedGuestSessionNotification();
 
   // Shows kiosk feature enable screen.
   void ShowKioskEnableScreen();
-
-  // Shows "kiosk auto-launch permission" screen.
-  void ShowKioskAutolaunchScreen();
 
   // Shows "filesystem encryption migration" screen.
   void ShowEncryptionMigrationScreen(const UserContext& user_context,
@@ -390,7 +377,6 @@ class ExistingUserController : public LoginDisplay::Delegate,
   std::unique_ptr<login::NetworkStateHelper> network_state_helper_;
 
   base::CallbackListSubscription show_user_names_subscription_;
-  base::CallbackListSubscription allow_new_user_subscription_;
   base::CallbackListSubscription allow_guest_subscription_;
   base::CallbackListSubscription users_subscription_;
   base::CallbackListSubscription local_account_auto_login_id_subscription_;

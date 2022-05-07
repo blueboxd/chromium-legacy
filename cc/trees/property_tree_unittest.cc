@@ -165,7 +165,7 @@ TEST(PropertyTreeTest, ComputeTransformSiblingSingularAncestor) {
   tree.UpdateTransforms(1);
 
   TransformNode singular;
-  singular.local.matrix().set(2, 2, 0.0);
+  singular.local.matrix().setRC(2, 2, 0.0);
   singular.id = tree.Insert(singular, 1);
 
   TransformNode child;
@@ -193,6 +193,39 @@ TEST(PropertyTreeTest, ComputeTransformSiblingSingularAncestor) {
   bool success = tree.CombineInversesBetween(3, 4, &transform);
   EXPECT_TRUE(success);
   EXPECT_TRANSFORM_EQ(expected, transform);
+}
+
+// Tests that the transform for fixed elements is translated based on the
+// overscroll nodes scroll_offset.
+TEST(PropertyTreeTest, FixedElementInverseTranslation) {
+  FakeProtectedSequenceSynchronizer synchronizer;
+  PropertyTrees property_trees(synchronizer);
+  TransformTree& tree = property_trees.transform_tree_mutable();
+  TransformNode contents_root;
+  contents_root.local.Translate(2, 2);
+  contents_root.id = tree.Insert(contents_root, 0);
+  tree.UpdateTransforms(1);
+
+  const gfx::PointF overscroll_offset(0, 10);
+  TransformNode overscroll_node;
+  overscroll_node.scroll_offset = overscroll_offset;
+  overscroll_node.id = tree.Insert(overscroll_node, 1);
+
+  tree.set_overscroll_node_id(overscroll_node.id);
+  tree.set_fixed_elements_dont_overscroll(true);
+
+  TransformNode fixed_node;
+  fixed_node.is_fixed_position = true;
+  fixed_node.id = tree.Insert(fixed_node, 2);
+
+  EXPECT_TRUE(tree.ShouldUndoOverscroll(&fixed_node));
+
+  tree.UpdateTransforms(2);  // overscroll_node
+  tree.UpdateTransforms(3);  // fixed_node
+
+  gfx::Transform expected;
+  expected.Translate(overscroll_offset.OffsetFromOrigin());
+  EXPECT_TRANSFORM_EQ(expected, tree.Node(fixed_node.id)->to_parent);
 }
 
 TEST(PropertyTreeTest, TransformsWithFlattening) {

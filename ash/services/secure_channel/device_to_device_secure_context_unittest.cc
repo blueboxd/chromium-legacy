@@ -7,17 +7,16 @@
 #include <list>
 #include <memory>
 
+#include "ash/services/device_sync/proto/cryptauth_api.pb.h"
 #include "ash/services/secure_channel/session_keys.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "chromeos/components/multidevice/fake_secure_message_delegate.h"
 #include "chromeos/components/multidevice/logging/logging.h"
-#include "chromeos/services/device_sync/proto/cryptauth_api.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/securemessage/proto/securemessage.pb.h"
-namespace chromeos {
 
-namespace secure_channel {
+namespace ash::secure_channel {
 
 namespace {
 
@@ -279,6 +278,4 @@ TEST_F(SecureChannelDeviceToDeviceSecureContextTest,
   EXPECT_EQ(message4, decoded_messages.front());
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

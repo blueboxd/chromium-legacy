@@ -91,6 +91,40 @@ TEST_F(ShortcutInfoTest, AllAttributesUpdate) {
   ASSERT_EQ(manifest_.icons[0].src, GURL(info_.icon_urls[0]));
 }
 
+TEST_F(ShortcutInfoTest, GetAllWebApkIcons) {
+  GURL best_primary_icon_url("https://best_primary_icon.png");
+  GURL splash_image_url("https://splash_image.png");
+  GURL best_shortcut_icon_url_1("https://best_shortcut_icon_1.png");
+  GURL best_shortcut_icon_url_2("https://best_shortcut_icon_2.png");
+
+  info_.best_shortcut_icon_urls.push_back(best_shortcut_icon_url_1);
+  info_.best_shortcut_icon_urls.push_back(best_shortcut_icon_url_2);
+  info_.best_primary_icon_url = best_primary_icon_url;
+  info_.splash_image_url = splash_image_url;
+
+  std::set<GURL> result = info_.GetWebApkIcons();
+  std::set<GURL> expected{best_shortcut_icon_url_1, best_shortcut_icon_url_2,
+                          best_primary_icon_url, splash_image_url};
+
+  ASSERT_EQ(4u, result.size());
+  ASSERT_EQ(expected, result);
+}
+
+TEST_F(ShortcutInfoTest, NotContainEmptyOrDuplicateWebApkIcons) {
+  GURL best_primary_icon_url = GURL("https://best_primary_icon.com");
+  GURL best_shortcut_icon_url = GURL("https://best_shortcut_icon_1.com");
+
+  info_.best_shortcut_icon_urls.push_back(best_shortcut_icon_url);
+  info_.best_shortcut_icon_urls.push_back(best_primary_icon_url);
+  info_.best_primary_icon_url = best_primary_icon_url;
+
+  std::set<GURL> result = info_.GetWebApkIcons();
+  std::set<GURL> expected{best_shortcut_icon_url, best_primary_icon_url};
+
+  ASSERT_EQ(2u, result.size());
+  ASSERT_EQ(expected, result);
+}
+
 TEST_F(ShortcutInfoTest, NameFallsBackToShortName) {
   manifest_.short_name = u"short_name";
   info_.UpdateFromManifest(manifest_);
@@ -200,6 +234,14 @@ TEST_F(ShortcutInfoTest, SplashIconFallbackToAny) {
 
   EXPECT_EQ(info_.splash_image_url.path(), "/icon_144.png");
   EXPECT_FALSE(info_.is_splash_image_maskable);
+}
+
+TEST_F(ShortcutInfoTest, DisplayOverride) {
+  manifest_.display = blink::mojom::DisplayMode::kStandalone;
+  manifest_.display_override = {blink::mojom::DisplayMode::kFullscreen};
+  info_.UpdateFromManifest(manifest_);
+
+  EXPECT_EQ(info_.display, blink::mojom::DisplayMode::kFullscreen);
 }
 
 }  // namespace webapps

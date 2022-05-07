@@ -494,7 +494,6 @@ void CreditCardSaveManager::OfferCardLocalSave() {
             .with_has_non_focusable_field(has_non_focusable_field_),
         base::BindOnce(&CreditCardSaveManager::OnUserDidDecideOnLocalSave,
                        weak_ptr_factory_.GetWeakPtr()));
-
     // Log metrics.
     if (local_card_save_candidate_.HasFirstAndLastName())
       AutofillMetrics::LogSaveCardWithFirstAndLastNameOffered(
@@ -523,6 +522,7 @@ void CreditCardSaveManager::OfferCardUploadSave() {
         upload_request_.card, legal_message_lines_,
         AutofillClient::SaveCreditCardOptions()
             .with_from_dynamic_change_form(from_dynamic_change_form_)
+            .with_has_multiple_legal_lines(legal_message_lines_.size() > 1)
             .with_has_non_focusable_field(has_non_focusable_field_)
             .with_should_request_name_from_user(should_request_name_from_user_)
             .with_should_request_expiration_date_from_user(
@@ -580,11 +580,9 @@ void CreditCardSaveManager::OnUserDidDecideOnLocalSave(
       GetLocalCardMigrationStrikeDatabase()->RemoveStrikes(
           LocalCardMigrationStrikeDatabase::kStrikesToRemoveWhenLocalCardAdded);
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
-
       personal_data_manager_->OnAcceptedLocalCreditCardSave(
           local_card_save_candidate_);
       break;
-
     case AutofillClient::SaveCardOfferUserDecision::kDeclined:
     case AutofillClient::SaveCardOfferUserDecision::kIgnored:
       OnUserDidIgnoreOrDeclineSave(local_card_save_candidate_.LastFourDigits());
@@ -858,7 +856,6 @@ void CreditCardSaveManager::OnUserDidDecideOnUploadSave(
       OnUserDidAcceptUploadHelper(user_provided_card_details);
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
       break;
-
     case AutofillClient::SaveCardOfferUserDecision::kDeclined:
     case AutofillClient::SaveCardOfferUserDecision::kIgnored:
       OnUserDidIgnoreOrDeclineSave(upload_request_.card.LastFourDigits());
@@ -930,6 +927,13 @@ void CreditCardSaveManager::OnUserDidAcceptUploadHelper(
         CREDIT_CARD_EXP_4_DIGIT_YEAR,
         user_provided_card_details.expiration_date_year, app_locale_);
   }
+
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnableUpdateVirtualCardEnrollment)) {
+    client_->GetVirtualCardEnrollmentManager()
+        ->SetSaveCardBubbleAcceptedTimestamp(AutofillClock::Now());
+  }
+
   // Populating risk data and offering upload occur asynchronously.
   // If |risk_data| has already been loaded, send the upload card request.
   // Otherwise, continue to wait and let OnDidGetUploadRiskData handle it.

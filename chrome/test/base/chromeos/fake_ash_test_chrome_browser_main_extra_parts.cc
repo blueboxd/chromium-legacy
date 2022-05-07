@@ -8,11 +8,13 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crosapi/test_controller_ash.h"
 #include "chromeos/services/machine_learning/public/cpp/fake_service_connection.h"
 #include "ui/base/test/ui_controls.h"
+#include "ui/views/input_event_activation_protector.h"
 
 namespace test {
 
@@ -62,6 +64,8 @@ void FakeAshTestChromeBrowserMainExtraParts::PostBrowserStart() {
 
   crosapi::CrosapiManager::Get()->crosapi_ash()->SetTestControllerForTesting(
       test_controller_ash_.get());
+  crosapi::BrowserManager::Get()->DisableAutoLaunchForTesting();
+  views::InputEventActivationProtector::DisableForTesting();
 
   // Call this at the end of PostBrowserStart().
   AshIsReadyForTesting();

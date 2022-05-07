@@ -52,6 +52,8 @@ const std::string kTestLogIdAsString(reinterpret_cast<const char*>(kTestLogId),
 
 constexpr base::TimeDelta kTestLogMMD = base::Seconds(42);
 
+constexpr base::TimeDelta kTestHWMPeriod = base::Seconds(1);
+
 class SCTAuditingHandlerTest : public testing::Test {
  public:
   SCTAuditingHandlerTest()
@@ -64,6 +66,7 @@ class SCTAuditingHandlerTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(persistence_dir_.CreateUniqueTempDir());
     persistence_path_ = persistence_dir_.GetPath().AppendASCII("SCT Auditing");
+    SCTAuditingReporter::SetRetryDelayForTesting(base::TimeDelta());
 
     // Set up a NetworkContext.
     mojom::NetworkContextParamsPtr context_params =
@@ -95,12 +98,14 @@ class SCTAuditingHandlerTest : public testing::Test {
 
     // Set up SCT auditing configuration.
     auto* cache = network_service_->sct_auditing_cache();
-    cache->set_sampling_rate(1.0);
-    cache->set_report_uri(GURL("https://example.test"));
-    cache->set_traffic_annotation(
-        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-    cache->set_hashdance_traffic_annotation(
-        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
+    mojom::SCTAuditingConfigurationPtr configuration(base::in_place);
+    configuration->sampling_rate = 1.0;
+    configuration->report_uri = GURL("https://example.test");
+    configuration->traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+    configuration->hashdance_traffic_annotation =
+        net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
+    cache->Configure(std::move(configuration));
 
     chain_ =
         net::ImportCertFromFile(net::GetTestCertsDirectory(), "ok_cert.pem");
@@ -108,6 +113,7 @@ class SCTAuditingHandlerTest : public testing::Test {
 
     handler_ = std::make_unique<SCTAuditingHandler>(network_context_.get(),
                                                     persistence_path_);
+    handler_->set_hwm_metrics_period_for_testing(kTestHWMPeriod);
     handler_->SetMode(mojom::SCTAuditingMode::kEnhancedSafeBrowsingReporting);
 
     mojo::PendingRemote<network::mojom::URLLoaderFactory> factory_remote;
@@ -203,6 +209,21 @@ void MakeTestSCTAndStatus(
   sct_list->push_back(net::SignedCertificateTimestampAndStatus(sct, status));
 }
 
+// Tests that if reporting is disabled, reports are not created.
+TEST_F(SCTAuditingHandlerTest, DisableReporting) {
+  // Create a report which would normally trigger a send.
+  const net::HostPortPair host_port_pair("example.com", 443);
+  net::SignedCertificateTimestampAndStatusList sct_list;
+  MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
+                       "extensions", "signature", base::Time::Now(),
+                       net::ct::SCT_STATUS_OK, &sct_list);
+  handler_->SetMode(mojom::SCTAuditingMode::kDisabled);
+  handler_->MaybeEnqueueReport(host_port_pair, chain_.get(), sct_list);
+
+  // Check that there are no pendin reports.
+  EXPECT_EQ(0u, handler_->GetPendingReportersForTesting()->size());
+}
+
 // Tests that when a new report is sampled, it will be sent to the server.
 // TODO(cthomp): Allow tracking success/failure of the report being sent. One
 // way would be to have OnSuccess/OnError handlers installed on the handler.
@@ -236,6 +257,10 @@ TEST_F(SCTAuditingHandlerTest, ReportsSentWithServerOK) {
 
 // Tests when the report server returns an HTTP error code.
 TEST_F(SCTAuditingHandlerTest, ReportSentWithServerError) {
+  // Set a long retry delay to allow inspecting the handler between an error and
+  // resending the report.
+  SCTAuditingReporter::SetRetryDelayForTesting(base::Seconds(1));
+
   // Enqueue a report which will trigger a send.
   const net::HostPortPair host_port_pair("example.com", 443);
   net::SignedCertificateTimestampAndStatusList sct_list;
@@ -417,19 +442,19 @@ TEST_F(SCTAuditingHandlerTest, ReportSucceedsOnSecondTry) {
       /*content=*/"",
       /*status=*/net::HTTP_TOO_MANY_REQUESTS);
 
-  EXPECT_EQ(0, url_loader_factory_.NumPending());
+  // The retry timer is set to zero, so a retry should have been scheduled
+  // already.
+  EXPECT_EQ(1, url_loader_factory_.NumPending());
+
   // With retry enabled, the pending reporter should remain on failure.
   EXPECT_EQ(1u, handler_->GetPendingReportersForTesting()->size());
 
-  // Simulate the server returning 200 OK to the report request. The request is
-  // not yet pending, so set the "default" response. Then when
-  // FastForwardUntilNoTasksRemain() is called, the retry will trigger and
-  // succeed. This is more robust than manually advancing the mock time due to
-  // the jitter specified by the backoff policy and the timeout set on the
-  // SimpleURLLoader.
-  url_loader_factory_.AddResponse("https://example.test",
-                                  /*content=*/"",
-                                  /*status=*/net::HTTP_OK);
+  // Simulate the server returning 200 OK to the report request.
+  url_loader_factory_.SimulateResponseForPendingRequest(
+      "https://example.test",
+      /*content=*/"",
+      /*status=*/net::HTTP_OK);
+
   // Wait for second request.
   WaitForRequests(2u);
 
@@ -512,29 +537,22 @@ TEST_F(SCTAuditingHandlerTest, ReportHighWaterMarkMetrics) {
   base::HistogramTester histograms;
 
   // Send two reports.
-  // Use the NetworkContext's handler to avoid repeating histograms.
-  handler_.reset();
   const net::HostPortPair host_port_pair("example.com", 443);
   net::SignedCertificateTimestampAndStatusList sct_list1;
   MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
                        "extensions1", "signature1", base::Time::Now(),
                        net::ct::SCT_STATUS_OK, &sct_list1);
-  network_context_->sct_auditing_handler()->MaybeEnqueueReport(
-      host_port_pair, chain_.get(), sct_list1);
+  handler_->MaybeEnqueueReport(host_port_pair, chain_.get(), sct_list1);
 
   net::SignedCertificateTimestampAndStatusList sct_list2;
   MakeTestSCTAndStatus(net::ct::SignedCertificateTimestamp::SCT_EMBEDDED,
                        "extensions2", "signature2", base::Time::Now(),
                        net::ct::SCT_STATUS_OK, &sct_list2);
-  network_context_->sct_auditing_handler()->MaybeEnqueueReport(
-      host_port_pair, chain_.get(), sct_list2);
+  handler_->MaybeEnqueueReport(host_port_pair, chain_.get(), sct_list2);
 
-  EXPECT_EQ(2u, network_context_->sct_auditing_handler()
-                    ->GetPendingReportersForTesting()
-                    ->size());
+  EXPECT_EQ(2u, handler_->GetPendingReportersForTesting()->size());
 
-  // High-water-mark metrics are recorded once an hour.
-  task_environment_.FastForwardBy(base::Hours(1));
+  task_environment_.FastForwardBy(kTestHWMPeriod);
 
   // The bucket for a HWM of 2 should have a single sample.
   histograms.ExpectUniqueSample("Security.SCTAuditing.OptIn.ReportersHWM", 2,

@@ -26,6 +26,8 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/ukm/test_ukm_recorder.h"
+#include "content/public/common/content_features.h"
+#include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/fenced_frame_test_util.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -34,6 +36,7 @@
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "third_party/blink/public/common/features.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/test/base/android/android_browser_test.h"
@@ -153,6 +156,8 @@ std::unique_ptr<net::test_server::HttpResponse> BasicResponse(
   if (request.relative_url == "/cart.html")
     return nullptr;
   if (request.relative_url == "/shopping-cart.html")
+    return nullptr;
+  if (request.relative_url == "/cart-in-portal.html")
     return nullptr;
 
   auto response = std::make_unique<net::test_server::BasicHttpResponse>();
@@ -991,6 +996,13 @@ class CommerceHintCartPatternTest : public CommerceHintAgentTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CommerceHintCartPatternTest, VisitCart) {
+  // The test is flaky with same-site back/forward cache, presumably because it
+  // doesn't expect a RenderView change on same-site navigations.
+  // TODO(https://crbug.com/1302902): Investigate and fix this.
+  content::DisableBackForwardCacheForTesting(
+      web_contents(),
+      content::BackForwardCache::TEST_ASSUMES_NO_RENDER_FRAME_CHANGE);
+
   NavigateToURL("https://www.guitarcenter.com/SpecialLoL");
   WaitForUmaCount("Commerce.Carts.VisitCart", 1);
 
@@ -1216,6 +1228,37 @@ IN_PROC_BROWSER_TEST_F(CommerceHintAgentFencedFrameTest,
   EXPECT_NE(nullptr, fenced_frame_host);
 
   // Do not affect counts.
+  WaitForUmaCount("Commerce.Carts.VisitCart", 1);
+}
+
+class CommerceHintAgentPortalBrowserTest : public CommerceHintAgentTest {
+ public:
+  CommerceHintAgentPortalBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{blink::features::kPortals,
+                              blink::features::kPortalsCrossOrigin},
+        /*disabled_features=*/{});
+  }
+  ~CommerceHintAgentPortalBrowserTest() override = default;
+  CommerceHintAgentPortalBrowserTest(
+      const CommerceHintAgentPortalBrowserTest&) = delete;
+
+  CommerceHintAgentPortalBrowserTest& operator=(
+      const CommerceHintAgentPortalBrowserTest&) = delete;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_F(CommerceHintAgentPortalBrowserTest, VisitCartInPortal) {
+  // For add-to-cart by URL, normally a URL in that domain has already been
+  // committed.
+  NavigateToURL("https://www.guitarcenter.com/cart-in-portal.html");
+  WaitForUmaCount("Commerce.Carts.VisitCart", 1);
+
+  EXPECT_EQ(true, content::EvalJs(web_contents(), "loadPromise"));
+
+  EXPECT_EQ(true, content::EvalJs(web_contents(), "activate()"));
   WaitForUmaCount("Commerce.Carts.VisitCart", 1);
 }
 

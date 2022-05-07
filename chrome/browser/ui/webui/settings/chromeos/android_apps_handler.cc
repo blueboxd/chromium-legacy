@@ -94,7 +94,7 @@ AndroidAppsHandler::BuildAndroidAppsInfo() {
 }
 
 void AndroidAppsHandler::HandleRequestAndroidAppsInfo(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
   SendAndroidAppsInfo();
 }
@@ -105,7 +105,7 @@ void AndroidAppsHandler::SendAndroidAppsInfo() {
 }
 
 void AndroidAppsHandler::ShowAndroidAppsSettings(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   bool activated_from_keyboard = false;
   if (args[0].is_bool())

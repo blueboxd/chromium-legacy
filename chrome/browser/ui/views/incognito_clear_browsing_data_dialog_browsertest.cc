@@ -67,9 +67,13 @@ IN_PROC_BROWSER_TEST_F(IncognitoClearBrowsingDataDialogBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(IncognitoClearBrowsingDataDialogBrowserTest,
                        TestCloseWindowsButton) {
+  base::HistogramTester histogram_tester;
   OpenDialog();
 
   GetDialogView()->AcceptDialog();
+  histogram_tester.ExpectBucketCount(
+      "Incognito.ClearBrowsingDataDialog.ActionType",
+      IncognitoClearBrowsingDataDialog::DialogActionType::kCloseIncognito, 1);
   ui_test_utils::WaitForBrowserToClose(GetIncognitoBrowser());
   ASSERT_EQ(0UL, BrowserList::GetIncognitoBrowserCount());
   ASSERT_TRUE(GetDialogView() == nullptr);
@@ -77,6 +81,7 @@ IN_PROC_BROWSER_TEST_F(IncognitoClearBrowsingDataDialogBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(IncognitoClearBrowsingDataDialogBrowserTest,
                        TestCancelButton) {
+  base::HistogramTester histogram_tester;
   OpenDialog();
 
   base::RunLoop run_loop;
@@ -88,6 +93,9 @@ IN_PROC_BROWSER_TEST_F(IncognitoClearBrowsingDataDialogBrowserTest,
       }));
 
   GetDialogView()->Cancel();
+  histogram_tester.ExpectBucketCount(
+      "Incognito.ClearBrowsingDataDialog.ActionType",
+      IncognitoClearBrowsingDataDialog::DialogActionType::kCancel, 1);
   run_loop.Run();
 }
 
@@ -105,40 +113,15 @@ IN_PROC_BROWSER_TEST_F(IncognitoClearBrowsingDataDialogBrowserTest,
   CloseBrowserSynchronously(GetIncognitoBrowser());
 }
 
-class IncognitoClearBrowsingDataTest
-    : public InProcessBrowserTest,
-      public testing::WithParamInterface<bool> {
- public:
-  IncognitoClearBrowsingDataTest() {
-    feature_list_.InitWithFeatureState(
-        features::kIncognitoClearBrowsingDataDialogForDesktop, GetParam());
-  }
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-INSTANTIATE_TEST_SUITE_P(IncognitoClearBrowsingDataTestWithFeatureFlag,
-                         IncognitoClearBrowsingDataTest,
-                         testing::Bool());
-
-IN_PROC_BROWSER_TEST_P(IncognitoClearBrowsingDataTest,
+IN_PROC_BROWSER_TEST_F(InProcessBrowserTest,
                        ClearBrowsingDataNavigationInIncognito) {
   Browser* incognito_browser = CreateIncognitoBrowser();
   ui_test_utils::SendToOmniboxAndSubmit(incognito_browser,
                                         "chrome://settings/clearBrowserData");
   std::u16string current_tab_title;
-
-  if (GetParam()) {
-    ui_test_utils::GetCurrentTabTitle(incognito_browser, &current_tab_title);
-    EXPECT_EQ(u"about:blank", current_tab_title);
-    ASSERT_TRUE(IncognitoClearBrowsingDataDialog::IsShowing());
-  } else {
-    // Should open the clear browsing data dialog in regular browser.
-    ui_test_utils::GetCurrentTabTitle(browser(), &current_tab_title);
-    EXPECT_EQ(u"chrome://settings/clearBrowserData", current_tab_title);
-    ASSERT_FALSE(IncognitoClearBrowsingDataDialog::IsShowing());
-  }
+  ui_test_utils::GetCurrentTabTitle(incognito_browser, &current_tab_title);
+  EXPECT_EQ(u"about:blank", current_tab_title);
+  ASSERT_TRUE(IncognitoClearBrowsingDataDialog::IsShowing());
 }
 
 class IncognitoHistoryDisclaimerDialogBrowserTest

@@ -219,6 +219,7 @@ class CORE_EXPORT CSSSelector {
     kPseudoAfter,
     kPseudoMarker,
     kPseudoModal,
+    kPseudoSelectorFragmentAnchor,
     kPseudoBackdrop,
     kPseudoLang,
     kPseudoNot,
@@ -299,10 +300,11 @@ class CORE_EXPORT CSSSelector {
     // See
     // https://github.com/WICG/shared-element-transitions/blob/main/explainer.md
     // for details.
-    kPseudoTransition,
-    kPseudoTransitionContainer,
-    kPseudoTransitionOldContent,
-    kPseudoTransitionNewContent,
+    kPseudoPageTransition,
+    kPseudoPageTransitionContainer,
+    kPseudoPageTransitionImageWrapper,
+    kPseudoPageTransitionOutgoingImage,
+    kPseudoPageTransitionIncomingImage,
   };
 
   enum class AttributeMatchType {

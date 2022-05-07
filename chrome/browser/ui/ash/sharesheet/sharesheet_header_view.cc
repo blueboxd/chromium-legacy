@@ -106,7 +106,8 @@ class SharesheetHeaderView::SharesheetImagePreview : public views::View {
                                   color_provider->IsDarkModeEnabled(),
                                   /*use_debug_colors=*/false),
         views::LayoutProvider::Get()->GetCornerRadiusMetric(
-            views::Emphasis::kMedium)));
+            views::Emphasis::kMedium),
+        1));
     SetLayoutManager(std::make_unique<views::BoxLayout>(
         views::BoxLayout::Orientation::kVertical,
         /* inside_border_insets */ gfx::Insets(),
@@ -127,7 +128,7 @@ class SharesheetHeaderView::SharesheetImagePreview : public views::View {
 
     // If we need to have more than 1 icon, add two rows so that we can
     // layout the icons in a grid.
-    DCHECK_GT(grid_icon_count, 1);
+    DCHECK_GT(grid_icon_count, 1u);
     AddRowToImageContainerView();
     AddRowToImageContainerView();
 
@@ -271,7 +272,7 @@ SharesheetHeaderView::SharesheetHeaderView(apps::mojom::IntentPtr intent,
   // Sets all views to be vertically centre-aligned.
   layout->set_cross_axis_alignment(
       views::BoxLayout::CrossAxisAlignment::kCenter);
-  SetFocusBehavior(View::FocusBehavior::ALWAYS);
+  SetFocusBehavior(View::FocusBehavior::ACCESSIBLE_ONLY);
 
   const bool has_files =
       (intent_->files.has_value() && !intent_->files.value().empty());
@@ -300,7 +301,7 @@ SharesheetHeaderView::SharesheetHeaderView(apps::mojom::IntentPtr intent,
     if (has_files) {
       ResolveImages();
     } else {
-      DCHECK_GT(image_preview_->GetImageViewCount(), 0);
+      DCHECK_GT(image_preview_->GetImageViewCount(), 0u);
       const auto icon_color = ColorProvider::Get()->GetContentLayerColor(
           ColorProvider::ContentLayerType::kIconColorProminent);
       gfx::ImageSkia file_type_icon = gfx::CreateVectorIcon(
@@ -324,7 +325,6 @@ void SharesheetHeaderView::ShowTextPreview() {
   std::vector<std::unique_ptr<views::Label>> preview_labels =
       ExtractShareText();
 
-  std::u16string filenames_tooltip_text = u"";
   if (intent_->files.has_value() && !intent_->files.value().empty()) {
     std::vector<std::u16string> file_names;
     for (const auto& file : intent_->files.value()) {
@@ -333,21 +333,24 @@ void SharesheetHeaderView::ShowTextPreview() {
       file_names.push_back(file_path.BaseName().LossyDisplayName());
     }
     std::u16string file_text;
+    std::u16string filenames_tooltip_text;
     if (file_names.size() == 1) {
       file_text = file_names[0];
     } else {
       // If there is more than 1 file, show an enumeration of the number of
       // files.
       auto size = intent_->files.value().size();
-      DCHECK_NE(size, 0);
+      DCHECK_NE(size, 0u);
       file_text =
           l10n_util::GetPluralStringFUTF16(IDS_SHARESHEET_FILES_LABEL, size);
       filenames_tooltip_text = ConcatenateFileNames(file_names);
     }
     auto file_label = CreatePreviewLabel(file_text);
-    file_label->SetTooltipText(filenames_tooltip_text);
-    file_label->SetAccessibleName(
-        base::StrCat({file_text, u" ", filenames_tooltip_text}));
+    if (!filenames_tooltip_text.empty()) {
+      file_label->SetTooltipText(filenames_tooltip_text);
+      file_label->SetAccessibleName(
+          base::StrCat({file_text, u" ", filenames_tooltip_text}));
+    }
     preview_labels.push_back(std::move(file_label));
   }
 
@@ -467,9 +470,10 @@ void SharesheetHeaderView::ResolveImage(size_t index) {
       HoldingSpaceImage::CreateDefaultPlaceholderImageSkiaResolver(
           /*use_light_mode_as_default=*/true));
   DCHECK_GT(image_preview_->GetImageViewCount(), index);
-  image_preview_->GetImageViewAt(index)->SetImage(image->GetImageSkia(size));
-
   ScopedLightModeAsDefault scoped_light_mode_as_default;
+  image_preview_->GetImageViewAt(index)->SetImage(
+      image->GetImageSkia(size, AshColorProvider::Get()->IsDarkModeEnabled()));
+
   const auto icon_color = chromeos::GetIconColorForPath(
       file_path, AshColorProvider::Get()->IsDarkModeEnabled());
   image_preview_->SetBackgroundColorForIndex(index, icon_color);
@@ -492,8 +496,9 @@ void SharesheetHeaderView::LoadImage(
 
 void SharesheetHeaderView::OnImageLoaded(const gfx::Size& size, size_t index) {
   DCHECK_GT(image_preview_->GetImageViewCount(), index);
-  image_preview_->GetImageViewAt(index)->SetImage(
-      images_[index]->GetImageSkia(size));
+  ScopedLightModeAsDefault scoped_light_mode_as_default;
+  image_preview_->GetImageViewAt(index)->SetImage(images_[index]->GetImageSkia(
+      size, AshColorProvider::Get()->IsDarkModeEnabled()));
   // TODO(crbug.com/1293668): Investigate why this SchedulePaint is needed.
   image_preview_->GetImageViewAt(index)->SchedulePaint();
 }

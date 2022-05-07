@@ -191,21 +191,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultAutoplaySetting" enum="ContentSetting"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default autoplay setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultCookiesSetting" enum="ContentSetting"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default cookies setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultIdleDetectionSetting"
-    enum="ContentSetting" expires_after="2022-06-19">
+    enum="ContentSetting" expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -214,28 +214,28 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultImagesSetting" enum="ContentSetting"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default image setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultJavaScriptSetting"
-    enum="ContentSetting" expires_after="2022-06-19">
+    enum="ContentSetting" expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default JavaScript setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultLocationSetting" enum="ContentSetting"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default location setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultMediaStreamCameraSetting"
-    enum="ContentSetting" expires_after="2022-06-19">
+    enum="ContentSetting" expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default camera setting at profile open.</summary>
@@ -249,7 +249,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultMIDISysExSetting" enum="ContentSetting"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -259,21 +259,21 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultNotificationsSetting"
-    enum="ContentSetting" expires_after="2022-06-19">
+    enum="ContentSetting" expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default notification setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultPopupsSetting" enum="ContentSetting"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default popups setting at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultRequestDesktopSiteSetting"
-    enum="ContentSetting" expires_after="2022-06-19">
+    enum="ContentSetting" expires_after="2022-08-21">
   <owner>shuyng@google.com</owner>
   <owner>twellington@chromium.org</owner>
   <summary>
@@ -283,7 +283,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultSoundSetting" enum="ContentSetting"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default sound setting at profile open.</summary>
@@ -297,14 +297,14 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.DefaultUsbGuardSetting" enum="ContentSetting"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>The default permission setting for WebUSB at profile open.</summary>
 </histogram>
 
 <histogram name="ContentSettings.DefaultWebBluetoothGuardSetting"
-    enum="ContentSetting" expires_after="2022-06-19">
+    enum="ContentSetting" expires_after="2022-08-21">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -312,8 +312,8 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="ContentSettings.Exceptions" units="units"
-    expires_after="never">
+<histogram name="ContentSettings.Exceptions.{ContentSettingsType}"
+    units="units" expires_after="never">
 <!-- expires-never: tracked as an important privacy metric. -->
 
   <owner>lshang@chromium.org</owner>
@@ -323,6 +323,65 @@ chromium-metrics-reviews@google.com.
     The number of user defined content setting exceptions at browser start.
     Suffixed with the name of content setting types.
   </summary>
+  <token key="ContentSettingsType">
+    <variant name="app-banner" summary="App banner exceptions"/>
+    <variant name="auto-dark-web-content"
+        summary="Auto-dark web contents exceptions"/>
+    <variant name="auto-select-certificate"
+        summary="Auto-select cert exceptions"/>
+    <variant name="automatic-downloads"
+        summary="Automatic downloads exceptions"/>
+    <variant name="autoplay" summary="Autoplay exception"/>
+    <variant name="background-sync" summary="Background sync exceptions"/>
+    <variant name="bluetooth-chooser-data" summary="Bluetooth chooser data"/>
+    <variant name="bluetooth-guard" summary="Bluetooth guard exceptions"/>
+    <variant name="client-hints" summary="Client hints"/>
+    <variant name="cookies" summary="Cookies exceptions"/>
+    <variant name="display-capture" summary="Display Capture Exceptions"/>
+    <variant name="durable-storage" summary="Durable Storage Exceptions"/>
+    <variant name="fullscreen" summary="Fullscreen exceptions"/>
+    <variant name="geolocation" summary="Geolocation exceptions"/>
+    <variant name="hid-chooser-data" summary="HID chooser data"/>
+    <variant name="images" summary="Images exceptions"/>
+    <variant name="important-site-info" summary="Important site info"/>
+    <variant name="installed-web-app-metadata"
+        summary="Installed web app metadata"/>
+    <variant name="javascript" summary="JavaScript exceptions"/>
+    <variant name="keygen" summary="Keygen exceptions"/>
+    <variant name="media-engagement" summary="Media engagement exceptions"/>
+    <variant name="media-stream-camera" summary="Camera exceptions"/>
+    <variant name="media-stream-mic" summary="Microphone exceptions"/>
+    <variant name="midi-sysex" summary="Midi exceptions"/>
+    <variant name="mixed-script" summary="Mixed script exceptions"/>
+    <variant name="mouselock" summary="Mouse lock exceptions"/>
+    <variant name="notifications" summary="Notification exceptions"/>
+    <variant name="password-protection" summary="Password protection"/>
+    <variant name="permission-autoblocking-data"
+        summary="Permission autoblocking data"/>
+    <variant name="permission-autorevocation-data"
+        summary="Permission autorevocation data"/>
+    <variant name="plugins" summary="Plugins exceptions"/>
+    <variant name="popups" summary="Popups exceptions"/>
+    <variant name="ppapi-broker" summary="Ppapi broker exceptions"/>
+    <variant name="protected-media-identifier"
+        summary="Protected media exceptions"/>
+    <variant name="protocol-handler" summary="Protocol handler exceptions"/>
+    <variant name="push-messaging" summary="Push messaging exceptions"/>
+    <variant name="request-desktop-site"
+        summary="Request desktop site exceptions"/>
+    <variant name="safe-browsing-url-check-data"
+        summary="Safe browsing url check data"/>
+    <variant name="serial-chooser-data" summary="Serial chooser data"/>
+    <variant name="site-engagement" summary="Site engagement exceptions"/>
+    <variant name="sound" summary="Sound exceptions"/>
+    <variant name="ssl-cert-decisions" summary="SSL cert decisions exceptions"/>
+    <variant name="subresource-filter" summary="Subresource filter exceptions"/>
+    <variant name="subresource-filter-data" summary="Subresource filter data"/>
+    <variant name="usb-chooser-data" summary="USB chooser data exceptions"/>
+    <variant name="webid-active-session" summary="FedCM Active Session"/>
+    <variant name="webid-request" summary="FedCM Request"/>
+    <variant name="webid-share" summary="FedCM Share"/>
+  </token>
 </histogram>
 
 <histogram name="ContentSettings.ExceptionScheme" enum="ContentSettingScheme"
@@ -408,7 +467,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.NumberOfExceptions" units="units"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>engedy@chromium.org</owner>
   <owner>src/components/permissions/PERMISSIONS_OWNERS</owner>
   <summary>
@@ -449,7 +508,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.Popups" enum="ContentSettingPopupAction"
-    expires_after="2022-07-11">
+    expires_after="2022-09-11">
   <owner>charleszhao@chromium.org</owner>
   <owner>lazzzis@google.com</owner>
   <owner>src/components/blocked_content/OWNERS</owner>
@@ -526,7 +585,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ContentSettings.Popups.StrongBlockerActions"
-    enum="StrongPopupBlockerAction" expires_after="2022-06-26">
+    enum="StrongPopupBlockerAction" expires_after="2022-08-28">
   <owner>csharrison@chromium.org</owner>
   <summary>
     Counts of various events related to the strong popup blocker (aka abusive
@@ -994,6 +1053,34 @@ chromium-metrics-reviews@google.com.
   <summary>
     When a token fails to complete, how many failures this token has seen.
     Record when the fetch fails.
+  </summary>
+</histogram>
+
+<histogram
+    name="ContentSuggestions.Feed.UnsignedUserPersonalization.CountValuesDuringStoreInitialization"
+    units="count" expires_after="2023-03-01">
+  <owner>tbansal@chromium.org</owner>
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Records count of entries in the pref store after the store is initialized
+    (which happens during the feed service intiialization). The metric is
+    recorded after the store is cleaned up and conpacted (as part of store
+    initialization).
+  </summary>
+</histogram>
+
+<histogram
+    name="ContentSuggestions.Feed.UnsignedUserPersonalization.LinkClicked"
+    units="count" expires_after="2023-03-01">
+  <owner>tbansal@chromium.org</owner>
+  <owner>harringtond@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <summary>
+    Recorded everytime when the user clicks a feed link article and an entry is
+    recorded to the user actions collector. The entry may not be recorded in
+    certain cases (not a complete list): the URL of the clicked link was not
+    valid, the MIDs was missing etc.
   </summary>
 </histogram>
 

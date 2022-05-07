@@ -485,6 +485,11 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
                 return handleJavaCrash();
             }
 
+            if (isDestroyed()) {
+                // This will crash below, but we want to know if the tab was destroyed or just never
+                // initialize.
+                throw new RuntimeException("Tab.loadUrl called on a destroyed tab");
+            }
             if (mNativeTabAndroid == 0) {
                 // if mNativeTabAndroid is null then we are going to crash anyways on the
                 // native side. Lets crash on the java side so that we can have a better stack
@@ -887,6 +892,10 @@ public class TabImpl implements Tab, TabObscuringHandler.Observer {
             }
 
             initWebContents(webContents);
+            // Avoid an empty title by updating the title here. This could happen if restoring from
+            // a WebContents that has no renderer and didn't force a reload. This happens on
+            // background tab creation from Recent Tabs (TabRestoreService).
+            updateTitle();
 
             if (!creatingWebContents && webContents.shouldShowLoadingUI()) {
                 didStartPageLoad(webContents.getVisibleUrl());

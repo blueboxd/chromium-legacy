@@ -14,6 +14,7 @@
 #include "base/sequence_checker.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
+#include "chrome/browser/ash/login/app_mode/kiosk_launch_controller.h"
 #include "chrome/browser/ash/login/session/user_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_observer.h"
@@ -25,13 +26,15 @@
 
 namespace policy {
 
-class ManagedSessionService : public session_manager::SessionManagerObserver,
-                              public ProfileObserver,
-                              public chromeos::PowerManagerClient::Observer,
-                              public ash::AuthStatusConsumer,
-                              public ash::UserAuthenticatorObserver,
-                              public ash::SessionTerminationManager::Observer,
-                              public user_manager::UserManager::Observer {
+class ManagedSessionService
+    : public ash::AuthStatusConsumer,
+      public ash::KioskLaunchController::KioskProfileLoadFailedObserver,
+      public ash::SessionTerminationManager::Observer,
+      public ash::UserAuthenticatorObserver,
+      public chromeos::PowerManagerClient::Observer,
+      public ProfileObserver,
+      public session_manager::SessionManagerObserver,
+      public user_manager::UserManager::Observer {
  public:
   class Observer : public base::CheckedObserver {
    public:
@@ -40,9 +43,6 @@ class ManagedSessionService : public session_manager::SessionManagerObserver,
 
     // Occurs when a user has logged in.
     virtual void OnLogin(Profile* profile) {}
-
-    // Occurs when a user login as guest.
-    virtual void OnGuestLogin() {}
 
     // Occurs when a user has logged out.
     // TODO(b/194215634):: Check if this function can be replaced by
@@ -69,6 +69,8 @@ class ManagedSessionService : public session_manager::SessionManagerObserver,
     // Occurs after a user's account is removed.
     virtual void OnUserRemoved(const AccountId& account_id,
                                user_manager::UserRemovalReason) {}
+
+    virtual void OnKioskLoginFailure() {}
   };
 
   explicit ManagedSessionService(
@@ -103,6 +105,8 @@ class ManagedSessionService : public session_manager::SessionManagerObserver,
   void OnAuthAttemptStarted() override;
 
   void OnSessionWillBeTerminated() override;
+
+  void OnKioskProfileLoadFailed() override;
 
  private:
   void SetLoginStatus();

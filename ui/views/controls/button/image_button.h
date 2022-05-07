@@ -6,6 +6,7 @@
 #define UI_VIEWS_CONTROLS_BUTTON_IMAGE_BUTTON_H_
 
 #include <memory>
+#include <utility>
 
 #include "base/gtest_prod_util.h"
 #include "ui/base/layout.h"
@@ -114,6 +115,12 @@ VIEW_BUILDER_PROPERTY(ImageButton::HorizontalAlignment,
                       ImageHorizontalAlignment)
 VIEW_BUILDER_PROPERTY(ImageButton::VerticalAlignment, ImageVerticalAlignment)
 VIEW_BUILDER_PROPERTY(gfx::Size, MinimumImageSize)
+VIEW_BUILDER_OVERLOAD_METHOD(SetImage,
+                             Button::ButtonState,
+                             const gfx::ImageSkia*)
+VIEW_BUILDER_OVERLOAD_METHOD(SetImage,
+                             Button::ButtonState,
+                             const gfx::ImageSkia&)
 END_VIEW_BUILDER
 
 ////////////////////////////////////////////////////////////////////////////////

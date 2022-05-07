@@ -48,6 +48,12 @@ class ModelHandler : public OptimizationTargetModelObserver {
     DCHECK_NE(optimization_target_,
               proto::OptimizationTarget::OPTIMIZATION_TARGET_UNKNOWN);
 
+    base::UmaHistogramBoolean(
+        "OptimizationGuide.ModelHandler.HandlerCreated." +
+            GetStringNameForOptimizationTarget(optimization_target_),
+        true);
+
+    handler_created_time_ = base::TimeTicks::Now();
     model_provider_->AddObserverForOptimizationTargetModel(
         optimization_target_, model_metadata, this);
     model_executor_->InitializeAndMoveToExecutionThread(
@@ -101,8 +107,9 @@ class ModelHandler : public OptimizationTargetModelObserver {
   }
 
   // Requests that the model executor unload the model from memory, if it is
-  // currently loaded.
-  void UnloadModel() {
+  // currently loaded. Virtual to allow derived classes to also observe this
+  // signal.
+  virtual void UnloadModel() {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     model_executor_task_runner_->PostTask(
         FROM_HERE,
@@ -117,6 +124,14 @@ class ModelHandler : public OptimizationTargetModelObserver {
 
     if (optimization_target_ != optimization_target)
       return;
+
+    if (handler_created_time_) {
+      base::UmaHistogramMediumTimes(
+          "OptimizationGuide.ModelHandler.HandlerCreatedToModelAvailable." +
+              GetStringNameForOptimizationTarget(optimization_target_),
+          base::TimeTicks::Now() - *handler_created_time_);
+      handler_created_time_ = absl::nullopt;
+    }
 
     model_info_ = model_info;
     model_available_ = true;
@@ -200,6 +215,13 @@ class ModelHandler : public OptimizationTargetModelObserver {
       GUARDED_BY_CONTEXT(sequence_checker_);
 
   const proto::OptimizationTarget optimization_target_;
+
+  // The time that |optimization_target_| was registered wih |model_provider_|
+  // when |this| is created.
+  //
+  // Will only be non-nullopt if a model has not been received yet after the
+  // target was registered.
+  absl::optional<base::TimeTicks> handler_created_time_;
 
   // The owned model executor.
   std::unique_ptr<ModelExecutor<OutputType, InputTypes...>> model_executor_;

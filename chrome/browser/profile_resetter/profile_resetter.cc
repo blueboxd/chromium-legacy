@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/synchronization/atomic_flag.h"
 #include "base/task/task_traits.h"
 #include "base/task/thread_pool.h"
@@ -66,7 +65,7 @@ void ResetShortcutsOnBlockingThread() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
   for (int location = ShellUtil::SHORTCUT_LOCATION_FIRST;
-       location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
+       location <= ShellUtil::SHORTCUT_LOCATION_LAST; ++location) {
     ShellUtil::ShortcutListMaybeRemoveUnknownArgs(
         static_cast<ShellUtil::ShortcutLocation>(location),
         ShellUtil::CURRENT_USER, chrome_exe, true, nullptr, nullptr);
@@ -136,7 +135,7 @@ void ProfileResetter::Reset(
   };
 
   ResettableFlags reset_triggered_for_flags = 0;
-  for (size_t i = 0; i < base::size(flagToMethod); ++i) {
+  for (size_t i = 0; i < std::size(flagToMethod); ++i) {
     if (resettable_flags & flagToMethod[i].flag) {
       reset_triggered_for_flags |= flagToMethod[i].flag;
       (this->*flagToMethod[i].method)();
@@ -389,7 +388,7 @@ std::vector<ShortcutCommand> GetChromeLaunchShortcuts(
     return std::vector<ShortcutCommand>();
   std::vector<ShortcutCommand> shortcuts;
   for (int location = ShellUtil::SHORTCUT_LOCATION_FIRST;
-       location < ShellUtil::NUM_SHORTCUT_LOCATIONS; ++location) {
+       location <= ShellUtil::SHORTCUT_LOCATION_LAST; ++location) {
     if (cancel.get() && cancel->data.IsSet())
       break;
     ShellUtil::ShortcutListMaybeRemoveUnknownArgs(

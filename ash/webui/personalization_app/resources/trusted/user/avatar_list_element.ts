@@ -7,17 +7,18 @@
  * that the user can select from.
  */
 
-import {assert} from 'chrome://resources/js/assert.m.js';
+import {assert} from 'chrome://resources/js/assert_ts.js';
 import {Url} from 'chrome://resources/mojo/url/mojom/url.mojom-webui.js';
 import {html} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 
 import {isSelectionEvent} from '../../common/utils.js';
-import {DefaultUserImage} from '../personalization_app.mojom-webui.js';
+import {DefaultUserImage, UserImage} from '../personalization_app.mojom-webui.js';
 import {WithPersonalizationStore} from '../personalization_store.js';
 
-import {AvatarCamera} from './avatar_camera_element.js';
+import {AvatarCamera, AvatarCameraMode} from './avatar_camera_element.js';
 import {fetchDefaultUserImages} from './user_controller.js';
 import {getUserProvider} from './user_interface_provider.js';
+import {selectLastExternalUserImageUrl} from './user_selectors.js';
 
 export interface AvatarList {
   $: {avatarCamera: AvatarCamera}
@@ -38,6 +39,8 @@ export class AvatarList extends WithPersonalizationStore {
 
       profileImage_: Object,
 
+      image_: Object,
+
       /** The presence of a device camera. */
       isCameraPresent_: {
         type: Boolean,
@@ -45,20 +48,22 @@ export class AvatarList extends WithPersonalizationStore {
         observer: 'onIsCameraPresentChanged_',
       },
 
-      /** Whether to show the camera UI to the user. */
-      shouldShowCameraUi_: {
-        type: Boolean,
-        value: false,
-      }
+      /** Whether the camera is off, photo mode, or video mode. */
+      cameraMode_: {
+        type: String,
+        value: null,
+      },
     };
   }
 
   private defaultUserImages_: Array<DefaultUserImage>|null;
   private profileImage_: Url|null;
   private isCameraPresent_: boolean;
-  private shouldShowCameraUi_: boolean;
+  private cameraMode_: AvatarCameraMode|null;
+  private image_: UserImage|null;
+  private lastExternalUserImageUrl_: Url|null;
 
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.watch<AvatarList['defaultUserImages_']>(
         'defaultUserImages_', state => state.user.defaultUserImages);
@@ -66,6 +71,9 @@ export class AvatarList extends WithPersonalizationStore {
         'profileImage_', state => state.user.profileImage);
     this.watch<AvatarList['isCameraPresent_']>(
         'isCameraPresent_', state => state.user.isCameraPresent);
+    this.watch<AvatarList['image_']>('image_', state => state.user.image);
+    this.watch<AvatarList['lastExternalUserImageUrl_']>(
+        'lastExternalUserImageUrl_', selectLastExternalUserImageUrl);
     this.updateFromStore();
     fetchDefaultUserImages(getUserProvider(), this.getStore());
   }
@@ -84,6 +92,20 @@ export class AvatarList extends WithPersonalizationStore {
     getUserProvider().selectDefaultImage(index);
   }
 
+  private getProfileImageAriaSelected_(
+      profileImage: Url|null, selectedImage: UserImage|null): string {
+    return (!!profileImage && !!selectedImage?.profileImage).toString();
+  }
+
+  private getDefaultUserImageAriaSelected_(
+      image: DefaultUserImage, selectedImage: UserImage|null): string {
+    return (image.index === selectedImage?.defaultImage?.index).toString();
+  }
+
+  private getExternalImageAriaSelected_(image: UserImage|null): string {
+    return (!!image?.externalImage).toString();
+  }
+
   private onSelectProfileImage_(event: Event) {
     if (!isSelectionEvent(event)) {
       return;
@@ -92,14 +114,28 @@ export class AvatarList extends WithPersonalizationStore {
     getUserProvider().selectProfileImage();
   }
 
+  private onSelectLastExternalUserImage_(event: Event) {
+    if (!isSelectionEvent(event)) {
+      return;
+    }
+    getUserProvider().selectLastExternalUserImage();
+  }
+
   private openCamera_() {
     assert(this.isCameraPresent_, 'Camera needed to record an image');
-    this.shouldShowCameraUi_ = true;
+    this.cameraMode_ = AvatarCameraMode.CAMERA;
+  }
+
+  private openVideo_() {
+    assert(this.isCameraPresent_, 'Camera needed to record a video');
+    this.cameraMode_ = AvatarCameraMode.VIDEO;
   }
 
   private onIsCameraPresentChanged_(value: boolean) {
     // Potentially hide camera UI if the camera has become unavailable.
-    this.shouldShowCameraUi_ = this.shouldShowCameraUi_ && value;
+    if (!value) {
+      this.cameraMode_ = null;
+    }
   }
 
   private onSelectImageFromDisk_(event: Event) {
@@ -111,7 +147,7 @@ export class AvatarList extends WithPersonalizationStore {
   }
 
   private onCameraClosed_() {
-    this.shouldShowCameraUi_ = false;
+    this.cameraMode_ = null;
   }
 }
 

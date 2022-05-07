@@ -18,7 +18,9 @@
 #import "ios/chrome/browser/ui/default_promo/default_browser_promo_non_modal_scheduler.h"
 #import "ios/chrome/browser/ui/ntp/ntp_util.h"
 #import "ios/chrome/browser/ui/omnibox/popup/autocomplete_match_formatter.h"
+#import "ios/chrome/browser/ui/omnibox/popup/autocomplete_suggestion_group_impl.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_presenter.h"
+#import "ios/chrome/browser/ui/omnibox/popup/popup_swift.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 
@@ -67,7 +69,14 @@ const CGFloat kOmniboxIconSize = 16;
 
   self.hasResults = !_currentResult.empty();
 
-  [self.consumer updateMatches:[self wrappedMatches] withAnimation:animation];
+  NSArray<id<AutocompleteSuggestion>>* matches = [self wrappedMatches];
+
+  [self.consumer updateMatches:@[ [AutocompleteSuggestionGroupImpl
+                                   groupWithTitle:nil
+                                      suggestions:matches] ]
+                 withAnimation:animation];
+
+  [self loadModelImages];
 }
 
 - (NSArray<id<AutocompleteSuggestion>>*)wrappedMatches {
@@ -116,12 +125,14 @@ const CGFloat kOmniboxIconSize = 16;
 #pragma mark - AutocompleteResultConsumerDelegate
 
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
-                   didHighlightRow:(NSUInteger)row {
+                   didHighlightRow:(NSUInteger)row
+                         inSection:(NSUInteger)section {
   _delegate->OnMatchHighlighted(row);
 }
 
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
-                      didSelectRow:(NSUInteger)row {
+                      didSelectRow:(NSUInteger)row
+                         inSection:(NSUInteger)section {
   // OpenMatch() may close the popup, which will clear the result set and, by
   // extension, |match| and its contents.  So copy the relevant match out to
   // make sure it stays alive until the call completes.
@@ -137,7 +148,8 @@ const CGFloat kOmniboxIconSize = 16;
 }
 
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
-        didTapTrailingButtonForRow:(NSUInteger)row {
+        didTapTrailingButtonForRow:(NSUInteger)row
+                         inSection:(NSUInteger)section {
   const AutocompleteMatch& match =
       ((const AutocompleteResult&)_currentResult).match_at(row);
 
@@ -157,7 +169,8 @@ const CGFloat kOmniboxIconSize = 16;
 }
 
 - (void)autocompleteResultConsumer:(id<AutocompleteResultConsumer>)sender
-           didSelectRowForDeletion:(NSUInteger)row {
+           didSelectRowForDeletion:(NSUInteger)row
+                         inSection:(NSUInteger)section {
   const AutocompleteMatch& match =
       ((const AutocompleteResult&)_currentResult).match_at(row);
   _delegate->OnMatchSelectedForDeletion(match);
@@ -166,6 +179,32 @@ const CGFloat kOmniboxIconSize = 16;
 - (void)autocompleteResultConsumerDidScroll:
     (id<AutocompleteResultConsumer>)sender {
   _delegate->OnScroll();
+}
+
+- (void)loadModelImages {
+  for (PopupMatchSection* section in self.model.sections) {
+    for (PopupMatch* match in section.matches) {
+      PopupImage* popupImage = match.image;
+      switch (popupImage.icon.iconType) {
+        case OmniboxIconTypeSuggestionIcon:
+          break;
+        case OmniboxIconTypeImage: {
+          [self fetchImage:popupImage.icon.imageURL.gurl
+                completion:^(UIImage* image) {
+                  popupImage.iconUIImageFromURL = image;
+                }];
+          break;
+        }
+        case OmniboxIconTypeFavicon: {
+          [self fetchFavicon:popupImage.icon.imageURL.gurl
+                  completion:^(UIImage* image) {
+                    popupImage.iconUIImageFromURL = image;
+                  }];
+          break;
+        }
+      }
+    }
+  }
 }
 
 #pragma mark - ImageFetcher

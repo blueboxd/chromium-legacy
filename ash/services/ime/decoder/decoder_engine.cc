@@ -9,7 +9,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 
-namespace chromeos {
+namespace ash {
 namespace ime {
 
 namespace {
@@ -102,4 +102,4 @@ void DecoderEngine::ProcessMessage(const std::vector<uint8_t>& message,
 }
 
 }  // namespace ime
-}  // namespace chromeos
+}  // namespace ash

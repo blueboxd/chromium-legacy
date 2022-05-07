@@ -20,7 +20,7 @@ class Metrics {
   // The different ways that autofill assistant can stop.
   //
   // GENERATED_JAVA_ENUM_PACKAGE: (
-  // org.chromium.chrome.browser.autofill_assistant.metrics)
+  // org.chromium.components.autofill_assistant.metrics)
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: DropOutReason
   //
   // This enum is used in histograms, do not remove/renumber entries. Only add
@@ -123,12 +123,23 @@ class Metrics {
   // AutofillAssistantPaymentRequestPrefilled enum listing in
   // tools/metrics/histograms/enums.xml.
   enum class PaymentRequestPrefilled {
+    // The action finished successfully (the user clicked the "confirm" chip).
     PREFILLED_SUCCESS = 0,
     NOTPREFILLED_SUCCESS = 1,
+    // The action finished unsuccessfully.
     PREFILLED_FAILURE = 2,
     NOTPREFILLED_FAILURE = 3,
+    // Unknown result, should not happen.
+    PREFILLED_UNKNOWN = 4,
+    NOTPREFILLED_UNKNOWN = 5,
+    // The user clicked the link in the terms and condition text.
+    PREFILLED_TERMS_AND_CONDITIONS_LINK_CLICKED = 6,
+    NOTPREFILLED_TERMS_AND_CONDITIONS_LINK_CLICKED = 7,
+    // The user clicked one of the non-confirm chips.
+    PREFILLED_ADDITIONAL_ACTION_SELECTED = 8,
+    NOTPREFILLED_ADDITIONAL_ACTION_SELECTED = 9,
 
-    kMaxValue = NOTPREFILLED_FAILURE
+    kMaxValue = NOTPREFILLED_ADDITIONAL_ACTION_SELECTED
   };
 
   // Whether autofill info was changed during an autofill assistant payment
@@ -139,12 +150,23 @@ class Metrics {
   // AutofillAssistantPaymentRequestAutofillInfoChanged enum listing
   // in tools/metrics/histograms/enums.xml.
   enum class PaymentRequestAutofillInfoChanged {
+    // The action finished successfully (the user clicked the "confirm" chip).
     CHANGED_SUCCESS = 0,
     NOTCHANGED_SUCCESS = 1,
+    // The action finished unsuccessfully.
     CHANGED_FAILURE = 2,
     NOTCHANGED_FAILURE = 3,
+    // Unknown result, should not happen.
+    CHANGED_UNKNOWN = 4,
+    NOTCHANGED_UNKNOWN = 5,
+    // The user clicked the link in the terms and condition text.
+    CHANGED_TERMS_AND_CONDITIONS_LINK_CLICKED = 6,
+    NOTCHANGED_TERMS_AND_CONDITIONS_LINK_CLICKED = 7,
+    // The user clicked one of the non-confirm chips.
+    CHANGED_ADDITIONAL_ACTION_SELECTED = 8,
+    NOTCHANGED_ADDITIONAL_ACTION_SELECTED = 9,
 
-    kMaxValue = NOTCHANGED_FAILURE
+    kMaxValue = NOTCHANGED_ADDITIONAL_ACTION_SELECTED
   };
 
   // Whether a billing postal code was required and whether the user ultimately
@@ -168,7 +190,7 @@ class Metrics {
   // The different ways in which DFM can be installed.
   //
   // GENERATED_JAVA_ENUM_PACKAGE: (
-  // org.chromium.chrome.browser.autofill_assistant.metrics)
+  // org.chromium.components.autofill_assistant.metrics)
   // GENERATED_JAVA_CLASS_NAME_OVERRIDE: FeatureModuleInstallation
   //
   // This enum is used in histograms, do not remove/renumber entries. Only add
@@ -574,10 +596,64 @@ class Metrics {
   // tools/metrics/ukm/ukm.xml as necessary.
   enum class CollectUserDataResult {
     UNKNOWN,
+    // The action finished successfully (the user clicked the "confirm" chip).
     SUCCESS,
+    // The action finished unsuccessfully.
     FAILURE,
+    // The user clicked the link in the terms and condition text.
+    TERMS_AND_CONDITIONS_LINK_CLICKED,
+    // The user clicked one of the non-confirm chips.
+    ADDITIONAL_ACTION_SELECTED,
 
-    kMaxValue = FAILURE
+    kMaxValue = ADDITIONAL_ACTION_SELECTED
+  };
+
+  // The source of the initial data for the current CollectUserData action.
+  //
+  // This enum is used in UKM metrics, do not remove/renumber entries. Only add
+  // at the end and update kMaxValue. Also remember to update the
+  // AutofillAssistantUserDataSource enum listing in
+  // tools/metrics/histograms/enums.xml and the description in
+  // tools/metrics/ukm/ukm.xml as necessary.
+  enum class UserDataSource {
+    UNKNOWN,
+    BACKEND,
+    CHROME_AUTOFILL,
+
+    kMaxValue = CHROME_AUTOFILL
+  };
+
+  // Outcome of the CUP verification process for GetAction RPC calls. CUP
+  // verification is used to check whether the actions delivered to the client
+  // come from a trusted source, and requires the request from the client to be
+  // signed first. Events are only recorded for RPC calls where we support CUP.
+  //
+  // This verification event is recorded after the response is deserialized but
+  // before it's actually used in the client. This is the case even if the
+  // verification doesn't happen due to the request not being signed in the
+  // first place. HTTP failures are checked before the feature flags for
+  // signing and verification, and therefore a failing HTTP request with
+  // verification disabled will be logged as |HTTP_FAILED|.
+  //
+  // This enum is used in histograms, do not remove/renumber entries. Only add
+  // at the end and update kMaxValue. Also remember to update the
+  // CupRpcVerificationEvent enum listing in tools/metrics/histograms/enums.xml.
+  enum class CupRpcVerificationEvent {
+    // Signature doesn't match response or context, message origin cannot be
+    // confirmed.
+    VERIFICATION_FAILED = 0,
+    // Signature correctly matches the response and context.
+    VERIFICATION_SUCCEEDED = 1,
+    // Response parsing failed. Rpc verification won't be performed.
+    PARSING_FAILED = 2,
+    // Response verification is disabled. Rpc verification won't be performed.
+    VERIFICATION_DISABLED = 3,
+    // Request signing is disabled. Rpc verification won't be performed.
+    SIGNING_DISABLED = 4,
+    // HTTP call didn't return "OK" 200. Rpc verification won't be performed.
+    HTTP_FAILED = 5,
+
+    kMaxValue = HTTP_FAILED
   };
 
   // Used for bitmasks for the InitialContactFieldsStatus,
@@ -625,9 +701,11 @@ class Metrics {
   };
 
   static void RecordDropOut(DropOutReason reason, const std::string& intent);
-  static void RecordPaymentRequestPrefilledSuccess(bool initially_complete,
-                                                   bool success);
-  static void RecordPaymentRequestAutofillChanged(bool changed, bool success);
+  static void RecordPaymentRequestPrefilledSuccess(
+      bool initially_complete,
+      CollectUserDataResult result);
+  static void RecordPaymentRequestAutofillChanged(bool changed,
+                                                  CollectUserDataResult result);
   static void RecordPaymentRequestFirstNameOnly(bool first_name_only);
   static void RecordTriggerScriptStarted(ukm::UkmRecorder* ukm_recorder,
                                          ukm::SourceId source_id,
@@ -693,10 +771,12 @@ class Metrics {
                                     UserDataSelectionState selection_state);
   static void RecordCollectUserDataSuccess(ukm::UkmRecorder* ukm_recorder,
                                            ukm::SourceId source_id,
-                                           bool success,
-                                           int64_t time_taken_ms);
+                                           CollectUserDataResult result,
+                                           int64_t time_taken_ms,
+                                           UserDataSource source);
   static void RecordOnboardingFetcherResult(
       OnboardingFetcherResultStatus status);
+  static void RecordCupRpcVerificationEvent(CupRpcVerificationEvent event);
 
   // Intended for debugging: writes string representation of |reason| to
   // |out|.

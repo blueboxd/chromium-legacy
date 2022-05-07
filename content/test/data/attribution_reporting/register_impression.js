@@ -27,7 +27,6 @@ function createImpressionTag({
   reportOrigin,
   expiry,
   priority,
-  registerAttributionSource = false,
   left,
   top,
 } = {}) {
@@ -49,9 +48,6 @@ function createImpressionTag({
   if (priority !== undefined)
     anchor.setAttribute('attributionsourcepriority', priority);
 
-  if (registerAttributionSource)
-    anchor.setAttribute('registerattributionsource', '');
-
   if (left !== undefined && top !== undefined) {
     const style = 'position: absolute; left: ' + (left - 10) +
         'px; top: ' + (top - 10) + 'px; width: 20px; height: 20px;';
@@ -71,7 +67,7 @@ function createAndClickImpressionTag(params) {
   return anchor;
 }
 
-function createAttributionSourceImg(src) {
+function createAttributionSrcImg(src) {
   const img = document.createElement('img');
   img.setAttribute('target', "top");
   img.width = 100;

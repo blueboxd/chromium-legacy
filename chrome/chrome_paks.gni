@@ -118,6 +118,7 @@ template("chrome_extra_paks") {
       "//chrome/browser/resources/segmentation_internals:resources",
       "//chrome/common:resources",
       "//components/autofill/core/browser:autofill_address_rewriter_resources",
+      "//components/history_clusters/history_clusters_internals/resources",
       "//components/optimization_guide/optimization_guide_internals/resources",
       "//components/resources",
       "//content:content_resources",
@@ -235,6 +236,7 @@ template("chrome_extra_paks") {
         "$root_gen_dir/ash/webui/connectivity_diagnostics_resources.pak",
         "$root_gen_dir/ash/webui/file_manager/resources/file_manager_swa_resources.pak",
         "$root_gen_dir/ash/webui/file_manager/untrusted_resources/file_manager_untrusted_resources.pak",
+        "$root_gen_dir/chrome/assistant_optin_resources.pak",
         "$root_gen_dir/chrome/audio_resources.pak",
         "$root_gen_dir/chrome/bluetooth_pairing_dialog_resources.pak",
         "$root_gen_dir/chrome/browser/supervised_user/supervised_user_unscaled_resources.pak",
@@ -294,6 +296,7 @@ template("chrome_extra_paks") {
         "//chrome/browser/resources:internet_config_dialog_resources",
         "//chrome/browser/resources:internet_detail_dialog_resources",
         "//chrome/browser/resources/chromeos:multidevice_setup_resources",
+        "//chrome/browser/resources/chromeos/assistant_optin:resources",
         "//chrome/browser/resources/chromeos/audio:resources",
         "//chrome/browser/resources/chromeos/emoji_picker:resources",
         "//chrome/browser/resources/chromeos/launcher_internals:resources",
@@ -359,6 +362,11 @@ template("chrome_extra_paks") {
     if (is_win || is_mac || is_linux || is_chromeos_lacros || is_fuchsia) {
       sources += [ "$root_gen_dir/chrome/browser_switch_resources.pak" ]
       deps += [ "//chrome/browser/resources/browser_switch:resources" ]
+    }
+
+    if (is_win || is_mac || is_linux || is_chromeos || is_fuchsia) {
+      sources += [ "$root_gen_dir/chrome/discards_resources.pak" ]
+      deps += [ "//chrome/browser/resources/discards:resources" ]
     }
 
     if (enable_extensions) {
@@ -474,7 +482,7 @@ template("chrome_paks") {
     output_dir = "${invoker.output_dir}/locales"
 
     if (is_mac) {
-      output_locales = locales_as_mac_outputs
+      output_locales = locales_as_apple_outputs
     } else {
       output_locales = platform_pak_locales
     }

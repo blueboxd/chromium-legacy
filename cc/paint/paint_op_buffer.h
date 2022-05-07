@@ -30,12 +30,14 @@
 #include "cc/paint/skottie_color_map.h"
 #include "cc/paint/skottie_frame_data.h"
 #include "cc/paint/skottie_resource_metadata.h"
+#include "cc/paint/skottie_text_property_value.h"
 #include "cc/paint/skottie_wrapper.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "third_party/skia/include/core/SkRect.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkRRect.h"
 #include "third_party/skia/include/core/SkScalar.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -149,6 +151,7 @@ struct CC_PAINT_EXPORT PlaybackParams {
   CustomDataRasterCallback custom_callback;
   DidDrawOpCallback did_draw_op_callback;
   absl::optional<bool> save_layer_alpha_should_preserve_lcd_text;
+  bool raw_draw_analysis;
 };
 
 class CC_PAINT_EXPORT PaintOp {
@@ -818,7 +821,8 @@ class CC_PAINT_EXPORT DrawSkottieOp final : public PaintOp {
                 SkRect dst,
                 float t,
                 SkottieFrameDataMap images,
-                const SkottieColorMap& color_map);
+                const SkottieColorMap& color_map,
+                SkottieTextPropertyValueMap text_map);
   ~DrawSkottieOp();
   static void Raster(const DrawSkottieOp* op,
                      SkCanvas* canvas,
@@ -841,6 +845,7 @@ class CC_PAINT_EXPORT DrawSkottieOp final : public PaintOp {
   SkottieFrameDataMap images;
   // Node name hashes and corresponding colors to use for dynamic coloration.
   SkottieColorMap color_map;
+  SkottieTextPropertyValueMap text_map;
 
  private:
   SkottieWrapper::FrameDataFetchResult GetImageAssetForRaster(
@@ -880,11 +885,12 @@ class CC_PAINT_EXPORT DrawTextBlobOp final : public PaintOpWithFlags {
   HAS_SERIALIZATION_FUNCTIONS();
 
   sk_sp<SkTextBlob> blob;
+  sk_sp<GrSlug> slug;
+  std::vector<sk_sp<GrSlug>> extra_slugs;
   SkScalar x;
   SkScalar y;
   // This field isn't serialized.
   NodeId node_id = kInvalidNodeId;
-  absl::optional<SkMatrix> hint;
 
  private:
   DrawTextBlobOp();
@@ -1129,7 +1135,7 @@ class CC_PAINT_EXPORT PaintOpBuffer : public SkRefCnt {
   size_t total_op_count() const { return op_count_ + subrecord_op_count_; }
 
   size_t next_op_offset() const { return used_; }
-  int numSlowPaths() const { return num_slow_paths_; }
+  int num_slow_paths() const { return num_slow_paths_; }
   bool HasNonAAPaint() const { return has_non_aa_paint_; }
   bool HasDiscardableImages() const { return has_discardable_images_; }
 

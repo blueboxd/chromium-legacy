@@ -19,6 +19,7 @@
 #include "base/i18n/file_util_icu.h"
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/nix/xdg_util.h"
 #include "base/no_destructor.h"
@@ -61,6 +62,12 @@ base::FilePath GetDesktopPath() {
     return web_app::GetShortcutOverrideForTesting()->desktop.GetPath();
   base::PathService::Get(base::DIR_USER_DESKTOP, &desktop_path);
   return desktop_path;
+}
+
+base::FilePath GetAutostartPath(base::Environment* env) {
+  if (web_app::GetShortcutOverrideForTesting())
+    return web_app::GetShortcutOverrideForTesting()->startup.GetPath();
+  return AutoStart::GetAutostartDirectory(env);
 }
 
 // Result of creating app shortcut icon.
@@ -228,8 +235,7 @@ bool CreateShortcutOnDesktop(const base::FilePath& shortcut_filename,
 bool CreateShortcutInAutoStart(base::Environment* env,
                                const base::FilePath& shortcut_filename,
                                const std::string& contents) {
-  DCHECK(!web_app::GetShortcutOverrideForTesting());
-  base::FilePath autostart_path = AutoStart::GetAutostartDirectory(env);
+  base::FilePath autostart_path = GetAutostartPath(env);
   if (!base::DirectoryExists(autostart_path) &&
       !base::CreateDirectory(autostart_path)) {
     return false;
@@ -370,9 +376,7 @@ bool DeleteShortcutOnDesktop(const base::FilePath& shortcut_filename) {
 
 bool DeleteShortcutInAutoStart(base::Environment* env,
                                const base::FilePath& shortcut_filename) {
-  // TODO(crbug.com/1276141): Support shortcut testing in Auto Start.
-  DCHECK(!web_app::GetShortcutOverrideForTesting());
-  base::FilePath autostart_path = AutoStart::GetAutostartDirectory(env);
+  base::FilePath autostart_path = GetAutostartPath(env);
   return base::DeleteFile(autostart_path.Append(shortcut_filename));
 }
 
@@ -407,11 +411,6 @@ bool CreateDesktopShortcut(base::Environment* env,
                                                 base::BlockingType::MAY_BLOCK);
 
   bool create_shortcut_in_startup = creation_locations.in_startup;
-  // Do not create the shortcuts in startup directory when testing because
-  // xdg-utility (which creates this shortcut) doesn't work well with temp
-  // directories.
-  if (web_app::GetShortcutOverrideForTesting())
-    create_shortcut_in_startup = false;
 
   ApplicationsMenuLocation applications_menu_location =
       creation_locations.applications_menu_location;
@@ -548,7 +547,7 @@ ShortcutLocations GetExistingShortcutLocations(
         base::PathExists(desktop_path.Append(shortcut_filename));
   }
 
-  base::FilePath autostart_path = AutoStart::GetAutostartDirectory(env);
+  base::FilePath autostart_path = GetAutostartPath(env);
   if (!autostart_path.empty()) {
     locations.in_startup =
         base::PathExists(autostart_path.Append(shortcut_filename));
@@ -617,7 +616,7 @@ bool DeleteAllDesktopShortcuts(base::Environment* env,
     }
   }
 
-  base::FilePath autostart_path = AutoStart::GetAutostartDirectory(env);
+  base::FilePath autostart_path = GetAutostartPath(env);
   std::vector<base::FilePath> shortcut_filenames_autostart =
       shell_integration_linux::GetExistingProfileShortcutFilenames(
           profile_path, autostart_path);
@@ -686,7 +685,7 @@ std::vector<base::FilePath> GetShortcutLocations(
   }
 
   if (locations.in_startup) {
-    base::FilePath autostart_path = AutoStart::GetAutostartDirectory(env);
+    base::FilePath autostart_path = GetAutostartPath(env);
     if (!autostart_path.empty()) {
       base::FilePath autostart_shortcut_path =
           autostart_path.Append(shortcut_filename);

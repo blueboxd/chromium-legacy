@@ -17,6 +17,7 @@
 #include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/dcheck_is_on.h"
+#include "base/trace_event/base_tracing_forward.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 
@@ -134,6 +135,7 @@ BASE_EXPORT void CheckThatAddressIsntWithinFirstPartitionPage(
     uintptr_t address);
 #endif
 
+template <bool AllowDangling = false>
 struct BackupRefPtrImpl {
   // Note that `BackupRefPtrImpl` itself is not thread-safe. If multiple threads
   // modify the same smart pointer object without synchronization, a data race
@@ -202,7 +204,7 @@ struct BackupRefPtrImpl {
     }
 #if !defined(PA_HAS_64_BITS_POINTERS)
     else {
-      AddressPoolManagerBitmap::IncrementOutsideOfBRPPoolPtrRefCount(address);
+      AddressPoolManagerBitmap::BanSuperPageFromBRPPool(address);
     }
 #endif
 
@@ -219,11 +221,13 @@ struct BackupRefPtrImpl {
 #endif
       ReleaseInternal(address);
     }
-#if !defined(PA_HAS_64_BITS_POINTERS)
-    else {
-      AddressPoolManagerBitmap::DecrementOutsideOfBRPPoolPtrRefCount(address);
-    }
-#endif
+    // We are unable to counteract BanSuperPageFromBRPPool(), called from
+    // WrapRawPtr(). We only use one bit per super-page and, thus can't tell if
+    // there's more than one associated raw_ptr<T> at a given time. The risk of
+    // exhausting the entire address space is minuscule, therefore, we couldn't
+    // resist the perf gain of a single relaxed store (in the above mentioned
+    // function) over much more expensive two CAS operations, which we'd have to
+    // use if we were to un-ban a super-page.
   }
 
   // Unwraps the pointer, while asserting that memory hasn't been freed. The
@@ -492,14 +496,19 @@ struct IsSupportedType<T,
 // non-default move constructor/assignment. Thus, it's possible to get an error
 // where the pointer is not actually dangling, and have to work around the
 // compiler. We have not managed to construct such an example in Chromium yet.
-template <typename T,
 #if BUILDFLAG(USE_BACKUP_REF_PTR)
-          typename Impl = internal::BackupRefPtrImpl>
+using RawPtrMayDangle = internal::BackupRefPtrImpl</*AllowDangling=*/true>;
+using RawPtrBanDanglingIfSupported =
+    internal::BackupRefPtrImpl</*AllowDangling=*/false>;
 #elif BUILDFLAG(USE_ASAN_BACKUP_REF_PTR)
-          typename Impl = internal::AsanBackupRefPtrImpl>
+using RawPtrMayDangle = internal::AsanBackupRefPtrImpl;
+using RawPtrBanDanglingIfSupported = internal::AsanBackupRefPtrImpl;
 #else
-          typename Impl = internal::RawPtrNoOpImpl>
+using RawPtrMayDangle = internal::RawPtrNoOpImpl;
+using RawPtrBanDanglingIfSupported = internal::RawPtrNoOpImpl;
 #endif
+
+template <typename T, typename Impl = RawPtrBanDanglingIfSupported>
 class TRIVIAL_ABI GSL_POINTER raw_ptr {
  public:
   static_assert(raw_ptr_traits::IsSupportedType<T>::value,
@@ -826,6 +835,14 @@ class TRIVIAL_ABI GSL_POINTER raw_ptr {
     std::swap(lhs.wrapped_ptr_, rhs.wrapped_ptr_);
   }
 
+  // If T can be serialised into trace, its alias is also
+  // serialisable.
+  template <class U = T>
+  typename perfetto::check_traced_value_support<U>::type WriteIntoTrace(
+      perfetto::TracedValue&& context) const {
+    perfetto::WriteIntoTracedValue(std::move(context), get());
+  }
+
  private:
   // This getter is meant for situations where the pointer is meant to be
   // dereferenced. It is allowed to crash on nullptr (it may or may not),
@@ -885,6 +902,17 @@ RAW_PTR_FUNC_ATTRIBUTES bool operator>=(const raw_ptr<U, I>& lhs,
 }  // namespace base
 
 using base::raw_ptr;
+
+// DisableDanglingPtrDetection option for raw_ptr annotates
+// "intentional-and-safe" dangling pointers. It is meant to be used at the
+// margin, only if there is no better way to re-architecture the code.
+//
+// Usage:
+// raw_ptr<T, DisableDanglingPtrDetection> dangling_ptr;
+//
+// When using it, please provide a justification about what guarantees it will
+// never be dereferenced after becoming dangling.
+using DisableDanglingPtrDetection = base::RawPtrMayDangle;
 
 namespace std {
 

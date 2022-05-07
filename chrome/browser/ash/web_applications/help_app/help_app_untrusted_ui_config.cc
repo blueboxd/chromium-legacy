@@ -9,6 +9,7 @@
 #include "ash/constants/ash_features.h"
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/tablet_mode.h"
+#include "ash/services/multidevice_setup/public/cpp/prefs.h"
 #include "ash/webui/help_app_ui/help_app_untrusted_ui.h"
 #include "ash/webui/help_app_ui/url_constants.h"
 #include "base/bind.h"
@@ -27,7 +28,6 @@
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chromeos/services/multidevice_setup/public/cpp/prefs.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
@@ -109,8 +109,7 @@ void PopulateLoadTimeData(content::WebUI* web_ui,
   // Messages, Smart Lock) is allowed on this device.
   source->AddBoolean(
       "multiDeviceFeaturesAllowed",
-      chromeos::multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(
-          pref_service));
+      multidevice_setup::AreAnyMultiDeviceFeaturesAllowed(pref_service));
   source->AddBoolean("tabletMode", TabletMode::Get()->InTabletMode());
   // Checks if there are active touch screens.
   source->AddBoolean(

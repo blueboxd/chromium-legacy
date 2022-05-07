@@ -85,8 +85,9 @@ phonehub::Notification::AppMetadata DictToAppMetadata(
 
   int user_id = app_metadata_dict->FindIntKey("userId").value_or(0);
 
-  return phonehub::Notification::AppMetadata(visible_app_name, *package_name,
-                                             icon, user_id);
+  return phonehub::Notification::AppMetadata(
+      visible_app_name, *package_name, icon, /*icon_color=*/absl::nullopt,
+      /*icon_is_monochrome=*/false, user_id);
 }
 
 void TryAddingMetadata(
@@ -210,16 +211,11 @@ void MultidevicePhoneHubHandler::RegisterMessages() {
           base::Unretained(this)));
 
   web_ui()->RegisterDeprecatedMessageCallback(
-      "resetHasNotificationSetupUiBeenDismissed",
-      base::BindRepeating(&MultidevicePhoneHubHandler::
-                              HandleResetHasNotificationSetupUiBeenDismissed,
-                          base::Unretained(this)));
-
-  web_ui()->RegisterDeprecatedMessageCallback(
-      "resetCameraRollOnboardingUiDismissed",
-      base::BindRepeating(&MultidevicePhoneHubHandler::
-                              HandleResetCameraRollOnboardingUiDismissed,
-                          base::Unretained(this)));
+      "resetHasMultideviceFeatureSetupUiBeenDismissed",
+      base::BindRepeating(
+          &MultidevicePhoneHubHandler::
+              HandleResetHasMultideviceFeatureSetupUiBeenDismissed,
+          base::Unretained(this)));
 
   web_ui()->RegisterDeprecatedMessageCallback(
       "setFakeCameraRoll",
@@ -299,13 +295,6 @@ void MultidevicePhoneHubHandler::OnCameraRollViewUiStateUpdated() {
   camera_roll_dict.SetBoolKey(
       "isCameraRollEnabled", fake_phone_hub_manager_->fake_camera_roll_manager()
                                  ->is_camera_roll_enabled());
-  camera_roll_dict.SetBoolKey(
-      "isOnboardingDismissed",
-      fake_phone_hub_manager_->fake_camera_roll_manager()
-          ->is_onboarding_dismissed());
-  camera_roll_dict.SetBoolKey(
-      "isLoadingViewShown", fake_phone_hub_manager_->fake_camera_roll_manager()
-                                ->is_loading_view_shown());
   FireWebUIListener("camera-roll-ui-view-state-updated", camera_roll_dict);
 }
 
@@ -600,19 +589,12 @@ void MultidevicePhoneHubHandler::HandleResetShouldShowOnboardingUi(
   PA_LOG(VERBOSE) << "Reset kHideOnboardingUi pref";
 }
 
-void MultidevicePhoneHubHandler::HandleResetHasNotificationSetupUiBeenDismissed(
-    const base::ListValue* args) {
+void MultidevicePhoneHubHandler::
+    HandleResetHasMultideviceFeatureSetupUiBeenDismissed(
+        const base::ListValue* args) {
   PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
   prefs->SetBoolean(phonehub::prefs::kHasDismissedSetupRequiredUi, false);
   PA_LOG(VERBOSE) << "Reset kHasDismissedSetupRequiredUi pref";
-}
-
-void MultidevicePhoneHubHandler::HandleResetCameraRollOnboardingUiDismissed(
-    const base::ListValue* args) {
-  PrefService* prefs = Profile::FromWebUI(web_ui())->GetPrefs();
-  prefs->SetBoolean(
-      chromeos::phonehub::prefs::kHasDismissedCameraRollOnboardingUi, false);
-  PA_LOG(VERBOSE) << "Reset kHasDismissedCameraRollOnboardingUi pref";
 }
 
 void MultidevicePhoneHubHandler::HandleSetFakeCameraRoll(
@@ -627,26 +609,12 @@ void MultidevicePhoneHubHandler::HandleSetFakeCameraRoll(
   fake_phone_hub_manager_->fake_camera_roll_manager()
       ->SetIsCameraRollAvailableToBeEnabled(!*is_camera_roll_enabled);
 
-  absl::optional<bool> is_onboarding_dismissed =
-      camera_roll_dict.FindBoolKey("isOnboardingDismissed");
-  CHECK(is_onboarding_dismissed);
-
-  fake_phone_hub_manager_->fake_camera_roll_manager()
-      ->SetIsCameraRollOnboardingDismissed(*is_onboarding_dismissed);
-
   absl::optional<bool> is_file_access_granted =
       camera_roll_dict.FindBoolKey("isFileAccessGranted");
   CHECK(is_file_access_granted);
 
   fake_phone_hub_manager_->fake_camera_roll_manager()
       ->SetIsAndroidStorageGranted(*is_file_access_granted);
-
-  absl::optional<bool> is_loading_view_shown =
-      camera_roll_dict.FindBoolKey("isLoadingViewShown");
-  CHECK(is_loading_view_shown);
-
-  fake_phone_hub_manager_->fake_camera_roll_manager()
-      ->SetIsCameraRollLoadingViewShown(*is_loading_view_shown);
 
   absl::optional<int> number_of_thumbnails =
       camera_roll_dict.FindIntKey("numberOfThumbnails");

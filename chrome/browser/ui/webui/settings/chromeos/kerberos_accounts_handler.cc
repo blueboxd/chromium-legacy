@@ -28,6 +28,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 
 namespace chromeos {
 namespace settings {
@@ -224,7 +225,7 @@ void KerberosAccountsHandler::RegisterMessages() {
 }
 
 void KerberosAccountsHandler::HandleGetKerberosAccounts(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(1U, args.size());
@@ -284,7 +285,7 @@ void KerberosAccountsHandler::OnListAccounts(
 }
 
 void KerberosAccountsHandler::HandleAddKerberosAccount(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   // TODO(https://crbug.com/961246):
@@ -320,7 +321,7 @@ void KerberosAccountsHandler::OnAddAccountAndAuthenticate(
 }
 
 void KerberosAccountsHandler::HandleRemoveKerberosAccount(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(2U, args.size());
@@ -345,7 +346,7 @@ void KerberosAccountsHandler::OnRemoveAccount(const std::string& callback_id,
 }
 
 void KerberosAccountsHandler::HandleValidateKerberosConfig(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(2U, args.size());
@@ -380,7 +381,7 @@ void KerberosAccountsHandler::OnValidateConfig(
 }
 
 void KerberosAccountsHandler::HandleSetAsActiveKerberosAccount(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(1U, args.size());

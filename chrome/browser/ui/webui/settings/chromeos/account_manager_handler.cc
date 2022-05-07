@@ -37,6 +37,7 @@
 #include "ui/base/webui/web_ui_util.h"
 #include "ui/chromeos/resources/grit/ui_chromeos_resources.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 
 namespace chromeos {
 namespace settings {
@@ -241,8 +242,7 @@ void AccountManagerUIHandler::SetProfileForTesting(Profile* profile) {
   profile_ = profile;
 }
 
-void AccountManagerUIHandler::HandleGetAccounts(
-    const base::Value::ConstListView args) {
+void AccountManagerUIHandler::HandleGetAccounts(const base::Value::List& args) {
   AllowJavascript();
 
   CHECK_EQ(args.size(), 1u);
@@ -392,8 +392,7 @@ base::ListValue AccountManagerUIHandler::GetSecondaryGaiaAccounts(
   return accounts;
 }
 
-void AccountManagerUIHandler::HandleAddAccount(
-    const base::Value::ConstListView args) {
+void AccountManagerUIHandler::HandleAddAccount(const base::Value::List& args) {
   AllowJavascript();
   ::GetAccountManagerFacade(profile_->GetPath().value())
       ->ShowAddAccountDialog(
@@ -402,7 +401,7 @@ void AccountManagerUIHandler::HandleAddAccount(
 }
 
 void AccountManagerUIHandler::HandleReauthenticateAccount(
-    const base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK(!args.empty());
@@ -416,7 +415,7 @@ void AccountManagerUIHandler::HandleReauthenticateAccount(
 }
 
 void AccountManagerUIHandler::HandleMigrateAccount(
-    const base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK(!args.empty());
@@ -426,7 +425,7 @@ void AccountManagerUIHandler::HandleMigrateAccount(
 }
 
 void AccountManagerUIHandler::HandleRemoveAccount(
-    const base::Value::ConstListView args) {
+    const base::Value::List& args) {
   AllowJavascript();
 
   CHECK(!args.empty());
@@ -456,12 +455,12 @@ void AccountManagerUIHandler::HandleRemoveAccount(
 }
 
 void AccountManagerUIHandler::HandleShowWelcomeDialogIfRequired(
-    const base::Value::ConstListView args) {
+    const base::Value::List& args) {
   chromeos::AccountManagerWelcomeDialog::ShowIfRequired();
 }
 
 void AccountManagerUIHandler::HandleChangeArcAvailability(
-    const base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK(ash::AccountAppsAvailability::IsArcAccountRestrictionsEnabled());
 
   // 2 args: account, is_available.

@@ -11,9 +11,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // static
 SecureChannelInitializer::Factory*
@@ -159,6 +157,4 @@ void SecureChannelInitializer::OnBluetoothAdapterReceived(
   }
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

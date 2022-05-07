@@ -5,6 +5,7 @@
 #include "chrome/app/chrome_main_delegate.h"
 
 #include <stddef.h>
+
 #include <string>
 
 #include "base/base_paths.h"
@@ -12,7 +13,6 @@
 #include "base/command_line.h"
 #include "base/cpu.h"
 #include "base/cpu_reduction_experiment.h"
-#include "base/cxx17_backports.h"
 #include "base/dcheck_is_on.h"
 #include "base/files/file_path.h"
 #include "base/i18n/rtl.h"
@@ -177,10 +177,6 @@
 #include "components/nacl/renderer/plugin/ppapi_entrypoints.h"
 #endif
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "pdf/pdf_ppapi.h"
-#endif
-
 #if BUILDFLAG(ENABLE_PDF)
 #include "chrome/child/pdf_child_init.h"
 #endif
@@ -213,7 +209,7 @@ const char* const ChromeMainDelegate::kNonWildcardDomainNonPortSchemes[] = {
     chrome::kChromeSearchScheme, content::kChromeDevToolsScheme,
     content::kChromeUIScheme, content::kChromeUIUntrustedScheme};
 const size_t ChromeMainDelegate::kNonWildcardDomainNonPortSchemesSize =
-    base::size(kNonWildcardDomainNonPortSchemes);
+    std::size(kNonWildcardDomainNonPortSchemes);
 
 namespace {
 
@@ -259,7 +255,7 @@ void SetUpExtendedCrashReporting(bool is_browser_process) {
 
   // Record product, version, channel and special build strings.
   wchar_t exe_file[MAX_PATH] = {};
-  CHECK(::GetModuleFileName(nullptr, exe_file, base::size(exe_file)));
+  CHECK(::GetModuleFileName(nullptr, exe_file, std::size(exe_file)));
 
   std::wstring product_name, version_number, channel_name, special_build;
   install_static::GetExecutableVersionDetails(
@@ -397,9 +393,9 @@ void InitializeUserDataDir(base::CommandLine* command_line) {
   wchar_t user_data_dir_buf[MAX_PATH], invalid_user_data_dir_buf[MAX_PATH];
 
   // In tests this may return false, implying the user data dir should be unset.
-  if (GetUserDataDirectoryThunk(
-          user_data_dir_buf, base::size(user_data_dir_buf),
-          invalid_user_data_dir_buf, base::size(invalid_user_data_dir_buf))) {
+  if (GetUserDataDirectoryThunk(user_data_dir_buf, std::size(user_data_dir_buf),
+                                invalid_user_data_dir_buf,
+                                std::size(invalid_user_data_dir_buf))) {
     base::FilePath user_data_dir(user_data_dir_buf);
     if (invalid_user_data_dir_buf[0] != 0) {
       chrome::SetInvalidSpecifiedUserDataDir(
@@ -727,6 +723,8 @@ void ChromeMainDelegate::PostFieldTrialInitialization() {
   } else if (process_type == switches::kRendererProcess) {
     hang_watcher_process_type =
         base::HangWatcher::ProcessType::kRendererProcess;
+  } else if (process_type == switches::kUtilityProcess) {
+    hang_watcher_process_type = base::HangWatcher::ProcessType::kUtilityProcess;
   } else {
     hang_watcher_process_type = base::HangWatcher::ProcessType::kUnknownProcess;
   }
@@ -905,7 +903,7 @@ bool ChromeMainDelegate::BasicStartupComplete(int* exit_code) {
     base::CommandLine interim_command_line(command_line.GetProgram());
     const char* const kSwitchNames[] = {switches::kUserDataDir, };
     interim_command_line.CopySwitchesFrom(command_line, kSwitchNames,
-                                          base::size(kSwitchNames));
+                                          std::size(kSwitchNames));
     interim_command_line.AppendSwitch(switches::kDiagnostics);
     interim_command_line.AppendSwitch(switches::kDiagnosticsRecovery);
 
@@ -1217,12 +1215,6 @@ void ChromeMainDelegate::SandboxInitialized(const std::string& process_type) {
       nacl_plugin::PPP_InitializeModule,
       nacl_plugin::PPP_ShutdownModule);
 #endif
-#if BUILDFLAG(ENABLE_PLUGINS) && BUILDFLAG(ENABLE_PDF)
-  ChromeContentClient::SetPDFEntryFunctions(
-      chrome_pdf::PPP_GetInterface,
-      chrome_pdf::PPP_InitializeModule,
-      chrome_pdf::PPP_ShutdownModule);
-#endif
 }
 
 absl::variant<int, content::MainFunctionParams> ChromeMainDelegate::RunProcess(
@@ -1246,7 +1238,7 @@ absl::variant<int, content::MainFunctionParams> ChromeMainDelegate::RunProcess(
 #endif
   };
 
-  for (size_t i = 0; i < base::size(kMainFunctions); ++i) {
+  for (size_t i = 0; i < std::size(kMainFunctions); ++i) {
     if (process_type == kMainFunctions[i].name)
       return kMainFunctions[i].function(std::move(main_function_params));
   }

@@ -459,6 +459,9 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // nullptr otherwise.
   LayoutBlock* ContainingNGBlock() const;
 
+  // Return the nearest fragmentation context root, if any.
+  LayoutBlock* ContainingFragmentationContextRoot() const;
+
   // Function to return our enclosing flow thread if we are contained inside
   // one. This function follows the containing block chain.
   LayoutFlowThread* FlowThreadContainingBlock() const {
@@ -673,10 +676,10 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
            ShouldApplyInlineSizeContainment();
   }
 
-  inline bool IsContainerForContainerQueries() const {
+  inline bool CanMatchSizeContainerQueries() const {
     NOT_DESTROYED();
     if (Element* element = DynamicTo<Element>(GetNode()))
-      return StyleRef().IsContainerForContainerQueries(*element);
+      return StyleRef().CanMatchSizeContainerQueries(*element);
     return false;
   }
 
@@ -1210,6 +1213,13 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   // Remove this object and all descendants from the containing
   // LayoutFlowThread.
   void RemoveFromLayoutFlowThread();
+
+  // Return true if this object might be inside a fragmentation context, or
+  // false if it's definitely *not* inside one.
+  bool MightBeInsideFragmentationContext() const {
+    NOT_DESTROYED();
+    return IsInsideFlowThread() || GetDocument().Printing();
+  }
 
   // FIXME: Until all SVG layoutObjects can be subclasses of
   // LayoutSVGModelObject we have to add SVG layoutObject methods to
@@ -2189,6 +2199,14 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
   bool WhitespaceChildrenMayChange() const {
     NOT_DESTROYED();
     return bitfields_.WhitespaceChildrenMayChange();
+  }
+  void SetNeedsDevtoolsInfo(bool b) {
+    NOT_DESTROYED();
+    bitfields_.SetNeedsDevtoolsInfo(b);
+  }
+  bool NeedsDevtoolsInfo() const {
+    NOT_DESTROYED();
+    return bitfields_.NeedsDevtoolsInfo();
   }
 
   virtual void Paint(const PaintInfo&) const;
@@ -3233,9 +3251,12 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
           layout_object_.StyleRef().Visibility() == EVisibility::kVisible);
     }
 
-    void SetNeedsPaintPropertyUpdate() {
-      layout_object_.SetNeedsPaintPropertyUpdate();
+    // Same as LayoutObject::SetNeedsPaintPropertyUpdate(), but does not mark
+    // ancestors as having a descendant needing a paint property update.
+    void SetOnlyThisNeedsPaintPropertyUpdate() {
+      layout_object_.bitfields_.SetNeedsPaintPropertyUpdate(true);
     }
+
     void AddSubtreePaintPropertyUpdateReason(
         SubtreePaintPropertyUpdateReason reason) {
       layout_object_.AddSubtreePaintPropertyUpdateReason(reason);
@@ -3256,11 +3277,6 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     }
 
 #if DCHECK_IS_ON()
-    // Same as setNeedsPaintPropertyUpdate() but does not mark ancestors as
-    // having a descendant needing a paint property update.
-    void SetOnlyThisNeedsPaintPropertyUpdateForTesting() {
-      layout_object_.bitfields_.SetNeedsPaintPropertyUpdate(true);
-    }
     void ClearNeedsPaintPropertyUpdateForTesting() {
       layout_object_.bitfields_.SetNeedsPaintPropertyUpdate(false);
     }
@@ -3412,6 +3428,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     auto* context = GetDisplayLockContext();
     return context && !context->ShouldPaintChildren();
   }
+
+  bool IsShapingDeferred() const;
 
   // This flag caches StyleRef().HasBorderDecoration() &&
   // !Table()->ShouldCollapseBorders().
@@ -3960,6 +3978,7 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
           might_traverse_physical_fragments_(false),
           is_anonymous_ng_multicol_inline_wrapper_(false),
           whitespace_children_may_change_(false),
+          needs_devtools_info_(false),
           positioned_state_(kIsStaticallyPositioned),
           selection_state_(static_cast<unsigned>(SelectionState::kNone)),
           subtree_paint_property_update_reasons_(
@@ -4308,6 +4327,8 @@ class CORE_EXPORT LayoutObject : public GarbageCollected<LayoutObject>,
     // re-evaluation of whitespace children.
     ADD_BOOLEAN_BITFIELD(whitespace_children_may_change_,
                          WhitespaceChildrenMayChange);
+
+    ADD_BOOLEAN_BITFIELD(needs_devtools_info_, NeedsDevtoolsInfo);
 
    private:
     // This is the cached 'position' value of this object

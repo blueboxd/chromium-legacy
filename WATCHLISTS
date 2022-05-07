@@ -741,8 +741,8 @@
                   '|ui/webui/resources/cr_components/chromeos/bluetooth'
     },
     'chromeos_cellular': {
-      'filepath': 'chromeos/dbus/hermes/|'\
-                  'chromeos/services/cellular_setup/|'\
+      'filepath': 'ash/services/cellular_setup/|'\
+                  'chromeos/dbus/hermes/|'\
                   'ui/webui/resources/cr_components/chromeos/cellular_setup/',
     },
     'chromeos_geolocation': {
@@ -789,6 +789,9 @@
     },
     'chromeos_wifi_sync': {
       'filepath': 'chromeos/components/sync_wifi/',
+    },
+    'chrometto_proto_extensions': {
+      'filepath': 'base/tracing/protos/',
     },
     'chromevox': {
       'filepath': 'chromevox|spoken_feedback',
@@ -854,7 +857,11 @@
                   '|ash/policy/'\
                   '|components/policy/'\
                   '|chrome/browser/ash/policy/'\
-                  '|chrome/browser/policy/'
+                  '|chrome/browser/policy/'\
+                  '|chrome/test/enterprise'\
+                  '|ash/components/arc/enterprise/'\
+                  '|chrome/browser/ash/arc/enterprise/'\
+                  '|docs/website/site/administrators/'
     },
     'cros_reporting': {
       'filepath': 'chrome/browser/policy/messaging_layer/'\
@@ -1355,6 +1362,8 @@
       'filepath': 'ash/components/proximity_auth/'\
                   '|ash/multi_device_setup/'\
                   '|ash/resources/multidevice_resources.grdp'\
+                  '|ash/services/device_sync/'\
+                  '|ash/services/multidevice_setup/'\
                   '|ash/services/secure_channel/'\
                   '|chrome/browser/ash/cryptauth/'\
                   '|chrome/browser/ash/device_sync/'\
@@ -1366,8 +1375,6 @@
                   '|chrome/browser/ui/webui/settings/chromeos/multidevice'\
                   '|chrome/test/data/webui/multidevice_setup/'\
                   '|chromeos/components/multidevice/'\
-                  '|chromeos/services/device_sync/'\
-                  '|chromeos/services/multidevice_setup/'\
                   '|ui/webui/resources/cr_components/chromeos/multidevice_setup/'
     },
     'multipaste': {
@@ -2133,7 +2140,8 @@
     'android_crazy_linker': ['johnmaguire+watch@google.com'],
     'android_flags': ['hnakashima+watch@chromium.org'],
     'android_infobars': ['dfalcantara+watch@chromium.org'],
-    'android_infra': ['agrieve+watch@chromium.org'],
+    'android_infra': ['agrieve+watch@chromium.org',
+                      'wnwen+watch@chromium.org'],
     'android_item_chooser_dialogs': ['juncai+watch@chromium.org'],
     'android_omnibox': ['ender+watch@chromium.org'],
     'android_search_widget': ['tedchoc+watch@chromium.org',
@@ -2413,6 +2421,7 @@
     'chromeos_wifi_sync': ['danlee+watch@google.com',
                            'jonmann+watch@chromium.org',
                            'stevenjb+watch@chromium.org'],
+    'chrometto_proto_extensions': ['ddrone+watch@google.com'],
     'chromevox': ['akihiroota@chromium.org',
                   'anastasi+watch@google.com',
                   'dtseng+chromevox@chromium.org',
@@ -2455,7 +2464,7 @@
            'ukai+cc@chromium.org',
            'yyanagisawa+cc@chromium.org'],
     'cr_elements': ['michaelpg+watch-elements@chromium.org'],
-    'cros_commercial_policy': ['chromeos-commercial-remote-management+watchlist@google.com'],
+    'cros_commercial_policy': ['enterprise-policy-review@google.com'],
     'cros_reporting': ['cros-reporting-reviews@google.com'],
     'cros_sharesheet': ['melzhang+watch+sharesheet@chromium.org'],
     'crostini': ['crostini-ui@chromium.org'],
@@ -2585,7 +2594,6 @@
     'libaom': ['fgalligan@chromium.org',
                'jianj@chromium.org',
                'jzern@chromium.org',
-               'kyslov@google.com',
                'marpan@chromium.org',
                'tomfinegan@chromium.org'],
     'libvpx': ['fgalligan@chromium.org',
@@ -2704,7 +2712,6 @@
                          'vasilii+watchlistpasswordmanager@chromium.org'],
     'payments': ['rouslan+payments@chromium.org',
                  'gogerald+paymentswatch@chromium.org',
-                 'maxlg+paymentswatch@chromium.org',
                  'nburris+paymentswatch@chromium.org'],
     'pdf': ['pdf-reviews@chromium.org'],
     'pepper_api': ['binji+watch@chromium.org',
@@ -2784,7 +2791,8 @@
                                 'sullivan@chromium.org'],
     'spellcheck': ['rlp+watch@chromium.org',
                    'rouslan+spell@chromium.org'],
-    'startup': ['nicolaso+watch@chromium.org',
+    'startup': ['cmfcmf+watch@chromium.org',
+                'nicolaso+watch@chromium.org',
                 'ydago+watch@chromium.org'],
     'storage_service': ['dmurph+watching-storageservice@chromium.org'],
     'structured_headers': ['iclelland+watch@chromium.org'],
@@ -2801,7 +2809,8 @@
     'switch_access': ['anastasi+watch@google.com'],
     'syncfs': ['kinuko+fileapi@chromium.org'],
     'system_web_apps': [ 'ortuno@chromium.org',
-                         'dominicschulz@google.com'],
+                         'dominicschulz@google.com',
+                         'qjw@chromium.org'],
     'tab_alert_indicators': ['jophba+watch@chromium.org'],
     'tab_capture': ['jophba+watch@chromium.org',
                     'mfoltz+watch@chromium.org'],

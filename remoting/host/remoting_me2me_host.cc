@@ -134,6 +134,10 @@
 #include "ui/gfx/x/xlib_support.h"
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_LINUX)
+#include "remoting/host/host_utmp_logger.h"
+#endif
+
 #if BUILDFLAG(IS_WIN)
 #include <commctrl.h>
 #include "base/win/registry.h"
@@ -439,6 +443,9 @@ class HostProcess : public ConfigWatcher::Delegate,
 
   std::unique_ptr<HostStatusLogger> host_status_logger_;
   std::unique_ptr<HostEventLogger> host_event_logger_;
+#if BUILDFLAG(IS_LINUX)
+  std::unique_ptr<HostUTMPLogger> host_utmp_logger_;
+#endif
   std::unique_ptr<HostPowerSaveBlocker> power_save_blocker_;
 
   std::unique_ptr<ChromotingHost> host_;
@@ -1697,11 +1704,8 @@ void HostProcess::StartHost() {
   // The feature is enabled for all Googlers using a supported platform.
   desktop_environment_options_.set_enable_remote_open_url(is_googler_);
 
-#if BUILDFLAG(IS_LINUX) || !defined(NDEBUG)
-  // Experimental feature. Enabled on Linux for easier testing.
-  if (is_googler_) {
-    desktop_environment_options_.set_enable_remote_webauthn(true);
-  }
+#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN)
+  desktop_environment_options_.set_enable_remote_webauthn(is_googler_);
 #endif
 
   if (max_clipboard_size_.has_value()) {
@@ -1732,6 +1736,13 @@ void HostProcess::StartHost() {
 
   host_status_logger_ = std::make_unique<HostStatusLogger>(
       host_->status_monitor(), log_to_server_.get());
+
+#if BUILDFLAG(IS_LINUX)
+  const base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
+  if (cmd_line->HasSwitch(kEnableUtempter))
+    host_utmp_logger_ =
+        std::make_unique<HostUTMPLogger>(host_->status_monitor());
+#endif
 
   power_save_blocker_ = std::make_unique<HostPowerSaveBlocker>(
       host_->status_monitor(), context_->ui_task_runner(),

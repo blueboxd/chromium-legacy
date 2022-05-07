@@ -13,6 +13,7 @@ Tests that window.rAF continues to fire during a non-immersive session.
     <script src="../resources/webxr_boilerplate.js"></script>
     <script>
       onMagicWindowXRFrameCallback = function() {
+        console.log('Got magic window frame');
         window.requestAnimationFrame( () => {
           done();
         });

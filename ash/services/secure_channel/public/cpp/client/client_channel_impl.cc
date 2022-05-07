@@ -11,9 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // static
 ClientChannelImpl::Factory* ClientChannelImpl::Factory::test_factory_ = nullptr;
@@ -163,6 +161,4 @@ void ClientChannelImpl::FlushForTesting() {
   file_payload_listeners_.FlushForTesting();
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

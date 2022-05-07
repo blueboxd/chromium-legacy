@@ -18,7 +18,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/url_constants.h"
-#include "content/public/renderer/document_state.h"
 #include "content/public/renderer/render_frame.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
@@ -41,7 +40,6 @@ using blink::WebSecurityOrigin;
 using blink::WebString;
 using blink::WebURL;
 using blink::WebView;
-using content::DocumentState;
 
 namespace content_settings {
 namespace {
@@ -193,16 +191,16 @@ void ContentSettingsAgentImpl::BindContentSettingsManager(
 
 void ContentSettingsAgentImpl::DidCommitProvisionalLoad(
     ui::PageTransition transition) {
-  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
-  if (frame->Parent())
-    return;  // Not a top-level navigation.
-
   // Clear "block" flags for the new page. This needs to happen before any of
   // `allowScript()`, `allowScriptFromSource()`, `allowImage()`, or
   // `allowPlugins()` is called for the new page so that these functions can
   // correctly detect that a piece of content flipped from "not blocked" to
   // "blocked".
   ClearBlockedContentSettings();
+
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+  if (frame->Parent())
+    return;  // Not a top-level navigation.
 
   if (!base::FeatureList::IsEnabled(
           features::kNavigationThreadingOptimizations)) {

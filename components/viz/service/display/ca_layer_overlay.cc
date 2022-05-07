@@ -5,6 +5,7 @@
 #include "components/viz/service/display/ca_layer_overlay.h"
 
 #include <algorithm>
+#include <limits>
 
 #include "base/metrics/histogram_macros.h"
 #include "components/viz/common/features.h"
@@ -26,9 +27,11 @@ namespace {
 // The CoreAnimation renderer's performance starts suffering when too many
 // quads are promoted to CALayers. At extremes, corruption can occur.
 // https://crbug.com/1022116
-// This number can be re-assigned by kMacCAOverlayQuadMaxNum when
-// feature kMacCAOverlayQuad is enabled.
+
 constexpr size_t kTooManyQuads = 128;
+// |kTooManyQuadsWithVideos| can be re-assigned by kMacCAOverlayQuadMaxNum when
+// feature kMacCAOverlayQuad is enabled.
+constexpr size_t kTooManyQuadsWithVideos = 300;
 
 // If there are too many RenderPassDrawQuads, we shouldn't use Core
 // Animation to present them as individual layers, since that potentially
@@ -142,9 +145,9 @@ gfx::CALayerResult FromTextureQuad(DisplayResourceProvider* resource_provider,
     // transformation that flips the contents of the layer without changing its
     // frame is the composition of a vertical flip about the anchor point, and a
     // translation by the height of the layer.
-    ca_layer_overlay->shared_state->transform.preTranslate(
-        0, ca_layer_overlay->bounds_rect.height(), 0);
-    ca_layer_overlay->shared_state->transform.preScale(1, -1, 1);
+    ca_layer_overlay->shared_state->transform.Translate(
+        0, ca_layer_overlay->bounds_rect.height());
+    ca_layer_overlay->shared_state->transform.Scale(1, -1);
   }
   ca_layer_overlay->contents_resource_id = resource_id;
   ca_layer_overlay->contents_rect =
@@ -173,20 +176,35 @@ gfx::CALayerResult FromYUVVideoQuad(DisplayResourceProvider* resource_provider,
       !resource_provider->IsOverlayCandidate(quad->v_plane_resource_id())) {
     return gfx::kCALayerFailedYUVNotCandidate;
   }
+
   if (quad->y_plane_resource_id() == quad->u_plane_resource_id() ||
       quad->y_plane_resource_id() == quad->v_plane_resource_id() ||
       quad->u_plane_resource_id() != quad->v_plane_resource_id()) {
     return gfx::kCALayerFailedYUVInvalidPlanes;
   }
 
-  gfx::RectF ya_contents_rect =
-      gfx::ScaleRect(quad->ya_tex_coord_rect, 1.f / quad->ya_tex_size.width(),
-                     1.f / quad->ya_tex_size.height());
-  gfx::RectF uv_contents_rect =
-      gfx::ScaleRect(quad->uv_tex_coord_rect, 1.f / quad->uv_tex_size.width(),
-                     1.f / quad->uv_tex_size.height());
-  if (ya_contents_rect != uv_contents_rect)
+  // Use division to calculate |ya_contents_rect| instead of using
+  // gfx::ScaleRect (which would multiply by the reciprocal), to avoid
+  // introducing excessive floating-point errors.
+  gfx::RectF ya_contents_rect = {
+      (quad->ya_tex_coord_rect.x() / quad->ya_tex_size.width()),
+      (quad->ya_tex_coord_rect.y() / quad->ya_tex_size.height()),
+      (quad->ya_tex_coord_rect.width() / quad->ya_tex_size.width()),
+      (quad->ya_tex_coord_rect.height() / quad->ya_tex_size.height())};
+  gfx::RectF uv_contents_rect = {
+      (quad->uv_tex_coord_rect.x() / quad->uv_tex_size.width()),
+      (quad->uv_tex_coord_rect.y() / quad->uv_tex_size.height()),
+      (quad->uv_tex_coord_rect.width() / quad->uv_tex_size.width()),
+      (quad->uv_tex_coord_rect.height() / quad->uv_tex_size.height())};
+  // For odd-sized videos, |ya_tex_coord_rect| and |uv_tex_coord_rect| might not
+  // be identical.
+  float tolerance_x = 1.5f / quad->uv_tex_size.width();
+  float tolerance_y = 1.5f / quad->uv_tex_size.height();
+  if (!ya_contents_rect.ApproximatelyEqual(uv_contents_rect, tolerance_x,
+                                           tolerance_y)) {
     return gfx::kCALayerFailedYUVTexcoordMismatch;
+  }
+
   ca_layer_overlay->contents_resource_id = y_resource_id;
   ca_layer_overlay->contents_rect = ya_contents_rect;
   ca_layer_overlay->protected_video_type = quad->protected_video_type;
@@ -271,7 +289,7 @@ class CALayerOverlayProcessorInternal {
       most_recent_overlay_shared_state_->opacity =
           quad->shared_quad_state->opacity;
       most_recent_overlay_shared_state_->transform =
-          quad->shared_quad_state->quad_to_target_transform.matrix();
+          quad->shared_quad_state->quad_to_target_transform;
     }
     ca_layer_overlay->shared_state = most_recent_overlay_shared_state_;
 
@@ -348,12 +366,16 @@ CALayerOverlayProcessor::CALayerOverlayProcessor()
     : overlays_allowed_(ui::RemoteLayerAPISupported()),
       enable_ca_renderer_(base::FeatureList::IsEnabled(kCARenderer)),
       enable_hdr_underlays_(base::FeatureList::IsEnabled(kHDRUnderlays)) {
-  max_quad_list_size_ = kTooManyQuads;
   if (base::FeatureList::IsEnabled(features::kMacCAOverlayQuad)) {
+    max_quad_list_size_for_videos_ = kTooManyQuadsWithVideos;
     const int max_num = features::kMacCAOverlayQuadMaxNum.Get();
     if (max_num > 0)
-      max_quad_list_size_ = max_num;
+      max_quad_list_size_for_videos_ = max_num;
+  } else {
+    max_quad_list_size_for_videos_ = kTooManyQuads;
   }
+
+  DCHECK_GE(max_quad_list_size_for_videos_, kTooManyQuads);
 }
 
 bool CALayerOverlayProcessor::AreClipSettingsValid(
@@ -458,9 +480,7 @@ bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
     result = gfx::kCALayerFailedVideoCaptureEnabled;
   } else if (!render_pass->copy_requests.empty()) {
     result = gfx::kCALayerFailedCopyRequests;
-  } else if (num_visible_quads > max_quad_list_size_) {
-    // |max_quad_list_size_| might be set by finch and is bigger than
-    // kTooManyQuads (128).
+  } else if (num_visible_quads > max_quad_list_size_for_videos_) {
     result = gfx::kCALayerFailedTooManyQuads;
   }
 
@@ -509,9 +529,10 @@ bool CALayerOverlayProcessor::ProcessForCALayerOverlays(
     ca_layer_overlays->push_back(ca_layer);
   }
 
-  // In the case of |max_quad_list_size_| > |num_visible_quads| > kTooManyQuads,
-  // Accept CALayerOverlay if in a video conference (video count >=
-  // kMaxNumVideos(5)). Otherwise, do not use CALayerOverlay.
+  // Apply Feature kMacCAOverlayQuad to non-video-conferencing mode only.
+  // In the case of |max_quad_list_size_for_videos_| > |num_visible_quads| >
+  // kTooManyQuads, accept CALayerOverlay only if it's in a video conferencing
+  // mode. (video count >= kMaxNumVideos(5)) Otherwise, fail CALayerOverlay.
   if (num_visible_quads > kTooManyQuads &&
       yuv_draw_quad_count < kMaxNumVideos) {
     result = gfx::kCALayerFailedTooManyQuads;

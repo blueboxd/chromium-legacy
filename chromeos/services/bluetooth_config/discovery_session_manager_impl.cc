@@ -4,9 +4,11 @@
 
 #include "chromeos/services/bluetooth_config/discovery_session_manager_impl.h"
 
+#include "base/feature_list.h"
 #include "chromeos/services/bluetooth_config/device_pairing_handler_impl.h"
 #include "components/device_event_log/device_event_log.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/floss/floss_features.h"
 
 namespace chromeos {
 namespace bluetooth_config {
@@ -19,10 +21,12 @@ const char kDiscoveryClientName[] = "CrosBluetoothConfig API";
 DiscoverySessionManagerImpl::DiscoverySessionManagerImpl(
     AdapterStateController* adapter_state_controller,
     scoped_refptr<device::BluetoothAdapter> bluetooth_adapter,
-    DiscoveredDevicesProvider* discovered_devices_provider)
+    DiscoveredDevicesProvider* discovered_devices_provider,
+    FastPairDelegate* fast_pair_delegate)
     : DiscoverySessionManager(adapter_state_controller,
                               discovered_devices_provider),
-      bluetooth_adapter_(std::move(bluetooth_adapter)) {
+      bluetooth_adapter_(std::move(bluetooth_adapter)),
+      fast_pair_delegate_(fast_pair_delegate) {
   adapter_observation_.Observe(bluetooth_adapter_.get());
 }
 
@@ -43,7 +47,7 @@ DiscoverySessionManagerImpl::CreateDevicePairingHandler(
     base::OnceClosure finished_pairing_callback) {
   return DevicePairingHandlerImpl::Factory::Create(
       std::move(receiver), adapter_state_controller, bluetooth_adapter_,
-      std::move(finished_pairing_callback));
+      fast_pair_delegate_, std::move(finished_pairing_callback));
 }
 
 void DiscoverySessionManagerImpl::AdapterDiscoveringChanged(
@@ -57,6 +61,15 @@ void DiscoverySessionManagerImpl::AdapterDiscoveringChanged(
   // |discovery_session_| is no longer operational, so destroy it.
   BLUETOOTH_LOG(EVENT) << "Adapter discovering became false during an active "
                           "discovery session, destroying session";
+
+  // With Floss the discovery could be stopped due to Inquiry timeout or before
+  // pairing/connection while pairing may be ongoing. UI should not destroy
+  // discovery session since doing so will clear the pairing handler which is
+  // still needed.
+  // TODO(b/222230887): Decouple pairing handler from discovery session.
+  if (base::FeatureList::IsEnabled(floss::features::kFlossEnabled))
+    return;
+
   DestroyDiscoverySession();
 }
 

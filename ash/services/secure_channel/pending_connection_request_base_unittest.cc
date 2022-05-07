@@ -14,9 +14,7 @@
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 namespace {
 
@@ -167,6 +165,4 @@ TEST_F(SecureChannelPendingConnectionRequestBaseTest,
   EXPECT_EQ(fake_client_connection_parameters(), extracted_client_data.get());
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

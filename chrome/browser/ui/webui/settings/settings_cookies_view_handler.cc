@@ -11,7 +11,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "base/cxx17_backports.h"
 #include "base/i18n/number_formatting.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -82,7 +81,7 @@ int GetCategoryLabelID(CookieTreeNode::DetailedInfo::NodeType node_type) {
   };
   // Before optimizing, consider the data size and the cost of L2 cache misses.
   // A linear search over a couple dozen integers is very fast.
-  for (size_t i = 0; i < base::size(kCategoryLabels); ++i) {
+  for (size_t i = 0; i < std::size(kCategoryLabels); ++i) {
     if (kCategoryLabels[i].node_type == node_type) {
       return kCategoryLabels[i].id;
     }
@@ -233,8 +232,7 @@ void CookiesViewHandler::RecreateCookiesTreeModel() {
   cookies_tree_model_->AddCookiesTreeObserver(this);
 }
 
-void CookiesViewHandler::HandleGetCookieDetails(
-    base::Value::ConstListView args) {
+void CookiesViewHandler::HandleGetCookieDetails(const base::Value::List& args) {
   CHECK_EQ(2U, args.size());
   std::string callback_id = args[0].GetString();
   std::string site = args[1].GetString();
@@ -267,7 +265,7 @@ void CookiesViewHandler::GetCookieDetails(const std::string& callback_id,
 }
 
 void CookiesViewHandler::HandleGetNumCookiesString(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(2U, args.size());
   std::string callback_id;
   callback_id = args[0].GetString();
@@ -282,7 +280,7 @@ void CookiesViewHandler::HandleGetNumCookiesString(
   ResolveJavascriptCallback(base::Value(callback_id), base::Value(string));
 }
 
-void CookiesViewHandler::HandleGetDisplayList(base::Value::ConstListView args) {
+void CookiesViewHandler::HandleGetDisplayList(const base::Value::List& args) {
   CHECK_EQ(2U, args.size());
   std::string callback_id = args[0].GetString();
   std::u16string filter = base::UTF8ToUTF16(args[1].GetString());
@@ -308,7 +306,7 @@ void CookiesViewHandler::GetDisplayList(std::string callback_id,
   ReturnLocalDataList(callback_id);
 }
 
-void CookiesViewHandler::HandleReloadCookies(base::Value::ConstListView args) {
+void CookiesViewHandler::HandleReloadCookies(const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   std::string callback_id = args[0].GetString();
 
@@ -334,7 +332,7 @@ void CookiesViewHandler::HandleReloadCookies(base::Value::ConstListView args) {
   ProcessPendingRequests();
 }
 
-void CookiesViewHandler::HandleRemoveAll(base::Value::ConstListView args) {
+void CookiesViewHandler::HandleRemoveAll(const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   AllowJavascript();
 
@@ -352,7 +350,7 @@ void CookiesViewHandler::RemoveAll(const std::string& callback_id) {
   ResolveJavascriptCallback(base::Value(callback_id), base::Value());
 }
 
-void CookiesViewHandler::HandleRemoveItem(base::Value::ConstListView args) {
+void CookiesViewHandler::HandleRemoveItem(const base::Value::List& args) {
   std::string node_path = args[0].GetString();
 
   AllowJavascript();
@@ -371,8 +369,7 @@ void CookiesViewHandler::RemoveItem(const std::string& path) {
   }
 }
 
-void CookiesViewHandler::HandleRemoveThirdParty(
-    base::Value::ConstListView args) {
+void CookiesViewHandler::HandleRemoveThirdParty(const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   std::string callback_id = args[0].GetString();
 
@@ -391,8 +388,7 @@ void CookiesViewHandler::HandleRemoveThirdParty(
   ProcessPendingRequests();
 }
 
-void CookiesViewHandler::HandleRemoveShownItems(
-    base::Value::ConstListView args) {
+void CookiesViewHandler::HandleRemoveShownItems(const base::Value::List& args) {
   CHECK_EQ(0U, args.size());
 
   AllowJavascript();
@@ -409,7 +405,7 @@ void CookiesViewHandler::RemoveShownItems() {
     cookies_tree_model_->DeleteCookieNode(parent->children().front().get());
 }
 
-void CookiesViewHandler::HandleRemoveSite(base::Value::ConstListView args) {
+void CookiesViewHandler::HandleRemoveSite(const base::Value::List& args) {
   CHECK_EQ(1U, args.size());
   std::u16string site = base::UTF8ToUTF16(args[0].GetString());
   AllowJavascript();

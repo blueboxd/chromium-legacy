@@ -25,7 +25,7 @@
 
 using testing::_;
 
-namespace chromeos {
+namespace ash {
 namespace ime {
 
 namespace {
@@ -75,19 +75,18 @@ class TestDecoderState : public mojom::InputMethod {
   }
 
  private:
-  void OnFocusDeprecated(
-      chromeos::ime::mojom::InputFieldInfoPtr input_field_info,
-      chromeos::ime::mojom::InputMethodSettingsPtr settings) override {}
-  void OnFocus(chromeos::ime::mojom::InputFieldInfoPtr input_field_info,
-               chromeos::ime::mojom::InputMethodSettingsPtr settings,
+  void OnFocusDeprecated(mojom::InputFieldInfoPtr input_field_info,
+                         mojom::InputMethodSettingsPtr settings) override {}
+  void OnFocus(mojom::InputFieldInfoPtr input_field_info,
+               mojom::InputMethodSettingsPtr settings,
                OnFocusCallback callback) override {}
   void OnBlur() override {}
   void OnSurroundingTextChanged(
       const std::string& text,
       uint32_t offset,
-      chromeos::ime::mojom::SelectionRangePtr selection_range) override {}
+      ime::mojom::SelectionRangePtr selection_range) override {}
   void OnCompositionCanceledBySystem() override {}
-  void ProcessKeyEvent(chromeos::ime::mojom::PhysicalKeyEventPtr event,
+  void ProcessKeyEvent(ime::mojom::PhysicalKeyEventPtr event,
                        ProcessKeyEventCallback callback) override {}
   void OnCandidateSelected(uint32_t selected_candidate_index) override {}
 
@@ -217,8 +216,8 @@ class ImeServiceTest : public testing::Test, public mojom::InputMethodHost {
   void HandleAutocorrect(mojom::AutocorrectSpanPtr autocorrect_span) override {}
   void RequestSuggestions(mojom::SuggestionsRequestPtr request,
                           RequestSuggestionsCallback callback) override {}
-  void DisplaySuggestions(const std::vector<::chromeos::ime::TextSuggestion>&
-                              suggestions) override {}
+  void DisplaySuggestions(
+      const std::vector<TextSuggestion>& suggestions) override {}
   void UpdateCandidatesWindow(mojom::CandidatesWindowPtr window) override {}
   void RecordUkm(mojom::UkmEntryPtr entry) override {}
   void ReportKoreanAction(mojom::KoreanAction action) override {}
@@ -777,4 +776,4 @@ TEST_F(ImeServiceTest, GetFieldTrialParamValueByFeatureConsidered) {
 }
 
 }  // namespace ime
-}  // namespace chromeos
+}  // namespace ash

@@ -96,8 +96,11 @@ scoped_refptr<StaticBitmapImage> GPUSwapChain::TransferToStaticBitmapImage() {
   const auto& sk_image_sync_token =
       transferable_resource.mailbox_holder.sync_token;
 
-  const SkImageInfo sk_image_info = SkImageInfo::MakeN32Premul(
-      transferable_resource.size.width(), transferable_resource.size.height());
+  auto sk_color_type = viz::ResourceFormatToClosestSkColorType(
+      /*gpu_compositing=*/true, transferable_resource.format);
+
+  const SkImageInfo sk_image_info = SkImageInfo::Make(
+      size_.width(), size_.height(), sk_color_type, kPremul_SkAlphaType);
 
   return AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
       sk_image_mailbox, sk_image_sync_token, /* shared_image_texture_id = */ 0,
@@ -225,10 +228,6 @@ bool GPUSwapChain::CopyTextureToResourceProvider(
                            reservation.id, reservation.generation,
                            WGPUTextureUsage_CopyDst,
                            reinterpret_cast<const GLbyte*>(&dst_mailbox));
-
-  WGPUCommandEncoder command_encoder =
-      GetProcs().deviceCreateCommandEncoder(device_->GetHandle(), nullptr);
-
   WGPUImageCopyTexture source = {
       .nextInChain = nullptr,
       .texture = texture,
@@ -248,8 +247,18 @@ bool GPUSwapChain::CopyTextureToResourceProvider(
       .height = static_cast<uint32_t>(size.height()),
       .depthOrArrayLayers = 1,
   };
-  GetProcs().commandEncoderCopyTextureToTextureInternal(
-      command_encoder, &source, &destination, &copy_size);
+
+  WGPUDawnEncoderInternalUsageDescriptor internal_usage_desc = {
+      .chain = {.sType = WGPUSType_DawnEncoderInternalUsageDescriptor},
+      .useInternalUsages = true,
+  };
+  WGPUCommandEncoderDescriptor command_encoder_desc = {
+      .nextInChain = &internal_usage_desc.chain,
+  };
+  WGPUCommandEncoder command_encoder = GetProcs().deviceCreateCommandEncoder(
+      device_->GetHandle(), &command_encoder_desc);
+  GetProcs().commandEncoderCopyTextureToTexture(command_encoder, &source,
+                                                &destination, &copy_size);
 
   WGPUCommandBuffer command_buffer =
       GetProcs().commandEncoderFinish(command_encoder, nullptr);

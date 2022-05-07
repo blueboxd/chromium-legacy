@@ -29,7 +29,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "ui/gfx/image/image_skia.h"
-#include "ui/gfx/image/image_skia_rep_default.h"
+#include "ui/gfx/image/image_skia_rep.h"
 
 namespace web_app {
 
@@ -244,8 +244,8 @@ void WebAppShortcutManager::OnShortcutInfoRetrievedCreateShortcuts(
   locations.applications_menu_location = APP_MENU_LOCATION_SUBDIR_CHROMEAPPS;
 
   internals::ScheduleCreatePlatformShortcuts(
-      std::move(shortcut_data_dir), locations, SHORTCUT_CREATION_BY_USER,
-      std::move(info), std::move(callback));
+      shortcut_data_dir, locations, SHORTCUT_CREATION_BY_USER, std::move(info),
+      std::move(callback));
 }
 
 void WebAppShortcutManager::OnShortcutsMenuIconsReadRegisterShortcutsMenu(

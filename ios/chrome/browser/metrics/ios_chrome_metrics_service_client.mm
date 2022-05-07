@@ -36,6 +36,7 @@
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/entropy_state_provider.h"
 #include "components/metrics/field_trials_provider.h"
+#include "components/metrics/form_factor_metrics_provider.h"
 #include "components/metrics/metrics_data_validation.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
@@ -177,6 +178,11 @@ void IOSChromeMetricsServiceClient::RegisterPrefs(
   ukm::UkmService::RegisterPrefs(registry);
 }
 
+variations::SyntheticTrialRegistry*
+IOSChromeMetricsServiceClient::GetSyntheticTrialRegistry() {
+  return synthetic_trial_registry_.get();
+}
+
 metrics::MetricsService* IOSChromeMetricsServiceClient::GetMetricsService() {
   return metrics_service_.get();
 }
@@ -257,6 +263,11 @@ void IOSChromeMetricsServiceClient::WebStateDidStopLoading(
 
 void IOSChromeMetricsServiceClient::Initialize() {
   PrefService* local_state = GetApplicationContext()->GetLocalState();
+
+  synthetic_trial_registry_ =
+      std::make_unique<variations::SyntheticTrialRegistry>(
+          IsExternalExperimentAllowlistEnabled());
+
   metrics_service_ = std::make_unique<metrics::MetricsService>(
       metrics_state_manager_, this, local_state);
   RegisterMetricsServiceProviders();
@@ -302,6 +313,9 @@ void IOSChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
         std::make_unique<metrics::EntropyStateProvider>(local_state));
 
   metrics_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::FormFactorMetricsProvider>());
+
+  metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ScreenInfoMetricsProvider>());
 
   metrics_service_->RegisterMetricsProvider(
@@ -339,12 +353,14 @@ void IOSChromeMetricsServiceClient::RegisterUKMProviders() {
       std::make_unique<metrics::CPUMetricsProvider>());
 
   ukm_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::FormFactorMetricsProvider>());
+
+  ukm_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ScreenInfoMetricsProvider>());
 
-  // TODO(crbug.com/754877): Support synthetic trials for UKM.
   ukm_service_->RegisterMetricsProvider(
-      std::make_unique<variations::FieldTrialsProvider>(nullptr,
-                                                        kUKMFieldTrialSuffix));
+      std::make_unique<variations::FieldTrialsProvider>(
+          synthetic_trial_registry_.get(), kUKMFieldTrialSuffix));
 
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<IOSChromeDefaultBrowserMetricsProvider>(
@@ -438,6 +454,10 @@ bool IOSChromeMetricsServiceClient::RegisterForNotifications() {
           ->GetChromeBrowserStateManager()
           ->GetLoadedBrowserStates();
   bool all_profiles_succeeded = true;
+
+  // If this function is called too early (before browser_state is fully
+  // initialized), the event listener will not be registered correctly.
+  DCHECK_GT(loaded_browser_states.size(), 0u);
   for (ChromeBrowserState* browser_state : loaded_browser_states) {
     if (!RegisterForBrowserStateEvents(browser_state)) {
       all_profiles_succeeded = false;

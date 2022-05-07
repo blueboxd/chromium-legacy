@@ -26,6 +26,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/rand_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -188,7 +189,7 @@ void MergeUpdateIntoExistingModelAnnotations(
 }  // namespace
 
 std::u16string FormatUrlForRedirectComparison(const GURL& url) {
-  url::Replacements<char> remove_port;
+  GURL::Replacements remove_port;
   remove_port.ClearPort();
   return url_formatter::FormatUrl(
       url.ReplaceComponents(remove_port),

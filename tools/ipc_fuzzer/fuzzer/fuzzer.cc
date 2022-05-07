@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <iostream>
+#include <iterator>
 #include <set>
 #include <string>
 #include <tuple>
@@ -11,7 +12,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_util.h"
 #include "base/types/id_type.h"
@@ -921,10 +921,10 @@ template <>
 struct FuzzTraits<gfx::Transform> {
   static bool Fuzz(gfx::Transform* p, Fuzzer* fuzzer) {
     SkScalar matrix[16];
-    for (size_t i = 0; i < base::size(matrix); i++) {
-      matrix[i] = p->matrix().get(i / 4, i % 4);
+    for (size_t i = 0; i < std::size(matrix); i++) {
+      matrix[i] = p->matrix().rc(i / 4, i % 4);
     }
-    if (!FuzzParamArray(&matrix[0], base::size(matrix), fuzzer))
+    if (!FuzzParamArray(&matrix[0], std::size(matrix), fuzzer))
       return false;
     *p = gfx::Transform(matrix[0], matrix[1], matrix[2], matrix[3], matrix[4],
                         matrix[5], matrix[6], matrix[7], matrix[8], matrix[9],
@@ -1396,15 +1396,6 @@ struct FuzzTraits<ppapi::PPB_X509Certificate_Fields> {
 };
 
 template <>
-struct FuzzTraits<ppapi::proxy::PPBFlash_DrawGlyphs_Params> {
-  static bool Fuzz(ppapi::proxy::PPBFlash_DrawGlyphs_Params* p,
-                       Fuzzer* fuzzer) {
-    // TODO(mbarbella): This should actually do something.
-    return true;
-  }
-};
-
-template <>
 struct FuzzTraits<ppapi::proxy::ResourceMessageCallParams> {
   static bool Fuzz(
       ppapi::proxy::ResourceMessageCallParams* p, Fuzzer* fuzzer) {
@@ -1593,10 +1584,12 @@ struct FuzzTraits<url::Origin> {
       origin = url::Origin::UnsafelyCreateTupleOriginWithoutNormalization(
           scheme, host, port);
     } else {
-      absl::optional<base::UnguessableToken> token =
-          p->GetNonceForSerialization();
-      if (!token)
+      absl::optional<base::UnguessableToken> token;
+      if (auto* nonce = p->GetNonceForSerialization()) {
+        token = *nonce;
+      } else {
         token = base::UnguessableToken::Deserialize(RandU64(), RandU64());
+      }
       if (!FuzzParam(&(*token), fuzzer))
         return false;
       origin = url::Origin::UnsafelyCreateOpaqueOriginWithoutNormalization(

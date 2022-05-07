@@ -14,9 +14,11 @@
 
 #include "ash/components/arc/arc_prefs.h"
 #include "ash/components/arc/metrics/arc_metrics_constants.h"
+#include "ash/components/login/auth/user_context.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/app_types.h"
 #include "ash/constants/ash_pref_names.h"
+#include "ash/constants/ash_switches.h"
 #include "ash/public/cpp/accelerators.h"
 #include "ash/public/cpp/accessibility_controller.h"
 #include "ash/public/cpp/ambient/ambient_ui_model.h"
@@ -53,6 +55,7 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "base/system/sys_info.h"
 #include "base/task/post_task.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -72,6 +75,7 @@
 #include "chrome/browser/ash/borealis/borealis_metrics.h"
 #include "chrome/browser/ash/borealis/borealis_service.h"
 #include "chrome/browser/ash/crosapi/automation_ash.h"
+#include "chrome/browser/ash/crosapi/browser_util.h"
 #include "chrome/browser/ash/crosapi/crosapi_ash.h"
 #include "chrome/browser/ash/crosapi/crosapi_manager.h"
 #include "chrome/browser/ash/crostini/crostini_export_import.h"
@@ -84,10 +88,12 @@
 #include "chrome/browser/ash/guest_os/guest_os_registry_service.h"
 #include "chrome/browser/ash/guest_os/guest_os_registry_service_factory.h"
 #include "chrome/browser/ash/login/lock/screen_locker.h"
+#include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_installer_factory.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_pref_names.h"
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
+#include "chrome/browser/ash/power/ml/smart_dim/ml_agent.h"
 #include "chrome/browser/ash/printing/cups_printers_manager.h"
 #include "chrome/browser/ash/printing/cups_printers_manager_factory.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
@@ -96,6 +102,7 @@
 #include "chrome/browser/banners/app_banner_manager_desktop.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
+#include "chrome/browser/component_updater/smart_dim_component_installer.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/chrome_policy_conversions_client.h"
@@ -131,6 +138,7 @@
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager/session_manager_client.h"
+#include "chromeos/metrics/login_event_recorder.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
@@ -145,8 +153,10 @@
 #include "components/policy/core/browser/policy_conversions.h"
 #include "components/policy/core/common/policy_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/services/app_service/public/cpp/app_types.h"
 #include "components/services/app_service/public/cpp/types_util.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
+#include "components/update_client/update_client_errors.h"
 #include "components/user_manager/user.h"
 #include "components/user_manager/user_manager.h"
 #include "components/variations/pref_names.h"
@@ -331,33 +341,35 @@ api::autotest_private::ShelfItemStatus GetShelfItemStatus(
   return api::autotest_private::ShelfItemStatus::SHELF_ITEM_STATUS_NONE;
 }
 
-api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
+api::autotest_private::AppType GetAppType(apps::AppType type) {
   switch (type) {
-    case apps::mojom::AppType::kArc:
+    case apps::AppType::kArc:
       return api::autotest_private::AppType::APP_TYPE_ARC;
-    case apps::mojom::AppType::kBuiltIn:
+    case apps::AppType::kBuiltIn:
       return api::autotest_private::AppType::APP_TYPE_BUILTIN;
-    case apps::mojom::AppType::kCrostini:
+    case apps::AppType::kCrostini:
       return api::autotest_private::AppType::APP_TYPE_CROSTINI;
-    case apps::mojom::AppType::kChromeApp:
-    case apps::mojom::AppType::kExtension:
+    case apps::AppType::kChromeApp:
+    case apps::AppType::kExtension:
       return api::autotest_private::AppType::APP_TYPE_EXTENSION;
-    case apps::mojom::AppType::kPluginVm:
+    case apps::AppType::kPluginVm:
       return api::autotest_private::AppType::APP_TYPE_PLUGINVM;
-    case apps::mojom::AppType::kWeb:
-    case apps::mojom::AppType::kSystemWeb:
+    case apps::AppType::kWeb:
+    case apps::AppType::kSystemWeb:
       return api::autotest_private::AppType::APP_TYPE_WEB;
-    case apps::mojom::AppType::kUnknown:
+    case apps::AppType::kUnknown:
       return api::autotest_private::AppType::APP_TYPE_NONE;
-    case apps::mojom::AppType::kMacOs:
+    case apps::AppType::kMacOs:
       return api::autotest_private::AppType::APP_TYPE_MACOS;
-    case apps::mojom::AppType::kStandaloneBrowser:
+    case apps::AppType::kStandaloneBrowser:
       return api::autotest_private::AppType::APP_TYPE_STANDALONEBROWSER;
-    case apps::mojom::AppType::kRemote:
+    case apps::AppType::kRemote:
       return api::autotest_private::AppType::APP_TYPE_REMOTE;
-    case apps::mojom::AppType::kBorealis:
+    case apps::AppType::kBorealis:
       return api::autotest_private::AppType::APP_TYPE_BOREALIS;
-    case apps::mojom::AppType::kStandaloneBrowserChromeApp:
+    case apps::AppType::kStandaloneBrowserExtension:
+      return api::autotest_private::AppType::APP_TYPE_NONE;
+    case apps::AppType::kStandaloneBrowserChromeApp:
       // Intentionally fall-through for now.
       // TODO(https://crbug.com/1225848): Figure out appropriate behavior for
       // Lacros-hosted chrome-apps.
@@ -368,25 +380,25 @@ api::autotest_private::AppType GetAppType(apps::mojom::AppType type) {
 }
 
 api::autotest_private::AppInstallSource GetAppInstallSource(
-    apps::mojom::InstallReason install_reason) {
+    apps::InstallReason install_reason) {
   switch (install_reason) {
-    case apps::mojom::InstallReason::kUnknown:
+    case apps::InstallReason::kUnknown:
       return api::autotest_private::AppInstallSource::
           APP_INSTALL_SOURCE_UNKNOWN;
-    case apps::mojom::InstallReason::kSystem:
+    case apps::InstallReason::kSystem:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_SYSTEM;
-    case apps::mojom::InstallReason::kPolicy:
+    case apps::InstallReason::kPolicy:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_POLICY;
-    case apps::mojom::InstallReason::kOem:
+    case apps::InstallReason::kOem:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_OEM;
-    case apps::mojom::InstallReason::kDefault:
+    case apps::InstallReason::kDefault:
       return api::autotest_private::AppInstallSource::
           APP_INSTALL_SOURCE_DEFAULT;
-    case apps::mojom::InstallReason::kSync:
+    case apps::InstallReason::kSync:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_SYNC;
-    case apps::mojom::InstallReason::kUser:
+    case apps::InstallReason::kUser:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_USER;
-    case apps::mojom::InstallReason::kSubApp:
+    case apps::InstallReason::kSubApp:
       return api::autotest_private::AppInstallSource::APP_INSTALL_SOURCE_SUBAPP;
   }
   NOTREACHED();
@@ -415,30 +427,29 @@ api::autotest_private::AppWindowType GetAppWindowType(ash::AppType type) {
   return api::autotest_private::AppWindowType::APP_WINDOW_TYPE_NONE;
 }
 
-api::autotest_private::AppReadiness GetAppReadiness(
-    apps::mojom::Readiness readiness) {
+api::autotest_private::AppReadiness GetAppReadiness(apps::Readiness readiness) {
   switch (readiness) {
-    case apps::mojom::Readiness::kReady:
+    case apps::Readiness::kReady:
       return api::autotest_private::AppReadiness::APP_READINESS_READY;
-    case apps::mojom::Readiness::kDisabledByBlocklist:
+    case apps::Readiness::kDisabledByBlocklist:
       return api::autotest_private::AppReadiness::
           APP_READINESS_DISABLEDBYBLACKLIST;
-    case apps::mojom::Readiness::kDisabledByPolicy:
+    case apps::Readiness::kDisabledByPolicy:
       return api::autotest_private::AppReadiness::
           APP_READINESS_DISABLEDBYPOLICY;
-    case apps::mojom::Readiness::kDisabledByUser:
+    case apps::Readiness::kDisabledByUser:
       return api::autotest_private::AppReadiness::APP_READINESS_DISABLEDBYUSER;
-    case apps::mojom::Readiness::kTerminated:
+    case apps::Readiness::kTerminated:
       return api::autotest_private::AppReadiness::APP_READINESS_TERMINATED;
-    case apps::mojom::Readiness::kUninstalledByUser:
+    case apps::Readiness::kUninstalledByUser:
       return api::autotest_private::AppReadiness::
           APP_READINESS_UNINSTALLEDBYUSER;
-    case apps::mojom::Readiness::kRemoved:
+    case apps::Readiness::kRemoved:
       return api::autotest_private::AppReadiness::APP_READINESS_REMOVED;
-    case apps::mojom::Readiness::kUninstalledByMigration:
+    case apps::Readiness::kUninstalledByMigration:
       return api::autotest_private::AppReadiness::
           APP_READINESS_UNINSTALLEDBYMIGRATION;
-    case apps::mojom::Readiness::kUnknown:
+    case apps::Readiness::kUnknown:
       return api::autotest_private::AppReadiness::APP_READINESS_NONE;
   }
   NOTREACHED();
@@ -464,18 +475,9 @@ api::autotest_private::HotseatState GetHotseatState(
   NOTREACHED();
 }
 
-std::unique_ptr<bool> ConvertMojomOptionalBool(
-    apps::mojom::OptionalBool optional) {
-  switch (optional) {
-    case apps::mojom::OptionalBool::kTrue:
-      return std::make_unique<bool>(true);
-    case apps::mojom::OptionalBool::kFalse:
-      return std::make_unique<bool>(false);
-    case apps::mojom::OptionalBool::kUnknown:
-      return nullptr;
-  }
-  NOTREACHED();
-  return nullptr;
+std::unique_ptr<bool> ConvertOptionalBool(absl::optional<bool> optional) {
+  return optional.has_value() ? std::make_unique<bool>(optional.value())
+                              : nullptr;
 }
 
 // Helper function to set whitelisted user pref based on |pref_name| with any
@@ -1417,56 +1419,51 @@ AutotestPrivateGetExtensionsInfoFunction::Run() {
   ExtensionActionManager* extension_action_manager =
       ExtensionActionManager::Get(browser_context());
 
-  base::ListValue extensions_values;
+  base::Value::List extensions_values;
   ExtensionList all;
   all.insert(all.end(), extensions.begin(), extensions.end());
   all.insert(all.end(), disabled_extensions.begin(), disabled_extensions.end());
   for (ExtensionList::const_iterator it = all.begin(); it != all.end(); ++it) {
     const Extension* extension = it->get();
     std::string id = extension->id();
-    std::unique_ptr<base::DictionaryValue> extension_value(
-        new base::DictionaryValue);
-    extension_value->SetStringKey("id", id);
-    extension_value->SetStringKey("version", extension->VersionString());
-    extension_value->SetStringKey("name", extension->name());
-    extension_value->SetStringKey("publicKey", extension->public_key());
-    extension_value->SetStringKey("description", extension->description());
-    extension_value->SetStringKey(
-        "backgroundUrl", BackgroundInfo::GetBackgroundURL(extension).spec());
-    extension_value->SetStringKey(
-        "optionsUrl", OptionsPageInfo::GetOptionsPage(extension).spec());
+    base::Value::Dict extension_value;
+    extension_value.Set("id", id);
+    extension_value.Set("version", extension->VersionString());
+    extension_value.Set("name", extension->name());
+    extension_value.Set("publicKey", extension->public_key());
+    extension_value.Set("description", extension->description());
+    extension_value.Set("backgroundUrl",
+                        BackgroundInfo::GetBackgroundURL(extension).spec());
+    extension_value.Set("optionsUrl",
+                        OptionsPageInfo::GetOptionsPage(extension).spec());
 
-    extension_value->SetKey("hostPermissions",
-                            GetHostPermissions(extension, false));
-    extension_value->SetKey("effectiveHostPermissions",
-                            GetHostPermissions(extension, true));
-    extension_value->SetKey("apiPermissions", GetAPIPermissions(extension));
+    extension_value.Set("hostPermissions",
+                        GetHostPermissions(extension, false));
+    extension_value.Set("effectiveHostPermissions",
+                        GetHostPermissions(extension, true));
+    extension_value.Set("apiPermissions", GetAPIPermissions(extension));
 
     ManifestLocation location = extension->location();
-    extension_value->SetBoolKey("isComponent",
-                                location == ManifestLocation::kComponent);
-    extension_value->SetBoolKey("isInternal",
-                                location == ManifestLocation::kInternal);
-    extension_value->SetBoolKey("isUserInstalled",
-                                location == ManifestLocation::kInternal ||
-                                    Manifest::IsUnpackedLocation(location));
-    extension_value->SetBoolKey("isEnabled", service->IsExtensionEnabled(id));
-    extension_value->SetBoolKey(
-        "allowedInIncognito", util::IsIncognitoEnabled(id, browser_context()));
+    extension_value.Set("isComponent",
+                        location == ManifestLocation::kComponent);
+    extension_value.Set("isInternal", location == ManifestLocation::kInternal);
+    extension_value.Set("isUserInstalled",
+                        location == ManifestLocation::kInternal ||
+                            Manifest::IsUnpackedLocation(location));
+    extension_value.Set("isEnabled", service->IsExtensionEnabled(id));
+    extension_value.Set("allowedInIncognito",
+                        util::IsIncognitoEnabled(id, browser_context()));
     const ExtensionAction* action =
         extension_action_manager->GetExtensionAction(*extension);
-    extension_value->SetBoolKey(
-        "hasPageAction",
-        action && action->action_type() == ActionInfo::TYPE_PAGE);
+    extension_value.Set("hasPageAction", action && action->action_type() ==
+                                                       ActionInfo::TYPE_PAGE);
 
     extensions_values.Append(std::move(extension_value));
   }
 
-  std::unique_ptr<base::DictionaryValue> return_value(
-      new base::DictionaryValue);
-  return_value->SetKey("extensions", std::move(extensions_values));
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(return_value))));
+  base::Value::Dict return_value;
+  return_value.Set("extensions", std::move(extensions_values));
+  return RespondNow(OneArgument(base::Value(std::move(return_value))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1655,11 +1652,11 @@ AutotestPrivateGetVisibleNotificationsFunction::Run() {
 
   message_center::NotificationList::Notifications notification_set =
       message_center::MessageCenter::Get()->GetVisibleNotifications();
-  auto values = std::make_unique<base::ListValue>();
+  base::Value::List values;
   for (auto* notification : notification_set)
-    values->Append(MakeDictionaryFromNotification(*notification));
-  return RespondNow(
-      OneArgument(base::Value::FromUniquePtrValue(std::move(values))));
+    values.Append(base::Value::FromUniquePtrValue(
+        MakeDictionaryFromNotification(*notification)));
+  return RespondNow(OneArgument(base::Value(std::move(values))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1885,6 +1882,20 @@ AutotestPrivateIsArcProvisionedFunction::Run() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateIsLacrosPrimaryBrowserFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateIsLacrosPrimaryBrowserFunction::
+    ~AutotestPrivateIsLacrosPrimaryBrowserFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateIsLacrosPrimaryBrowserFunction::Run() {
+  DVLOG(1) << "AutotestPrivateIsLacrosPrimaryBrowserFunction";
+  return RespondNow(OneArgument(
+      base::Value(crosapi::browser_util::IsLacrosPrimaryBrowser())));
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateGetArcPackageFunction
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -1982,6 +1993,50 @@ ExtensionFunction::ResponseAction AutotestPrivateGetArcPackageFunction::Run() {
   }
   return RespondNow(
       OneArgument(base::Value::FromUniquePtrValue(std::move(package_value))));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetCryptohomeRecoveryDataFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetCryptohomeRecoveryDataFunction::
+    ~AutotestPrivateGetCryptohomeRecoveryDataFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetCryptohomeRecoveryDataFunction::Run() {
+  // The API is available only on test images.
+  base::SysInfo::CrashIfChromeOSNonTestImage();
+
+  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
+          ash::switches::kForceCryptohomeRecoveryForTesting)) {
+    return RespondNow(
+        Error("force-cryptohome-recovery-for-testing switch is not set"));
+  }
+
+  auto* host = ash::LoginDisplayHost::default_host();
+  if (!host)
+    return RespondNow(Error("LoginDisplayHost is not available"));
+  auto* context = host->GetWizardContext();
+  if (!context)
+    return RespondNow(Error("WizardContext is not available"));
+
+  chromeos::UserContext* user_context =
+      context->extra_factors_auth_session.get();
+  if (!user_context)
+    return RespondNow(Error("UserContext is not available"));
+
+  std::string reauth_proof_token = user_context->GetReauthProofToken();
+  std::string refresh_token = user_context->GetRefreshToken();
+  if (reauth_proof_token.empty() || refresh_token.empty()) {
+    return RespondNow(Error("Tokens are empty"));
+  }
+
+  api::autotest_private::CryptohomeRecoveryDataDict result;
+  result.reauth_proof_token = reauth_proof_token;
+  result.refresh_token = refresh_token;
+
+  return RespondNow(
+      OneArgument(base::Value::FromUniquePtrValue(result.ToValue())));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2849,6 +2904,64 @@ void AutotestPrivateBootstrapMachineLearningServiceFunction::
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateLoadSmartDimComponentFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateLoadSmartDimComponentFunction::
+    AutotestPrivateLoadSmartDimComponentFunction() = default;
+AutotestPrivateLoadSmartDimComponentFunction::
+    ~AutotestPrivateLoadSmartDimComponentFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateLoadSmartDimComponentFunction::Run() {
+  DVLOG(1) << "AutotestPrivateLoadSmartDimComponentFunction";
+
+  if (ash::power::ml::SmartDimMlAgent::GetInstance()->IsDownloadWorkerReady()) {
+    return RespondNow(NoArguments());
+  }
+
+  const std::string crx_id =
+      component_updater::SmartDimComponentInstallerPolicy::GetExtensionId();
+  g_browser_process->component_updater()->GetOnDemandUpdater().OnDemandUpdate(
+      crx_id, component_updater::OnDemandUpdater::Priority::FOREGROUND,
+      base::BindOnce(&AutotestPrivateLoadSmartDimComponentFunction::
+                         OnComponentUpdatedCallback,
+                     this));
+
+  timer_.Start(
+      FROM_HERE, base::Seconds(5),
+      base::BindRepeating(
+          &AutotestPrivateLoadSmartDimComponentFunction::TryRespond, this));
+
+  return RespondLater();
+}
+
+void AutotestPrivateLoadSmartDimComponentFunction::OnComponentUpdatedCallback(
+    update_client::Error error) {
+  if (error != update_client::Error::NONE &&
+      error != update_client::Error::UPDATE_IN_PROGRESS) {
+    Respond(Error(base::StringPrintf(
+        "On demand update of the SmartDim component failed with error: %d.",
+        static_cast<int>(error))));
+  }
+}
+
+void AutotestPrivateLoadSmartDimComponentFunction::TryRespond() {
+  ++timer_triggered_count_;
+  if (did_respond()) {
+    return;
+  }
+
+  if (ash::power::ml::SmartDimMlAgent::GetInstance()->IsDownloadWorkerReady()) {
+    Respond(NoArguments());
+  } else if (timer_triggered_count_ >= 12) {
+    Respond(Error("Timeout occurred before SmartDim component was loaded."));
+  } else {
+    timer_.Reset();
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateSetAssistantEnabled
 ///////////////////////////////////////////////////////////////////////////////
 
@@ -3416,8 +3529,8 @@ AutotestPrivateGetAllInstalledAppsFunction::Run() {
     app.type = GetAppType(update.AppType());
     app.install_source = GetAppInstallSource(update.InstallReason());
     app.readiness = GetAppReadiness(update.Readiness());
-    app.show_in_launcher = ConvertMojomOptionalBool(update.ShowInLauncher());
-    app.show_in_search = ConvertMojomOptionalBool(update.ShowInSearch());
+    app.show_in_launcher = ConvertOptionalBool(update.ShowInLauncher());
+    app.show_in_search = ConvertOptionalBool(update.ShowInSearch());
     installed_apps.emplace_back(std::move(app));
   });
 
@@ -5474,6 +5587,71 @@ AutotestPrivateResetHoldingSpaceFunction::Run() {
         Error("Failed to call `MarkTimeOfFirstAdd()` after clearing prefs."));
   }
 
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateStartLoginEventRecorderDataCollectionFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateStartLoginEventRecorderDataCollectionFunction::
+    AutotestPrivateStartLoginEventRecorderDataCollectionFunction() = default;
+
+AutotestPrivateStartLoginEventRecorderDataCollectionFunction::
+    ~AutotestPrivateStartLoginEventRecorderDataCollectionFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateStartLoginEventRecorderDataCollectionFunction::Run() {
+  chromeos::LoginEventRecorder::Get()
+      ->PrepareEventCollectionForTesting();  // IN-TEST
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetLoginEventRecorderLoginEventsFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetLoginEventRecorderLoginEventsFunction::
+    AutotestPrivateGetLoginEventRecorderLoginEventsFunction() = default;
+
+AutotestPrivateGetLoginEventRecorderLoginEventsFunction::
+    ~AutotestPrivateGetLoginEventRecorderLoginEventsFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetLoginEventRecorderLoginEventsFunction::Run() {
+  const auto& collected_data =
+      chromeos::LoginEventRecorder::Get()
+          ->GetCollectedLoginEventsForTesting();  // IN-TEST
+  std::vector<api::autotest_private::LoginEventRecorderData> result_data;
+  for (const auto& data : collected_data) {
+    api::autotest_private::LoginEventRecorderData event_data;
+    event_data.name = data.name();
+    event_data.microsecnods_since_unix_epoch =
+        (data.time() - base::Time::UnixEpoch()).InMicroseconds();
+    result_data.emplace_back(std::move(event_data));
+  }
+
+  return RespondNow(ArgumentList(
+      api::autotest_private::GetLoginEventRecorderLoginEvents::Results::Create(
+          result_data)));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateAddLoginEventForTestingFunction
+//////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateAddLoginEventForTestingFunction::
+    AutotestPrivateAddLoginEventForTestingFunction() = default;
+
+AutotestPrivateAddLoginEventForTestingFunction::
+    ~AutotestPrivateAddLoginEventForTestingFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateAddLoginEventForTestingFunction::Run() {
+  chromeos::LoginEventRecorder::Get()->AddLoginTimeMarker(
+      /*marker_name=*/"AutotestPrivateTestMarker",
+      /*send_to_uma=*/false,
+      /*write_to_file=*/false);
   return RespondNow(NoArguments());
 }
 

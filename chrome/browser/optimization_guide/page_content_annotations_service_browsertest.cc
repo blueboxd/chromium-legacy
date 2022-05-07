@@ -360,6 +360,29 @@ IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
 
 #if BUILDFLAG(BUILD_WITH_TFLITE_LIB)
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
+                       PageTopicsDomainPreProcessing) {
+  PageContentAnnotationsService* service =
+      PageContentAnnotationsServiceFactory::GetForProfile(browser()->profile());
+
+  base::RunLoop run_loop;
+  service->BatchAnnotatePageTopics(
+      base::BindOnce(
+          [](base::RunLoop* run_loop,
+             const std::vector<BatchAnnotationResult>& results) {
+            ASSERT_EQ(results.size(), 1U);
+            EXPECT_EQ(results[0].input(), "chromium org");
+            EXPECT_EQ(results[0].type(), AnnotationType::kPageTopics);
+            // Intentionally does not test model execution, since that is well
+            // covered in the unittests for PageContentAnnotationsModelManager.
+            run_loop->Quit();
+          },
+          &run_loop),
+      std::vector<GURL>{GURL("https://www.chromium.org")});
+
+  run_loop.Run();
+}
+
+IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBrowserTest,
                        NoVisitsForUrlInHistory) {
   HistoryVisit history_visit;
   history_visit.url = GURL("https://probablynotarealurl.com/");
@@ -633,14 +656,9 @@ class PageContentAnnotationsServiceBatchVisitNoAnnotateTest
   base::test::ScopedFeatureList scoped_feature_list_;
 };
 
-// TODO(crbug/1291486): Disabled due to flakiness on Mac and Windows.
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-#define MAYBE_QueueFullAndVisitBatchActive DISABLED_QueueFullAndVisitBatchActive
-#else
-#define MAYBE_QueueFullAndVisitBatchActive QueueFullAndVisitBatchActive
-#endif
+// TODO(https://crbug/1291486): Re-enable once flakiness is fixed.
 IN_PROC_BROWSER_TEST_F(PageContentAnnotationsServiceBatchVisitNoAnnotateTest,
-                       MAYBE_QueueFullAndVisitBatchActive) {
+                       DISABLED_QueueFullAndVisitBatchActive) {
   base::HistogramTester histogram_tester;
   HistoryVisit history_visit(base::Time::Now(),
                              GURL("https://probablynotarealurl.com/"), 0);

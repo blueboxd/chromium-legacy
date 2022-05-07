@@ -7,8 +7,6 @@
 
 #include <memory>
 
-// TODO(https://crbug.com/1164001): move to forward declaration.
-#include "ash/services/secure_channel/authenticated_channel.h"
 #include "ash/services/secure_channel/device_id_pair.h"
 #include "ash/services/secure_channel/nearby_initiator_failure_type.h"
 #include "ash/services/secure_channel/public/mojom/nearby_connector.mojom.h"
@@ -18,9 +16,9 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
-namespace chromeos {
+namespace ash::secure_channel {
 
-namespace secure_channel {
+class AuthenticatedChannel;
 
 // Attempts connects to remote devices via the Nearby Connections library.
 class NearbyConnectionManager {
@@ -94,8 +92,6 @@ class NearbyConnectionManager {
       id_pair_to_initiator_metadata_map_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_NEARBY_CONNECTION_MANAGER_H_

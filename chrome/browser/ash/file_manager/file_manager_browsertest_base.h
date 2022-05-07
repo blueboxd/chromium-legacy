@@ -79,6 +79,9 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
     // Whether test should enable drive dss pinning.
     bool drive_dss_pin = false;
 
+    // Whether test needs the extract-archive feature.
+    bool extract_archive = false;
+
     // Whether Drive should act as if offline.
     bool offline = false;
 
@@ -118,6 +121,12 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
 
     // Whether test should run with the Web Drive Office feature.
     bool enable_web_drive_office = false;
+
+    // Whether test should run with the GuestOs <-> Files app integration.
+    bool enable_guest_os_files = false;
+
+    // Whether test needs the files-filters-in-recents flag.
+    bool enable_filters_in_recents = false;
   };
 
   FileManagerBrowserTestBase(const FileManagerBrowserTestBase&) = delete;
@@ -175,6 +184,12 @@ class FileManagerBrowserTestBase : public content::DevToolsAgentHostObserver,
   void OnCommand(const std::string& name,
                  const base::DictionaryValue& value,
                  std::string* output);
+
+  // Checks if the command is a GuestOs one. If so, handles it and returns
+  // true, otherwise it returns false.
+  bool HandleGuestOsCommands(const std::string& name,
+                             const base::DictionaryValue& value,
+                             std::string* output);
 
   // Called during setup if needed, to create a drive integration service for
   // the given |profile|. Caller owns the return result.

@@ -345,9 +345,6 @@ CanvasRenderingContext* HTMLCanvasElement::GetCanvasRenderingContext(
   if (attributes.color_space != PredefinedColorSpace::kSRGB)
     UseCounter::Count(doc, WebFeature::kCanvasUseColorSpace);
 
-  if (RuntimeEnabledFeatures::NewCanvas2DAPIEnabled(GetExecutionContext()))
-    UseCounter::Count(doc, WebFeature::kNewCanvas2DAPI);
-
   if (ContentsCcLayer() != old_contents_cc_layer)
     SetNeedsCompositingUpdate();
 
@@ -1257,7 +1254,7 @@ void HTMLCanvasElement::SetCanvas2DLayerBridgeInternal(
         "Blink.Canvas.2DLayerBridge.WillReadFrequently",
         context_ && context_->CreationAttributes().will_read_frequently);
 
-    if (ShouldAccelerate() &&
+    if (ShouldAccelerate() && context_ &&
         !context_->CreationAttributes().will_read_frequently) {
       canvas2d_bridge_ = Create2DLayerBridge(RasterMode::kGPU);
     }

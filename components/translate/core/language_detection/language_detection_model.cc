@@ -4,7 +4,6 @@
 
 #include "components/translate/core/language_detection/language_detection_model.h"
 
-#include "base/cxx17_backports.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/histogram_macros_local.h"
 #include "base/strings/utf_string_conversions.h"
@@ -83,7 +82,7 @@ void LanguageDetectionModel::UpdateWithFile(base::File model_file) {
 
   std::string file_content(model_file.GetLength(), '\0');
   int bytes_read =
-      model_file.Read(0, base::data(file_content), model_file.GetLength());
+      model_file.Read(0, std::data(file_content), model_file.GetLength());
   if (bytes_read != model_file.GetLength()) {
     return;
   }
@@ -110,14 +109,14 @@ bool LanguageDetectionModel::IsAvailable() const {
 std::pair<std::string, float> LanguageDetectionModel::DetectTopLanguage(
     const std::string& sampled_str) const {
   DCHECK(IsAvailable());
-  std::vector<tflite::task::core::Category> categories =
-      lang_detection_model_->Classify(sampled_str);
-  std::sort(categories.begin(), categories.end(), sort_category());
-
-  if (categories.empty())
+  auto status_or_categories = lang_detection_model_->Classify(sampled_str);
+  if (!status_or_categories.ok() || status_or_categories.value().empty()) {
     return std::make_pair(translate::kUnknownLanguageCode, 0.0);
-
-  return std::make_pair(categories[0].class_name, categories[0].score);
+  }
+  auto& categories = status_or_categories.value();
+  auto top_category =
+      std::min_element(categories.begin(), categories.end(), sort_category());
+  return std::make_pair(top_category->class_name, top_category->score);
 }
 
 std::string LanguageDetectionModel::DeterminePageLanguage(

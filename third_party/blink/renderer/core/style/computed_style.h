@@ -147,6 +147,7 @@ class UserSelect;
 class WebkitTapHighlightColor;
 class WebkitTextFillColor;
 class WebkitTextStrokeColor;
+class WebkitUserModify;
 
 }  // namespace css_longhand
 
@@ -262,6 +263,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class css_longhand::WebkitTapHighlightColor;
   friend class css_longhand::WebkitTextFillColor;
   friend class css_longhand::WebkitTextStrokeColor;
+  friend class css_longhand::WebkitUserModify;
   // Access to private Appearance() and HasAppearance().
   friend class LayoutTheme;
   friend class StyleAdjuster;
@@ -273,7 +275,7 @@ class ComputedStyle : public ComputedStyleBase,
   friend class CachedUAStyle;
   // Accesses visited and unvisited colors.
   friend class ColorPropertyFunctions;
-  // Edits the background for media controls.
+  // Edits the background for media controls and accesses UserModify().
   friend class StyleAdjuster;
   // Access to private SetFontInternal().
   friend class FontBuilder;
@@ -282,6 +284,8 @@ class ComputedStyle : public ComputedStyleBase,
   friend class FilterOperationResolver;
   // Access to SetInitialData() and GetCurrentColor().
   friend class StyleResolver;
+  // Access to UserModify().
+  friend class MatchedPropertiesCache;
 
  protected:
   mutable std::unique_ptr<StyleCachedData> cached_data_;
@@ -313,6 +317,20 @@ class ComputedStyle : public ComputedStyleBase,
 
   // Shallow copy into a new instance sharing DataPtrs.
   CORE_EXPORT static scoped_refptr<ComputedStyle> Clone(const ComputedStyle&);
+
+  static const ComputedStyle* NullifyEnsured(const ComputedStyle* style) {
+    if (!style)
+      return nullptr;
+    if (style->IsEnsuredOutsideFlatTree())
+      return nullptr;
+    if (style->IsEnsuredInDisplayNone())
+      return nullptr;
+    return style;
+  }
+
+  static bool IsNullOrEnsured(const ComputedStyle* style) {
+    return !NullifyEnsured(style);
+  }
 
   // Find out how two ComputedStyles differ. Used for figuring out if style
   // recalc needs to propagate style changes down the tree. The constants are
@@ -392,47 +410,6 @@ class ComputedStyle : public ComputedStyleBase,
   CORE_EXPORT void InheritFrom(const ComputedStyle& inherit_parent,
                                IsAtShadowBoundary = kNotAtShadowBoundary);
   void CopyNonInheritedFromCached(const ComputedStyle&);
-
-  bool AncestorsAffectedByHoverInSubjectHas() const {
-    return DynamicRestyleFlagsForSubjectHas() &
-           kAncestorsAffectedByHoverInSubjectHas;
-  }
-
-  void SetAncestorsAffectedByHoverInSubjectHas() {
-    SetDynamicRestyleFlagsForSubjectHas(DynamicRestyleFlagsForSubjectHas() |
-                                        kAncestorsAffectedByHoverInSubjectHas);
-  }
-
-  bool AncestorsAffectedByActiveInSubjectHas() const {
-    return DynamicRestyleFlagsForSubjectHas() &
-           kAncestorsAffectedByActiveInSubjectHas;
-  }
-
-  void SetAncestorsAffectedByActiveInSubjectHas() {
-    SetDynamicRestyleFlagsForSubjectHas(DynamicRestyleFlagsForSubjectHas() |
-                                        kAncestorsAffectedByActiveInSubjectHas);
-  }
-
-  bool AncestorsAffectedByFocusInSubjectHas() const {
-    return DynamicRestyleFlagsForSubjectHas() &
-           kAncestorsAffectedByFocusInSubjectHas;
-  }
-
-  void SetAncestorsAffectedByFocusInSubjectHas() {
-    SetDynamicRestyleFlagsForSubjectHas(DynamicRestyleFlagsForSubjectHas() |
-                                        kAncestorsAffectedByFocusInSubjectHas);
-  }
-
-  bool AncestorsAffectedByFocusVisibleInSubjectHas() const {
-    return DynamicRestyleFlagsForSubjectHas() &
-           kAncestorsAffectedByFocusVisibleInSubjectHas;
-  }
-
-  void SetAncestorsAffectedByFocusVisibleInSubjectHas() {
-    SetDynamicRestyleFlagsForSubjectHas(
-        DynamicRestyleFlagsForSubjectHas() |
-        kAncestorsAffectedByFocusVisibleInSubjectHas);
-  }
 
   PseudoId StyleType() const {
     return static_cast<PseudoId>(StyleTypeInternal());
@@ -2121,17 +2098,22 @@ class ComputedStyle : public ComputedStyleBase,
   }
   CORE_EXPORT bool ShouldApplyAnyContainment(const Element& element) const;
 
-  // Utility method which checks if legacy layout is forced for the element, or
-  // if the element is rendered as an SVG element, in addition to checking
-  // IsContainerForContainerQueries(). Query containers are not established in
-  // legacy layout or for SVG elements apart from SVG outer roots which behave
-  // as a replaced element.
-  bool IsContainerForContainerQueries(const Element& element) const;
+  // Return true if an element can match size container queries. In addition to
+  // checking if it has a size container-type, we check if we are never able to
+  // reach NGBlockNode::Layout() for legacy layout objects or SVG elements.
+  bool CanMatchSizeContainerQueries(const Element& element) const;
 
-  bool IsContainerForContainerQueries() const {
-    return IsInlineOrBlockSizeContainer() && StyleType() == kPseudoIdNone &&
-           !InsideFragmentationContextWithNondeterministicEngine();
+  bool IsContainerForSizeContainerQueries() const {
+    return IsInlineOrBlockSizeContainer() && StyleType() == kPseudoIdNone;
   }
+
+  bool IsContentVisibilityVisible() const {
+    return ContentVisibility() == EContentVisibility::kVisible;
+  }
+
+  // Interleaving roots are elements that may require layout to fully update
+  // the style of their descendants.
+  static bool IsInterleavingRoot(const ComputedStyle*);
 
   // Display utility functions.
   bool IsDisplayReplacedType() const {
@@ -2243,6 +2225,13 @@ class ComputedStyle : public ComputedStyleBase,
     return PointerEventsInternal();
   }
 
+  // User modify utility functions.
+  EUserModify UsedUserModify() const {
+    if (IsInert())
+      return EUserModify::kReadOnly;
+    return UserModifyInternal();
+  }
+
   // User select utility functions.
   EUserSelect UsedUserSelect() const {
     if (IsInert())
@@ -2252,7 +2241,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   bool IsSelectable() const {
     return !IsInert() && !(UserSelectInternal() == EUserSelect::kNone &&
-                           UserModify() == EUserModify::kReadOnly);
+                           UserModifyInternal() == EUserModify::kReadOnly);
   }
 
   bool IsFocusable() const {
@@ -2791,6 +2780,7 @@ class ComputedStyle : public ComputedStyleBase,
   EFloat Floating() const { return FloatingInternal(); }
   EPointerEvents PointerEvents() const { return PointerEventsInternal(); }
   EResize Resize() const { return ResizeInternal(); }
+  EUserModify UserModify() const { return UserModifyInternal(); }
   EUserSelect UserSelect() const { return UserSelectInternal(); }
 
   bool IsInlineSizeContainer() const {
@@ -2804,9 +2794,6 @@ class ComputedStyle : public ComputedStyleBase,
   }
   bool IsSizeContainer() const {
     return (ContainerType() & kContainerTypeSize) == kContainerTypeSize;
-  }
-  bool IsContentVisibilityVisible() const {
-    return ContentVisibility() == EContentVisibility::kVisible;
   }
 
   void SetInternalVisitedColor(const StyleColor& v) {

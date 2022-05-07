@@ -34,7 +34,7 @@ void TestWebUI::HandleReceivedMessage(const std::string& handler_name,
     // handler during iteration of the vector, resulting in undefined behavior.
     std::vector<MessageCallback> callbacks_to_run = callbacks_map_it->second;
     for (auto& callback : callbacks_to_run)
-      callback.Run(args->GetListDeprecated());
+      callback.Run(args->GetList());
     return;
   }
 
@@ -98,13 +98,15 @@ void TestWebUI::AddMessageHandler(
 
 void TestWebUI::RegisterMessageCallback(base::StringPiece message,
                                         MessageCallback callback) {
-  message_callbacks_[std::string(message)].push_back(std::move(callback));
+  message_callbacks_[static_cast<std::string>(message)].push_back(
+      std::move(callback));
 }
 
 void TestWebUI::RegisterDeprecatedMessageCallback(
     base::StringPiece message,
     const DeprecatedMessageCallback& callback) {
-  deprecated_message_callbacks_[std::string(message)].push_back(callback);
+  deprecated_message_callbacks_[static_cast<std::string>(message)].push_back(
+      callback);
 }
 
 bool TestWebUI::CanCallJavascript() {

@@ -44,6 +44,7 @@
 <translation id="3344973607274501920">Chromiumil ei õnnestunud teie paroole kontrollida. Kontrollige internetiühendust.</translation>
 <translation id="3472200483164753384">Ei toetata versioonis Chromium Canary</translation>
 <translation id="3639997914391704523">Chromium saab teie paroole kontrollida siis, kui logite sisse oma Google'i kontoga.</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" /> kasutas Chromiumi ning jättis järjehoidjad, paroolid ja muud seaded sellesse seadmesse.</translation>
 <translation id="3805899903892079518">Chromiumil pole juurdepääsu fotodele ega videotele. Lubage iOS-is juurdepääs valikutega Seaded &gt; Privaatsus &gt; Fotod.</translation>
 <translation id="4043291146360695975">Paroolid salvestatakse rakendusse Paroolihaldur ainult selles seadmes.</translation>
 <translation id="4099085513035183040">Ei toetata Chromiumi beetaversioonis</translation>
@@ -55,6 +56,13 @@
 <translation id="4828317641996116749">Chromiumil ei õnnestunud kõiki paroole kontrollida. Proovige hiljem uuesti.</translation>
 <translation id="4985291216379576555">Võrguühenduseta, Chromium ei saa värskendusi otsida</translation>
 <translation id="4999538639245140991">Kuna logite välja kontolt, mida haldab <ph name="SIGNOUT_MANAGED_DOMAIN" />, kustutatakse selles seadmes teie Chromiumi andmed. Google'i kontole jäävad teie andmed alles.</translation>
+<translation id="5039881550736388123">Kui see on sisse lülitatud
+<ph name="BEGIN_INDENT" />  • Aitate täiustada Chromiumi inimeste jaoks, kes kasutavad seda nagu teie.<ph name="END_INDENT" />
+
+Olulised aspektid
+<ph name="BEGIN_INDENT" />  • Google'ile saadetakse teavet teie Chromiumi kasutuse kohta, kuid see teave pole teiega seotud.
+  • Kui Chromium jookseb kokku, võivad krahhi üksikasjad isiklikku teavet sisaldada.
+  • Kui lülitate sünkroonimise sisse, võivad mõõdikud sisaldada ka teavet teie külastatavate URL-ide kohta.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Logige Chromiumi sisse</translation>
 <translation id="5224391634244552924">Salvestatud paroole ei ole. Chromium saab teie paroole kontrollida, kui olete need salvestanud.</translation>
 <translation id="5308226104666789935">Chromium ei saa värskendusi otsida</translation>
@@ -65,6 +73,7 @@
 <translation id="5777187867430702742">Chromiumi leht</translation>
 <translation id="5862307444128926510">Tere tulemast Chromiumi</translation>
 <translation id="5945387852661427312">Logite sisse kontoga, mida haldab <ph name="DOMAIN" />, ja annate selle administraatorile üle Chromiumi andmete juhtimise. Teie andmed seotakse jäädavalt selle kontoga. Chromiumist väljalogimisel kustutatakse teie andmed sellest seadmest, kuid need jäävad alles teie Google'i kontole.</translation>
+<translation id="5983312940147103417">Chromiumi täiustamine</translation>
 <translation id="602807004951640891">Chromiumi kasutamisel nõustute <ph name="BEGIN_LINK_TOS" />teenusetingimustega<ph name="END_LINK_TOS" />.</translation>
 <translation id="6119647025869519954">Chromiumi vaikebrauseriks määramiseks tehke järgmist.
 1. Avage menüü Seaded.

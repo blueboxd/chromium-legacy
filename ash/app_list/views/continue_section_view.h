@@ -10,6 +10,7 @@
 #include "ash/ash_export.h"
 #include "ash/public/cpp/app_list/app_list_controller_observer.h"
 #include "base/timer/timer.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/view.h"
 
 namespace views {
@@ -27,6 +28,7 @@ class ContinueTaskView;
 // The "Continue" section of the bubble launcher. This view wraps around
 // suggestions with tasks to continue.
 class ASH_EXPORT ContinueSectionView : public views::View,
+                                       public views::FocusChangeListener,
                                        public AppListModelProvider::Observer,
                                        public AppListControllerObserver {
  public:
@@ -38,10 +40,6 @@ class ASH_EXPORT ContinueSectionView : public views::View,
   ContinueSectionView(const ContinueSectionView&) = delete;
   ContinueSectionView& operator=(const ContinueSectionView&) = delete;
   ~ContinueSectionView() override;
-
-  // AppListModelProvider::Observer:
-  void OnActiveAppListModelsChanged(AppListModel* model,
-                                    SearchModel* search_model) override;
 
   // Called when the `suggestion_container_` finishes updating the tasks.
   void OnSearchResultContainerResultsChanged();
@@ -71,14 +69,26 @@ class ASH_EXPORT ContinueSectionView : public views::View,
     return suggestions_container_;
   }
 
+  // views::View:
+  void AddedToWidget() override;
+  void RemovedFromWidget() override;
+
+  // views::FocusChangeListener:
+  void OnWillChangeFocus(views::View* focused_before,
+                         views::View* focused_now) override {}
+  void OnDidChangeFocus(views::View* focused_before,
+                        views::View* focused_now) override;
+
+  // AppListModelProvider::Observer:
+  void OnActiveAppListModelsChanged(AppListModel* model,
+                                    SearchModel* search_model) override;
+
   // AppListControllerObserver:
   void OnAppListVisibilityChanged(bool shown, int64_t display_id) override;
 
   AppListNudgeController* nudge_controller_for_test() const {
     return nudge_controller_;
   }
-
-  static void SetPrivacyNoticeAcceptedForTest(bool is_disabled);
 
   // Fire `privacy_notice_shown_timer_` for testing purposes.
   bool FirePrivacyNoticeShownTimerForTest();
@@ -99,20 +109,28 @@ class ASH_EXPORT ContinueSectionView : public views::View,
   // notice, the continue label and the continue section itself.
   void UpdateElementsVisibility();
 
-  // Invoked when the privacy notice has been accepted.
-  void MarkPrivacyNoticeAccepted();
+  // Removes the privacy notice from the view.
+  void RemovePrivacyNotice();
 
   // Invoked when the privacy notice has been shown for enough time.
-  void MarkPrivacyNoticeShown();
+  void OnPrivacyNoticeShowTimerDone();
 
-  // Invoked after the `privacy_notice_count_timer_` fires.
-  void OnPrivacyNoticeCountTimerDone();
+  // Invoked when the privacy notice has been acknowledged.
+  void OnPrivacyToastAcknowledged();
 
-  // Whether the user has already accepted the privacy notice.
-  bool IsPrivacyNoticeAccepted() const;
+  // Starts the animation to dismiss the privacy notice toast.
+  void AnimateDismissToast(base::RepeatingClosure callback);
 
-  // Whether the user has already seen the privacy notice.
-  bool IsPrivacyNoticeShown() const;
+  // Starts the animation to show the continue section in the app list bubble.
+  void AnimateShowContinueSection();
+
+  // Starts the animation for sliding other launcher content by
+  // `vertical_offset`.
+  void AnimateSlideLauncherContent(int vertical_offset);
+
+  // Starts the animation to dismiss the privacy notice toast only. This is used
+  // when the privacy notice does not have enough items after an update.
+  void MaybeAnimateOutPrivacyNotice();
 
   bool tablet_mode_ = false;
 
@@ -125,6 +143,8 @@ class ASH_EXPORT ContinueSectionView : public views::View,
   views::Label* continue_label_ = nullptr;
   AppListToastView* privacy_toast_ = nullptr;
   ContinueTaskContainerView* suggestions_container_ = nullptr;
+
+  base::WeakPtrFactory<ContinueSectionView> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

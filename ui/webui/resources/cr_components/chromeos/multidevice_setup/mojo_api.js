@@ -7,15 +7,15 @@
 // #import 'chrome://resources/mojo/mojo/public/js/mojo_bindings_lite.js';
 // #import 'chrome://resources/mojo/mojo/public/mojom/base/time.mojom-lite.js';
 // #import 'chrome://resources/mojo/chromeos/components/multidevice/mojom/multidevice_types.mojom-lite.js';
-// #import 'chrome://resources/mojo/chromeos/services/device_sync/public/mojom/device_sync.mojom-lite.js';
-// #import 'chrome://resources/mojo/chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom-lite.js';
+// #import 'chrome://resources/mojo/ash/services/device_sync/public/mojom/device_sync.mojom-lite.js';
+// #import 'chrome://resources/mojo/ash/services/multidevice_setup/public/mojom/multidevice_setup.mojom-lite.js';
 // clang-format on
 
 cr.define('multidevice_setup', function() {
   /** @interface */
   /* #export */ class MojoInterfaceProvider {
     /**
-     * @return {!chromeos.multideviceSetup.mojom.MultiDeviceSetupRemote}
+     * @return {!ash.multideviceSetup.mojom.MultiDeviceSetupRemote}
      */
     getMojoServiceRemote() {}
   }
@@ -23,15 +23,14 @@ cr.define('multidevice_setup', function() {
   /** @implements {multidevice_setup.MojoInterfaceProvider} */
   /* #export */ class MojoInterfaceProviderImpl {
     constructor() {
-      /** @private {?chromeos.multideviceSetup.mojom.MultiDeviceSetupRemote} */
+      /** @private {?ash.multideviceSetup.mojom.MultiDeviceSetupRemote} */
       this.remote_ = null;
     }
 
     /** @override */
     getMojoServiceRemote() {
       if (!this.remote_) {
-        this.remote_ =
-            chromeos.multideviceSetup.mojom.MultiDeviceSetup.getRemote();
+        this.remote_ = ash.multideviceSetup.mojom.MultiDeviceSetup.getRemote();
       }
 
       return this.remote_;

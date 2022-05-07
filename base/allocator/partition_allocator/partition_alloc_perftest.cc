@@ -22,8 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_result_reporter.h"
 
-#if BUILDFLAG(IS_ANDROID) || defined(ARCH_CPU_32_BITS) || \
-    (BUILDFLAG(IS_FUCHSIA) && defined(ARCH_CPU_ARM64))
+#if BUILDFLAG(IS_ANDROID) || defined(ARCH_CPU_32_BITS) || BUILDFLAG(IS_FUCHSIA)
 // Some tests allocate many GB of memory, which can cause issues on Android and
 // address-space exhaustion for any 32-bit process.
 #define MEMORY_CONSTRAINED
@@ -89,7 +88,7 @@ class PartitionAllocator : public Allocator {
   ~PartitionAllocator() override = default;
 
   void* Alloc(size_t size) override {
-    return alloc_.AllocFlagsNoHooks(0, size, PartitionPageSize());
+    return alloc_.AllocWithFlagsNoHooks(0, size, PartitionPageSize());
   }
   void Free(void* data) override { ThreadSafePartitionRoot::FreeNoHooks(data); }
 
@@ -126,7 +125,8 @@ class PartitionAllocatorWithThreadCache : public Allocator {
   ~PartitionAllocatorWithThreadCache() override = default;
 
   void* Alloc(size_t size) override {
-    return g_partition_root->AllocFlagsNoHooks(0, size, PartitionPageSize());
+    return g_partition_root->AllocWithFlagsNoHooks(0, size,
+                                                   PartitionPageSize());
   }
   void Free(void* data) override { ThreadSafePartitionRoot::FreeNoHooks(data); }
 };

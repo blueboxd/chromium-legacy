@@ -19,11 +19,9 @@
 
 namespace device {
 class BluetoothAdapter;
-}  // namespace device
+}
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // SecureChannelBase implementation which fetches the Bluetooth adapter, then
 // initializes the rest of the service. Initialization of the service is
@@ -106,16 +104,6 @@ class SecureChannelInitializer : public SecureChannelBase {
   base::WeakPtrFactory<SecureChannelInitializer> weak_ptr_factory_{this};
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the //chrome/browser/chromeos
-// source migration is finished.
-namespace ash {
-namespace secure_channel {
-using ::chromeos::secure_channel::SecureChannelInitializer;
-}
-}  // namespace ash
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_SECURE_CHANNEL_INITIALIZER_H_

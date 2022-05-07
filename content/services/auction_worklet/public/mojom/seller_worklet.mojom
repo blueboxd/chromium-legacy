@@ -11,6 +11,15 @@ import "third_party/blink/public/mojom/interest_group/interest_group_types.mojom
 import "url/mojom/origin.mojom";
 import "url/mojom/url.mojom";
 
+// The other seller associated with a bid. For component (nested)
+// SellerWorklets, `top_level_seller` is the seller for the parent auction.
+// For top-level SellerWorklets, `component_seller` is the seller in the
+// nested component auction where the bid was originally made.
+union ComponentAuctionOtherSeller {
+  url.mojom.Origin top_level_seller;
+  url.mojom.Origin component_seller;
+};
+
 // Manages the auction workflow for one loaded FLEDGE seller worklet.
 // See https://github.com/WICG/turtledove/blob/main/FLEDGE.md
 //
@@ -37,6 +46,12 @@ interface SellerWorklet {
   // `auction_ad_config_non_shared_params` Values in an AuctionConfig that can
   //  vary between auctions that can share a SellerWorklet.
   //
+  // `browser_signals_other_seller` The origin of the other seller associated
+  //  with the bid. If this is a component seller worklet, it's the
+  //  top-level seller. If this is a top-level seller scoring a bid from a
+  //  component auction, it's the seller in the component auction.
+  //  Null if this is the top-level seller scoring its own bids.
+  //
   // `browser_signal_interest_group_owner` The owner of the interest group
   //  that offered the bid.
   //
@@ -49,6 +64,11 @@ interface SellerWorklet {
   // `browser_signal_bidding_duration_msecs` is the duration the BiddingWorklet
   //  took to generate the bid. Taken as milliseconds to reduce granularity of
   //  timing information passed to an untrusted process.
+  //
+  // `seller_timeout` Restrict the runtime of the seller's scoring script. Any
+  //  timeout higher than 500 ms will be clamped to 500 ms before passing in as
+  //  `seller_timeout`. Null if not provided by the publisher page. Null will be
+  //  passed to the worklet in that case.
   //
   // Returns:
   // `score` Non-negative score the SellerWorklet assigns to the bid. A value
@@ -63,16 +83,16 @@ interface SellerWorklet {
   //  TODO(https://crbug.com/657632): Update when optional integers supported.
   //
   // `debug_loss_report_url` The URL to request if this bid does not win the
-  // auction. It's requested if the auction runs to completion and this is not
-  // the winning bid, including the case that this worklet rejects this bid
-  // outright, giving it a score <= 0. This field has the debug prefix because
-  // it's part of an interim reporting API that will be replaced with
-  // standardized reporting APIs once available. It must be a valid HTTPS URL.
+  //  auction. It's requested if the auction runs to completion and this is not
+  //  the winning bid, including the case that this worklet rejects this bid
+  //  outright, giving it a score <= 0. This field has the debug prefix because
+  //  it's part of an interim reporting API that will be replaced with
+  //  standardized reporting APIs once available. It must be a valid HTTPS URL.
   //
   // `debug_win_report_url` The URL to request if this bid wins the auction.
-  // This field has the debug prefix because it's part of an interim reporting
-  // API that will be replaced with standardized reporting APIs once available.
-  // It must be a valid HTTPS URL.
+  //  This field has the debug prefix because it's part of an interim reporting
+  //  API that will be replaced with standardized reporting APIs once available.
+  //  It must be a valid HTTPS URL.
   //
   // `errors` are various error messages to be used for debugging. These are too
   //  sensitive for the renderers to see. `errors` should not be assumed to be
@@ -82,10 +102,12 @@ interface SellerWorklet {
           double bid,
           blink.mojom.AuctionAdConfigNonSharedParams
               auction_ad_config_non_shared_params,
+          ComponentAuctionOtherSeller? browser_signals_other_seller,
           url.mojom.Origin browser_signal_interest_group_owner,
           url.mojom.Url browser_signal_render_url,
           array<url.mojom.Url> browser_signal_ad_component_render_urls,
-          uint32 browser_signal_bidding_duration_msecs) =>
+          uint32 browser_signal_bidding_duration_msecs,
+          mojo_base.mojom.TimeDelta? seller_timeout) =>
               (double score,
               uint32 scoring_signals_data_version,
               bool has_scoring_signals_data_version,
@@ -113,6 +135,12 @@ interface SellerWorklet {
   // Arguments:
   // `auction_ad_config_non_shared_params` Values in an AuctionConfig that can
   //  vary between auctions that can share a SellerWorklet.
+  //
+  // `browser_signals_other_seller` The origin of the other seller associated
+  //  with the bid. If this is a component seller worklet, it's the
+  //  top-level seller. If this is a top-level seller scoring a bid from a
+  //  component auction, it's the seller in the component auction.
+  //  Null if this is the top-level seller scoring its own bids.
   //
   // `browser_signal_interest_group_owner` The owner of the interest group
   //  that offered the winning bid.
@@ -145,6 +173,7 @@ interface SellerWorklet {
   ReportResult(
       blink.mojom.AuctionAdConfigNonSharedParams
           auction_ad_config_non_shared_params,
+      ComponentAuctionOtherSeller? browser_signals_other_seller,
       url.mojom.Origin browser_signal_interest_group_owner,
       url.mojom.Url browser_signal_render_url,
       double browser_signal_bid,

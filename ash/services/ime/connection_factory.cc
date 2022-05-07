@@ -6,7 +6,7 @@
 
 #include <utility>
 
-namespace chromeos {
+namespace ash {
 namespace ime {
 
 ConnectionFactory::ConnectionFactory(
@@ -32,4 +32,4 @@ bool ConnectionFactory::IsConnected() {
 }
 
 }  // namespace ime
-}  // namespace chromeos
+}  // namespace ash

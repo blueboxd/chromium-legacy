@@ -115,19 +115,9 @@ bool IsDockedMagnifierResizingEnabled() {
   return base::FeatureList::IsEnabled(::features::kDockedMagnifierResizing);
 }
 
-const base::Feature kExperimentalAccessibilityDictationOffline{
-    "ExperimentalAccessibilityDictationOffline",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsExperimentalAccessibilityDictationOfflineEnabled() {
+bool IsDictationOfflineAvailable() {
   return base::FeatureList::IsEnabled(
-      ::features::kExperimentalAccessibilityDictationOffline);
-}
-
-bool IsDictationOfflineAvailableAndEnabled() {
-  return base::FeatureList::IsEnabled(
-             ash::features::kOnDeviceSpeechRecognition) &&
-         IsExperimentalAccessibilityDictationOfflineEnabled();
+      ash::features::kOnDeviceSpeechRecognition);
 }
 
 const base::Feature kExperimentalAccessibilityDictationCommands{
@@ -157,6 +147,15 @@ bool IsExperimentalAccessibilityDictationHintsEnabled() {
       ::features::kExperimentalAccessibilityDictationHints);
 }
 
+const base::Feature kExperimentalAccessibilityDictationWithPumpkin{
+    "ExperimentalAccessibilityDictationWithPumpkin",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsExperimentalAccessibilityDictationWithPumpkinEnabled() {
+  return base::FeatureList::IsEnabled(
+      ::features::kExperimentalAccessibilityDictationWithPumpkin);
+}
+
 const base::Feature kEnhancedNetworkVoices{"EnhancedNetworkVoices",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -167,7 +166,7 @@ bool IsEnhancedNetworkVoicesEnabled() {
 const base::Feature kAccessibilityOSSettingsVisibility{
     "AccessibilityOSSettingsVisibility", base::FEATURE_DISABLED_BY_DEFAULT};
 
-bool IsAccessibilityOSSettingsVisibility() {
+bool IsAccessibilityOSSettingsVisibilityEnabled() {
   return base::FeatureList::IsEnabled(
       ::features::kAccessibilityOSSettingsVisibility);
 }
@@ -210,5 +209,19 @@ const base::Feature kReaderModeSidePanel{"ReaderModeSidePanel",
 bool IsReaderModeSidePanelEnabled() {
   return base::FeatureList::IsEnabled(::features::kReaderModeSidePanel);
 }
+
+#if !BUILDFLAG(IS_ANDROID)
+const base::Feature kScreenAI{"ScreenAI", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsScreenAIEnabled() {
+  return base::FeatureList::IsEnabled(::features::kScreenAI);
+}
+
+const base::Feature kPdfOcr{"PdfOcr", base::FEATURE_DISABLED_BY_DEFAULT};
+
+bool IsPdfOcrEnabled() {
+  return base::FeatureList::IsEnabled(::features::kPdfOcr);
+}
+#endif  // !BUILDFLAG(IS_ANDROID)
 
 }  // namespace features

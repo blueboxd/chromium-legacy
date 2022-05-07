@@ -295,12 +295,7 @@ class HotseatEventHandler : public ui::EventHandler,
 
 }  // namespace
 
-ShelfLayoutManager::State::State()
-    : visibility_state(SHELF_VISIBLE),
-      auto_hide_state(SHELF_AUTO_HIDE_HIDDEN),
-      window_state(WorkspaceWindowState::kDefault),
-      pre_lock_screen_animation_active(false),
-      session_state(session_manager::SessionState::UNKNOWN) {}
+ShelfLayoutManager::State::State() = default;
 
 bool ShelfLayoutManager::State::IsAddingSecondaryUser() const {
   return session_state == session_manager::SessionState::LOGIN_SECONDARY;
@@ -398,6 +393,7 @@ ShelfLayoutManager::~ShelfLayoutManager() {
 }
 
 void ShelfLayoutManager::InitObservers() {
+  shelf_->AddObserver(this);
   auto* shell = Shell::Get();
   shell->AddShellObserver(this);
   SplitViewController::Get(shelf_widget_->GetNativeWindow())->AddObserver(this);
@@ -434,6 +430,7 @@ void ShelfLayoutManager::PrepareForShutdown() {
 
   SplitViewController::Get(shelf_widget_->GetNativeWindow())
       ->RemoveObserver(this);
+  shelf_->RemoveObserver(this);
 }
 
 bool ShelfLayoutManager::IsVisible() const {
@@ -999,8 +996,7 @@ void ShelfLayoutManager::SetChildBounds(aura::Window* child,
   }
 }
 
-void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged(
-    aura::Window* root_window) {
+void ShelfLayoutManager::OnShelfAutoHideBehaviorChanged() {
   UpdateVisibilityState();
 }
 

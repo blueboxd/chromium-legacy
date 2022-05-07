@@ -9,28 +9,24 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "components/services/app_service/public/cpp/macros.h"
 #include "components/services/app_service/public/mojom/types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace apps {
 
 // The types of permissions in App Service.
-enum class PermissionType {
-  kUnknown = 0,
-  kCamera = 1,
-  kLocation = 2,
-  kMicrophone = 3,
-  kNotifications = 4,
-  kContacts = 5,
-  kStorage = 6,
-  kPrinting = 7,
-};
+ENUM(PermissionType,
+     kUnknown,
+     kCamera,
+     kLocation,
+     kMicrophone,
+     kNotifications,
+     kContacts,
+     kStorage,
+     kPrinting)
 
-enum class TriState {
-  kAllow,
-  kBlock,
-  kAsk,
-};
+ENUM(TriState, kAllow, kBlock, kAsk)
 
 // The permission value could be a TriState or a bool
 struct COMPONENT_EXPORT(APP_TYPES) PermissionValue {
@@ -46,7 +42,7 @@ struct COMPONENT_EXPORT(APP_TYPES) PermissionValue {
 
   // Checks whether this is equal to permission enabled. If it is TriState, only
   // Allow represent permission enabled.
-  bool IsPermissionEnabled();
+  bool IsPermissionEnabled() const;
 
   absl::optional<bool> bool_value;
   absl::optional<TriState> tristate_value;
@@ -67,6 +63,12 @@ struct COMPONENT_EXPORT(APP_TYPES) Permission {
 
   std::unique_ptr<Permission> Clone() const;
 
+  // Checks whether this is equal to permission enabled. If it is TriState, only
+  // Allow represent permission enabled.
+  bool IsPermissionEnabled() const;
+
+  std::string ToString() const;
+
   PermissionType permission_type;
   std::unique_ptr<PermissionValue> value;
   // If the permission is managed by an enterprise policy.
@@ -79,6 +81,9 @@ using Permissions = std::vector<PermissionPtr>;
 // Creates a deep copy of `source_permissions`.
 COMPONENT_EXPORT(APP_TYPES)
 Permissions ClonePermissions(const Permissions& source_permissions);
+
+COMPONENT_EXPORT(APP_TYPES)
+bool IsEqual(const Permissions& source, const Permissions& target);
 
 // TODO(crbug.com/1253250): Remove these functions after migrating to non-mojo
 // AppService.

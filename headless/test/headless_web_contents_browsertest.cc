@@ -35,6 +35,7 @@
 #include "headless/public/headless_devtools_client.h"
 #include "headless/public/headless_web_contents.h"
 #include "headless/test/headless_browser_test.h"
+#include "pdf/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -47,7 +48,7 @@
 #include "ui/gfx/geometry/size_f.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PDF)
 #include "base/strings/string_number_conversions.h"
 #include "pdf/pdf.h"
 #include "printing/pdf_render_settings.h"
@@ -274,7 +275,7 @@ INSTANTIATE_TEST_SUITE_P(HeadlessWebContentsScreenshotWindowPositionTests,
                          HeadlessWebContentsScreenshotWindowPositionTest,
                          ::testing::Bool());
 
-#if BUILDFLAG(ENABLE_PRINTING)
+#if BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PDF)
 class HeadlessWebContentsPDFTest : public HeadlessAsyncDevTooledBrowserTest {
  public:
   const double kPaperWidth = 10;
@@ -570,9 +571,92 @@ const char kExpectedStructTreeJSON[] = R"({
 }
 )";
 
+const char kExpectedFigureOnlyStructTreeJSON[] = R"({
+   "lang": "en",
+   "type": "Document",
+   "~children": [ {
+      "alt": "Figure 1: The caption",
+      "type": "Figure",
+      "~children": [ {
+         "alt": "Sample SVG image",
+         "type": "Figure"
+      }, {
+         "type": "NonStruct",
+         "~children": [ {
+            "type": "NonStruct"
+         } ]
+      } ]
+   } ]
+}
+)";
+
+const char kExpectedFigureRoleOnlyStructTreeJSON[] = R"({
+   "lang": "en",
+   "type": "Document",
+   "~children": [ {
+      "alt": "Text that describes the figure.",
+      "type": "Figure",
+      "~children": [ {
+         "alt": "Sample SVG image",
+         "type": "Figure"
+      }, {
+         "type": "P",
+         "~children": [ {
+            "type": "NonStruct"
+         } ]
+      } ]
+   } ]
+}
+)";
+
+const char kExpectedImageOnlyStructTreeJSON[] = R"({
+   "lang": "en",
+   "type": "Document",
+   "~children": [ {
+      "type": "Div",
+      "~children": [ {
+         "alt": "Sample SVG image",
+         "type": "Figure"
+      } ]
+   } ]
+}
+)";
+
+const char kExpectedImageRoleOnlyStructTreeJSON[] = R"({
+   "lang": "en",
+   "type": "Document",
+   "~children": [ {
+      "alt": "That cat is so cute",
+      "type": "Figure",
+      "~children": [ {
+         "type": "P",
+         "~children": [ {
+            "type": "NonStruct"
+         } ]
+      } ]
+   } ]
+}
+)";
+
+struct TaggedPDFTestData {
+  const char* url;
+  const char* expected_json;
+};
+
+constexpr TaggedPDFTestData kTaggedPDFTestData[] = {
+    {"/structured_doc.html", kExpectedStructTreeJSON},
+    {"/structured_doc_only_figure.html", kExpectedFigureOnlyStructTreeJSON},
+    {"/structured_doc_only_figure_role.html",
+     kExpectedFigureRoleOnlyStructTreeJSON},
+    {"/structured_doc_only_image.html", kExpectedImageOnlyStructTreeJSON},
+    {"/structured_doc_only_image_role.html",
+     kExpectedImageRoleOnlyStructTreeJSON},
+};
+
 class HeadlessWebContentsTaggedPDFTest
     : public HeadlessAsyncDevTooledBrowserTest,
-      public page::Observer {
+      public page::Observer,
+      public ::testing::WithParamInterface<TaggedPDFTestData> {
  public:
   void RunDevTooledTest() override {
     EXPECT_TRUE(embedded_test_server()->Start());
@@ -584,7 +668,7 @@ class HeadlessWebContentsTaggedPDFTest
     run_loop.Run();
 
     devtools_client_->GetPage()->Navigate(
-        embedded_test_server()->GetURL("/structured_doc.html").spec());
+        embedded_test_server()->GetURL(GetParam().url).spec());
   }
 
   void OnLoadEventFired(const page::LoadEventFiredParams&) override {
@@ -624,17 +708,21 @@ class HeadlessWebContentsTaggedPDFTest
     // Map Windows line endings to Unix by removing '\r'.
     base::RemoveChars(json, "\r", &json);
 
-    EXPECT_EQ(kExpectedStructTreeJSON, json);
+    EXPECT_EQ(GetParam().expected_json, json);
 
     FinishAsynchronousTest();
   }
 };
 
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessWebContentsTaggedPDFTest);
+HEADLESS_ASYNC_DEVTOOLED_TEST_P(HeadlessWebContentsTaggedPDFTest);
+
+INSTANTIATE_TEST_SUITE_P(All,
+                         HeadlessWebContentsTaggedPDFTest,
+                         ::testing::ValuesIn(kTaggedPDFTestData));
 
 #endif  // BUILDFLAG(ENABLE_TAGGED_PDF)
 
-#endif  // BUILDFLAG(ENABLE_PRINTING)
+#endif  // BUILDFLAG(ENABLE_PRINTING) && BUILDFLAG(ENABLE_PDF)
 
 class HeadlessWebContentsSecurityTest
     : public HeadlessAsyncDevTooledBrowserTest,

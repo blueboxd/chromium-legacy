@@ -9,9 +9,7 @@
 #include "ash/services/secure_channel/register_payload_file_request.h"
 #include "base/callback.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 FakeAuthenticatedChannel::FakeAuthenticatedChannel() : AuthenticatedChannel() {}
 
@@ -58,6 +56,4 @@ void FakeAuthenticatedChannelObserver::OnMessageReceived(
   received_messages_.push_back(std::make_pair(feature, payload));
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

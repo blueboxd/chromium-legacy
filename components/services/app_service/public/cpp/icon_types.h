@@ -22,9 +22,12 @@ struct COMPONENT_EXPORT(ICON_TYPES) IconKey {
   IconKey(IconKey&&) = default;
   IconKey& operator=(IconKey&&) = default;
 
-  bool operator==(const IconKey& other) const;
-
   ~IconKey();
+
+  bool operator==(const IconKey& other) const;
+  bool operator!=(const IconKey& other) const;
+
+  std::unique_ptr<IconKey> Clone() const;
 
   // A timeline value for icons that do not change.
   static const uint64_t kDoesNotChangeOverTime;

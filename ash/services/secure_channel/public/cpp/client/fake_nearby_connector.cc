@@ -11,8 +11,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
-namespace chromeos {
-namespace secure_channel {
+namespace ash::secure_channel {
 
 FakeNearbyConnector::FakeConnection::FakeConnection(
     const std::vector<uint8_t>& bluetooth_public_address,
@@ -169,5 +168,4 @@ void FakeNearbyConnector::Connect(
   std::move(on_connect_closure).Run();
 }
 
-}  // namespace secure_channel
-}  // namespace chromeos
+}  // namespace ash::secure_channel

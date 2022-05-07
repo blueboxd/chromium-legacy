@@ -8,7 +8,6 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/format_macros.h"
 #include "base/hash/md5.h"
@@ -238,7 +237,7 @@ class StreamCommandMarshal final : public CommandMarshal {
       return "";
     std::cout.flush();
     size_t command_id = static_cast<size_t>(std::cin.get());
-    if (command_id >= base::size(kCommandNames)) {
+    if (command_id >= std::size(kCommandNames)) {
       ReturnFailure("Unknown command.");
       return "";
     }
@@ -754,8 +753,8 @@ int main(int argc, char* argv[]) {
   std::unique_ptr<Backend> cache_backend;
   net::TestCompletionCallback cb;
   int rv = disk_cache::CreateCacheBackend(
-      net::DISK_CACHE, backend_type, cache_path, INT_MAX,
-      disk_cache::ResetHandling::kNeverReset, nullptr, &cache_backend,
+      net::DISK_CACHE, backend_type, /*file_operations=*/nullptr, cache_path,
+      INT_MAX, disk_cache::ResetHandling::kNeverReset, nullptr, &cache_backend,
       cb.callback());
   if (cb.GetResult(rv) != net::OK) {
     std::cerr << "Invalid cache." << std::endl;

@@ -127,12 +127,20 @@
         "gslides"
       ]
     },
-    "open-web-drive-office": {
+    "open-web-drive-office-word": {
       "extensions": [
         "doc",
-        "docx",
+        "docx"
+      ]
+    },
+    "open-web-drive-office-excel": {
+      "extensions": [
         "xls",
-        "xlsx",
+        "xlsx"
+      ]
+    },
+    "open-web-drive-office-powerpoint": {
+      "extensions": [
         "ppt",
         "pptx"
       ]
@@ -165,6 +173,7 @@
     "common/js/dialog_type.js",
     "common/js/file_operation_common.js",
     "common/js/file_type.js",
+    "common/js/file_types_data.js",
     "common/js/files_app_entry_types.js",
     "common/js/files_app_state.js",
     "common/js/filtered_volume_manager.js",

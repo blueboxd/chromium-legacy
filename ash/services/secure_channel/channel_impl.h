@@ -16,9 +16,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Channel which provides clients the ability to send messages to remote
 // devices, registers local files to receive file transfers, and to listen for
@@ -95,8 +93,6 @@ class ChannelImpl : public mojom::Channel {
   base::WeakPtrFactory<ChannelImpl> weak_ptr_factory_{this};
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_CHANNEL_IMPL_H_

@@ -14,6 +14,7 @@
 #include "chrome/browser/apps/app_service/menu_util.h"
 #include "chrome/browser/ash/app_restore/full_restore_service.h"
 #include "chrome/browser/ash/arc/app_shortcuts/arc_app_shortcuts_menu_builder.h"
+#include "chrome/browser/ash/borealis/borealis_window_manager.h"
 #include "chrome/browser/ash/crosapi/browser_manager.h"
 #include "chrome/browser/ash/crostini/crostini_manager.h"
 #include "chrome/browser/ash/crostini/crostini_shelf_utils.h"
@@ -53,16 +54,16 @@ bool MenuItemHasLauncherContext(const extensions::MenuItem* item) {
   return item->contexts().Contains(extensions::MenuItem::LAUNCHER);
 }
 
-apps::mojom::WindowMode ConvertLaunchTypeCommandToWindowMode(int command_id) {
+apps::WindowMode ConvertLaunchTypeCommandToWindowMode(int command_id) {
   switch (command_id) {
     case ash::LAUNCH_TYPE_REGULAR_TAB:
-      return apps::mojom::WindowMode::kBrowser;
+      return apps::WindowMode::kBrowser;
     case ash::LAUNCH_TYPE_WINDOW:
-      return apps::mojom::WindowMode::kWindow;
+      return apps::WindowMode::kWindow;
     case ash::LAUNCH_TYPE_TABBED_WINDOW:
-      return apps::mojom::WindowMode::kTabbedWindow;
+      return apps::WindowMode::kTabbedWindow;
     default:
-      return apps::mojom::WindowMode::kUnknown;
+      return apps::WindowMode::kUnknown;
   }
 }
 
@@ -89,10 +90,11 @@ AppServiceShelfContextMenu::AppServiceShelfContextMenu(
     const ash::ShelfItem* item,
     int64_t display_id)
     : ShelfContextMenu(controller, item, display_id) {
-  if (crostini::IsUnmatchedCrostiniShelfAppId(item->id.app_id)) {
-    // For Crostini app_id with the prefix "crostini:", set app_type as Unknown
-    // to skip the ArcAppShelfId valid. App type can't be set as Crostini,
-    // because the pin item should not be added for it.
+  if (crostini::IsUnmatchedCrostiniShelfAppId(item->id.app_id) ||
+      borealis::BorealisWindowManager::IsAnonymousAppId(item->id.app_id)) {
+    // Sometimes GuestOS runs applications that are not registered with the apps
+    // service. These "anonymous" apps should not be pinnable, so we set type
+    // "unknown" to avoid the ARC check below.
     app_type_ = apps::AppType::kUnknown;
     return;
   }
@@ -230,14 +232,14 @@ bool AppServiceShelfContextMenu::IsCommandIdChecked(int command_id) const {
       if ((command_id >= ash::LAUNCH_TYPE_PINNED_TAB &&
            command_id <= ash::LAUNCH_TYPE_WINDOW) ||
           command_id == ash::LAUNCH_TYPE_TABBED_WINDOW) {
-        auto user_window_mode = apps::mojom::WindowMode::kUnknown;
+        auto user_window_mode = apps::WindowMode::kUnknown;
         apps::AppServiceProxyFactory::GetForProfile(controller()->profile())
             ->AppRegistryCache()
             .ForOneApp(item().id.app_id,
                        [&user_window_mode](const apps::AppUpdate& update) {
                          user_window_mode = update.WindowMode();
                        });
-        return user_window_mode != apps::mojom::WindowMode::kUnknown &&
+        return user_window_mode != apps::WindowMode::kUnknown &&
                user_window_mode ==
                    ConvertLaunchTypeCommandToWindowMode(command_id);
       }
@@ -473,11 +475,13 @@ void AppServiceShelfContextMenu::SetLaunchType(int command_id) {
     case apps::AppType::kWeb:
     case apps::AppType::kSystemWeb: {
       // Web apps can only toggle between kWindow, kTabbed and kBrowser.
-      apps::mojom::WindowMode user_window_mode =
+      apps::WindowMode user_window_mode =
           ConvertLaunchTypeCommandToWindowMode(command_id);
-      if (user_window_mode != apps::mojom::WindowMode::kUnknown) {
+      if (user_window_mode != apps::WindowMode::kUnknown) {
         apps::AppServiceProxyFactory::GetForProfile(controller()->profile())
-            ->SetWindowMode(item().id.app_id, user_window_mode);
+            ->SetWindowMode(
+                item().id.app_id,
+                apps::ConvertWindowModeToMojomWindowMode(user_window_mode));
       }
       return;
     }
@@ -562,11 +566,11 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
       bool show_in_launcher = false;
       apps::AppServiceProxyFactory::GetForProfile(controller()->profile())
           ->AppRegistryCache()
-          .ForOneApp(item().id.app_id, [&show_in_launcher](
-                                           const apps::AppUpdate& update) {
-            if (update.ShowInLauncher() == apps::mojom::OptionalBool::kTrue)
-              show_in_launcher = true;
-          });
+          .ForOneApp(item().id.app_id,
+                     [&show_in_launcher](const apps::AppUpdate& update) {
+                       show_in_launcher =
+                           update.ShowInLauncher().value_or(false);
+                     });
       return show_in_launcher;
     }
     case apps::AppType::kCrostini:
@@ -586,6 +590,7 @@ bool AppServiceShelfContextMenu::ShouldAddPinMenu() {
     case apps::AppType::kMacOs:
     case apps::AppType::kRemote:
     case apps::AppType::kExtension:
+    case apps::AppType::kStandaloneBrowserExtension:
       NOTREACHED() << "Type " << (int)app_type_
                    << " should not appear in shelf.";
       return false;

@@ -278,6 +278,7 @@ void FlexItem::ComputeStretchedSize() {
 
 void FlexItem::Trace(Visitor* visitor) const {
   visitor->Trace(box_);
+  visitor->Trace(ng_input_node_);
   visitor->Trace(layout_result_);
 }
 
@@ -801,7 +802,7 @@ LayoutUnit FlexLayoutAlgorithm::IntrinsicContentBlockSize() const {
 
 void FlexLayoutAlgorithm::AlignFlexLines(
     LayoutUnit cross_axis_content_extent,
-    Vector<NGFlexLine>* flex_line_outputs) {
+    HeapVector<NGFlexLine>* flex_line_outputs) {
   const StyleContentAlignmentData align_content = ResolvedAlignContent(*style_);
   if (align_content.GetPosition() == ContentPosition::kFlexStart &&
       gap_between_lines_ == 0) {
@@ -821,6 +822,10 @@ void FlexLayoutAlgorithm::AlignFlexLines(
   for (wtf_size_t i = 0; i < flex_lines_.size(); i++) {
     FlexLine& line_context = flex_lines_[i];
     line_context.cross_axis_offset_ += line_offset;
+    if (flex_line_outputs) {
+      (*flex_line_outputs)[i].cross_axis_offset =
+          line_context.cross_axis_offset_;
+    }
 
     for (FlexItem& flex_item : line_context.line_items_) {
       flex_item.offset_->cross_axis_offset += line_offset;

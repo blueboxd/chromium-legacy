@@ -4,9 +4,13 @@
 
 #include "components/signin/core/browser/consistency_cookie_manager.h"
 
+#include <memory>
+
+#include "base/test/scoped_feature_list.h"
 #include "components/signin/core/browser/account_reconcilor.h"
 #include "components/signin/core/browser/account_reconcilor_delegate.h"
 #include "components/signin/public/base/signin_metrics.h"
+#include "components/signin/public/base/signin_switches.h"
 #include "components/signin/public/base/test_signin_client.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/cookies/canonical_cookie.h"
@@ -38,9 +42,25 @@ class ConsistencyCookieManagerTest : public testing::Test {
         std::make_unique<MockCookieManager>();
     cookie_manager_ = mock_cookie_manager.get();
     signin_client_.set_cookie_manager(std::move(mock_cookie_manager));
+    reconcilor_ = std::make_unique<AccountReconcilor>(
+        /*identity_manager=*/nullptr, &signin_client_,
+        std::make_unique<AccountReconcilorDelegate>());
   }
 
-  ~ConsistencyCookieManagerTest() override { reconcilor_.Shutdown(); }
+  ~ConsistencyCookieManagerTest() override { DeleteConsistencyCookieManager(); }
+
+  ConsistencyCookieManager* GetConsistencyCookieManager() {
+    return reconcilor_->GetConsistencyCookieManager();
+  }
+
+  void DeleteConsistencyCookieManager() {
+    if (!reconcilor_)
+      return;
+    // `AccountReconcilor` shutdown should not trigger a cookie update.
+    reconcilor_->Shutdown();
+    reconcilor_.reset();
+    testing::Mock::VerifyAndClearExpectations(cookie_manager());
+  }
 
   void ExpectCookieSet(const std::string& value) {
     const std::string expected_domain =
@@ -64,23 +84,28 @@ class ConsistencyCookieManagerTest : public testing::Test {
     account_reconcilor()->SetState(state);
   }
 
-  AccountReconcilor* account_reconcilor() { return &reconcilor_; }
-  SigninClient* signin_client() { return &signin_client_; }
+  AccountReconcilor* account_reconcilor() { return reconcilor_.get(); }
   MockCookieManager* cookie_manager() { return cookie_manager_; }
 
  private:
+  // The kLacrosNonSyncingProfiles flags bundles several features: non-syncing
+  // profiles, signed out profiles, and Mirror Landing. The
+  // `ConsistencyCookieManager` is related to MirrorLanding.
+  base::test::ScopedFeatureList feature_list_{
+      switches::kLacrosNonSyncingProfiles};
+
   TestSigninClient signin_client_{/*prefs=*/nullptr};
   MockCookieManager* cookie_manager_ = nullptr;  // Owned by `signin_client_`.
-  AccountReconcilor reconcilor_{/*identity_manager=*/nullptr, &signin_client_,
-                                std::make_unique<AccountReconcilorDelegate>()};
+  std::unique_ptr<AccountReconcilor> reconcilor_;
 };
 
+// Tests that the cookie is updated when the state of the `AccountReconcilor`
+// changes.
 TEST_F(ConsistencyCookieManagerTest, ReconcilorState) {
-  // Initial state.
+  // Ensure the cookie manager was created.
+  ASSERT_TRUE(GetConsistencyCookieManager());
   EXPECT_EQ(account_reconcilor()->GetState(),
             signin_metrics::ACCOUNT_RECONCILOR_INACTIVE);
-  ConsistencyCookieManager cookie_consistency_manager(signin_client(),
-                                                      account_reconcilor());
   // Cookie has not been set.
   testing::Mock::VerifyAndClearExpectations(cookie_manager());
 
@@ -127,6 +152,176 @@ TEST_F(ConsistencyCookieManagerTest, ReconcilorState) {
   EXPECT_EQ(account_reconcilor()->GetState(),
             signin_metrics::ACCOUNT_RECONCILOR_SCHEDULED);
   SetReconcilorState(signin_metrics::ACCOUNT_RECONCILOR_RUNNING);
+  testing::Mock::VerifyAndClearExpectations(cookie_manager());
+}
+
+// Checks that the `ScopedAccountUpdate` updates the reconcilor state and can be
+// nested.
+TEST_F(ConsistencyCookieManagerTest, ScopedAccountUpdate) {
+  ConsistencyCookieManager* consistency_cookie_manager =
+      GetConsistencyCookieManager();
+  ExpectCookieSet(ConsistencyCookieManager::kCookieValueStringConsistent);
+  SetReconcilorState(signin_metrics::ACCOUNT_RECONCILOR_OK);
+  testing::Mock::VerifyAndClearExpectations(cookie_manager());
+
+  EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 0);
+
+  {
+    // Create a scoped update, this sets the cookie to "Updating".
+    ExpectCookieSet(ConsistencyCookieManager::kCookieValueStringUpdating);
+    ConsistencyCookieManager::ScopedAccountUpdate update_1 =
+        consistency_cookie_manager->CreateScopedAccountUpdate();
+    testing::Mock::VerifyAndClearExpectations(cookie_manager());
+    EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 1);
+
+    {
+      // Create a second update, this does nothing, but increments the internal
+      // counter. Counter is decremented when it goes out of scope.
+      ConsistencyCookieManager::ScopedAccountUpdate update_2 =
+          consistency_cookie_manager->CreateScopedAccountUpdate();
+      testing::Mock::VerifyAndClearExpectations(cookie_manager());
+      EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 2);
+    }
+
+    // `update_2` was destroyed. Cookie value did not change as `update_1` is
+    // still alive.
+    testing::Mock::VerifyAndClearExpectations(cookie_manager());
+    EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 1);
+
+    // Destroy `update_1`. All updates are destroyed, cookue should go back to
+    // "Consistent".
+    ExpectCookieSet(ConsistencyCookieManager::kCookieValueStringConsistent);
+  }
+
+  testing::Mock::VerifyAndClearExpectations(cookie_manager());
+  EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 0);
+}
+
+// Tests the behavior of `ScopedAccountUpdate` when the reconcilor is inactive.
+TEST_F(ConsistencyCookieManagerTest, ScopedAccountUpdate_Inactive) {
+  ConsistencyCookieManager* consistency_cookie_manager =
+      GetConsistencyCookieManager();
+  EXPECT_EQ(account_reconcilor()->GetState(),
+            signin_metrics::ACCOUNT_RECONCILOR_INACTIVE);
+  EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 0);
+
+  {
+    // Create a scoped update, this does not change the cookie because the
+    // reconcilor is inactive.
+    ConsistencyCookieManager::ScopedAccountUpdate update =
+        consistency_cookie_manager->CreateScopedAccountUpdate();
+    testing::Mock::VerifyAndClearExpectations(cookie_manager());
+    EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 1);
+
+    // Destroy `update`. Cookie is not updated, because the reconcilor is
+    // inactive.
+  }
+
+  testing::Mock::VerifyAndClearExpectations(cookie_manager());
+
+  {
+    // Create a scoped update, this does not change the cookie because the
+    // reconcilor is inactive.
+    ConsistencyCookieManager::ScopedAccountUpdate update =
+        consistency_cookie_manager->CreateScopedAccountUpdate();
+    testing::Mock::VerifyAndClearExpectations(cookie_manager());
+    EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 1);
+
+    // Start the reconcilor. The state is "Updating" because there is a live
+    // update, even though it was created when the reconcilor was inactive.
+    ExpectCookieSet(ConsistencyCookieManager::kCookieValueStringUpdating);
+    SetReconcilorState(signin_metrics::ACCOUNT_RECONCILOR_OK);
+    testing::Mock::VerifyAndClearExpectations(cookie_manager());
+
+    // Destroy `update`. This resets the state to "Consistent".
+    ExpectCookieSet(ConsistencyCookieManager::kCookieValueStringConsistent);
+  }
+
+  testing::Mock::VerifyAndClearExpectations(cookie_manager());
+}
+
+// Tests the move operator and constructor of `ScopedAccountUpdate`.
+TEST_F(ConsistencyCookieManagerTest, MoveOperations) {
+  ConsistencyCookieManager* consistency_cookie_manager =
+      GetConsistencyCookieManager();
+  ExpectCookieSet(ConsistencyCookieManager::kCookieValueStringConsistent);
+  SetReconcilorState(signin_metrics::ACCOUNT_RECONCILOR_OK);
+  testing::Mock::VerifyAndClearExpectations(cookie_manager());
+
+  EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 0);
+
+  std::unique_ptr<ConsistencyCookieManager::ScopedAccountUpdate> update_ptr;
+
+  {
+    // Create a scoped update, this sets the cookie to "Updating".
+    ExpectCookieSet(ConsistencyCookieManager::kCookieValueStringUpdating);
+    ConsistencyCookieManager::ScopedAccountUpdate update_1 =
+        consistency_cookie_manager->CreateScopedAccountUpdate();
+    testing::Mock::VerifyAndClearExpectations(cookie_manager());
+    EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 1);
+
+    // Move the update on itself, this does nothing.
+    // Use a `dummy` pointer as an indirection, as the compiler does not allow
+    // `update_1 = std::move(update_1);`
+    ConsistencyCookieManager::ScopedAccountUpdate* dummy = &update_1;
+    update_1 = std::move(*dummy);
+    testing::Mock::VerifyAndClearExpectations(cookie_manager());
+    EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 1);
+
+    // Move the update to another instance, this does nothing.
+    ConsistencyCookieManager::ScopedAccountUpdate update_2 =
+        std::move(update_1);
+    testing::Mock::VerifyAndClearExpectations(cookie_manager());
+    EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 1);
+
+    // Move constructor works the same.
+    update_ptr =
+        std::make_unique<ConsistencyCookieManager::ScopedAccountUpdate>(
+            std::move(update_2));
+    testing::Mock::VerifyAndClearExpectations(cookie_manager());
+    EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 1);
+
+    // Now delete all the updates that were moved, it does nothing.
+  }
+
+  testing::Mock::VerifyAndClearExpectations(cookie_manager());
+  EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 1);
+
+  // Delete the remaining update, the cookie goes back to consistent.
+  ExpectCookieSet(ConsistencyCookieManager::kCookieValueStringConsistent);
+  update_ptr.reset();
+  testing::Mock::VerifyAndClearExpectations(cookie_manager());
+  EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 0);
+}
+
+// `ScopedAccountUpdate` can safely outlive the `AccountReconcilor`.
+TEST_F(ConsistencyCookieManagerTest, UpdateAfterDestruction) {
+  ConsistencyCookieManager* consistency_cookie_manager =
+      GetConsistencyCookieManager();
+  ExpectCookieSet(ConsistencyCookieManager::kCookieValueStringConsistent);
+  SetReconcilorState(signin_metrics::ACCOUNT_RECONCILOR_OK);
+  testing::Mock::VerifyAndClearExpectations(cookie_manager());
+
+  EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 0);
+
+  {
+    // Create a scoped update, this sets the cookie to "Updating".
+    ExpectCookieSet(ConsistencyCookieManager::kCookieValueStringUpdating);
+    ConsistencyCookieManager::ScopedAccountUpdate update_1 =
+        consistency_cookie_manager->CreateScopedAccountUpdate();
+    testing::Mock::VerifyAndClearExpectations(cookie_manager());
+    EXPECT_EQ(consistency_cookie_manager->scoped_update_count_, 1);
+
+    // Delete the `ConsistencyCookieManager`, but not the update.
+    DeleteConsistencyCookieManager();
+    // The cookie is not updated.
+    testing::Mock::VerifyAndClearExpectations(cookie_manager());
+
+    // Delete the update, after the `ConsistencyCookieManager` was
+    // destroyed.
+  }
+
+  // The cookie is not updated, and there is no crash.
   testing::Mock::VerifyAndClearExpectations(cookie_manager());
 }
 

@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">"<ph name="FILE_NAME" />". <ph name="ERROR_MESSAGE" />-ын нэрийг өөрчлөх боломжгүй байна.</translation>
 <translation id="1499943022354839699">Dvorak гартай англи (АНУ)</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> - хост</translation>
+<translation id="1521655867290435174">Google Хүснэгт</translation>
 <translation id="1538729222189715449">Linux-н файлуудыг нээж байна...</translation>
 <translation id="1547964879613821194">Канадын Англи хэл</translation>
 <translation id="1556189134700913550">Бүгдэд хамааруулах</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">Таниулах гэрчилгээг сүлжээнээс цуцалсан байна</translation>
 <translation id="2547921442987553570"><ph name="EXTENSION_NAME" />-д нэмэх</translation>
 <translation id="255937426064304553">АНУ олон улсын</translation>
-<translation id="2562685439590298522">Docs</translation>
 <translation id="2563185590376525700">Frog</translation>
 <translation id="2578394532502990878">Тамил авиа зүй</translation>
 <translation id="2579959351793446050">Одиа</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">АНУ өргөтгөсөн</translation>
 <translation id="290843123675549676">Марати</translation>
 <translation id="2923240520113693977">Эстон</translation>
-<translation id="2925966894897775835">Sheets</translation>
 <translation id="2938685643439809023">Монгол</translation>
-<translation id="2943400156390503548">Слайдууд</translation>
 <translation id="2943503720238418293">Богино нэр ашиглах</translation>
 <translation id="2949781154072577687"><ph name="DRIVE_NAME" />-г форматалж байна...</translation>
 <translation id="2951236788251446349">Далайн мөгөөрс</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032">Сүлжээ <ph name="NETWORK_COUNT" />-н <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, дохионы хүч <ph name="SIGNAL_STRENGTH" />%, таны администратор удирддаг, дэлгэрэнгүй мэдээлэл</translation>
 <translation id="4387004326333427325">Баталгаажуулах сертификатыг алсаас цуцалсан байна.</translation>
 <translation id="4394214039309501350">Гадаад холбоос</translation>
+<translation id="4401287888955153199">Бүгдийг задлах</translation>
 <translation id="4418686080762064601">Файлууддаа товчлол үүсгэх</translation>
 <translation id="4425149324548788773">Миний Драйв</translation>
 <translation id="4439427728133035643">Сүлжээ: <ph name="NETWORK_COUNT" />-н <ph name="NETWORK_INDEX" />, <ph name="NETWORK_NAME" />, дохионы хүч <ph name="SIGNAL_STRENGTH" />%, холбогдох</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">Файлуудыг офлайн үед ашиглах боломжтой болгох</translation>
 <translation id="4658782175094886150">Цасан дунд байгаа хүн</translation>
 <translation id="4669606053856530811">Эдгээр зүйлийг '<ph name="SOURCE_NAME" />'-н гишүүдтэй хуваалцаагүй тохиолдолд тус гишүүд хандах боломжгүй.</translation>
+<translation id="467809019005607715">Google Слайд</translation>
 <translation id="4690246192099372265">Швед</translation>
 <translation id="4693155481716051732">Сүши</translation>
 <translation id="4694604912444486114">Сармагчин</translation>
@@ -655,6 +655,7 @@
 <translation id="6732801395666424405">Гэрчилгээнүүдийг ачаалласангүй</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [ <ph name="ISSUED_TO" /> ]</translation>
 <translation id="6751256176799620176">1 фолдер сонгосон</translation>
+<translation id="6755827872271341378">ChromeOS Flex төхөөрөмж</translation>
 <translation id="6790428901817661496">Тоглуулах</translation>
 <translation id="6795884519221689054">Хулсны баавгай</translation>
 <translation id="6806699711453372963">Linux-н хуваалцлыг удирдах</translation>
@@ -732,6 +733,7 @@
 <translation id="7343393116438664539">Вьетнам телекс</translation>
 <translation id="7359359531237882347"><ph name="NUMBER_OF_ITEMS" /> зүйлийг хуулж байна...</translation>
 <translation id="7375951387215729722">Файлын жагсаалтыг <ph name="COLUMN_NAME" />-н дагуу буурах дарааллаар эрэмбэлсэн.</translation>
+<translation id="7402503521691663770">ChromeOS Flex төхөөрөмжүүд</translation>
 <translation id="7408870451288633753">Чех</translation>
 <translation id="7417453074306512035">Этиоп хэлний гар</translation>
 <translation id="7417705661718309329">Google-ийн газрын зураг</translation>
@@ -821,6 +823,7 @@
 <translation id="8042602468072383151"><ph name="AUDIO_TYPE" /> аудио</translation>
 <translation id="8045462269890919536">Румын</translation>
 <translation id="8049184478152619004">Хувийн блокоос гаргах түлхүүр (PUK)-ийг оруулна уу</translation>
+<translation id="807187749540895545">Гаргаж байна <ph name="FILE_NAME" />...</translation>
 <translation id="8079530767338315840">Давтах</translation>
 <translation id="8087576439476816834">Татах, <ph name="PROFILE_NAME" /></translation>
 <translation id="8106045200081704138">Надтай хуваалцсан</translation>
@@ -872,6 +875,7 @@
 <translation id="8484284835977497781">Саяхны зургаасаа сонгоно уу.</translation>
 <translation id="8487700953926739672">Сүлжээнд холбогдоогүй байна</translation>
 <translation id="8492972329130824181">Гэрийн сүлжээ боломжгүй байна. Холбогдохын тулд мобайл дата роумингийг идэвхжүүлсэн байх ёстой.</translation>
+<translation id="8499098729323186194"><ph name="NUMBER_OF_ITEMS" />-г гаргаж байна...</translation>
 <translation id="8521441079177373948">Их Британи</translation>
 <translation id="8525306231823319788">Бүтэн дэлгэц</translation>
 <translation id="853494022971700746">Франц (Франц)</translation>
@@ -947,6 +951,7 @@
 <translation id="9172592259078059678">Гужарати галиг</translation>
 <translation id="9173120999827300720">Олон улсын гартай англи (АНУ)</translation>
 <translation id="9174050671906956834">Хогийн саван дахь зүйлсийг 30 хоногийн дараа үүрд устгана.</translation>
+<translation id="9183302530794969518">Google Докс</translation>
 <translation id="9189836632794948435">Казак</translation>
 <translation id="9213073329713032541">Суулгалтыг амжилттай эхлүүллээ.</translation>
 <translation id="9219103736887031265">Зураг</translation>

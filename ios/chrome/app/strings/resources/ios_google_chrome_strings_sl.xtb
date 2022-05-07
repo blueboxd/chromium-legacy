@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">Pomagajte izboljšati Chrome s pošiljanjem statističnih podatkov o uporabi in poročil o zrušitvah Googlu.</translation>
 <translation id="417201473131094001">Ni podprto v Chromu Canary</translation>
 <translation id="4214277427269650960">Prijavite se na tem spletnem mestu in v Chrome. Sinhronizacijo lahko vklopite pozneje.</translation>
+<translation id="4233521129555661685">Uporabnik <ph name="USER_EMAIL1" /> je uporabljal Chrome in pustil zaznamke, gesla in druge nastavitve v tej napravi.</translation>
 <translation id="424864128008805179">Se želite odjaviti iz Chroma?</translation>
 <translation id="4249068189593983585">Nasvet za Chrome. Če želite več možnosti za zavihke, pridržite gumb za prikaz zavihkov v orodni vrstici na dnu ali vrhu zaslona.</translation>
 <translation id="4523886039239821078">Nekateri dodatki povzročajo zrušitve Chroma. Odstranite jih:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chromu ni uspelo preveriti vseh gesel. Poskusite znova jutri ali <ph name="BEGIN_LINK" />preverite gesla v računu Google.<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">Ni podprto v Chromu Beta</translation>
 <translation id="5030102366287574140">Chrome vas lahko varuje pred podatkovnimi kršitvami, spletnimi mesti, ki niso varna, in drugim.</translation>
+<translation id="5108659628347594808">Izboljšajte Chrome</translation>
 <translation id="5119391094379141756">Izberite Chrome.</translation>
 <translation id="5162467219239570114">Chrome je zastarel. Če v trgovini <ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> ni na voljo nobene posodobitve, vaša naprava morda ne podpira več novih različic Chroma.</translation>
 <translation id="5389212809648216794">Google Chrome ne more uporabljati fotoaparata, ker ga uporablja druga aplikacija</translation>
@@ -81,6 +83,15 @@
 <translation id="6709398533399187136">Geslo je bilo razkrito zaradi podatkovne kršitve. Google Upravitelj gesel priporoča, da ga takoj spremenite.</translation>
 <translation id="6822673484890854830">Chromu ni uspelo preveriti vseh gesel. Poskusite znova pozneje.</translation>
 <translation id="6964931465519938134">Zdaj lahko uporabljate Chrome, kadar koli se dotaknete povezav v sporočilih, dokumentih in drugih aplikacijah.</translation>
+<translation id="7046845777663074840">Če je omogočeno:
+<ph name="BEGIN_INDENT" />  • Pomagate izboljšati Chrome za ljudi, ki ga uporabljajo kot vi.<ph name="END_INDENT" />
+
+Kaj je treba upoštevati:
+<ph name="BEGIN_INDENT" />  • Googlu se pošiljajo podatki o vaši uporabi Chroma, vendar niso povezani z vami.
+
+  • Če se Chrome zruši, bodo med podatki o zrušitvi morda nekateri osebni podatki.
+
+  • Če vklopite sinhronizacijo, bodo meritve vključevale tudi podatke o URL-jih, ki jih obiščete.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Prilagodite si Chrome</translation>
 <translation id="7124339256045485976">Posodobitev Chroma</translation>
 <translation id="7161390184744336561">Google Chrome je zastarel</translation>

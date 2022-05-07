@@ -46,6 +46,7 @@
 #include "components/prefs/pref_service.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -129,11 +130,11 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
   }
 
   void SetNextUninstallExternalWebAppResult(const GURL& app_url,
-                                            bool uninstalled) {
+                                            webapps::UninstallResultCode code) {
     DCHECK(!base::Contains(next_uninstall_external_web_app_results_, app_url));
 
     next_uninstall_external_web_app_results_[app_url] = {
-        GetAppIdForUrl(app_url), uninstalled};
+        GetAppIdForUrl(app_url), code};
   }
 
   const std::vector<WebAppInstallInfo>& web_app_info_list() {
@@ -148,7 +149,7 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
     return uninstall_external_web_app_urls_;
   }
 
-  size_t num_reparent_tab_calls() { return num_reparent_tab_calls_; }
+  size_t num_reparent_tab_calls() const { return num_reparent_tab_calls_; }
 
   // WebAppInstallFinalizer
   void FinalizeInstall(const WebAppInstallInfo& web_app_info,
@@ -195,7 +196,8 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
     UnregisterApp(app_id);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), /*uninstalled=*/true));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  webapps::UninstallResultCode::kSuccess));
   }
 
   void UninstallExternalWebAppByUrl(
@@ -206,18 +208,17 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
     uninstall_external_web_app_urls_.push_back(app_url);
 
     AppId app_id;
-    bool uninstalled;
-    std::tie(app_id, uninstalled) =
-        next_uninstall_external_web_app_results_[app_url];
+    webapps::UninstallResultCode code;
+    std::tie(app_id, code) = next_uninstall_external_web_app_results_[app_url];
     next_uninstall_external_web_app_results_.erase(app_url);
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindLambdaForTesting(
-            [&, app_id, uninstalled, callback = std::move(callback)]() mutable {
-              if (uninstalled)
+            [&, app_id, code, callback = std::move(callback)]() mutable {
+              if (code == webapps::UninstallResultCode::kSuccess)
                 UnregisterApp(app_id);
-              std::move(callback).Run(uninstalled);
+              std::move(callback).Run(code);
             }));
   }
 
@@ -272,7 +273,7 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
 
   // Maps app URLs to the id of the app that would have been installed for that
   // url and the result of trying to uninstall it.
-  std::map<GURL, std::pair<AppId, bool>>
+  std::map<GURL, std::pair<AppId, webapps::UninstallResultCode>>
       next_uninstall_external_web_app_results_;
 };
 
@@ -315,8 +316,9 @@ class ExternallyManagedAppInstallTaskTest
     auto ui_manager = std::make_unique<FakeWebAppUiManager>();
     ui_manager_ = ui_manager.get();
 
-    auto sync_bridge = std::make_unique<WebAppSyncBridge>(
-        &provider->GetDatabaseFactory(), registrar.get(), install_manager_);
+    auto sync_bridge = std::make_unique<WebAppSyncBridge>(registrar.get());
+    sync_bridge->SetSubsystems(&provider->GetDatabaseFactory(),
+                               install_manager_);
 
     provider->SetRegistrar(std::move(registrar));
     provider->SetSyncBridge(std::move(sync_bridge));
@@ -735,7 +737,8 @@ TEST_F(ExternallyManagedAppInstallTaskTest, ReinstallPlaceholderSucceeds) {
   // Replace the placeholder with a real app.
   options.reinstall_placeholder = true;
   auto task = GetInstallationTaskWithTestMocks(options);
-  finalizer()->SetNextUninstallExternalWebAppResult(kWebAppUrl, true);
+  finalizer()->SetNextUninstallExternalWebAppResult(
+      kWebAppUrl, webapps::UninstallResultCode::kSuccess);
   url_loader().SetPrepareForLoadResultLoaded();
   url_loader().SetNextLoadUrlResult(kWebAppUrl,
                                     WebAppUrlLoader::Result::kUrlLoaded);
@@ -794,7 +797,8 @@ TEST_F(ExternallyManagedAppInstallTaskTest, ReinstallPlaceholderFails) {
   options.reinstall_placeholder = true;
   auto task = GetInstallationTaskWithTestMocks(options);
 
-  finalizer()->SetNextUninstallExternalWebAppResult(kWebAppUrl, false);
+  finalizer()->SetNextUninstallExternalWebAppResult(
+      kWebAppUrl, webapps::UninstallResultCode::kError);
   url_loader().SetPrepareForLoadResultLoaded();
   url_loader().SetNextLoadUrlResult(kWebAppUrl,
                                     WebAppUrlLoader::Result::kUrlLoaded);

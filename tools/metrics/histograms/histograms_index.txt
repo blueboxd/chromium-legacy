@@ -15,6 +15,7 @@ tools/metrics/histograms/metadata/bluetooth/histograms.xml
 tools/metrics/histograms/metadata/bookmarks/histograms.xml
 tools/metrics/histograms/metadata/borealis/histograms.xml
 tools/metrics/histograms/metadata/browser/histograms.xml
+tools/metrics/histograms/metadata/browsing_topics/histograms.xml
 tools/metrics/histograms/metadata/chrome/histograms.xml
 tools/metrics/histograms/metadata/chromeos/histograms.xml
 tools/metrics/histograms/metadata/chromeos_hps/histograms.xml
@@ -59,6 +60,7 @@ tools/metrics/histograms/metadata/installer/histograms.xml
 tools/metrics/histograms/metadata/interstitial/histograms.xml
 tools/metrics/histograms/metadata/invalidation/histograms.xml
 tools/metrics/histograms/metadata/ios/histograms.xml
+tools/metrics/histograms/metadata/kerberos/histograms.xml
 tools/metrics/histograms/metadata/language/histograms.xml
 tools/metrics/histograms/metadata/leveldb_proto/histograms.xml
 tools/metrics/histograms/metadata/local/histograms.xml
@@ -94,6 +96,7 @@ tools/metrics/histograms/metadata/print/histograms.xml
 tools/metrics/histograms/metadata/printing/histograms.xml
 tools/metrics/histograms/metadata/privacy_budget/histograms.xml
 tools/metrics/histograms/metadata/profile/histograms.xml
+tools/metrics/histograms/metadata/quick_answers/histograms.xml
 tools/metrics/histograms/metadata/quickoffice/histograms.xml
 tools/metrics/histograms/metadata/quota/histograms.xml
 tools/metrics/histograms/metadata/renderer/histograms.xml

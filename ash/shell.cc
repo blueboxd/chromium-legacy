@@ -518,6 +518,16 @@ void Shell::RemoveShellObserver(ShellObserver* observer) {
   shell_observers_.RemoveObserver(observer);
 }
 
+void Shell::ShutdownEventDispatch() {
+  for (aura::Window* root : GetAllRootWindows())
+    aura::client::SetDragDropClient(root, nullptr);
+
+  // Stop dispatching events (e.g. synthesized mouse exits from window close).
+  // https://crbug.com/874156
+  for (RootWindowController* rwc : GetAllRootWindowControllers())
+    rwc->GetHost()->dispatcher()->Shutdown();
+}
+
 void Shell::UpdateAfterLoginStatusChange(LoginStatus status) {
   for (auto* root_window_controller : GetAllRootWindowControllers())
     root_window_controller->UpdateAfterLoginStatusChange(status);
@@ -543,11 +553,6 @@ void Shell::NotifyShelfAlignmentChanged(aura::Window* root_window,
                                         ShelfAlignment old_alignment) {
   for (auto& observer : shell_observers_)
     observer.OnShelfAlignmentChanged(root_window, old_alignment);
-}
-
-void Shell::NotifyShelfAutoHideBehaviorChanged(aura::Window* root_window) {
-  for (auto& observer : shell_observers_)
-    observer.OnShelfAutoHideBehaviorChanged(root_window);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -601,6 +606,12 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate)
 
 Shell::~Shell() {
   TRACE_EVENT0("shutdown", "ash::Shell::Destructor");
+#if DCHECK_IS_ON()
+  // All WindowEventDispatchers should be shutdown before the Shell is
+  // destroyed.
+  for (RootWindowController* rwc : GetAllRootWindowControllers())
+    DCHECK(rwc->GetHost()->dispatcher()->in_shutdown());
+#endif
   login_unlock_throughput_recorder_.reset();
 
   hud_display::HUDDisplayView::Destroy();
@@ -729,8 +740,6 @@ Shell::~Shell() {
   logout_confirmation_controller_.reset();
 
   // Drag-and-drop must be canceled prior to close all windows.
-  for (aura::Window* root : GetAllRootWindows())
-    aura::client::SetDragDropClient(root, nullptr);
   drag_drop_controller_.reset();
 
   // Controllers who have WindowObserver added must be deleted
@@ -752,11 +761,6 @@ Shell::~Shell() {
   // Has to happen before ~MruWindowTracker.
   window_cycle_controller_.reset();
   overview_controller_.reset();
-
-  // Stop dispatching events (e.g. synthesized mouse exits from window close).
-  // https://crbug.com/874156
-  for (RootWindowController* rwc : GetAllRootWindowControllers())
-    rwc->GetHost()->dispatcher()->Shutdown();
 
   // Close all widgets (including the shelf) and destroy all window containers.
   CloseAllRootWindowChildWindows();
@@ -1179,8 +1183,8 @@ void Shell::Init(
   tray_action_ =
       std::make_unique<TrayAction>(backlights_forced_off_setter_.get());
 
-  lock_state_controller_ =
-      std::make_unique<LockStateController>(shutdown_controller_.get());
+  lock_state_controller_ = std::make_unique<LockStateController>(
+      shutdown_controller_.get(), local_state_);
   power_button_controller_ = std::make_unique<PowerButtonController>(
       backlights_forced_off_setter_.get());
   // Pass the initial display state to PowerButtonController.

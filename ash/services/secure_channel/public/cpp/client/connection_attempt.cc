@@ -6,9 +6,7 @@
 
 #include "ash/services/secure_channel/public/cpp/client/client_channel.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 ConnectionAttempt::Delegate::~Delegate() = default;
 
@@ -40,6 +38,4 @@ void ConnectionAttempt::NotifyConnection(
   }
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

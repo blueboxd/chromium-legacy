@@ -52,7 +52,6 @@
 #include "ui/views/widget/desktop_aura/desktop_screen_position_client.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_platform.h"
-#include "ui/views/widget/drop_helper.h"
 #include "ui/views/widget/focus_manager_event_handler.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/root_view.h"
@@ -976,7 +975,10 @@ void DesktopNativeWidgetAura::Restore() {
 }
 
 void DesktopNativeWidgetAura::SetFullscreen(bool fullscreen,
-                                            const base::TimeDelta& delay) {
+                                            const base::TimeDelta& delay,
+                                            int64_t target_display_id) {
+  // The `target_display_id` argument is unsupported in Aura.
+  DCHECK_EQ(target_display_id, display::kInvalidDisplayId);
   if (content_window_)
     desktop_window_tree_host_->SetFullscreen(fullscreen);
 }
@@ -1361,24 +1363,14 @@ void DesktopNativeWidgetAura::OnDragExited() {
   drop_helper_->OnDragExit();
 }
 
-ui::mojom::DragOperation DesktopNativeWidgetAura::OnPerformDrop(
-    const ui::DropTargetEvent& event,
-    std::unique_ptr<ui::OSExchangeData> data) {
-  DCHECK(drop_helper_.get() != nullptr);
-  if (ShouldActivate())
-    Activate();
-  return drop_helper_->OnDrop(event.data(), event.location(),
-                              last_drop_operation_);
-}
-
 aura::client::DragDropDelegate::DropCallback
 DesktopNativeWidgetAura::GetDropCallback(const ui::DropTargetEvent& event) {
   DCHECK(drop_helper_);
-  if (ShouldActivate())
-    Activate();
-
-  return drop_helper_->GetDropCallback(event.data(), event.location(),
-                                       last_drop_operation_);
+  auto drop_helper_cb = drop_helper_->GetDropCallback(
+      event.data(), event.location(), last_drop_operation_);
+  return base::BindOnce(&DesktopNativeWidgetAura::PerformDrop,
+                        weak_ptr_factory_.GetWeakPtr(),
+                        std::move(drop_helper_cb));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1426,6 +1418,17 @@ void DesktopNativeWidgetAura::RootWindowDestroyed() {
     native_cursor_manager_ = nullptr;
     cursor_manager_ = nullptr;
   }
+}
+
+void DesktopNativeWidgetAura::PerformDrop(
+    views::DropHelper::DropCallback drop_cb,
+    std::unique_ptr<ui::OSExchangeData> data,
+    ui::mojom::DragOperation& output_drag_op) {
+  if (ShouldActivate())
+    Activate();
+
+  if (drop_cb)
+    std::move(drop_cb).Run(std::move(data), output_drag_op);
 }
 
 }  // namespace views

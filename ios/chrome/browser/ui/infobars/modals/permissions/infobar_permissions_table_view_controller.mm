@@ -5,16 +5,21 @@
 #import "ios/chrome/browser/ui/infobars/modals/permissions/infobar_permissions_table_view_controller.h"
 
 #include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/notreached.h"
 #include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/ui/infobars/modals/infobar_modal_constants.h"
-#import "ios/chrome/browser/ui/infobars/modals/permissions/infobar_permissions_modal_delegate.h"
-#include "ios/chrome/browser/ui/infobars/modals/permissions/permission_info.h"
+#import "ios/chrome/browser/ui/infobars/presentation/infobar_modal_presentation_handler.h"
+#include "ios/chrome/browser/ui/permissions/permission_info.h"
+#import "ios/chrome/browser/ui/permissions/permission_metrics_util.h"
+#import "ios/chrome/browser/ui/permissions/permissions_delegate.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_image_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_cells_constants.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_switch_cell.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_switch_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
+#include "ios/chrome/common/string_util.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/permissions/permissions.h"
@@ -36,8 +41,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 @interface InfobarPermissionsTableViewController ()
 
-// InfobarPermissionsModalDelegate for this ViewController.
-@property(nonatomic, weak) id<InfobarPermissionsModalDelegate>
+// Delegate for this ViewController.
+@property(nonatomic, weak) id<InfobarModalDelegate, PermissionsDelegate>
     infobarModalDelegate;
 // Used to build and record metrics.
 @property(nonatomic, strong) InfobarMetricsRecorder* metricsRecorder;
@@ -53,7 +58,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 @implementation InfobarPermissionsTableViewController
 
 - (instancetype)initWithDelegate:
-    (id<InfobarPermissionsModalDelegate>)modalDelegate {
+    (id<InfobarModalDelegate, PermissionsDelegate>)modalDelegate {
   self = [super initWithStyle:UITableViewStylePlain];
   if (self) {
     _metricsRecorder = [[InfobarMetricsRecorder alloc]
@@ -84,6 +89,17 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self loadModel];
 }
 
+- (void)viewDidAppear:(BOOL)animated {
+  [super viewDidAppear:animated];
+  [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Presented];
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+  [self.infobarModalDelegate modalInfobarWasDismissed:self];
+  [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Dismissed];
+  [super viewDidDisappear:animated];
+}
+
 #pragma mark - TableViewModel
 
 - (void)loadModel {
@@ -94,7 +110,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
        toSectionWithIdentifier:SectionIdentifierContent];
 
   for (id permission in self.permissionsInfo) {
-    [self updateSwitchForPermission:permission];
+    [self updateSwitchForPermission:permission tableViewLoaded:NO];
   }
 }
 
@@ -123,7 +139,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   return cell;
 }
 
-#pragma mark - InfobarPermissionsModalConsumer
+#pragma mark - PermissionsConsumer
 
 - (void)setPermissionsDescription:(NSString*)permissionsDescription {
   _permissionsDescription = permissionsDescription;
@@ -134,45 +150,57 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (void)permissionStateChanged:(PermissionInfo*)permissionInfo {
-  [self updateSwitchForPermission:permissionInfo];
+  [self updateSwitchForPermission:permissionInfo tableViewLoaded:YES];
 }
 
 #pragma mark - Private Methods
 
 // Helper that returns the permissionsDescription item.
-- (TableViewTextItem*)permissionsDescriptionItem {
-  TableViewTextItem* descriptionItem =
-      [[TableViewTextItem alloc] initWithType:ItemTypePermissionsDescription];
-  descriptionItem.text = self.permissionsDescription;
-  descriptionItem.textColor = [UIColor colorNamed:kTextSecondaryColor];
-  descriptionItem.textFont =
-      [UIFont preferredFontForTextStyle:kTableViewSublabelFontStyle];
-  descriptionItem.enabled = NO;
+- (SettingsImageDetailTextItem*)permissionsDescriptionItem {
+  SettingsImageDetailTextItem* descriptionItem =
+      [[SettingsImageDetailTextItem alloc]
+          initWithType:ItemTypePermissionsDescription];
+
+  NSMutableAttributedString* descriptionAttributedString =
+      [[NSMutableAttributedString alloc]
+          initWithAttributedString:PutBoldPartInString(
+                                       self.permissionsDescription,
+                                       kTableViewSublabelFontStyle)];
+
+  NSDictionary* attrs = @{
+    NSForegroundColorAttributeName : [UIColor colorNamed:kTextSecondaryColor]
+  };
+  [descriptionAttributedString
+      addAttributes:attrs
+              range:NSMakeRange(0, descriptionAttributedString.length)];
+  descriptionItem.attributedText = descriptionAttributedString;
   return descriptionItem;
 }
 
 // Updates the switch of the given permission.
-- (void)updateSwitchForPermission:(PermissionInfo*)permissionInfo {
-  // TODO(crbug.com/1289645): Display permissions always in the same order.
+- (void)updateSwitchForPermission:(PermissionInfo*)permissionInfo
+                  tableViewLoaded:(BOOL)tableViewLoaded {
   switch (permissionInfo.permission) {
     case web::PermissionCamera:
       [self updateSwitchForPermissionState:permissionInfo.state
                                  withLabel:l10n_util::GetNSString(
                                                IDS_IOS_PERMISSIONS_CAMERA)
-                                    toItem:ItemTypePermissionsCamera];
+                                    toItem:ItemTypePermissionsCamera
+                           tableViewLoaded:tableViewLoaded];
       break;
     case web::PermissionMicrophone:
       [self updateSwitchForPermissionState:permissionInfo.state
                                  withLabel:l10n_util::GetNSString(
                                                IDS_IOS_PERMISSIONS_MICROPHONE)
-                                    toItem:ItemTypePermissionsMicrophone];
+                                    toItem:ItemTypePermissionsMicrophone
+                           tableViewLoaded:tableViewLoaded];
       break;
   }
 }
 
 // Dismisses the infobar modal.
 - (void)dismissInfobarModal {
-  // TODO(crbug.com/1289645): Record some metrics.
+  [self.metricsRecorder recordModalEvent:MobileMessagesModalEvent::Canceled];
   [self.infobarModalDelegate dismissInfobarModal:self];
 }
 
@@ -200,7 +228,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 // Adds or removes a switch depending on the value of the PermissionState.
 - (void)updateSwitchForPermissionState:(web::PermissionState)state
                              withLabel:(NSString*)label
-                                toItem:(ItemType)itemType {
+                                toItem:(ItemType)itemType
+                       tableViewLoaded:(BOOL)tableViewLoaded {
   if ([self.tableViewModel hasItemForItemType:itemType
                             sectionIdentifier:SectionIdentifierContent]) {
     // Remove the switch item if the permission is not accessible.
@@ -236,8 +265,28 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [[TableViewSwitchItem alloc] initWithType:itemType];
   switchItem.text = label;
   switchItem.on = state == web::PermissionStateAllowed;
-  [self.tableViewModel addItem:switchItem
-       toSectionWithIdentifier:SectionIdentifierContent];
+
+  // If ItemTypePermissionsMicrophone is already added, insert the
+  // ItemTypePermissionsCamera before the ItemTypePermissionsMicrophone.
+  if (itemType == ItemTypePermissionsCamera &&
+      [self.tableViewModel hasItemForItemType:ItemTypePermissionsMicrophone
+                            sectionIdentifier:SectionIdentifierContent]) {
+    NSIndexPath* index = [self.tableViewModel
+        indexPathForItemType:ItemTypePermissionsMicrophone];
+    [self.tableViewModel insertItem:switchItem
+            inSectionWithIdentifier:SectionIdentifierContent
+                            atIndex:index.row];
+  } else {
+    [self.tableViewModel addItem:switchItem
+         toSectionWithIdentifier:SectionIdentifierContent];
+  }
+
+  if (tableViewLoaded) {
+    [self.presentationHandler resizeInfobarModal];
+    NSIndexPath* index = [self.tableViewModel indexPathForItemType:itemType];
+    [self.tableView insertRowsAtIndexPaths:@[ index ]
+                          withRowAnimation:UITableViewRowAnimationAutomatic];
+  }
 }
 
 @end

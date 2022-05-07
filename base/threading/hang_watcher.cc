@@ -113,6 +113,26 @@ void LogHungThreadCountHistogram(HangWatcher::ThreadType thread_type,
           break;
       }
       break;
+
+    case HangWatcher::ProcessType::kUtilityProcess:
+      switch (thread_type) {
+        case HangWatcher::ThreadType::kIOThread:
+          UMA_HISTOGRAM_BOOLEAN(
+              "HangWatcher.IsThreadHung.UtilityProcess."
+              "IOThread",
+              any_thread_hung);
+          break;
+        case HangWatcher::ThreadType::kMainThread:
+          UMA_HISTOGRAM_BOOLEAN(
+              "HangWatcher.IsThreadHung.UtilityProcess."
+              "MainThread",
+              any_thread_hung);
+          break;
+        case HangWatcher::ThreadType::kThreadPoolThread:
+          // Not recorded for now.
+          break;
+      }
+      break;
   }
 }
 
@@ -171,6 +191,17 @@ constexpr base::FeatureParam<int> kRendererProcessMainThreadLogLevel{
     static_cast<int>(LoggingLevel::kUmaOnly)};
 constexpr base::FeatureParam<int> kRendererProcessThreadPoolLogLevel{
     &kEnableHangWatcher, "renderer_process_threadpool_log_level",
+    static_cast<int>(LoggingLevel::kUmaOnly)};
+
+// Utility process.
+constexpr base::FeatureParam<int> kUtilityProcessIOThreadLogLevel{
+    &kEnableHangWatcher, "utility_process_io_thread_log_level",
+    static_cast<int>(LoggingLevel::kUmaOnly)};
+constexpr base::FeatureParam<int> kUtilityProcessMainThreadLogLevel{
+    &kEnableHangWatcher, "utility_process_main_thread_log_level",
+    static_cast<int>(LoggingLevel::kUmaOnly)};
+constexpr base::FeatureParam<int> kUtilityProcessThreadPoolLogLevel{
+    &kEnableHangWatcher, "utility_process_threadpool_log_level",
     static_cast<int>(LoggingLevel::kUmaOnly)};
 
 // static
@@ -352,6 +383,18 @@ void HangWatcher::InitializeOnMainThread(ProcessType process_type) {
           static_cast<LoggingLevel>(kRendererProcessMainThreadLogLevel.Get()),
           std::memory_order_relaxed);
       break;
+
+    case HangWatcher::ProcessType::kUtilityProcess:
+      g_threadpool_log_level.store(
+          static_cast<LoggingLevel>(kUtilityProcessThreadPoolLogLevel.Get()),
+          std::memory_order_relaxed);
+      g_io_thread_log_level.store(
+          static_cast<LoggingLevel>(kUtilityProcessIOThreadLogLevel.Get()),
+          std::memory_order_relaxed);
+      g_main_thread_log_level.store(
+          static_cast<LoggingLevel>(kUtilityProcessMainThreadLogLevel.Get()),
+          std::memory_order_relaxed);
+      break;
   }
 }
 
@@ -453,7 +496,7 @@ HangWatcher::GetTimeSinceLastCriticalMemoryPressureCrashKey() {
   if (last_critical_memory_pressure_time.is_null()) {
     constexpr char kNoMemoryPressureMsg[] = "No critical memory pressure";
     static_assert(
-        base::size(kNoMemoryPressureMsg) <=
+        std::size(kNoMemoryPressureMsg) <=
             static_cast<uint64_t>(kCrashKeyContentSize),
         "The crash key is too small to hold \"No critical memory pressure\".");
     return debug::ScopedCrashKeyString(crash_key, kNoMemoryPressureMsg);

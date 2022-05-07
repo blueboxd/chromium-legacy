@@ -15,8 +15,9 @@
 
 namespace blink {
 
+class CredentialRequestOptions;
+class FederatedAccountLoginRequest;
 class FederatedCredentialInit;
-class FederatedIdentityProvider;
 
 class MODULES_EXPORT FederatedCredential final : public Credential {
   DEFINE_WRAPPERTYPEINFO();
@@ -30,13 +31,25 @@ class MODULES_EXPORT FederatedCredential final : public Credential {
       const String& name,
       const KURL& icon_url);
 
+  static FederatedCredential* Create(const KURL& provider_url,
+                                     const String& client_id,
+                                     const String& hint,
+                                     const CredentialRequestOptions* options);
+
   FederatedCredential(const String& id,
                       scoped_refptr<const SecurityOrigin> provider,
                       const String& name,
                       const KURL& icon_url);
 
+  FederatedCredential(const KURL& provider_url,
+                      const String& client_id,
+                      const String& hint,
+                      const CredentialRequestOptions* options);
+
+  void Trace(Visitor*) const override;
+
   scoped_refptr<const SecurityOrigin> GetProviderAsOrigin() const {
-    return provider_;
+    return provider_origin_;
   }
 
   // Credential:
@@ -44,8 +57,8 @@ class MODULES_EXPORT FederatedCredential final : public Credential {
 
   // FederatedCredential.idl
   String provider() const {
-    CHECK(provider_);
-    return provider_->ToString();
+    CHECK(provider_origin_);
+    return provider_origin_->ToString();
   }
   const String& name() const { return name_; }
   const KURL& iconURL() const { return icon_url_; }
@@ -55,30 +68,24 @@ class MODULES_EXPORT FederatedCredential final : public Credential {
     return g_empty_string;
   }
 
-  const String& idToken() const {
-    // TODO(goto): This is a stub, so that we can port the WebID API
-    // gradually.
-    return g_empty_string;
-  }
+  ScriptPromise login(ScriptState* script_state,
+                      FederatedAccountLoginRequest* request);
 
-  const String& approvedBy() const {
-    // TODO(goto): This is a stub, so that we can port the WebID API
-    // gradually.
-    return g_empty_string;
-  }
+  ScriptPromise logout(ScriptState* script_state);
+
+  ScriptPromise revoke(ScriptState*, const String& hint, ExceptionState&);
 
   static ScriptPromise logoutRps(
       ScriptState*,
       const HeapVector<Member<FederatedCredentialLogoutRpsRequest>>&);
-  static ScriptPromise revoke(ScriptState*,
-                              const String&,
-                              FederatedIdentityProvider*,
-                              ExceptionState&);
 
  private:
-  const scoped_refptr<const SecurityOrigin> provider_;
+  const scoped_refptr<const SecurityOrigin> provider_origin_;
   const String name_;
   const KURL icon_url_;
+  const KURL provider_url_;
+  const String client_id_;
+  Member<const CredentialRequestOptions> options_;
 };
 
 }  // namespace blink

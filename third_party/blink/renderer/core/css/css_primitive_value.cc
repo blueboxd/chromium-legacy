@@ -92,6 +92,7 @@ CSSPrimitiveValue::UnitCategory CSSPrimitiveValue::UnitTypeToUnitCategory(
     UnitType type) {
   switch (type) {
     case UnitType::kNumber:
+    case UnitType::kInteger:
       return CSSPrimitiveValue::kUNumber;
     case UnitType::kPercentage:
       return CSSPrimitiveValue::kUPercent;
@@ -333,8 +334,7 @@ double CSSPrimitiveValue::ComputeLengthDouble(
 
 bool CSSPrimitiveValue::AccumulateLengthArray(CSSLengthArray& length_array,
                                               double multiplier) const {
-  DCHECK_EQ(length_array.values.size(),
-            static_cast<unsigned>(kLengthUnitTypeCount));
+  DCHECK_EQ(length_array.values.size(), CSSLengthArray::kSize);
   if (IsCalculated()) {
     return To<CSSMathFunctionValue>(this)->AccumulateLengthArray(length_array,
                                                                  multiplier);
@@ -775,17 +775,17 @@ const char* CSSPrimitiveValue::UnitTypeToString(UnitType type) {
     case UnitType::kDynamicViewportMax:
       return "dvmax";
     case UnitType::kContainerWidth:
-      return "qw";
+      return "cqw";
     case UnitType::kContainerHeight:
-      return "qh";
+      return "cqh";
     case UnitType::kContainerInlineSize:
-      return "qi";
+      return "cqi";
     case UnitType::kContainerBlockSize:
-      return "qb";
+      return "cqb";
     case UnitType::kContainerMin:
-      return "qmin";
+      return "cqmin";
     case UnitType::kContainerMax:
-      return "qmax";
+      return "cqmax";
     default:
       break;
   }

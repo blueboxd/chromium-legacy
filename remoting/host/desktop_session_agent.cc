@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/notreached.h"
 #include "base/process/process_handle.h"
+#include "base/task/bind_post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -31,6 +32,7 @@
 #include "remoting/host/base/screen_resolution.h"
 #include "remoting/host/chromoting_messages.h"
 #include "remoting/host/crash_process.h"
+#include "remoting/host/desktop_display_info_monitor.h"
 #include "remoting/host/desktop_environment.h"
 #include "remoting/host/input_injector.h"
 #include "remoting/host/keyboard_layout_monitor.h"
@@ -175,12 +177,17 @@ void DesktopSessionClipboardStub::InjectClipboardEvent(
 
 class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
  public:
-  typedef base::RepeatingCallback<void(std::unique_ptr<IPC::Message> message)>
-      SendMessageCallback;
+  using SharedMemoryCreatedCallback = base::RepeatingCallback<
+      void(int id, base::ReadOnlySharedMemoryRegion, uint32_t size)>;
+  using SharedMemoryReleasedCallback = base::RepeatingCallback<void(int id)>;
 
-  explicit SharedMemoryFactoryImpl(
-      const SendMessageCallback& send_message_callback)
-      : send_message_callback_(send_message_callback) {}
+  SharedMemoryFactoryImpl(
+      SharedMemoryCreatedCallback shared_memory_created_callback,
+      SharedMemoryReleasedCallback shared_memory_released_callback)
+      : shared_memory_created_callback_(
+            std::move(shared_memory_created_callback)),
+        shared_memory_released_callback_(
+            std::move(shared_memory_released_callback)) {}
 
   SharedMemoryFactoryImpl(const SharedMemoryFactoryImpl&) = delete;
   SharedMemoryFactoryImpl& operator=(const SharedMemoryFactoryImpl&) = delete;
@@ -188,9 +195,7 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
   std::unique_ptr<webrtc::SharedMemory> CreateSharedMemory(
       size_t size) override {
     base::OnceClosure release_buffer_callback = base::BindOnce(
-        send_message_callback_,
-        std::make_unique<ChromotingDesktopNetworkMsg_ReleaseSharedBuffer>(
-            next_shared_buffer_id_));
+        shared_memory_released_callback_, next_shared_buffer_id_);
     std::unique_ptr<SharedMemoryImpl> buffer = SharedMemoryImpl::Create(
         size, next_shared_buffer_id_, std::move(release_buffer_callback));
     if (buffer) {
@@ -204,9 +209,8 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
       // Practically speaking it never happens.
       next_shared_buffer_id_ += 2;
 
-      send_message_callback_.Run(
-          std::make_unique<ChromotingDesktopNetworkMsg_CreateSharedBuffer>(
-              buffer->id(), buffer->region().Duplicate(), buffer->size()));
+      shared_memory_created_callback_.Run(
+          buffer->id(), buffer->region().Duplicate(), buffer->size());
     }
 
     return std::move(buffer);
@@ -214,7 +218,8 @@ class SharedMemoryFactoryImpl : public webrtc::SharedMemoryFactory {
 
  private:
   int next_shared_buffer_id_ = 1;
-  SendMessageCallback send_message_callback_;
+  SharedMemoryCreatedCallback shared_memory_created_callback_;
+  SharedMemoryReleasedCallback shared_memory_released_callback_;
 };
 
 }  // namespace
@@ -427,16 +432,27 @@ void DesktopSessionAgent::Start(
   }
 
   // Start the video capturer and mouse cursor monitor.
+  // TODO(lambroslambrou): When supporting multiple streams, this class should
+  // create and own a single DesktopDisplayInfoMonitor and call Start() on it,
+  // instead of passing it to CreateVideoCapturer() here.
   video_capturer_ = std::make_unique<DesktopAndCursorConditionalComposer>(
-      desktop_environment_->CreateVideoCapturer());
+      desktop_environment_->CreateVideoCapturer(
+          desktop_environment_->CreateDisplayInfoMonitor()));
   video_capturer_->Start(this);
   video_capturer_->SetSharedMemoryFactory(
       std::make_unique<SharedMemoryFactoryImpl>(
-          base::BindRepeating(&DesktopSessionAgent::SendToNetwork, this)));
+          base::BindPostTask(
+              caller_task_runner_,
+              base::BindRepeating(
+                  &DesktopSessionAgent::OnSharedMemoryRegionCreated, this)),
+          base::BindPostTask(
+              caller_task_runner_,
+              base::BindRepeating(
+                  &DesktopSessionAgent::OnSharedMemoryRegionReleased, this))));
   mouse_cursor_monitor_ = desktop_environment_->CreateMouseCursorMonitor();
   mouse_cursor_monitor_->Init(this,
                               webrtc::MouseCursorMonitor::SHAPE_AND_POSITION);
-  // Unretained is sound because callback will never be invoked once after
+  // Unretained is sound because callback will never be invoked after
   // |keyboard_layout_monitor_| is destroyed.
   keyboard_layout_monitor_ = desktop_environment_->CreateKeyboardLayoutMonitor(
       base::BindRepeating(&DesktopSessionAgent::OnKeyboardLayoutChange,
@@ -463,25 +479,27 @@ void DesktopSessionAgent::OnCaptureResult(
     std::unique_ptr<webrtc::DesktopFrame> frame) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 
-  // Serialize webrtc::DesktopFrame.
-  SerializedDesktopFrame serialized_frame;
+  mojom::CaptureResultPtr capture_result;
   if (frame) {
-    serialized_frame.shared_buffer_id = frame->shared_memory()->id();
-    serialized_frame.bytes_per_row = frame->stride();
-    serialized_frame.dimensions = frame->size();
-    serialized_frame.capture_time_ms = frame->capture_time_ms();
-    serialized_frame.dpi = frame->dpi();
-    serialized_frame.capturer_id = frame->capturer_id();
+    DCHECK_EQ(result, webrtc::DesktopCapturer::Result::SUCCESS);
+    std::vector<webrtc::DesktopRect> dirty_region;
     for (webrtc::DesktopRegion::Iterator i(frame->updated_region());
          !i.IsAtEnd(); i.Advance()) {
-      serialized_frame.dirty_region.push_back(i.rect());
+      dirty_region.push_back(i.rect());
     }
+    capture_result =
+        mojom::CaptureResult::NewDesktopFrame(mojom::DesktopFrame::New(
+            frame->shared_memory()->id(), frame->stride(), frame->size(),
+            std::move(dirty_region), frame->capture_time_ms(), frame->dpi(),
+            frame->capturer_id()));
+  } else {
+    DCHECK_NE(result, webrtc::DesktopCapturer::Result::SUCCESS);
+    capture_result = mojom::CaptureResult::NewCaptureError(result);
   }
 
   last_frame_ = std::move(frame);
 
-  SendToNetwork(std::make_unique<ChromotingDesktopNetworkMsg_CaptureResult>(
-      result, serialized_frame));
+  desktop_session_event_handler_->OnCaptureResult(std::move(capture_result));
 }
 
 void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
@@ -493,7 +511,7 @@ void DesktopSessionAgent::OnMouseCursor(webrtc::MouseCursor* cursor) {
       std::make_unique<ChromotingDesktopNetworkMsg_MouseCursor>(*owned_cursor));
 
   if (video_capturer_)
-    video_capturer_->SetMouseCursor(owned_cursor.release());
+    video_capturer_->SetMouseCursor(std::move(owned_cursor));
 }
 
 void DesktopSessionAgent::OnMouseCursorPosition(
@@ -516,16 +534,19 @@ void DesktopSessionAgent::OnClipboardEvent(
 
 void DesktopSessionAgent::ProcessAudioPacket(
     std::unique_ptr<AudioPacket> packet) {
-  DCHECK(audio_capture_task_runner_->BelongsToCurrentThread());
-
-  std::string serialized_packet;
-  if (!packet->SerializeToString(&serialized_packet)) {
-    LOG(ERROR) << "Failed to serialize AudioPacket.";
+  // AudioPackets are received on the audio_capture task runner but must be sent
+  // over IPC on the same task_runner the mojo remote was bound on.
+  if (!caller_task_runner_->BelongsToCurrentThread()) {
+    DCHECK(audio_capture_task_runner_->BelongsToCurrentThread());
+    caller_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&DesktopSessionAgent::ProcessAudioPacket,
+                                  this, std::move(packet)));
     return;
   }
 
-  SendToNetwork(std::make_unique<ChromotingDesktopNetworkMsg_AudioPacket>(
-      serialized_packet));
+  if (desktop_session_event_handler_) {
+    desktop_session_event_handler_->OnAudioPacket(std::move(packet));
+  }
 }
 
 void DesktopSessionAgent::OnResult(uint64_t file_id,
@@ -717,6 +738,24 @@ void DesktopSessionAgent::OnKeyboardLayoutChange(
 
   SendToNetwork(
       std::make_unique<ChromotingDesktopNetworkMsg_KeyboardChanged>(layout));
+}
+
+void DesktopSessionAgent::OnSharedMemoryRegionCreated(
+    int id,
+    base::ReadOnlySharedMemoryRegion region,
+    uint32_t size) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  if (desktop_session_event_handler_) {
+    desktop_session_event_handler_->OnSharedMemoryRegionCreated(
+        id, std::move(region), size);
+  }
+}
+
+void DesktopSessionAgent::OnSharedMemoryRegionReleased(int id) {
+  DCHECK(caller_task_runner_->BelongsToCurrentThread());
+  if (desktop_session_event_handler_) {
+    desktop_session_event_handler_->OnSharedMemoryRegionReleased(id);
+  }
 }
 
 void DesktopSessionAgent::SetScreenResolution(

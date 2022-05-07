@@ -1429,9 +1429,7 @@ std::unique_ptr<TabDragController> TabDragController::Detach(
 
   TabStripModel* attached_model = attached_context_->GetTabStripModel();
 
-  std::vector<TabRendererData> tab_data;
   for (size_t i = first_tab_index(); i < drag_data_.size(); ++i) {
-    tab_data.push_back(static_cast<Tab*>(drag_data_[i].attached_view)->data());
     int index = attached_model->GetIndexOfWebContents(drag_data_[i].contents);
     DCHECK_NE(-1, index);
 
@@ -1912,11 +1910,18 @@ void TabDragController::RevertDragAt(size_t drag_index) {
     int index = attached_context_->GetTabStripModel()->GetIndexOfWebContents(
         data->contents);
     if (attached_context_ != source_context_) {
+      std::unique_ptr<base::AutoReset<bool>> removing_last_tab_setter;
+      if (attached_context_->GetTabStripModel()->count() == 1) {
+        removing_last_tab_setter = std::make_unique<base::AutoReset<bool>>(
+            &is_removing_last_tab_for_revert_, true);
+      }
       // The Tab was inserted into another TabDragContext. We need to
       // put it back into the original one.
       std::unique_ptr<content::WebContents> detached_web_contents =
           attached_context_->GetTabStripModel()
               ->DetachWebContentsAtForInsertion(index);
+      // No-longer removing the last tab, so reset state.
+      removing_last_tab_setter.reset();
       // TODO(beng): (Cleanup) seems like we should use Attach() for this
       //             somehow.
       source_context_->GetTabStripModel()->InsertWebContentsAt(
@@ -1972,7 +1977,7 @@ void TabDragController::CompleteDrag() {
       }
 
       // If source window was maximized - maximize the new window as well.
-#if !BUILDFLAG(IS_WIN)
+#if !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_LINUX)
       // Keeping maximized state breaks snap to Grid on Windows when dragging
       // tabs from maximized windows. TODO:(crbug.com/727051) Explore doing this
       // for other desktop OS's. kMaximizedStateRetainedOnTabDrag in
@@ -1980,7 +1985,7 @@ void TabDragController::CompleteDrag() {
       // to false on each desktop OS that changes this behavior.
       if (was_source_maximized_ || was_source_fullscreen_)
         MaximizeAttachedWindow();
-#endif  // BUILDFLAG(IS_WIN)
+#endif  // !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_LINUX)
     }
     attached_context_->StoppedDragging(
         GetViewsMatchingDraggedContents(attached_context_),

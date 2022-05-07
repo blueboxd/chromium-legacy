@@ -106,6 +106,12 @@ public class TabUiFeatureUtilities {
             new BooleanCachedFieldTrialParameter(ChromeFeatureList.GRID_TAB_SWITCHER_FOR_TABLETS,
                     GRID_TAB_SWITCHER_FOR_TABLETS_POLISH_PARAM, false);
 
+    // Field trial parameter for defining tab width for tab strip improvements.
+    private static final String TAB_STRIP_IMPROVEMENTS_TAB_WIDTH_PARAM = "min_tab_width";
+    public static final DoubleCachedFieldTrialParameter TAB_STRIP_TAB_WIDTH =
+            new DoubleCachedFieldTrialParameter(ChromeFeatureList.TAB_STRIP_IMPROVEMENTS,
+                    TAB_STRIP_IMPROVEMENTS_TAB_WIDTH_PARAM, 190.f);
+
     private static Boolean sTabManagementModuleSupportedForTesting;
 
     /**
@@ -139,6 +145,15 @@ public class TabUiFeatureUtilities {
         // Having Tab Groups or Start implies Grid Tab Switcher.
         return isTabManagementModuleSupported() || isTabGroupsAndroidEnabled(context)
                 || ReturnToChromeExperimentsUtil.isStartSurfaceEnabled(context);
+    }
+
+    /**
+     * @return Whether the tablet Grid Tab Switcher Polish is enabled.
+     * @param context The activity context.
+     */
+    public static boolean isTabletGridTabSwitcherPolishEnabled(Context context) {
+        return DeviceFormFactor.isNonMultiDisplayContextOnTablet(context)
+                && GRID_TAB_SWITCHER_FOR_TABLETS_POLISH.getValue();
     }
 
     /**
@@ -211,6 +226,26 @@ public class TabUiFeatureUtilities {
      */
     public static boolean isLaunchPolishEnabled() {
         return ENABLE_LAUNCH_POLISH.getValue();
+    }
+
+    private static Float sTabMinWidthForTesting;
+
+    /**
+     * Set the min tab width for testing.
+     */
+    public static void setTabMinWidthForTesting(@Nullable Float minWidth) {
+        sTabMinWidthForTesting = minWidth;
+    }
+
+    /**
+     * @return The min tab width.
+     */
+    public static float getTabMinWidth() {
+        if (sTabMinWidthForTesting != null) {
+            return sTabMinWidthForTesting;
+        }
+
+        return (float) TAB_STRIP_TAB_WIDTH.getValue();
     }
 
     /**

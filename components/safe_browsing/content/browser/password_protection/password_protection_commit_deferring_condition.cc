@@ -12,28 +12,33 @@ namespace safe_browsing {
 PasswordProtectionCommitDeferringCondition::
     PasswordProtectionCommitDeferringCondition(
         content::NavigationHandle& navigation_handle,
-        scoped_refptr<PasswordProtectionRequestContent> request)
-    : content::CommitDeferringCondition(navigation_handle), request_(request) {
+        PasswordProtectionRequestContent& request)
+    : content::CommitDeferringCondition(navigation_handle),
+      request_(request.AsWeakPtr()) {
   DCHECK(request_);
   request_->AddDeferredNavigation(*this);
 }
 
 PasswordProtectionCommitDeferringCondition::
     ~PasswordProtectionCommitDeferringCondition() {
-  // It's ok we won't call RemoveDeferredNavigation if !navigation_was_resumed
-  // since `request_` will clean up all conditions after calling
-  // ResumeNavigation.
-  if (!navigation_was_resumed_)
+  if (request_)
     request_->RemoveDeferredNavigation(*this);
 }
 
 content::CommitDeferringCondition::Result
 PasswordProtectionCommitDeferringCondition::WillCommitNavigation(
     base::OnceClosure resume) {
+  if (invoke_callback_for_testing_)
+    std::move(invoke_callback_for_testing_).Run();
+
   // The request may have asked for a resumption before this condition was
   // executed. In that case, proceed without deferring.
   if (navigation_was_resumed_)
     return Result::kProceed;
+
+  // If the request was already deleted, it should have called
+  // ResumeNavigation.
+  DCHECK(request_);
 
   resume_ = std::move(resume);
   return Result::kDefer;

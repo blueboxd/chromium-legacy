@@ -19,7 +19,6 @@ import androidx.fragment.app.Fragment;
 import androidx.viewpager2.widget.ViewPager2;
 
 import org.chromium.base.ActivityState;
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ApplicationStatus.ActivityStateListener;
 import org.chromium.base.metrics.RecordHistogram;
@@ -99,7 +98,6 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
 
     private String mResultSyncConsentAccountName;
 
-    private boolean mFlowIsKnown;
     private boolean mPostNativeAndPolicyPagesCreated;
     // Use hasValue() to simplify access. Will be null before initialized.
     private final OneshotSupplierImpl<Boolean> mNativeSideIsInitializedSupplier =
@@ -139,6 +137,10 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
             handleBackPressed();
             return true;
         });
+    }
+
+    private boolean isFlowKnown() {
+        return mFreProperties != null;
     }
 
     /** Creates first page and sets up adapter. Should result UI being shown on the screen. */
@@ -260,7 +262,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
         mFirstRunFlowSequencer = new FirstRunFlowSequencer(this) {
             @Override
             public void onFlowIsKnown(Bundle freProperties) {
-                mFlowIsKnown = true;
+                assert freProperties != null;
                 mFreProperties = freProperties;
 
                 onInternalStateChanged();
@@ -328,12 +330,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     }
 
     private void onInternalStateChanged() {
-        if (!mFlowIsKnown) {
-            return;
-        }
-
-        if (mNativeSideIsInitializedSupplier.hasValue() && mFreProperties == null) {
-            completeFirstRunExperience();
+        if (!isFlowKnown()) {
             return;
         }
 
@@ -351,7 +348,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
     }
 
     private boolean areNativeAndPoliciesInitialized() {
-        return mNativeSideIsInitializedSupplier.hasValue() && mFlowIsKnown
+        return mNativeSideIsInitializedSupplier.hasValue() && isFlowKnown()
                 && this.getPolicyLoadListener().get() != null;
     }
 
@@ -399,7 +396,7 @@ public class FirstRunActivity extends FirstRunActivityBase implements FirstRunPa
                 if (activity.getTaskId() == this.getTaskId()) {
                     activity.finish();
                 } else {
-                    ApiCompatibilityUtils.finishAndRemoveTask(activity);
+                    activity.finishAndRemoveTask();
                     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.LOLLIPOP_MR1) {
                         // On L ApiCompatibilityUtils.finishAndRemoveTask() sometimes fails. Try one
                         // last time, see crbug.com/781396 for origin of this approach.

@@ -25,6 +25,7 @@
 #include "chrome/browser/web_applications/web_app_utils.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
+#include "components/webapps/browser/uninstall_result_code.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/origin.h"
@@ -48,9 +49,9 @@ class WebAppUninstallJobTest : public WebAppTest {
 
     file_utils_wrapper_ =
         base::MakeRefCounted<testing::StrictMock<MockFileUtilsWrapper>>();
-    icon_manager_ = std::make_unique<WebAppIconManager>(
-        profile(), controller().registrar(), install_manager(),
-        file_utils_wrapper_);
+    icon_manager_ =
+        std::make_unique<WebAppIconManager>(profile(), file_utils_wrapper_);
+    icon_manager_->SetSubsystems(&controller().registrar(), &install_manager());
   }
 
   void TearDown() override {
@@ -88,6 +89,7 @@ TEST_F(WebAppUninstallJobTest, SimpleUninstall) {
   WebAppUninstallJob task(&os_integration_manager_, &controller().sync_bridge(),
                           icon_manager_.get(), &controller().registrar(),
                           &install_manager(), &install_finalizer(),
+                          &controller().translation_manager(),
                           profile()->GetPrefs());
 
   OsHooksErrors result;
@@ -103,8 +105,8 @@ TEST_F(WebAppUninstallJobTest, SimpleUninstall) {
   base::RunLoop loop;
   task.Start(id, url::Origin(), webapps::WebappUninstallSource::kAppMenu,
              WebAppUninstallJob::ModifyAppRegistry::kYes,
-             base::BindLambdaForTesting([&](WebAppUninstallJobResult result) {
-               EXPECT_EQ(WebAppUninstallJobResult::kSuccess, result);
+             base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
+               EXPECT_EQ(webapps::UninstallResultCode::kSuccess, code);
                loop.Quit();
              }));
   loop.Run();
@@ -124,6 +126,7 @@ TEST_F(WebAppUninstallJobTest, FailedDataDelete) {
   WebAppUninstallJob task(&os_integration_manager_, &controller().sync_bridge(),
                           icon_manager_.get(), &controller().registrar(),
                           &install_manager(), &install_finalizer(),
+                          &controller().translation_manager(),
                           profile()->GetPrefs());
 
   OsHooksErrors result;
@@ -139,8 +142,8 @@ TEST_F(WebAppUninstallJobTest, FailedDataDelete) {
   base::RunLoop loop;
   task.Start(id, url::Origin(), webapps::WebappUninstallSource::kAppMenu,
              WebAppUninstallJob::ModifyAppRegistry::kYes,
-             base::BindLambdaForTesting([&](WebAppUninstallJobResult result) {
-               EXPECT_EQ(WebAppUninstallJobResult::kError, result);
+             base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
+               EXPECT_EQ(webapps::UninstallResultCode::kError, code);
                loop.Quit();
              }));
   loop.Run();
@@ -160,6 +163,7 @@ TEST_F(WebAppUninstallJobTest, FailedOsHooks) {
   WebAppUninstallJob task(&os_integration_manager_, &controller().sync_bridge(),
                           icon_manager_.get(), &controller().registrar(),
                           &install_manager(), &install_finalizer(),
+                          &controller().translation_manager(),
                           profile()->GetPrefs());
 
   OsHooksErrors result;
@@ -176,8 +180,8 @@ TEST_F(WebAppUninstallJobTest, FailedOsHooks) {
   base::RunLoop loop;
   task.Start(id, url::Origin(), webapps::WebappUninstallSource::kAppMenu,
              WebAppUninstallJob::ModifyAppRegistry::kYes,
-             base::BindLambdaForTesting([&](WebAppUninstallJobResult result) {
-               EXPECT_EQ(WebAppUninstallJobResult::kError, result);
+             base::BindLambdaForTesting([&](webapps::UninstallResultCode code) {
+               EXPECT_EQ(webapps::UninstallResultCode::kError, code);
                loop.Quit();
              }));
   loop.Run();

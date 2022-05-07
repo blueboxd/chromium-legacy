@@ -77,7 +77,6 @@ extern const base::Feature kNtpRealboxTailSuggest;
 extern const base::Feature kOmniboxFuzzyUrlSuggestions;
 extern const base::Feature kOmniboxPedalsAndroidBatch1;
 extern const base::Feature kOmniboxPedalsBatch2NonEnglish;
-extern const base::Feature kOmniboxPedalsBatch3;
 extern const base::Feature kOmniboxPedalsBatch3NonEnglish;
 extern const base::Feature kOmniboxPedalsTranslationConsole;
 extern const base::Feature kWebUIOmniboxPopup;
@@ -103,6 +102,10 @@ extern const base::Feature kUpdatedConnectionSecurityIndicators;
 extern const base::Feature kDefaultTypedNavigationsToHttps;
 extern const char kDefaultTypedNavigationsToHttpsTimeoutParam[];
 extern const base::Feature kOmniboxSpareRenderer;
+
+// Omnibox Logging.
+extern const base::Feature kReportAssistedQueryStats;
+extern const base::Feature kReportSearchboxStats;
 
 }  // namespace omnibox
 

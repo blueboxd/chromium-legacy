@@ -12,12 +12,10 @@
 #include "base/i18n/number_formatting.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/win/windows_version.h"
 #include "build/branding_buildflags.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "build/chromeos_buildflags.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -106,6 +104,7 @@
 #include "chrome/browser/ash/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash.h"
 #include "chrome/browser/ash/ownership/owner_settings_service_ash_factory.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/common/webui_url_constants.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/chromeos/devicetype_utils.h"
@@ -123,6 +122,7 @@
 #endif
 
 #if BUILDFLAG(IS_WIN)
+#include "base/win/windows_version.h"
 #include "chrome/browser/safe_browsing/chrome_cleaner/srt_field_trial_win.h"
 #include "device/fido/win/webauthn_api.h"
 
@@ -173,6 +173,7 @@ void AddCommonStrings(content::WebUIDataSource* html_source, Profile* profile) {
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     {"relaunchConfirmationDialogTitle", IDS_RELAUNCH_CONFIRMATION_DIALOG_TITLE},
 #endif
+    {"remove", IDS_REMOVE},
     {"restart", IDS_SETTINGS_RESTART},
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
     {"restartToApplyChanges", IDS_SETTINGS_RESTART_TO_APPLY_CHANGES},
@@ -452,16 +453,6 @@ void AddClearBrowsingDataStrings(content::WebUIDataSource* html_source,
       {"notificationWarning", IDS_SETTINGS_NOTIFICATION_WARNING},
   };
 
-  html_source->AddString(
-      "clearBrowsingHistorySummarySignedIn",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SIGNED_IN,
-          base::ASCIIToUTF16(chrome::kMyActivityUrlInClearBrowsingData)));
-  html_source->AddString(
-      "clearBrowsingHistorySummarySynced",
-      l10n_util::GetStringFUTF16(
-          IDS_SETTINGS_CLEAR_BROWSING_HISTORY_SUMMARY_SYNCED,
-          base::ASCIIToUTF16(chrome::kMyActivityUrlInClearBrowsingData)));
   html_source->AddString(
       "clearGoogleSearchHistoryGoogleDse",
       l10n_util::GetStringFUTF16(
@@ -1030,6 +1021,8 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"viewExistingPasswordAriaDescription",
        IDS_SETTINGS_PASSWORD_VIEW_EXISTING_PASSWORD_ARIA_DESCRIPTION},
       {"copyPassword", IDS_SETTINGS_PASSWORD_COPY},
+      {"sendPassword", IDS_SETTINGS_PASSWORD_SEND},
+      {"copyUsername", IDS_SETTINGS_USERNAME_COPY},
       {"passwordStoredOnDevice", IDS_SETTINGS_PASSWORD_STORED_ON_DEVICE},
       {"passwordStoredInAccount", IDS_SETTINGS_PASSWORD_STORED_IN_ACCOUNT},
       {"passwordStoredInAccountAndOnDevice",
@@ -1037,6 +1030,7 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"editPasswordWebsiteLabel", IDS_SETTINGS_PASSWORDS_WEBSITE},
       {"editPasswordUsernameLabel", IDS_SETTINGS_PASSWORDS_USERNAME},
       {"editPasswordPasswordLabel", IDS_SETTINGS_PASSWORDS_PASSWORD},
+      {"passwordNoteLabel", IDS_SETTINGS_PASSWORDS_NOTE},
       {"noAddressesFound", IDS_SETTINGS_ADDRESS_NONE},
       {"noPasswordsFound", IDS_SETTINGS_PASSWORDS_NONE},
       {"noExceptionsFound", IDS_SETTINGS_PASSWORDS_EXCEPTIONS_NONE},
@@ -1622,6 +1616,8 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
       {"privacySandboxTrialsTitle", IDS_SETTINGS_PRIVACY_SANDBOX_TRIALS_TITLE},
       {"privacySandboxTrialsSummary",
        IDS_SETTINGS_PRIVACY_SANDBOX_TRIALS_SUMMARY},
+      {"privacySandboxTrialsSummaryLearnMore",
+       IDS_SETTINGS_PRIVACY_SANDBOX_TRIALS_SUMMARY_LEARN_MORE},
       {"privacySandboxAdPersonalizationTitle",
        IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_TITLE},
       {"privacySandboxAdPersonalizationSummary",
@@ -1636,36 +1632,82 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_SUMMARY},
       {"privacySandboxLearnMoreDialogTitle",
        IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_TITLE},
-      {"privacySandboxLearnMoreDialogBrowserInterests",
-       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_BROWSER_INTERESTS},
-      {"privacySandboxLearnMoreDialogWebsiteInterests",
-       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_WEBSITE_INTERESTS},
+      {"privacySandboxLearnMoreDialogTopicsTitle",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_TOPICS_TITLE},
+      {"privacySandboxLearnMoreDialogFledgeTitle",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_FLEDGE_TITLE},
       {"privacySandboxLearnMoreDialogDataTypes",
        IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_DATA_TYPES},
       {"privacySandboxLearnMoreDialogDataUsage",
        IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_DATA_USAGE},
       {"privacySandboxLearnMoreDialogDataManagement",
        IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_DATA_MANAGEMENT},
+      {"privacySandboxLearnMoreDialogTopicsDataTypes",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_TOPICS_DATA_TYPES},
+      {"privacySandboxLearnMoreDialogTopicsDataUsage",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_TOPICS_DATA_USAGE},
+      {"privacySandboxLearnMoreDialogTopicsDataManagement",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_TOPICS_DATA_MANAGEMENT},
+      {"privacySandboxLearnMoreDialogFledgeDataTypes",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_FLEDGE_DATA_TYPES},
+      {"privacySandboxLearnMoreDialogFledgeDataUsage",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_FLEDGE_DATA_USAGE},
+      {"privacySandboxLearnMoreDialogFledgeDataManagement",
+       IDS_SETTINGS_PRIVACY_SANDBOX_LEARN_MORE_DIALOG_FLEDGE_DATA_MANAGEMENT},
       {"privacySandboxAdPersonalizationDialogTitle",
        IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TITLE},
       {"privacySandboxAdPersonalizationDialogDescription",
        IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_DESCRIPTION},
-      {"privacySandboxAdPersonalizationDialogBrowserInterests",
-       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_BROWSER_INTERESTS},
-      {"privacySandboxAdPersonalizationDialogBrowserInterestsEmpty",
-       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_BROWSER_INTERESTS_EMPTY},
-      {"privacySandboxAdPersonalizationDialogWebsiteInterests",
-       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_WEBSITE_INTERESTS},
-      {"privacySandboxAdPersonalizationDialogWebsiteInterestsEmpty",
-       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_WEBSITE_INTERESTS_EMPTY},
+      {"privacySandboxAdPersonalizationDialogDescriptionTrialsOff",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_DESCRIPTION_TRIALS_OFF},
+      {"privacySandboxAdPersonalizationDialogDescriptionListsEmpty",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_DESCRIPTION_LISTS_EMPTY},
+      {"privacySandboxAdPersonalizationRemovedDialogTitle",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_REMOVED_DIALOG_TITLE},
+      {"privacySandboxAdPersonalizationRemovedDialogDescription",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_REMOVED_DIALOG_DESCRIPTION},
+      {"privacySandboxAdPersonalizationDialogTopicsTitle",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TOPICS_TITLE},
+      {"privacySandboxAdPersonalizationDialogTopicsEmpty",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TOPICS_EMPTY},
+      {"privacySandboxAdPersonalizationDialogRemovedTopicsLabel",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_REMOVED_TOPICS_LABEL},
+      {"privacySandboxAdPersonalizationDialogRemovedTopicsEmpty",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_REMOVED_TOPICS_EMPTY},
+      {"privacySandboxAdPersonalizationDialogTopicsLearnMore1",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TOPICS_LEARN_MORE_1},
+      {"privacySandboxAdPersonalizationDialogTopicsLearnMore2",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TOPICS_LEARN_MORE_2},
+      {"privacySandboxAdPersonalizationDialogTopicsLearnMore3",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TOPICS_LEARN_MORE_3},
+      {"privacySandboxAdPersonalizationDialogTopicsLearnMore4",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TOPICS_LEARN_MORE_4},
+      {"privacySandboxAdPersonalizationDialogFledgeTitle",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_FLEDGE_TITLE},
+      {"privacySandboxAdPersonalizationDialogFledgeEmpty",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_FLEDGE_EMPTY},
+      {"privacySandboxAdPersonalizationDialogRemovedFledgeLabel",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_REMOVED_FLEDGE_LABEL},
+      {"privacySandboxAdPersonalizationDialogRemovedFledgeEmpty",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_REMOVED_FLEDGE_EMPTY},
+      {"privacySandboxAdPersonalizationDialogFledgeLearnMore1",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_FLEDGE_LEARN_MORE_1},
+      {"privacySandboxAdPersonalizationDialogFledgeLearnMore2",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_FLEDGE_LEARN_MORE_2},
+      {"privacySandboxAdPersonalizationDialogFledgeLearnMore3",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_FLEDGE_LEARN_MORE_3},
       {"privacySandboxAdMeasurementDialogTitle",
        IDS_SETTINGS_PRIVACY_SANDBOX_AD_MEASUREMENT_DIALOG_TITLE},
       {"privacySandboxAdMeasurementDialogDescription",
        IDS_SETTINGS_PRIVACY_SANDBOX_AD_MEASUREMENT_DIALOG_DESCRIPTION},
+      {"privacySandboxAdMeasurementDialogDescriptionTrialsOff",
+       IDS_SETTINGS_PRIVACY_SANDBOX_AD_MEASUREMENT_DIALOG_DESCRIPTION_TRIALS_OFF},
       {"privacySandboxSpamAndFraudDialogTitle",
        IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_TITLE},
       {"privacySandboxSpamAndFraudDialogDescription1",
        IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION1},
+      {"privacySandboxSpamAndFraudDialogDescription1TrialsOff",
+       IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION1_TRIALS_OFF},
       {"privacySandboxSpamAndFraudDialogDescription2",
        IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION2},
       {"privacySandboxSpamAndFraudDialogDescription3",
@@ -2813,19 +2855,26 @@ void AddSiteSettingsStrings(content::WebUIDataSource* html_source,
   html_source->AddString("addSiteExceptionPlaceholder", "[*.]example.com");
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_CHROMEOS_LACROS)
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
 void AddSystemStrings(content::WebUIDataSource* html_source) {
   static constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"systemPageTitle", IDS_SETTINGS_SYSTEM},
-#if !BUILDFLAG(IS_MAC)
+#if !defined(IS_MAC) && !BUILDFLAG(IS_CHROMEOS_LACROS)
     {"backgroundAppsLabel", IDS_SETTINGS_SYSTEM_BACKGROUND_APPS_LABEL},
 #endif
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
     {"hardwareAccelerationLabel",
      IDS_SETTINGS_SYSTEM_HARDWARE_ACCELERATION_LABEL},
     {"proxySettingsLabel", IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_LABEL},
+#endif
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    {"useAshProxyLabel", IDS_SETTINGS_SYSTEM_USE_ASH_PROXY_LABEL},
+    {"usesAshProxyLabel", IDS_SETTINGS_SYSTEM_USES_ASH_PROXY_LABEL},
+#endif
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);
 
+#if !BUILDFLAG(IS_CHROMEOS_LACROS)
   html_source->AddString(
       "proxySettingsExtensionLabel",
       l10n_util::GetStringFUTF16(
@@ -2836,12 +2885,13 @@ void AddSystemStrings(content::WebUIDataSource* html_source) {
       l10n_util::GetStringFUTF16(
           IDS_SETTINGS_SYSTEM_PROXY_SETTINGS_POLICY_LABEL,
           l10n_util::GetStringUTF16(IDS_SHORT_PRODUCT_NAME)));
+#endif
 
   // TODO(dbeam): we should probably rename anything involving "localized
   // strings" to "load time data" as all primitive types are used now.
   SystemHandler::AddLoadTimeData(html_source);
 }
-#endif
+#endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 void AddExtensionsStrings(content::WebUIDataSource* html_source) {
   html_source->AddLocalizedString("extensionsPageTitle",
@@ -3038,8 +3088,11 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddChromeOSSettingsStrings(html_source);
 #else
   AddDefaultBrowserStrings(html_source);
-  AddSystemStrings(html_source);
   AddImportDataStrings(html_source);
+#endif
+
+#if !BUILDFLAG(IS_CHROMEOS_ASH)
+  AddSystemStrings(html_source);
 #endif
 
 #if BUILDFLAG(USE_NSS_CERTS)

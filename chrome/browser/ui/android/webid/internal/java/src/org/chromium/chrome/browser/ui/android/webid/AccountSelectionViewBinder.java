@@ -39,12 +39,15 @@ import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.A
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.ContinueButtonProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.DataSharingConsentProperties;
 import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.HeaderProperties;
+import org.chromium.chrome.browser.ui.android.webid.AccountSelectionProperties.ItemProperties;
 import org.chromium.chrome.browser.ui.android.webid.data.Account;
 import org.chromium.chrome.browser.ui.android.webid.data.IdentityProviderMetadata;
 import org.chromium.components.browser_ui.util.AvatarGenerator;
 import org.chromium.components.browser_ui.widget.RoundedIconGenerator;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModel.WritableObjectPropertyKey;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor.ViewBinder;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.util.ColorUtils;
@@ -140,9 +143,12 @@ class AccountSelectionViewBinder {
             ImageView avatarView = view.findViewById(R.id.start_icon);
             avatarView.setImageDrawable(croppedAvatar);
         } else if (key == AccountProperties.ON_CLICK_LISTENER) {
-            view.setOnClickListener(clickedView -> {
-                model.get(AccountProperties.ON_CLICK_LISTENER).onResult(account);
-            });
+            Callback<Account> clickCallback = model.get(AccountProperties.ON_CLICK_LISTENER);
+            if (clickCallback == null) {
+                view.setOnClickListener(null);
+            } else {
+                view.setOnClickListener(clickedView -> { clickCallback.onResult(account); });
+            }
         } else if (key == AccountProperties.ACCOUNT) {
             TextView subject = view.findViewById(R.id.title);
             subject.setText(account.getName());
@@ -160,7 +166,7 @@ class AccountSelectionViewBinder {
         tabCreator.launchUrl(url, TabLaunchType.FROM_CHROME_UI);
     }
 
-    static SpanApplier.SpanInfo createLink(Resources r, String url, String tag) {
+    static SpanApplier.SpanInfo createLink(Context context, String url, String tag) {
         if (TextUtils.isEmpty(url)) return null;
 
         String startTag = "<" + tag + ">";
@@ -169,7 +175,7 @@ class AccountSelectionViewBinder {
             openTab(url);
         };
         return new SpanApplier.SpanInfo(
-                startTag, endTag, new NoUnderlineClickableSpan(r, onClickCallback));
+                startTag, endTag, new NoUnderlineClickableSpan(context, onClickCallback));
     }
 
     /**
@@ -183,30 +189,26 @@ class AccountSelectionViewBinder {
             DataSharingConsentProperties.Properties properties =
                     model.get(DataSharingConsentProperties.PROPERTIES);
 
-            Resources resources = view.getResources();
+            Context context = view.getContext();
             SpanApplier.SpanInfo privacyPolicySpan =
-                    createLink(resources, properties.mPrivacyPolicyUrl, "link_privacy_policy");
+                    createLink(context, properties.mPrivacyPolicyUrl, "link_privacy_policy");
             SpanApplier.SpanInfo termsOfServiceSpan =
-                    createLink(resources, properties.mTermsOfServiceUrl, "link_terms_of_service");
+                    createLink(context, properties.mTermsOfServiceUrl, "link_terms_of_service");
 
-            // TODO(crbug.com/1293913): Validate string choices.
-            int consentTextId = (privacyPolicySpan == null && termsOfServiceSpan == null)
-                    ? R.string.account_selection_data_sharing_consent_no_links
+            int consentTextId = termsOfServiceSpan == null
+                    ? R.string.account_selection_data_sharing_consent_no_tos
                     : R.string.account_selection_data_sharing_consent;
             String consentText = String.format(
-                    view.getContext().getString(consentTextId), properties.mFormattedIdpUrl);
+                    context.getString(consentTextId), properties.mFormattedIdpEtldPlusOne);
 
-            // If the consent text includes the link for the privacy policy or the terms of service,
-            // and there is no corresponding URL, remove the link tag.
+            // |privacyPolicySpan| cannot be null due to the following:
+            // 1. We check that the privacy URL is valid in
+            // FederatedAuthRequestImpl::OnClientMetadataResponseReceived(), and an empty URL is
+            // invalid.
+            // 2. createLink() only returns null if the provided URL is empty.
             List<SpanApplier.SpanInfo> spans = new ArrayList<>();
-            if (privacyPolicySpan == null) {
-                consentText = consentText.replaceAll("</?link_privacy_policy>", "");
-            } else {
-                spans.add(privacyPolicySpan);
-            }
-            if (termsOfServiceSpan == null) {
-                consentText = consentText.replaceAll("</?link_terms_of_service>", "");
-            } else {
+            spans.add(privacyPolicySpan);
+            if (termsOfServiceSpan != null) {
                 spans.add(termsOfServiceSpan);
             }
 
@@ -229,11 +231,11 @@ class AccountSelectionViewBinder {
     @SuppressWarnings("checkstyle:SetTextColorAndSetTextSizeCheck")
     static void bindContinueButtonView(PropertyModel model, View view, PropertyKey key) {
         Context context = view.getContext();
+        ButtonCompat button = view.findViewById(R.id.account_selection_continue_btn);
         if (key == ContinueButtonProperties.IDP_METADATA) {
             if (!ColorUtils.inNightMode(context)) {
                 IdentityProviderMetadata idpMetadata =
                         model.get(ContinueButtonProperties.IDP_METADATA);
-                ButtonCompat button = view.findViewById(R.id.account_selection_continue_btn);
 
                 Integer backgroundColor = idpMetadata.getBrandBackgroundColor();
                 if (backgroundColor != null) {
@@ -258,10 +260,9 @@ class AccountSelectionViewBinder {
                     givenName != null && !givenName.isEmpty() ? givenName : account.getName();
             String btnText = String.format(
                     context.getString(R.string.account_selection_continue), displayedName);
-            Button button = view.findViewById(R.id.account_selection_continue_btn);
             button.setText(btnText);
         } else if (key == ContinueButtonProperties.ON_CLICK_LISTENER) {
-            view.setOnClickListener(clickedView -> {
+            button.setOnClickListener(clickedView -> {
                 Account account = model.get(ContinueButtonProperties.ACCOUNT);
                 model.get(ContinueButtonProperties.ON_CLICK_LISTENER).onResult(account);
             });
@@ -290,20 +291,74 @@ class AccountSelectionViewBinder {
     }
 
     /**
+     * Called whenever non-account views are bound to the bottom sheet.
+     * @param model The model containing the data for the view.
+     * @param view The view to be bound.
+     * @param key The key of the property to be bound.
+     */
+    static void bindContentView(PropertyModel model, View view, PropertyKey key) {
+        PropertyModel itemModel = model.get((WritableObjectPropertyKey<PropertyModel>) key);
+        View itemView = null;
+        ViewBinder<PropertyModel, View, PropertyKey> itemBinder = null;
+        if (key == ItemProperties.HEADER) {
+            itemView = view.findViewById(R.id.header_view_item);
+            itemBinder = AccountSelectionViewBinder::bindHeaderView;
+        } else if (key == ItemProperties.CONTINUE_BUTTON) {
+            itemView = view.findViewById(R.id.account_selection_continue_btn);
+            itemBinder = AccountSelectionViewBinder::bindContinueButtonView;
+        } else if (key == ItemProperties.AUTO_SIGN_IN_CANCEL_BUTTON) {
+            itemView = view.findViewById(R.id.auto_sign_in_cancel_btn);
+            itemBinder = AccountSelectionViewBinder::bindAutoSignInCancelButtonView;
+        } else if (key == ItemProperties.DATA_SHARING_CONSENT) {
+            itemView = view.findViewById(R.id.user_data_sharing_consent);
+            itemBinder = AccountSelectionViewBinder::bindDataSharingConsentView;
+        } else {
+            assert false : "Unhandled update to property:" + key;
+            return;
+        }
+
+        if (itemModel == null) {
+            itemView.setVisibility(View.GONE);
+            return;
+        }
+
+        itemView.setVisibility(View.VISIBLE);
+        for (PropertyKey itemKey : itemModel.getAllSetProperties()) {
+            itemBinder.bind(itemModel, itemView, itemKey);
+        }
+    }
+
+    /**
      * Called whenever a header is bound to this view.
      * @param model The model containing the data for the view.
      * @param view The view to be bound.
      * @param key The key of the property to be bound.
      */
     static void bindHeaderView(PropertyModel model, View view, PropertyKey key) {
-        if (key == HeaderProperties.FORMATTED_RP_URL || key == HeaderProperties.FORMATTED_IDP_URL
+        if (key == HeaderProperties.FORMATTED_RP_ETLD_PLUS_ONE
+                || key == HeaderProperties.FORMATTED_IDP_ETLD_PLUS_ONE
                 || key == HeaderProperties.TYPE) {
+            Resources resources = view.getResources();
             TextView headerTitleText = view.findViewById(R.id.header_title);
             HeaderProperties.HeaderType headerType = model.get(HeaderProperties.TYPE);
-            String title = computeHeaderTitle(view.getResources(), headerType,
-                    model.get(HeaderProperties.FORMATTED_RP_URL),
-                    model.get(HeaderProperties.FORMATTED_IDP_URL));
+            String title = computeHeaderTitle(resources, headerType,
+                    model.get(HeaderProperties.FORMATTED_RP_ETLD_PLUS_ONE),
+                    model.get(HeaderProperties.FORMATTED_IDP_ETLD_PLUS_ONE));
             headerTitleText.setText(title);
+
+            // Make instructions for closing the bottom sheet part of the header's content
+            // description. This is needed because the bottom sheet's content description (which
+            // includes instructions to close the bottom sheet) is not announced when the FedCM
+            // bottom sheet is shown. Don't include instructions for closing the bottom sheet as
+            // part of the "Verifying..." header content description because the bottom sheet
+            // closes itself automatically at the "Verifying..." stage.
+            if (headerType != HeaderProperties.HeaderType.VERIFY) {
+                headerTitleText.setContentDescription(title + ". "
+                        + resources.getString(R.string.bottom_sheet_accessibility_description));
+            } else {
+                // Update the content description in case the view is recycled.
+                headerTitleText.setContentDescription(title);
+            }
 
             if (key == HeaderProperties.TYPE) {
                 boolean progressBarVisible = (headerType == HeaderProperties.HeaderType.VERIFY);

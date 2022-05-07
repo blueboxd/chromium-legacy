@@ -25,7 +25,6 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_timeouts.h"
-#include "base/test/with_feature_override.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
@@ -153,7 +152,6 @@
 
 #if BUILDFLAG(ENABLE_PDF)
 #include "chrome/browser/pdf/pdf_extension_test_util.h"
-#include "pdf/pdf_features.h"
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 using extensions::ContextMenuMatcher;
@@ -548,14 +546,9 @@ class WebViewTest : public extensions::PlatformAppBrowserTest {
 
   void SetUpOnMainThread() override {
     extensions::PlatformAppBrowserTest::SetUpOnMainThread();
-    const testing::TestInfo* const test_info =
-        testing::UnitTest::GetInstance()->current_test_info();
-    // Mock out geolocation for geolocation specific tests.
-    if (!strncmp(test_info->name(), "GeolocationAPI",
-            strlen("GeolocationAPI"))) {
-      geolocation_overrider_ =
-          std::make_unique<device::ScopedGeolocationOverrider>(10, 20);
-    }
+
+    geolocation_overrider_ =
+        std::make_unique<device::ScopedGeolocationOverrider>(10, 20);
 
     host_resolver()->AddRule("*", "127.0.0.1");
     identifiability_metrics_test_helper_.SetUpOnMainThread();
@@ -2932,10 +2925,7 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasNoAccessDeny) {
 // In following GeolocationAPIEmbedderHasAccess* tests, embedder (i.e. the
 // platform app) has geolocation permission
 //
-// Note that these test names must be "GeolocationAPI" prefixed (b/c we mock out
-// geolocation in this case).
-//
-// Also note that these are run separately because OverrideGeolocation() doesn't
+// Note that these are run separately because OverrideGeolocation() doesn't
 // mock out geolocation for multiple navigator.geolocation calls properly and
 // the tests become flaky.
 //
@@ -2958,7 +2948,115 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, GeolocationAPIEmbedderHasAccessDeny) {
 IN_PROC_BROWSER_TEST_F(WebViewTest,
                        GeolocationAPIEmbedderHasAccessMultipleBridgeIdAllow) {
   TestHelper("testMultipleBridgeIdAllow",
-             "web_view/geolocation/embedder_has_permission",
+             "web_view/geolocation/embedder_has_permission", NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasAccessAllowGeolocation) {
+  TestHelper("testAllowGeolocation",
+             "web_view/permissions_test/embedder_has_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasAccessDenyGeolocation) {
+  TestHelper("testDenyGeolocation",
+             "web_view/permissions_test/embedder_has_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasAccessAllowCamera) {
+  TestHelper("testAllowCamera",
+             "web_view/permissions_test/embedder_has_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, PermissionsAPIEmbedderHasAccessDenyCamera) {
+  TestHelper("testDenyCamera",
+             "web_view/permissions_test/embedder_has_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasAccessAllowMicrophone) {
+  TestHelper("testAllowMicrophone",
+             "web_view/permissions_test/embedder_has_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasAccessDenyMicrophone) {
+  TestHelper("testDenyMicrophone",
+             "web_view/permissions_test/embedder_has_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, PermissionsAPIEmbedderHasAccessAllowMedia) {
+  TestHelper("testAllowMedia",
+             "web_view/permissions_test/embedder_has_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest, PermissionsAPIEmbedderHasAccessDenyMedia) {
+  TestHelper("testDenyMedia",
+             "web_view/permissions_test/embedder_has_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasNoAccessAllowGeolocation) {
+  TestHelper("testAllowGeolocation",
+             "web_view/permissions_test/embedder_has_no_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasNoAccessDenyGeolocation) {
+  TestHelper("testDenyGeolocation",
+             "web_view/permissions_test/embedder_has_no_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasNoAccessAllowCamera) {
+  TestHelper("testAllowCamera",
+             "web_view/permissions_test/embedder_has_no_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasNoAccessDenyCamera) {
+  TestHelper("testDenyCamera",
+             "web_view/permissions_test/embedder_has_no_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasNoAccessAllowMicrophone) {
+  TestHelper("testAllowMicrophone",
+             "web_view/permissions_test/embedder_has_no_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasNoAccessDenyMicrophone) {
+  TestHelper("testDenyMicrophone",
+             "web_view/permissions_test/embedder_has_no_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasNoAccessAllowMedia) {
+  TestHelper("testAllowMedia",
+             "web_view/permissions_test/embedder_has_no_permission",
+             NEEDS_TEST_SERVER);
+}
+
+IN_PROC_BROWSER_TEST_F(WebViewTest,
+                       PermissionsAPIEmbedderHasNoAccessDenyMedia) {
+  TestHelper("testDenyMedia",
+             "web_view/permissions_test/embedder_has_no_permission",
              NEEDS_TEST_SERVER);
 }
 
@@ -3424,9 +3522,8 @@ IN_PROC_BROWSER_TEST_F(WebViewTest,
   for (auto* download : saved_downloads) {
     const std::string port_string =
         base::NumberToString(embedded_test_server()->port());
-    url::Replacements<char> replacements;
-    replacements.SetPort(port_string.c_str(),
-                         url::Component(0, port_string.size()));
+    GURL::Replacements replacements;
+    replacements.SetPortStr(port_string);
     std::vector<GURL> url_chain;
     url_chain.push_back(download->GetURL().ReplaceComponents(replacements));
 
@@ -3936,14 +4033,9 @@ IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestFocusWhileFocused) {
 }
 
 #if BUILDFLAG(ENABLE_PDF)
-class WebViewPdfTest : public base::test::WithFeatureOverride,
-                       public WebViewTest {
- public:
-  WebViewPdfTest()
-      : base::test::WithFeatureOverride(chrome_pdf::features::kPdfUnseasoned) {}
-};
+using WebViewPdfTest = WebViewTest;
 
-IN_PROC_BROWSER_TEST_P(WebViewPdfTest, NestedGuestContainerBounds) {
+IN_PROC_BROWSER_TEST_F(WebViewPdfTest, NestedGuestContainerBounds) {
   TestHelper("testPDFInWebview", "web_view/shim", NO_TEST_SERVER);
 
   std::vector<content::WebContents*> guest_web_contents_list;
@@ -3966,7 +4058,7 @@ IN_PROC_BROWSER_TEST_P(WebViewPdfTest, NestedGuestContainerBounds) {
 
 // Test that context menu Back/Forward items in a MimeHandlerViewGuest affect
 // the embedder WebContents. See crbug.com/587355.
-IN_PROC_BROWSER_TEST_P(WebViewPdfTest, ContextMenuNavigationInMimeHandlerView) {
+IN_PROC_BROWSER_TEST_F(WebViewPdfTest, ContextMenuNavigationInMimeHandlerView) {
   TestHelper("testNavigateToPDFInWebview", "web_view/shim", NO_TEST_SERVER);
 
   std::vector<content::WebContents*> guest_web_contents_list;
@@ -3998,11 +4090,9 @@ IN_PROC_BROWSER_TEST_P(WebViewPdfTest, ContextMenuNavigationInMimeHandlerView) {
             web_view_contents->GetLastCommittedURL());
 }
 
-IN_PROC_BROWSER_TEST_P(WebViewPdfTest, Shim_TestDialogInPdf) {
+IN_PROC_BROWSER_TEST_F(WebViewPdfTest, Shim_TestDialogInPdf) {
   TestHelper("testDialogInPdf", "web_view/shim", NO_TEST_SERVER);
 }
-
-INSTANTIATE_FEATURE_OVERRIDE_TEST_SUITE(WebViewPdfTest);
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 IN_PROC_BROWSER_TEST_F(WebViewTest, Shim_TestMailtoLink) {

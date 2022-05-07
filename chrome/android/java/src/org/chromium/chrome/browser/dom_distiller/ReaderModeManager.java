@@ -51,6 +51,7 @@ import org.chromium.components.messages.MessageDispatcher;
 import org.chromium.components.messages.MessageDispatcherProvider;
 import org.chromium.components.messages.MessageIdentifier;
 import org.chromium.components.messages.MessageScopeType;
+import org.chromium.components.messages.PrimaryActionClickBehavior;
 import org.chromium.components.navigation_interception.InterceptNavigationDelegate;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadCommittedDetails;
@@ -243,24 +244,28 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
         WebContents webContents = tab.getWebContents();
         if (webContents == null) return;
 
-        mCustomTabNavigationDelegate = (navParams) -> {
-            if (DomDistillerUrlUtils.isDistilledPage(navParams.url)
-                    || navParams.isExternalProtocol) {
-                return false;
+        mCustomTabNavigationDelegate = new InterceptNavigationDelegate() {
+            @Override
+            public boolean shouldIgnoreNavigation(
+                    NavigationHandle navigationHandle, GURL escapedUrl) {
+                if (DomDistillerUrlUtils.isDistilledPage(navigationHandle.getUrl())
+                        || navigationHandle.isExternalProtocol()) {
+                    return false;
+                }
+
+                Intent returnIntent =
+                        new Intent(Intent.ACTION_VIEW, Uri.parse(escapedUrl.getSpec()));
+                returnIntent.setClassName(activity, ChromeLauncherActivity.class.getName());
+
+                // Set the parent ID of the tab to be created.
+                returnIntent.putExtra(EXTRA_READER_MODE_PARENT,
+                        IntentUtils.safeGetInt(activity.getIntent().getExtras(),
+                                EXTRA_READER_MODE_PARENT, Tab.INVALID_TAB_ID));
+
+                activity.startActivity(returnIntent);
+                activity.finish();
+                return true;
             }
-
-            Intent returnIntent =
-                    new Intent(Intent.ACTION_VIEW, Uri.parse(navParams.url.getSpec()));
-            returnIntent.setClassName(activity, ChromeLauncherActivity.class.getName());
-
-            // Set the parent ID of the tab to be created.
-            returnIntent.putExtra(EXTRA_READER_MODE_PARENT,
-                    IntentUtils.safeGetInt(activity.getIntent().getExtras(),
-                            EXTRA_READER_MODE_PARENT, Tab.INVALID_TAB_ID));
-
-            activity.startActivity(returnIntent);
-            activity.finish();
-            return true;
         };
 
         DomDistillerTabUtils.setInterceptNavigationDelegate(
@@ -551,20 +556,23 @@ public class ReaderModeManager extends EmptyTabObserver implements UserData {
         // Save url for #onMessageDismissed. mDistillerUrl may have been changed and became
         // different from the url when message is enqueued.
         GURL url = mDistillerUrl;
-        mMessageModel =
-                new PropertyModel.Builder(MessageBannerProperties.ALL_KEYS)
-                        .with(MessageBannerProperties.MESSAGE_IDENTIFIER,
-                                MessageIdentifier.READER_MODE)
-                        .with(MessageBannerProperties.TITLE,
-                                resources.getString(R.string.reader_mode_message_title))
-                        .with(MessageBannerProperties.ICON_RESOURCE_ID,
-                                R.drawable.infobar_mobile_friendly)
-                        .with(MessageBannerProperties.PRIMARY_BUTTON_TEXT,
-                                resources.getString(R.string.reader_mode_message_button))
-                        .with(MessageBannerProperties.ON_PRIMARY_ACTION, this::activateReaderMode)
-                        .with(MessageBannerProperties.ON_DISMISSED,
-                                (reason) -> onMessageDismissed(url, reason))
-                        .build();
+        mMessageModel = new PropertyModel.Builder(MessageBannerProperties.ALL_KEYS)
+                                .with(MessageBannerProperties.MESSAGE_IDENTIFIER,
+                                        MessageIdentifier.READER_MODE)
+                                .with(MessageBannerProperties.TITLE,
+                                        resources.getString(R.string.reader_mode_message_title))
+                                .with(MessageBannerProperties.ICON_RESOURCE_ID,
+                                        R.drawable.infobar_mobile_friendly)
+                                .with(MessageBannerProperties.PRIMARY_BUTTON_TEXT,
+                                        resources.getString(R.string.reader_mode_message_button))
+                                .with(MessageBannerProperties.ON_PRIMARY_ACTION,
+                                        () -> {
+                                            activateReaderMode();
+                                            return PrimaryActionClickBehavior.DISMISS_IMMEDIATELY;
+                                        })
+                                .with(MessageBannerProperties.ON_DISMISSED,
+                                        (reason) -> onMessageDismissed(url, reason))
+                                .build();
         messageDispatcher.enqueueMessage(
                 mMessageModel, mTab.getWebContents(), MessageScopeType.NAVIGATION, false);
     }

@@ -87,10 +87,14 @@ bool IsExternalExtensionUninstalled(content::BrowserContext* context,
   return prefs && prefs->IsExternalExtensionUninstalled(extension_id);
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_FUCHSIA)
 bool IsExtensionUnsupportedDeprecatedApp(content::BrowserContext* context,
                                          const std::string& extension_id) {
   if (!base::FeatureList::IsEnabled(features::kChromeAppsDeprecation))
+    return false;
+
+  if (extension_id == extensions::kWebStoreAppId)
     return false;
 
   const auto* prefs = Profile::FromBrowserContext(context)->GetPrefs();
@@ -107,9 +111,7 @@ bool IsExtensionUnsupportedDeprecatedApp(content::BrowserContext* context,
   if (!app)
     return false;
 
-  // TODO(crbug.com/1235894): Figure out if "hosted apps" should be checked as
-  // well.
-  return (app->is_platform_app() || app->is_legacy_packaged_app()) &&
+  return app->is_app() &&
          !IsExtensionForceInstalled(context, extension_id, nullptr);
 }
 #endif

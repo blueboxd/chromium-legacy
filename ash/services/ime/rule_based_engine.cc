@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
 
-namespace chromeos {
+namespace ash {
 namespace ime {
 
 namespace {
@@ -175,4 +175,4 @@ RuleBasedEngine::RuleBasedEngine(
 }
 
 }  // namespace ime
-}  // namespace chromeos
+}  // namespace ash

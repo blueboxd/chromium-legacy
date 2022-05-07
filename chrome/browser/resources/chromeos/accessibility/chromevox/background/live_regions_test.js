@@ -11,14 +11,11 @@ GEN_INCLUDE([
  * Test fixture for Live Regions.
  */
 ChromeVoxLiveRegionsTest = class extends ChromeVoxNextE2ETest {
-  setUp() {
+  async setUpDeferred() {
+    await super.setUpDeferred();
+
     window.TreeChangeType = chrome.automation.TreeChangeType;
-    const runTest = this.deferRunTest(WhenTestDone.EXPECT);
-    (async function() {
-      await importModule(
-          'LiveRegions', '/chromevox/background/live_regions.js');
-      runTest();
-    })();
+    await importModule('LiveRegions', '/chromevox/background/live_regions.js');
   }
 
   /**

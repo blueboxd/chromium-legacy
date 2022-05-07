@@ -11,7 +11,6 @@
 
 #include "base/compiler_specific.h"
 #include "base/containers/span.h"
-#include "base/cxx17_backports.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram.h"
 #include "base/metrics/histogram_samples.h"
@@ -167,10 +166,9 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
 
     if (stream_type_ == BASIC_HANDSHAKE_STREAM) {
       url_request_context_host_.SetExpectations(
-          WebSocketStandardRequest(
-              socket_path, socket_host, Origin(),
-              WebSocketExtraHeadersToString(send_additional_request_headers),
-              WebSocketExtraHeadersToString(extra_request_headers)),
+          WebSocketStandardRequest(socket_path, socket_host, Origin(),
+                                   send_additional_request_headers,
+                                   extra_request_headers),
           WebSocketStandardResponse(
               WebSocketExtraHeadersToString(extra_response_headers)) +
               additional_data_);
@@ -226,7 +224,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
         "user-agent",      "",        "accept-encoding", "gzip, deflate",
         "accept-language", "en-us,fr"};
     frames_.push_back(spdy_util_.ConstructSpdyGet(
-        kExtraRequestHeaders, base::size(kExtraRequestHeaders) / 2, 1,
+        kExtraRequestHeaders, std::size(kExtraRequestHeaders) / 2, 1,
         DEFAULT_PRIORITY));
     AddWrite(&frames_.back());
 
@@ -333,10 +331,9 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
     const std::string socket_path = socket_url.path();
 
     url_request_context_host_.SetExpectations(
-        WebSocketStandardRequest(
-            socket_path, socket_host, Origin(),
-            WebSocketExtraHeadersToString(send_additional_request_headers),
-            WebSocketExtraHeadersToString(extra_request_headers)),
+        WebSocketStandardRequest(socket_path, socket_host, Origin(),
+                                 send_additional_request_headers,
+                                 extra_request_headers),
         response_body);
     CreateAndConnectStream(socket_url, sub_protocols, Origin(),
                            SiteForCookies(), CreateIsolationInfo(),
@@ -359,7 +356,9 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
     const std::string socket_path = socket_url.path();
 
     url_request_context_host_.SetExpectations(
-        WebSocketStandardRequest(socket_path, socket_host, Origin(), "", ""),
+        WebSocketStandardRequest(socket_path, socket_host, Origin(),
+                                 /*send_additional_request_headers=*/{},
+                                 /*extra_headers=*/{}),
         WebSocketStandardResponse(extra_response_headers));
     CreateAndConnectStream(socket_url, sub_protocols, Origin(),
                            SiteForCookies(), CreateIsolationInfo(),
@@ -462,8 +461,9 @@ class CommonAuthTestHelper {
       std::string response1,
       std::string request2,
       std::string response2) {
-    request1_ =
-        WebSocketStandardRequest("/", "www.example.org", Origin(), "", "");
+    request1_ = WebSocketStandardRequest("/", "www.example.org", Origin(),
+                                         /*send_additional_request_headers=*/{},
+                                         /*extra_headers=*/{});
     response1_ = std::move(response1);
     request2_ = std::move(request2);
     response2_ = std::move(response2);
@@ -1346,8 +1346,9 @@ TEST_P(WebSocketStreamCreateTest, CancellationDuringWrite) {
 
 // Cancellation during read of the response headers works.
 TEST_P(WebSocketStreamCreateTest, CancellationDuringRead) {
-  std::string request =
-      WebSocketStandardRequest("/", "www.example.org", Origin(), "", "");
+  std::string request = WebSocketStandardRequest(
+      "/", "www.example.org", Origin(), /*send_additional_request_headers=*/{},
+      /*extra_headers=*/{});
   MockWrite writes[] = {MockWrite(ASYNC, 0, request.c_str())};
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 1),
@@ -1401,8 +1402,9 @@ TEST_P(WebSocketStreamCreateTest, VeryLargeResponseHeaders) {
 TEST_P(WebSocketStreamCreateTest, NoResponse) {
   base::HistogramTester histogram_tester;
 
-  std::string request =
-      WebSocketStandardRequest("/", "www.example.org", Origin(), "", "");
+  std::string request = WebSocketStandardRequest(
+      "/", "www.example.org", Origin(), /*send_additional_request_headers=*/{},
+      /*extra_headers=*/{});
   MockWrite writes[] = {MockWrite(ASYNC, request.data(), request.size(), 0)};
   MockRead reads[] = {MockRead(ASYNC, 0, 1)};
   std::unique_ptr<SequencedSocketData> socket_data(
@@ -1503,12 +1505,13 @@ TEST_P(WebSocketStreamCreateBasicAuthTest, FailureIncorrectPasswordInUrl) {
 }
 
 TEST_P(WebSocketStreamCreateBasicAuthTest, SuccessfulConnectionReuse) {
-  std::string request1 =
-      WebSocketStandardRequest("/", "www.example.org", Origin(), "", "");
+  std::string request1 = WebSocketStandardRequest(
+      "/", "www.example.org", Origin(), /*send_additional_request_headers=*/{},
+      /*extra_headers=*/{});
   std::string response1 = kUnauthorizedResponse;
-  std::string request2 =
-      WebSocketStandardRequest("/", "www.example.org", Origin(),
-                               "Authorization: Basic Zm9vOmJhcg==\r\n", "");
+  std::string request2 = WebSocketStandardRequest(
+      "/", "www.example.org", Origin(),
+      {{"Authorization", "Basic Zm9vOmJhcg=="}}, /*extra_headers=*/{});
   std::string response2 = WebSocketStandardResponse(std::string());
   MockWrite writes[] = {
       MockWrite(SYNCHRONOUS, 0, request1.c_str()),
@@ -1591,8 +1594,9 @@ TEST_P(WebSocketMultiProtocolStreamCreateTest, Incomplete) {
 
   AddSSLData();
   if (stream_type_ == BASIC_HANDSHAKE_STREAM) {
-    std::string request =
-        WebSocketStandardRequest("/", "www.example.org", Origin(), "", "");
+    std::string request = WebSocketStandardRequest(
+        "/", "www.example.org", Origin(),
+        /*send_additional_request_headers=*/{}, /*extra_headers=*/{});
     MockRead reads[] = {MockRead(ASYNC, ERR_IO_PENDING, 0)};
     MockWrite writes[] = {MockWrite(ASYNC, 1, request.c_str())};
     CreateAndConnectRawExpectations("wss://www.example.org/", NoSubProtocols(),
@@ -1663,8 +1667,9 @@ TEST_P(WebSocketStreamCreateTest, HandleErrConnectionClosed) {
       "Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=\r\n"
       "Cache-Control: no-sto";
 
-  std::string request =
-      WebSocketStandardRequest("/", "www.example.org", Origin(), "", "");
+  std::string request = WebSocketStandardRequest(
+      "/", "www.example.org", Origin(), /*send_additional_request_headers=*/{},
+      /*extra_headers=*/{});
   MockRead reads[] = {
       MockRead(SYNCHRONOUS, 1, kTruncatedResponse),
       MockRead(SYNCHRONOUS, ERR_CONNECTION_CLOSED, 2),
@@ -1764,8 +1769,9 @@ TEST_P(WebSocketStreamCreateTest, ContinueSSLRequestAfterDelete) {
 }
 
 TEST_P(WebSocketStreamCreateTest, HandleConnectionCloseInFirstSegment) {
-  std::string request =
-      WebSocketStandardRequest("/", "www.example.org", Origin(), "", "");
+  std::string request = WebSocketStandardRequest(
+      "/", "www.example.org", Origin(), /*send_additional_request_headers=*/{},
+      /*extra_headers=*/{});
 
   // The response headers are immediately followed by a close frame, length 11,
   // code 1013, reason "Try Again".

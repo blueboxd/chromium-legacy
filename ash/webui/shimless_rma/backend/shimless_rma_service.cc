@@ -273,6 +273,20 @@ void ShimlessRmaService::SetDifferentOwner(SetDifferentOwnerCallback callback) {
   TransitionNextStateGeneric(std::move(callback));
 }
 
+void ShimlessRmaService::SetWipeDevice(bool should_wipe_device,
+                                       SetWipeDeviceCallback callback) {
+  if (state_proto_.state_case() != rmad::RmadState::kWipeSelection) {
+    LOG(ERROR) << "SetWipeDevice called from incorrect state "
+               << state_proto_.state_case();
+    std::move(callback).Run(RmadStateToMojo(state_proto_.state_case()),
+                            can_abort_, can_go_back_,
+                            rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
+    return;
+  }
+  state_proto_.mutable_wipe_selection()->set_wipe_device(should_wipe_device);
+  TransitionNextStateGeneric(std::move(callback));
+}
+
 void ShimlessRmaService::ChooseManuallyDisableWriteProtect(
     ChooseManuallyDisableWriteProtectCallback callback) {
   if (state_proto_.state_case() != rmad::RmadState::kWpDisableMethod) {
@@ -878,9 +892,11 @@ void ShimlessRmaService::Error(rmad::RmadErrorCode error) {
 }
 
 void ShimlessRmaService::OsUpdateProgress(update_engine::Operation operation,
-                                          double progress) {
+                                          double progress,
+                                          update_engine::ErrorCode error_code) {
   if (os_update_observer_.is_bound()) {
-    os_update_observer_->OnOsUpdateProgressUpdated(operation, progress);
+    os_update_observer_->OnOsUpdateProgressUpdated(operation, progress,
+                                                   error_code);
   }
 }
 
@@ -904,8 +920,8 @@ void ShimlessRmaService::ProvisioningProgress(
     const rmad::ProvisionStatus& status) {
   last_provisioning_progress_ = status;
   if (provisioning_observer_.is_bound()) {
-    provisioning_observer_->OnProvisioningUpdated(status.status(),
-                                                  status.progress());
+    provisioning_observer_->OnProvisioningUpdated(
+        status.status(), status.progress(), status.error());
   }
 }
 
@@ -936,8 +952,8 @@ void ShimlessRmaService::FinalizationProgress(
     const rmad::FinalizeStatus& status) {
   last_finalization_progress_ = status;
   if (finalization_observer_.is_bound()) {
-    finalization_observer_->OnFinalizationUpdated(status.status(),
-                                                  status.progress());
+    finalization_observer_->OnFinalizationUpdated(
+        status.status(), status.progress(), status.error());
   }
 }
 
@@ -977,7 +993,8 @@ void ShimlessRmaService::ObserveProvisioningProgress(
   if (last_provisioning_progress_) {
     provisioning_observer_->OnProvisioningUpdated(
         last_provisioning_progress_->status(),
-        last_provisioning_progress_->progress());
+        last_provisioning_progress_->progress(),
+        last_provisioning_progress_->error());
   }
 }
 
@@ -1017,7 +1034,8 @@ void ShimlessRmaService::ObserveFinalizationStatus(
   if (last_finalization_progress_) {
     finalization_observer_->OnFinalizationUpdated(
         last_finalization_progress_->status(),
-        last_finalization_progress_->progress());
+        last_finalization_progress_->progress(),
+        last_finalization_progress_->error());
   }
 }
 
@@ -1083,32 +1101,33 @@ void ShimlessRmaService::OnAbortRmaResponse(
     AbortRmaCallback callback,
     bool reboot,
     absl::optional<rmad::AbortRmaReply> response) {
-  const bool rma_not_required =
-      critical_error_occurred_ ||
-      (response && response->error() == rmad::RMAD_ERROR_RMA_NOT_REQUIRED);
-  // Send status before shutting down or restarting Chrome session.
-  if (!response) {
-    LOG(ERROR) << "Failed to call rmad::AbortRma";
-    std::move(callback).Run(rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID);
-  } else if (rma_not_required) {
-    std::move(callback).Run(rmad::RMAD_ERROR_OK);
-  } else {
-    std::move(callback).Run(response->error());
-  }
+  const rmad::RmadErrorCode error_code =
+      response ? response->error()
+               : rmad::RmadErrorCode::RMAD_ERROR_REQUEST_INVALID;
+
   // Only reboot or exit to login if abort was successful (state will be
   // RMAD_ERROR_RMA_NOT_REQUIRED) or a critical error has occurred.
-  if (rma_not_required) {
-    if (reboot) {
-      VLOG(1) << "Rebooting...";
-      chromeos::PowerManagerClient::Get()->RequestRestart(
-          power_manager::REQUEST_RESTART_FOR_USER,
-          critical_error_occurred_
-              ? "Rebooting after user cancelled RMA due to critical error."
-              : "Rebooting after user cancelled RMA.");
-    } else {
-      VLOG(1) << "Restarting Chrome to bypass RMA after cancel request.";
-      shimless_rma_delegate_->ExitRmaThenRestartChrome();
-    }
+  const bool should_exit_rma = critical_error_occurred_ ||
+                               error_code == rmad::RMAD_ERROR_RMA_NOT_REQUIRED;
+  if (!should_exit_rma) {
+    std::move(callback).Run(error_code);
+    return;
+  }
+
+  // Send status before shutting down or restarting Chrome session.
+  std::move(callback).Run(rmad::RMAD_ERROR_OK);
+
+  // Either reboot the device or just restart the Chrome session.
+  if (reboot) {
+    VLOG(1) << "Rebooting...";
+    chromeos::PowerManagerClient::Get()->RequestRestart(
+        power_manager::REQUEST_RESTART_FOR_USER,
+        critical_error_occurred_
+            ? "Rebooting after user cancelled RMA due to critical error."
+            : "Rebooting after user cancelled RMA.");
+  } else {
+    VLOG(1) << "Restarting Chrome to bypass RMA after cancel request.";
+    shimless_rma_delegate_->ExitRmaThenRestartChrome();
   }
 }
 
@@ -1118,7 +1137,8 @@ void ShimlessRmaService::OnOsUpdateStatusCallback(
     bool rollback,
     bool powerwash,
     const std::string& version,
-    int64_t update_size) {
+    int64_t update_size,
+    update_engine::ErrorCode error_code) {
   if (check_os_callback_) {
     switch (operation) {
       // If IDLE is received when there is a callback it means no update is
@@ -1147,8 +1167,7 @@ void ShimlessRmaService::OnOsUpdateStatusCallback(
         break;
     }
   }
-  // TODO(gavindodd): Pass errors and any other needed data.
-  OsUpdateProgress(operation, progress);
+  OsUpdateProgress(operation, progress, error_code);
 }
 
 void ShimlessRmaService::OsUpdateOrNextRmadStateCallback(

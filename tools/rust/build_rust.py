@@ -35,12 +35,13 @@ TODO(https://crbug.com/1245714): Do a proper 3-stage build
 
 import argparse
 import collections
+import hashlib
 import os
-import sys
 import pipes
 import shutil
 import string
 import subprocess
+import sys
 
 from pathlib import Path
 
@@ -53,9 +54,15 @@ from update import (CHROMIUM_DIR, CLANG_REVISION, CLANG_SUB_REVISION,
                     LLVM_BUILD_DIR, GetDefaultHostOs, RmTree, UpdatePackage)
 import build
 
-# Trunk on 2/10/2021
-RUST_REVISION = '502d6aa'
+# Trunk on 3/11/2022
+RUST_REVISION = '2c6a29'
 RUST_SUB_REVISION = 1
+
+# Hash of src/stage0.json, which itself contains the stage0 toolchain hashes.
+# We trust the Rust build system checks, but to ensure it is not tampered with
+# itself check the hash.
+STAGE0_JSON_SHA256 = (
+    'a38b7ea8b8cbdb592b1a7ae8b97fa31746a2bda309597de111be4893a035070d')
 
 PACKAGE_VERSION = '%s-%s-%s-%s' % (RUST_REVISION, RUST_SUB_REVISION,
                                    CLANG_REVISION, CLANG_SUB_REVISION)
@@ -64,6 +71,9 @@ RUST_GIT_URL = 'https://github.com/rust-lang/rust/'
 
 THIRD_PARTY_DIR = os.path.join(CHROMIUM_DIR, 'third_party')
 RUST_SRC_DIR = os.path.join(THIRD_PARTY_DIR, 'rust-src')
+STAGE0_JSON_PATH = os.path.join(RUST_SRC_DIR, 'src', 'stage0.json')
+# Download crates.io dependencies to rust-src subdir (rather than $HOME/.cargo)
+CARGO_HOME_DIR = os.path.join(RUST_SRC_DIR, 'cargo-home')
 RUST_SRC_VERSION_FILE_PATH = os.path.join(RUST_SRC_DIR, 'src', 'version')
 RUST_TOOLCHAIN_OUT_DIR = os.path.join(THIRD_PARTY_DIR, 'rust-toolchain')
 RUST_TOOLCHAIN_LIB_DIR = os.path.join(RUST_TOOLCHAIN_OUT_DIR, 'lib')
@@ -107,6 +117,8 @@ def CheckoutRust(commit, dir):
     # git diff-index --quiet returns success when there is no diff.
     # Also check that the first commit is reachable.
     if (RunCommand(['git', 'diff-index', '--quiet', 'HEAD'], fail_hard=False)
+        and RunCommand(['git', 'fetch'], fail_hard=False)
+        and RunCommand(['git', 'checkout', commit], fail_hard=False)
         and UpdateSubmodules()):
       return
 
@@ -127,14 +139,29 @@ def CheckoutRust(commit, dir):
   sys.exit(1)
 
 
-def Configure():
+def VerifyStage0JsonHash():
+  hasher = hashlib.sha256()
+  with open(STAGE0_JSON_PATH, 'rb') as input:
+    hasher.update(input.read())
+  actual_hash = hasher.hexdigest()
+
+  if actual_hash == STAGE0_JSON_SHA256:
+    return
+
+  print('src/stage0.json hash is different than expected!')
+  print('Expected hash: ' + STAGE0_JSON_SHA256)
+  print('Actual hash:   ' + actual_hash)
+  sys.exit(1)
+
+
+def Configure(llvm_libs_root):
   # Read the config.toml template file...
   with open(RUST_CONFIG_TEMPLATE_PATH, 'r') as input:
     template = string.Template(input.read())
 
   subs = {}
   subs['INSTALL_DIR'] = RUST_TOOLCHAIN_OUT_DIR
-  subs['LLVM_ROOT'] = LLVM_BUILD_DIR
+  subs['LLVM_ROOT'] = llvm_libs_root
   subs['PACKAGE_VERSION'] = PACKAGE_VERSION
 
   # ...and apply substitutions, writing to config.toml in Rust tree.
@@ -146,6 +173,8 @@ def RunXPy(sub, args, gcc_toolchain_path, verbose):
   ''' Run x.py, Rust's build script'''
   clang_path = os.path.join(LLVM_BUILD_DIR, 'bin', 'clang')
   RUSTENV = collections.defaultdict(str, os.environ)
+  # Cargo normally stores files in $HOME. Override this.
+  RUSTENV['CARGO_HOME'] = CARGO_HOME_DIR
   RUSTENV['AR'] = os.path.join(LLVM_BUILD_DIR, 'bin', 'llvm-ar')
   RUSTENV['CC'] = clang_path
   RUSTENV['CXX'] = os.path.join(LLVM_BUILD_DIR, 'bin', 'clang++')
@@ -153,10 +182,9 @@ def RunXPy(sub, args, gcc_toolchain_path, verbose):
   # We use these flags to avoid linking with the system libstdc++.
   gcc_toolchain_flag = (f'--gcc-toolchain={gcc_toolchain_path}'
                         if gcc_toolchain_path else '')
-  static_libstdcpp_flag = '-static-libstdc++'
   # These affect how C/C++ files are compiled, but not Rust libs/exes.
   RUSTENV['CFLAGS'] += f' {gcc_toolchain_flag}'
-  RUSTENV['LDFLAGS'] += f' {gcc_toolchain_flag} {static_libstdcpp_flag}'
+  RUSTENV['LDFLAGS'] += f' {gcc_toolchain_flag}'
   # These affect how Rust crates are built. A `-Clink-arg=<foo>` arg passes foo
   # to the clang invocation used to link.
   #
@@ -169,12 +197,12 @@ def RunXPy(sub, args, gcc_toolchain_path, verbose):
   RUSTENV['RUSTFLAGS_BOOTSTRAP'] = (
       f'-Clinker={clang_path} -Clink-arg=-fuse-ld=lld '
       f'-Clink-arg=-Wl,--no-gc-sections -Clink-arg={gcc_toolchain_flag} '
-      f'-Clink-arg={static_libstdcpp_flag}')
+      f'-L native={gcc_toolchain_path}/lib64')
   RUSTENV['RUSTFLAGS_NOT_BOOTSTRAP'] = RUSTENV['RUSTFLAGS_BOOTSTRAP']
   os.chdir(RUST_SRC_DIR)
   cmd = [sys.executable, 'x.py', sub]
-  if verbose:
-    cmd.append('-v')
+  if verbose and verbose > 0:
+    cmd.append('-' + verbose * 'v')
   RunCommand(cmd + args, env=RUSTENV)
 
 
@@ -183,8 +211,13 @@ def main():
       description='Build and package Rust toolchain')
   parser.add_argument('-v',
                       '--verbose',
-                      action='store_true',
+                      action='count',
                       help='run subcommands with verbosity')
+  parser.add_argument(
+      '--verify-stage0-hash',
+      action='store_true',
+      help='checkout Rust, verify the stage0 hash, then immediately quit without '
+      'building. Will print the actual hash if different than expected.')
   parser.add_argument(
       '--skip-checkout',
       action='store_true',
@@ -201,8 +234,32 @@ def main():
   parser.add_argument(
       '--fetch-llvm-libs',
       action='store_true',
-      help='fetch Clang/LLVM libs and extract into LLVM_BUILD_DIR')
+      help='fetch Clang/LLVM libs and extract into LLVM_BUILD_DIR. Useless '
+      'without --use-final-llvm-build-dir.')
+  parser.add_argument(
+      '--use-final-llvm-build-dir',
+      action='store_true',
+      help='use libs in LLVM_BUILD_DIR instead of LLVM_BOOTSTRAP_DIR. Useful '
+      'with --fetch-llvm-libs for local builds.')
   args = parser.parse_args()
+
+  # Get the LLVM root for libs. We use LLVM_BUILD_DIR tools either way.
+  #
+  # TODO(https://crbug.com/1245714): use LTO libs from LLVM_BUILD_DIR for
+  # stage 2+.
+  if args.use_final_llvm_build_dir:
+    llvm_libs_root = LLVM_BUILD_DIR
+  else:
+    llvm_libs_root = build.LLVM_BOOTSTRAP_DIR
+
+  if not args.skip_checkout:
+    CheckoutRust(RUST_REVISION, RUST_SRC_DIR)
+
+  VerifyStage0JsonHash()
+  if args.verify_stage0_hash:
+    # The above function exits and prints the actual hash if verification failed
+    # so we just quit here; if we reach this point, the hash is valid.
+    return 0
 
   if args.fetch_llvm_libs:
     UpdatePackage('clang-libs', GetDefaultHostOs())
@@ -212,9 +269,6 @@ def main():
   args.gcc_toolchain = None
   build.MaybeDownloadHostGcc(args)
 
-  if not args.skip_checkout:
-    CheckoutRust(RUST_REVISION, RUST_SRC_DIR)
-
   # Delete vendored sources and .cargo subdir. Otherwise when updating an
   # existing checkout, vendored sources will not be re-fetched leaving deps out
   # of date.
@@ -223,34 +277,36 @@ def main():
       shutil.rmtree(dir)
 
   # Set up config.toml in Rust source tree to configure build.
-  Configure()
+  Configure(llvm_libs_root)
 
   if not args.skip_clean:
+    print('Cleaning build artifacts...')
     RunXPy('clean', [], args.gcc_toolchain, args.verbose)
+
+  if not args.skip_test:
+    print('Running stage 2 tests...')
+    # Run a subset of tests. Tell x.py to keep the rustc we already built.
+    RunXPy('test',
+           ['--stage', '2', 'library/std', 'src/test/codegen', 'src/test/ui'],
+           args.gcc_toolchain, args.verbose)
 
   targets = [
       'library/proc_macro', 'library/std', 'src/tools/cargo',
       'src/tools/clippy', 'src/tools/rustfmt'
   ]
 
-  # Build stage 1 compiler and tools.
-  RunXPy('build', ['--stage', '1'] + targets, args.gcc_toolchain, args.verbose)
-
-  if not args.skip_test:
-    # Run a subset of tests. Tell x.py to keep the rustc we already built.
-    RunXPy('test', [
-        '--stage', '1', '--keep-stage', '1', 'library/std', 'src/test/codegen',
-        'src/test/ui'
-    ], args.gcc_toolchain, args.verbose)
+  # Build stage 2 compiler, tools, and libraries. This should reuse earlier
+  # stages from the test command (if run).
+  print('Building stage 2 artifacts...')
+  RunXPy('build', ['--stage', '2'] + targets, args.gcc_toolchain, args.verbose)
 
   if not args.skip_install:
+    print(f'Installing to {RUST_TOOLCHAIN_OUT_DIR} ...')
     # Clean output directory.
     if os.path.exists(RUST_TOOLCHAIN_OUT_DIR):
       shutil.rmtree(RUST_TOOLCHAIN_OUT_DIR)
 
-    RunXPy('install',
-           ['--stage', '1', '--keep-stage', '1'] + DISTRIBUTION_ARTIFACTS,
-           args.gcc_toolchain, args.verbose)
+    RunXPy('install', DISTRIBUTION_ARTIFACTS, args.gcc_toolchain, args.verbose)
 
     # Write expected `rustc --version` string to our toolchain directory.
     with open(RUST_SRC_VERSION_FILE_PATH) as version_file:
@@ -258,6 +314,8 @@ def main():
     with open(VERSION_STAMP_PATH, 'w') as stamp:
       stamp.write('rustc %s-dev (%s chromium)\n' %
                   (rust_version, PACKAGE_VERSION))
+
+  return 0
 
 
 if __name__ == '__main__':

@@ -49,12 +49,6 @@
 #include "ui/events/devices/device_data_manager_test_api.h"
 #include "ui/events/devices/touchscreen_device.h"
 
-#if BUILDFLAG(IS_CHROMEOS)
-#include "chrome/browser/apps/app_service/app_service_proxy.h"
-#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
-#include "chrome/browser/web_applications/test/web_app_install_test_utils.h"
-#endif
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 #include "ash/public/cpp/test/app_list_test_api.h"
 #include "chrome/browser/ui/app_list/app_list_client_impl.h"
@@ -121,7 +115,7 @@ void ExpectInitialManifestFieldsFromBasicWebApp(
 
   // Manifest Resources: This is chrome/test/data/web_apps/basic-192.png
   EXPECT_EQ(IconManagerReadAppIconPixel(icon_manager, web_app->app_id(),
-                                        /*size=*/192),
+                                        /*size_px=*/192),
             SK_ColorBLACK);
 
   // User preferences:
@@ -716,8 +710,9 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
   // theme_color must be installed opaque.
   EXPECT_EQ(registrar().GetAppThemeColor(app_id),
             SkColorSetARGB(0xFF, 0xBB, 0xCC, 0xDD));
-  EXPECT_EQ(IconManagerReadAppIconPixel(icon_manager(), app_id, /*size=*/192),
-            SK_ColorBLUE);
+  EXPECT_EQ(
+      IconManagerReadAppIconPixel(icon_manager(), app_id, /*size_px=*/192),
+      SK_ColorBLUE);
 }
 
 // Check that offline fallback installs attempt fetching the install_url.
@@ -813,8 +808,9 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
   // theme_color must be installed opaque.
   EXPECT_EQ(registrar().GetAppThemeColor(app_id),
             SkColorSetARGB(0xFF, 0xBB, 0xCC, 0xDD));
-  EXPECT_EQ(IconManagerReadAppIconPixel(icon_manager(), app_id, /*size=*/192),
-            SK_ColorBLUE);
+  EXPECT_EQ(
+      IconManagerReadAppIconPixel(icon_manager(), app_id, /*size_px=*/192),
+      SK_ColorBLUE);
 }
 
 // Check that offline only installs don't fetch from the install_url.
@@ -864,8 +860,9 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest,
   // theme_color must be installed opaque.
   EXPECT_EQ(registrar().GetAppThemeColor(app_id),
             SkColorSetARGB(0xFF, 0xBB, 0xCC, 0xDD));
-  EXPECT_EQ(IconManagerReadAppIconPixel(icon_manager(), app_id, /*size=*/192),
-            SK_ColorBLUE);
+  EXPECT_EQ(
+      IconManagerReadAppIconPixel(icon_manager(), app_id, /*size_px=*/192),
+      SK_ColorBLUE);
 }
 
 const char kOnlyForNewUsersInstallUrl[] = "https://example.org/";
@@ -953,14 +950,13 @@ IN_PROC_BROWSER_TEST_F(PreinstalledWebAppManagerBrowserTest, OemInstalled) {
   auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile());
   proxy->FlushMojoCallsForTesting();
 
-  apps::mojom::InstallReason install_reason =
-      apps::mojom::InstallReason::kUnknown;
+  apps::InstallReason install_reason = apps::InstallReason::kUnknown;
   proxy->AppRegistryCache().ForOneApp(app_id,
                                       [&](const apps::AppUpdate& update) {
                                         install_reason = update.InstallReason();
                                       });
 
-  EXPECT_EQ(install_reason, apps::mojom::InstallReason::kOem);
+  EXPECT_EQ(install_reason, apps::InstallReason::kOem);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 

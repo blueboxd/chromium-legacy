@@ -110,7 +110,7 @@ class PolicyGenerationTest(unittest.TestCase):
               "type": "boolean"
           },
           "supported_on": ["chrome_os:99-"],
-          "id": 979,
+          "id": 1015,
           "tags": [],
           "caption": "ChunkZeroLastFieldBooleanPolicy caption",
           "desc": "ChunkZeroLastFieldBooleanPolicy desc.",
@@ -121,7 +121,7 @@ class PolicyGenerationTest(unittest.TestCase):
               "type": "boolean"
           },
           "supported_on": ["chrome_os:99-"],
-          "id": 980,
+          "id": 1016,
           "tags": [],
           "caption": "ChunkOneFirstFieldBooleanPolicy caption",
           "desc": "ChunkOneFirstFieldBooleanPolicy desc.",
@@ -132,7 +132,7 @@ class PolicyGenerationTest(unittest.TestCase):
               "type": "boolean"
           },
           "supported_on": ["chrome_os:99-"],
-          "id": 1779,
+          "id": 1815,
           "tags": [],
           "caption": "ChunkOneLastFieldBooleanPolicy caption",
           "desc": "ChunkOneLastFieldBooleanPolicy desc.",
@@ -143,7 +143,7 @@ class PolicyGenerationTest(unittest.TestCase):
               "type": "string"
           },
           "supported_on": ["chrome_os:99-"],
-          "id": 1780,
+          "id": 1816,
           "tags": [],
           "caption": "ChunkTwoFirstFieldStringPolicy caption",
           "desc": "ChunkTwoFirstFieldStringPolicy desc"
@@ -154,7 +154,7 @@ class PolicyGenerationTest(unittest.TestCase):
               "type": "string"
           },
           "supported_on": ["chrome_os:99-"],
-          "id": 2579,
+          "id": 2615,
           "tags": [],
           "caption": "ChunkTwoLastFieldStringPolicy caption",
           "desc": "ChunkTwoLastFieldStringPolicy desc"
@@ -229,7 +229,7 @@ class PolicyGenerationTest(unittest.TestCase):
     self.assertListEqual([], stmts)
     self.assertIsNone(expr)
 
-  def _assertCallsEqual(self, call_args_list, expected_output):
+  def _assertCallsEqual(self, expected_output, call_args_list):
     # Convert mocked write calls into actual content that would be written
     # to the file. Elements of call_args_list are call objects, which are
     # two-tuples of (positional args, keyword args). With call[0] we first
@@ -240,7 +240,7 @@ class PolicyGenerationTest(unittest.TestCase):
 
     # Strip whitespace from the beginning and end of expected and actual
     # output and verify that they are equal.
-    self.assertEqual(actual_output.strip(), expected_output.strip())
+    self.assertEqual(expected_output.strip(), actual_output.strip())
 
   def testWriteCloudPolicyProtobuf(self):
     is_full_runtime_values = [False, True]
@@ -268,8 +268,8 @@ class PolicyGenerationTest(unittest.TestCase):
             "full_runtime_suffix": full_runtime_suffix,
         }
 
-        self._assertCallsEqual(mocked_file().write.call_args_list,
-                               expected_formatted)
+        self._assertCallsEqual(expected_formatted,
+                               mocked_file().write.call_args_list)
 
   def testWriteChromeSettingsProtobuf(self):
     is_full_runtime_values = [False, True]
@@ -297,8 +297,8 @@ class PolicyGenerationTest(unittest.TestCase):
             "full_runtime_suffix": full_runtime_suffix,
         }
 
-        self._assertCallsEqual(mocked_file().write.call_args_list,
-                               expected_formatted)
+        self._assertCallsEqual(expected_formatted,
+                               mocked_file().write.call_args_list)
 
   def testWritePolicyProto(self):
     output_path = 'mock_write_policy_proto'
@@ -308,8 +308,8 @@ class PolicyGenerationTest(unittest.TestCase):
         generate_policy_source._WritePolicyProto(f, self.policies[0])
 
     mocked_file.assert_called_once_with(output_path, 'w', encoding='utf-8')
-    self._assertCallsEqual(mocked_file().write.call_args_list,
-                           test_data.EXPECTED_POLICY_PROTO)
+    self._assertCallsEqual(test_data.EXPECTED_POLICY_PROTO,
+                           mocked_file().write.call_args_list)
 
   def testGetMetapoliciesOfType(self):
     merge_metapolicies = generate_policy_source._GetMetapoliciesOfType(
@@ -352,8 +352,8 @@ class PolicyGenerationTest(unittest.TestCase):
             "windows_only_part": windows_only_part,
         }
 
-        self._assertCallsEqual(mocked_file().write.call_args_list,
-                               expected_formatted)
+        self._assertCallsEqual(expected_formatted,
+                               mocked_file().write.call_args_list)
 
   def testWritePolicyConstantSource(self):
     output_path = 'mock_policy_constants_cc'
@@ -379,8 +379,8 @@ class PolicyGenerationTest(unittest.TestCase):
             "windows_only_part": windows_only_part,
         }
 
-        self._assertCallsEqual(mocked_file().write.call_args_list,
-                               expected_formatted)
+        self._assertCallsEqual(expected_formatted,
+                               mocked_file().write.call_args_list)
 
   def testWriteChromeOSPolicyConstantsHeader(self):
     output_path = 'mock_policy_constants_h'
@@ -394,8 +394,8 @@ class PolicyGenerationTest(unittest.TestCase):
             self.risk_tags,
         )
     mocked_file.assert_called_once_with(output_path, 'w', encoding='utf-8')
-    self._assertCallsEqual(mocked_file().write.call_args_list,
-                           test_data.EXPECTED_CROS_POLICY_CONSTANTS_HEADER)
+    self._assertCallsEqual(test_data.EXPECTED_CROS_POLICY_CONSTANTS_HEADER,
+                           mocked_file().write.call_args_list)
 
   def testWriteChromeOSPolicyConstantsSource(self):
     output_path = 'mock_policy_constants_cc'
@@ -409,8 +409,8 @@ class PolicyGenerationTest(unittest.TestCase):
             self.risk_tags,
         )
     mocked_file.assert_called_once_with(output_path, 'w', encoding='utf-8')
-    self._assertCallsEqual(mocked_file().write.call_args_list,
-                           test_data.EXPECTED_CROS_POLICY_CONSTANTS_SOURCE)
+    self._assertCallsEqual(test_data.EXPECTED_CROS_POLICY_CONSTANTS_SOURCE,
+                           mocked_file().write.call_args_list)
 
 
   def testWriteAppRestrictions(self):
@@ -425,38 +425,38 @@ class PolicyGenerationTest(unittest.TestCase):
             self.risk_tags,
         )
     mocked_file.assert_called_once_with(output_path, 'w', encoding='utf-8')
-    self._assertCallsEqual(mocked_file().write.call_args_list,
-                           test_data.EXPECTED_APP_RESTRICTIONS_XML)
+    self._assertCallsEqual(test_data.EXPECTED_APP_RESTRICTIONS_XML,
+                           mocked_file().write.call_args_list)
 
 
   def testChunkNumberAndFieldNumber(self):
     test_data = [
         # Last top-level policy
-        PolicyData(policy_id=979, chunk_number=0, field_number=981),
+        PolicyData(policy_id=1015, chunk_number=0, field_number=1017),
         # First policy in chunk 1
-        PolicyData(policy_id=980, chunk_number=1, field_number=1),
+        PolicyData(policy_id=1016, chunk_number=1, field_number=1),
         # Last policy in chunk 1
-        PolicyData(policy_id=1779, chunk_number=1, field_number=800),
+        PolicyData(policy_id=1815, chunk_number=1, field_number=800),
         # First policy in chunk 2
-        PolicyData(policy_id=1780, chunk_number=2, field_number=1),
+        PolicyData(policy_id=1816, chunk_number=2, field_number=1),
         # Last policy in chunk 2
-        PolicyData(policy_id=2579, chunk_number=2, field_number=800),
+        PolicyData(policy_id=2615, chunk_number=2, field_number=800),
         # First policy in chunk 3
-        PolicyData(policy_id=2580, chunk_number=3, field_number=1),
+        PolicyData(policy_id=2616, chunk_number=3, field_number=1),
         # Last policy in chunk 3
-        PolicyData(policy_id=3379, chunk_number=3, field_number=800),
+        PolicyData(policy_id=3415, chunk_number=3, field_number=800),
         # First policy in chunk 501
-        PolicyData(policy_id=400980, chunk_number=501, field_number=1),
+        PolicyData(policy_id=401016, chunk_number=501, field_number=1),
         # Last policy in chunk 501
-        PolicyData(policy_id=401779, chunk_number=501, field_number=800),
+        PolicyData(policy_id=401815, chunk_number=501, field_number=800),
         # First policy in chunk 502
-        PolicyData(policy_id=401780, chunk_number=502, field_number=1),
+        PolicyData(policy_id=401816, chunk_number=502, field_number=1),
         # Last policy in chunk 502
-        PolicyData(policy_id=402579, chunk_number=502, field_number=800),
+        PolicyData(policy_id=402615, chunk_number=502, field_number=800),
         # First policy in chunk 503
-        PolicyData(policy_id=402580, chunk_number=503, field_number=1),
+        PolicyData(policy_id=402616, chunk_number=503, field_number=1),
         # Last policy in chunk 503
-        PolicyData(policy_id=403379, chunk_number=503, field_number=800),
+        PolicyData(policy_id=403415, chunk_number=503, field_number=800),
     ]
 
     for policy_data in test_data:

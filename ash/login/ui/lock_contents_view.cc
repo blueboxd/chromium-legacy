@@ -569,6 +569,7 @@ FingerprintState LockContentsView::TestApi::GetFingerPrintState(
 LockContentsView::UserState::UserState(const LoginUserInfo& user_info)
     : account_id(user_info.basic_user_info.account_id) {
   fingerprint_state = user_info.fingerprint_state;
+  smart_lock_state = user_info.smart_lock_state;
   if (user_info.auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN)
     force_online_sign_in = true;
   show_pin_pad_for_password = user_info.show_pin_pad_for_password;
@@ -1929,7 +1930,12 @@ void LockContentsView::LayoutUserAddingScreenIndicator() {
 
 void LockContentsView::LayoutPublicSessionView() {
   gfx::Rect bounds = GetContentsBounds();
-  bounds.ClampToCenteredSize(expanded_view_->GetPreferredSize());
+  gfx::Size pref_size = expanded_view_->GetPreferredSize();
+  if (bounds.width() < pref_size.width()) {
+    int height = expanded_view_->GetHeightForWidth(bounds.width());
+    pref_size = {bounds.width(), height};
+  }
+  bounds.ClampToCenteredSize(pref_size);
   expanded_view_->SetBoundsRect(bounds);
 }
 

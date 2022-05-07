@@ -53,7 +53,8 @@ NGTableTypes::Caption ComputeCaptionConstraint(
 
     MinMaxSizes min_max_sizes =
         ComputeMinAndMaxContentContribution(table_style, caption, space).sizes;
-    min_max_sizes += ComputeMinMaxMargins(table_style, caption).InlineSum();
+    min_max_sizes +=
+        ComputeMarginsFor(space, caption.Style(), table_space).InlineSum();
     caption_min_max.Encompass(min_max_sizes);
   }
   return caption_min_max;
@@ -307,17 +308,25 @@ scoped_refptr<const NGTableConstraintSpaceData> CreateConstraintSpaceData(
             section.start_row + section.row_count - row_index;
         wtf_size_t rowspan =
             std::min(cell_block_constraints[cell_index].rowspan, max_rowspan);
-        // Compute cell's size.
+
+        // Determine the cell's block-size.
         LayoutUnit cell_block_size;
         for (wtf_size_t i = 0; i < rowspan; ++i) {
-          if (!rows[row_index + i].is_collapsed) {
-            cell_block_size += rows[row_index + i].block_size;
-            if (i != 0)
-              cell_block_size += border_spacing.block_size;
-          }
+          if (rows[row_index + i].is_collapsed)
+            continue;
+          cell_block_size += rows[row_index + i].block_size;
+          if (i != 0)
+            cell_block_size += border_spacing.block_size;
         }
+
+        // Confusingly a rowspanned cell originating from a collapsed-row will
+        // have no block-size.
+        LayoutUnit rowspan_block_size = rowspan > 1 && !row.is_collapsed
+                                            ? cell_block_size
+                                            : kIndefiniteSize;
+
         data->cells.emplace_back(
-            cell_block_constraints[cell_index].borders, cell_block_size,
+            cell_block_constraints[cell_index].borders, rowspan_block_size,
             cell_block_constraints[cell_index].column_index,
             /* has_grown */ cell_block_size >
                 cell_block_constraints[cell_index].min_block_size,
@@ -334,6 +343,7 @@ scoped_refptr<const NGTableConstraintSpaceData> CreateConstraintSpaceData(
 // back to LayoutObject.
 class ColumnGeometriesBuilder {
   STACK_ALLOCATED();
+
  public:
   void VisitCol(const NGLayoutInputNode& col,
                 wtf_size_t start_column_index,

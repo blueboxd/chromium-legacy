@@ -50,7 +50,7 @@ public class PageInfoCookiesPreference extends SiteSettingsPreferenceFragment {
     @Override
     public void onCreatePreferences(Bundle bundle, String s) {
         // Remove this Preference if it is restored without SiteSettingsDelegate.
-        if (getSiteSettingsDelegate() == null) {
+        if (!hasSiteSettingsDelegate()) {
             getParentFragmentManager().beginTransaction().remove(this).commit();
             return;
         }
@@ -70,7 +70,7 @@ public class PageInfoCookiesPreference extends SiteSettingsPreferenceFragment {
     public void setParams(PageInfoCookiesViewParams params) {
         Preference cookieSummary = findPreference(COOKIE_SUMMARY_PREFERENCE);
         NoUnderlineClickableSpan linkSpan = new NoUnderlineClickableSpan(
-                getResources(), (view) -> { params.onCookieSettingsLinkClicked.run(); });
+                getContext(), (view) -> { params.onCookieSettingsLinkClicked.run(); });
         cookieSummary.setSummary(
                 SpanApplier.applySpans(getString(R.string.page_info_cookies_description),
                         new SpanApplier.SpanInfo("<link>", "</link>", linkSpan)));

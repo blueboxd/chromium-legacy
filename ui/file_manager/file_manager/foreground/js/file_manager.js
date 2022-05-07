@@ -19,7 +19,6 @@ import {metrics} from '../../common/js/metrics.js';
 import {ProgressItemState} from '../../common/js/progress_center_common.js';
 import {str, util} from '../../common/js/util.js';
 import {AllowedPaths, VolumeManagerCommon} from '../../common/js/volume_manager_types.js';
-import {xfm} from '../../common/js/xfm.js';
 import {Crostini} from '../../externs/background/crostini.js';
 import {FileBrowserBackgroundFull} from '../../externs/background/file_browser_background_full.js';
 import {FileOperationManager} from '../../externs/background/file_operation_manager.js';
@@ -51,12 +50,12 @@ import {FileTransferController} from './file_transfer_controller.js';
 import {FileTypeFiltersController} from './file_type_filters_controller.js';
 import {FolderShortcutsDataModel} from './folder_shortcuts_data_model.js';
 import {GearMenuController} from './gear_menu_controller.js';
+import {GuestOsController} from './guest_os_controller.js';
 import {importer} from './import_controller.js';
 import {LastModifiedController} from './last_modified_controller.js';
 import {LaunchParam} from './launch_param.js';
 import {ListThumbnailLoader} from './list_thumbnail_loader.js';
 import {MainWindowComponent} from './main_window_component.js';
-import {ContentMetadataProvider} from './metadata/content_metadata_provider.js';
 import {MetadataModel} from './metadata/metadata_model.js';
 import {ThumbnailModel} from './metadata/thumbnail_model.js';
 import {MetadataBoxController} from './metadata_box_controller.js';
@@ -113,6 +112,9 @@ export class FileManager extends EventTarget {
 
     /** @private {?CrostiniController} */
     this.crostiniController_ = null;
+
+    /** @private {?GuestOsController} */
+    this.guestOsController_ = null;
 
     /**
      * ImportHistory. Non-null only once history observer is added in
@@ -646,7 +648,7 @@ export class FileManager extends EventTarget {
         this.guestMode_ = guest;
       }
     } catch (error) {
-      console.error(error);
+      console.warn(error);
       // Leave this.guestMode_ as its initial value.
     }
   }
@@ -1336,8 +1338,14 @@ export class FileManager extends EventTarget {
     await this.crostiniController_.redraw();
     // Never show toast in an open-file dialog.
     const maybeShowToast = this.dialogType === DialogType.FULL_PAGE;
-    return this.crostiniController_.loadSharedPaths(
+    await this.crostiniController_.loadSharedPaths(
         maybeShowToast, this.ui_.toast);
+
+    if (util.isGuestOsEnabled()) {
+      this.guestOsController_ = new GuestOsController(
+          this.directoryModel_, assert(this.directoryTree));
+      await this.guestOsController_.refresh();
+    }
   }
 
   /**
@@ -1503,7 +1511,7 @@ export class FileManager extends EventTarget {
             try {
               nextCurrentDirEntry = await volumeInfo.resolveDisplayRoot();
             } catch (error) {
-              console.error(error.stack || error);
+              console.warn(error.stack || error);
               nextCurrentDirEntry = null;
             }
           }

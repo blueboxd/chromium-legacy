@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
@@ -27,6 +28,8 @@
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/privacy_sandbox/canonical_topic.h"
+#include "components/privacy_sandbox/privacy_sandbox_features.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/cookie_access_details.h"
 #include "content/public/browser/navigation_handle.h"
@@ -45,34 +48,6 @@ using content::BrowserThread;
 
 namespace content_settings {
 namespace {
-
-bool ShouldSendUpdatedContentSettingsRulesToRenderer(
-    ContentSettingsType content_type) {
-  // ContentSettingsType::DEFAULT signals that multiple content settings may
-  // have been updated, e.g. by the PolicyProvider. This should always be sent
-  // to the renderer in case a relevant setting is updated.
-  if (content_type == ContentSettingsType::DEFAULT)
-    return true;
-
-  return RendererContentSettingRules::IsRendererContentSetting((content_type));
-}
-
-void MaybeSendRendererContentSettingsRules(
-    content::RenderFrameHost* rfh,
-    const HostContentSettingsMap* map,
-    PageSpecificContentSettings::Delegate* delegate) {
-  DCHECK_EQ(rfh, rfh->GetMainFrame());
-  // Only send a message to the renderer if it is initialised and not dead.
-  // Otherwise, the IPC messages will be queued in the browser process,
-  // potentially causing large memory leaks. See https://crbug.com/875937.
-  content::RenderProcessHost* process = rfh->GetProcess();
-  if (!process->IsInitializedAndNotDead())
-    return;
-
-  RendererContentSettingRules rules;
-  GetRendererContentSettingRules(map, &rules);
-  delegate->SetContentSettingRules(process, rules);
-}
 
 bool WillNavigationCreateNewPageSpecificContentSettingsOnCommit(
     content::NavigationHandle* navigation_handle) {
@@ -196,20 +171,6 @@ void PageSpecificContentSettings::WebContentsHandler::OnServiceWorkerAccessed(
   auto* pscs = PageSpecificContentSettings::GetForPage(frame->GetPage());
   if (pscs)
     pscs->OnServiceWorkerAccessed(scope, allowed);
-}
-
-void PageSpecificContentSettings::WebContentsHandler::ReadyToCommitNavigation(
-    content::NavigationHandle* navigation_handle) {
-  if (!WillNavigationCreateNewPageSpecificContentSettingsOnCommit(
-          navigation_handle)) {
-    return;
-  }
-
-  // There may be content settings that were updated for the navigated URL.
-  // These would not have been sent before if we're navigating cross-origin.
-  // Ensure up to date rules are sent before navigation commits.
-  MaybeSendRendererContentSettingsRules(navigation_handle->GetRenderFrameHost(),
-                                        map_, delegate_.get());
 }
 
 void PageSpecificContentSettings::WebContentsHandler::DidFinishNavigation(
@@ -496,6 +457,7 @@ void PageSpecificContentSettings::OnContentBlocked(ContentSettingsType type) {
     status.blocked = true;
     MaybeUpdateLocationBar();
     NotifyDelegate(&Delegate::OnContentBlocked, type);
+    MaybeUpdateParent(&PageSpecificContentSettings::OnContentBlocked, type);
   }
 }
 
@@ -537,8 +499,10 @@ void PageSpecificContentSettings::OnContentAllowed(ContentSettingsType type) {
     NotifyDelegate(&Delegate::OnContentAllowed, type);
   }
 
-  if (access_changed)
+  if (access_changed) {
     MaybeUpdateLocationBar();
+    MaybeUpdateParent(&PageSpecificContentSettings::OnContentAllowed, type);
+  }
 }
 
 void PageSpecificContentSettings::OnDomStorageAccessed(const GURL& url,
@@ -562,7 +526,9 @@ void PageSpecificContentSettings::OnDomStorageAccessed(const GURL& url,
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
-  NotifySiteDataObservers();
+  MaybeUpdateParent(&PageSpecificContentSettings::OnDomStorageAccessed, url,
+                    local, blocked_by_policy);
+  MaybeNotifySiteDataObservers();
 }
 
 void PageSpecificContentSettings::OnCookiesAccessed(
@@ -578,7 +544,8 @@ void PageSpecificContentSettings::OnCookiesAccessed(
     NotifyDelegate(&Delegate::OnCookieAccessAllowed, details.cookie_list);
   }
 
-  NotifySiteDataObservers();
+  MaybeUpdateParent(&PageSpecificContentSettings::OnCookiesAccessed, details);
+  MaybeNotifySiteDataObservers();
 }
 
 void PageSpecificContentSettings::OnIndexedDBAccessed(const GURL& url,
@@ -599,7 +566,9 @@ void PageSpecificContentSettings::OnIndexedDBAccessed(const GURL& url,
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
-  NotifySiteDataObservers();
+  MaybeUpdateParent(&PageSpecificContentSettings::OnIndexedDBAccessed, url,
+                    blocked_by_policy);
+  MaybeNotifySiteDataObservers();
 }
 
 void PageSpecificContentSettings::OnCacheStorageAccessed(
@@ -617,7 +586,9 @@ void PageSpecificContentSettings::OnCacheStorageAccessed(
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
-  NotifySiteDataObservers();
+  MaybeUpdateParent(&PageSpecificContentSettings::OnCacheStorageAccessed, url,
+                    blocked_by_policy);
+  MaybeNotifySiteDataObservers();
 }
 
 void PageSpecificContentSettings::OnServiceWorkerAccessed(
@@ -644,6 +615,9 @@ void PageSpecificContentSettings::OnServiceWorkerAccessed(
   } else {
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
+
+  MaybeUpdateParent(&PageSpecificContentSettings::OnServiceWorkerAccessed,
+                    scope, allowed);
 }
 
 void PageSpecificContentSettings::OnSharedWorkerAccessed(
@@ -661,6 +635,8 @@ void PageSpecificContentSettings::OnSharedWorkerAccessed(
         worker_url, name, storage_key);
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
+  MaybeUpdateParent(&PageSpecificContentSettings::OnSharedWorkerAccessed,
+                    worker_url, name, storage_key, blocked_by_policy);
 }
 
 void PageSpecificContentSettings::OnInterestGroupJoined(
@@ -673,7 +649,19 @@ void PageSpecificContentSettings::OnInterestGroupJoined(
     allowed_interest_group_api_.push_back(api_origin);
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
-  NotifySiteDataObservers();
+  MaybeUpdateParent(&PageSpecificContentSettings::OnInterestGroupJoined,
+                    api_origin, blocked_by_policy);
+  MaybeNotifySiteDataObservers();
+}
+
+void PageSpecificContentSettings::OnTopicAccessed(
+    const url::Origin api_origin,
+    bool blocked_by_policy,
+    privacy_sandbox::CanonicalTopic topic) {
+  // TODO(crbug.com/1286276): Add URL and Topic to local_shared_objects?
+  accessed_topics_.insert(topic);
+  MaybeUpdateParent(&PageSpecificContentSettings::OnTopicAccessed, api_origin,
+                    blocked_by_policy, topic);
 }
 
 void PageSpecificContentSettings::OnWebDatabaseAccessed(
@@ -689,7 +677,9 @@ void PageSpecificContentSettings::OnWebDatabaseAccessed(
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
-  NotifySiteDataObservers();
+  MaybeUpdateParent(&PageSpecificContentSettings::OnWebDatabaseAccessed, url,
+                    blocked_by_policy);
+  MaybeNotifySiteDataObservers();
 }
 
 void PageSpecificContentSettings::OnFileSystemAccessed(const GURL& url,
@@ -707,7 +697,9 @@ void PageSpecificContentSettings::OnFileSystemAccessed(const GURL& url,
     OnContentAllowed(ContentSettingsType::COOKIES);
   }
 
-  NotifySiteDataObservers();
+  MaybeUpdateParent(&PageSpecificContentSettings::OnFileSystemAccessed, url,
+                    blocked_by_policy);
+  MaybeNotifySiteDataObservers();
 }
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_WIN)
@@ -752,6 +744,7 @@ void PageSpecificContentSettings::OnMediaStreamPermissionSet(
     const std::string& media_stream_selected_video_device,
     const std::string& media_stream_requested_audio_device,
     const std::string& media_stream_requested_video_device) {
+  DCHECK(!IsEmbeddedPage());
   media_stream_access_origin_ = request_origin;
 
   if (new_microphone_camera_state & MICROPHONE_ACCESSED) {
@@ -807,6 +800,8 @@ void PageSpecificContentSettings::SetPepperBrokerAllowed(bool allowed) {
   }
 }
 
+// TODO(crbug.com/1187618): This method needs to be updated to deal with
+// fenced frames.
 void PageSpecificContentSettings::OnContentSettingChanged(
     const ContentSettingsPattern& primary_pattern,
     const ContentSettingsPattern& secondary_pattern,
@@ -874,12 +869,6 @@ void PageSpecificContentSettings::OnContentSettingChanged(
     default:
       break;
   }
-
-  if (!ShouldSendUpdatedContentSettingsRulesToRenderer(content_type))
-    return;
-
-  MaybeSendRendererContentSettingsRules(&page().GetMainDocument(), map_,
-                                        delegate_);
 }
 
 void PageSpecificContentSettings::ClearContentSettingsChangedViaPageInfo() {
@@ -921,6 +910,23 @@ bool PageSpecificContentSettings::HasContentSettingChangedViaPageInfo(
          content_settings_changed_via_page_info_.end();
 }
 
+bool PageSpecificContentSettings::HasAccessedTopics() const {
+  return !GetAccessedTopics().empty();
+}
+
+std::vector<privacy_sandbox::CanonicalTopic>
+PageSpecificContentSettings::GetAccessedTopics() const {
+  if (accessed_topics_.empty() &&
+      privacy_sandbox::kPrivacySandboxSettings3ShowSampleDataForTesting.Get() &&
+      page().GetMainDocument().GetLastCommittedURL().host() == "example.com") {
+    // TODO(crbug.com/1286276): Remove sample topic when API is ready.
+    return {privacy_sandbox::CanonicalTopic(
+        browsing_topics::Topic(1),
+        privacy_sandbox::CanonicalTopic::AVAILABLE_TAXONOMY)};
+  }
+  return {accessed_topics_.begin(), accessed_topics_.end()};
+}
+
 bool PageSpecificContentSettings::HasJoinedUserToInterestGroup() const {
   return !allowed_interest_group_api_.empty();
 }
@@ -933,6 +939,10 @@ bool PageSpecificContentSettings::IsPagePrerendering() const {
   // observers may come before this and call into here. In that case we'll still
   // queue their updates.
   return !!updates_queued_during_prerender_;
+}
+
+bool PageSpecificContentSettings::IsEmbeddedPage() const {
+  return page().GetMainDocument().GetParentOrOuterDocument();
 }
 
 void PageSpecificContentSettings::OnPrerenderingPageActivation() {
@@ -949,7 +959,9 @@ void PageSpecificContentSettings::OnPrerenderingPageActivation() {
   updates_queued_during_prerender_.reset();
 }
 
-void PageSpecificContentSettings::NotifySiteDataObservers() {
+void PageSpecificContentSettings::MaybeNotifySiteDataObservers() {
+  if (IsEmbeddedPage())
+    return;
   if (IsPagePrerendering()) {
     updates_queued_during_prerender_->site_data_accessed = true;
     return;
@@ -958,6 +970,8 @@ void PageSpecificContentSettings::NotifySiteDataObservers() {
 }
 
 void PageSpecificContentSettings::MaybeUpdateLocationBar() {
+  if (IsEmbeddedPage())
+    return;
   if (IsPagePrerendering())
     return;
   delegate_->UpdateLocationBar();

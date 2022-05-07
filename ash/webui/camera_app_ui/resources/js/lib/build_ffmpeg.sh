@@ -105,15 +105,8 @@ do_add_header() {
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
-// @ts-nocheck
-
-/**
- * @fileoverview
- * @suppress {checkTypes|missingProperties|suspiciousCode}
- * @suppress {undefinedVars|uselessCode}
- */
-
 /* eslint-disable */
+// @ts-nocheck
 EOF
   cat ffmpeg.orig.js >> ffmpeg.js
   echo >> ffmpeg.js

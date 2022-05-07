@@ -10,12 +10,9 @@
 
 #include "ash/services/secure_channel/public/cpp/client/client_channel.h"
 #include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
 #include "base/callback.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Test double implementation of ClientChannel.
 class FakeClientChannel : public ClientChannel {
@@ -69,15 +66,6 @@ class FakeClientChannel : public ClientChannel {
   base::OnceClosure destructor_callback_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove when this file is moved to ash.
-namespace ash {
-namespace secure_channel {
-using ::chromeos::secure_channel::FakeClientChannel;
-}  // namespace secure_channel
-}  // namespace ash
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_PUBLIC_CPP_CLIENT_FAKE_CLIENT_CHANNEL_H_

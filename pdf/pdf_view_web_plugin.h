@@ -23,6 +23,7 @@
 #include "pdf/post_message_sender.h"
 #include "pdf/ppapi_migration/graphics.h"
 #include "pdf/ppapi_migration/url_loader.h"
+#include "pdf/v8_value_converter.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_text_input_type.h"
 #include "third_party/blink/public/web/web_plugin.h"
@@ -56,7 +57,6 @@ namespace chrome_pdf {
 class PDFiumEngine;
 class PdfAccessibilityDataHandler;
 
-// Skeleton for a `blink::WebPlugin` to replace `OutOfProcessInstance`.
 class PdfViewWebPlugin final : public PdfViewPluginBase,
                                public blink::WebPlugin,
                                public pdf::mojom::PdfListener,
@@ -142,9 +142,11 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   };
 
   // Allows for dependency injections into `PdfViewWebPlugin`.
-  class Client {
+  class Client : public V8ValueConverter {
    public:
     virtual ~Client() = default;
+
+    virtual base::WeakPtr<Client> GetWeakPtr() = 0;
 
     // Prints the given `element`.
     virtual void Print(const blink::WebElement& element) {}
@@ -247,10 +249,6 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   bool IsValidLink(const std::string& url) override;
   std::unique_ptr<Graphics> CreatePaintGraphics(const gfx::Size& size) override;
   bool BindPaintGraphics(Graphics& graphics) override;
-  void ScheduleTaskOnMainThread(const base::Location& from_here,
-                                ResultCallback callback,
-                                int32_t result,
-                                base::TimeDelta delay) override;
 
   // pdf::mojom::PdfListener:
   void SetCaretPosition(const gfx::PointF& position) override;
@@ -356,7 +354,7 @@ class PdfViewWebPlugin final : public PdfViewPluginBase,
   // see crbug.com/66334.
   // TODO(crbug.com/1217012): Re-evaluate the need for a callback when parts of
   // the plugin are moved off the main thread.
-  void OnInvokePrintDialog(int32_t /*result*/);
+  void OnInvokePrintDialog();
 
   // Callback to set the document information in the accessibility tree
   // asynchronously.

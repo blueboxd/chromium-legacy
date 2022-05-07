@@ -55,7 +55,6 @@
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/active_use_util.h"
 #include "chrome/browser/after_startup_task_utils.h"
-#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_impl.h"
@@ -67,7 +66,6 @@
 #include "chrome/browser/component_updater/registration.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/enterprise/browser_management/management_service_factory.h"
-#include "chrome/browser/first_party_sets/first_party_sets_util.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/language/url_language_histogram_factory.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
@@ -157,6 +155,7 @@
 #include "components/variations/field_trial_config/field_trial_util.h"
 #include "components/variations/pref_names.h"
 #include "components/variations/service/variations_service.h"
+#include "components/variations/synthetic_trial_registry.h"
 #include "components/variations/synthetic_trials_active_group_id_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "components/variations/variations_crash_keys.h"
@@ -166,7 +165,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/network_service_instance.h"
+#include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/notification_service.h"
@@ -189,7 +188,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "rlz/buildflags/buildflags.h"
-#include "services/network/public/mojom/network_service.mojom.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
@@ -224,6 +222,7 @@
 #include "ash/components/arc/metrics/stability_metrics_manager.h"
 #include "ash/components/settings/cros_settings_names.h"
 #include "ash/constants/ash_switches.h"
+#include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/ash/settings/cros_settings.h"
 #include "chrome/browser/ash/settings/hardware_data_usage_controller.h"
 #include "chrome/browser/ash/settings/stats_reporting_controller.h"
@@ -570,9 +569,9 @@ ChromeBrowserMainParts::~ChromeBrowserMainParts() {
 void ChromeBrowserMainParts::SetupMetrics() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::SetupMetrics");
   metrics::MetricsService* metrics = browser_process_->metrics_service();
-  metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
+  metrics->GetSyntheticTrialRegistry()->AddSyntheticTrialObserver(
       variations::VariationsIdsProvider::GetInstance());
-  metrics->synthetic_trial_registry()->AddSyntheticTrialObserver(
+  metrics->GetSyntheticTrialRegistry()->AddSyntheticTrialObserver(
       variations::SyntheticTrialsActiveGroupIdProvider::GetInstance());
   // Now that field trials have been created, initializes metrics recording.
   metrics->InitializeMetricsRecordingState();
@@ -1600,8 +1599,9 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate)) {
     component_updater::RegisterComponentsForUpdate();
   } else {
-    component_updater::FirstPartySetsComponentInstallerPolicy::
-        SendFileToNetworkService(base::File());
+    // Initialize First-Party Sets even if component updater is disabled.
+    content::FirstPartySetsHandler::GetInstance()->SetPublicFirstPartySets(
+        base::File());
   }
 
   // TODO(stevenjb): Move WIN and MACOSX specific code to appropriate Parts.
@@ -1716,21 +1716,6 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 #endif  // BUILDFLAG(ENABLE_NACL)
 
   PreBrowserStart();
-
-  // Only read and update the persisted sets when First-Party Sets component
-  // will be installed.
-  if (!parsed_command_line().HasSwitch(switches::kDisableComponentUpdate) &&
-      base::FeatureList::IsEnabled(features::kFirstPartySets)) {
-    FirstPartySetsUtil::GetInstance()->SendAndUpdatePersistedSets(
-        user_data_dir_,
-        /*send_sets=*/
-        base::BindOnce([](base::OnceCallback<void(const std::string&)> callback,
-                          const std::string& sets) {
-          content::GetNetworkService()
-              ->SetPersistedFirstPartySetsAndGetCurrentSets(
-                  sets, std::move(callback));
-        }));
-  }
 
   variations::VariationsService* variations_service =
       browser_process_->variations_service();

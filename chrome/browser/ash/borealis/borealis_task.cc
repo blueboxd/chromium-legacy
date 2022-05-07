@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ash/borealis/borealis_task.h"
 
-#include <optional>
 #include <sstream>
 #include <string>
 
@@ -31,6 +30,8 @@
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/dbus/concierge/concierge_service.pb.h"
+#include "chromeos/dbus/dlcservice/dlcservice.pb.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace borealis {
 

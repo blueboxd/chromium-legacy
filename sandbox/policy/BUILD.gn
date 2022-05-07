@@ -31,10 +31,9 @@ component("policy") {
     "//build:chromeos_buildflags",
     "//ppapi/buildflags",
     "//printing/buildflags",
-    "//sandbox:common",
     "//sandbox/policy/mojom",
   ]
-  public_deps = []
+  public_deps = [ "//sandbox:common" ]
   if (is_linux || is_chromeos) {
     sources += [
       "linux/bpf_audio_policy_linux.cc",
@@ -59,6 +58,8 @@ component("policy") {
       "linux/bpf_print_compositor_policy_linux.h",
       "linux/bpf_renderer_policy_linux.cc",
       "linux/bpf_renderer_policy_linux.h",
+      "linux/bpf_screen_ai_policy_linux.cc",
+      "linux/bpf_screen_ai_policy_linux.h",
       "linux/bpf_service_policy_linux.cc",
       "linux/bpf_service_policy_linux.h",
       "linux/bpf_speech_recognition_policy_linux.cc",

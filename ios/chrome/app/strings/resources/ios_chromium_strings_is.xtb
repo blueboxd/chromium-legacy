@@ -44,6 +44,7 @@
 <translation id="3344973607274501920">Chromium gat ekki athugað aðgangsorðin þín. Athugaðu nettenginguna þína.</translation>
 <translation id="3472200483164753384">Ekki stutt í Chromium Canary</translation>
 <translation id="3639997914391704523">Chromium getur athugað aðgangsorðin þín þegar þú skráir þig inn með Google reikningnum þínum</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" /> notaði Chromium og skildi eftir bókamerki, aðgangsorð og aðrar stillingar í þessu tæki.</translation>
 <translation id="3805899903892079518">Chromium hefur ekki aðgang að myndunum þínum eða myndskeiðum. Veittu aðgang í iOS Settings &gt; Privacy &gt; Photos.</translation>
 <translation id="4043291146360695975">Aðgangsorð eru aðeins vistuð í aðgangsorðastjórnun í þessu tæki.</translation>
 <translation id="4099085513035183040">Ekki stutt í Chromium Beta</translation>
@@ -55,6 +56,13 @@
 <translation id="4828317641996116749">Chromium gat ekki athugað öll aðgangsorð. Reyndu aftur síðar.</translation>
 <translation id="4985291216379576555">Ótengt, Chromium getur ekki leitað að uppfærslum.</translation>
 <translation id="4999538639245140991">Vegna þess að þú ert að skrá þig út af reikningi sem stýrt er af <ph name="SIGNOUT_MANAGED_DOMAIN" /> verður Chromium gögnum þínum eytt úr þessu tæki. Gögnin verða áfram geymd á Google reikningnum þínum.</translation>
+<translation id="5039881550736388123">Þegar kveikt er á þessu:
+<ph name="BEGIN_INDENT" />  • Hjálpaðu til við að bæta Chromium fyrir fólk sem notar það eins og þú.<ph name="END_INDENT" />
+
+Hafðu í huga:
+<ph name="BEGIN_INDENT" />  • Upplýsingar um notkun þína á Chromium eru sendar til Google en eru ekki tengdar við þig.
+  • Ef Chromium hrynur gætu tilteknar persónuupplýsingar komið fram í upplýsingum um hrunið.
+  • Ef þú kveikir að samstillingu gætu mæligildi innihaldið upplýsingar um vefslóðir sem þú ferð á.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Skráðu þig inn á Chromium</translation>
 <translation id="5224391634244552924">Engin vistuð aðgangsorð. Chromium getur athugað aðgangsorðin þín þegar þú vistar þau.</translation>
 <translation id="5308226104666789935">Chromium getur ekki leitað að uppfærslum</translation>
@@ -65,6 +73,7 @@
 <translation id="5777187867430702742">Chromium síða</translation>
 <translation id="5862307444128926510">Velkomin(n) í Chromium</translation>
 <translation id="5945387852661427312">Þú ert að skrá þig út af reikningi sem stýrt er af <ph name="DOMAIN" /> og veitir í leiðinni stjórnanda lénsins umsjón með Chromium gögnunum þínum. Gögnin þín verða tengd við þennan reikning til frambúðar. Ef þú skráir þig út af Chromium verður gögnunum þínum á þessu tæki eytt, en þau verða áfram geymd á Google reikningnum þínum.</translation>
+<translation id="5983312940147103417">Bættu Chromium</translation>
 <translation id="602807004951640891">Með því að nota Chromium samþykkirðu <ph name="BEGIN_LINK_TOS" />þjónustuskilmálana<ph name="END_LINK_TOS" />.</translation>
 <translation id="6119647025869519954">Til að gera Chromium að sjálfgefnum vafra:
 1. Opnaðu Stillingar

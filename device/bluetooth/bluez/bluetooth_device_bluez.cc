@@ -124,6 +124,13 @@ BluetoothDevice::ConnectErrorCode DBusErrorToConnectError(
   return error_code;
 }
 
+void OnForgetSuccess(base::OnceClosure callback) {
+#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
+  device::RecordForgetResult(device::ForgetResult::kSuccess);
+#endif
+  std::move(callback).Run();
+}
+
 void OnForgetError(dbus::ObjectPath object_path,
                    bluez::BluetoothDeviceBlueZ::ErrorCallback error_callback,
                    const std::string& error_name,
@@ -405,6 +412,14 @@ bool BluetoothDeviceBlueZ::IsPaired() const {
   // Trusted properties will be set to true.
   return properties->paired.value();
 }
+
+#if BUILDFLAG(IS_CHROMEOS)
+bool BluetoothDeviceBlueZ::IsBonded() const {
+  // TODO(b/217464014): Update to retrieve whether the peripheral is bonded to
+  // the device when this information is available from the platform.
+  return IsPaired();
+}
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 bool BluetoothDeviceBlueZ::IsConnected() const {
   bluez::BluetoothDeviceClient::Properties* properties =
@@ -700,21 +715,13 @@ void BluetoothDeviceBlueZ::Disconnect(base::OnceClosure callback,
 void BluetoothDeviceBlueZ::Forget(base::OnceClosure callback,
                                   ErrorCallback error_callback) {
   BLUETOOTH_LOG(EVENT) << object_path_.value() << ": Removing device";
+
+  // |this| can be destroyed during this call, so the callbacks are not class
+  // methods or else they may never be invoked.
   bluez::BluezDBusManager::Get()->GetBluetoothAdapterClient()->RemoveDevice(
       adapter()->object_path(), object_path_,
-      base::BindOnce(&BluetoothDeviceBlueZ::OnForgetSuccess,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)),
+      base::BindOnce(&OnForgetSuccess, std::move(callback)),
       base::BindOnce(&OnForgetError, object_path_, std::move(error_callback)));
-}
-
-void BluetoothDeviceBlueZ::OnForgetSuccess(base::OnceClosure callback) {
-#if BUILDFLAG(IS_CHROMEOS_ASH) || BUILDFLAG(IS_CHROMEOS_LACROS)
-  device::RecordForgetResult(device::ForgetResult::kSuccess);
-#endif
-  if (IsPaired())
-    adapter_->NotifyDevicePairedChanged(this, false);
-
-  std::move(callback).Run();
 }
 
 void BluetoothDeviceBlueZ::ConnectToService(

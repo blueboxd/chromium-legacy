@@ -2184,6 +2184,11 @@ be describing additional metrics about the same event.
       prompted to them to when the action finished, either succesfully or not.
     </summary>
   </metric>
+  <metric name="UserDataSource" enum="AutofillAssistantUserDataSource">
+    <summary>
+      The source of the user data for the CollectUserData action.
+    </summary>
+  </metric>
 </event>
 
 <event name="AutofillAssistant.InChromeTriggering">
@@ -12148,6 +12153,21 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="Omnibox.EditUrlSuggestion.Share">
+  <owner>nyquist@chromium.org</owner>
+  <owner>ssid@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    User pressed 'Share' while viewing edit URL suggestions which shares the
+    current URL.
+  </summary>
+  <metric name="HasOccurred" enum="Boolean">
+    <summary>
+      A boolean signaling that the event has occurred; only records true values.
+    </summary>
+  </metric>
+</event>
+
 <event name="OmniboxSecurityIndicator.FormSubmission">
   <owner>meacer@chromium.org</owner>
   <summary>
@@ -15378,12 +15398,84 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="PostMessage.Incoming.FirstPartyToFirstParty.DifferentBucket">
+  <owner>arichiv@chromium.org</owner>
+  <owner>miketaylr@chromium.org</owner>
+  <summary>
+    A top level frame received an incoming postMessage event from another top
+    level frame with a different storage key and a different origin.
+  </summary>
+  <metric name="SourceFrameSourceId">
+    <summary>
+      The UKM source ID of the postMessage event's source frame, as an integer.
+    </summary>
+  </metric>
+</event>
+
+<event name="PostMessage.Incoming.FirstPartyToFirstParty.SameBucket">
+  <owner>arichiv@chromium.org</owner>
+  <owner>miketaylr@chromium.org</owner>
+  <summary>
+    A top level frame received an incoming postMessage event from another top
+    level frame with the same storage key.
+  </summary>
+  <metric name="SourceFrameSourceId">
+    <summary>
+      The UKM source ID of the postMessage event's source frame, as an integer.
+    </summary>
+  </metric>
+</event>
+
+<event
+    name="PostMessage.Incoming.FirstPartyToThirdParty.DifferentBucket.DifferentOrigin">
+  <owner>arichiv@chromium.org</owner>
+  <owner>miketaylr@chromium.org</owner>
+  <summary>
+    A child frame received an incoming postMessage event from a top level frame
+    with a different storage key and a different origin.
+  </summary>
+  <metric name="SourceFrameSourceId">
+    <summary>
+      The UKM source ID of the postMessage event's source frame, as an integer.
+    </summary>
+  </metric>
+</event>
+
+<event
+    name="PostMessage.Incoming.FirstPartyToThirdParty.DifferentBucket.SameOrigin">
+  <owner>arichiv@chromium.org</owner>
+  <owner>miketaylr@chromium.org</owner>
+  <summary>
+    A child frame received an incoming postMessage event from a top level frame
+    with a different storage key and the same origin.
+  </summary>
+  <metric name="SourceFrameSourceId">
+    <summary>
+      The UKM source ID of the postMessage event's source frame, as an integer.
+    </summary>
+  </metric>
+</event>
+
 <event name="PostMessage.Incoming.Frame">
   <owner>arichiv@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
   <summary>
     The frame received an incoming postMessage event. This is recorded only for
     postMessage events sent between frames in the same renderer process.
+  </summary>
+  <metric name="SourceFrameSourceId">
+    <summary>
+      The UKM source ID of the postMessage event's source frame, as an integer.
+    </summary>
+  </metric>
+</event>
+
+<event name="PostMessage.Incoming.Opaque">
+  <owner>arichiv@chromium.org</owner>
+  <owner>miketaylr@chromium.org</owner>
+  <summary>
+    A frame received an incoming postMessage event from another frame where
+    either of their origins or top level origins are opaque.
   </summary>
   <metric name="SourceFrameSourceId">
     <summary>
@@ -15403,6 +15495,80 @@ be describing additional metrics about the same event.
   <metric name="SourcePageSourceId">
     <summary>
       The UKM source ID of the postMessage event's source page, as an integer.
+    </summary>
+  </metric>
+</event>
+
+<event
+    name="PostMessage.Incoming.ThirdPartyToFirstParty.DifferentBucket.DifferentOrigin">
+  <owner>arichiv@chromium.org</owner>
+  <owner>miketaylr@chromium.org</owner>
+  <summary>
+    A top level frame received an incoming postMessage event from a child frame
+    with a different storage key and a different origin.
+  </summary>
+  <metric name="SourceFrameSourceId">
+    <summary>
+      The UKM source ID of the postMessage event's source frame, as an integer.
+    </summary>
+  </metric>
+</event>
+
+<event
+    name="PostMessage.Incoming.ThirdPartyToFirstParty.DifferentBucket.SameOrigin">
+  <owner>arichiv@chromium.org</owner>
+  <owner>miketaylr@chromium.org</owner>
+  <summary>
+    A top level frame received an incoming postMessage event from a child frame
+    with a different storage key and the same origin.
+  </summary>
+  <metric name="SourceFrameSourceId">
+    <summary>
+      The UKM source ID of the postMessage event's source frame, as an integer.
+    </summary>
+  </metric>
+</event>
+
+<event
+    name="PostMessage.Incoming.ThirdPartyToThirdParty.DifferentBucket.DifferentOrigin">
+  <owner>arichiv@chromium.org</owner>
+  <owner>miketaylr@chromium.org</owner>
+  <summary>
+    A child frame received an incoming postMessage event from another child
+    frame with a different storage key and a different origin.
+  </summary>
+  <metric name="SourceFrameSourceId">
+    <summary>
+      The UKM source ID of the postMessage event's source frame, as an integer.
+    </summary>
+  </metric>
+</event>
+
+<event
+    name="PostMessage.Incoming.ThirdPartyToThirdParty.DifferentBucket.SameOrigin">
+  <owner>arichiv@chromium.org</owner>
+  <owner>miketaylr@chromium.org</owner>
+  <summary>
+    A child frame received an incoming postMessage event from another child
+    frame with a different storage key and the same origin.
+  </summary>
+  <metric name="SourceFrameSourceId">
+    <summary>
+      The UKM source ID of the postMessage event's source frame, as an integer.
+    </summary>
+  </metric>
+</event>
+
+<event name="PostMessage.Incoming.ThirdPartyToThirdParty.SameBucket">
+  <owner>arichiv@chromium.org</owner>
+  <owner>miketaylr@chromium.org</owner>
+  <summary>
+    A child frame received an incoming postMessage event from another child
+    frame with the same storage key.
+  </summary>
+  <metric name="SourceFrameSourceId">
+    <summary>
+      The UKM source ID of the postMessage event's source frame, as an integer.
     </summary>
   </metric>
 </event>
@@ -15773,10 +15939,20 @@ be describing additional metrics about the same event.
 <event name="PrerenderPageLoad" singular="True">
   <owner>ksakamoto@chromium.org</owner>
   <owner>nhiroki@chromium.org</owner>
+  <owner>asamidoi@chromium.org</owner>
   <summary>
     Metrics related to Prerender2
     (https://docs.google.com/document/d/1P2VKCLpmnNm_cRAjUeE-bqLL0bslL_zKqiNeCzNom_w/edit?usp=sharing).
   </summary>
+  <metric name="FinalStatus" enum="PrerenderHostFinalStatus">
+    <summary>
+      A status of a prerendering attempt. Recorded as enum
+      PrerenderHostFinalStatus in //tools/metrics/histograms/enums.xml.
+
+      This is replicated as Prerender.Experimental.PrerenderHostFinalStatus.* in
+      UMA.
+    </summary>
+  </metric>
   <metric name="Timing.ActivationToFirstContentfulPaint">
     <summary>
       The duration in milliseconds from time of activation navigation start to
@@ -18502,6 +18678,20 @@ be describing additional metrics about the same event.
     <summary>
       Session ID of the browser or app window this entry represents, unique for
       the browsing session.
+    </summary>
+  </metric>
+</event>
+
+<event name="TopToolbar.Share">
+  <owner>nyquist@chromium.org</owner>
+  <owner>ssid@chromium.org</owner>
+  <owner>xingliu@chromium.org</owner>
+  <summary>
+    User pressed the 'Share' in the top toolbar, which shares the current URL.
+  </summary>
+  <metric name="HasOccurred" enum="Boolean">
+    <summary>
+      A boolean signaling that the event has occurred; only records true values.
     </summary>
   </metric>
 </event>

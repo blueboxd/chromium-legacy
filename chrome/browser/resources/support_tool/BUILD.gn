@@ -16,7 +16,6 @@ generate_grd("build_grd") {
   grd_prefix = "support_tool"
   out_grd = resources_grd_file
   input_files = [
-    "support_tool.css",
     "support_tool_container.html",
     "support_tool.html",
   ]
@@ -48,6 +47,7 @@ html_to_wrapper("html_wrapper_files") {
 }
 
 ts_library("build_ts") {
+  composite = true
   root_dir = target_gen_dir
   out_dir = "$target_gen_dir/tsc"
   tsconfig_base = "tsconfig_base.json"

@@ -163,6 +163,7 @@
 #include "components/captive_portal/core/buildflags.h"
 #include "components/content_settings/browser/page_specific_content_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "components/custom_handlers/protocol_handler.h"
 #include "components/custom_handlers/protocol_handler_registry.h"
 #include "components/custom_handlers/register_protocol_handler_permission_request.h"
 #include "components/favicon/content/content_favicon_driver.h"
@@ -207,7 +208,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/custom_handlers/protocol_handler.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/profiling.h"
 #include "content/public/common/url_constants.h"
@@ -289,11 +289,11 @@ using content::NativeWebKeyboardEvent;
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
-using content::ProtocolHandler;
 using content::Referrer;
 using content::RenderWidgetHostView;
 using content::SiteInstance;
 using content::WebContents;
+using custom_handlers::ProtocolHandler;
 using extensions::Extension;
 using ui::WebDialogDelegate;
 using web_modal::WebContentsModalDialogManager;
@@ -934,7 +934,8 @@ void Browser::OnWindowClosing() {
 
   BrowserList::NotifyBrowserCloseStarted(this);
 
-  tab_strip_model_->CloseAllTabs();
+  if (!tab_strip_model_->empty())
+    tab_strip_model_->CloseAllTabs();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1252,19 +1253,13 @@ void Browser::TabGroupedStateChanged(
 }
 
 void Browser::TabStripEmpty() {
-  // Close the frame after we return to the message loop (not immediately,
-  // otherwise it will destroy this object before the stack has a chance to
-  // cleanly unwind.)
-  // Note: This will be called several times if TabStripEmpty is called several
-  //       times. This is because it does not close the window if tabs are
-  //       still present.
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(
-                     [](base::WeakPtr<Browser> browser) {
-                       if (browser)
-                         browser->window()->Close();
-                     },
-                     weak_factory_.GetWeakPtr()));
+  // This function is often called with various Browser related classes on the
+  // stack. Calling code can't handle Browser being deleted here (because it
+  // may delete the classes on the stack calling into this function). Because of
+  // this, BrowserWindow::Close() is used, instead of CloseNow(). CloseNow()
+  // immediately deletes, where was Close() is a hide, and then delete after
+  // posting a task.
+  window_->Close();
 
   // Instant may have visible WebContents that need to be detached before the
   // window system closes.
@@ -1585,6 +1580,14 @@ WebContents* Browser::OpenURLFromTab(WebContents* source,
 
 void Browser::NavigationStateChanged(WebContents* source,
                                      content::InvalidateTypes changed_flags) {
+  // If we're shutting down we should refuse to process this message.
+  // See crbug.com/1306297; it's possible that a WebContents sends navigation
+  // state messages while destructing during browser tear-down. Ironically we
+  // can't use IsShuttingDown() because by this point the browser is entirely
+  // removed from the browser list.
+  if (!command_controller_)
+    return;
+
   // Only update the UI when something visible has changed.
   if (changed_flags)
     ScheduleUIUpdate(source, changed_flags);

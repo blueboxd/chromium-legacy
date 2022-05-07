@@ -24,7 +24,10 @@ namespace syncer {
 
 namespace {
 
-ModelTypeSet ResolvePreferredTypes(UserSelectableTypeSet selected_types) {
+// Converts |selected_types| to the corresponding ModelTypeSet (e.g.
+// {kExtensions} becomes {EXTENSIONS, EXTENSION_SETTINGS}).
+ModelTypeSet UserSelectableTypesToModelTypes(
+    UserSelectableTypeSet selected_types) {
   ModelTypeSet preferred_types;
   for (UserSelectableType type : selected_types) {
     preferred_types.PutAll(UserSelectableTypeToAllModelTypes(type));
@@ -33,7 +36,8 @@ ModelTypeSet ResolvePreferredTypes(UserSelectableTypeSet selected_types) {
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-ModelTypeSet ResolvePreferredOsTypes(UserSelectableOsTypeSet selected_types) {
+ModelTypeSet UserSelectableOsTypesToModelTypes(
+    UserSelectableOsTypeSet selected_types) {
   ModelTypeSet preferred_types;
   for (UserSelectableOsType type : selected_types) {
     preferred_types.PutAll(UserSelectableOsTypeToAllModelTypes(type));
@@ -107,8 +111,9 @@ UserSelectableTypeSet SyncUserSettingsImpl::GetRegisteredSelectableTypes()
     const {
   UserSelectableTypeSet registered_types;
   for (UserSelectableType type : UserSelectableTypeSet::All()) {
-    if (registered_model_types_.Has(
-            UserSelectableTypeToCanonicalModelType(type))) {
+    if (!base::Intersection(registered_model_types_,
+                            UserSelectableTypeToAllModelTypes(type))
+             .Empty()) {
       registered_types.Put(type);
     }
   }
@@ -141,8 +146,9 @@ UserSelectableOsTypeSet SyncUserSettingsImpl::GetRegisteredSelectableOsTypes()
   DCHECK(chromeos::features::IsSyncSettingsCategorizationEnabled());
   UserSelectableOsTypeSet registered_types;
   for (UserSelectableOsType type : UserSelectableOsTypeSet::All()) {
-    if (registered_model_types_.Has(
-            UserSelectableOsTypeToCanonicalModelType(type))) {
+    if (!base::Intersection(registered_model_types_,
+                            UserSelectableOsTypeToAllModelTypes(type))
+             .Empty()) {
       registered_types.Put(type);
     }
   }
@@ -237,11 +243,11 @@ void SyncUserSettingsImpl::SetSyncRequestedIfNotSetExplicitly() {
 }
 
 ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
-  ModelTypeSet types = ResolvePreferredTypes(GetSelectedTypes());
+  ModelTypeSet types = UserSelectableTypesToModelTypes(GetSelectedTypes());
   types.PutAll(AlwaysPreferredUserTypes());
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   if (chromeos::features::IsSyncSettingsCategorizationEnabled()) {
-    types.PutAll(ResolvePreferredOsTypes(GetSelectedOsTypes()));
+    types.PutAll(UserSelectableOsTypesToModelTypes(GetSelectedOsTypes()));
   }
 #endif
   types.RetainAll(registered_model_types_);
@@ -272,12 +278,6 @@ bool SyncUserSettingsImpl::IsEncryptedDatatypeEnabled() const {
   const ModelTypeSet encrypted_types = GetEncryptedDataTypes();
   DCHECK(encrypted_types.HasAll(AlwaysEncryptedUserTypes()));
   return !Intersection(preferred_types, encrypted_types).Empty();
-}
-
-// static
-ModelTypeSet SyncUserSettingsImpl::ResolvePreferredTypesForTesting(
-    UserSelectableTypeSet selected_types) {
-  return ResolvePreferredTypes(selected_types);
 }
 
 }  // namespace syncer

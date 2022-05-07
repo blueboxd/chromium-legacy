@@ -29,6 +29,7 @@
 #include "components/global_media_controls/public/views/media_item_ui_list_view.h"
 #include "components/global_media_controls/public/views/media_item_ui_view.h"
 #include "components/media_message_center/media_notification_view_impl.h"
+#include "components/media_router/browser/media_routes_observer.h"
 #include "components/media_router/browser/presentation/web_contents_presentation_manager.h"
 #include "components/media_router/browser/test/mock_media_router.h"
 #include "components/soda/constants.h"
@@ -537,7 +538,7 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   }
 
   void OnSodaProgress(int progress) {
-    speech::SodaInstaller::GetInstance()->NotifySodaDownloadProgressForTesting(
+    speech::SodaInstaller::GetInstance()->NotifySodaProgressForTesting(
         progress);
   }
 
@@ -546,9 +547,8 @@ class MediaDialogViewBrowserTest : public InProcessBrowserTest {
   }
 
   void OnSodaLanguagePackInstalled() {
-    speech::SodaInstaller::GetInstance()
-        ->NotifyOnSodaLanguagePackInstalledForTesting(
-            speech::LanguageCode::kEnUs);
+    speech::SodaInstaller::GetInstance()->NotifySodaInstalledForTesting(
+        speech::LanguageCode::kEnUs);
   }
 
  protected:

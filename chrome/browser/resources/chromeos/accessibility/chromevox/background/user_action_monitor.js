@@ -8,6 +8,7 @@
 
 goog.provide('UserActionMonitor');
 
+goog.require('CommandHandlerInterface');
 goog.require('KeyCode');
 goog.require('KeySequence');
 goog.require('Output');
@@ -326,6 +327,6 @@ UserActionMonitor.Action = class {
    * @private
    */
   static onCommand_(command) {
-    CommandHandler.onCommand(command);
+    CommandHandlerInterface.instance.onCommand(command);
   }
 };

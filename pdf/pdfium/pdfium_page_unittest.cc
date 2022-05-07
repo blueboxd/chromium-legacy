@@ -11,12 +11,12 @@
 #include "base/files/file_path.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/test/scoped_feature_list.h"
 #include "cc/test/pixel_comparator.h"
 #include "cc/test/pixel_test_utils.h"
 #include "pdf/accessibility_structs.h"
 #include "pdf/pdfium/pdfium_engine.h"
 #include "pdf/pdfium/pdfium_test_base.h"
-#include "pdf/ppapi_migration/geometry_conversions.h"
 #include "pdf/test/test_client.h"
 #include "pdf/test/test_helpers.h"
 #include "pdf/ui/thumbnail.h"
@@ -24,6 +24,7 @@
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/pdfium/public/fpdf_formfill.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size_f.h"
@@ -178,7 +179,7 @@ TEST_F(PDFiumPageLinkTest, AnnotLinkGeneration) {
   if (UsingTestFonts()) {
     expected_links[0].bounding_rects[0] = {99, 436, 236, 14};
   }
-  static constexpr size_t kExpectedLinkCount = base::size(expected_links);
+  static constexpr size_t kExpectedLinkCount = std::size(expected_links);
 
   TestClient client;
   std::unique_ptr<PDFiumEngine> engine =
@@ -282,6 +283,39 @@ TEST_F(PDFiumPageImageTest, ImageAltText) {
   EXPECT_EQ("", page.images_[1].alt_text);
   EXPECT_EQ(gfx::Rect(380, 678, 1, 1), page.images_[2].bounding_rect);
   EXPECT_EQ("", page.images_[2].alt_text);
+}
+
+class PDFiumPageImageDataTest : public PDFiumPageImageTest {
+ public:
+  PDFiumPageImageDataTest() : enable_pdf_ocr_({features::kPdfOcr}) {}
+
+  PDFiumPageImageDataTest(const PDFiumPageImageDataTest&) = delete;
+  PDFiumPageImageDataTest& operator=(const PDFiumPageImageDataTest&) = delete;
+  ~PDFiumPageImageDataTest() override = default;
+
+ private:
+  base::test::ScopedFeatureList enable_pdf_ocr_;
+};
+
+TEST_F(PDFiumPageImageDataTest, ImageData) {
+  TestClient client;
+  std::unique_ptr<PDFiumEngine> engine =
+      InitializeEngine(&client, FILE_PATH_LITERAL("text_with_image.pdf"));
+  ASSERT_TRUE(engine);
+  ASSERT_EQ(1, engine->GetNumberOfPages());
+
+  PDFiumPage& page = GetPDFiumPageForTest(*engine, 0);
+  page.CalculateImages();
+  ASSERT_EQ(3u, page.images_.size());
+
+  ASSERT_FALSE(page.images_[0].alt_text.empty());
+  EXPECT_TRUE(page.images_[0].image_data.drawsNothing());
+  EXPECT_EQ(page.images_[0].image_data.width(), 0);
+  EXPECT_EQ(page.images_[0].image_data.height(), 0);
+
+  ASSERT_TRUE(page.images_[2].alt_text.empty());
+  EXPECT_EQ(page.images_[1].image_data.width(), 20);
+  EXPECT_EQ(page.images_[1].image_data.height(), 20);
 }
 
 using PDFiumPageTextTest = PDFiumTestBase;
@@ -501,7 +535,7 @@ TEST_F(PDFiumPageHighlightTest, PopulateHighlights) {
 
   PDFiumPage& page = GetPDFiumPageForTest(*engine, 0);
   page.PopulateAnnotations();
-  ASSERT_EQ(base::size(kExpectedHighlights), page.highlights_.size());
+  ASSERT_EQ(std::size(kExpectedHighlights), page.highlights_.size());
 
   for (size_t i = 0; i < page.highlights_.size(); ++i) {
     ASSERT_EQ(kExpectedHighlights[i].start_char_index,
@@ -539,7 +573,7 @@ TEST_F(PDFiumPageTextFieldTest, PopulateTextFields) {
   PDFiumPage& page = GetPDFiumPageForTest(*engine, 0);
   page.PopulateAnnotations();
   size_t text_fields_count = page.text_fields_.size();
-  ASSERT_EQ(base::size(kExpectedTextFields), text_fields_count);
+  ASSERT_EQ(std::size(kExpectedTextFields), text_fields_count);
 
   for (size_t i = 0; i < text_fields_count; ++i) {
     EXPECT_EQ(kExpectedTextFields[i].name, page.text_fields_[i].name);
@@ -618,12 +652,12 @@ TEST_F(PDFiumPageChoiceFieldTest, PopulateChoiceFields) {
   PDFiumPage& page = GetPDFiumPageForTest(*engine, 0);
   page.PopulateAnnotations();
   size_t choice_fields_count = page.choice_fields_.size();
-  ASSERT_EQ(base::size(kExpectedChoiceFields), choice_fields_count);
+  ASSERT_EQ(std::size(kExpectedChoiceFields), choice_fields_count);
 
   for (size_t i = 0; i < choice_fields_count; ++i) {
     EXPECT_EQ(kExpectedChoiceFields[i].name, page.choice_fields_[i].name);
     size_t choice_field_options_count = page.choice_fields_[i].options.size();
-    ASSERT_EQ(base::size(kExpectedChoiceFields[i].options),
+    ASSERT_EQ(std::size(kExpectedChoiceFields[i].options),
               choice_field_options_count);
     for (size_t j = 0; j < choice_field_options_count; ++j) {
       EXPECT_EQ(kExpectedChoiceFields[i].options[j].name,
@@ -701,7 +735,7 @@ TEST_F(PDFiumPageButtonTest, PopulateButtons) {
   PDFiumPage& page = GetPDFiumPageForTest(*engine, 0);
   page.PopulateAnnotations();
   size_t buttons_count = page.buttons_.size();
-  ASSERT_EQ(base::size(kExpectedButtons), buttons_count);
+  ASSERT_EQ(std::size(kExpectedButtons), buttons_count);
 
   for (size_t i = 0; i < buttons_count; ++i) {
     EXPECT_EQ(kExpectedButtons[i].name, page.buttons_[i].name);

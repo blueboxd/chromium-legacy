@@ -184,7 +184,8 @@ public class ToSAndUMAFirstRunFragment
         final boolean hasChildAccount = getPageDelegate().getProperties().getBoolean(
                 SyncConsentFirstRunFragment.IS_CHILD_ACCOUNT, false);
         final boolean isMetricsReportingDisabledByPolicy = !isWaitingForNativeAndPolicyInit()
-                && PrivacyPreferencesManagerImpl.getInstance().isMetricsReportingDisabledByPolicy();
+                && !PrivacyPreferencesManagerImpl.getInstance()
+                            .isUsageAndCrashReportingPermittedByPolicy();
 
         updateTosText(umaDialogMayBeShown, hasChildAccount, isMetricsReportingDisabledByPolicy);
 
@@ -193,7 +194,7 @@ public class ToSAndUMAFirstRunFragment
 
     private SpanInfo buildTermsOfServiceLink() {
         NoUnderlineClickableSpan clickableGoogleTermsSpan =
-                new NoUnderlineClickableSpan(getResources(), (view1) -> {
+                new NoUnderlineClickableSpan(getContext(), (view1) -> {
                     if (!isAdded()) return;
                     getPageDelegate().showInfoPage(R.string.google_terms_of_service_url);
                 });
@@ -202,7 +203,7 @@ public class ToSAndUMAFirstRunFragment
 
     private SpanInfo buildAdditionalTermsOfServiceLink() {
         NoUnderlineClickableSpan clickableChromeAdditionalTermsSpan =
-                new NoUnderlineClickableSpan(getResources(), (view1) -> {
+                new NoUnderlineClickableSpan(getContext(), (view1) -> {
                     if (!isAdded()) return;
                     getPageDelegate().showInfoPage(R.string.chrome_additional_terms_of_service_url);
                 });
@@ -211,7 +212,7 @@ public class ToSAndUMAFirstRunFragment
 
     private SpanInfo buildPrivacyPolicyLink() {
         NoUnderlineClickableSpan clickableFamilyLinkPrivacySpan =
-                new NoUnderlineClickableSpan(getResources(), (view1) -> {
+                new NoUnderlineClickableSpan(getContext(), (view1) -> {
                     if (!isAdded()) return;
                     getPageDelegate().showInfoPage(R.string.google_privacy_policy_url);
                 });
@@ -221,7 +222,7 @@ public class ToSAndUMAFirstRunFragment
 
     private SpanInfo buildMetricsAndCrashReportingLink() {
         NoUnderlineClickableSpan clickableUMADialogSpan =
-                new NoUnderlineClickableSpan(getResources(), (view1) -> openUmaDialog());
+                new NoUnderlineClickableSpan(getContext(), (view1) -> openUmaDialog());
         return new SpanInfo("<UMA_LINK>", "</UMA_LINK>", clickableUMADialogSpan);
     }
 
@@ -350,8 +351,8 @@ public class ToSAndUMAFirstRunFragment
     private boolean getUmaCheckBoxInitialState() {
         // Metrics and crash reporting could not be permitted by policy.
         if (!isWaitingForNativeAndPolicyInit()
-                && PrivacyPreferencesManagerImpl.getInstance()
-                           .isMetricsReportingDisabledByPolicy()) {
+                && !PrivacyPreferencesManagerImpl.getInstance()
+                            .isUsageAndCrashReportingPermittedByPolicy()) {
             return false;
         }
 
@@ -396,8 +397,8 @@ public class ToSAndUMAFirstRunFragment
         return !FREMobileIdentityConsistencyFieldTrial.shouldShowOldFreWithUmaDialog()
                 && (sShowUmaCheckBoxForTesting || VersionInfo.isOfficialBuild())
                 && (isWaitingForNativeAndPolicyInit()
-                        || !PrivacyPreferencesManagerImpl.getInstance()
-                                    .isMetricsReportingDisabledByPolicy());
+                        || PrivacyPreferencesManagerImpl.getInstance()
+                                   .isUsageAndCrashReportingPermittedByPolicy());
     }
 
     @VisibleForTesting

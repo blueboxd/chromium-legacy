@@ -6,7 +6,7 @@ import {FakeMethodResolver} from 'chrome://resources/ash/common/fake_method_reso
 import {FakeObservables} from 'chrome://resources/ash/common/fake_observables.js';
 import {assert} from 'chrome://resources/js/assert.m.js';
 
-import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, Component, ComponentType, ErrorObserverRemote, FinalizationObserverRemote, FinalizationStatus, HardwareVerificationStatusObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningObserverRemote, ProvisioningStatus, QrCode, RmadErrorCode, ShimlessRmaServiceInterface, State, StateResult, UpdateRoFirmwareObserverRemote, UpdateRoFirmwareStatus, WriteProtectDisableCompleteAction} from './shimless_rma_types.js';
+import {CalibrationComponentStatus, CalibrationObserverRemote, CalibrationOverallStatus, CalibrationSetupInstruction, CalibrationStatus, Component, ComponentType, ErrorObserverRemote, FinalizationError, FinalizationObserverRemote, FinalizationStatus, HardwareVerificationStatusObserverRemote, HardwareWriteProtectionStateObserverRemote, OsUpdateObserverRemote, OsUpdateOperation, PowerCableStateObserverRemote, ProvisioningError, ProvisioningObserverRemote, ProvisioningStatus, QrCode, RmadErrorCode, ShimlessRmaServiceInterface, State, StateResult, UpdateErrorCode, UpdateRoFirmwareObserverRemote, UpdateRoFirmwareStatus, WriteProtectDisableCompleteAction} from './shimless_rma_types.js';
 
 /** @implements {ShimlessRmaServiceInterface} */
 export class FakeShimlessRmaService {
@@ -275,6 +275,15 @@ export class FakeShimlessRmaService {
   setDifferentOwner() {
     return this.getNextStateForMethod_(
         'setDifferentOwner', State.kChooseDestination);
+  }
+
+  /**
+   * @param {boolean} shouldWipeDevice
+   * @return {!Promise<!StateResult>}
+   */
+  setWipeDevice(shouldWipeDevice) {
+    return this.getNextStateForMethod_(
+        'setWipeDevice', State.kChooseWipeDevice);
   }
 
   /**
@@ -770,10 +779,12 @@ export class FakeShimlessRmaService {
    */
   observeOsUpdateProgress(remote) {
     this.observables_.observe(
-        'OsUpdateObserver_onOsUpdateProgressUpdated', (operation, progress) => {
+        'OsUpdateObserver_onOsUpdateProgressUpdated',
+        (operation, progress, errorCode) => {
           remote.onOsUpdateProgressUpdated(
               /** @type {!OsUpdateOperation} */ (operation),
-              /** @type {number} */ (progress));
+              /** @type {number} */ (progress),
+              /** @type {!UpdateErrorCode} */ (errorCode));
         });
   }
 
@@ -897,10 +908,12 @@ export class FakeShimlessRmaService {
    */
   observeProvisioningProgress(remote) {
     this.observables_.observe(
-        'ProvisioningObserver_onProvisioningUpdated', (status, progress) => {
+        'ProvisioningObserver_onProvisioningUpdated',
+        (status, progress, error) => {
           remote.onProvisioningUpdated(
               /** @type {!ProvisioningStatus} */ (status),
-              /** @type {number} */ (progress));
+              /** @type {number} */ (progress),
+              /** @type {!ProvisioningError} */ (error));
         });
     if (this.automaticallyTriggerProvisioningObservation_) {
       // Fake progress over 4 seconds.
@@ -1016,10 +1029,12 @@ export class FakeShimlessRmaService {
    */
   observeFinalizationStatus(remote) {
     this.observables_.observe(
-        'FinalizationObserver_onFinalizationUpdated', (status, progress) => {
+        'FinalizationObserver_onFinalizationUpdated',
+        (status, progress, error) => {
           remote.onFinalizationUpdated(
               /** @type {!FinalizationStatus} */ (status),
-              /** @type {number} */ (progress));
+              /** @type {number} */ (progress),
+              /** @type {!FinalizationError} */ (error));
         });
     if (this.automaticallyTriggerFinalizationObservation_) {
       this.triggerFinalizationObserver(

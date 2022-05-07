@@ -35,6 +35,7 @@
 #include "absl/container/fixed_array.h"
 #include "absl/container/inlined_vector.h"
 #include "absl/strings/escaping.h"
+#include "absl/strings/internal/cord_data_edge.h"
 #include "absl/strings/internal/cord_internal.h"
 #include "absl/strings/internal/cord_rep_btree.h"
 #include "absl/strings/internal/cord_rep_crc.h"
@@ -86,30 +87,6 @@ static inline CordRep* VerifyTree(CordRep* node) {
   return node;
 }
 
-// Create a concatenation of the specified nodes.
-// Does not change the refcounts of "left" and "right".
-// The returned node has a refcount of 1.
-static CordRep* RawConcat(CordRep* left, CordRep* right) {
-  // Avoid making degenerate concat nodes (one child is empty)
-  if (left == nullptr) return right;
-  if (right == nullptr) return left;
-  if (left->length == 0) {
-    CordRep::Unref(left);
-    return right;
-  }
-  if (right->length == 0) {
-    CordRep::Unref(right);
-    return left;
-  }
-  ABSL_INTERNAL_LOG(FATAL, "CordRepConcat is no longer supported");
-  return nullptr;
-}
-
-static CordRep* Concat(CordRep* left, CordRep* right) {
-  CordRep* rep = RawConcat(left, right);
-  return VerifyTree(rep);
-}
-
 static CordRepFlat* CreateFlat(const char* data, size_t length,
                                size_t alloc_hint) {
   CordRepFlat* flat = CordRepFlat::New(length + alloc_hint);
@@ -149,23 +126,6 @@ void InitializeCordRepExternal(absl::string_view data, CordRepExternal* rep) {
 }
 
 }  // namespace cord_internal
-
-static CordRep* NewSubstring(CordRep* child, size_t offset, size_t length) {
-  // Never create empty substring nodes
-  if (length == 0) {
-    CordRep::Unref(child);
-    return nullptr;
-  } else {
-    CordRepSubstring* rep = new CordRepSubstring();
-    assert(child->IsExternal() || child->IsFlat());
-    assert((offset + length) <= child->length);
-    rep->length = length;
-    rep->tag = cord_internal::SUBSTRING;
-    rep->start = offset;
-    rep->child = child;
-    return VerifyTree(rep);
-  }
-}
 
 // Creates a CordRep from the provided string. If the string is large enough,
 // and not wasteful, we move the string into an external cord rep, preserving
@@ -624,68 +584,6 @@ inline void Cord::Prepend(T&& src) {
 
 template void Cord::Prepend(std::string&& src);
 
-static CordRep* RemovePrefixFrom(CordRep* node, size_t n) {
-  if (n >= node->length) return nullptr;
-  if (n == 0) return CordRep::Ref(node);
-  absl::InlinedVector<CordRep*, kInlinedVectorSize> rhs_stack;
-
-  assert(!node->IsCrc());
-  assert(n <= node->length);
-
-  if (n == 0) {
-    CordRep::Ref(node);
-  } else {
-    size_t start = n;
-    size_t len = node->length - n;
-    if (node->IsSubstring()) {
-      // Consider in-place update of node, similar to in RemoveSuffixFrom().
-      start += node->substring()->start;
-      node = node->substring()->child;
-    }
-    node = NewSubstring(CordRep::Ref(node), start, len);
-  }
-  while (!rhs_stack.empty()) {
-    node = Concat(node, CordRep::Ref(rhs_stack.back()));
-    rhs_stack.pop_back();
-  }
-  return node;
-}
-
-// RemoveSuffixFrom() is very similar to RemovePrefixFrom(), with the
-// exception that removing a suffix has an optimization where a node may be
-// edited in place iff that node and all its ancestors have a refcount of 1.
-static CordRep* RemoveSuffixFrom(CordRep* node, size_t n) {
-  if (n >= node->length) return nullptr;
-  if (n == 0) return CordRep::Ref(node);
-  absl::InlinedVector<CordRep*, kInlinedVectorSize> lhs_stack;
-  bool inplace_ok = node->refcount.IsOne();
-  assert(!node->IsCrc());
-
-  assert(n <= node->length);
-
-  if (n == 0) {
-    CordRep::Ref(node);
-  } else if (inplace_ok && !node->IsExternal()) {
-    // Consider making a new buffer if the current node capacity is much
-    // larger than the new length.
-    CordRep::Ref(node);
-    node->length -= n;
-  } else {
-    size_t start = 0;
-    size_t len = node->length - n;
-    if (node->IsSubstring()) {
-      start = node->substring()->start;
-      node = node->substring()->child;
-    }
-    node = NewSubstring(CordRep::Ref(node), start, len);
-  }
-  while (!lhs_stack.empty()) {
-    node = Concat(CordRep::Ref(lhs_stack.back()), node);
-    lhs_stack.pop_back();
-  }
-  return node;
-}
-
 void Cord::RemovePrefix(size_t n) {
   ABSL_INTERNAL_CHECK(n <= size(),
                       absl::StrCat("Requested prefix size ", n,
@@ -697,14 +595,20 @@ void Cord::RemovePrefix(size_t n) {
     auto constexpr method = CordzUpdateTracker::kRemovePrefix;
     CordzUpdateScope scope(contents_.cordz_info(), method);
     tree = cord_internal::RemoveCrcNode(tree);
-    if (tree->IsBtree()) {
+    if (n >= tree->length) {
+      CordRep::Unref(tree);
+      tree = nullptr;
+    } else if (tree->IsBtree()) {
       CordRep* old = tree;
       tree = tree->btree()->SubTree(n, tree->length - n);
       CordRep::Unref(old);
+    } else if (tree->IsSubstring() && tree->refcount.IsOne()) {
+      tree->substring()->start += n;
+      tree->length -= n;
     } else {
-      CordRep* newrep = RemovePrefixFrom(tree, n);
+      CordRep* rep = CordRepSubstring::Substring(tree, n, tree->length - n);
       CordRep::Unref(tree);
-      tree = VerifyTree(newrep);
+      tree = rep;
     }
     contents_.SetTreeOrEmpty(tree, scope);
   }
@@ -721,57 +625,21 @@ void Cord::RemoveSuffix(size_t n) {
     auto constexpr method = CordzUpdateTracker::kRemoveSuffix;
     CordzUpdateScope scope(contents_.cordz_info(), method);
     tree = cord_internal::RemoveCrcNode(tree);
-    if (tree->IsBtree()) {
-      tree = CordRepBtree::RemoveSuffix(tree->btree(), n);
-    } else {
-      CordRep* newrep = RemoveSuffixFrom(tree, n);
+    if (n >= tree->length) {
       CordRep::Unref(tree);
-      tree = VerifyTree(newrep);
+      tree = nullptr;
+    } else if (tree->IsBtree()) {
+      tree = CordRepBtree::RemoveSuffix(tree->btree(), n);
+    } else if (!tree->IsExternal() && tree->refcount.IsOne()) {
+      assert(tree->IsFlat() || tree->IsSubstring());
+      tree->length -= n;
+    } else {
+      CordRep* rep = CordRepSubstring::Substring(tree, 0, tree->length - n);
+      CordRep::Unref(tree);
+      tree = rep;
     }
     contents_.SetTreeOrEmpty(tree, scope);
   }
-}
-
-// Work item for NewSubRange().
-struct SubRange {
-  SubRange(CordRep* a_node, size_t a_pos, size_t a_n)
-      : node(a_node), pos(a_pos), n(a_n) {}
-  CordRep* node;  // nullptr means concat last 2 results.
-  size_t pos;
-  size_t n;
-};
-
-static CordRep* NewSubRange(CordRep* node, size_t pos, size_t n) {
-  absl::InlinedVector<CordRep*, kInlinedVectorSize> results;
-  absl::InlinedVector<SubRange, kInlinedVectorSize> todo;
-  assert(!node->IsCrc());
-  todo.push_back(SubRange(node, pos, n));
-  do {
-    const SubRange& sr = todo.back();
-    node = sr.node;
-    pos = sr.pos;
-    n = sr.n;
-    todo.pop_back();
-
-    if (node == nullptr) {
-      assert(results.size() >= 2);
-      CordRep* right = results.back();
-      results.pop_back();
-      CordRep* left = results.back();
-      results.pop_back();
-      results.push_back(Concat(left, right));
-    } else if (pos == 0 && n == node->length) {
-      results.push_back(CordRep::Ref(node));
-    } else {
-      if (node->IsSubstring()) {
-        pos += node->substring()->start;
-        node = node->substring()->child;
-      }
-      results.push_back(NewSubstring(CordRep::Ref(node), pos, n));
-    }
-  } while (!todo.empty());
-  assert(results.size() == 1);
-  return results[0];
 }
 
 Cord Cord::Subcord(size_t pos, size_t new_size) const {
@@ -807,7 +675,7 @@ Cord Cord::Subcord(size_t pos, size_t new_size) const {
   if (tree->IsBtree()) {
     tree = tree->btree()->SubTree(pos, new_size);
   } else {
-    tree = NewSubRange(tree, pos, new_size);
+    tree = CordRepSubstring::Substring(tree, pos, new_size);
   }
   sub_cord.contents_.EmplaceTree(tree, contents_.data_,
                                  CordzUpdateTracker::kSubCord);
@@ -1094,35 +962,6 @@ void Cord::CopyToArraySlowPath(char* dst) const {
   }
 }
 
-Cord::ChunkIterator& Cord::ChunkIterator::AdvanceStack() {
-  auto& stack_of_right_children = stack_of_right_children_;
-  if (stack_of_right_children.empty()) {
-    assert(!current_chunk_.empty());  // Called on invalid iterator.
-    // We have reached the end of the Cord.
-    return *this;
-  }
-
-  // Process the next node on the stack.
-  CordRep* node = stack_of_right_children.back();
-  stack_of_right_children.pop_back();
-
-  // Get the child node if we encounter a SUBSTRING.
-  size_t offset = 0;
-  size_t length = node->length;
-  if (node->IsSubstring()) {
-    offset = node->substring()->start;
-    node = node->substring()->child;
-  }
-
-  assert(node->IsExternal() || node->IsFlat());
-  assert(length != 0);
-  const char* data =
-      node->IsExternal() ? node->external()->base : node->flat()->Data();
-  current_chunk_ = absl::string_view(data + offset, length);
-  current_leaf_ = node;
-  return *this;
-}
-
 Cord Cord::ChunkIterator::AdvanceAndReadBytes(size_t n) {
   ABSL_HARDENING_ASSERT(bytes_remaining_ >= n &&
                         "Attempted to iterate past `end()`");
@@ -1165,133 +1004,31 @@ Cord Cord::ChunkIterator::AdvanceAndReadBytes(size_t n) {
     return subcord;
   }
 
-  auto& stack_of_right_children = stack_of_right_children_;
-  if (n < current_chunk_.size()) {
-    // Range to read is a proper subrange of the current chunk.
-    assert(current_leaf_ != nullptr);
-    CordRep* subnode = CordRep::Ref(current_leaf_);
-    const char* data = subnode->IsExternal() ? subnode->external()->base
-                                             : subnode->flat()->Data();
-    subnode = NewSubstring(subnode, current_chunk_.data() - data, n);
-    subcord.contents_.EmplaceTree(VerifyTree(subnode), method);
-    RemoveChunkPrefix(n);
-    return subcord;
-  }
-
-  // Range to read begins with a proper subrange of the current chunk.
-  assert(!current_chunk_.empty());
+  // Short circuit if reading the entire data edge.
   assert(current_leaf_ != nullptr);
-  CordRep* subnode = CordRep::Ref(current_leaf_);
-  if (current_chunk_.size() < subnode->length) {
-    const char* data = subnode->IsExternal() ? subnode->external()->base
-                                             : subnode->flat()->Data();
-    subnode = NewSubstring(subnode, current_chunk_.data() - data,
-                           current_chunk_.size());
-  }
-  n -= current_chunk_.size();
-  bytes_remaining_ -= current_chunk_.size();
-
-  // Process the next node(s) on the stack, reading whole subtrees depending on
-  // their length and how many bytes we are advancing.
-  CordRep* node = nullptr;
-  while (!stack_of_right_children.empty()) {
-    node = stack_of_right_children.back();
-    stack_of_right_children.pop_back();
-    if (node->length > n) break;
-    // TODO(qrczak): This might unnecessarily recreate existing concat nodes.
-    // Avoiding that would need pretty complicated logic (instead of
-    // current_leaf, keep current_subtree_ which points to the highest node
-    // such that the current leaf can be found on the path of left children
-    // starting from current_subtree_; delay creating subnode while node is
-    // below current_subtree_; find the proper node along the path of left
-    // children starting from current_subtree_ if this loop exits while staying
-    // below current_subtree_; etc.; alternatively, push parents instead of
-    // right children on the stack).
-    subnode = Concat(subnode, CordRep::Ref(node));
-    n -= node->length;
-    bytes_remaining_ -= node->length;
-    node = nullptr;
-  }
-
-  if (node == nullptr) {
-    // We have reached the end of the Cord.
-    assert(bytes_remaining_ == 0);
-    subcord.contents_.EmplaceTree(VerifyTree(subnode), method);
+  if (n == current_leaf_->length) {
+    bytes_remaining_ = 0;
+    current_chunk_ = {};
+    CordRep* tree = CordRep::Ref(current_leaf_);
+    subcord.contents_.EmplaceTree(VerifyTree(tree), method);
     return subcord;
   }
 
-  // Get the child node if we encounter a SUBSTRING.
-  size_t offset = 0;
-  size_t length = node->length;
-  if (node->IsSubstring()) {
-    offset = node->substring()->start;
-    node = node->substring()->child;
-  }
+  // From this point on, we need a partial substring node.
+  // Get pointer to the underlying flat or external data payload and
+  // compute data pointer and offset into current flat or external.
+  CordRep* payload = current_leaf_->IsSubstring()
+                         ? current_leaf_->substring()->child
+                         : current_leaf_;
+  const char* data = payload->IsExternal() ? payload->external()->base
+                                           : payload->flat()->Data();
+  const size_t offset = current_chunk_.data() - data;
 
-  // Range to read ends with a proper (possibly empty) subrange of the current
-  // chunk.
-  assert(node->IsExternal() || node->IsFlat());
-  assert(length > n);
-  if (n > 0) {
-    subnode = Concat(subnode, NewSubstring(CordRep::Ref(node), offset, n));
-  }
-  const char* data =
-      node->IsExternal() ? node->external()->base : node->flat()->Data();
-  current_chunk_ = absl::string_view(data + offset + n, length - n);
-  current_leaf_ = node;
+  auto* tree = CordRepSubstring::Substring(payload, offset, n);
+  subcord.contents_.EmplaceTree(VerifyTree(tree), method);
   bytes_remaining_ -= n;
-  subcord.contents_.EmplaceTree(VerifyTree(subnode), method);
+  current_chunk_.remove_prefix(n);
   return subcord;
-}
-
-void Cord::ChunkIterator::AdvanceBytesSlowPath(size_t n) {
-  assert(bytes_remaining_ >= n && "Attempted to iterate past `end()`");
-  assert(n >= current_chunk_.size());  // This should only be called when
-                                       // iterating to a new node.
-
-  n -= current_chunk_.size();
-  bytes_remaining_ -= current_chunk_.size();
-
-  if (stack_of_right_children_.empty()) {
-    // We have reached the end of the Cord.
-    assert(bytes_remaining_ == 0);
-    return;
-  }
-
-  // Process the next node(s) on the stack, skipping whole subtrees depending on
-  // their length and how many bytes we are advancing.
-  CordRep* node = nullptr;
-  auto& stack_of_right_children = stack_of_right_children_;
-  while (!stack_of_right_children.empty()) {
-    node = stack_of_right_children.back();
-    stack_of_right_children.pop_back();
-    if (node->length > n) break;
-    n -= node->length;
-    bytes_remaining_ -= node->length;
-    node = nullptr;
-  }
-
-  if (node == nullptr) {
-    // We have reached the end of the Cord.
-    assert(bytes_remaining_ == 0);
-    return;
-  }
-
-  // Get the child node if we encounter a SUBSTRING.
-  size_t offset = 0;
-  size_t length = node->length;
-  if (node->IsSubstring()) {
-    offset = node->substring()->start;
-    node = node->substring()->child;
-  }
-
-  assert(node->IsExternal() || node->IsFlat());
-  assert(length > n);
-  const char* data =
-      node->IsExternal() ? node->external()->base : node->flat()->Data();
-  current_chunk_ = absl::string_view(data + offset + n, length - n);
-  current_leaf_ = node;
-  bytes_remaining_ -= n;
 }
 
 char Cord::operator[](size_t i) const {

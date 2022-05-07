@@ -15,7 +15,6 @@
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
-#include "base/cxx17_backports.h"
 #include "base/json/json_writer.h"
 #include "base/lazy_instance.h"
 #include "base/memory/raw_ptr.h"
@@ -216,7 +215,7 @@ ExtensionWebRequestEventRouter::EventTypes GetEventTypeFromEventName(
             ExtensionWebRequestEventRouter::kOnErrorOccurred},
            {keys::kOnCompleted, ExtensionWebRequestEventRouter::kOnCompleted}});
 
-  DCHECK_EQ(kRequestStageMap->size(), base::size(kWebRequestEvents));
+  DCHECK_EQ(kRequestStageMap->size(), std::size(kWebRequestEvents));
 
   static const size_t kWebRequestEventPrefixLen =
       strlen(kWebRequestEventPrefix);
@@ -319,7 +318,8 @@ void SendOnMessageEventOnUI(
     return;
 
   std::unique_ptr<base::ListValue> event_args(new base::ListValue);
-  event_args->Append(event_details->GetAndClearDict());
+  event_args->Append(
+      base::Value::FromUniquePtrValue(event_details->GetAndClearDict()));
 
   EventRouter* event_router = EventRouter::Get(browser_context);
 
@@ -395,7 +395,7 @@ events::HistogramValue GetEventHistogramValue(const std::string& event_name) {
       {events::WEB_REQUEST_ON_AUTH_REQUIRED, keys::kOnAuthRequiredEvent},
       {events::WEB_REQUEST_ON_RESPONSE_STARTED, keys::kOnResponseStartedEvent},
       {events::WEB_REQUEST_ON_HEADERS_RECEIVED, keys::kOnHeadersReceivedEvent}};
-  static_assert(base::size(kWebRequestEvents) == base::size(values_and_names),
+  static_assert(std::size(kWebRequestEvents) == std::size(values_and_names),
                 "kWebRequestEvents and values_and_names must be the same");
   for (const ValueAndName& value_and_name : values_and_names) {
     if (value_and_name.event_name == event_name)
@@ -629,7 +629,7 @@ WebRequestAPI::WebRequestAPI(content::BrowserContext* context)
       proxies_(std::make_unique<ProxySet>()),
       may_have_proxies_(MayHaveProxies()) {
   EventRouter* event_router = EventRouter::Get(browser_context_);
-  for (size_t i = 0; i < base::size(kWebRequestEvents); ++i) {
+  for (size_t i = 0; i < std::size(kWebRequestEvents); ++i) {
     // Observe the webRequest event.
     std::string event_name = kWebRequestEvents[i];
     event_router->RegisterObserver(this, event_name);
@@ -698,7 +698,8 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
     ukm::SourceIdObj ukm_source_id,
     mojo::PendingReceiver<network::mojom::URLLoaderFactory>* factory_receiver,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
-        header_client) {
+        header_client,
+    const url::Origin& request_initiator) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* web_contents = content::WebContents::FromRenderFrameHost(frame);
   if (!MayHaveProxies()) {
@@ -719,6 +720,21 @@ bool WebRequestAPI::MaybeProxyURLLoaderFactory(
           skip_proxy = false;
         }
       }
+    }
+
+    // Create a proxy URLLoader even when there is no CRX
+    // installed with webRequest permissions. This allows the extension
+    // requests to be intercepted for CRX telemetry service if enabled.
+    // TODO(zackhan): This is here for the current implementation, but if it's
+    // expanded, it should live somewhere else so that we don't have to create
+    // a full proxy just for telemetry.
+    const std::string& request_scheme = request_initiator.scheme();
+    if (extensions::kExtensionScheme == request_scheme &&
+        ExtensionsBrowserClient::Get()->IsExtensionTelemetryServiceEnabled(
+            browser_context) &&
+        ExtensionsBrowserClient::Get()
+            ->IsExtensionTelemetryRemoteHostContactedSignalEnabled()) {
+      skip_proxy = false;
     }
 
     if (skip_proxy)
@@ -1094,6 +1110,18 @@ int ExtensionWebRequestEventRouter::OnBeforeRequest(
       HasExtraHeadersListenerForRequest(browser_context, request));
 
   const bool is_incognito_context = IsIncognitoBrowserContext(browser_context);
+
+  // CRX requests information can be intercepted here.
+  // May be null for browser-initiated requests such as navigations.
+  if (request->initiator) {
+    const std::string& scheme = request->initiator->scheme();
+    const std::string& extension_id = request->initiator->host();
+    const GURL& request_url = request->url;
+    if (scheme == extensions::kExtensionScheme) {
+      ExtensionsBrowserClient::Get()->NotifyExtensionRemoteHostContacted(
+          browser_context, extension_id, request_url);
+    }
+  }
 
   // Whether to initialized |blocked_requests_|.
   bool initialize_blocked_requests = false;
@@ -1633,9 +1661,10 @@ void ExtensionWebRequestEventRouter::DispatchEventToListeners(
       }
       custom_event_details = event_details_filtered_copy.get();
     }
-    args_filtered->Append(custom_event_details->GetFilteredDict(
-        listener->extra_info_spec, PermissionHelper::Get(browser_context),
-        listener->id.extension_id, crosses_incognito));
+    args_filtered->Append(
+        base::Value::FromUniquePtrValue(custom_event_details->GetFilteredDict(
+            listener->extra_info_spec, PermissionHelper::Get(browser_context),
+            listener->id.extension_id, crosses_incognito)));
 
     EventRouter::DispatchEventToSender(
         rph, browser_context, listener->id.extension_id,
@@ -2114,7 +2143,7 @@ std::unique_ptr<base::Value> SerializeResponseHeaders(
   auto serialized_headers = std::make_unique<base::ListValue>();
   for (const auto& it : headers) {
     serialized_headers->Append(
-        helpers::CreateHeaderDictionary(it.first, it.second));
+        base::Value(helpers::CreateHeaderDictionary(it.first, it.second)));
   }
   return std::move(serialized_headers);
 }
@@ -2128,42 +2157,40 @@ std::unique_ptr<base::ListValue> SummarizeCookieModifications(
     const std::vector<CookieType>& modifications) {
   auto cookie_modifications = std::make_unique<base::ListValue>();
   for (const CookieType& mod : modifications) {
-    auto summary = std::make_unique<base::DictionaryValue>();
+    base::Value::Dict summary;
     switch (mod.type) {
       case helpers::ADD:
-        summary->SetStringKey(activity_log::kCookieModificationTypeKey,
-                              activity_log::kCookieModificationAdd);
+        summary.Set(activity_log::kCookieModificationTypeKey,
+                    activity_log::kCookieModificationAdd);
         break;
       case helpers::EDIT:
-        summary->SetStringKey(activity_log::kCookieModificationTypeKey,
-                              activity_log::kCookieModificationEdit);
+        summary.Set(activity_log::kCookieModificationTypeKey,
+                    activity_log::kCookieModificationEdit);
         break;
       case helpers::REMOVE:
-        summary->SetStringKey(activity_log::kCookieModificationTypeKey,
-                              activity_log::kCookieModificationRemove);
+        summary.Set(activity_log::kCookieModificationTypeKey,
+                    activity_log::kCookieModificationRemove);
         break;
     }
     if (mod.filter) {
       if (mod.filter->name) {
-        summary->SetStringKey(activity_log::kCookieFilterNameKey,
-                              *mod.modification->name);
+        summary.Set(activity_log::kCookieFilterNameKey,
+                    *mod.modification->name);
       }
       if (mod.filter->domain) {
-        summary->SetStringKey(activity_log::kCookieFilterDomainKey,
-                              *mod.modification->name);
+        summary.Set(activity_log::kCookieFilterDomainKey,
+                    *mod.modification->name);
       }
     }
     if (mod.modification) {
       if (mod.modification->name) {
-        summary->SetStringKey(activity_log::kCookieModDomainKey,
-                              *mod.modification->name);
+        summary.Set(activity_log::kCookieModDomainKey, *mod.modification->name);
       }
       if (mod.modification->domain) {
-        summary->SetStringKey(activity_log::kCookieModDomainKey,
-                              *mod.modification->name);
+        summary.Set(activity_log::kCookieModDomainKey, *mod.modification->name);
       }
     }
-    cookie_modifications->Append(std::move(summary));
+    cookie_modifications->Append(base::Value(std::move(summary)));
   }
   return cookie_modifications;
 }
@@ -2182,8 +2209,8 @@ std::unique_ptr<base::DictionaryValue> SummarizeResponseDelta(
   std::unique_ptr<base::ListValue> modified_headers(new base::ListValue());
   net::HttpRequestHeaders::Iterator iter(delta.modified_request_headers);
   while (iter.GetNext()) {
-    modified_headers->Append(
-        helpers::CreateHeaderDictionary(iter.name(), iter.value()));
+    modified_headers->Append(base::Value(
+        helpers::CreateHeaderDictionary(iter.name(), iter.value())));
   }
   if (!modified_headers->GetListDeprecated().empty()) {
     details->Set(activity_log::kModifiedRequestHeadersKey,

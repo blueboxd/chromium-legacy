@@ -5,6 +5,7 @@
 #include "ash/display/cursor_window_controller.h"
 
 #include "ash/accessibility/magnifier/fullscreen_magnifier_controller.h"
+#include "ash/capture_mode/capture_mode_camera_controller.h"
 #include "ash/capture_mode/capture_mode_controller.h"
 #include "ash/capture_mode/capture_mode_session.h"
 #include "ash/constants/ash_constants.h"
@@ -148,9 +149,16 @@ bool CursorWindowController::ShouldEnableCursorCompositing() {
   if (is_cursor_motion_blur_enabled_)
     return true;
 
-  auto* session = CaptureModeController::Get()->capture_mode_session();
+  auto* controller = CaptureModeController::Get();
+  auto* session = controller->capture_mode_session();
   if (session && session->is_drag_in_progress()) {
     // To ensure the cursor is aligned with the dragged region.
+    return true;
+  }
+
+  auto* camera_controller = controller->camera_controller();
+  if (camera_controller && camera_controller->is_drag_in_progress()) {
+    // To ensure the cursor is aligned with the dragged camera preview.
     return true;
   }
 
@@ -248,6 +256,14 @@ void CursorWindowController::SetDisplay(const display::Display& display) {
   UpdateCursorImage();
 }
 
+void CursorWindowController::OnDockedMagnifierResizingStateChanged(
+    bool is_active) {
+  const int container_id = is_active ? kShellWindowId_DockedMagnifierContainer
+                                     : kShellWindowId_MouseCursorContainer;
+  SetContainer(
+      RootWindowController::ForWindow(container_)->GetContainer(container_id));
+}
+
 void CursorWindowController::UpdateLocation() {
   if (!cursor_window_)
     return;
@@ -275,6 +291,10 @@ void CursorWindowController::SetCursorSize(ui::CursorSize cursor_size) {
 void CursorWindowController::SetVisibility(bool visible) {
   visible_ = visible;
   UpdateCursorVisibility();
+}
+
+const aura::Window* CursorWindowController::GetContainerForTest() const {
+  return container_;
 }
 
 void CursorWindowController::SetContainer(aura::Window* container) {

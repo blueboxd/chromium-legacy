@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">‏אם שולחים אלינו נתוני שימוש ודוחות קריסה, עוזרים לשפר את Chrome.</translation>
 <translation id="417201473131094001">‏אין תמיכה ב-Chrome Canary</translation>
 <translation id="4214277427269650960">‏עליך להיכנס לאתר הזה ול-Chrome. ניתן להפעיל את הסנכרון מאוחר יותר.</translation>
+<translation id="4233521129555661685">‏במכשיר הזה נעשה שימוש ב‑Chrome על ידי <ph name="USER_EMAIL1" /> ונשארו סימניות, סיסמאות והגדרות נוספות.</translation>
 <translation id="424864128008805179">‏האם לצאת מ-Chrome?</translation>
 <translation id="4249068189593983585">‏טיפ למשתמשי Chrome: כדי לקבל אפשרויות נוספות של כרטיסיות, יש ללחוץ לחיצה ארוכה על הלחצן 'הצגת כרטיסיות' בסרגל הכלים, שנמצא בחלק התחתון או העליון של המסך.</translation>
 <translation id="4523886039239821078">‏תוספים מסוימים גורמים ל-Chrome לקרוס. יש להסיר את ההתקנה שלהם:</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">‏Chrome לא הצליח לבדוק את כל הסיסמאות. אפשר לנסות שוב מחר או <ph name="BEGIN_LINK" />לבדוק את הסיסמאות בחשבון Google.<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">‏אין תמיכה ב-Chrome בטא</translation>
 <translation id="5030102366287574140">‏Chrome יכול להגן עליך מפני פרצות באבטחת מידע, אתרים לא בטוחים וסכנות נוספות.</translation>
+<translation id="5108659628347594808">‏משפרים את Chrome</translation>
 <translation id="5119391094379141756">‏בוחרים באפשרות Chrome</translation>
 <translation id="5162467219239570114">‏Chrome אינו מעודכן. אם אין עדכון זמין ב-<ph name="BEGIN_LINK" />App Store<ph name="END_LINK" />, ייתכן שהמכשיר שלך אינו תומך עוד בגרסאות חדשות של Chrome.</translation>
 <translation id="5389212809648216794">‏Google Chrome לא יכול להשתמש במצלמה כי אפליקציה אחרת משתמשת בה</translation>
@@ -81,6 +83,15 @@
 <translation id="6709398533399187136">‏הסיסמה שלך נחשפה בעקבות פרצה באבטחת מידע. לפי מנהל הסיסמאות של Google, מומלץ לשנות אותה עכשיו.</translation>
 <translation id="6822673484890854830">‏Chrome לא הצליח לבדוק את כל הסיסמאות. אפשר לנסות שוב מאוחר יותר.</translation>
 <translation id="6964931465519938134">‏אפשר עכשיו להשתמש ב-Chrome בכל פעם שמקישים על קישורים בהודעות, במסמכים ובאפליקציות אחרות.</translation>
+<translation id="7046845777663074840">‏כשהאפשרות פועלת:
+<ph name="BEGIN_INDENT" />  • עוזרים לשפר את Chrome אצל אנשים שמשתמשים בדפדפן בצורה דומה.<ph name="END_INDENT" />
+
+דברים שחשוב לקחת בחשבון:
+<ph name="BEGIN_INDENT" />  • מידע לגבי השימוש שלך ב‑Chrome יישלח אל Google, אבל לא יקושר אליך.
+
+  • אם Chrome קורס, הפרטים על הקריסה עשויים לכלול גם פרטים אישיים מסוימים.
+
+  • אם הסנכרון מופעל, המדדים עשויים לכלול גם פרטים לגבי כתובות URL שביקרת בהן.<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">‏אפשר להתאים אישית את Chrome בדרך שנוחה לך</translation>
 <translation id="7124339256045485976">‏Chrome יתעדכן באופן קבוע</translation>
 <translation id="7161390184744336561">‏Google Chrome אינו מעודכן</translation>

@@ -17,6 +17,7 @@
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/scoped_blocking_call.h"
+#include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/ios/browser/active_state_manager.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -27,6 +28,8 @@
 #include "ios/chrome/browser/browser_state_metrics/browser_state_metrics.h"
 #include "ios/chrome/browser/chrome_constants.h"
 #include "ios/chrome/browser/chrome_paths.h"
+#include "ios/chrome/browser/optimization_guide/optimization_guide_service.h"
+#include "ios/chrome/browser/optimization_guide/optimization_guide_service_factory.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/account_reconcilor_factory.h"
@@ -212,6 +215,14 @@ void ChromeBrowserStateManagerImpl::DoFinalInitForServices(
   // Initialization needs to happen after the browser context is available
   // because UnifiedConsentService's dependencies needs the URL context getter.
   UnifiedConsentServiceFactory::GetForBrowserState(browser_state);
+
+  // Initialization needs to happen after the browser context is available
+  // because because IOSChromeMetricsServiceAccessor requires browser_state
+  // to be registered in the ChromeBrowserStateManager.
+  if (optimization_guide::features::IsOptimizationHintsEnabled()) {
+    OptimizationGuideServiceFactory::GetForBrowserState(browser_state)
+        ->DoFinalInit();
+  }
 }
 
 void ChromeBrowserStateManagerImpl::AddBrowserStateToCache(

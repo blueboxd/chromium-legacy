@@ -26,9 +26,7 @@
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 namespace {
 
@@ -477,6 +475,4 @@ TEST_F(SecureChannelMultiplexedChannelImplTest,
                                  true /* expected_to_be_last_client */);
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

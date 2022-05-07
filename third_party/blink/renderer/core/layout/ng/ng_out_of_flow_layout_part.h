@@ -5,9 +5,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_OUT_OF_FLOW_LAYOUT_PART_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_NG_OUT_OF_FLOW_LAYOUT_PART_H_
 
-#include "third_party/blink/renderer/core/core_export.h"
-
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_rect.h"
 #include "third_party/blink/renderer/core/layout/geometry/physical_offset.h"
 #include "third_party/blink/renderer/core/layout/ng/geometry/ng_static_position.h"
@@ -16,6 +15,8 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_node.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/style/computed_style_base_constants.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_set.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
@@ -154,6 +155,8 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
           default_writing_direction(default_writing_direction),
           fixedpos_containing_block(fixedpos_containing_block),
           inline_container(inline_container) {}
+
+    void Trace(Visitor* visitor) const;
   };
 
   // Stores the calculated offset for an OOF positioned node, along with the
@@ -200,7 +203,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
     // The physical fragment of the containing block used when laying out a
     // fragmentainer descendant. This is the containing block as defined by the
     // spec: https://www.w3.org/TR/css-position-3/#absolute-cb.
-    scoped_refptr<const NGPhysicalFragment> containing_block_fragment = nullptr;
+    Member<const NGPhysicalFragment> containing_block_fragment;
 
     void Trace(Visitor* visitor) const;
   };
@@ -213,9 +216,9 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       const NGLogicalOutOfFlowPositionedNode&);
 
   void ComputeInlineContainingBlocks(
-      const Vector<NGLogicalOutOfFlowPositionedNode>&);
+      const HeapVector<NGLogicalOutOfFlowPositionedNode>&);
   void ComputeInlineContainingBlocksForFragmentainer(
-      const Vector<NGLogicalOutOfFlowPositionedNode>&);
+      const HeapVector<NGLogicalOutOfFlowPositionedNode>&);
   // |containing_block_relative_offset| is the accumulated relative offset from
   // the inline's containing block to the fragmentation context root.
   // |containing_block_offset| is the offset of the inline's containing block
@@ -230,7 +233,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       bool adjust_for_fragmentation = false);
 
   void LayoutCandidates(
-      Vector<NGLogicalOutOfFlowPositionedNode>* candidates,
+      HeapVector<NGLogicalOutOfFlowPositionedNode>* candidates,
       const LayoutBox* only_layout,
       HeapHashSet<Member<const LayoutObject>>* placed_objects);
 
@@ -243,7 +246,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   // |multicol_children| holds the children of an inner multicol if
   // we are laying out OOF elements inside a nested fragmentation context.
   void LayoutFragmentainerDescendants(
-      Vector<NGLogicalOutOfFlowPositionedNode>* descendants,
+      HeapVector<NGLogicalOutOfFlowPositionedNode>* descendants,
       LayoutUnit column_inline_progression,
       bool outer_context_has_fixedpos_container = false,
       HeapVector<MulticolChildInfo>* multicol_children = nullptr);
@@ -334,7 +337,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
 
   // Out-of-flow positioned nodes that we should lay out at a later time. For
   // example, if the containing block has not finished layout.
-  Vector<NGLogicalOutOfFlowPositionedNode> delayed_descendants_;
+  HeapVector<NGLogicalOutOfFlowPositionedNode> delayed_descendants_;
 
   // Holds the children of an inner multicol if we are laying out OOF elements
   // inside a nested fragmentation context.

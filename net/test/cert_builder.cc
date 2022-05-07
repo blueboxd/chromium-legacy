@@ -7,11 +7,9 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece.h"
 #include "crypto/openssl_util.h"
 #include "crypto/rsa_private_key.h"
 #include "net/cert/asn1_util.h"
-#include "net/cert/internal/parse_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/der/encode_values.h"
 #include "net/der/input.h"
@@ -132,6 +130,24 @@ std::unique_ptr<CertBuilder> CertBuilder::FromStaticCertFile(
     return nullptr;
 
   return CertBuilder::FromStaticCert(cert->cert_buffer(), private_key.get());
+}
+
+// static
+std::unique_ptr<CertBuilder> CertBuilder::FromSubjectPublicKeyInfo(
+    base::span<const uint8_t> spki_der,
+    CertBuilder* issuer) {
+  DCHECK(issuer);
+  auto builder = std::make_unique<CertBuilder>(/*orig_cert=*/nullptr, issuer);
+
+  CBS cbs;
+  CBS_init(&cbs, spki_der.data(), spki_der.size());
+  builder->key_ = bssl::UniquePtr<EVP_PKEY>(EVP_parse_public_key(&cbs));
+  // Check that there was no error in `EVP_parse_public_key` and that it
+  // consumed the entire public key.
+  if (!builder->key_ || (CBS_len(&cbs) != 0))
+    return nullptr;
+
+  return builder;
 }
 
 CertBuilder::~CertBuilder() = default;
@@ -301,7 +317,7 @@ void CertBuilder::SetCrlDistributionPointUrls(const std::vector<GURL>& urls) {
   SetExtension(der::Input(kCrlDistributionPointsOid), FinishCBB(cbb.get()));
 }
 
-void CertBuilder::SetSubjectCommonName(const std::string common_name) {
+void CertBuilder::SetSubjectCommonName(base::StringPiece common_name) {
   // See RFC 4519.
   static const uint8_t kCommonName[] = {0x55, 0x04, 0x03};
 
@@ -318,6 +334,7 @@ void CertBuilder::SetSubjectCommonName(const std::string common_name) {
   ASSERT_TRUE(CBBAddBytes(&value, common_name));
 
   subject_tlv_ = FinishCBB(cbb.get());
+  Invalidate();
 }
 
 void CertBuilder::SetSubjectAltName(const std::string& dns_name) {
@@ -364,6 +381,45 @@ void CertBuilder::SetSubjectAltNames(
     }
   }
   SetExtension(der::Input(kSubjectAltNameOid), FinishCBB(cbb.get()));
+}
+
+void CertBuilder::SetKeyUsages(const std::vector<KeyUsageBit>& usages) {
+  ASSERT_GT(usages.size(), 0U);
+  int number_of_unused_bits = 0;
+  std::vector<uint8_t> bytes;
+  for (auto usage : usages) {
+    int bit_index = static_cast<int>(usage);
+
+    // Index of the byte that contains the bit.
+    size_t byte_index = bit_index / 8;
+
+    if (byte_index + 1 > bytes.size()) {
+      bytes.resize(byte_index + 1);
+      number_of_unused_bits = 8;
+    }
+
+    // Within a byte, bits are ordered from most significant to least
+    // significant. Convert |bit_index| to an index within the |byte_index|
+    // byte, measured from its least significant bit.
+    uint8_t bit_index_in_byte = 7 - (bit_index - byte_index * 8);
+
+    if (byte_index + 1 == bytes.size() &&
+        bit_index_in_byte < number_of_unused_bits) {
+      number_of_unused_bits = bit_index_in_byte;
+    }
+
+    bytes[byte_index] |= (1 << bit_index_in_byte);
+  }
+
+  // From RFC 5290:
+  //   KeyUsage ::= BIT STRING {...}
+  bssl::ScopedCBB cbb;
+  CBB ku_cbb;
+  ASSERT_TRUE(CBB_init(cbb.get(), bytes.size() + 1));
+  ASSERT_TRUE(CBB_add_asn1(cbb.get(), &ku_cbb, CBS_ASN1_BITSTRING));
+  ASSERT_TRUE(CBB_add_u8(&ku_cbb, number_of_unused_bits));
+  ASSERT_TRUE(CBB_add_bytes(&ku_cbb, bytes.data(), bytes.size()));
+  SetExtension(der::Input(kKeyUsageOid), FinishCBB(cbb.get()));
 }
 
 void CertBuilder::SetExtendedKeyUsages(
@@ -428,6 +484,7 @@ void CertBuilder::SetValidity(base::Time not_before, base::Time not_after) {
   ASSERT_TRUE(x509_util::CBBAddTime(&validity, not_before));
   ASSERT_TRUE(x509_util::CBBAddTime(&validity, not_after));
   validity_tlv_ = FinishCBB(cbb.get());
+  Invalidate();
 }
 
 void CertBuilder::SetSubjectKeyIdentifier(

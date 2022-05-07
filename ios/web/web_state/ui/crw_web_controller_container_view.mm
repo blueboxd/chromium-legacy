@@ -149,6 +149,12 @@
   [self setNeedsLayout];
 }
 
+- (void)updateWebViewContentViewFullscreenState:
+    (CrFullscreenState)fullscreenState {
+  DCHECK(_webViewContentView);
+  [self.webViewContentView updateFullscreenState:fullscreenState];
+}
+
 #pragma mark UIView (printing)
 
 // Only print the web view by returning the web view printformatter.

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 
@@ -286,6 +287,59 @@ constexpr base::StringPiece kLottieDataWith2Assets =
 std::string CreateCustomLottieDataWith2Assets(
     base::StringPiece custom_asset_id_0,
     base::StringPiece custom_asset_id_1);
+
+// cc/test/data/lottie/animation_with_2_text_nodes.json
+constexpr base::FilePath::CharType kLottieDataWith2TextFileName[] =
+    FILE_PATH_LITERAL("animation_with_2_text_nodes.json");
+constexpr base::StringPiece kLottieDataWith2TextNode1 = "text_node_1";
+constexpr base::StringPiece kLottieDataWith2TextNode1Text = "test_text_1";
+constexpr base::StringPiece kLottieDataWith2TextNode2 = "text_node_2";
+constexpr base::StringPiece kLottieDataWith2TextNode2Text = "test_text_2";
+
+// Returns an animation with the same structure as
+// |kLottieDataWith2TextFileName| except with text node names specified by the
+// caller.
+std::string CreateCustomLottieDataWith2TextNodes(
+    base::StringPiece custom_text_node_name_0,
+    base::StringPiece custom_text_node_name_1);
+
+constexpr base::StringPiece kLottieDataWith2MarkersMarker1 = "TestMarker1";
+constexpr base::StringPiece kLottieDataWith2MarkersMarker2 = "TestMarker2";
+constexpr float kLottieDataWith2MarkersMarker1Time = .33f;
+constexpr float kLottieDataWith2MarkersMarker2Time = .67f;
+// Duration: 6 seconds. Marker 1 is at 2 seconds, and marker 2 is at 4 seconds.
+constexpr base::StringPiece kLottieDataWith2Markers =
+    R"({
+      "v" : "4.12.0",
+      "fr": 30,
+      "w" : 400,
+      "h" : 200,
+      "ip": 0,
+      "op": 180,
+      "assets": [],
+      "layers": [
+        {
+          "ty": 1,
+          "sw": 400,
+          "sh": 200,
+          "sc": "#00ff00",
+          "ip": 0,
+          "op": 180
+        }
+      ],
+      "markers": [
+        {
+          "tm": 60,
+          "cm": "TestMarker1",
+          "dr": 0
+        },
+        {
+          "tm": 120,
+          "cm": "TestMarker2",
+          "dr": 0
+        }
+      ]
+    })";
 
 }  // namespace cc
 

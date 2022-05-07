@@ -133,7 +133,8 @@ dependencies {
     // Matches version depended on by Dagger.
     buildCompile 'com.squareup:javapoet:1.13.0'
 
-    String errorproneVersion = '2.10.0'
+    String errorproneVersion = '2.11.0'
+
     // Used by downstream targets.
     compile "com.google.errorprone:error_prone_annotations:${errorproneVersion}"
     compile 'org.checkerframework:checker-compat-qual:2.5.3'
@@ -170,7 +171,7 @@ dependencies {
     // Version 1.2 is needed by espresso-web, but we'll newer 1.2.1.
     androidTestCompile 'org.ccil.cowan.tagsoup:tagsoup:1.2.1'
 
-    String robolectricVersion = '4.3.1'
+    String robolectricVersion = '4.7.3'
     // Use testCompile to avoid having support_android = true set on
     // robolectric dependencies.
     testCompile "org.robolectric:robolectric:${robolectricVersion}"

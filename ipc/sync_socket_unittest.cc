@@ -2,26 +2,25 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/sync_socket.h"
-
 #include <stddef.h>
 #include <stdio.h>
+
 #include <memory>
 #include <sstream>
 #include <string>
 
 #include "base/bind.h"
-#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
+#include "base/sync_socket.h"
 #include "base/task/single_thread_task_runner.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
 #include "ipc/ipc_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if BUILDFLAG(IS_POSIX)
+#if BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 #include "base/file_descriptor_posix.h"
 #endif
 
@@ -38,7 +37,7 @@
 // Windows HANDLEs versus posix file descriptors.
 #if BUILDFLAG(IS_WIN)
 IPC_MESSAGE_CONTROL1(MsgClassSetHandle, base::SyncSocket::Handle)
-#elif BUILDFLAG(IS_POSIX)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
 IPC_MESSAGE_CONTROL1(MsgClassSetHandle, base::FileDescriptor)
 #endif
 
@@ -53,7 +52,7 @@ IPC_MESSAGE_CONTROL0(MsgClassShutdown)
 namespace {
 
 const char kHelloString[] = "Hello, SyncSocket Client";
-const size_t kHelloStringLength = base::size(kHelloString);
+const size_t kHelloStringLength = std::size(kHelloString);
 
 // The SyncSocket server listener class processes two sorts of
 // messages from the client.
@@ -86,7 +85,7 @@ class SyncSocketServerListener : public IPC::Listener {
   void OnMsgClassSetHandle(const base::SyncSocket::Handle handle) {
     SetHandle(handle);
   }
-#elif BUILDFLAG(IS_POSIX)
+#elif BUILDFLAG(IS_POSIX) || BUILDFLAG(IS_FUCHSIA)
   void OnMsgClassSetHandle(const base::FileDescriptor& fd_struct) {
     SetHandle(fd_struct.fd);
   }
@@ -209,7 +208,7 @@ TEST_F(SyncSocketTest, SanityTest) {
 // |length| bytes of packets or Shutdown() is called on another thread.
 static void BlockingRead(base::SyncSocket* socket, char* buf,
                          size_t length, size_t* received) {
-  DCHECK(buf != NULL);
+  DCHECK_NE(buf, nullptr);
   // Notify the parent thread that we're up and running.
   socket->Send(kHelloString, kHelloStringLength);
   *received = socket->Receive(buf, length);
@@ -229,7 +228,7 @@ TEST_F(SyncSocketTest, DisconnectTest) {
   size_t received = 1U;  // Initialize to an unexpected value.
   worker.task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&BlockingRead, &pair[0], &buf[0],
-                                base::size(buf), &received));
+                                std::size(buf), &received));
 
   // Wait for the worker thread to say hello.
   char hello[kHelloStringLength] = {0};

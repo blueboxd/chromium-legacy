@@ -31,13 +31,13 @@ TtsHandler::~TtsHandler() {
   RemoveTtsControllerDelegates();
 }
 
-void TtsHandler::HandleGetAllTtsVoiceData(base::Value::ConstListView args) {
+void TtsHandler::HandleGetAllTtsVoiceData(const base::Value::List& args) {
   OnVoicesChanged();
 }
 
-void TtsHandler::HandleGetTtsExtensions(base::Value::ConstListView args) {
+void TtsHandler::HandleGetTtsExtensions(const base::Value::List& args) {
   // Ensure the built in tts engine is loaded to be able to respond to messages.
-  WakeTtsEngine(base::Value::ConstListView());
+  WakeTtsEngine(base::Value::List());
 
   base::ListValue responses;
   Profile* profile = Profile::FromWebUI(web_ui());
@@ -106,7 +106,7 @@ void TtsHandler::OnVoicesChanged() {
   FireWebUIListener("all-voice-data-updated", responses);
 
   // Also refresh the TTS extensions in case they have changed.
-  HandleGetTtsExtensions(base::Value::ConstListView());
+  HandleGetTtsExtensions(base::Value::List());
 }
 
 void TtsHandler::OnTtsEvent(content::TtsUtterance* utterance,
@@ -122,7 +122,7 @@ void TtsHandler::OnTtsEvent(content::TtsUtterance* utterance,
   }
 }
 
-void TtsHandler::HandlePreviewTtsVoice(base::Value::ConstListView args) {
+void TtsHandler::HandlePreviewTtsVoice(const base::Value::List& args) {
   DCHECK_EQ(2U, args.size());
   const std::string& text = args[0].GetString();
   const std::string& voice_id = args[1].GetString();
@@ -191,7 +191,7 @@ int TtsHandler::GetVoiceLangMatchScore(const content::VoiceData* voice,
              : 0;
 }
 
-void TtsHandler::WakeTtsEngine(base::Value::ConstListView args) {
+void TtsHandler::WakeTtsEngine(const base::Value::List& args) {
   Profile* profile = Profile::FromWebUI(web_ui());
   TtsExtensionEngine::GetInstance()->LoadBuiltInTtsEngine(profile);
   extensions::ProcessManager::Get(profile)->WakeEventPage(

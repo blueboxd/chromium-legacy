@@ -42,6 +42,7 @@ TEST_F('MediaInternalsUIBrowserTest', 'Integration', function() {
         generalAudioInformationSet: doNothing,
         redrawVideoCaptureCapabilities: doNothing,
         audioFocusSessionUpdated: doNothing,
+        updateRegisteredCdms: doNothing,
       };
 
       var manager = new Manager(mockClientRenderer);

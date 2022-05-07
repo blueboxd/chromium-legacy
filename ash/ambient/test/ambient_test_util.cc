@@ -4,19 +4,28 @@
 
 #include "ash/ambient/test/ambient_test_util.h"
 
-#include "ash/ambient/ambient_constants.h"
 #include "ash/ambient/model/ambient_animation_photo_config.h"
+#include "ash/utility/lottie_util.h"
 #include "base/check.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/stringprintf.h"
 #include "cc/paint/skottie_resource_metadata.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace ash {
 
-std::string GenerateTestLottieDynamicAssetId(int unique_id) {
+std::string GenerateLottieCustomizableIdForTesting(int unique_id) {
   return base::StrCat(
-      {kLottieDynamicAssetIdPrefix, base::NumberToString(unique_id)});
+      {kLottieCustomizableIdPrefix, base::NumberToString(unique_id)});
+}
+
+std::string GenerateLottieDynamicAssetIdForTesting(base::StringPiece position,
+                                                   int idx) {
+  CHECK(!position.empty());
+  return base::StringPrintf("%s_Photo_Position%s_%d",
+                            kLottieCustomizableIdPrefix.data(), position.data(),
+                            idx);
 }
 
 AmbientPhotoConfig GenerateAnimationConfigWithNAssets(int num_assets) {
@@ -24,7 +33,8 @@ AmbientPhotoConfig GenerateAnimationConfigWithNAssets(int num_assets) {
   for (int i = 0; i < num_assets; ++i) {
     CHECK(resource_metadata.RegisterAsset(
         "test-resource-path", "test-resource-name",
-        GenerateTestLottieDynamicAssetId(/*unique_id=*/i),
+        GenerateLottieDynamicAssetIdForTesting(
+            /*position=*/base::NumberToString(i), /*idx=*/1),
         /*size=*/absl::nullopt));
   }
   return CreateAmbientAnimationPhotoConfig(resource_metadata);

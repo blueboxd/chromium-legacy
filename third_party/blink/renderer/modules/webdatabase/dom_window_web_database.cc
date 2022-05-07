@@ -31,7 +31,6 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_database_callback.h"
-#include "third_party/blink/renderer/core/frame/deprecation.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/modules/webdatabase/database.h"
@@ -76,21 +75,18 @@ Database* DOMWindowWebDatabase::openDatabase(
       UseCounter::Count(window, WebFeature::kOpenWebDatabaseInsecureContext);
     }
 
+    if (!base::FeatureList::IsEnabled(blink::features::kWebSQLAccess) &&
+        !base::CommandLine::ForCurrentProcess()->HasSwitch(
+            blink::switches::kWebSQLAccess)) {
+      exception_state.ThrowSecurityError(
+          "Access to the WebDatabase API is denied.");
+      return nullptr;
+    }
+
     if (window.IsCrossSiteSubframeIncludingScheme()) {
-      Deprecation::CountDeprecation(
-          &window, WebFeature::kOpenWebDatabaseThirdPartyContext);
-      if (!base::FeatureList::IsEnabled(
-              features::kWebSQLInThirdPartyContextEnabled) &&
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              blink::switches::kWebSQLInThirdPartyContextEnabled)) {
-        if (base::FeatureList::IsEnabled(
-                features::kWebSQLInThirdPartyContextThrowsWhenDisabled)) {
-          exception_state.ThrowSecurityError(
-              "Access to the WebDatabase API is denied in third party "
-              "contexts.");
-        }
-        return nullptr;
-      }
+      exception_state.ThrowSecurityError(
+          "Access to the WebDatabase API is denied in third party contexts.");
+      return nullptr;
     }
 
     String error_message;

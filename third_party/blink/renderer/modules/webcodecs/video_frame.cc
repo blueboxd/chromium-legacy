@@ -611,12 +611,13 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
 
     // The sync token needs to be updated when |frame| is released, but
     // AcceleratedStaticBitmapImage::UpdateSyncToken() is not thread-safe.
-    auto release_cb = media::BindToCurrentLoop(WTF::Bind(
-        [](scoped_refptr<Image> image, const gpu::SyncToken& sync_token) {
-          static_cast<StaticBitmapImage*>(image.get())
-              ->UpdateSyncToken(sync_token);
-        },
-        std::move(image)));
+    auto release_cb =
+        media::BindToCurrentLoop(ConvertToBaseOnceCallback(CrossThreadBindOnce(
+            [](scoped_refptr<Image> image, const gpu::SyncToken& sync_token) {
+              static_cast<StaticBitmapImage*>(image.get())
+                  ->UpdateSyncToken(sync_token);
+            },
+            std::move(image))));
 
     frame = media::VideoFrame::WrapNativeTextures(
         format, mailbox_holders, std::move(release_cb), coded_size,
@@ -644,8 +645,14 @@ VideoFrame* VideoFrame::Create(ScriptState* script_state,
                                         "Failed to create video frame");
       return nullptr;
     }
-    if (sk_image->isLazyGenerated())
+    if (sk_image->isLazyGenerated()) {
       sk_image = sk_image->makeRasterImage();
+      if (!sk_image) {
+        exception_state.ThrowDOMException(DOMExceptionCode::kOperationError,
+                                          "Failed to create video frame");
+        return nullptr;
+      }
+    }
 
     const bool force_opaque =
         init && init->alpha() == kAlphaDiscard && !sk_image->isOpaque();

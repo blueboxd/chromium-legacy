@@ -9,7 +9,7 @@
 // #import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
 // #import {getDeepActiveElement} from 'chrome://resources/js/util.m.js';
-// #import {waitAfterNextRender} from 'chrome://test/test_util.js';
+// #import {eventToPromise, waitBeforeNextRender, waitAfterNextRender} from 'chrome://test/test_util.js';
 // clang-format on
 
 /**
@@ -276,14 +276,9 @@ suite('ManageAccessibilityPageTests', function() {
   });
 
   test('Dictation labels', async () => {
-    // Setup. Ensure that the Dictation locale menu is shown by doing the
-    // following:
-    // 1. Set the dictation pref to true (done in default prefs).
-    // 2. Ensure dictation locale prefs are allowed.
-    // 3. Populate dictation locale options with mock data.
-    loadTimeData.overrideValues({
-      areDictationLocalePrefsAllowed: true,
-    });
+    // Ensure that the Dictation locale menu is shown by setting the dictation
+    // pref to true (done in default prefs) and populating dictation locale
+    // options with mock data.
     initPage();
     const locales = [{
       name: 'English (United States)',
@@ -294,9 +289,6 @@ suite('ManageAccessibilityPageTests', function() {
     }];
     cr.webUIListenerCallback('dictation-locales-set', locales);
     Polymer.dom.flush();
-    // Sanity checks.
-    assertTrue(loadTimeData.getBoolean('areDictationLocalePrefsAllowed'));
-    assertTrue(page.areDictationLocalePrefsAllowed_);
 
     // Dictation toggle.
     const dictationSetting = page.$$('#enableDictation');
@@ -399,5 +391,44 @@ suite('ManageAccessibilityPageTests', function() {
     assertEquals(
         'French (France) speech is sent to Google for processing',
         page.computeDictationLocaleSubtitle_());
+  });
+
+  [{selector: '#ttsSubpageButton', route: settings.routes.MANAGE_TTS_SETTINGS},
+   {
+     selector: '#captionsSubpageButton',
+     route: settings.routes.MANAGE_CAPTION_SETTINGS
+   },
+   {selector: '#displaySubpageButton', route: settings.routes.DISPLAY},
+   {selector: '#keyboardSubpageButton', route: settings.routes.KEYBOARD},
+   {selector: '#pointerSubpageButton', route: settings.routes.POINTERS},
+  ].forEach(({selector, route}) => {
+    test(
+        `should focus ${selector} button when returning from ${
+            route.path} subpage`,
+        async () => {
+          initPage();
+          Polymer.dom.flush();
+          const router = settings.Router.getInstance();
+
+          const subpageButton = page.$$(selector);
+          assertTrue(!!subpageButton);
+
+          subpageButton.click();
+          assertEquals(route, router.getCurrentRoute());
+          assertNotEquals(
+              subpageButton, page.shadowRoot.activeElement,
+              `${selector} should not be focused`);
+
+          const popStateEventPromise = eventToPromise('popstate', window);
+          router.navigateToPreviousRoute();
+          await popStateEventPromise;
+          await waitBeforeNextRender(page);
+
+          assertEquals(
+              settings.routes.MANAGE_ACCESSIBILITY, router.getCurrentRoute());
+          assertEquals(
+              subpageButton, page.shadowRoot.activeElement,
+              `${selector} should be focused`);
+        });
   });
 });

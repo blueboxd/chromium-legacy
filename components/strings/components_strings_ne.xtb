@@ -458,6 +458,7 @@
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
 <translation id="2316887270356262533">१ एम.बि. भन्दा कम ठाउँ खाली गर्दछ। तपाईं अर्कोपटक आउँदा केही साइटहरू अझ ढिलोगरी लोड हुनसक्छन्।</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> लाई एक-पटके टेक्स्ट म्यासेज र पासवर्ड आवश्यक हुन्छ।</translation>
+<translation id="2318594867107319532">पछिल्लो पटक नीति संशोधन गरिएको टाइमस्ट्याम्प:</translation>
 <translation id="2328651992442742497">अनुमति दिइयोस् (डिफल्ट)</translation>
 <translation id="2329182534073751090">विन्डो रहने स्थान</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, <ph name="EXPIRATION_DATE_ABBR" /> मा म्याद समाप्त हुन्छ</translation>
@@ -492,6 +493,7 @@
 <translation id="2430968933669123598">Google खाता व्यवस्थापन गर्नुहोस्, आफ्नो Google खातामा गई तपाईंको जानकारी, गोपनीयता र सुरक्षाको व्यवस्थापन गर्न Enter थिच्नुहोस्</translation>
 <translation id="2436186046335138073"><ph name="HANDLER_HOSTNAME" /> लाई सबै <ph name="PROTOCOL" /> लिङ्कहरू खोल्ने अनुमति दिने?</translation>
 <translation id="2438874542388153331">दायाँतिर चार प्वाल</translation>
+<translation id="2448295565072560657">तपाईं लग इन भएका बेला यो डिभाइससँग एट्याच गरिएका सहायक डिभाइसहरू</translation>
 <translation id="2450021089947420533">Journeys</translation>
 <translation id="2463739503403862330">पूर्ण जानकारी भर्नुहोस्</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -499,6 +501,7 @@
 <translation id="2465688316154986572">स्टिच</translation>
 <translation id="2465914000209955735">आफूले Chrome मा डाउनलोड गरेका फाइल व्यवस्थापन गर्नुहोस्</translation>
 <translation id="2466004615675155314">वेबबाट प्राप्त जानकारी देखाउनुहोस्</translation>
+<translation id="2467272921457885625">CPU/RAM को प्रयोगसम्बन्धी इतिहासलगायतका डिभाइसको हार्डवेयरसम्बन्धी विवरण तथा तथ्याङ्कहरू</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />नेटवर्क सम्बन्धी निदान चलाएर हेर्नुहोस्<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">१ देखि N सम्मको क्रम</translation>
 <translation id="2470767536994572628">तपाईंले एनोटेसनहरू सम्पादन गर्दा स्क्रिनमा यो कागजातको एउटा मात्र पृष्ठ देखिने छ। साथै, यो कागजात सुरुमा जतातिर फर्केको थियो त्यतैतिर घुमाइने छ</translation>
@@ -525,6 +528,7 @@
 <translation id="2539524384386349900">पत्ता लगाउनुहोस्</translation>
 <translation id="2540701853218677861">टाइमस्ट्याम्प तथा असफल प्रयासलगायतका डिभाइसमार्फत लग इन वा लग आउट गरेको कुराको इतिहास</translation>
 <translation id="2541219929084442027">तपाईंले आफ्ना सबै इन्कोग्निटो ट्याबहरू बन्द गरेपछि तपाईंले ती इन्कोग्निटो ट्याबमा हेर्ने पेजहरू तपाईंको ब्राजउरको इतिहास, कुकी स्टोर वा खोजको इतिहासमा भण्डारण हुने छैनन्। तपाईंले डाउनलोड गर्ने कुनै फाइल वा बनाउने कुनै बुकमार्क भने भण्डारण गरिने छ।</translation>
+<translation id="2544546346215446551">तपाईंका एड्मिनले तपाईंको डिभाइस रिस्टार्ट गर्नुभयो</translation>
 <translation id="2544644783021658368">एउटा कागजात</translation>
 <translation id="2546283357679194313">कुकीहरू र साइट डाटा</translation>
 <translation id="254947805923345898">नीतिको मान मान्य छैन।</translation>
@@ -936,7 +940,6 @@
 <translation id="385051799172605136">पछाडि जानुहोस्</translation>
 <translation id="3858027520442213535">मिति र समय अपडेट गर्नुहोस्</translation>
 <translation id="3858860766373142691">नाम</translation>
-<translation id="3879224246272917991">CPU/RAM को प्रयोग र हार्डवेयरसम्बन्धी विवरण जस्ता डिभाइससम्बन्धी तथ्याङ्क</translation>
 <translation id="3881478300875776315">कम हरफ देखाउनुहोस्</translation>
 <translation id="3884278016824448484">विभेदात्मक यन्त्र पहिचानकर्ता</translation>
 <translation id="3885155851504623709">प्यारिस</translation>
@@ -971,6 +974,7 @@
 <translation id="3990250421422698716">जग अफसेट</translation>
 <translation id="3996311196211510766">यो साइट <ph name="ORIGIN" /> ले यसलाई गरिने सबै अनुरोधहरूमा मूल नीति
     लागू गर्न अनुरोध गरेको छ। तर अहिले यो नीति लागू गर्न सकिँदैन।</translation>
+<translation id="4006465311664329701">Google Pay प्रयोग गर्दा इम्पोर्ट गरिने भुक्तानी विधि, अफर र ठेगानाहरू</translation>
 <translation id="4009243425692662128">तपाईंले प्रिन्ट गर्ने पेजका सामग्री विश्लेषण गर्ने प्रयोजनका लागि Google क्लाउड वा तेस्रो पक्षकहाँ पठाइन्छ। उदाहरणका लागि, उक्त पाठमा संवेदनशील डेटा छ कि छैन भनी जाँच गरिन सक्छ।</translation>
 <translation id="4010758435855888356">भण्डारण प्रयोग गर्ने अनुमति दिने हो?</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{{COUNT} पृष्ठ भएको PDF कागजात}other{{COUNT} पृष्ठहरू भएको PDF कागजात}}</translation>
@@ -1249,6 +1253,7 @@
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, Google Sheets प्रयोग गरी तुरुन्तै नयाँ पाना बनाउन Tab थिच्नुहोस् अनि Enter थिच्नुहोस्</translation>
 <translation id="4825507807291741242">शक्तिशाली</translation>
 <translation id="483241715238664915">चेतावनी देखाउने सुविधा अन गर्नुहोस्</translation>
+<translation id="4834250788637067901">Google Pay प्रयोग गर्दा इम्पोर्ट गरिने भुक्तानी विधि, अफर र ठेगानाहरू</translation>
 <translation id="4838327282952368871">स्वप्निल</translation>
 <translation id="4840250757394056958">Chrome को ब्राउजिङ इतिहास हेर्नुहोस्</translation>
 <translation id="484462545196658690">स्वतः</translation>
@@ -1376,7 +1381,6 @@
 <translation id="5205222826937269299">नाम आवश्यक छ</translation>
 <translation id="5209518306177824490">SHA-1 फिङ्गरप्रिन्ट</translation>
 <translation id="5209670883520018268">ट्रे २०</translation>
-<translation id="5215116848420601511">Google Pay को प्रयोग गर्ने भुक्तानी विधि र ठेगानाहरू</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="521659676233207110">ट्रे १३</translation>
 <translation id="5216942107514965959">पछिल्लो पटक आज खोलिएको</translation>
@@ -1655,6 +1659,7 @@
 <translation id="6157754950574419155">ब्राउजिङ इतिहासमा भएका सबै गतिविधि हटाउनुहोस्</translation>
 <translation id="6157877588268064908">ढुवानीका विधि र मापदण्डहरू हेर्न, ठेगाना चयन गर्नुहोस्</translation>
 <translation id="6165508094623778733">थप जान्नुहोस्</translation>
+<translation id="6167577165590485365">पछिल्लो पटक नीति प्राप्त गर्ने प्रयास गरिएको मिति:</translation>
 <translation id="6169916984152623906">तपाईं अब निजी रूपमा ब्राउज गर्न सक्नुहुन्छ र यो डिभाइसको प्रयोग गर्ने अन्य व्यक्तिहरूले तपाईंको क्रियाकलाप देख्ने छैनन्। यद्यपि, तपाईंका डाउनलोड र बुकमार्कहरू सुरक्षित गरिनेछन्।</translation>
 <translation id="6177128806592000436">यस साइटमा तपाईँको जडान सुरक्षित छैन</translation>
 <translation id="6180316780098470077">पुन: प्रयास गर्न पाइने अन्तराल</translation>
@@ -2289,7 +2294,6 @@
 <translation id="8241712895048303527">यस साइटमा रोक लगाउनुहोस्</translation>
 <translation id="8242426110754782860">अगाडि बढ्नुहोस्</translation>
 <translation id="8249296373107784235">रद्द गर्नुहोस्</translation>
-<translation id="8249320324621329438">पछिल्लो पटक ल्याइएको:</translation>
 <translation id="8253091569723639551">बिल पठाउने ठेगाना आवश्यक छ</translation>
 <translation id="8257387598443225809">यो एप मोबाइलमा चलाउने प्रयोजनले बनाइएको हो</translation>
 <translation id="825929999321470778">सुरक्षित गरिएका सबै पासवर्डहरू देखाउनुहोस्</translation>
@@ -2492,7 +2496,6 @@
 <translation id="8975012916872825179">फोन नम्बर, इमेल ठेगाना र ढुवानी गर्नु पर्ने ठेगाना जस्ता जानकारी समावेश हुन्छ</translation>
 <translation id="8975263830901772334">तपाईंले प्रिन्ट गर्ने फाइलका नामहरू</translation>
 <translation id="8978053250194585037">Google Safe Browsing ले हालै <ph name="SITE" /> मा <ph name="BEGIN_LINK" />फिसिङ पत्ता लगायो<ph name="END_LINK" />। फिसिङमार्फत आक्रमण गर्ने साइटहरूले तपाईंलाई झुक्याउन आफूलाई अन्य बेवसाइटका रूपमा प्रस्तुत गर्दछन्।</translation>
-<translation id="8983003182662520383">Google Pay को प्रयोग गर्ने भुक्तानी विधि र ठेगानाहरू</translation>
 <translation id="8983369100812962543">तपाईं अब एपको आकार बदल्न सक्नुहुन्छ</translation>
 <translation id="8987245424886630962"><ph name="VIEW_CHROME_HISTORY_FOCUSED_FRIENDLY_MATCH_TEXT" />, Chrome मा आफ्नो ब्राउजिङ इतिहास हेर्न Tab थिच्नुहोस् अनि Enter थिच्नुहोस्</translation>
 <translation id="8987927404178983737">महिना</translation>

@@ -176,6 +176,7 @@ android_resources("chrome_base_module_resources") {
     "java/res_base/values/ic_launcher_round_alias.xml",
     "java/res_base/values/values.xml",
     "java/res_base/xml/network_security_config.xml",
+    "java/res_chromium_base/drawable/themed_app_icon.xml",
     "java/res_chromium_base/mipmap-hdpi/app_icon.png",
     "java/res_chromium_base/mipmap-hdpi/layered_app_icon.png",
     "java/res_chromium_base/mipmap-hdpi/layered_app_icon_background.png",
@@ -245,6 +246,7 @@ android_resources("chrome_app_java_resources") {
     "//components/browser_ui/settings/android:java_resources",
     "//components/browser_ui/strings/android:browser_ui_strings_grd",
     "//components/browser_ui/styles/android:java_resources",
+    "//components/browser_ui/theme/android:java_resources",
     "//components/browser_ui/widget/android:java_resources",
     "//components/find_in_page/android:java_resources",
     "//components/javascript_dialogs/android:java_resources",
@@ -303,7 +305,6 @@ java_group("delegate_public_impl_java") {
     "//chrome/browser/password_manager/android:settings_interface_public_impl_java",
     "//chrome/browser/policy/android:delegate_public_impl_java",
     "//chrome/browser/touch_to_fill/android/internal:resource_provider_public_impl_java",
-    "//chrome/browser/ui/android/theme:delegate_public_impl_java",
     "//components/autofill_assistant/android:autofill_assistant_public_impl_java",
     "//components/externalauth/android:google_delegate_public_impl_java",
     "//components/language/android:ulp_delegate_public_java",
@@ -337,7 +338,6 @@ android_library("chrome_java") {
     "$google_play_services_package:google_play_services_vision_java",
     "//base:base_java",
     "//cc:cc_java",
-    "//chrome/android/features/autofill_assistant:public_java",
     "//chrome/android/features/keyboard_accessory:public_java",
     "//chrome/android/features/start_surface:public_java",
     "//chrome/android/modules/cablev2_authenticator/public:java",
@@ -397,6 +397,7 @@ android_library("chrome_java") {
     "//chrome/browser/page_annotations/android:java",
     "//chrome/browser/paint_preview/android:java",
     "//chrome/browser/partnercustomizations:delegate_java",
+    "//chrome/browser/partnercustomizations:java",
     "//chrome/browser/password_check:public_java",
     "//chrome/browser/password_entry_edit:public_java",
     "//chrome/browser/password_manager/android:java",
@@ -455,6 +456,8 @@ android_library("chrome_java") {
     "//chrome/browser/webauthn/android:java",
     "//chrome/browser/xsurface:java",
     "//components/autofill/android:autofill_java",
+    "//components/autofill/android:prefeditor_autofill_java",
+    "//components/autofill_assistant/android:public_java",
     "//components/autofill_assistant/browser:proto_java",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
@@ -536,6 +539,7 @@ android_library("chrome_java") {
     "//components/paint_preview/browser/android:java",
     "//components/paint_preview/player/android:java",
     "//components/password_manager/core/browser:password_manager_java_enums",
+    "//components/password_manager/core/common:password_manager_common_java_enums",
     "//components/payments/content/android:java",
     "//components/payments/content/android:service_java",
     "//components/payments/mojom:mojom_java",
@@ -669,8 +673,6 @@ android_library("chrome_java") {
     "//chrome/browser/notifications/scheduler/public:jni_enums",
     "//chrome/browser/supervised_user/supervised_user_error_page:enums_srcjar",
     "//chrome/browser/ui:duplicate_download_enums_java",
-    "//components/autofill_assistant/browser:autofill_assistant_enums_java",
-    "//components/autofill_assistant/browser:autofill_assistant_intent_strings_java",
     "//components/browsing_data/core:browsing_data_utils_java",
     "//components/browsing_data/core:clear_browsing_data_tab_java",
     "//components/dom_distiller/core:distiller_type_java",
@@ -791,7 +793,7 @@ java_group("chrome_all_java") {
   ]
 
   if (disable_autofill_assistant_dfm) {
-    deps += [ "//chrome/android/features/autofill_assistant:java" ]
+    deps += [ "//components/autofill_assistant/android:java" ]
   }
 
   if (disable_tab_ui_dfm) {
@@ -807,7 +809,6 @@ java_group("chrome_all_java") {
 group("jni_headers") {
   public_deps = [
     ":chrome_jni_headers",
-    "//chrome/android/features/autofill_assistant:jni_headers",
     "//chrome/android/features/autofill_assistant:jni_headers_public",
     "//chrome/android/features/keyboard_accessory:jni_headers",
     "//chrome/android/features/start_surface:jni_headers",
@@ -841,6 +842,8 @@ group("jni_headers") {
     "//chrome/browser/ui/messages/android:jni_headers",
     "//chrome/browser/util:jni_headers",
     "//chrome/browser/webauthn/android:jni_headers",
+    "//components/autofill_assistant/android:jni_headers",
+    "//components/autofill_assistant/android:jni_headers_public",
     "//components/image_fetcher:jni_headers",
     "//components/media_router/browser/android:jni_headers",
     "//components/ukm/android:jni_headers",
@@ -1009,6 +1012,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/omaha/android:java",
     "//chrome/browser/optimization_guide/android:java",
     "//chrome/browser/page_annotations/test/android:junit",
+    "//chrome/browser/partnercustomizations:java",
     "//chrome/browser/password_edit_dialog/android:junit",
     "//chrome/browser/password_entry_edit/android/internal:junit",
     "//chrome/browser/payments/android:junit",
@@ -1254,6 +1258,7 @@ android_library("chrome_test_util_java") {
     "//chrome/browser/tab:java",
     "//chrome/browser/ui/android/appmenu:java",
     "//chrome/test/android:chrome_java_test_support",
+    "//components/autofill/android:prefeditor_autofill_java",
     "//components/payments/content/android:java",
     "//components/payments/content/android:service_java",
     "//components/payments/mojom:mojom_java",
@@ -1351,6 +1356,7 @@ android_library("chrome_test_java") {
     "//chrome/browser/banners/android:java",
     "//chrome/browser/browser_controls/android:java",
     "//chrome/browser/commerce/android:javatests",
+    "//chrome/browser/commerce/merchant_viewer:optimization_guide_protos_java",
     "//chrome/browser/commerce/merchant_viewer/android:java",
     "//chrome/browser/commerce/merchant_viewer/android:javatests",
     "//chrome/browser/content_creation/notes/internal/android:java",
@@ -1392,6 +1398,9 @@ android_library("chrome_test_java") {
     "//chrome/browser/page_annotations/test/android:javatests",
     "//chrome/browser/paint_preview/android:java",
     "//chrome/browser/paint_preview/android:javatests",
+    "//chrome/browser/partnercustomizations:delegate_java",
+    "//chrome/browser/partnercustomizations:java",
+    "//chrome/browser/partnercustomizations:test_support_java",
     "//chrome/browser/password_check:public_java",
     "//chrome/browser/password_edit_dialog/android:javatests",
     "//chrome/browser/password_entry_edit/android/internal:javatests",
@@ -1462,6 +1471,8 @@ android_library("chrome_test_java") {
     "//chrome/test/android:chrome_java_test_support",
     "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",
     "//components/autofill/android:autofill_java",
+    "//components/autofill/android:prefeditor_autofill_java",
+    "//components/autofill_assistant/android:public_java",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/background_task_scheduler:background_task_scheduler_task_ids_java",
     "//components/background_task_scheduler/internal:background_task_scheduler_javatests",
@@ -1622,6 +1633,7 @@ android_library("chrome_test_java") {
     "//third_party/androidx:androidx_viewpager2_viewpager2_java",
     "//third_party/androidx:androidx_viewpager_viewpager_java",
     "//third_party/blink/public:blink_headers_java",
+    "//third_party/blink/public/common:common_java",
     "//third_party/blink/public/mojom:android_mojo_bindings_java",
     "//third_party/blink/public/mojom:mojom_core_java",
     "//third_party/blink/public/mojom:mojom_mhtml_load_result_java",
@@ -1892,6 +1904,7 @@ android_resources("chrome_public_apk_resources") {
 android_resources("chrome_public_apk_base_module_resources") {
   resource_overlay = true
   sources = [
+    "java/res_chromium_base/drawable/themed_app_icon.xml",
     "java/res_chromium_base/mipmap-hdpi/app_icon.png",
     "java/res_chromium_base/mipmap-hdpi/layered_app_icon.png",
     "java/res_chromium_base/mipmap-hdpi/layered_app_icon_background.png",
@@ -2399,6 +2412,7 @@ android_library("browser_java_test_support") {
     "//base:base_java",
     "//base:base_java_test_support",
     "//base:jni_java",
+    "//chrome/browser/download/android:java",
     "//chrome/browser/prefetch/android:java",
     "//chrome/browser/profiles/android:java",
     "//chrome/browser/sync/android:java",
@@ -3063,6 +3077,7 @@ chrome_test_apk_tmpl("chrome_public_unit_test_apk") {
   shared_libraries = [ ":libchromefortest" ]
   deps = [
     ":chrome_unit_test_java",
+    "//chrome/browser/partnercustomizations:javatests",
     "//chrome/browser/user_education:javatests",
     "//chrome/browser/video_tutorials/internal:javatests",
   ]
@@ -3218,6 +3233,14 @@ android_test_apk("chrome_smoke_test_apk") {
   ]
 }
 
+_common_smoke_test_args = [
+  "--enable-breakpad-dump",
+  "--use-apk-under-test-flags-file",
+
+  # FRE is too flakey on some old devices https://crbug.com/1289733
+  "--disable-fre",
+]
+
 instrumentation_test_runner("chrome_public_smoke_test") {
   apk_under_test = ":chrome_public_apk"
   android_test_apk = ":chrome_smoke_test_apk"
@@ -3225,10 +3248,8 @@ instrumentation_test_runner("chrome_public_smoke_test") {
   if (!is_java_debug) {
     proguard_mapping_path = "$root_build_dir/apks/ChromePublic.apk.mapping"
   }
-  extra_args = [
-    "--enable-breakpad-dump",
-    "--use-apk-under-test-flags-file",
-  ]
+
+  extra_args = _common_smoke_test_args
 }
 
 # Public webview targets don't work with non-public sdks.
@@ -3250,10 +3271,7 @@ instrumentation_test_runner("monochrome_public_smoke_test") {
   android_test_apk = ":chrome_smoke_test_apk"
   android_test_apk_name = "ChromeSmokeTest"
   never_incremental = true
-  extra_args = [
-    "--enable-breakpad-dump",
-    "--use-apk-under-test-flags-file",
-  ]
+  extra_args = _common_smoke_test_args
 }
 
 android_test_apk("chrome_bundle_smoke_test_apk") {
@@ -3848,7 +3866,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/download/DownloadManagerService.java",
     "java/src/org/chromium/chrome/browser/download/DownloadUtils.java",
     "java/src/org/chromium/chrome/browser/download/DuplicateDownloadDialogBridge.java",
-    "java/src/org/chromium/chrome/browser/download/items/OfflineContentAggregatorFactory.java",
     "java/src/org/chromium/chrome/browser/download/service/DownloadBackgroundTask.java",
     "java/src/org/chromium/chrome/browser/download/service/DownloadTaskScheduler.java",
     "java/src/org/chromium/chrome/browser/explore_sites/ExploreSitesBridge.java",
@@ -3861,6 +3878,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/feedback/ConnectivityChecker.java",
     "java/src/org/chromium/chrome/browser/feedback/ScreenshotTask.java",
     "java/src/org/chromium/chrome/browser/firstrun/FirstRunUtils.java",
+    "java/src/org/chromium/chrome/browser/flags/BadFlagsSnackbarManager.java",
     "java/src/org/chromium/chrome/browser/gesturenav/OverscrollSceneLayer.java",
     "java/src/org/chromium/chrome/browser/history/BrowsingHistoryBridge.java",
     "java/src/org/chromium/chrome/browser/history/HistoryDeletionBridge.java",
@@ -3926,7 +3944,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchBackgroundTaskScheduler.java",
     "java/src/org/chromium/chrome/browser/page_info/PageInfoAboutThisSiteController.java",
     "java/src/org/chromium/chrome/browser/partnerbookmarks/PartnerBookmarksReader.java",
-    "java/src/org/chromium/chrome/browser/partnercustomizations/PartnerBrowserCustomizations.java",
     "java/src/org/chromium/chrome/browser/password_manager/AccountChooserDialog.java",
     "java/src/org/chromium/chrome/browser/password_manager/AutoSigninFirstRunDialog.java",
     "java/src/org/chromium/chrome/browser/password_manager/AutoSigninSnackbarController.java",
@@ -3945,6 +3962,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/printing/TabPrinter.java",
     "java/src/org/chromium/chrome/browser/privacy/settings/PrivacyPreferencesManagerImpl.java",
     "java/src/org/chromium/chrome/browser/push_messaging/PushMessagingServiceObserver.java",
+    "java/src/org/chromium/chrome/browser/query_tiles/QueryTileUtils.java",
     "java/src/org/chromium/chrome/browser/query_tiles/TileProviderFactory.java",
     "java/src/org/chromium/chrome/browser/query_tiles/TileServiceUtils.java",
     "java/src/org/chromium/chrome/browser/read_later/ReadingListBridge.java",

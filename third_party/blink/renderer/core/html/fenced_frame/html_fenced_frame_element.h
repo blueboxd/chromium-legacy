@@ -45,9 +45,11 @@ class CORE_EXPORT HTMLFencedFrameElement : public HTMLFrameOwnerElement {
     virtual ~FencedFrameDelegate();
     void Trace(Visitor* visitor) const;
 
-    virtual void DidGetInserted() = 0;
     virtual void Navigate(const KURL&) = 0;
-    virtual void DidGetRemoved() {}
+    // This method is used to clean up all state in preparation for destruction,
+    // even though the destruction may happen arbitrarily later during garbage
+    // collection.
+    virtual void Dispose() {}
 
    protected:
     HTMLFencedFrameElement& GetElement() const { return *outer_element_; }
@@ -69,6 +71,7 @@ class CORE_EXPORT HTMLFencedFrameElement : public HTMLFrameOwnerElement {
     NOTREACHED();
     return ParsedPermissionsPolicy();
   }
+  void SetCollapsed(bool) override;
 
   // HTMLElement overrides.
   bool IsHTMLFencedFrameElement() const final { return true; }
@@ -114,6 +117,7 @@ class CORE_EXPORT HTMLFencedFrameElement : public HTMLFrameOwnerElement {
       const QualifiedName&,
       const AtomicString&,
       MutableCSSPropertyValueSet*) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&, LegacyLayout) override;
   void AttachLayoutTree(AttachContext& context) override;
   bool SupportsFocus() const override;
@@ -131,12 +135,15 @@ class CORE_EXPORT HTMLFencedFrameElement : public HTMLFrameOwnerElement {
 
   // The underlying <fencedframe> implementation that we delegate all of the
   // important bits to. See the comment above this class declaration.
+  // Note: This is null when the document is sandboxed without
+  // `kFencedFrameMandatoryUnsandboxedFlags`.
   Member<FencedFrameDelegate> frame_delegate_;
   Member<ResizeObserver> resize_observer_;
   // See |FrozenFrameSize| above.
   absl::optional<PhysicalSize> frozen_frame_size_;
   absl::optional<PhysicalRect> content_rect_;
   bool should_freeze_frame_size_on_next_layout_ = false;
+  bool collapsed_by_client_ = false;
 
   friend class ResizeObserverDelegate;
 };

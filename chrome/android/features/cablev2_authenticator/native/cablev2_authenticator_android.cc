@@ -208,8 +208,9 @@ enum class CableV2MobileResult {
   kInvalidQR = 9,
   kInvalidServerLink = 10,
   kEOFWhileProcessing = 11,
+  kDiscoverableCredentialsRejected = 12,
 
-  kMaxValue = 11,
+  kMaxValue = 12,
 };
 
 // JavaByteArrayToSpan returns a span that aliases |data|. Be aware that the
@@ -504,6 +505,10 @@ class AndroidPlatform : public device::cablev2::authenticator::Platform {
         case Error::UNKNOWN_COMMAND:
           result = CableV2MobileResult::kUnknownCommand;
           break;
+        case Error::AUTHENTICATOR_SELECTION_RECEIVED:
+        case Error::DISCOVERABLE_CREDENTIALS_REQUEST:
+          result = CableV2MobileResult::kDiscoverableCredentialsRejected;
+          break;
         case Error::INTERNAL_ERROR:
         case Error::SERVER_LINK_WRONG_LENGTH:
         case Error::SERVER_LINK_NOT_ON_CURVE:
@@ -702,6 +707,7 @@ static jlong JNI_CableAuthenticator_StartQR(
       CableV2MobileEvent::kStoppedWhileAwaitingTunnelServerConnection;
   global_data
       .current_transaction = device::cablev2::authenticator::TransactFromQRCode(
+      /*protocol_revision=*/0,
       std::make_unique<AndroidPlatform>(env, cable_authenticator,
                                         /*is_usb=*/false),
       global_data.network_context, *global_data.root_secret,
@@ -761,6 +767,7 @@ static jlong JNI_CableAuthenticator_StartServerLink(
 
   global_data.current_transaction =
       device::cablev2::authenticator::TransactFromQRCode(
+          /*protocol_revision=*/0,
           std::make_unique<AndroidPlatform>(env, cable_authenticator,
                                             /*is_usb=*/false),
           global_data.network_context, dummy_root_secret,
@@ -796,6 +803,7 @@ static jlong JNI_CableAuthenticator_StartCloudMessage(
       CableV2MobileEvent::kStoppedWhileAwaitingTunnelServerConnection;
   global_data.current_transaction =
       device::cablev2::authenticator::TransactFromFCM(
+          event->protocol_revision,
           std::make_unique<AndroidPlatform>(env, cable_authenticator,
                                             /*is_usb=*/false),
           global_data.network_context, *global_data.root_secret,

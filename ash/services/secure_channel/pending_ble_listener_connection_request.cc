@@ -6,15 +6,17 @@
 
 #include <utility>
 
+#include "ash/services/secure_channel/client_connection_parameters.h"
+#include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "base/memory/ptr_util.h"
 #include "chromeos/components/multidevice/logging/logging.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 namespace {
+
 const char kBleListenerReadableRequestTypeForLogging[] = "BLE Listener";
+
 }  // namespace
 
 // static
@@ -73,6 +75,4 @@ void PendingBleListenerConnectionRequest::HandleConnectionFailure(
       mojom::ConnectionAttemptFailureReason::AUTHENTICATION_ERROR);
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

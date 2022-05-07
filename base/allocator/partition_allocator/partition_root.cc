@@ -948,21 +948,22 @@ bool PartitionRoot<thread_safe>::TryReallocInPlaceForNormalBuckets(
 }
 
 template <bool thread_safe>
-void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
-                                               void* ptr,
-                                               size_t new_size,
-                                               const char* type_name) {
+void* PartitionRoot<thread_safe>::ReallocWithFlags(int flags,
+                                                   void* ptr,
+                                                   size_t new_size,
+                                                   const char* type_name) {
 #if defined(MEMORY_TOOL_REPLACES_ALLOCATOR)
   CHECK_MAX_SIZE_OR_RETURN_NULLPTR(new_size, flags);
   void* result = realloc(ptr, new_size);
-  PA_CHECK(result || flags & PartitionAllocReturnNull);
+  PA_CHECK(result || flags & AllocFlags::kReturnNull);
   return result;
 #else
-  bool no_hooks = flags & PartitionAllocNoHooks;
+  bool no_hooks = flags & AllocFlags::kNoHooks;
   if (UNLIKELY(!ptr)) {
-    return no_hooks ? AllocFlagsNoHooks(flags, new_size, PartitionPageSize())
-                    : AllocFlagsInternal(flags, new_size, PartitionPageSize(),
-                                         type_name);
+    return no_hooks
+               ? AllocWithFlagsNoHooks(flags, new_size, PartitionPageSize())
+               : AllocWithFlagsInternal(flags, new_size, PartitionPageSize(),
+                                        type_name);
   }
 
   if (UNLIKELY(!new_size)) {
@@ -971,7 +972,7 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
   }
 
   if (new_size > MaxDirectMapped()) {
-    if (flags & PartitionAllocReturnNull)
+    if (flags & AllocFlags::kReturnNull)
       return nullptr;
     internal::PartitionExcessiveAllocationSize(new_size);
   }
@@ -1018,11 +1019,12 @@ void* PartitionRoot<thread_safe>::ReallocFlags(int flags,
   }
 
   // This realloc cannot be resized in-place. Sadness.
-  void* ret = no_hooks ? AllocFlagsNoHooks(flags, new_size, PartitionPageSize())
-                       : AllocFlagsInternal(flags, new_size,
-                                            PartitionPageSize(), type_name);
+  void* ret = no_hooks
+                  ? AllocWithFlagsNoHooks(flags, new_size, PartitionPageSize())
+                  : AllocWithFlagsInternal(flags, new_size, PartitionPageSize(),
+                                           type_name);
   if (!ret) {
-    if (flags & PartitionAllocReturnNull)
+    if (flags & AllocFlags::kReturnNull)
       return nullptr;
     internal::PartitionExcessiveAllocationSize(new_size);
   }
@@ -1043,9 +1045,9 @@ void PartitionRoot<thread_safe>::PurgeMemory(int flags) {
     // TODO(bikineev): Consider rescheduling the purging after PCScan.
     if (PCScan::IsInProgress())
       return;
-    if (flags & PartitionPurgeDecommitEmptySlotSpans)
+    if (flags & PurgeFlags::kDecommitEmptySlotSpans)
       DecommitEmptySlotSpans();
-    if (flags & PartitionPurgeDiscardUnusedSystemPages) {
+    if (flags & PurgeFlags::kDiscardUnusedSystemPages) {
       for (Bucket& bucket : buckets) {
         if (bucket.slot_size == kInvalidBucketSize)
           continue;

@@ -43,6 +43,10 @@ export class ReadLaterItemElement extends ReadLaterItemElementBase {
     return {
       data: Object,
       buttonRipples: Boolean,
+      title: {
+        computed: 'computeTitle_(data.title)',
+        reflectToAttribute: true,
+      },
     };
   }
 
@@ -50,12 +54,16 @@ export class ReadLaterItemElement extends ReadLaterItemElementBase {
   buttonRipples: boolean;
   private apiProxy_: ReadLaterApiProxy = ReadLaterApiProxyImpl.getInstance();
 
-  ready() {
+  override ready() {
     super.ready();
     this.addEventListener('click', this.onClick_);
     this.addEventListener('auxclick', this.onAuxClick_.bind(this));
     this.addEventListener('contextmenu', this.onContextMenu_.bind(this));
     this.addEventListener('keydown', this.onKeyDown_.bind(this));
+  }
+
+  private computeTitle_(): string {
+    return this.data.title;
   }
 
   private onAuxClick_(e: MouseEvent) {

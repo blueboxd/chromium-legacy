@@ -14,9 +14,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Parameters associated with a client request, which should be tightly-coupled
 // to the associated communication channel.
@@ -89,13 +87,6 @@ class ClientConnectionParameters {
 std::ostream& operator<<(std::ostream& stream,
                          const ClientConnectionParameters& details);
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash::secure_channel {
-using ::chromeos::secure_channel::ClientConnectionParameters;
-}
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_CLIENT_CONNECTION_PARAMETERS_H_

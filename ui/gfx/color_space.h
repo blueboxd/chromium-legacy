@@ -18,11 +18,8 @@
 struct skcms_Matrix3x3;
 struct skcms_TransferFunction;
 class SkColorSpace;
+class SkM44;
 enum SkYUVColorSpace : int;
-
-namespace skia {
-class Matrix44;
-}  // namespace skia
 
 // These forward declarations are used to give IPC code friend access to private
 // fields of gfx::ColorSpace for the purpose of serialization and
@@ -168,9 +165,10 @@ class COLOR_SPACE_EXPORT ColorSpace {
              MatrixID matrix,
              RangeID range,
              const skcms_Matrix3x3* custom_primary_matrix,
-             const skcms_TransferFunction* cunstom_transfer_fn);
+             const skcms_TransferFunction* cunstom_transfer_fn,
+             bool is_hdr = false);
 
-  explicit ColorSpace(const SkColorSpace& sk_color_space);
+  explicit ColorSpace(const SkColorSpace& sk_color_space, bool is_hdr = false);
 
   // Returns true if this is not the default-constructor object.
   bool IsValid() const;
@@ -279,6 +277,9 @@ class COLOR_SPACE_EXPORT ColorSpace {
   // Returns true if the transfer function is an HDR one (SMPTE 2084, HLG, etc).
   bool IsHDR() const;
 
+  // Returns true if the transfer function is PQ or HLG.
+  bool IsPQOrHLG() const;
+
   // Returns true if the encoded values can be outside of the 0.0-1.0 range.
   bool FullRangeEncodedValues() const;
 
@@ -330,7 +331,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   }
 
   void GetPrimaryMatrix(skcms_Matrix3x3* to_XYZD50) const;
-  void GetPrimaryMatrix(skia::Matrix44* to_XYZD50) const;
+  SkM44 GetPrimaryMatrix() const;
   bool GetTransferFunction(skcms_TransferFunction* fn) const;
   bool GetInverseTransferFunction(skcms_TransferFunction* fn) const;
 
@@ -345,11 +346,11 @@ class COLOR_SPACE_EXPORT ColorSpace {
 
   // Returns the transfer matrix for |bit_depth|. For most formats, this is the
   // RGB to YUV matrix.
-  void GetTransferMatrix(int bit_depth, skia::Matrix44* matrix) const;
+  SkM44 GetTransferMatrix(int bit_depth) const;
 
   // Returns the range adjust matrix that converts from |range_| to full range
   // for |bit_depth|.
-  void GetRangeAdjustMatrix(int bit_depth, skia::Matrix44* matrix) const;
+  SkM44 GetRangeAdjustMatrix(int bit_depth) const;
 
   // Returns the current primary ID.
   // Note: if SetCustomPrimaries() has been used, the primary ID returned
@@ -381,7 +382,7 @@ class COLOR_SPACE_EXPORT ColorSpace {
   static bool GetTransferFunction(TransferID, skcms_TransferFunction* fn);
   static size_t TransferParamCount(TransferID);
 
-  void SetCustomTransferFunction(const skcms_TransferFunction& fn);
+  void SetCustomTransferFunction(const skcms_TransferFunction& fn, bool is_hdr);
   void SetCustomPrimaries(const skcms_Matrix3x3& to_XYZD50);
 
   PrimaryID primaries_ = PrimaryID::INVALID;

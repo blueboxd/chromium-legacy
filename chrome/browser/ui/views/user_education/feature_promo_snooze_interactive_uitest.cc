@@ -50,9 +50,6 @@ base::Feature kSnoozeTestFeature("SnoozeTestFeature",
 class FeaturePromoSnoozeInteractiveTest : public InProcessBrowserTest {
  public:
   FeaturePromoSnoozeInteractiveTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        feature_engagement::kIPHDesktopSnoozeFeature);
-
     subscription_ = BrowserContextDependencyManager::GetInstance()
                         ->RegisterCreateServicesCallbackForTesting(
                             base::BindRepeating(RegisterMockTracker));
@@ -178,13 +175,11 @@ class FeaturePromoSnoozeInteractiveTest : public InProcessBrowserTest {
   }
 
   views::Button* GetSnoozeButtonForTesting() {
-    return GetPromoBubbleView()->GetButtonForTesting(
-        views::PlatformStyle::kIsOkButtonLeading ? 1 : 0);
+    return GetPromoBubbleView()->GetNonDefaultButtonForTesting(0);
   }
 
   views::Button* GetDismissButtonForTesting() {
-    return GetPromoBubbleView()->GetButtonForTesting(
-        views::PlatformStyle::kIsOkButtonLeading ? 0 : 1);
+    return GetPromoBubbleView()->GetDefaultButtonForTesting();
   }
 
   raw_ptr<NiceMock<feature_engagement::test::MockTracker>> mock_tracker_;

@@ -44,11 +44,13 @@
 #include "ash/system/unified/hps_notify_controller.h"
 #include "ash/system/unified/top_shortcuts_view.h"
 #include "ash/system/unified/unified_system_tray_controller.h"
+#include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wallpaper/wallpaper_controller_impl.h"
 #include "ash/wm/desks/desks_restore_util.h"
 #include "ash/wm/desks/persistent_desks_bar_controller.h"
 #include "ash/wm/desks/templates/desks_templates_util.h"
+#include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_cycle/window_cycle_controller.h"
 #include "chromeos/components/quick_answers/public/cpp/quick_answers_prefs.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
@@ -100,6 +102,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test) {
   tray::VPNListView::RegisterProfilePrefs(registry);
   UnifiedSystemTrayController::RegisterProfilePrefs(registry);
   MediaTray::RegisterProfilePrefs(registry);
+  UsbPeripheralNotificationController::RegisterProfilePrefs(registry);
   WallpaperControllerImpl::RegisterProfilePrefs(registry);
   WindowCycleController::RegisterProfilePrefs(registry);
 
@@ -128,6 +131,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry, bool for_test) {
   PowerPrefs::RegisterLocalStatePrefs(registry);
   DisplayPrefs::RegisterLocalStatePrefs(registry);
   LoginExpandedPublicAccountView::RegisterLocalStatePrefs(registry);
+  LockStateController::RegisterPrefs(registry);
   quick_pair::Mediator::RegisterLocalStatePrefs(registry);
   TopShortcutsView::RegisterLocalStatePrefs(registry);
 }

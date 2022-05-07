@@ -5,8 +5,10 @@
 #include "third_party/blink/renderer/core/document_transition/document_transition_supplement.h"
 
 #include "cc/document_transition/document_transition_request.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_document_transition_callback.h"
 #include "third_party/blink/renderer/core/document_transition/document_transition.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
@@ -33,11 +35,26 @@ DocumentTransitionSupplement* DocumentTransitionSupplement::From(
 }
 
 // static
-DocumentTransition* DocumentTransitionSupplement::documentTransition(
+DocumentTransition* DocumentTransitionSupplement::EnsureDocumentTransition(
     Document& document) {
   auto* supplement = From(document);
   DCHECK(supplement->GetTransition());
   return supplement->GetTransition();
+}
+
+// static
+DocumentTransition* DocumentTransitionSupplement::createDocumentTransition(
+    Document& document,
+    ExceptionState& exception_state) {
+  auto* transition = EnsureDocumentTransition(document);
+
+  if (!transition->StartNewTransition()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Transition already in progress");
+    return nullptr;
+  }
+
+  return transition;
 }
 
 DocumentTransition* DocumentTransitionSupplement::GetTransition() {

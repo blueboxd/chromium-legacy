@@ -62,6 +62,8 @@ constexpr static base::TimeDelta kFadeInDuration = base::Milliseconds(100);
 constexpr static base::TimeDelta kIdentityTranslationDuration =
     base::Milliseconds(200);
 
+constexpr static base::TimeDelta kFastFadeInDuration = base::Milliseconds(0);
+
 // TODO(crbug.com/1199206): Move this into SharedAppListConfig once the UI for
 // categories is more developed.
 constexpr size_t kMaxResultsWithCategoricalSearch = 3;
@@ -110,6 +112,8 @@ SearchResultListView::SearchResultListType CategoryToListType(
       return SearchResultListView::SearchResultListType::kPlayStore;
     case ash::AppListSearchResultCategory::kSearchAndAssistant:
       return SearchResultListView::SearchResultListType::kSearchAndAssistant;
+    case ash::AppListSearchResultCategory::kGames:
+      return SearchResultListView::SearchResultListType::kGames;
     case ash::AppListSearchResultCategory::kUnknown:
       NOTREACHED();
       return SearchResultListView::SearchResultListType::kUnified;
@@ -213,6 +217,10 @@ void SearchResultListView::SetListType(SearchResultListType list_type) {
       title_label_->SetText(l10n_util::GetStringUTF16(
           IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_SEARCH_AND_ASSISTANT));
       break;
+    case SearchResultListType::kGames:
+      title_label_->SetText(l10n_util::GetStringUTF16(
+          IDS_ASH_SEARCH_RESULT_CATEGORY_LABEL_GAMES));
+      break;
   }
 
   switch (list_type_.value()) {
@@ -231,6 +239,7 @@ void SearchResultListView::SetListType(SearchResultListType list_type) {
     case SearchResultListType::kHelp:
     case SearchResultListType::kPlayStore:
     case SearchResultListType::kSearchAndAssistant:
+    case SearchResultListType::kGames:
       title_label_->SetVisible(true);
       break;
   }
@@ -256,6 +265,7 @@ void SearchResultListView::SetListType(SearchResultListType list_type) {
     case SearchResultListType::kHelp:
     case SearchResultListType::kPlayStore:
     case SearchResultListType::kSearchAndAssistant:
+    case SearchResultListType::kGames:
       DCHECK(search_result_view_type_ ==
              SearchResultView::SearchResultViewType::kDefault);
       break;
@@ -279,7 +289,8 @@ SearchResultListView::GetAllListTypesForCategoricalSearch() {
       SearchResultListType::kSettings,
       SearchResultListType::kHelp,
       SearchResultListType::kPlayStore,
-      SearchResultListType::kSearchAndAssistant};
+      SearchResultListType::kSearchAndAssistant,
+      SearchResultListType::kGames};
   return categorical_search_types;
 }
 
@@ -314,8 +325,10 @@ SearchResultListView::ScheduleResultAnimations(
 
   auto schedule_animation = [this, &current_animation_info,
                              &aggregate_animation_info](views::View* view) {
-    ShowViewWithAnimation(view, current_animation_info.total_views +
-                                    aggregate_animation_info.total_views);
+    ShowViewWithAnimation(view,
+                          current_animation_info.total_views +
+                              aggregate_animation_info.total_views,
+                          current_animation_info.use_short_animations);
     ++current_animation_info.animating_views;
   };
 
@@ -344,10 +357,29 @@ SearchResultListView::ScheduleResultAnimations(
   return current_animation_info;
 }
 
+bool SearchResultListView::HasAnimatingChildView() {
+  auto is_animating = [](views::View* view) {
+    return (view->GetVisible() && view->layer() &&
+            view->layer()->GetAnimator() &&
+            view->layer()->GetAnimator()->is_animating());
+  };
+
+  if (is_animating(title_label_))
+    return true;
+
+  for (size_t i = 0; i < search_result_views_.size(); ++i) {
+    if (is_animating(GetResultViewAt(i)))
+      return true;
+  }
+  return false;
+}
+
 void SearchResultListView::ShowViewWithAnimation(views::View* view,
-                                                 int position) {
-  // Abort any in-progress layer animation.
+                                                 int position,
+                                                 bool use_short_animations) {
   DCHECK(view->layer()->GetAnimator());
+
+  // Abort any in-progress layer animation.
   view->layer()->GetAnimator()->AbortAllAnimations();
 
   // Animation spec:
@@ -372,9 +404,12 @@ void SearchResultListView::ShowViewWithAnimation(views::View* view,
       .SetTransform(view, translate_down)
       .Then()
       .SetOpacity(view, 1.0f, gfx::Tween::LINEAR)
-      .SetDuration(kFadeInDuration)
+      .SetDuration(use_short_animations ? kFastFadeInDuration : kFadeInDuration)
       .At(base::TimeDelta())
-      .SetDuration(kIdentityTranslationDuration)
+      .SetDuration(
+          use_short_animations
+              ? app_list_features::DynamicSearchUpdateAnimationDuration()
+              : kIdentityTranslationDuration)
       .SetTransform(view, gfx::Transform(), gfx::Tween::LINEAR_OUT_SLOW_IN);
 }
 
@@ -583,6 +618,8 @@ SearchResult::Category SearchResultListView::GetSearchCategory() {
       return SearchResult::Category::kPlayStore;
     case SearchResultListType::kSearchAndAssistant:
       return SearchResult::Category::kSearchAndAssistant;
+    case SearchResultListType::kGames:
+      return SearchResult::Category::kGames;
   }
 }
 
@@ -614,6 +651,7 @@ std::vector<SearchResult*> SearchResultListView::GetCategorizedSearchResults() {
     case SearchResultListType::kHelp:
     case SearchResultListType::kPlayStore:
     case SearchResultListType::kSearchAndAssistant:
+    case SearchResultListType::kGames:
       SearchResult::Category search_category = GetSearchCategory();
       return SearchModel::FilterSearchResultsByFunction(
           results(),

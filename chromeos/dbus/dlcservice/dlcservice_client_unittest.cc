@@ -37,7 +37,6 @@ std::unique_ptr<dbus::Signal> CreateSignal(
   writer.AppendProtoAsArrayOfBytes(dlc_state);
   return signal;
 }
-}  // namespace
 
 class DlcserviceClientTest : public testing::Test {
  public:
@@ -478,5 +477,7 @@ TEST_F(DlcserviceClientTest, StateChangeObserver) {
   client_->RemoveObserver(&observer);
   client_->DlcStateChangedForTest(signal.get());
 }
+
+}  // namespace
 
 }  // namespace chromeos

@@ -101,6 +101,19 @@ IntentFilters CloneIntentFilters(const IntentFilters& intent_filters) {
   return ret;
 }
 
+bool IsEqual(const IntentFilters& source, const IntentFilters& target) {
+  if (source.size() != target.size()) {
+    return false;
+  }
+
+  for (int i = 0; i < static_cast<int>(source.size()); i++) {
+    if (*source[i] != *target[i]) {
+      return false;
+    }
+  }
+  return true;
+}
+
 ConditionType ConvertMojomConditionTypeToConditionType(
     const apps::mojom::ConditionType& mojom_condition_type) {
   switch (mojom_condition_type) {
@@ -154,6 +167,8 @@ PatternMatchType ConvertMojomPatternMatchTypeToPatternMatchType(
       return PatternMatchType::kFileExtension;
     case apps::mojom::PatternMatchType::kIsDirectory:
       return PatternMatchType::kIsDirectory;
+    case apps::mojom::PatternMatchType::kSuffix:
+      return PatternMatchType::kSuffix;
   }
 }
 
@@ -174,6 +189,8 @@ apps::mojom::PatternMatchType ConvertPatternMatchTypeToMojomPatternMatchType(
       return apps::mojom::PatternMatchType::kFileExtension;
     case PatternMatchType::kIsDirectory:
       return apps::mojom::PatternMatchType::kIsDirectory;
+    case PatternMatchType::kSuffix:
+      return apps::mojom::PatternMatchType::kSuffix;
   }
 }
 

@@ -101,7 +101,8 @@ void MessageStreamLookupImpl::DeviceConnectedStateChanged(
     device::BluetoothDevice* device,
     bool is_now_connected) {
   // Check to see if the device supports Message Streams.
-  if (!device || !base::Contains(device->GetUUIDs(), kMessageStreamUuid)) {
+  if (!device || !device->IsPaired() ||
+      !base::Contains(device->GetUUIDs(), kMessageStreamUuid)) {
     return;
   }
 
@@ -196,7 +197,8 @@ void MessageStreamLookupImpl::OnSocketDisconnected(
 void MessageStreamLookupImpl::AttemptCreateMessageStream(
     device::BluetoothDevice* device,
     const CreateMessageStreamAttemptType& type) {
-  QP_LOG(VERBOSE) << __func__ << ": device address = " << device->GetAddress();
+  QP_LOG(VERBOSE) << __func__ << ": device address = " << device->GetAddress()
+                  << " type = " << CreateMessageStreamAttemptTypeToString(type);
 
   // Only open MessageStreams for new devices that don't already have a
   // MessageStream stored in the map. We can sometimes reach this point if
@@ -209,6 +211,13 @@ void MessageStreamLookupImpl::AttemptCreateMessageStream(
     return;
   }
 
+  if (base::Contains(pending_connect_requests_, device->GetAddress())) {
+    QP_LOG(VERBOSE) << __func__ << ": Ignoring due to matching pending request";
+    return;
+  }
+
+  pending_connect_requests_.insert(device->GetAddress());
+
   device->ConnectToService(
       /*uuid=*/kMessageStreamUuid, /*callback=*/
       base::BindOnce(&MessageStreamLookupImpl::OnConnected,
@@ -216,7 +225,7 @@ void MessageStreamLookupImpl::AttemptCreateMessageStream(
                      base::TimeTicks::Now(), type),
       /*error_callback=*/
       base::BindOnce(&MessageStreamLookupImpl::OnConnectError,
-                     weak_ptr_factory_.GetWeakPtr(), type));
+                     weak_ptr_factory_.GetWeakPtr(), device_address, type));
 }
 
 void MessageStreamLookupImpl::OnConnected(
@@ -224,8 +233,8 @@ void MessageStreamLookupImpl::OnConnected(
     base::TimeTicks connect_to_service_start_time,
     const CreateMessageStreamAttemptType& type,
     scoped_refptr<device::BluetoothSocket> socket) {
-  QP_LOG(VERBOSE) << __func__ << ": device = " << device_address
-                  << " Type = " << CreateMessageStreamAttemptTypeToString(type);
+  QP_LOG(INFO) << __func__ << ": device = " << device_address
+               << " Type = " << CreateMessageStreamAttemptTypeToString(type);
   RecordMessageStreamConnectToServiceResult(/*success=*/true);
   RecordMessageStreamConnectToServiceTime(base::TimeTicks::Now() -
                                           connect_to_service_start_time);
@@ -237,18 +246,21 @@ void MessageStreamLookupImpl::OnConnected(
     observer.OnMessageStreamConnected(device_address, message_stream.get());
 
   message_streams_[device_address] = std::move(message_stream);
+  pending_connect_requests_.erase(device_address);
 }
 
 void MessageStreamLookupImpl::OnConnectError(
+    std::string device_address,
     const CreateMessageStreamAttemptType& type,
     const std::string& error_message) {
   // Because we need to attempt to create MessageStreams at many different
   // iterations due to the variability of Bluetooth APIs, we can expect to
   // see errors here frequently, along with errors followed by a success.
-  QP_LOG(VERBOSE) << __func__ << ": Error = [ " << error_message << "]. Type = "
-                  << CreateMessageStreamAttemptTypeToString(type);
+  QP_LOG(INFO) << __func__ << ": Error = [ " << error_message
+               << "]. Type = " << CreateMessageStreamAttemptTypeToString(type);
   RecordMessageStreamConnectToServiceResult(/*success=*/false);
   RecordMessageStreamConnectToServiceError(error_message);
+  pending_connect_requests_.erase(device_address);
 }
 
 }  // namespace quick_pair

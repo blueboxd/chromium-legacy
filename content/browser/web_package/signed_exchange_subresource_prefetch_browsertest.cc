@@ -5,7 +5,6 @@
 #include <string>
 #include <vector>
 
-#include "base/cxx17_backports.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/format_macros.h"
@@ -1897,6 +1896,19 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest, CORS) {
 
   RegisterRequestHandler(embedded_test_server());
   RegisterRequestHandler(data_server.get());
+
+  // Prefetch requests for alternate SXG should be made with no-cors,
+  // regardless of the crossorigin attribute of Link:rel=preload header that
+  // triggered the prefetch.
+  embedded_test_server()->RegisterRequestMonitor(
+      base::BindRepeating([](const net::test_server::HttpRequest& request) {
+        if (!base::EndsWith(request.relative_url, "_data.sxg"))
+          return;
+        auto it = request.headers.find("Sec-Fetch-Mode");
+        ASSERT_TRUE(it != request.headers.end());
+        EXPECT_EQ(it->second, "no-cors");
+      }));
+
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(data_server->Start());
 
@@ -1997,7 +2009,7 @@ IN_PROC_BROWSER_TEST_F(SignedExchangeSubresourcePrefetchBrowserTest, CORS) {
   std::string requests_list_string;
 
   std::vector<MockSignedExchangeHandlerParams> mock_params;
-  for (size_t i = 0; i < base::size(kTestCases); ++i) {
+  for (size_t i = 0; i < std::size(kTestCases); ++i) {
     if (i) {
       target_sxg_outer_link_header += ",";
       target_sxg_inner_link_header += ",";
@@ -2083,7 +2095,7 @@ let results = [];
       NavigateToURL(shell(), embedded_test_server()->GetURL(prefetch_path)));
 
   // Wait until all (main- and sub-resource) SXGs are prefetched.
-  while (GetCachedExchanges(shell()).size() < base::size(kTestCases) + 1) {
+  while (GetCachedExchanges(shell()).size() < std::size(kTestCases) + 1) {
     base::RunLoop run_loop;
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE, run_loop.QuitClosure(), TestTimeouts::tiny_timeout());
@@ -2092,7 +2104,7 @@ let results = [];
 
   NavigateToURLAndWaitTitle(target_sxg_url, "done");
 
-  for (size_t i = 0; i < base::size(kTestCases); ++i) {
+  for (size_t i = 0; i < std::size(kTestCases); ++i) {
     SCOPED_TRACE(base::StringPrintf("TestCase %zu", i));
     EXPECT_EQ(
         EvalJs(shell(), base::StringPrintf("results[%zu]", i)).ExtractString(),

@@ -208,6 +208,26 @@ void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosCount(
       std::move(callback));
 }
 
+void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosEnabled(
+    FetchGooglePhotosEnabledCallback callback) {
+  if (!ash::features::IsWallpaperGooglePhotosIntegrationEnabled()) {
+    mojo::ReportBadMessage(
+        "Cannot call `FetchGooglePhotosEnabled()` without Google Photos "
+        "Wallpaper integration enabled.");
+    std::move(callback).Run(
+        ash::personalization_app::mojom::GooglePhotosEnablementState::kError);
+    return;
+  }
+
+  if (!google_photos_enabled_fetcher_) {
+    google_photos_enabled_fetcher_ =
+        std::make_unique<wallpaper_handlers::GooglePhotosEnabledFetcher>(
+            profile_);
+  }
+  google_photos_enabled_fetcher_->AddRequestAndStartIfNecessary(
+      std::move(callback));
+}
+
 void PersonalizationAppWallpaperProviderImpl::FetchGooglePhotosPhotos(
     const absl::optional<std::string>& item_id,
     const absl::optional<std::string>& album_id,
@@ -326,11 +346,12 @@ void PersonalizationAppWallpaperProviderImpl::OnWallpaperChanged() {
       return;
     }
     case ash::WallpaperType::kGooglePhotos:
-      NotifyWallpaperChanged(
-          ash::personalization_app::mojom::CurrentWallpaper::New(
-              wallpaper_data_url, /*attribution=*/std::vector<std::string>(),
-              info.layout, info.type,
-              /*key=*/info.location));
+      client->FetchGooglePhotosPhoto(
+          GetAccountId(profile_), info.location,
+          base::BindOnce(&PersonalizationAppWallpaperProviderImpl::
+                             SendGooglePhotosAttribution,
+                         weak_ptr_factory_.GetWeakPtr(), info,
+                         wallpaper_data_url));
       return;
     case ash::WallpaperType::kDefault:
     case ash::WallpaperType::kDevice:
@@ -365,7 +386,7 @@ void PersonalizationAppWallpaperProviderImpl::SelectWallpaper(
   }
 
   std::vector<ash::OnlineWallpaperVariant> variants;
-  for (auto entry : image_asset_id_map_) {
+  for (const auto& entry : image_asset_id_map_) {
     const ImageInfo& image_info = entry.second;
     if (image_info.unit_id == it->second.unit_id &&
         image_info.collection_id == it->second.collection_id) {
@@ -424,6 +445,7 @@ void PersonalizationAppWallpaperProviderImpl::SelectLocalImage(
 
 void PersonalizationAppWallpaperProviderImpl::SelectGooglePhotosPhoto(
     const std::string& id,
+    ash::WallpaperLayout layout,
     SelectGooglePhotosPhotoCallback callback) {
   if (pending_select_google_photos_photo_callback_)
     std::move(pending_select_google_photos_photo_callback_).Run(false);
@@ -434,15 +456,15 @@ void PersonalizationAppWallpaperProviderImpl::SelectGooglePhotosPhoto(
   client->RecordWallpaperSourceUMA(ash::WallpaperType::kGooglePhotos);
 
   client->SetGooglePhotosWallpaper(
-      ash::GooglePhotosWallpaperParams(GetAccountId(profile_), id),
+      ash::GooglePhotosWallpaperParams(GetAccountId(profile_), id, layout),
       base::BindOnce(&PersonalizationAppWallpaperProviderImpl::
                          OnGooglePhotosWallpaperSelected,
                      backend_weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PersonalizationAppWallpaperProviderImpl::SetCustomWallpaperLayout(
+void PersonalizationAppWallpaperProviderImpl::SetCurrentWallpaperLayout(
     ash::WallpaperLayout layout) {
-  WallpaperController::Get()->UpdateCustomWallpaperLayout(
+  WallpaperController::Get()->UpdateCurrentWallpaperLayout(
       GetAccountId(profile_), layout);
 }
 
@@ -501,6 +523,13 @@ PersonalizationAppWallpaperProviderImpl::SetGooglePhotosCountFetcherForTest(
     std::unique_ptr<wallpaper_handlers::GooglePhotosCountFetcher> fetcher) {
   google_photos_count_fetcher_ = std::move(fetcher);
   return google_photos_count_fetcher_.get();
+}
+
+wallpaper_handlers::GooglePhotosEnabledFetcher*
+PersonalizationAppWallpaperProviderImpl::SetGooglePhotosEnabledFetcherForTest(
+    std::unique_ptr<wallpaper_handlers::GooglePhotosEnabledFetcher> fetcher) {
+  google_photos_enabled_fetcher_ = std::move(fetcher);
+  return google_photos_enabled_fetcher_.get();
 }
 
 wallpaper_handlers::GooglePhotosPhotosFetcher*
@@ -680,6 +709,18 @@ void PersonalizationAppWallpaperProviderImpl::FindAttributionInCollection(
   // resetting the previous fetcher last because the current method is bound
   // to a callback owned by the previous fetcher.
   wallpaper_attribution_info_fetcher_ = std::move(fetcher);
+}
+
+void PersonalizationAppWallpaperProviderImpl::SendGooglePhotosAttribution(
+    const ash::WallpaperInfo& info,
+    const GURL& wallpaper_data_url,
+    mojo::StructPtr<ash::personalization_app::mojom::GooglePhotosPhoto> photo) {
+  std::vector<std::string> attribution;
+  if (!photo.is_null())
+    attribution.push_back(photo->name);
+  NotifyWallpaperChanged(ash::personalization_app::mojom::CurrentWallpaper::New(
+      wallpaper_data_url, attribution, info.layout, info.type,
+      /*key=*/info.location));
 }
 
 void PersonalizationAppWallpaperProviderImpl::SetMinimizedWindowStateForPreview(

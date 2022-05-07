@@ -8,14 +8,12 @@
 #include <string>
 
 #include "ash/services/secure_channel/file_transfer_update_callback.h"
-#include "ash/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom.h"
+#include "ash/services/secure_channel/public/mojom/secure_channel.mojom-forward.h"
+#include "ash/services/secure_channel/public/mojom/secure_channel_types.mojom-forward.h"
 #include "base/callback.h"
 #include "base/unguessable_token.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Proxies the communication channel between clients and remote devices.
 //
@@ -79,8 +77,6 @@ class SingleClientProxy {
   Delegate* delegate_;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_SINGLE_CLIENT_PROXY_H_

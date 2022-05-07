@@ -402,6 +402,7 @@ _WIN_10_AMD_LAPTOP_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('jetstream2'),
     _GetBenchmarkConfig('kraken'),
     _GetBenchmarkConfig('octane'),
+    _GetBenchmarkConfig('speedometer2'),
 ])
 _WIN_7_BENCHMARK_CONFIGS = PerfSuite([
     'loading.desktop',
@@ -497,7 +498,6 @@ _FUCHSIA_SHERLOCK_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
 ])
 _FUCHSIA_ATLAS_PERF_FYI_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('system_health.common_desktop'),
-    _GetBenchmarkConfig('system_health.memory_desktop')
 ])
 _LINUX_PERF_CALIBRATION_BENCHMARK_CONFIGS = PerfSuite([
     _GetBenchmarkConfig('speedometer2'),
@@ -555,10 +555,8 @@ WIN_10_LOW_END = PerfPlatform(
     'Low end windows 10 HP laptops. HD Graphics 5500, x86-64-i3-5005U, '
     'SSD, 4GB RAM.',
     _WIN_10_LOW_END_BENCHMARK_CONFIGS,
-    # TODO(crbug.com/998161): Increase the number of shards once you
-    # have enough test data to make a shard map and when more devices
-    # are added to the data center.
-    46,
+    # TODO(crbug.com/1305291): Increase the count back to 46 when issue fixed.
+    40,
     'win')
 WIN_10 = PerfPlatform(
     'win-10-perf',
@@ -569,7 +567,7 @@ WIN_10_AMD = PerfPlatform('win-10_amd-perf', 'Windows AMD chipset',
                           _WIN_10_AMD_BENCHMARK_CONFIGS, 1, 'win')
 WIN_10_AMD_LAPTOP = PerfPlatform('win-10_amd_laptop-perf',
                                  'Windows 10 Laptop with AMD chipset.',
-                                 _WIN_10_AMD_LAPTOP_BENCHMARK_CONFIGS, 2, 'win')
+                                 _WIN_10_AMD_LAPTOP_BENCHMARK_CONFIGS, 5, 'win')
 
 # Android
 ANDROID_GO = PerfPlatform(
@@ -661,7 +659,7 @@ FUCHSIA_PERF_SHERLOCK_FYI = PerfPlatform(
 FUCHSIA_PERF_ATLAS_FYI = PerfPlatform('fuchsia-perf-atlas-fyi',
                                       '',
                                       _FUCHSIA_ATLAS_PERF_FYI_BENCHMARK_CONFIGS,
-                                      1,
+                                      4,
                                       'fuchsia',
                                       is_fyi=True,
                                       executables=FUCHSIA_EXEC_CONFIGS['atlas'])

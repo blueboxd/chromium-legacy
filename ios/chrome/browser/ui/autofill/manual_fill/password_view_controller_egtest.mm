@@ -28,6 +28,7 @@
 #error "This file requires ARC support."
 #endif
 
+using base::test::ios::kWaitForActionTimeout;
 using chrome_test_util::ButtonWithAccessibilityLabelId;
 using chrome_test_util::CancelButton;
 using chrome_test_util::ManualFallbackKeyboardIconMatcher;
@@ -548,6 +549,11 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
 
 // Tests password generation on manual fallback.
 - (void)testPasswordGenerationOnManualFallback {
+  // Disable the test on iOS 15.3 due to build failure.
+  // TODO(crbug.com/1306530): enable the test with fix.
+  if (@available(iOS 15.3, *)) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on iOS 15.3.");
+  }
   [SigninEarlGreyUI signinWithFakeIdentity:[FakeChromeIdentity fakeIdentity1]];
   [ChromeEarlGrey waitForSyncInitialized:YES syncTimeout:10.0];
 
@@ -568,12 +574,26 @@ id<GREYMatcher> CancelUsingOtherPasswordButton() {
       assertWithMatcher:grey_sufficientlyVisible()];
 
   // Select a 'Suggest Password...' option.
-  [[EarlGrey selectElementWithMatcher:ManualFallbackSuggestPasswordMatcher()]
-      performAction:grey_tap()];
+  [[[EarlGrey selectElementWithMatcher:ManualFallbackSuggestPasswordMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()] performAction:grey_tap()];
+
+  // Dismiss the keyboard, if on iPad.
+  if ([ChromeEarlGrey isIPadIdiom]) {
+    GREYCondition* waitForKeyboardDismiss = [GREYCondition
+        conditionWithName:@"waitForKeyboardDismiss"
+                    block:^BOOL() {
+                      return [EarlGrey dismissKeyboardWithError:nil];
+                    }];
+
+    // Verify that keyboard is dismissed.
+    GREYAssertTrue(
+        [waitForKeyboardDismiss waitWithTimeout:kWaitForActionTimeout],
+        @"Keyboard must dismiss before selecting 'Use Suggested Password'.");
+  }
 
   // Confirm by tapping on the 'Use Suggested Password' button.
-  [[EarlGrey selectElementWithMatcher:UseSuggestedPasswordMatcher()]
-      performAction:grey_tap()];
+  [[[EarlGrey selectElementWithMatcher:UseSuggestedPasswordMatcher()]
+      assertWithMatcher:grey_sufficientlyVisible()] performAction:grey_tap()];
 
   // Verify Web Content.
   NSString* javaScriptCondition =

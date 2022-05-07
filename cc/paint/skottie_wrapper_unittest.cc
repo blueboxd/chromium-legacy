@@ -30,6 +30,7 @@ using ::testing::_;
 using ::testing::Contains;
 using ::testing::Eq;
 using ::testing::FieldsAre;
+using ::testing::FloatNear;
 using ::testing::IsEmpty;
 using ::testing::Key;
 using ::testing::Mock;
@@ -39,6 +40,8 @@ using ::testing::Optional;
 using ::testing::Pair;
 using ::testing::SizeIs;
 using ::testing::UnorderedElementsAre;
+
+constexpr float kMarkerEpsilon = .01f;
 
 class MockFrameDataCallback {
  public:
@@ -141,13 +144,15 @@ TEST(SkottieWrapperTest, LoadsCorrectAssetsForDraw) {
   EXPECT_CALL(mock_callback,
               OnAssetLoaded(HashSkottieResourceId("image_0"), _, _, _));
   skottie->Draw(&canvas, /*t=*/0.25, SkRect::MakeWH(500, 500),
-                mock_callback.Get(), SkottieColorMap());
+                mock_callback.Get(), SkottieColorMap(),
+                SkottieTextPropertyValueMap());
   Mock::VerifyAndClearExpectations(&mock_callback);
 
   EXPECT_CALL(mock_callback,
               OnAssetLoaded(HashSkottieResourceId("image_1"), _, _, _));
   skottie->Draw(&canvas, /*t=*/0.75, SkRect::MakeWH(500, 500),
-                mock_callback.Get(), SkottieColorMap());
+                mock_callback.Get(), SkottieColorMap(),
+                SkottieTextPropertyValueMap());
   Mock::VerifyAndClearExpectations(&mock_callback);
 }
 
@@ -158,7 +163,8 @@ TEST(SkottieWrapperTest, AllowsNullFrameDataCallbackForDraw) {
   // Just verify that this call does not cause a CHECK failure.
   ::testing::NiceMock<MockCanvas> canvas;
   skottie->Draw(&canvas, /*t=*/0, SkRect::MakeWH(500, 500),
-                SkottieWrapper::FrameDataCallback(), SkottieColorMap());
+                SkottieWrapper::FrameDataCallback(), SkottieColorMap(),
+                SkottieTextPropertyValueMap());
 }
 
 TEST(SkottieWrapperTest, LoadsCorrectAssetsForSeek) {
@@ -176,6 +182,71 @@ TEST(SkottieWrapperTest, LoadsCorrectAssetsForSeek) {
               OnAssetLoaded(HashSkottieResourceId("image_1"), _, _, _));
   skottie->Seek(/*t=*/0.75, mock_callback.Get());
   Mock::VerifyAndClearExpectations(&mock_callback);
+}
+
+TEST(SkottieWrapperTest, LoadsTextNodes) {
+  auto skottie = CreateSkottieFromTestDataDir(kLottieDataWith2TextFileName);
+  ASSERT_TRUE(skottie->is_valid());
+  EXPECT_THAT(skottie->GetTextNodeNames(),
+              UnorderedElementsAre(kLottieDataWith2TextNode1,
+                                   kLottieDataWith2TextNode2));
+  EXPECT_THAT(skottie->GetCurrentTextPropertyValues(),
+              UnorderedElementsAre(
+                  Pair(HashSkottieResourceId(kLottieDataWith2TextNode1),
+                       SkottieTextPropertyValue(
+                           std::string(kLottieDataWith2TextNode1Text))),
+                  Pair(HashSkottieResourceId(kLottieDataWith2TextNode2),
+                       SkottieTextPropertyValue(
+                           std::string(kLottieDataWith2TextNode2Text)))));
+}
+
+TEST(SkottieWrapperTest, SetsTextNodesWithDraw) {
+  auto skottie = CreateSkottieFromTestDataDir(kLottieDataWith2TextFileName);
+  ASSERT_TRUE(skottie->is_valid());
+  ::testing::NiceMock<MockCanvas> canvas;
+
+  SkottieTextPropertyValueMap text_map = {
+      {HashSkottieResourceId(kLottieDataWith2TextNode1),
+       SkottieTextPropertyValue("new-test-text-1")},
+      {HashSkottieResourceId(kLottieDataWith2TextNode2),
+       SkottieTextPropertyValue("new-test-text-2")}};
+  skottie->Draw(&canvas, /*t=*/0, SkRect::MakeWH(500, 500),
+                SkottieWrapper::FrameDataCallback(), SkottieColorMap(),
+                text_map);
+  EXPECT_THAT(skottie->GetCurrentTextPropertyValues(),
+              UnorderedElementsAre(
+                  Pair(HashSkottieResourceId(kLottieDataWith2TextNode1),
+                       SkottieTextPropertyValue("new-test-text-1")),
+                  Pair(HashSkottieResourceId(kLottieDataWith2TextNode2),
+                       SkottieTextPropertyValue("new-test-text-2"))));
+
+  text_map = {{HashSkottieResourceId(kLottieDataWith2TextNode2),
+               SkottieTextPropertyValue("new-test-text-2b")}};
+  skottie->Draw(&canvas, /*t=*/0.1, SkRect::MakeWH(500, 500),
+                SkottieWrapper::FrameDataCallback(), SkottieColorMap(),
+                text_map);
+  EXPECT_THAT(skottie->GetCurrentTextPropertyValues(),
+              UnorderedElementsAre(
+                  Pair(HashSkottieResourceId(kLottieDataWith2TextNode1),
+                       SkottieTextPropertyValue("new-test-text-1")),
+                  Pair(HashSkottieResourceId(kLottieDataWith2TextNode2),
+                       SkottieTextPropertyValue("new-test-text-2b"))));
+}
+
+TEST(SkottieWrapperTest, Marker) {
+  auto skottie = CreateSkottieFromString(kLottieDataWith2Markers);
+  ASSERT_TRUE(skottie->is_valid());
+  EXPECT_THAT(
+      skottie->GetAllMarkers(),
+      UnorderedElementsAre(
+          FieldsAre(
+              kLottieDataWith2MarkersMarker1,
+              FloatNear(kLottieDataWith2MarkersMarker1Time, kMarkerEpsilon),
+              FloatNear(kLottieDataWith2MarkersMarker1Time, kMarkerEpsilon)),
+          FieldsAre(
+              kLottieDataWith2MarkersMarker2,
+              FloatNear(kLottieDataWith2MarkersMarker2Time, kMarkerEpsilon),
+              FloatNear(kLottieDataWith2MarkersMarker2Time, kMarkerEpsilon))));
 }
 
 }  // namespace

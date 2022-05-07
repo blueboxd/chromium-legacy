@@ -13,7 +13,6 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/observer_list.h"
@@ -497,7 +496,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     if (!response) {
       LOG(ERROR) << update_engine::kIsFeatureEnabled
                  << " call failed for feature " << feature;
-      std::move(callback).Run(std::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 
@@ -505,7 +504,7 @@ class UpdateEngineClientImpl : public UpdateEngineClient {
     bool enabled;
     if (!reader.PopBool(&enabled)) {
       LOG(ERROR) << "Bad response: " << response->ToString();
-      std::move(callback).Run(std::nullopt);
+      std::move(callback).Run(absl::nullopt);
       return;
     }
 
@@ -678,7 +677,7 @@ class UpdateEngineClientStubImpl : public UpdateEngineClient {
   void IsFeatureEnabled(const std::string& feature,
                         IsFeatureEnabledCallback callback) override {
     VLOG(1) << "Requesting to get " << feature;
-    std::move(callback).Run(std::nullopt);
+    std::move(callback).Run(absl::nullopt);
   }
 
  private:
@@ -762,10 +761,10 @@ bool UpdateEngineClient::IsTargetChannelMoreStable(
     const std::string& target_channel) {
   const char** cix = std::find(
       kReleaseChannelsList,
-      kReleaseChannelsList + base::size(kReleaseChannelsList), current_channel);
+      kReleaseChannelsList + std::size(kReleaseChannelsList), current_channel);
   const char** tix = std::find(
       kReleaseChannelsList,
-      kReleaseChannelsList + base::size(kReleaseChannelsList), target_channel);
+      kReleaseChannelsList + std::size(kReleaseChannelsList), target_channel);
   return tix > cix;
 }
 

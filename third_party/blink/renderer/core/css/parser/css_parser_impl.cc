@@ -122,13 +122,10 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseValue(
   CSSTokenizedValue tokenized_value = ConsumeValue(stream);
   parser.ConsumeDeclarationValue(tokenized_value, unresolved_property,
                                  important, rule_type);
-  bool did_parse = false;
-  bool did_change = false;
-  if (!parser.parsed_properties_.IsEmpty()) {
-    did_parse = true;
-    did_change = declaration->AddParsedProperties(parser.parsed_properties_);
+  if (parser.parsed_properties_.IsEmpty()) {
+    return MutableCSSPropertyValueSet::kParseError;
   }
-  return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
+  return declaration->AddParsedProperties(parser.parsed_properties_);
 }
 
 MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
@@ -144,13 +141,11 @@ MutableCSSPropertyValueSet::SetResult CSSParserImpl::ParseVariableValue(
   CSSTokenizedValue tokenized_value = ConsumeValue(stream);
   parser.ConsumeVariableValue(tokenized_value, property_name, important,
                               is_animation_tainted);
-  bool did_parse = false;
-  bool did_change = false;
-  if (!parser.parsed_properties_.IsEmpty()) {
-    did_parse = true;
-    did_change = declaration->AddParsedProperties(parser.parsed_properties_);
+  if (parser.parsed_properties_.IsEmpty()) {
+    return MutableCSSPropertyValueSet::kParseError;
+  } else {
+    return declaration->AddParsedProperties(parser.parsed_properties_);
   }
-  return MutableCSSPropertyValueSet::SetResult{did_parse, did_change};
 }
 
 static inline void FilterProperties(
@@ -1108,16 +1103,21 @@ StyleRuleContainer* CSSParserImpl::ConsumeContainerRule(
 
   ContainerQueryParser query_parser(*context_);
 
-  absl::optional<ContainerSelector> selector =
-      query_parser.ConsumeSelector(prelude);
-  if (!selector)
-    return nullptr;
+  // <container-name>
+  AtomicString name;
+  if (prelude.Peek().GetType() == kIdentToken) {
+    auto* ident = DynamicTo<CSSCustomIdentValue>(
+        css_parsing_utils::ConsumeSingleContainerName(prelude, *context_));
+    if (!ident)
+      return nullptr;
+    name = ident->Value();
+  }
 
   std::unique_ptr<MediaQueryExpNode> query = query_parser.ParseQuery(prelude);
   if (!query)
     return nullptr;
-  ContainerQuery* container_query =
-      MakeGarbageCollected<ContainerQuery>(*selector, std::move(query));
+  ContainerQuery* container_query = MakeGarbageCollected<ContainerQuery>(
+      ContainerSelector(std::move(name), *query), std::move(query));
 
   HeapVector<Member<StyleRuleBase>> rules;
   ConsumeRuleList(stream, kRegularRuleList,

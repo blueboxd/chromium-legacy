@@ -16,10 +16,14 @@ interface CrosWindow {
 
   boolean setOrigin(double x, double y);
   boolean setBounds(double x, double y, double width, double height);
-  boolean setFullscreen(boolean value);
-  boolean maximize();
-  boolean minimize();
+  void setFullscreen(boolean fullscreen);
+  // Sets window state to maximized.
+  void maximize();
+  // Sets window state to minimized.
+  void minimize();
   boolean raise();
-  boolean focus();
-  boolean close();
+  // Allocates focus to the CrosWindow identified by id and brings to front.
+  void focus();
+  // Closes the window.
+  void close();
 };

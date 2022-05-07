@@ -62,7 +62,7 @@
 // copy of the MojoSystemThunks struct definition.
 struct MojoSystemThunks;
 
-namespace chromeos {
+namespace ash {
 namespace ime {
 
 // A simple downloading callback with the downloading URL as return.
@@ -88,21 +88,18 @@ class ImeCrosPlatform {
   virtual ~ImeCrosPlatform() = default;
 
  public:
-  // The three methods below are Getters of the local data directories on the
-  // platform. It's possible for the IME service to be running in a mode where
-  // some local directories are unavailable, in which case these directories
-  // will be empty.
-  //
-  // The returned pointer must remain valid until the `Platform` is destroyed.
-
-  // Get the local IME bundle directory, which is read-only.
+  // Get the read-only local IME bundle directory. IME service could be running
+  // in a mode where the directory is unavailable, in which case this will
+  // return empty. Returned pointer remains valid until `Platform` is destroyed.
   virtual const char* GetImeBundleDir() = 0;
 
-  // Get the IME global directory, which is accessible to all users.
-  virtual const char* GetImeGlobalDir() = 0;
+  // Obsolete, thus deprecated and must not be used. Kept for ABI vtable compat.
+  virtual void Unused3() = 0;
 
-  // Get the local IME directory in home directory of the active user, which
-  // is only accessible to the user itself.
+  // Get the local IME directory in home directory of the active user, which is
+  // only accessible to the user itself. IME service could be running in a mode
+  // where the directory is unavailable, in which case this will return empty.
+  // Returned pointer remains valid until `Platform` is destroyed.
   virtual const char* GetImeUserHomeDir() = 0;
 
   // Obsolete, thus deprecated and must not be used. Kept for ABI vtable compat.
@@ -177,7 +174,7 @@ class ImeClientDelegate {
 };
 
 }  // namespace ime
-}  // namespace chromeos
+}  // namespace ash
 
 // ============================================================================
 // [Proto + Mojo modes] [IME service container --> IME shared lib]
@@ -209,7 +206,7 @@ extern "C" {
 // once. Client must call this function before any others. `platform` must
 // remain valid during the whole life of the IME shared lib.
 __attribute__((visibility("default"))) void ImeDecoderInitOnce(
-    chromeos::ime::ImeCrosPlatform* platform);
+    ash::ime::ImeCrosPlatform* platform);
 
 // Closes the IME shared lib and releases resources used by it.
 __attribute__((visibility("default"))) void ImeDecoderClose();
@@ -217,7 +214,7 @@ __attribute__((visibility("default"))) void ImeDecoderClose();
 // Sets logger for the shared library. Releases the previous logger if there
 // was one. If the new logger is null, then no logger will be used.
 __attribute__((visibility("default"))) void SetImeEngineLogger(
-    chromeos::ime::ChromeLoggerFunc logger_func);
+    ash::ime::ChromeLoggerFunc logger_func);
 
 // ****************************************************************************
 // ***************************** PROTO MODE ***********************************
@@ -233,7 +230,7 @@ __attribute__((visibility("default"))) bool ImeDecoderSupports(
 // TODO(googleo): Remove this and pass `delegate` upon ImeDecoderInitOnce.
 __attribute__((visibility("default"))) bool ImeDecoderActivateIme(
     const char* ime_spec,
-    chromeos::ime::ImeClientDelegate* delegate);
+    ash::ime::ImeClientDelegate* delegate);
 
 // Processes IME events sent from client in serialised protobuf `data` which
 // should be invalidated by this IME shared lib soon after it's consumed.

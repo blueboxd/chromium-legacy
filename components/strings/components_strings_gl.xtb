@@ -457,6 +457,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2310021320168182093">Chou2 (sobre)</translation>
 <translation id="2316887270356262533">Libera menos de 1 MB. É posible que algúns sitios carguen de forma máis lenta a próxima vez que os visites.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> require un nome de usuario e un contrasinal.</translation>
+<translation id="2318594867107319532">Última marca de tempo da política:</translation>
 <translation id="2328651992442742497">Permiso concedido (opción predeterminada)</translation>
 <translation id="2329182534073751090">colocación das ventás</translation>
 <translation id="2330137317877982892">A tarxeta <ph name="CREDIT_CARD" /> caduca o <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -491,6 +492,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2430968933669123598">Xestionar Conta de Google. Preme Introducir para xestionar a información, a privacidade e a seguranza na túa Conta de Google</translation>
 <translation id="2436186046335138073">Queres que se use <ph name="HANDLER_HOSTNAME" /> para abrir todas as ligazóns de <ph name="PROTOCOL" />?</translation>
 <translation id="2438874542388153331">Catro perforacións na parte dereita</translation>
+<translation id="2448295565072560657">Periféricos conectados a este dispositivo mentres tes a sesión iniciada</translation>
 <translation id="2450021089947420533">Percorridos</translation>
 <translation id="2463739503403862330">Completar</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -498,6 +500,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2465688316154986572">Grampa</translation>
 <translation id="2465914000209955735">Xestionar os ficheiros que descargaches en Chrome</translation>
 <translation id="2466004615675155314">Mostrar información da Web</translation>
+<translation id="2467272921457885625">Especificacións e estatísticas do hardware do dispositivo, como o historial de uso de CPU/RAM</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Executar diagnóstico de rede<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">Orde de 1 a N</translation>
 <translation id="2470767536994572628">Ao editar as anotacións, este documento volverá á vista dunha soa páxina e á orientación orixinal</translation>
@@ -524,6 +527,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="2539524384386349900">Detectar</translation>
 <translation id="2540701853218677861">Historial de inicios e peches de sesión (por exemplo, marcas de tempo e intentos sen éxito)</translation>
 <translation id="2541219929084442027">As páxinas que ves nas pestanas do modo de incógnito non se conservarán no historial do teu navegador, no almacenamento de cookies nin no historial de busca unha vez pechadas todas as pestanas do modo de incógnito. Conservaranse todos os ficheiros que descargues ou os marcadores que crees.</translation>
+<translation id="2544546346215446551">O teu administrador reiniciou o dispositivo</translation>
 <translation id="2544644783021658368">Documento individual</translation>
 <translation id="2546283357679194313">Cookies e datos dos sitios</translation>
 <translation id="254947805923345898">O valor da política non é válido.</translation>
@@ -938,7 +942,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="385051799172605136">Atrás</translation>
 <translation id="3858027520442213535">Actualizar data e hora</translation>
 <translation id="3858860766373142691">Nome</translation>
-<translation id="3879224246272917991">Estatísticas do dispositivo, como o uso de CPU/RAM, e especificacións do hardware</translation>
 <translation id="3881478300875776315">Mostrar menos liñas</translation>
 <translation id="3884278016824448484">Identificador de dispositivos en conflito</translation>
 <translation id="3885155851504623709">Parroquia</translation>
@@ -973,6 +976,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="3990250421422698716">Compensación mediante empurro</translation>
 <translation id="3996311196211510766">O sitio <ph name="ORIGIN" /> solicitou que se aplicase unha política de orixe
     a todas as solicitudes que reciba, pero actualmente non se pode aplicar esta política.</translation>
+<translation id="4006465311664329701">Métodos de pago, ofertas e enderezos que usan Google Pay</translation>
 <translation id="4009243425692662128">O contido das páxinas que imprimas envíaselle a Google Cloud ou a terceiros para que o analicen. Por exemplo, poderíase comprobar se contén datos confidenciais.</translation>
 <translation id="4010758435855888356">Queres permitir o acceso ao almacenamento?</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{Documento PDF con {COUNT} páxina}other{Documento PDF con {COUNT} páxinas}}</translation>
@@ -1252,6 +1256,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />. Preme Tabulador e, a continuación, Introducir para crear rapidamente unha nova folla de cálculo de Google</translation>
 <translation id="4825507807291741242">Potente</translation>
 <translation id="483241715238664915">Activar advertencias</translation>
+<translation id="4834250788637067901">Métodos de pago, ofertas e enderezos que usan Google Pay</translation>
 <translation id="4838327282952368871">Onírico</translation>
 <translation id="4840250757394056958">Ver historial de Chrome</translation>
 <translation id="484462545196658690">Automático</translation>
@@ -1379,7 +1384,6 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="5205222826937269299">É obrigatorio introducir o nome</translation>
 <translation id="5209518306177824490">Impresión dixital SHA-1</translation>
 <translation id="5209670883520018268">Bandexa 20</translation>
-<translation id="5215116848420601511">Métodos de pago e enderezos que usan Google Pay</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="521659676233207110">Bandexa 13</translation>
 <translation id="5216942107514965959">Visitouse hoxe por última vez</translation>
@@ -1658,6 +1662,7 @@ En caso contrario, a configuración de privacidade impedirao. Se o permites, o c
 <translation id="6157754950574419155">Quitar todos os elementos do historial</translation>
 <translation id="6157877588268064908">Para consultar os requisitos e métodos de envío, selecciona un enderezo</translation>
 <translation id="6165508094623778733">Máis información</translation>
+<translation id="6167577165590485365">Último intento de obtención:</translation>
 <translation id="6169916984152623906">Agora podes navegar de forma privada, sen que os demais usuarios deste dispositivo vexan a túa actividade. Non obstante, gardaranse as descargas e os marcadores.</translation>
 <translation id="6177128806592000436">A túa conexión a este sitio non é segura</translation>
 <translation id="6180316780098470077">Intervalo de reintentos</translation>
@@ -2292,7 +2297,6 @@ Detalles adicionais:
 <translation id="8241712895048303527">Bloquear neste sitio</translation>
 <translation id="8242426110754782860">Continuar</translation>
 <translation id="8249296373107784235">Cancelar</translation>
-<translation id="8249320324621329438">Última comprobación:</translation>
 <translation id="8253091569723639551">É obrigatorio introducir o enderezo de facturación</translation>
 <translation id="8257387598443225809">Esta aplicación está deseñada para dispositivos móbiles</translation>
 <translation id="825929999321470778">Mostrar todos os contrasinais gardados</translation>
@@ -2495,7 +2499,6 @@ Detalles adicionais:
 <translation id="8975012916872825179">Incluír información como números de teléfono, enderezos de correo electrónico e enderezos de envío</translation>
 <translation id="8975263830901772334">Nomes dos ficheiros que imprimes</translation>
 <translation id="8978053250194585037">A función de navegación segura de Google <ph name="BEGIN_LINK" />detectou actividades de phishing<ph name="END_LINK" /> recentemente no sitio <ph name="SITE" />. Os sitios de phishing fanse pasar por outros sitios web para enganar os usuarios.</translation>
-<translation id="8983003182662520383">Métodos de pago e enderezos que usan Google Pay</translation>
 <translation id="8983369100812962543">Xa podes cambiar o tamaño da aplicación</translation>
 <translation id="8987245424886630962"><ph name="VIEW_CHROME_HISTORY_FOCUSED_FRIENDLY_MATCH_TEXT" />. Para consultar o teu historial de navegación en Chrome, preme Tabulador e, a continuación, Introducir</translation>
 <translation id="8987927404178983737">Mes</translation>

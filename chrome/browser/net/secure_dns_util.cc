@@ -5,15 +5,18 @@
 #include "chrome/browser/net/secure_dns_util.h"
 
 #include <algorithm>
+#include <iterator>
+#include <memory>
 #include <string>
 
 #include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/ranges/algorithm.h"
 #include "base/strings/string_piece.h"
-#include "base/strings/string_split.h"
 #include "build/build_config.h"
+#include "chrome/browser/net/dns_probe_runner.h"
 #include "chrome/common/chrome_features.h"
 #include "components/country_codes/country_codes.h"
 #include "components/embedder_support/pref_names.h"
@@ -22,23 +25,23 @@
 #include "net/dns/public/dns_config_overrides.h"
 #include "net/dns/public/dns_over_https_config.h"
 #include "net/dns/public/doh_provider_entry.h"
+#include "net/dns/public/secure_dns_mode.h"
 
-namespace chrome_browser_net {
-
-namespace secure_dns {
+namespace chrome_browser_net::secure_dns {
 
 namespace {
 
 const char kAlternateErrorPagesBackup[] = "alternate_error_pages.backup";
 
-void IncrementDropdownHistogram(net::DohProviderIdForHistogram id,
-                                const std::string& doh_template,
-                                base::StringPiece old_template,
-                                base::StringPiece new_template) {
-  if (doh_template == old_template) {
+void IncrementDropdownHistogram(
+    net::DohProviderIdForHistogram id,
+    const absl::optional<net::DnsOverHttpsConfig>& doh_config,
+    const absl::optional<net::DnsOverHttpsConfig>& old_config,
+    const absl::optional<net::DnsOverHttpsConfig>& new_config) {
+  if (doh_config == old_config) {
     UMA_HISTOGRAM_ENUMERATION("Net.DNS.UI.DropdownSelectionEvent.Unselected",
                               id);
-  } else if (doh_template == new_template) {
+  } else if (doh_config == new_config) {
     UMA_HISTOGRAM_ENUMERATION("Net.DNS.UI.DropdownSelectionEvent.Selected", id);
   } else {
     UMA_HISTOGRAM_ENUMERATION("Net.DNS.UI.DropdownSelectionEvent.Ignored", id);
@@ -101,35 +104,31 @@ net::DohProviderEntry::List ProvidersForCountry(
   return local_providers;
 }
 
-std::vector<std::string> GetDisabledProviders() {
-  return SplitString(features::kDnsOverHttpsDisabledProvidersParam.Get(), ",",
-                     base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-}
-
-net::DohProviderEntry::List RemoveDisabledProviders(
-    const net::DohProviderEntry::List& providers,
-    const std::vector<std::string>& disabled_providers) {
-  net::DohProviderEntry::List filtered_providers;
-  std::copy_if(providers.begin(), providers.end(),
-               std::back_inserter(filtered_providers),
-               [&disabled_providers](const auto* entry) {
-                 return !base::Contains(disabled_providers, entry->provider);
-               });
-  return filtered_providers;
+net::DohProviderEntry::List SelectEnabledProviders(
+    const net::DohProviderEntry::List& providers) {
+  net::DohProviderEntry::List enabled_providers;
+  base::ranges::copy_if(providers, std::back_inserter(enabled_providers),
+                        &base::FeatureList::IsEnabled,
+                        &net::DohProviderEntry::feature);
+  return enabled_providers;
 }
 
 void UpdateDropdownHistograms(
     const std::vector<const net::DohProviderEntry*>& providers,
-    base::StringPiece old_template,
-    base::StringPiece new_template) {
+    base::StringPiece old_config,
+    base::StringPiece new_config) {
+  auto old_parsed = net::DnsOverHttpsConfig::FromString(old_config);
+  auto new_parsed = net::DnsOverHttpsConfig::FromString(new_config);
+  DCHECK(old_parsed.has_value() || old_config.empty());
+  DCHECK(new_parsed.has_value() || new_config.empty());
   for (const auto* entry : providers) {
+    net::DnsOverHttpsConfig doh_config({entry->doh_server_config});
     IncrementDropdownHistogram(entry->provider_id_for_histogram.value(),
-                               entry->doh_server_config.server_template(),
-                               old_template, new_template);
+                               doh_config, old_parsed, new_parsed);
   }
-  // An empty template indicates a custom provider.
+  // An empty config string indicates a custom provider.
   IncrementDropdownHistogram(net::DohProviderIdForHistogram::kCustom,
-                             std::string(), old_template, new_template);
+                             absl::nullopt, old_parsed, new_parsed);
 }
 
 void UpdateValidationHistogram(bool valid) {
@@ -140,13 +139,17 @@ void UpdateProbeHistogram(bool success) {
   UMA_HISTOGRAM_BOOLEAN("Net.DNS.UI.ProbeAttemptSuccess", success);
 }
 
-void ApplyConfig(net::DnsConfigOverrides* overrides,
-                 base::StringPiece doh_config) {
-  overrides->dns_over_https_config =
-      net::DnsOverHttpsConfig::FromString(doh_config);
-  CHECK(overrides->dns_over_https_config);  // `doh_config` must be valid.
+std::unique_ptr<DnsProbeRunner> MakeProbeRunner(
+    net::DnsOverHttpsConfig doh_config,
+    const DnsProbeRunner::NetworkContextGetter& network_context_getter) {
+  net::DnsConfigOverrides overrides;
+  overrides.search = std::vector<std::string>();
+  overrides.attempts = 1;
+  overrides.secure_dns_mode = net::SecureDnsMode::kSecure;
+  overrides.dns_over_https_config = std::move(doh_config);
+
+  return std::make_unique<DnsProbeRunner>(std::move(overrides),
+                                          network_context_getter);
 }
 
-}  // namespace secure_dns
-
-}  // namespace chrome_browser_net
+}  // namespace chrome_browser_net::secure_dns

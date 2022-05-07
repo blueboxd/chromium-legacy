@@ -10,14 +10,13 @@
 #include <vector>
 
 #include "ash/services/secure_channel/background_eid_generator.h"
+#include "ash/services/secure_channel/data_with_timestamp.h"
 
 namespace cryptauth {
 class BeaconSeed;
-}  // namespace cryptauth
+}
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 // Test double class for BackgroundEidGenerator.
 class FakeBackgroundEidGenerator : public BackgroundEidGenerator {
@@ -55,13 +54,6 @@ class FakeBackgroundEidGenerator : public BackgroundEidGenerator {
   int num_identify_calls_ = 0;
 };
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
-
-// TODO(https://crbug.com/1164001): remove after the migration is finished.
-namespace ash::secure_channel {
-using ::chromeos::secure_channel::FakeBackgroundEidGenerator;
-}
+}  // namespace ash::secure_channel
 
 #endif  // ASH_SERVICES_SECURE_CHANNEL_FAKE_BACKGROUND_EID_GENERATOR_H_

@@ -18,6 +18,7 @@
 #include "base/scoped_observation.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "components/history/core/browser/history_types.h"
@@ -103,11 +104,14 @@ class HistoryClustersService : public KeyedService {
   // Returns true if the Journeys feature is enabled for the current application
   // locale. This is a cached wrapper of `IsJourneysEnabled()` within features.h
   // that's already evaluated against the g_browser_process application locale.
-  bool IsJourneysEnabled() const { return is_journeys_enabled_; }
+  bool IsJourneysEnabled() const;
 
   // Used to add and remove observers.
   void AddObserver(Observer* obs);
   void RemoveObserver(Observer* obs);
+
+  // Returns whether observers are registered to notify the debug messages.
+  bool ShouldNotifyDebugMessage() const;
 
   // Notifies the observers of a debug message being available.
   void NotifyDebugMessage(const std::string& message) const;
@@ -178,6 +182,7 @@ class HistoryClustersService : public KeyedService {
   // `keyword_accumulator`. If History is not yet exhausted, will request
   // another batch of clusters. Otherwise, will update the keyword cache.
   void PopulateClusterKeywordCache(
+      base::ElapsedTimer total_latency_timer,
       base::Time begin_time,
       std::unique_ptr<std::vector<std::u16string>> keyword_accumulator,
       KeywordSet* cache,
@@ -186,6 +191,7 @@ class HistoryClustersService : public KeyedService {
 
   // Internally used callback for `QueryClusters()`.
   void OnGotHistoryVisits(ClusteringRequestSource clustering_request_source,
+                          base::TimeTicks query_visits_start,
                           QueryClustersCallback callback,
                           std::vector<history::AnnotatedVisit> annotated_visits,
                           base::Time continuation_end_time) const;
@@ -196,7 +202,7 @@ class HistoryClustersService : public KeyedService {
                         QueryClustersCallback callback,
                         std::vector<history::Cluster> clusters) const;
 
-  // True if the Journeys feature is enabled for the application locale.
+  // True if Journeys is enabled based on field trial and locale checks.
   const bool is_journeys_enabled_;
 
   // Non-owning pointer, but never nullptr.

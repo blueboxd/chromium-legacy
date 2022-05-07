@@ -6,7 +6,7 @@
  * @fileoverview 'os-search-result-row' is the container for one search result.
  */
 import '//resources/cr_elements/icons.m.js';
-import '../os_icons.m.js';
+import '../os_icons.js';
 import '../../settings_shared_css.js';
 
 import {assert, assertNotReached} from '//resources/js/assert.m.js';
@@ -20,7 +20,7 @@ import {OpenWindowProxyImpl} from '../../open_window_proxy.js';
 import {Route, Router} from '../../router.js';
 import {routes} from '../os_route.m.js';
 import {RouteObserverBehavior} from '../route_observer_behavior.js';
-import {getSearchHandler, setSearchHandlerForTesting} from '../search_handler.m.js';
+import {getSearchHandler, setSearchHandlerForTesting} from '../search_handler.js';
 
 /**
  * This solution uses DP and has the complexity of O(M*N), where M and N are

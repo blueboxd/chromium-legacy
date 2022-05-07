@@ -5,11 +5,11 @@
 #include "content/shell/browser/shell_content_browser_client.h"
 
 #include <stddef.h>
+
 #include <utility>
 
 #include "base/base_switches.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/feature_list.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
@@ -36,6 +36,7 @@
 #include "components/variations/service/variations_service.h"
 #include "components/variations/service/variations_service_client.h"
 #include "content/public/browser/client_certificate_delegate.h"
+#include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/network_service_instance.h"
@@ -302,8 +303,7 @@ void ShellContentBrowserClient::AppendExtraCommandLineSwitches(
   };
 
   command_line->CopySwitchesFrom(*base::CommandLine::ForCurrentProcess(),
-                                 kForwardSwitches,
-                                 base::size(kForwardSwitches));
+                                 kForwardSwitches, std::size(kForwardSwitches));
 
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -492,6 +492,10 @@ base::DictionaryValue ShellContentBrowserClient::GetNetLogConstants() {
 
 base::FilePath
 ShellContentBrowserClient::GetSandboxedStorageServiceDataDirectory() {
+  return browser_context()->GetPath();
+}
+
+base::FilePath ShellContentBrowserClient::GetFirstPartySetsDirectory() {
   return browser_context()->GetPath();
 }
 
@@ -711,7 +715,8 @@ void ShellContentBrowserClient::OnNetworkServiceCreated(
 
   // Network service receives an empty First-Party Sets file when component
   // updater is disabled.
-  network_service->SetFirstPartySets(base::File());
+  content::FirstPartySetsHandler::GetInstance()->SetPublicFirstPartySets(
+      base::File());
 }
 
 }  // namespace content

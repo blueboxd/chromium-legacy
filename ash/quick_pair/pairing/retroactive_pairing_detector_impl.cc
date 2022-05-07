@@ -65,6 +65,10 @@ RetroactivePairingDetectorImpl::RetroactivePairingDetectorImpl(
     return;
   }
 
+  // If we get to this point in the constructor, it means that the user is
+  // logged in to enable this scenario, so we can being our observations. If we
+  // get any log in events, we know to ignore them, since we already
+  // instantiated our retroactive pairing detector.
   retroactive_pairing_detector_instatiated_ = true;
 
   device::BluetoothAdapterFactory::Get()->GetAdapter(
@@ -147,8 +151,7 @@ void RetroactivePairingDetectorImpl::OnDevicePaired(
     return;
   }
 
-  QP_LOG(VERBOSE) << __func__ << ":  Storing Fast Pair device address: "
-                  << device->classic_address().value();
+  QP_LOG(INFO) << __func__ << ": Storing Fast Pair device address";
   fast_pair_addresses_.insert(device->classic_address().value());
 }
 
@@ -305,8 +308,8 @@ void RetroactivePairingDetectorImpl::NotifyDeviceFound(
   auto device = base::MakeRefCounted<Device>(model_id, ble_address,
                                              Protocol::kFastPairRetroactive);
   device->set_classic_address(classic_address);
-  QP_LOG(VERBOSE) << __func__ << ": Found device for Retroactive Pairing "
-                  << device;
+  QP_LOG(INFO) << __func__ << ": Found device for Retroactive Pairing "
+               << device;
 
   FastPairHandshakeLookup::GetInstance()->Create(
       adapter_, std::move(device),

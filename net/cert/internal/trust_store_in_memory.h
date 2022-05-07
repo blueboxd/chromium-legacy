@@ -35,7 +35,11 @@ class NET_EXPORT TrustStoreInMemory : public TrustStore {
   // used during verification).
   void AddTrustAnchor(scoped_refptr<ParsedCertificate> cert);
 
-  // Adds a certificate as a trust achor and extracts anchor constraints from
+  // Adds a certificate as a trust anchor which will have expiration enforced.
+  // See VerifyCertificateChain for details.
+  void AddTrustAnchorWithExpiration(scoped_refptr<ParsedCertificate> cert);
+
+  // Adds a certificate as a trust anchor and extracts anchor constraints from
   // the certificate. See VerifyCertificateChain for details.
   void AddTrustAnchorWithConstraints(scoped_refptr<ParsedCertificate> cert);
 
@@ -76,6 +80,10 @@ class NET_EXPORT TrustStoreInMemory : public TrustStore {
   // distrusted certificates require a full DER match.
   void AddCertificate(scoped_refptr<ParsedCertificate> cert,
                       const CertificateTrust& trust);
+
+  // Returns the `Entry` matching `cert`, or `nullptr` if not in the trust
+  // store.
+  const Entry* GetEntry(const ParsedCertificate* cert) const;
 };
 
 }  // namespace net

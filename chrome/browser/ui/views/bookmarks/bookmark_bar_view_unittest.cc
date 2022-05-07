@@ -19,10 +19,10 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/app_list/app_list_util.h"
+#include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view_test_helper.h"
 #include "chrome/browser/ui/views/native_widget_factory.h"
-#include "chrome/browser/ui/views/read_later/read_later_button.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
@@ -31,7 +31,6 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/bookmarks/test/bookmark_test_helpers.h"
 #include "components/prefs/pref_service.h"
-#include "components/reading_list/features/reading_list_switches.h"
 #include "components/search_engines/search_terms_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_client.h"
@@ -50,8 +49,6 @@ namespace {
 class BookmarkBarViewBaseTest : public ChromeViewsTestBase {
  public:
   BookmarkBarViewBaseTest() {
-    feature_list_.InitAndEnableFeature(reading_list::switches::kReadLater);
-
     TestingProfile::Builder profile_builder;
     profile_builder.AddTestingFactory(
         TemplateURLServiceFactory::GetInstance(),
@@ -220,38 +217,19 @@ TEST_F(BookmarkBarViewTest, AppsShortcutVisibility) {
   EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
 
   // Try to make the Apps shortcut visible. Its visibility depends on whether
-  // the app launcher is enabled.
+  // the Apps shortcut is enabled.
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, true);
-  if (IsAppLauncherEnabled()) {
-    EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
-  } else {
+  if (chrome::IsAppsShortcutEnabled(browser()->profile())) {
     EXPECT_TRUE(test_helper_->apps_page_shortcut()->GetVisible());
+  } else {
+    EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
   }
 
   // Make sure we can also properly transition from true to false.
   browser()->profile()->GetPrefs()->SetBoolean(
       bookmarks::prefs::kShowAppsShortcutInBookmarkBar, false);
   EXPECT_FALSE(test_helper_->apps_page_shortcut()->GetVisible());
-}
-
-// Verify that in instant extended mode the visibility of the reading list
-// button properly follows the pref value.
-TEST_F(BookmarkBarViewTest, ReadingListVisibility) {
-  browser()->profile()->GetPrefs()->SetBoolean(
-      bookmarks::prefs::kShowReadingListInBookmarkBar, false);
-  EXPECT_FALSE(bookmark_bar_view()->read_later_button()->GetVisible());
-
-  // Try to make the Apps shortcut visible. Its visibility depends on whether
-  // the app launcher is enabled.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      bookmarks::prefs::kShowReadingListInBookmarkBar, true);
-  EXPECT_TRUE(bookmark_bar_view()->read_later_button()->GetVisible());
-
-  // Make sure we can also properly transition from true to false.
-  browser()->profile()->GetPrefs()->SetBoolean(
-      bookmarks::prefs::kShowReadingListInBookmarkBar, false);
-  EXPECT_FALSE(bookmark_bar_view()->read_later_button()->GetVisible());
 }
 
 // Various assertions around visibility of the overflow_button.
@@ -493,7 +471,7 @@ TEST_F(BookmarkBarViewTest, DropCallback_InvalidatePtrTest) {
   EXPECT_EQ(output_drag_op, ui::mojom::DragOperation::kNone);
 }
 
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
+#if !BUILDFLAG(IS_CHROMEOS)
 // Verifies that the apps shortcut is shown or hidden following the policy
 // value. This policy (and the apps shortcut) isn't present on ChromeOS.
 TEST_F(BookmarkBarViewTest, ManagedShowAppsShortcutInBookmarksBar) {

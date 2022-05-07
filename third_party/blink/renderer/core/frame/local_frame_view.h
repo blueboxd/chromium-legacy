@@ -262,6 +262,8 @@ class CORE_EXPORT LocalFrameView final
   void PropagateFrameRects() override;
   void InvalidateAllCustomScrollbarsOnActiveChanged();
 
+  void UsesOverlayScrollbarsChanged();
+
   Color BaseBackgroundColor() const;
   void SetBaseBackgroundColor(const Color&);
   void UpdateBaseBackgroundColorRecursively(const Color&);
@@ -474,7 +476,8 @@ class CORE_EXPORT LocalFrameView final
 
   void ServiceScriptedAnimations(base::TimeTicks);
 
-  void ScheduleAnimation(base::TimeDelta = base::TimeDelta());
+  void ScheduleAnimation(base::TimeDelta = base::TimeDelta(),
+                         base::Location location = base::Location::Current());
 
   // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
   // passed around the LocalFrameView layout methods can be true while this
@@ -501,6 +504,7 @@ class CORE_EXPORT LocalFrameView final
                                bool value) {
     allow_deferred_shaping_ = value;
   }
+  void RequestToLockDeferred(Element& element);
 
   // The window that hosts the LocalFrameView. The LocalFrameView will
   // communicate scrolls and repaints to the host window in the window's
@@ -1046,6 +1050,7 @@ class CORE_EXPORT LocalFrameView final
 
   Member<LocalFrame> frame_;
 
+  HeapVector<Member<Element>> deferred_to_be_locked_;
   LayoutUnit current_viewport_bottom_ = kIndefiniteSize;
   LayoutUnit current_minimum_top_;
   bool allow_deferred_shaping_ = false;

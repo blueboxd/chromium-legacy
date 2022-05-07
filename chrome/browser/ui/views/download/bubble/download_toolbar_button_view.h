@@ -35,7 +35,8 @@ class DownloadToolbarButtonView : public ToolbarButton, public DownloadDisplay {
   bool IsShowing() override;
   void Enable() override;
   void Disable() override;
-  void UpdateDownloadIcon(download::DownloadIconState state) override;
+  void UpdateDownloadIcon() override;
+  void ShowDetails() override;
 
   // ToolbarButton:
   void UpdateIcon() override;
@@ -45,7 +46,8 @@ class DownloadToolbarButtonView : public ToolbarButton, public DownloadDisplay {
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
   void ButtonPressed();
-  std::unique_ptr<views::BubbleDialogDelegate> CreateBubbleDialogDelegate();
+  std::unique_ptr<views::BubbleDialogDelegate> CreateBubbleDialogDelegate(
+      std::unique_ptr<View> bubble_contents_view);
   void OnBubbleDelegateDeleted();
 
   raw_ptr<Browser> browser_;
@@ -53,7 +55,6 @@ class DownloadToolbarButtonView : public ToolbarButton, public DownloadDisplay {
   std::unique_ptr<DownloadDisplayController> controller_;
   // Controller for the DownloadBubbleUI, both main view and partial view.
   std::unique_ptr<DownloadBubbleUIController> bubble_controller_;
-  download::DownloadIconState icon_state_;
   raw_ptr<views::BubbleDialogDelegate> bubble_delegate_ = nullptr;
 };
 

@@ -71,7 +71,7 @@ NGFragmentItems::NGFragmentItems(const NGFragmentItems& other)
 }
 
 NGFragmentItems::~NGFragmentItems() {
-  for (unsigned i = 0; i < size_; ++i)
+  for (wtf_size_t i = 0; i < size_; ++i)
     items_[i].~NGFragmentItem();
 }
 
@@ -489,5 +489,10 @@ void NGFragmentItems::CheckAllItemsAreValid() const {
     DCHECK(!item.IsLayoutObjectDestroyedOrMoved());
 }
 #endif
+
+void NGFragmentItems::Trace(Visitor* visitor) const {
+  for (const NGFragmentItem& item : Items())
+    visitor->Trace(item);
+}
 
 }  // namespace blink

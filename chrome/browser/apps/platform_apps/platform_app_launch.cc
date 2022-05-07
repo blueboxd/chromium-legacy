@@ -18,13 +18,15 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_FUCHSIA)
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/web_applications/extension_status_utils.h"
 #include "chrome/common/webui_url_constants.h"
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
+        // BUILDFLAG(IS_FUCHSIA)
 
 namespace apps {
 
@@ -121,7 +123,8 @@ bool OpenExtensionApplicationTab(Profile* profile, const std::string& app_id) {
   return app_tab != nullptr;
 }
 
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) || \
+    BUILDFLAG(IS_FUCHSIA)
 bool OpenDeprecatedApplicationPrompt(Profile* profile,
                                      const std::string& app_id) {
   if (!extensions::IsExtensionUnsupportedDeprecatedApp(profile, app_id))
@@ -130,7 +133,8 @@ bool OpenDeprecatedApplicationPrompt(Profile* profile,
   Browser::CreateParams create_params(profile, /*user_gesture=*/false);
   Browser* browser = Browser::Create(create_params);
 
-  NavigateParams params(browser, GURL(chrome::kChromeUIAppsURL),
+  NavigateParams params(browser,
+                        GURL(chrome::kChromeUIAppsWithDeprecationDialogURL),
                         ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
   params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
   params.tabstrip_add_types = TabStripModel::ADD_ACTIVE;
@@ -138,10 +142,10 @@ bool OpenDeprecatedApplicationPrompt(Profile* profile,
 
   browser->window()->Show();
 
-  // TODO(crbug.com/1225779): Show the deprecated apps dialog.
   return true;
 }
-#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX) ||
+        // BUILDFLAG(IS_FUCHSIA)
 
 bool OpenExtensionApplicationWithReenablePrompt(
     Profile* profile,

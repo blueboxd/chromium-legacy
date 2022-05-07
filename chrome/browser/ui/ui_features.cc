@@ -20,9 +20,6 @@ const base::Feature kAllowWindowDragUsingSystemDragDrop{
 const base::Feature kChromeLabs{"ChromeLabs",
                                 base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enables the Commander UI surface. See https://crbug.com/1014639
-const base::Feature kCommander{"Commander", base::FEATURE_DISABLED_BY_DEFAULT};
-
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
 // Enables "Tips for Chrome" in Main Chrome Menu | Help.
 const base::Feature kChromeTipsInMainMenu{"ChromeTipsInMainMenu",
@@ -79,6 +76,10 @@ const base::Feature kForceSignInReauth{"ForceSignInReauth",
 const base::Feature kProminentDarkModeActiveTabTitle{
     "ProminentDarkModeActiveTabTitle", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables the QuickCommands UI surface. See https://crbug.com/1014639
+const base::Feature kQuickCommands{"QuickCommands",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a 'new' badge on the option to add to the reading list in the tab
 // context menu.
 const base::Feature kReadLaterNewBadgePromo{"ReadLaterNewBadgePromo",
@@ -101,9 +102,12 @@ const base::Feature kSideSearchClearCacheWhenClosed{
 const base::Feature kSideSearchFeedback{"SideSearchFeedback",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Controls whether the state of side search is set at a per tab level.
-const base::Feature kSideSearchStatePerTab{"SideSearchStatePerTab",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+// Controls whether the Side Search feature is configured to support any
+// participating Chrome search engine. This should always be enabled with
+// kSideSearch on non-ChromeOS platforms.
+const base::Feature kSideSearchDSESupport{"SideSearchDSESupport",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
 #endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 const base::Feature kSidePanelDragAndDrop{"SidePanelDragAndDrop",

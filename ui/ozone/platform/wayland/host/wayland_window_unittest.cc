@@ -19,6 +19,7 @@
 #include "base/nix/xdg_util.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind.h"
 #include "base/test/scoped_command_line.h"
 #include "build/chromeos_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,6 +45,7 @@
 #include "ui/ozone/platform/wayland/host/wayland_output_manager.h"
 #include "ui/ozone/platform/wayland/host/wayland_seat.h"
 #include "ui/ozone/platform/wayland/host/wayland_subsurface.h"
+#include "ui/ozone/platform/wayland/host/wayland_toplevel_window.h"
 #include "ui/ozone/platform/wayland/host/wayland_zcr_cursor_shapes.h"
 #include "ui/ozone/platform/wayland/mojom/wayland_overlay_config.mojom.h"
 #include "ui/ozone/platform/wayland/test/mock_pointer.h"
@@ -451,7 +453,7 @@ TEST_P(WaylandWindowTest, SetDecorationInsets) {
   }
 }
 
-TEST_P(WaylandWindowTest, ShuffledUpdateVisualSizeOrder) {
+TEST_P(WaylandWindowTest, DisregardUnpassedWindowConfigure) {
   const auto kNormalBounds1 = gfx::Rect{0, 0, 500, 300};
   const auto kNormalBounds2 = gfx::Rect{0, 0, 800, 600};
   const auto kNormalBounds3 = gfx::Rect{0, 0, 700, 400};
@@ -459,15 +461,17 @@ TEST_P(WaylandWindowTest, ShuffledUpdateVisualSizeOrder) {
 
   window_->set_update_visual_size_immediately(false);
 
-  // Send 3 configures and only ack the second one, the first pending configure
-  // is cleared. The second can still be ack'ed.
+  // Send 3 configures, and call UpdateVisualSize out of order. The out-of-order
+  // UpdateVisualSize(kNormalBounds2) should disregarded b/c kNormalBounds2
+  // never reached UI Compositor when UpdateVisualSize(kNormalBounds2) is
+  // called.
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kNormalBounds1.width(),
-                                               kNormalBounds1.height()))
-      .Times(0);
-  EXPECT_CALL(*xdg_surface_, AckConfigure(2)).Times(0);
+                                               kNormalBounds1.height()));
+  EXPECT_CALL(*xdg_surface_, AckConfigure(2));
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kNormalBounds2.width(),
-                                               kNormalBounds2.height()));
-  EXPECT_CALL(*xdg_surface_, AckConfigure(3));
+                                               kNormalBounds2.height()))
+      .Times(0);
+  EXPECT_CALL(*xdg_surface_, AckConfigure(3)).Times(0);
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kNormalBounds3.width(),
                                                kNormalBounds3.height()));
   EXPECT_CALL(*xdg_surface_, AckConfigure(4));
@@ -528,8 +532,10 @@ TEST_P(WaylandWindowTest, UpdateVisualSizeClearsPreviousUnackedConfigures) {
 
   window_->set_update_visual_size_immediately(false);
 
-  // Send 3 configures and only ack the second one, the first pending configure
-  // is cleared. The second can still be ack'ed.
+  // Send 3 configures. Calling UpdateVisualSize(kNormalBounds3) will cause the
+  // kNormalBounds3 to be passed onto UI compositor. Hence, kNormalBounds1/2/3
+  // configs will be acknowledgeable. The next UpdateVisualSize(kNormalBounds3)
+  // wiil ack kNormalBounds3 and skip kNormalBounds1/2.
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kNormalBounds1.width(),
                                                kNormalBounds1.height()))
       .Times(0);
@@ -539,8 +545,9 @@ TEST_P(WaylandWindowTest, UpdateVisualSizeClearsPreviousUnackedConfigures) {
   Sync();
 
   EXPECT_CALL(*xdg_surface_, SetWindowGeometry(0, 0, kNormalBounds2.width(),
-                                               kNormalBounds2.height()));
-  EXPECT_CALL(*xdg_surface_, AckConfigure(3));
+                                               kNormalBounds2.height()))
+      .Times(0);
+  EXPECT_CALL(*xdg_surface_, AckConfigure(3)).Times(0);
   state = InitializeWlArrayWithActivatedState();
   SendConfigureEvent(xdg_surface_, kNormalBounds2.width(),
                      kNormalBounds2.height(), ++serial, state.get());
@@ -554,8 +561,7 @@ TEST_P(WaylandWindowTest, UpdateVisualSizeClearsPreviousUnackedConfigures) {
                      kNormalBounds3.height(), ++serial, state.get());
   Sync();
 
-  window_->UpdateVisualSize(kNormalBounds2.size(), 1.0f);
-  window_->UpdateVisualSize(kNormalBounds1.size(), 1.0f);
+  window_->UpdateVisualSize(kNormalBounds3.size(), 1.0f);
   window_->UpdateVisualSize(kNormalBounds3.size(), 1.0f);
 }
 
@@ -2661,7 +2667,8 @@ TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
   background->surface_scale_factor = 1;
   background->opacity = 1.f;
   overlays.push_back(std::move(background));
-  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), std::move(overlays));
+  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), 1u,
+                                      std::move(overlays));
   mock_surface->SendFrameCallback();
 
   Sync();
@@ -2693,7 +2700,8 @@ TEST_P(WaylandWindowTest, ReattachesBackgroundOnShow) {
   primary->surface_scale_factor = 1;
   primary->opacity = 1.f;
   overlays.push_back(std::move(primary));
-  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), std::move(overlays));
+  buffer_manager_gpu_->CommitOverlays(window->GetWidget(), 2u,
+                                      std::move(overlays));
 
   Sync();
 
@@ -3224,6 +3232,111 @@ TEST_P(WaylandWindowTest, StartWithMinimized) {
   // (which means the surface is not maximized, fullscreen or activated)
   states = ScopedWlArray();
   SendConfigureEvent(xdg_surface_, 0, 0, 2, states.get());
+  Sync();
+}
+
+class BlockableWaylandToplevelWindow : public WaylandToplevelWindow {
+ public:
+  BlockableWaylandToplevelWindow(MockPlatformWindowDelegate* delegate,
+                                 WaylandConnection* connection)
+      : WaylandToplevelWindow(delegate, connection) {}
+
+  static std::unique_ptr<BlockableWaylandToplevelWindow> Create(
+      const gfx::Rect bounds,
+      WaylandConnection* connection,
+      MockPlatformWindowDelegate* delegate) {
+    auto window =
+        std::make_unique<BlockableWaylandToplevelWindow>(delegate, connection);
+    window->set_update_visual_size_immediately(/*update_immediately=*/true);
+    window->set_apply_pending_state_on_update_visual_size(
+        /*apply_immediately=*/true);
+
+    PlatformWindowInitProperties properties;
+    properties.bounds = bounds;
+    properties.type = PlatformWindowType::kWindow;
+    properties.parent_widget = gfx::kNullAcceleratedWidget;
+    window->Initialize(std::move(properties));
+    window->Show(false);
+    return window;
+  }
+
+  // WaylandToplevelWindow overrides:
+  uint32_t DispatchEvent(const PlatformEvent& platform_event) override {
+    ui::Event* event(platform_event);
+    if (event->type() == ET_TOUCH_RELEASED && !blocked_) {
+      base::RunLoop run_loop{base::RunLoop::Type::kNestableTasksAllowed};
+      blocked_ = true;
+
+      base::ThreadTaskRunnerHandle::Get()->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(async_task_), run_loop.QuitClosure()));
+      run_loop.Run();
+      blocked_ = false;
+    }
+
+    return WaylandToplevelWindow::DispatchEvent(platform_event);
+  }
+
+  void SetAsyncTask(
+      base::RepeatingCallback<void(base::OnceClosure)> async_task) {
+    async_task_ = std::move(async_task);
+  }
+
+ private:
+  bool blocked_ = false;
+  base::RepeatingCallback<void(base::OnceClosure)> async_task_;
+};
+
+// This test ensures that Ozone/Wayland does not crash while handling a
+// sequence of two or more touch down/up actions, where the first one blocks
+// unfinished before the second pair comes in.
+//
+// This mimics the behavior of a modal dialog that comes up as a result of
+// the first touch down/up action, and blocks the original flow, before it gets
+// handled completely.
+TEST_P(WaylandWindowTest, BlockingTouchDownUp_NoCrash) {
+  window_.reset();
+
+  MockPlatformWindowDelegate delegate;
+  auto window = BlockableWaylandToplevelWindow::Create(
+      gfx::Rect(0, 0, 800, 600), connection_.get(), &delegate);
+
+  wl_seat_send_capabilities(
+      server_.seat()->resource(),
+      WL_SEAT_CAPABILITY_POINTER | WL_SEAT_CAPABILITY_TOUCH);
+  Sync();
+  ASSERT_TRUE(connection_->seat()->pointer());
+  ASSERT_TRUE(connection_->seat()->touch());
+  window->set_touch_focus(true);
+
+  uint32_t serial = 0;
+
+  // Test that CanDispatchEvent is set correctly.
+  wl::MockSurface* toplevel_surface = server_.GetObject<wl::MockSurface>(
+      window->root_surface()->GetSurfaceId());
+  Sync();
+  VerifyCanDispatchTouchEvents({window.get()}, {});
+
+  // Steps to be executed after the handling of the first touch down/up
+  // pair blocks.
+  auto async_task = base::BindLambdaForTesting([&](base::OnceClosure closure) {
+    wl_touch_send_down(server_.seat()->touch()->resource(), ++serial, 0,
+                       toplevel_surface->resource(), 0 /* id */,
+                       wl_fixed_from_int(100), wl_fixed_from_int(100));
+    wl_touch_send_up(server_.seat()->touch()->resource(), ++serial, 2000,
+                     0 /* id */);
+    Sync();
+
+    std::move(closure).Run();
+  });
+  window->SetAsyncTask(std::move(async_task));
+
+  // Start executing the first touch down/up pair.
+  wl_touch_send_down(server_.seat()->touch()->resource(), ++serial, 0,
+                     toplevel_surface->resource(), 0 /* id */,
+                     wl_fixed_from_int(50), wl_fixed_from_int(50));
+  wl_touch_send_up(server_.seat()->touch()->resource(), ++serial, 1000,
+                   0 /* id */);
   Sync();
 }
 

@@ -9,42 +9,17 @@
 #include "ash/components/phonehub/fake_phone_hub_manager.h"
 #include "ash/constants/ash_features.h"
 #include "ash/webui/eche_app_ui/fake_feature_status_provider.h"
+#include "ash/webui/eche_app_ui/fake_launch_app_helper.h"
 #include "ash/webui/eche_app_ui/launch_app_helper.h"
 #include "base/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "ui/base/resource/resource_bundle.h"
+#include "ui/gfx/image/image.h"
 
 namespace ash {
 namespace eche_app {
-
-class TestableLaunchAppHelper : public LaunchAppHelper {
- public:
-  TestableLaunchAppHelper(
-      phonehub::PhoneHubManager* phone_hub_manager,
-      LaunchEcheAppFunction launch_eche_app_function,
-      CloseEcheAppFunction close_eche_app_function,
-      LaunchNotificationFunction launch_notification_function)
-      : LaunchAppHelper(phone_hub_manager,
-                        launch_eche_app_function,
-                        close_eche_app_function,
-                        launch_notification_function) {}
-
-  ~TestableLaunchAppHelper() override = default;
-  TestableLaunchAppHelper(const TestableLaunchAppHelper&) = delete;
-  TestableLaunchAppHelper& operator=(const TestableLaunchAppHelper&) = delete;
-
-  // LaunchAppHelper:
-  LaunchAppHelper::AppLaunchProhibitedReason CheckAppLaunchProhibitedReason(
-      FeatureStatus status) const override {
-    return LaunchAppHelper::AppLaunchProhibitedReason::kNotProhibited;
-  }
-  void ShowNotification(const absl::optional<std::u16string>& title,
-                        const absl::optional<std::u16string>& message,
-                        std::unique_ptr<NotificationInfo> info) const override {
-    // Do nothing.
-  }
-};
 
 class EcheRecentAppClickHandlerTest : public testing::Test {
  protected:
@@ -60,10 +35,9 @@ class EcheRecentAppClickHandlerTest : public testing::Test {
         phonehub::FeatureStatus::kEnabledAndConnected);
     fake_feature_status_provider_.SetStatus(FeatureStatus::kIneligible);
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kEcheSWA,
-                              features::kPhoneHubRecentApps},
+        /*enabled_features=*/{features::kEcheSWA},
         /*disabled_features=*/{});
-    launch_app_helper_ = std::make_unique<TestableLaunchAppHelper>(
+    launch_app_helper_ = std::make_unique<FakeLaunchAppHelper>(
         &fake_phone_hub_manager_,
         base::BindRepeating(
             &EcheRecentAppClickHandlerTest::FakeLaunchEcheAppFunction,
@@ -87,7 +61,8 @@ class EcheRecentAppClickHandlerTest : public testing::Test {
   void FakeLaunchEcheAppFunction(const absl::optional<int64_t>& notification_id,
                                  const std::string& package_name,
                                  const std::u16string& visible_name,
-                                 const absl::optional<int64_t>& user_id) {
+                                 const absl::optional<int64_t>& user_id,
+                                 const gfx::Image& icon) {
     package_name_ = package_name;
     visible_name_ = visible_name;
     user_id_ = user_id.value();
@@ -97,7 +72,7 @@ class EcheRecentAppClickHandlerTest : public testing::Test {
       const absl::optional<std::u16string>& title,
       const absl::optional<std::u16string>& message,
       std::unique_ptr<LaunchAppHelper::NotificationInfo> info) {
-    // Do nothing.
+    num_notifications_shown_++;
   }
 
   void FakeCloseEcheAppFunction() {
@@ -130,21 +105,31 @@ class EcheRecentAppClickHandlerTest : public testing::Test {
         ->FetchRecentAppMetadataList();
   }
 
+  void SetAppLaunchProhibitedReason(
+      LaunchAppHelper::AppLaunchProhibitedReason reason) {
+    launch_app_helper_->SetAppLaunchProhibitedReason(reason);
+  }
+
+  void reset() { num_notifications_shown_ = 0; }
+
   const std::string& get_package_name() { return package_name_; }
 
   const std::u16string& get_visible_name() { return visible_name_; }
 
   int64_t get_user_id() { return user_id_; }
 
+  size_t num_notifications_shown() { return num_notifications_shown_; }
+
  private:
   phonehub::FakePhoneHubManager fake_phone_hub_manager_;
   base::test::ScopedFeatureList scoped_feature_list_;
   FakeFeatureStatusProvider fake_feature_status_provider_;
-  std::unique_ptr<LaunchAppHelper> launch_app_helper_;
+  std::unique_ptr<FakeLaunchAppHelper> launch_app_helper_;
   std::unique_ptr<EcheRecentAppClickHandler> handler_;
   std::string package_name_;
   std::u16string visible_name_;
   int64_t user_id_;
+  size_t num_notifications_shown_ = 0;
 };
 
 TEST_F(EcheRecentAppClickHandlerTest, StatusChangeTransitions) {
@@ -180,7 +165,8 @@ TEST_F(EcheRecentAppClickHandlerTest, LaunchEcheAppFunction) {
   const char16_t app_visible_name[] = u"Fake App";
   const char package_name[] = "com.fakeapp";
   auto fake_app_metadata = phonehub::Notification::AppMetadata(
-      app_visible_name, package_name, gfx::Image(), user_id);
+      app_visible_name, package_name, gfx::Image(),
+      /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true, user_id);
 
   RecentAppClicked(fake_app_metadata);
 
@@ -195,7 +181,8 @@ TEST_F(EcheRecentAppClickHandlerTest, HandleNotificationClick) {
   const char16_t app_visible_name[] = u"Fake App";
   const char package_name[] = "com.fakeapp";
   auto fake_app_metadata = phonehub::Notification::AppMetadata(
-      app_visible_name, package_name, gfx::Image(), user_id);
+      app_visible_name, package_name, gfx::Image(),
+      /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true, user_id);
 
   HandleNotificationClick(notification_id, fake_app_metadata);
   std::vector<phonehub::Notification::AppMetadata> app_metadata =
@@ -205,6 +192,27 @@ TEST_F(EcheRecentAppClickHandlerTest, HandleNotificationClick) {
             app_metadata[0].visible_app_name);
   EXPECT_EQ(fake_app_metadata.package_name, app_metadata[0].package_name);
   EXPECT_EQ(fake_app_metadata.user_id, app_metadata[0].user_id);
+}
+
+TEST_F(EcheRecentAppClickHandlerTest,
+       HandleRecentAppClickWithProhibitedReason) {
+  const int64_t user_id = 1;
+  const char16_t app_visible_name[] = u"Fake App";
+  const char package_name[] = "com.fakeapp";
+  auto fake_app_metadata = phonehub::Notification::AppMetadata(
+      app_visible_name, package_name, gfx::Image(),
+      /*icon_color=*/absl::nullopt, /*icon_is_monochrome=*/true, user_id);
+
+  SetAppLaunchProhibitedReason(
+      LaunchAppHelper::AppLaunchProhibitedReason::kDisabledByScreenLock);
+  RecentAppClicked(fake_app_metadata);
+  EXPECT_EQ(num_notifications_shown(), 1u);
+
+  reset();
+  SetAppLaunchProhibitedReason(
+      LaunchAppHelper::AppLaunchProhibitedReason::kDisabledByPhone);
+  RecentAppClicked(fake_app_metadata);
+  EXPECT_EQ(num_notifications_shown(), 1u);
 }
 
 }  // namespace eche_app

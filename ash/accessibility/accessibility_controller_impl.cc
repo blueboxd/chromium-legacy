@@ -1897,6 +1897,14 @@ void AccessibilityControllerImpl::MagnifierBoundsChanged(
     client_->MagnifierBoundsChanged(bounds_in_screen);
 }
 
+void AccessibilityControllerImpl::UpdateFloatingPanelBoundsIfNeeded() {
+  Shell* shell = Shell::Get();
+  if (shell->accessibility_controller()->autoclick().enabled())
+    shell->autoclick_controller()->UpdateAutoclickMenuBoundsIfNeeded();
+  if (shell->accessibility_controller()->sticky_keys().enabled())
+    shell->sticky_keys_controller()->UpdateStickyKeysOverlayBoundsIfNeeded();
+}
+
 void AccessibilityControllerImpl::UpdateAutoclickMenuBoundsIfNeeded() {
   Shell::Get()->autoclick_controller()->UpdateAutoclickMenuBoundsIfNeeded();
 }
@@ -2302,10 +2310,12 @@ void AccessibilityControllerImpl::UpdateFeatureFromPref(FeatureType feature) {
     case FeatureType::kDictation:
       if (enabled &&
           ::features::IsExperimentalAccessibilityDictationCommandsEnabled()) {
-        // The Dictation bubble is hidden behind a flag; only create the
-        // controller if the flag is enabled.
-        dictation_bubble_controller_ =
-            std::make_unique<DictationBubbleController>();
+        if (!dictation_bubble_controller_) {
+          // The Dictation bubble is hidden behind a flag; only create the
+          // controller if the flag is enabled.
+          dictation_bubble_controller_ =
+              std::make_unique<DictationBubbleController>();
+        }
       } else {
         dictation_nudge_controller_.reset();
         dictation_bubble_controller_.reset();
@@ -2411,6 +2421,16 @@ void AccessibilityControllerImpl::UpdateDictationBubble(
   DCHECK(dictation_bubble_controller_);
 
   dictation_bubble_controller_->UpdateBubble(visible, icon, text, hints);
+}
+
+DictationBubbleController*
+AccessibilityControllerImpl::GetDictationBubbleControllerForTest() {
+  if (!dictation_bubble_controller_) {
+    dictation_bubble_controller_ =
+        std::make_unique<DictationBubbleController>();
+  }
+
+  return dictation_bubble_controller_.get();
 }
 
 }  // namespace ash

@@ -31,6 +31,8 @@ extern const char kClearTokenService[];
 
 extern const char kDisableSigninScopedDeviceId[];
 
+extern const base::Feature kEnableFetchingAccountCapabilities;
+
 extern const base::Feature kForceDisableExtendedSyncPromos;
 
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)

@@ -107,7 +107,7 @@ export const MainPageMixin = dedupingMixin(
           })();
         }
 
-        connectedCallback() {
+        override connectedCallback() {
           this.scroller =
               this.domHost ? this.domHost.parentElement : document.body;
 
@@ -288,6 +288,8 @@ export const MainPageMixin = dedupingMixin(
           return [classifyRoute(oldRoute), classifyRoute(newRoute)];
         }
 
+        // TODO(dpapad): Figure out why adding the |override| keyword here
+        // throws an error.
         currentRouteChanged(newRoute: Route, oldRoute: Route|null) {
           const transition = this.getStateTransition_(newRoute, oldRoute);
           if (transition === null) {
@@ -308,8 +310,12 @@ export const MainPageMixin = dedupingMixin(
               // Case when navigating from '/?search=foo' to '/' (clearing
               // search results).
               this.switchToSections_(TOP_LEVEL_EQUIVALENT_ROUTE);
+            } else if (newState === RouteState.DIALOG) {
+              // Case when user clicks "Reset all settings" from within the
+              // settings-reset-profile-banner to navigate to
+              // /resetProfileSettings.
+              this.switchToSections_(newRoute);
             }
-            // Nothing to do here for the case of RouteState.DIALOG.
             return;
           }
 

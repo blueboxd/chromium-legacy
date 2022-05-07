@@ -39,6 +39,7 @@
 #include "net/http/http_util.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/manifest/manifest.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/mojom/manifest/display_mode.mojom-shared.h"
 #include "third_party/blink/public/mojom/manifest/manifest.mojom.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -316,6 +317,16 @@ void PopulateFileHandlingIcons(WebAppInstallInfo* web_app_info,
   }
 }
 
+apps::FileHandler::LaunchType ToFileHandlerLaunchType(
+    blink::mojom::ManifestFileHandler::LaunchType launch_type) {
+  switch (launch_type) {
+    case blink::mojom::ManifestFileHandler::LaunchType::kSingleClient:
+      return apps::FileHandler::LaunchType::kSingleClient;
+    case blink::mojom::ManifestFileHandler::LaunchType::kMultipleClients:
+      return apps::FileHandler::LaunchType::kMultipleClients;
+  }
+}
+
 }  // namespace
 
 apps::FileHandlers CreateFileHandlersFromManifest(
@@ -329,6 +340,8 @@ apps::FileHandlers CreateFileHandlersFromManifest(
     apps::FileHandler web_app_file_handler;
     web_app_file_handler.action = manifest_file_handler->action;
     web_app_file_handler.display_name = manifest_file_handler->name;
+    web_app_file_handler.launch_type =
+        ToFileHandlerLaunchType(manifest_file_handler->launch_type);
 
     for (const auto& it : manifest_file_handler->accept) {
       apps::FileHandler::AcceptEntry web_app_accept_entry;
@@ -384,24 +397,25 @@ void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
 
   if (manifest.has_theme_color) {
     web_app_info->theme_color =
-        SkColorSetA(SkColor(manifest.theme_color), SK_AlphaOPAQUE);
+        SkColorSetA(static_cast<SkColor>(manifest.theme_color), SK_AlphaOPAQUE);
   }
 
   if (manifest.has_background_color) {
-    web_app_info->background_color =
-        SkColorSetA(SkColor(manifest.background_color), SK_AlphaOPAQUE);
+    web_app_info->background_color = SkColorSetA(
+        static_cast<SkColor>(manifest.background_color), SK_AlphaOPAQUE);
   }
 
   if (manifest.user_preferences &&
       manifest.user_preferences->color_scheme_dark) {
     if (manifest.user_preferences->color_scheme_dark->has_theme_color) {
       web_app_info->dark_mode_theme_color = SkColorSetA(
-          SkColor(manifest.user_preferences->color_scheme_dark->theme_color),
+          static_cast<SkColor>(
+              manifest.user_preferences->color_scheme_dark->theme_color),
           SK_AlphaOPAQUE);
     }
     if (manifest.user_preferences->color_scheme_dark->has_background_color) {
       web_app_info->dark_mode_background_color = SkColorSetA(
-          SkColor(
+          static_cast<SkColor>(
               manifest.user_preferences->color_scheme_dark->background_color),
           SK_AlphaOPAQUE);
     }
@@ -492,10 +506,12 @@ void UpdateWebAppInfoFromManifest(const blink::mojom::Manifest& manifest,
 
   web_app_info->permissions_policy.clear();
   for (const auto& decl : manifest.permissions_policy) {
-    PermissionsPolicyDeclaration copy;
-    copy.feature = decl->feature;
-    for (const auto& origin : decl->allowlist)
-      copy.allowlist.push_back(origin);
+    blink::ParsedPermissionsPolicyDeclaration copy;
+    copy.feature = decl.feature;
+    for (const auto& origin : decl.allowed_origins)
+      copy.allowed_origins.push_back(origin);
+    copy.matches_all_origins = decl.matches_all_origins;
+    copy.matches_opaque_src = decl.matches_opaque_src;
     web_app_info->permissions_policy.push_back(std::move(copy));
   }
 }

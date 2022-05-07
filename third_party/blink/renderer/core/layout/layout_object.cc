@@ -1060,6 +1060,19 @@ LayoutBlock* LayoutObject::ContainingNGBlock() const {
   return containing_block;
 }
 
+LayoutBlock* LayoutObject::ContainingFragmentationContextRoot() const {
+  NOT_DESTROYED();
+  if (!MightBeInsideFragmentationContext())
+    return nullptr;
+  for (LayoutBlock* ancestor = ContainingBlock(); ancestor;
+       ancestor = ancestor->ContainingBlock()) {
+    if (ancestor->IsFragmentationContextRoot())
+      return ancestor;
+    // TODO(mstensho): Make sure that we return the LayoutView when printing.
+  }
+  return nullptr;
+}
+
 bool LayoutObject::IsFirstInlineFragmentSafe() const {
   NOT_DESTROYED();
   DCHECK(IsInline());
@@ -2924,8 +2937,7 @@ void LayoutObject::StyleDidChange(StyleDifference diff,
     }
   }
 
-  if (ShouldApplyStrictContainment() &&
-      (style_->ContentVisibility() == EContentVisibility::kVisible)) {
+  if (ShouldApplyStrictContainment() && style_->IsContentVisibilityVisible()) {
     if (ShouldApplyStyleContainment()) {
       UseCounter::Count(GetDocument(),
                         WebFeature::kCSSContainAllWithoutContentVisibility);
@@ -5033,6 +5045,14 @@ void LayoutObject::MarkSelfPaintingLayerForVisualOverflowRecalc() {
 #if DCHECK_IS_ON()
   InvalidateVisualOverflow();
 #endif
+}
+
+bool LayoutObject::IsShapingDeferred() const {
+  if (const auto* block_flow = DynamicTo<LayoutNGBlockFlow>(this)) {
+    return block_flow->HasNGInlineNodeData() &&
+           block_flow->GetNGInlineNodeData()->IsShapingDeferred();
+  }
+  return false;
 }
 
 bool IsMenuList(const LayoutObject* object) {

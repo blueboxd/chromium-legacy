@@ -56,7 +56,7 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
           optimization_guide::proto::OptimizationTarget,
           const SegmentationModelHandler::ModelUpdatedCallback&)>;
 
-  explicit ModelExecutionManagerImpl(
+  ModelExecutionManagerImpl(
       const base::flat_set<OptimizationTarget>& segment_ids,
       ModelHandlerCreator model_handler_creator,
       base::Clock* clock,
@@ -72,12 +72,12 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
       delete;
 
   // ModelExecutionManager overrides.
-  void ExecuteModel(optimization_guide::proto::OptimizationTarget segment_id,
+  void ExecuteModel(const proto::SegmentInfo& segment_info,
                     ModelExecutionCallback callback) override;
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(SegmentationPlatformServiceImplTest,
-                           InitializationFlow);
+  friend class SegmentationPlatformServiceImplTest;
+
   struct ExecutionState;
   struct ModelExecutionTraceEvent;
 
@@ -115,7 +115,8 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
   // model, this will be called at least once per session.
   void OnSegmentationModelUpdated(
       optimization_guide::proto::OptimizationTarget segment_id,
-      proto::SegmentationModelMetadata metadata);
+      proto::SegmentationModelMetadata metadata,
+      int64_t model_version);
 
   // Callback after fetching the current SegmentInfo from the
   // SegmentInfoDatabase. This is part of the flow for informing the
@@ -125,6 +126,7 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
   void OnSegmentInfoFetchedForModelUpdate(
       optimization_guide::proto::OptimizationTarget segment_id,
       proto::SegmentationModelMetadata metadata,
+      int64_t model_version,
       absl::optional<proto::SegmentInfo> segment_info);
 
   // Callback after storing the updated version of the SegmentInfo.

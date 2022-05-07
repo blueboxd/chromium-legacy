@@ -44,6 +44,7 @@
 <translation id="3344973607274501920">Chromium imeshindwa kukagua manenosiri yako. Jaribu kuangalia muunganisho wako wa Intaneti.</translation>
 <translation id="3472200483164753384">Haitumiki kwenye Chromium Canary (toleo la jaribio)</translation>
 <translation id="3639997914391704523">Chromium inaweza kukagua manenosiri yako unapoingia ukitumia Akaunti ya Google.</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" /> alikuwa akitumia Chromium na akaacha alamisho, manenosiri na mipangilio mingine kwenye kifaa hiki.</translation>
 <translation id="3805899903892079518">Chromium haina uwezo wa kufikia picha au video zako. Washa uwezo wa kufikia katika Mipangilio ya iOS &gt; Faragha &gt; Picha.</translation>
 <translation id="4043291146360695975">Manenosiri huhifadhiwa kwenye Kidhibiti cha Manenosiri kwenye kifaa hiki tu.</translation>
 <translation id="4099085513035183040">Haitumiki kwenye toleo la Beta la Chromium</translation>
@@ -55,6 +56,15 @@
 <translation id="4828317641996116749">Chromium imeshindwa kukagua manenosiri yote. Jaribu tena baadaye.</translation>
 <translation id="4985291216379576555">Nje ya mtandao, Chromium imeshindwa kukagua kama kuna masasisho</translation>
 <translation id="4999538639245140991">Kwa sababu unaondoka kwenye akaunti inayodhibitiwa na <ph name="SIGNOUT_MANAGED_DOMAIN" />, data yako ya Chromium itafutwa kwenye kifaa hiki, lakini itasalia katika Akaunti yako ya Google.</translation>
+<translation id="5039881550736388123">Inapokuwa imewashwa:
+<ph name="BEGIN_INDENT" />  • Saidia kuboresha Chromium kwa ajili ya watumiaji wengine wanaoitumia kama wewe unavyoitumia.<ph name="END_INDENT" />
+
+Mambo ya kuzingatia:
+<ph name="BEGIN_INDENT" />  • Taarifa kuhusu matumizi yako ya Chromium zitatumwa kwenda Google, lakini bila kukupa masharti yoyote.
+
+  • Ikiwa Chromium itaacha kufanya kazi, maelezo kuhusu kutofanya kazi yanaweza kujumuisha taarifa binafsi.
+
+  • Iwapo utawasha usawazishaji, vipimo vinaweza pia kujumuisha taarifa kuhusu URL unazozitembelea.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Ingia Katika Akaunti kwenye Chromium</translation>
 <translation id="5224391634244552924">Hakuna manenosiri yaliyohifadhiwa. Chromium inaweza kukagua manenosiri yako ukiyahifadhi.</translation>
 <translation id="5308226104666789935">Chromium imeshindwa kukagua kama kuna masasisho</translation>
@@ -65,6 +75,7 @@
 <translation id="5777187867430702742">Ukurasa wa Chromium</translation>
 <translation id="5862307444128926510">Karibu kwenye Chromium</translation>
 <translation id="5945387852661427312">Unaingia kwa kutumia akaunti inayodhibitiwa na <ph name="DOMAIN" /> na kumpa msimamizi wa kikoa hicho udhibiti wa data yako ya Chromium. Data yako ya Chromium itahusishwa na akaunti hii daima. Kuondoka kwenye Chromium kutafuta data yako kwenye kifaa hiki, lakini itaendelea kuhifadhiwa katika Akaunti yako ya Google.</translation>
+<translation id="5983312940147103417">Boresha Chromium</translation>
 <translation id="602807004951640891">Kwa kutumia Chromium, unakubali <ph name="BEGIN_LINK_TOS" />Sheria na Masharti<ph name="END_LINK_TOS" />.</translation>
 <translation id="6119647025869519954">Ili ufanye Chromium iwe kivinjari chako chaguomsingi:
 1. Fungua Mipangilio

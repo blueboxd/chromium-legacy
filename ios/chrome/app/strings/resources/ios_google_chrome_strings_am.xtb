@@ -50,6 +50,7 @@
 <translation id="4099578267706723511">የአጠቃቀም ስታቲክሶችን እና የብልሽት ሪፖርቶችን ወደ Google በመላክ Chromeን የተሻለ ለማድረግ እገዛ ያድርጉ።</translation>
 <translation id="417201473131094001">በChrome Canary ላይ አይደገፍም</translation>
 <translation id="4214277427269650960">ወደዚህ ጣቢያ እና Chrome በመለያ ይግቡ። በኋላ ስምረትን ማብራት ይችላሉ።</translation>
+<translation id="4233521129555661685"><ph name="USER_EMAIL1" /> በዚህ መሣሪያ ላይ Chromeን እና ግራ ዕልባቶችን፣ የይለፍ ቃላትን እና ሌሎች ቅንብሮችን እየተጠቀመ ነበር።</translation>
 <translation id="424864128008805179">ከChrome ተዘግቶ ይወጣ?</translation>
 <translation id="4249068189593983585">የChrome ጠቃሚ ምክር። ተጨማሪ የትር አማራጮችን ለማግኘት በመሣሪያ አሞሌው ውስጥ የትሮችን አሳይ አዝራሩን ነክተው ይያዙ፣ ይህ በማያ ገጽዎ አናት ወይም ግርጌ ላይ ነው ያለው።</translation>
 <translation id="4523886039239821078">አንዳንድ ተጨማሪዎች Chrome እንዲበላሽ ያደርጋሉ። እባክዎ የሚከተለውን ያራግፉ፦</translation>
@@ -57,6 +58,7 @@
 <translation id="4698415050768537821">Chrome ሁሉንም የይለፍ ቃላት ማረጋገጥ አልቻለም። ነገ እንደገና ይሞክሩ ወይም <ph name="BEGIN_LINK" />የGoogle መለያዎን ይለፍ ቃላት ይፈትሹ።<ph name="END_LINK" /></translation>
 <translation id="484033449593719797">በChrome ቅድመ-ይሁንታ ላይ አይደገፍም</translation>
 <translation id="5030102366287574140">Chrome ከውሂብ ጥሰቶች፣ ደህንነታቸው ካልተጠበቁ ድር ጣቢያዎች እና ከተጨማሪ ነገሮች ደህንነትዎን ለመጠበቅ ሊያግዘዎት ይችላል።</translation>
+<translation id="5108659628347594808">Chromeን የተሻለ ያድርጉት</translation>
 <translation id="5119391094379141756">Chromeን ይምረጡ</translation>
 <translation id="5162467219239570114">Chrome ጊዜው አልፎበታል። በ<ph name="BEGIN_LINK" />App Store<ph name="END_LINK" /> ውስጥ ምንም ዝማኔ ከሌለ የእርስዎ መሣሪያ አዲስ የChrome ስሪቶችን ከእንግዲህ ላይደግፍ ይችላል።</translation>
 <translation id="5389212809648216794">ሌላ መተግበሪያ ካሜራዎን እየተጠቀመበት ስለሆነ Google Chrome ካሜራዎን መጠቀም አይችልም</translation>
@@ -81,6 +83,13 @@
 <translation id="6709398533399187136">የይለፍ ቃልዎ በውሂብ ጥሰት ውስጥ ተጋልጧል። Google የይለፍ ቃል አስተዳዳሪ አሁን እንዲቀይሩት ይመክራል።</translation>
 <translation id="6822673484890854830">Chrome ሁሉንም የይለፍ ቃላት ማረጋገጥ አልቻለም። ቆይተው እንደገና ይሞክሩ።</translation>
 <translation id="6964931465519938134">አገናኞችን በመልእክቶች፣ በሰነዶች እና በሌሎች መተግበሪያዎች ውስጥ መታ በሚያደርጉበት ጊዜ ሁሉ Chromeን አሁን መጠቀም ይችላሉ።</translation>
+<translation id="7046845777663074840">ሲበራ፦
+<ph name="BEGIN_INDENT" />  • Chrome እርስዎ በሚጠቀሙበት መንገድ ለሚጠቀሙ ሰዎች የተሻለ እንዲሆን ያግዙ።<ph name="END_INDENT" />
+
+ከግምት ውስጥ መግባት የሚገቡ ነገሮች፡-
+<ph name="BEGIN_INDENT" />  • ስለ Chrome አጠቃቀምዎ መረጃ ወደ Google ተልኳል፣ ነገር ግን ከእርስዎ ጋር አልተያያዘም።
+  • Chrome ከተበላሸ፣ ስለ ብልሽቱ ዝርዝሮች አንዳንድ የግል መረጃዎችን ሊያካትቱ ይችላሉ።
+  • ማስመርን ካበሩት፣ መለኪያዎች እርስዎ ስለሚጎበኟቸው ዩአርኤሎች መረጃንም ሊያካትቱ ይችላሉ።<ph name="END_INDENT" /></translation>
 <translation id="7059914902409643750">Chromeን የራስዎ ያድርጉት</translation>
 <translation id="7124339256045485976">Chromeን እንደተዘመነ ያቆዩት</translation>
 <translation id="7161390184744336561">Google Chrome ቀኑ አልፎበታል</translation>

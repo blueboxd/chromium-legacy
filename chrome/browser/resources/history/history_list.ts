@@ -46,6 +46,7 @@ export interface HistoryListElement {
     'infinite-list': IronListElement,
     'scroll-threshold': IronScrollThresholdElement,
     'dialog': CrLazyRenderElement<CrDialogElement>,
+    'no-results': HTMLElement,
     'sharedMenu': CrLazyRenderElement<CrActionMenuElement>,
   };
 }
@@ -117,8 +118,7 @@ export class HistoryListElement extends HistoryListElementBase {
   lastSelectedIndex: number;
   queryState: QueryState;
 
-  /** @override */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
 
     // It is possible (eg, when middle clicking the reload button) for all other
@@ -132,7 +132,7 @@ export class HistoryListElement extends HistoryListElementBase {
     this.addWebUIListener('history-deleted', () => this.onHistoryDeleted_());
   }
 
-  ready() {
+  override ready() {
     super.ready();
 
     this.setAttribute('role', 'application');
@@ -309,6 +309,10 @@ export class HistoryListElement extends HistoryListElementBase {
     });
   }
 
+  removeItemsForTest(indices: number[]) {
+    this.removeItemsByIndex_(indices);
+  }
+
   /**
    * Remove all |indices| from the history list. Uses notifySplices to send a
    * single large notification to Polymer, rather than many small notifications,
@@ -331,6 +335,10 @@ export class HistoryListElement extends HistoryListElementBase {
       });
     });
     this.notifySplices('historyData_', splices);
+  }
+
+  removeItemsByIndexForTesting(indices: Array<number>) {
+    this.removeItemsByIndex_(indices);
   }
 
   /**

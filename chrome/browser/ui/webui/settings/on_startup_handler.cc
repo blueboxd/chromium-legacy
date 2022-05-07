@@ -79,7 +79,7 @@ base::Value OnStartupHandler::GetNtpExtension() {
   return dict;
 }
 
-void OnStartupHandler::HandleGetNtpExtension(base::Value::ConstListView args) {
+void OnStartupHandler::HandleGetNtpExtension(const base::Value::List& args) {
   const base::Value& callback_id = args[0];
   AllowJavascript();
 
@@ -87,7 +87,7 @@ void OnStartupHandler::HandleGetNtpExtension(base::Value::ConstListView args) {
 }
 
 void OnStartupHandler::HandleValidateStartupPage(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   CHECK_EQ(args.size(), 2U);
   const base::Value& callback_id = args[0];
   const std::string& url_string = args[1].GetString();

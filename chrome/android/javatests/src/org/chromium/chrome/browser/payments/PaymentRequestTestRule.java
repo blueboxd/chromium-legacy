@@ -32,8 +32,6 @@ import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt;
 import org.chromium.chrome.browser.autofill.CardUnmaskPrompt.CardUnmaskObserverForTest;
-import org.chromium.chrome.browser.autofill.prefeditor.EditorObserverForTest;
-import org.chromium.chrome.browser.autofill.prefeditor.EditorTextField;
 import org.chromium.chrome.browser.payments.ChromePaymentRequestFactory.ChromePaymentRequestDelegateImpl;
 import org.chromium.chrome.browser.payments.ChromePaymentRequestFactory.ChromePaymentRequestDelegateImplObserverForTest;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSection;
@@ -41,6 +39,8 @@ import org.chromium.chrome.browser.payments.ui.PaymentRequestSection.OptionSecti
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI;
 import org.chromium.chrome.browser.payments.ui.PaymentRequestUI.PaymentRequestObserverForTest;
 import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
+import org.chromium.components.autofill.prefeditor.EditorObserverForTest;
+import org.chromium.components.autofill.prefeditor.EditorTextField;
 import org.chromium.components.payments.AbortReason;
 import org.chromium.components.payments.PayerData;
 import org.chromium.components.payments.PaymentApp;
@@ -271,7 +271,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                     PaymentRequestTestRule.this);
             CardUnmaskPrompt.setObserverForTest(PaymentRequestTestRule.this);
         });
-        assertWaitForPageScaleFactorMatch(1);
+        assertWaitForPageScaleFactorMatch(0.5f);
     }
 
     public PaymentsCallbackHelper<PaymentRequestUI> getReadyForInput() {
@@ -400,6 +400,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
 
     /** Clicks on an HTML node. */
     protected void clickNode(String nodeId) throws TimeoutException {
+        DOMUtils.waitForNonZeroNodeBounds(mWebContentsRef.get(), nodeId);
         DOMUtils.clickNode(mWebContentsRef.get(), nodeId);
     }
 

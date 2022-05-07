@@ -52,9 +52,11 @@ void CalendarViewController::RemoveObserver(Observer* observer) {
 void CalendarViewController::UpdateMonth(
     const base::Time current_month_first_date) {
   base::Time::Exploded currently_shown_date_exploded =
-      calendar_utils::GetExplodedUTC(currently_shown_date_);
+      calendar_utils::GetExplodedUTC(currently_shown_date_ +
+                                     base::Minutes(time_difference_minutes_));
   base::Time::Exploded current_month_first_date_exploded =
-      calendar_utils::GetExplodedUTC(current_month_first_date);
+      calendar_utils::GetExplodedUTC(current_month_first_date +
+                                     base::Minutes(time_difference_minutes_));
   if (currently_shown_date_exploded.year ==
           current_month_first_date_exploded.year &&
       currently_shown_date_exploded.month ==
@@ -174,11 +176,9 @@ int CalendarViewController::GetTodayRowBottomHeight() const {
 }
 
 void CalendarViewController::FetchEvents() {
-  std::set<base::Time> months;
-  calendar_utils::GetSurroundingMonthsUTC(
-      GetOnScreenMonthFirstDayUTC().UTCMidnight(),
-      CalendarModel::kNumSurroundingMonthsCached, months);
-  Shell::Get()->system_tray_model()->calendar_model()->FetchEvents(months);
+  Shell::Get()->system_tray_model()->calendar_model()->FetchEventsSurrounding(
+      CalendarModel::kNumSurroundingMonthsCached,
+      GetOnScreenMonthFirstDayUTC().UTCMidnight());
 }
 
 SingleDayEventList CalendarViewController::SelectedDateEvents() {

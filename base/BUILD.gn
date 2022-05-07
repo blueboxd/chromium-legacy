@@ -99,12 +99,23 @@ if (is_fuchsia) {
   import("//third_party/fuchsia-sdk/sdk/build/fidl_library.gni")
 }
 
-# TODO(crbug.com/1280708): Switch to enable_rust after we have NaCl support.
-build_rust_json_parser = toolchain_has_rust
+# TODO(crbug.com/1280708, crbug.com/1304707): Drop toolchain_has_rust after we
+# have support for all our toolchains: NaCl, Linux x86, etc.
+build_rust_json_parser = enable_rust && toolchain_has_rust
 
 buildflag_header("parsing_buildflags") {
   header = "parsing_buildflags.h"
   flags = [ "BUILD_RUST_JSON_PARSER=$build_rust_json_parser" ]
+}
+
+# TODO(crbug.com/1298039): The BUILDFLAG should be used instead. So
+# buildflag_header() should generate a Rust config (and perhaps a Rust crate
+# which depends on said config, so its usage can be expressed via deps).
+config("todo_buildflag_build_rust_json_parser") {
+  rustflags = [
+    "--cfg",
+    "buildflag__build_rust_json_parser",
+  ]
 }
 
 config("memory_tagging") {
@@ -1263,6 +1274,8 @@ mixed_component("base") {
       "process/process_mac.cc",
       "process/process_metrics_mac.cc",
       "profiler/module_cache_mac.cc",
+      "profiler/native_unwinder_apple.cc",
+      "profiler/native_unwinder_apple.h",
       "profiler/native_unwinder_mac.cc",
       "profiler/native_unwinder_mac.h",
       "profiler/stack_sampler_mac.cc",
@@ -1311,8 +1324,8 @@ mixed_component("base") {
 
     if (ios_stack_profiler_enabled) {
       sources += [
-        "profiler/native_unwinder_ios.cc",
-        "profiler/native_unwinder_ios.h",
+        "profiler/native_unwinder_apple.cc",
+        "profiler/native_unwinder_apple.h",
         "profiler/suspendable_thread_delegate_mac.cc",
         "profiler/suspendable_thread_delegate_mac.h",
       ]
@@ -1427,16 +1440,19 @@ mixed_component("base") {
   # module, to avoid increasing Chrome's executable size.
   assert_no_deps = [ ":native_unwinder_android" ]
 
+  rs_crate_root = "base.rs"
+  rs_sources = [ "base.rs" ]
+
   if (build_rust_json_parser) {
-    rs_crate_root = "lib.rs"
+    # TODO(crbug.com/1298039): The BUILDFLAG should be used instead.
+    rs_configs = [ ":todo_buildflag_build_rust_json_parser" ]
     rs_deps = [
       "//third_party/rust/serde/v1:lib",
-      "//third_party/rust/serde_jsonrc/v0_1:lib",
+      "//third_party/rust/serde_json_lenient/v0_1:lib",
     ]
-    rs_sources = [
+    rs_sources += [
       "json/json_parser.rs",
       "json/mod.rs",
-      "lib.rs",
       "rs_glue/mod.rs",
       "values.rs",
       "values_deserialization.rs",
@@ -1668,7 +1684,6 @@ mixed_component("base") {
       "android/task_scheduler/post_task_android.h",
       "android/task_scheduler/task_runner_android.cc",
       "android/task_scheduler/task_runner_android.h",
-      "android/time_utils.cc",
       "android/timezone_utils.cc",
       "android/timezone_utils.h",
       "android/trace_event_binding.cc",
@@ -2767,6 +2782,13 @@ component("i18n") {
     configs += [ "//build/config/compiler:optimize_max" ]
   }
 
+  if (is_chromeos_lacros) {
+    sources += [
+      "i18n/icu_mergeable_data_file.cc",
+      "i18n/icu_mergeable_data_file.h",
+    ]
+  }
+
   if (is_mac) {
     frameworks = [ "CoreFoundation.framework" ]
   }
@@ -2813,6 +2835,10 @@ test("base_perftests") {
   if (is_android) {
     deps += [ "//testing/android/native_test:native_test_native_code" ]
     shard_timeout = 600
+  }
+  if (is_fuchsia) {
+    # TODO(crbug.com/1306335): Switch to CFv2 once infrastructure supports it.
+    use_cfv2 = false
   }
 
   if (!is_official_build) {
@@ -3382,8 +3408,21 @@ test("base_unittests") {
     "vlog_unittest.cc",
   ]
 
-  if (build_rust_json_parser) {
-    sources -= [ "json/json_parser_unittest.cc" ]
+  # TODO(crbug.com/1304253): iOS test() targets don't support mixing Rust code
+  # yet.
+  if (!is_ios) {
+    rs_sources = []
+
+    if (build_rust_json_parser) {
+      # TODO(crbug.com/1298039): The BUILDFLAG should be used instead.
+      rs_configs = [ ":todo_buildflag_build_rust_json_parser" ]
+      rs_sources += [
+        "json/json_parser_unittest.rs",
+        "values_unittest.rs",
+      ]
+
+      sources -= [ "json/json_parser_unittest.cc" ]
+    }
   }
 
   defines = []
@@ -3407,6 +3446,12 @@ test("base_unittests") {
     "//testing/gtest",
     "//third_party/icu",
   ]
+
+  # TODO(crbug.com/1304253): iOS test() targets don't support mixing Rust code
+  # yet.
+  if (!is_ios) {
+    rs_deps = [ ":base" ]
+  }
 
   data_deps = [
     "//base/test:immediate_crash_test_helper",
@@ -3742,6 +3787,10 @@ test("base_unittests") {
     }
   }
 
+  if (is_chromeos_lacros) {
+    sources += [ "i18n/icu_mergeable_data_file_unittest.cc" ]
+  }
+
   if (is_linux || is_chromeos_lacros) {
     sources += [
       "linux_util_unittest.cc",
@@ -3823,6 +3872,9 @@ test("base_unittests") {
       deps += [ ":base_profiler_test_support_library" ]
     }
     sources += [ "files/os_validation_win_unittest.cc" ]
+  }
+  if (is_apple) {
+    sources += [ "profiler/native_unwinder_apple_unittest.cc" ]
   }
 
   if (use_allocator_shim) {
@@ -3977,7 +4029,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/RadioUtils.java",
       "android/java/src/org/chromium/base/SysUtils.java",
       "android/java/src/org/chromium/base/ThreadUtils.java",
-      "android/java/src/org/chromium/base/TimeUtils.java",
       "android/java/src/org/chromium/base/TimezoneUtils.java",
       "android/java/src/org/chromium/base/TraceEvent.java",
       "android/java/src/org/chromium/base/UnguessableToken.java",
@@ -4088,6 +4139,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/PathUtils.java",
       "android/java/src/org/chromium/base/PiiElider.java",
       "android/java/src/org/chromium/base/PowerMonitor.java",
+      "android/java/src/org/chromium/base/PowerMonitorForQ.java",
       "android/java/src/org/chromium/base/Predicate.java",
       "android/java/src/org/chromium/base/Promise.java",
       "android/java/src/org/chromium/base/RadioUtils.java",
@@ -4109,6 +4161,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/CalledByNative.java",
       "android/java/src/org/chromium/base/annotations/CalledByNativeUnchecked.java",
       "android/java/src/org/chromium/base/annotations/CheckDiscard.java",
+      "android/java/src/org/chromium/base/annotations/DoNotClassMerge.java",
       "android/java/src/org/chromium/base/annotations/DoNotInline.java",
       "android/java/src/org/chromium/base/annotations/IdentifierNameString.java",
       "android/java/src/org/chromium/base/annotations/JNIAdditionalImport.java",
@@ -4118,17 +4171,6 @@ if (is_android) {
       "android/java/src/org/chromium/base/annotations/MockedInTests.java",
       "android/java/src/org/chromium/base/annotations/NativeClassQualifiedName.java",
       "android/java/src/org/chromium/base/annotations/UsedByReflection.java",
-      "android/java/src/org/chromium/base/annotations/VerifiesOnLollipop.java",
-      "android/java/src/org/chromium/base/annotations/VerifiesOnLollipopMR1.java",
-      "android/java/src/org/chromium/base/annotations/VerifiesOnM.java",
-      "android/java/src/org/chromium/base/annotations/VerifiesOnN.java",
-      "android/java/src/org/chromium/base/annotations/VerifiesOnNMR1.java",
-      "android/java/src/org/chromium/base/annotations/VerifiesOnO.java",
-      "android/java/src/org/chromium/base/annotations/VerifiesOnOMR1.java",
-      "android/java/src/org/chromium/base/annotations/VerifiesOnP.java",
-      "android/java/src/org/chromium/base/annotations/VerifiesOnQ.java",
-      "android/java/src/org/chromium/base/annotations/VerifiesOnR.java",
-      "android/java/src/org/chromium/base/annotations/VerifiesOnS.java",
       "android/java/src/org/chromium/base/compat/ApiHelperForM.java",
       "android/java/src/org/chromium/base/compat/ApiHelperForN.java",
       "android/java/src/org/chromium/base/compat/ApiHelperForO.java",
@@ -4247,7 +4289,6 @@ if (is_android) {
       # AssertsTest doesn't really belong in //base but it's preferable to
       # stick it here than create another target for a single test.
       "android/javatests/src/org/chromium/base/AdvancedMockContextTest.java",
-      "android/javatests/src/org/chromium/base/ApiCompatibilityUtilsTest.java",
       "android/javatests/src/org/chromium/base/AssertsTest.java",
       "android/javatests/src/org/chromium/base/CommandLineFlagsTest.java",
       "android/javatests/src/org/chromium/base/CommandLineInitUtilTest.java",
@@ -4338,6 +4379,7 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/task/SchedulerTestHelpers.java",
       "test/android/javatests/src/org/chromium/base/test/task/ThreadPoolTestHelpers.java",
       "test/android/javatests/src/org/chromium/base/test/util/AdvancedMockContext.java",
+      "test/android/javatests/src/org/chromium/base/test/util/AndroidSdkLevelSkipCheck.java",
       "test/android/javatests/src/org/chromium/base/test/util/AnnotationProcessingUtils.java",
       "test/android/javatests/src/org/chromium/base/test/util/AnnotationRule.java",
       "test/android/javatests/src/org/chromium/base/test/util/ApplicationContextWrapper.java",
@@ -4363,9 +4405,9 @@ if (is_android) {
       "test/android/javatests/src/org/chromium/base/test/util/LooperUtils.java",
       "test/android/javatests/src/org/chromium/base/test/util/Manual.java",
       "test/android/javatests/src/org/chromium/base/test/util/Matchers.java",
+      "test/android/javatests/src/org/chromium/base/test/util/MaxAndroidSdkLevel.java",
       "test/android/javatests/src/org/chromium/base/test/util/MetricsUtils.java",
       "test/android/javatests/src/org/chromium/base/test/util/MinAndroidSdkLevel.java",
-      "test/android/javatests/src/org/chromium/base/test/util/MinAndroidSdkLevelSkipCheck.java",
       "test/android/javatests/src/org/chromium/base/test/util/PayloadCallbackHelper.java",
       "test/android/javatests/src/org/chromium/base/test/util/RequiresRestart.java",
       "test/android/javatests/src/org/chromium/base/test/util/Restriction.java",
@@ -4463,11 +4505,11 @@ if (is_android) {
       "test/android/junit/src/org/chromium/base/test/params/ParameterizedRunnerDelegateFactoryTest.java",
       "test/android/junit/src/org/chromium/base/test/params/ParameterizedRunnerTest.java",
       "test/android/junit/src/org/chromium/base/test/params/ParameterizedTestNameTest.java",
+      "test/android/junit/src/org/chromium/base/test/util/AndroidSdkLevelSkipCheckTest.java",
       "test/android/junit/src/org/chromium/base/test/util/AnnotationProcessingUtilsTest.java",
       "test/android/junit/src/org/chromium/base/test/util/CommandLineFlagsNoClassAnnotationCheckTest.java",
       "test/android/junit/src/org/chromium/base/test/util/CommandLineFlagsWithClassAnnotationCheckTest.java",
       "test/android/junit/src/org/chromium/base/test/util/DisableIfTest.java",
-      "test/android/junit/src/org/chromium/base/test/util/MinAndroidSdkLevelSkipCheckTest.java",
       "test/android/junit/src/org/chromium/base/test/util/RestrictionSkipCheckTest.java",
       "test/android/junit/src/org/chromium/base/test/util/SkipCheckTest.java",
     ]

@@ -9,12 +9,18 @@
  */
 
 import '/strings.m.js';
+import './ambient/album_list_element.js';
+import './ambient/albums_subpage_element.js';
+import './ambient/animation_theme_item_element.js';
+import './ambient/animation_theme_list_element.js';
+import './ambient/art_album_dialog_element.js';
 import './ambient/ambient_preview_element.js';
 import './ambient/ambient_subpage_element.js';
 import './ambient/ambient_weather_element.js';
 import './ambient/toggle_row_element.js';
 import './ambient/topic_source_item_element.js';
 import './ambient/topic_source_list_element.js';
+import './ambient/zero_state_element.js';
 import './personalization_router_element.js';
 import './personalization_test_api.js';
 import './personalization_toast_element.js';

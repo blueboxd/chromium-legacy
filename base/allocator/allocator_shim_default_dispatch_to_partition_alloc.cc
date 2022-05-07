@@ -246,11 +246,12 @@ void* AllocateAlignedMemory(size_t alignment, size_t size) {
     PA_CHECK(base::bits::IsPowerOfTwo(alignment));
     // TODO(bartekn): See if the compiler optimizes branches down the stack on
     // Mac, where PartitionPageSize() isn't constexpr.
-    return Allocator()->AllocFlagsNoHooks(0, size, base::PartitionPageSize());
+    return Allocator()->AllocWithFlagsNoHooks(0, size,
+                                              base::PartitionPageSize());
   }
 
-  return AlignedAllocator()->AlignedAllocFlags(base::PartitionAllocNoHooks,
-                                               alignment, size);
+  return AlignedAllocator()->AlignedAllocWithFlags(
+      partition_alloc::AllocFlags::kNoHooks, alignment, size);
 }
 
 }  // namespace
@@ -258,19 +259,43 @@ void* AllocateAlignedMemory(size_t alignment, size_t size) {
 namespace base {
 namespace internal {
 
+namespace {
+#if BUILDFLAG(IS_APPLE)
+int g_alloc_flags = 0;
+#else
+constexpr int g_alloc_flags = 0;
+#endif
+}  // namespace
+
+void PartitionAllocSetCallNewHandlerOnMallocFailure(bool value) {
+#if BUILDFLAG(IS_APPLE)
+  // We generally prefer to always crash rather than returning nullptr for
+  // OOM. However, on some macOS releases, we have to locally allow it due to
+  // weirdness in OS code. See https://crbug.com/654695 for details.
+  //
+  // Apple only since it's not needed elsewhere, and there is a performance
+  // penalty.
+
+  if (value)
+    g_alloc_flags = 0;
+  else
+    g_alloc_flags = partition_alloc::AllocFlags::kReturnNull;
+#endif
+}
+
 void* PartitionMalloc(const AllocatorDispatch*, size_t size, void* context) {
   ScopedDisallowAllocations guard{};
-  return Allocator()->AllocFlagsNoHooks(0, MaybeAdjustSize(size),
-                                        PartitionPageSize());
+  return Allocator()->AllocWithFlagsNoHooks(
+      0 | g_alloc_flags, MaybeAdjustSize(size), PartitionPageSize());
 }
 
 void* PartitionMallocUnchecked(const AllocatorDispatch*,
                                size_t size,
                                void* context) {
   ScopedDisallowAllocations guard{};
-  return Allocator()->AllocFlagsNoHooks(base::PartitionAllocReturnNull,
-                                        MaybeAdjustSize(size),
-                                        PartitionPageSize());
+  return Allocator()->AllocWithFlagsNoHooks(
+      partition_alloc::AllocFlags::kReturnNull | g_alloc_flags,
+      MaybeAdjustSize(size), PartitionPageSize());
 }
 
 void* PartitionCalloc(const AllocatorDispatch*,
@@ -279,8 +304,9 @@ void* PartitionCalloc(const AllocatorDispatch*,
                       void* context) {
   ScopedDisallowAllocations guard{};
   const size_t total = base::CheckMul(n, MaybeAdjustSize(size)).ValueOrDie();
-  return Allocator()->AllocFlagsNoHooks(base::PartitionAllocZeroFill, total,
-                                        PartitionPageSize());
+  return Allocator()->AllocWithFlagsNoHooks(
+      partition_alloc::AllocFlags::kZeroFill | g_alloc_flags, total,
+      PartitionPageSize());
 }
 
 void* PartitionMemalign(const AllocatorDispatch*,
@@ -304,8 +330,8 @@ void* PartitionAlignedAlloc(const AllocatorDispatch* dispatch,
 // TODO(tasak): Expand the given memory block to the given size if possible.
 // This realloc always free the original memory block and allocates a new memory
 // block.
-// TODO(tasak): Implement PartitionRoot<thread_safe>::AlignedReallocFlags and
-// use it.
+// TODO(tasak): Implement PartitionRoot<thread_safe>::AlignedReallocWithFlags
+// and use it.
 void* PartitionAlignedRealloc(const AllocatorDispatch* dispatch,
                               void* address,
                               size_t size,
@@ -352,8 +378,9 @@ void* PartitionRealloc(const AllocatorDispatch*,
   }
 #endif  // BUILDFLAG(IS_APPLE)
 
-  return Allocator()->ReallocFlags(base::PartitionAllocNoHooks, address,
-                                   MaybeAdjustSize(size), "");
+  return Allocator()->ReallocWithFlags(
+      partition_alloc::AllocFlags::kNoHooks | g_alloc_flags, address,
+      MaybeAdjustSize(size), "");
 }
 
 #if BUILDFLAG(IS_ANDROID) && BUILDFLAG(IS_CHROMECAST)
@@ -496,12 +523,14 @@ void EnablePartitionAllocMemoryReclaimer() {
   // memory. Thus, the registration to the memory reclaimer has to be done
   // some time later, when the main root is fully configured.
   // TODO(bartekn): Aligned allocator can use the regular initialization path.
-  PartitionAllocMemoryReclaimer::Instance()->RegisterPartition(Allocator());
+  ::partition_alloc::MemoryReclaimer::Instance()->RegisterPartition(
+      Allocator());
   auto* original_root = OriginalAllocator();
   if (original_root)
-    PartitionAllocMemoryReclaimer::Instance()->RegisterPartition(original_root);
+    ::partition_alloc::MemoryReclaimer::Instance()->RegisterPartition(
+        original_root);
   if (AlignedAllocator() != Allocator()) {
-    PartitionAllocMemoryReclaimer::Instance()->RegisterPartition(
+    ::partition_alloc::MemoryReclaimer::Instance()->RegisterPartition(
         AlignedAllocator());
   }
 }
@@ -596,8 +625,8 @@ void ConfigurePartitions(
   PA_CHECK(current_aligned_root == g_original_root);
 
   // Purge memory, now that the traffic to the original partition is cut off.
-  current_root->PurgeMemory(PartitionPurgeDecommitEmptySlotSpans |
-                            PartitionPurgeDiscardUnusedSystemPages);
+  current_root->PurgeMemory(PurgeFlags::kDecommitEmptySlotSpans |
+                            PurgeFlags::kDiscardUnusedSystemPages);
 
   if (!use_alternate_bucket_distribution) {
     g_root.Get()->SwitchToDenserBucketDistribution();

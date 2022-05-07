@@ -15,6 +15,8 @@
 #include "ash/public/cpp/esim_manager.h"
 #include "ash/public/cpp/network_config_service.h"
 #include "ash/public/cpp/resources/grit/ash_public_unscaled_resources.h"
+#include "ash/services/cellular_setup/public/mojom/esim_manager.mojom.h"
+#include "ash/services/multidevice_setup/multidevice_setup_service.h"
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/containers/contains.h"
@@ -107,6 +109,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/grit/assistant_optin_resources.h"
+#include "chrome/grit/assistant_optin_resources_map.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/component_extension_resources.h"
@@ -115,8 +119,6 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/oobe_conditional_resources.h"
 #include "chrome/grit/oobe_unconditional_resources_map.h"
-#include "chromeos/services/cellular_setup/public/mojom/esim_manager.mojom.h"
-#include "chromeos/services/multidevice_setup/multidevice_setup_service.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/prefs/pref_service.h"
@@ -136,6 +138,11 @@
 #include "ui/resources/grit/webui_generated_resources.h"
 
 namespace chromeos {
+
+// TODO(https://crbug.com/1164001): remove after migrating to ash.
+namespace multidevice_setup {
+namespace mojom = ::ash::multidevice_setup::mojom;
+}
 
 namespace {
 
@@ -232,6 +239,8 @@ void AddArcScreensResources(content::WebUIDataSource* source) {
 }
 
 void AddAssistantScreensResources(content::WebUIDataSource* source) {
+  source->AddResourcePaths(
+      base::make_span(kAssistantOptinResources, kAssistantOptinResourcesSize));
   source->AddResourcePath("voice_match_animation.json",
                           IDR_ASSISTANT_VOICE_MATCH_ANIMATION);
   source->OverrideContentSecurityPolicy(
@@ -287,7 +296,7 @@ void AddTestAPIResources(content::WebUIDataSource* source) {
 // chrome://oobe/oobe
 void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   if (features::IsOobePolymer3Enabled()) {
-    // TODO(crbug.com/1279339): Separate CloudReady screens resources.
+    // TODO(crbug.com/1279339): Separate ChromeOS Flex screens resources.
     source->SetDefaultResource(IDR_OOBE_POLY3_HTML);
   } else {
     if (switches::IsOsInstallAllowed()) {
@@ -308,7 +317,7 @@ void AddOobeDisplayTypeDefaultResources(content::WebUIDataSource* source) {
 // chrome://oobe/login
 void AddLoginDisplayTypeDefaultResources(content::WebUIDataSource* source) {
   if (features::IsOobePolymer3Enabled()) {
-    // TODO(crbug.com/1279339): Separate CloudReady screens resources.
+    // TODO(crbug.com/1279339): Separate ChromeOS Flex screens resources.
     source->SetDefaultResource(IDR_MD_LOGIN_POLY3_HTML);
   } else {
     if (switches::IsOsInstallAllowed()) {
@@ -521,7 +530,7 @@ void OobeUI::ConfigureOobeDisplay() {
 
   auto signin_screen_handler = std::make_unique<SigninScreenHandler>(
       js_calls_container_.get(), network_state_informer_, error_screen,
-      core_handler_, GetHandler<GaiaScreenHandler>());
+      GetHandler<GaiaScreenHandler>());
   signin_screen_handler_ = signin_screen_handler.get();
   AddWebUIHandler(std::move(signin_screen_handler));
 
@@ -631,7 +640,7 @@ void OobeUI::BindInterface(
 }
 
 void OobeUI::BindInterface(
-    mojo::PendingReceiver<cellular_setup::mojom::ESimManager> receiver) {
+    mojo::PendingReceiver<ash::cellular_setup::mojom::ESimManager> receiver) {
   ash::GetESimManager(std::move(receiver));
 }
 
@@ -800,12 +809,6 @@ void OobeUI::ShowOobeUI(bool show) {
 
   if (show && oobe_display_chooser_)
     oobe_display_chooser_->TryToPlaceUiOnTouchDisplay();
-}
-
-void OobeUI::ShowSigninScreen(SigninScreenHandlerDelegate* delegate) {
-  signin_screen_handler_->SetDelegate(delegate);
-
-  signin_screen_handler_->Show();
 }
 
 void OobeUI::ForwardAccelerator(std::string accelerator_name) {

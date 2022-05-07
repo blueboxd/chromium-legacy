@@ -53,8 +53,9 @@ function castToMojoRotation(rotation: number): Rotation {
       return Rotation.ROTATION_180;
     case 270:
       return Rotation.ROTATION_270;
+    default:
+      assertNotReached(`Invalid rotation ${rotation}`);
   }
-  assertNotReached(`Invalid rotation ${rotation}`);
 }
 
 /**
@@ -64,7 +65,7 @@ export class ChromeHelper {
   /**
    * An interface remote that is used to communicate with Chrome.
    */
-  private remote: CameraAppHelperRemote =
+  private readonly remote: CameraAppHelperRemote =
       wrapEndpoint(CameraAppHelper.getRemote());
 
   /**
@@ -106,6 +107,7 @@ export class ChromeHelper {
 
   /**
    * Starts monitor monitoring the existence of external screens.
+   *
    * @param onChange Callback called when the existence of external screens
    *     changes.
    * @return Resolved to the initial state.
@@ -160,6 +162,7 @@ export class ChromeHelper {
 
   /**
    * Triggers the begin of event tracing in Chrome.
+   *
    * @param event Name of the event.
    */
   startTracing(event: string): void {
@@ -168,6 +171,7 @@ export class ChromeHelper {
 
   /**
    * Triggers the end of event tracing in Chrome.
+   *
    * @param event Name of the event.
    */
   stopTracing(event: string): void {
@@ -176,6 +180,7 @@ export class ChromeHelper {
 
   /**
    * Opens the file in Downloads folder by its |name| in gallery.
+   *
    * @param name Name of the target file.
    */
   openFileInGallery(name: string): void {
@@ -184,6 +189,7 @@ export class ChromeHelper {
 
   /**
    * Opens the chrome feedback dialog.
+   *
    * @param placeholder The text of the placeholder in the description
    *     field.
    */
@@ -193,6 +199,7 @@ export class ChromeHelper {
 
   /**
    * Opens the given URL in the browser.
+   *
    * @param url The URL to open.
    */
   openUrlInBrowser(url: string): void {
@@ -201,6 +208,7 @@ export class ChromeHelper {
 
   /**
    * Checks return value from |handleCameraResult|.
+   *
    * @param caller Caller identifier.
    */
   private async checkReturn(
@@ -215,6 +223,7 @@ export class ChromeHelper {
 
   /**
    * Notifies ARC++ to finish the intent.
+   *
    * @param intentId Intent id of the intent to be finished.
    */
   async finish(intentId: number): Promise<void> {
@@ -225,6 +234,7 @@ export class ChromeHelper {
 
   /**
    * Notifies ARC++ to append data to intent result.
+   *
    * @param intentId Intent id of the intent to be appended data to.
    * @param data The data to be appended to intent result.
    */
@@ -236,6 +246,7 @@ export class ChromeHelper {
 
   /**
    * Notifies ARC++ to clear appended intent result data.
+   *
    * @param intentId Intent id of the intent to be cleared its result.
    */
   async clearData(intentId: number): Promise<void> {
@@ -264,11 +275,12 @@ export class ChromeHelper {
    * Monitors for the file deletion of the file given by its |name| and triggers
    * |callback| when the file is deleted. Note that a previous monitor request
    * will be canceled once another monitor request is sent.
+   *
    * @param name The name of the file to monitor.
    * @param callback Function to trigger when deletion.
    * @return Resolved when the file is deleted or the current monitor is
    *     canceled by future monitor call.
-   * @throws {!Error} When error occurs during monitor.
+   * @throws When error occurs during monitor.
    */
   async monitorFileDeletion(name: string, callback: () => void): Promise<void> {
     const {result} = await this.remote.monitorFileDeletion(name);
@@ -281,6 +293,8 @@ export class ChromeHelper {
         return;
       case FileMonitorResult.ERROR:
         throw new Error('Error happens when monitoring file deletion');
+      default:
+        assertNotReached();
     }
   }
 
@@ -294,7 +308,7 @@ export class ChromeHelper {
 
   /**
    * Scans the blob data and returns the detected document corners.
-   * @param blob
+   *
    * @return Promise resolve to positions of document corner. Null for failing
    *     to detected corner positions.
    */
@@ -336,6 +350,7 @@ export class ChromeHelper {
 
   /**
    * Converts given |jpegData| to PDF format.
+   *
    * @param jpegBlob Blob in JPEG format.
    * @return Blob in PDF format.
    */
@@ -348,6 +363,7 @@ export class ChromeHelper {
   /**
    * Creates a new instance of ChromeHelper if it is not set. Returns the
    *     exist instance.
+   *
    * @return The singleton instance.
    */
   static getInstance(): ChromeHelper {

@@ -5,17 +5,12 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_NG_GRID_DATA_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_NG_GRID_NG_GRID_DATA_H_
 
-#include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_geometry.h"
 #include "third_party/blink/renderer/core/layout/ng/grid/ng_grid_track_collection.h"
-#include "third_party/blink/renderer/platform/geometry/layout_unit.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
 
 struct CORE_EXPORT NGGridPlacementData {
-  USING_FAST_MALLOC(NGGridPlacementData);
-
- public:
   NGGridPlacementData(const bool is_parent_grid_container,
                       const wtf_size_t column_auto_repetitions,
                       const wtf_size_t row_auto_repetitions)
@@ -47,24 +42,40 @@ struct CORE_EXPORT NGGridPlacementData {
   wtf_size_t row_start_offset;
 };
 
-// This struct contains a bundle of the ranges from the track collection and the
-// resolved used sizes of the sets in a given track direction.
+// This struct contains the column and row data necessary to layout grid items.
+// For grid sizing, it will store |NGGridSizingTrackCollection| pointers, which
+// are able to modify the geometry of its sets. However, after sizing is done,
+// it should only copy |NGGridLayoutTrackCollection| immutable data.
 struct CORE_EXPORT NGGridLayoutData {
   USING_FAST_MALLOC(NGGridLayoutData);
 
  public:
-  using RangeData = NGGridLayoutAlgorithmTrackCollection::Range;
+  NGGridLayoutData() = default;
 
-  struct TrackCollectionGeometry {
-    Vector<RangeData> ranges;
-    Vector<SetOffsetData> sets;
+  NGGridLayoutData(const NGGridLayoutData& other) { CopyFrom(other); }
 
-    LayoutUnit gutter_size;
-    wtf_size_t track_count;
-  };
+  NGGridLayoutData& operator=(const NGGridLayoutData& other) {
+    CopyFrom(other);
+    return *this;
+  }
 
-  TrackCollectionGeometry column_geometry;
-  TrackCollectionGeometry row_geometry;
+  void CopyFrom(const NGGridLayoutData& other) {
+    columns = std::make_unique<NGGridLayoutTrackCollection>(*other.Columns());
+    rows = std::make_unique<NGGridLayoutTrackCollection>(*other.Rows());
+  }
+
+  NGGridLayoutTrackCollection* Columns() const {
+    DCHECK(columns);
+    return columns.get();
+  }
+
+  NGGridLayoutTrackCollection* Rows() const {
+    DCHECK(rows);
+    return rows.get();
+  }
+
+  std::unique_ptr<NGGridLayoutTrackCollection> columns;
+  std::unique_ptr<NGGridLayoutTrackCollection> rows;
 };
 
 }  // namespace blink

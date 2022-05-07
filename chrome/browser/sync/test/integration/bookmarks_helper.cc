@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include <algorithm>
 #include <functional>
 #include <memory>
 #include <set>
@@ -19,6 +18,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
 #include "base/rand_util.h"
+#include "base/ranges/algorithm.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -55,6 +55,7 @@
 #include "ui/base/models/tree_node_iterator.h"
 #include "ui/gfx/favicon_size.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/image/image_skia_rep.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -1176,14 +1177,13 @@ bool ServerBookmarksEqualityChecker::IsExitConditionSatisfied(
       actual_specifics = entity.specifics().bookmark();
     }
 
-    auto it =
-        std::find_if(expected.begin(), expected.end(),
-                     [actual_specifics](const ExpectedBookmark& bookmark) {
-                       return actual_specifics.legacy_canonicalized_title() ==
-                                  bookmark.title &&
-                              actual_specifics.full_title() == bookmark.title &&
-                              actual_specifics.url() == bookmark.url;
-                     });
+    auto it = base::ranges::find_if(
+        expected, [actual_specifics](const ExpectedBookmark& bookmark) {
+          return actual_specifics.legacy_canonicalized_title() ==
+                     bookmark.title &&
+                 actual_specifics.full_title() == bookmark.title &&
+                 actual_specifics.url() == bookmark.url;
+        });
     if (it != expected.end()) {
       expected.erase(it);
     } else {
@@ -1278,8 +1278,8 @@ bool BookmarkModelMatchesFakeServerChecker::IsExitConditionSatisfied(
     auto parent_iter =
         server_guids_by_parent_id.find(server_entity.parent_id_string());
     DCHECK(parent_iter != server_guids_by_parent_id.end());
-    auto server_position_iter = std::find(
-        parent_iter->second.begin(), parent_iter->second.end(), node->guid());
+    auto server_position_iter =
+        base::ranges::find(parent_iter->second, node->guid());
     DCHECK(server_position_iter != parent_iter->second.end());
     const size_t server_position =
         server_position_iter - parent_iter->second.begin();
@@ -1445,8 +1445,7 @@ BookmarkModelMatchesFakeServerChecker::GetServerGuidsGroupedByParentSyncId(
   };
 
   for (auto& [parent_id, children_guids] : guids_grouped_by_parent_id) {
-    std::sort(children_guids.begin(), children_guids.end(),
-              sort_by_position_fn);
+    base::ranges::sort(children_guids, sort_by_position_fn);
   }
   return guids_grouped_by_parent_id;
 }

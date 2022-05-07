@@ -813,7 +813,7 @@ TEST_F(StyleResolverTestCQ, CascadedValuesForElementInContainer) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       #container { container-type: inline-size; }
-      @container size(min-width: 1px) {
+      @container (min-width: 1px) {
         #inner {
           top: 1em;
         }
@@ -843,7 +843,7 @@ TEST_F(StyleResolverTestCQ, CascadedValuesForPseudoElementInContainer) {
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       #container { container-type: inline-size; }
-      @container size(min-width: 1px) {
+      @container (min-width: 1px) {
         #inner::before {
           top: 1em;
         }
@@ -918,8 +918,8 @@ TEST_F(StyleResolverTest, ComputeValueStandardProperty) {
       MakeGarbageCollected<MutableCSSPropertyValueSet>(kHTMLStandardMode);
   MutableCSSPropertyValueSet::SetResult result = set->SetProperty(
       property_id, "var(--color)", false, SecureContextMode::kInsecureContext,
-      /*style_sheet_contents=*/nullptr);
-  ASSERT_TRUE(result.did_parse);
+      /*context_style_sheet=*/nullptr);
+  ASSERT_NE(MutableCSSPropertyValueSet::kParseError, result);
   const CSSValue* parsed_value = set->GetPropertyCSSValue(property_id);
   ASSERT_TRUE(parsed_value);
   const CSSValue* computed_value = StyleResolver::ComputeValue(
@@ -1306,7 +1306,7 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueries) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       #a { color: red; }
-      @container size(min-width: 0px) {
+      @container (min-width: 0px) {
         #b { color: blue; }
         span { color: green; }
         #d { color: coral; }
@@ -1345,7 +1345,7 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesPseudo) {
     <style>
       main { container-type: size; width: 100px; }
       #a::before { content: "before"; }
-      @container size(min-width: 0px) {
+      @container (min-width: 0px) {
         #a::after { content: "after"; }
       }
     </style>
@@ -1364,7 +1364,7 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesPseudo) {
   ASSERT_TRUE(before);
   ASSERT_TRUE(after);
 
-  EXPECT_FALSE(a->ComputedStyleRef().DependsOnContainerQueries());
+  EXPECT_TRUE(a->ComputedStyleRef().DependsOnContainerQueries());
   EXPECT_FALSE(before->ComputedStyleRef().DependsOnContainerQueries());
   EXPECT_TRUE(after->ComputedStyleRef().DependsOnContainerQueries());
 }
@@ -1374,7 +1374,7 @@ TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesPseudo) {
 TEST_F(StyleResolverTestCQ, DependsOnContainerQueriesMPC) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
-      @container size(min-width: 9999999px) {
+      @container (min-width: 9999999px) {
         #a { color: green; }
       }
     </style>
@@ -1872,8 +1872,6 @@ TEST_F(StyleResolverTest, IsInertWithFullscreen) {
 
 TEST_F(StyleResolverTest, IsInertWithFrameAndFullscreen) {
   Document& document = GetDocument();
-  LocalFrame& frame = GetFrame();
-
   document.body()->setInnerHTML(R"HTML(
     <div>div_text</div>
   )HTML");
@@ -1898,25 +1896,7 @@ TEST_F(StyleResolverTest, IsInertWithFrameAndFullscreen) {
   EXPECT_FALSE(div->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div_text->GetComputedStyle()->IsInert());
 
-  frame.SetIsInert(true);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
-  EXPECT_TRUE(html->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(body->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
-
   EnterFullscreen(document, *body);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
-  EXPECT_TRUE(html->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(body->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
-
-  frame.SetIsInert(false);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(document.GetComputedStyle()->IsInert());
@@ -1933,20 +1913,10 @@ TEST_F(StyleResolverTest, IsInertWithFrameAndFullscreen) {
   EXPECT_FALSE(body->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div->GetComputedStyle()->IsInert());
   EXPECT_FALSE(div_text->GetComputedStyle()->IsInert());
-
-  frame.SetIsInert(true);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_FALSE(document.GetComputedStyle()->IsInert());
-  EXPECT_TRUE(html->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(body->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div->GetComputedStyle()->IsInert());
-  EXPECT_TRUE(div_text->GetComputedStyle()->IsInert());
 }
 
 TEST_F(StyleResolverTest, IsInertWithBackdrop) {
   Document& document = GetDocument();
-  LocalFrame& frame = GetFrame();
   NonThrowableExceptionState exception_state;
 
   document.documentElement()->setInnerHTML(R"HTML(
@@ -1977,35 +1947,21 @@ TEST_F(StyleResolverTest, IsInertWithBackdrop) {
   EXPECT_FALSE(IsBackdropInert(body));
   EXPECT_FALSE(IsBackdropInert(dialog));
 
-  frame.SetIsInert(true);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_EQ(html->GetPseudoElement(kPseudoIdBackdrop), nullptr);
-  EXPECT_TRUE(IsBackdropInert(body));
-  EXPECT_TRUE(IsBackdropInert(dialog));
-
   dialog->close();
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_EQ(html->GetPseudoElement(kPseudoIdBackdrop), nullptr);
-  EXPECT_TRUE(IsBackdropInert(body));
+  EXPECT_FALSE(IsBackdropInert(body));
   EXPECT_EQ(dialog->GetPseudoElement(kPseudoIdBackdrop), nullptr);
 
   EnterFullscreen(document, *html);
   UpdateAllLifecyclePhasesForTest();
 
-  EXPECT_TRUE(IsBackdropInert(html));
+  EXPECT_FALSE(IsBackdropInert(html));
   EXPECT_EQ(body->GetPseudoElement(kPseudoIdBackdrop), nullptr);
   EXPECT_EQ(dialog->GetPseudoElement(kPseudoIdBackdrop), nullptr);
 
   dialog->showModal(exception_state);
-  UpdateAllLifecyclePhasesForTest();
-
-  EXPECT_TRUE(IsBackdropInert(html));
-  EXPECT_EQ(body->GetPseudoElement(kPseudoIdBackdrop), nullptr);
-  EXPECT_TRUE(IsBackdropInert(dialog));
-
-  frame.SetIsInert(false);
   UpdateAllLifecyclePhasesForTest();
 
   EXPECT_FALSE(IsBackdropInert(html));
@@ -2101,10 +2057,10 @@ TEST_F(StyleResolverTestCQ, StyleRulesForElementContainerQuery) {
   GetDocument().documentElement()->setInnerHTML(R"HTML(
     <style>
       #container { container-type: inline-size }
-      @container size(min-width: 1px) {
+      @container (min-width: 1px) {
         #target { }
       }
-      @container size(min-width: 99999px) {
+      @container (min-width: 99999px) {
         #target { color: red }
       }
     </style>

@@ -46,7 +46,7 @@ base::flat_set<device::FidoTransportProtocol> supported_transports() {
 }
 
 void HandleClose(base::RepeatingClosure close_callback,
-                 base::Value::ConstListView args) {
+                 const base::Value::List& args) {
   DCHECK_EQ(0u, args.size());
   close_callback.Run();
 }
@@ -118,8 +118,7 @@ void SecurityKeysPINHandler::Close() {
   callback_id_.clear();
 }
 
-void SecurityKeysPINHandler::HandleStartSetPIN(
-    base::Value::ConstListView args) {
+void SecurityKeysPINHandler::HandleStartSetPIN(const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(State::kNone, state_);
   DCHECK_EQ(1u, args.size());
@@ -180,7 +179,7 @@ void SecurityKeysPINHandler::OnSetPINComplete(
                             base::Value(std::move(response)));
 }
 
-void SecurityKeysPINHandler::HandleSetPIN(base::Value::ConstListView args) {
+void SecurityKeysPINHandler::HandleSetPIN(const base::Value::List& args) {
   DCHECK(state_ == State::kGatherNewPIN || state_ == State::kGatherChangePIN);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(3u, args.size());
@@ -225,7 +224,7 @@ void SecurityKeysResetHandler::Close() {
   callback_id_.clear();
 }
 
-void SecurityKeysResetHandler::HandleReset(base::Value::ConstListView args) {
+void SecurityKeysResetHandler::HandleReset(const base::Value::List& args) {
   DCHECK_EQ(State::kNone, state_);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(1u, args.size());
@@ -256,7 +255,7 @@ void SecurityKeysResetHandler::OnResetSent() {
 }
 
 void SecurityKeysResetHandler::HandleCompleteReset(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(1u, args.size());
 
@@ -319,8 +318,7 @@ SecurityKeysCredentialHandler::SecurityKeysCredentialHandler(
     : SecurityKeysHandlerBase(std::move(discovery_factory)) {}
 SecurityKeysCredentialHandler::~SecurityKeysCredentialHandler() = default;
 
-void SecurityKeysCredentialHandler::HandleStart(
-    base::Value::ConstListView args) {
+void SecurityKeysCredentialHandler::HandleStart(const base::Value::List& args) {
   DCHECK_EQ(State::kNone, state_);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(1u, args.size());
@@ -383,7 +381,7 @@ void SecurityKeysCredentialHandler::Close() {
   DCHECK(!credential_management_provide_pin_cb_);
 }
 
-void SecurityKeysCredentialHandler::HandlePIN(base::Value::ConstListView args) {
+void SecurityKeysCredentialHandler::HandlePIN(const base::Value::List& args) {
   DCHECK_EQ(State::kPIN, state_);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(2u, args.size());
@@ -398,7 +396,7 @@ void SecurityKeysCredentialHandler::HandlePIN(base::Value::ConstListView args) {
 }
 
 void SecurityKeysCredentialHandler::HandleEnumerate(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_EQ(state_, State::kReady);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(1u, args.size());
@@ -413,7 +411,7 @@ void SecurityKeysCredentialHandler::HandleEnumerate(
 }
 
 void SecurityKeysCredentialHandler::HandleDelete(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_EQ(State::kReady, state_);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(2u, args.size());
@@ -440,7 +438,7 @@ void SecurityKeysCredentialHandler::HandleDelete(
 }
 
 void SecurityKeysCredentialHandler::HandleUpdateUserInformation(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_EQ(State::kReady, state_);
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(5u, args.size());
@@ -661,7 +659,7 @@ SecurityKeysBioEnrollmentHandler::SecurityKeysBioEnrollmentHandler(
 SecurityKeysBioEnrollmentHandler::~SecurityKeysBioEnrollmentHandler() = default;
 
 void SecurityKeysBioEnrollmentHandler::HandleStart(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state_, State::kNone);
   DCHECK_EQ(1u, args.size());
@@ -808,7 +806,7 @@ void SecurityKeysBioEnrollmentHandler::OnGatherPIN(
 }
 
 void SecurityKeysBioEnrollmentHandler::HandleProvidePIN(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(2u, args.size());
   DCHECK_EQ(state_, State::kGatherPIN);
@@ -818,7 +816,7 @@ void SecurityKeysBioEnrollmentHandler::HandleProvidePIN(
 }
 
 void SecurityKeysBioEnrollmentHandler::HandleGetSensorInfo(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(1u, args.size());
   DCHECK_EQ(state_, State::kReady);
@@ -834,7 +832,7 @@ void SecurityKeysBioEnrollmentHandler::HandleGetSensorInfo(
 }
 
 void SecurityKeysBioEnrollmentHandler::HandleEnumerate(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(1u, args.size());
   DCHECK_EQ(state_, State::kReady);
@@ -869,7 +867,7 @@ void SecurityKeysBioEnrollmentHandler::OnHaveEnumeration(
 }
 
 void SecurityKeysBioEnrollmentHandler::HandleStartEnrolling(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(1u, args.size());
   DCHECK_EQ(state_, State::kReady);
@@ -940,7 +938,7 @@ void SecurityKeysBioEnrollmentHandler::OnHavePostEnrollmentEnumeration(
 }
 
 void SecurityKeysBioEnrollmentHandler::HandleDelete(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(2u, args.size());
   state_ = State::kDeleting;
@@ -968,7 +966,7 @@ void SecurityKeysBioEnrollmentHandler::OnDelete(
 }
 
 void SecurityKeysBioEnrollmentHandler::HandleRename(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(args.size(), 3u);
   state_ = State::kRenaming;
@@ -996,7 +994,7 @@ void SecurityKeysBioEnrollmentHandler::OnRename(
 }
 
 void SecurityKeysBioEnrollmentHandler::HandleCancel(
-    base::Value::ConstListView args) {
+    const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(state_, State::kEnrolling);
   DCHECK_EQ(0u, args.size());
@@ -1026,8 +1024,7 @@ void SecurityKeysPhonesHandler::RegisterMessages() {
                           base::Unretained(this)));
 }
 
-void SecurityKeysPhonesHandler::HandleEnumerate(
-    base::Value::ConstListView args) {
+void SecurityKeysPhonesHandler::HandleEnumerate(const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(1u, args.size());
 
@@ -1035,7 +1032,7 @@ void SecurityKeysPhonesHandler::HandleEnumerate(
   DoEnumerate(args[0]);
 }
 
-void SecurityKeysPhonesHandler::HandleDelete(base::Value::ConstListView args) {
+void SecurityKeysPhonesHandler::HandleDelete(const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(2u, args.size());
 
@@ -1054,7 +1051,7 @@ void SecurityKeysPhonesHandler::HandleDelete(base::Value::ConstListView args) {
   DoEnumerate(args[0]);
 }
 
-void SecurityKeysPhonesHandler::HandleRename(base::Value::ConstListView args) {
+void SecurityKeysPhonesHandler::HandleRename(const base::Value::List& args) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK_EQ(3u, args.size());
 

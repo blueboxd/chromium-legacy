@@ -50,7 +50,7 @@ class SESSIONS_EXPORT TabRestoreServiceImpl : public TabRestoreService {
   const Entries& entries() const override;
   std::vector<LiveTab*> RestoreMostRecentEntry(
       LiveTabContext* context) override;
-  std::unique_ptr<Tab> RemoveTabEntryById(SessionID id) override;
+  void RemoveTabEntryById(SessionID id) override;
   std::vector<LiveTab*> RestoreEntryById(
       LiveTabContext* context,
       SessionID id,
@@ -60,6 +60,8 @@ class SESSIONS_EXPORT TabRestoreServiceImpl : public TabRestoreService {
   void DeleteLastSession() override;
   bool IsRestoring() const override;
   void Shutdown() override;
+
+  void CreateRestoredEntryCommandForTest(SessionID id);
 
  private:
   friend class ::TabRestoreServiceImplTest;

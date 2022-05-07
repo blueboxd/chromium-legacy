@@ -342,6 +342,14 @@ void LogAcceptCHFrameStatus(AcceptCHFrameRestart status) {
   base::UmaHistogramEnumeration("ClientHints.AcceptCHFrame", status);
 }
 
+bool IsSameOriginRedirect(const std::vector<GURL>& url_chain) {
+  if (url_chain.size() < 2)
+    return false;
+
+  auto previous_origin = url::Origin::Create(url_chain[url_chain.size() - 2]);
+  return previous_origin.IsSameOriginWith(url_chain[url_chain.size() - 1]);
+}
+
 }  // namespace
 
 // TODO(kinuko): Fix the method ordering and move these methods after the ctor.
@@ -472,10 +480,9 @@ void NavigationURLLoaderImpl::CreateInterceptors(
 }
 
 void NavigationURLLoaderImpl::Restart() {
-  // Cancel all inflight early hints preloads.
-  // TODO(https://crbug.com/671310): Consider preserving `early_hints_manager_`
-  // on same-origin redirects.
-  early_hints_manager_.reset();
+  // Cancel all inflight early hints preloads except for same origin redirects.
+  if (!IsSameOriginRedirect(url_chain_))
+    early_hints_manager_.reset();
 
   // Clear `url_loader_` if it's not the default one (network). This allows
   // the restarted request to use a new loader, instead of, e.g., reusing the
@@ -654,12 +661,12 @@ NavigationURLLoaderImpl::PrepareForNonInterceptedRequest(
       } else {
         initiating_origin = resource_request_->request_initiator;
       }
+
       bool handled = GetContentClient()->browser()->HandleExternalProtocol(
-          resource_request_->url, web_contents_getter_,
-          ChildProcessHost::kInvalidUniqueID, frame_tree_node_id_,
-          navigation_ui_data_.get(),
-          resource_request_->resource_type ==
-              static_cast<int>(blink::mojom::ResourceType::kMainFrame),
+          resource_request_->url, web_contents_getter_, frame_tree_node_id_,
+          navigation_ui_data_.get(), request_info_->is_primary_main_frame,
+          FrameTreeNode::GloballyFindByID(frame_tree_node_id_)
+              ->IsInFencedFrameTree(),
           request_info_->sandbox_flags,
           static_cast<ui::PageTransition>(resource_request_->transition_type),
           resource_request_->has_user_gesture, initiating_origin,
@@ -732,10 +739,13 @@ void NavigationURLLoaderImpl::OnReceiveEarlyHints(
   DCHECK_NE(early_hints->ip_address_space,
             network::mojom::IPAddressSpace::kUnknown);
 
-  // Allow Early Hints preload only for the main frame. Calculating appropriate
-  // parameters to create URLLoaderFactory for subframes is complicated and not
-  // supported yet.
-  if (!resource_request_->is_main_frame)
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id_);
+
+  // Allow Early Hints preload only for outermost main frames. Calculating
+  // appropriate parameters to create URLLoaderFactory for subframes, fenced
+  // frames or portal are complicated and not supported yet.
+  if (frame_tree_node->GetParentOrOuterDocument())
     return;
 
   if (!early_hints_manager_) {
@@ -955,7 +965,7 @@ void NavigationURLLoaderImpl::OnComplete(
 }
 
 void NavigationURLLoaderImpl::OnAcceptCHFrameReceived(
-    const GURL& url,
+    const url::Origin& origin,
     const std::vector<network::mojom::WebClientHintsType>& accept_ch_frame,
     OnAcceptCHFrameReceivedCallback callback) {
   if (!base::FeatureList::IsEnabled(network::features::kAcceptCHFrame)) {
@@ -985,7 +995,7 @@ void NavigationURLLoaderImpl::OnAcceptCHFrameReceived(
   const std::vector<network::mojom::WebClientHintsType>& filtered_hints =
       filtered_enabled_hints.GetEnabledHints();
 
-  if (!AreCriticalHintsMissing(url, frame_tree_node, client_hint_delegate,
+  if (!AreCriticalHintsMissing(origin, frame_tree_node, client_hint_delegate,
                                filtered_hints)) {
     std::move(callback).Run(net::OK);
     return;
@@ -994,7 +1004,7 @@ void NavigationURLLoaderImpl::OnAcceptCHFrameReceived(
   net::HttpRequestHeaders modified_headers;
   client_hint_delegate->SetAdditionalClientHints(filtered_hints);
   AddNavigationRequestClientHintsHeaders(
-      url, &modified_headers, browser_context_, client_hint_delegate,
+      origin, &modified_headers, browser_context_, client_hint_delegate,
       frame_tree_node->navigation_request()->is_overriding_user_agent(),
       frame_tree_node,
       frame_tree_node->navigation_request()
@@ -1025,8 +1035,11 @@ void NavigationURLLoaderImpl::OnAcceptCHFrameReceived(
   // While not a true redirect, a redirect loop can be simulated by repeatedly
   // closing the socket and presenting a different ALPS setting with each new
   // handshake.
-  if (redirect_limit_-- == 0) {
-    std::move(callback).Run(net::ERR_TOO_MANY_REDIRECTS);
+  if (--accept_ch_restart_limit_ == 0) {
+    LogAcceptCHFrameStatus(AcceptCHFrameRestart::kRedirectOverflow);
+    OnComplete(network::URLLoaderCompletionStatus(
+        net::ERR_TOO_MANY_ACCEPT_CH_RESTARTS));
+    std::move(callback).Run(net::ERR_TOO_MANY_ACCEPT_CH_RESTARTS);
     return;
   }
 
@@ -1271,61 +1284,57 @@ NavigationURLLoaderImpl::NavigationURLLoaderImpl(
 
   mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
       header_client;
-  // `frame_tree_node` may be null in some unit test environments.
-  if (frame_tree_node) {
-    // Initialize proxied factory remote/receiver if necessary.
-    // This also populates `bypass_redirect_checks_`.
-    DCHECK(frame_tree_node->navigation_request());
+  DCHECK(frame_tree_node);
+  DCHECK(frame_tree_node->navigation_request());
 
-    GetContentClient()
-        ->browser()
-        ->RegisterNonNetworkNavigationURLLoaderFactories(
-            frame_tree_node_id_,
-            ukm::SourceIdObj::FromInt64(frame_tree_node->navigation_request()
-                                            ->GetNextPageUkmSourceId()),
-            &non_network_url_loader_factories_);
+  // Initialize proxied factory remote/receiver if necessary.
+  // This also populates `bypass_redirect_checks_`.
+  GetContentClient()->browser()->RegisterNonNetworkNavigationURLLoaderFactories(
+      frame_tree_node_id_,
+      ukm::SourceIdObj::FromInt64(
+          frame_tree_node->navigation_request()->GetNextPageUkmSourceId()),
+      &non_network_url_loader_factories_);
 
-    // The embedder may want to proxy all network-bound URLLoaderFactory
-    // receivers that it can. If it elects to do so, those proxies will be
-    // connected when loader is created if the request type supports proxying.
-    mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory;
-    auto factory_receiver = pending_factory.InitWithNewPipeAndPassReceiver();
-    // Here we give nullptr for `factory_override`, because CORS is no-op for
-    // navigations.
-    bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
-        browser_context_, frame_tree_node->current_frame_host(),
-        frame_tree_node->current_frame_host()->GetProcess()->GetID(),
-        ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
-        frame_tree_node->navigation_request()->GetNavigationId(),
-        ukm::SourceIdObj::FromInt64(
-            frame_tree_node->navigation_request()->GetNextPageUkmSourceId()),
-        &factory_receiver, &header_client, &bypass_redirect_checks_,
-        /*disable_secure_dns=*/nullptr, /*factory_override=*/nullptr);
-    if (devtools_instrumentation::WillCreateURLLoaderFactory(
-            frame_tree_node->current_frame_host(), /*is_navigation=*/true,
-            /*is_download=*/false, &factory_receiver,
-            /*factory_override=*/nullptr)) {
-      use_proxy = true;
-    }
-    if (use_proxy) {
-      proxied_factory_receiver_ = std::move(factory_receiver);
-      proxied_factory_remote_ = std::move(pending_factory);
-    }
-
-    const std::string storage_domain;
-    // TODO(https://crbug.com/1264405): Determine if we should deprecate
-    // navigation in filesystem: URLs entirely or in 3p contexts; alter the
-    // below as necessary. NOTE: while the logic below is appropriate for
-    // browser-initiated navigations, it is likely incorrect to always use
-    // first-party StorageKeys for renderer-initiated navigations.
-    non_network_url_loader_factories_.emplace(
-        url::kFileSystemScheme,
-        CreateFileSystemURLLoaderFactory(
-            ChildProcessHost::kInvalidUniqueID,
-            frame_tree_node->frame_tree_node_id(),
-            storage_partition_->GetFileSystemContext(), storage_domain,
-            blink::StorageKey(url::Origin::Create(url_))));
+  // The embedder may want to proxy all network-bound URLLoaderFactory
+  // receivers that it can. If it elects to do so, those proxies will be
+  // connected when loader is created if the request type supports proxying.
+  mojo::PendingRemote<network::mojom::URLLoaderFactory> pending_factory;
+  auto factory_receiver = pending_factory.InitWithNewPipeAndPassReceiver();
+  // Here we give nullptr for `factory_override`, because CORS is no-op for
+  // navigations.
+  bool use_proxy = GetContentClient()->browser()->WillCreateURLLoaderFactory(
+      browser_context_, frame_tree_node->current_frame_host(),
+      frame_tree_node->current_frame_host()->GetProcess()->GetID(),
+      ContentBrowserClient::URLLoaderFactoryType::kNavigation, url::Origin(),
+      frame_tree_node->navigation_request()->GetNavigationId(),
+      ukm::SourceIdObj::FromInt64(
+          frame_tree_node->navigation_request()->GetNextPageUkmSourceId()),
+      &factory_receiver, &header_client, &bypass_redirect_checks_,
+      /*disable_secure_dns=*/nullptr, /*factory_override=*/nullptr);
+  if (devtools_instrumentation::WillCreateURLLoaderFactory(
+          frame_tree_node->current_frame_host(), /*is_navigation=*/true,
+          /*is_download=*/false, &factory_receiver,
+          /*factory_override=*/nullptr)) {
+    use_proxy = true;
   }
+  if (use_proxy) {
+    proxied_factory_receiver_ = std::move(factory_receiver);
+    proxied_factory_remote_ = std::move(pending_factory);
+  }
+
+  const std::string storage_domain;
+  // TODO(https://crbug.com/1264405): Determine if we should deprecate
+  // navigation in filesystem: URLs entirely or in 3p contexts; alter the
+  // below as necessary. NOTE: while the logic below is appropriate for
+  // browser-initiated navigations, it is likely incorrect to always use
+  // first-party StorageKeys for renderer-initiated navigations.
+  non_network_url_loader_factories_.emplace(
+      url::kFileSystemScheme,
+      CreateFileSystemURLLoaderFactory(
+          ChildProcessHost::kInvalidUniqueID,
+          frame_tree_node->frame_tree_node_id(),
+          storage_partition_->GetFileSystemContext(), storage_domain,
+          blink::StorageKey(url::Origin::Create(url_))));
 
   non_network_url_loader_factories_.emplace(url::kAboutScheme,
                                             AboutURLLoaderFactory::Create());

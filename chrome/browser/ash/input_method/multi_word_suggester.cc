@@ -10,6 +10,7 @@
 #include "ash/services/ime/public/cpp/suggestions.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/ash/input_method/ui/suggestion_details.h"
@@ -21,13 +22,19 @@ namespace ash {
 namespace input_method {
 namespace {
 
-using ::chromeos::ime::TextSuggestion;
-using ::chromeos::ime::TextSuggestionMode;
-using ::chromeos::ime::TextSuggestionType;
+using ime::TextSuggestion;
+using ime::TextSuggestionMode;
+using ime::TextSuggestionType;
 
+// Used for UmaHistogramExactLinear, should remain <= 101.
+constexpr size_t kMaxSuggestionLength = 101;
 constexpr char kMultiWordFirstAcceptTimeDays[] = "multi_word_first_accept";
 constexpr char16_t kSuggestionShownMessage[] =
-    u"predictive writing candidate shown, press tab to accept";
+    u"predictive writing candidate shown, press down to select or "
+    u"press tab to accept";
+constexpr char kSuggestionSelectedMessage[] =
+    "predictive writing candidate selected, candidate text is %s, "
+    "press tab to accept or press up to deselect";
 constexpr char16_t kSuggestionAcceptedMessage[] =
     u"predictive writing candidate inserted";
 constexpr char16_t kSuggestionDismissedMessage[] =
@@ -39,7 +46,7 @@ absl::optional<TextSuggestion> GetMultiWordSuggestion(
     return absl::nullopt;
   if (suggestions[0].type == TextSuggestionType::kMultiWord) {
     // There should only ever be one multi word suggestion given at a time.
-    DCHECK_EQ(suggestions.size(), 1);
+    DCHECK_EQ(suggestions.size(), 1u);
     return suggestions[0];
   }
   return absl::nullopt;
@@ -67,6 +74,12 @@ void RecordTimeToAccept(base::TimeDelta delta) {
 void RecordTimeToDismiss(base::TimeDelta delta) {
   base::UmaHistogramTimes("InputMethod.Assistive.TimeToDismiss.MultiWord",
                           delta);
+}
+
+void RecordSuggestionLength(size_t suggestion_length) {
+  base::UmaHistogramExactLinear(
+      "InputMethod.Assistive.MultiWord.SuggestionLength", suggestion_length,
+      kMaxSuggestionLength);
 }
 
 absl::optional<int> GetTimeFirstAcceptedSuggestion(Profile* profile) {
@@ -148,6 +161,11 @@ void MultiWordSuggester::OnExternalSuggestionsUpdated(
     return;
   }
 
+  if (auto suggestion_length = multi_word_suggestion->text.size();
+      suggestion_length < kMaxSuggestionLength) {
+    RecordSuggestionLength(suggestion_length);
+  }
+
   auto suggestion = SuggestionState::Suggestion{
       .mode = multi_word_suggestion->mode,
       .text = base::UTF8ToUTF16(multi_word_suggestion->text),
@@ -187,8 +205,7 @@ SuggestionStatus MultiWordSuggester::HandleKeyEvent(const ui::KeyEvent& event) {
 }
 
 bool MultiWordSuggester::Suggest(const std::u16string& text,
-                                 size_t cursor_pos,
-                                 size_t anchor_pos) {
+                                 size_t cursor_pos) {
   return state_.IsSuggestionShowing();
 }
 
@@ -256,6 +273,9 @@ void MultiWordSuggester::DisplaySuggestion(
   details.show_quick_accept_annotation = ShouldShowTabGuide(profile_);
   details.confirmed_length = suggestion.confirmed_length;
   details.show_setting_link = false;
+
+  suggestion_button_.announce_string = base::UTF8ToUTF16(base::StringPrintf(
+      kSuggestionSelectedMessage, base::UTF16ToUTF8(details.text).c_str()));
 
   std::string error;
   suggestion_handler_->SetSuggestion(focused_context_id_, details, &error);

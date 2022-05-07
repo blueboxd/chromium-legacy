@@ -69,9 +69,6 @@ tast_disabled_tests_from_chrome_all = [
   # crbug.com/1263233
   "security.SharedFilesystemState",
 
-  # https://crbug.com/1269876: Flaky.
-  "arc.TextToSpeech",
-
   # https://crbug.com/1269880: Flaky.
   "ui.ChromeCrashReporterMetrics.success_crashpad",
 
@@ -134,10 +131,6 @@ tast_disabled_tests_from_chrome_all = [
   # b/217362120
   "security.SELinuxFilesARC.vm",
 
-  # https://crbug.com/1297028
-  "arc.StandardizedKeyboardCopyPaste",
-  "arc.StandardizedKeyboardCopyPaste.tablet_mode",
-
   # https://crbug.com/1297581
   "policy.ImagesForURLCheck.blocklist",
   "policy.ImagesForURLCheck.default",
@@ -145,12 +138,20 @@ tast_disabled_tests_from_chrome_all = [
   "policy.JavaScriptAllowedForUrls",
   "policy.JavaScriptBlockedForUrls",
   "policy.ImagesForURLCheck.default",
+
+  # https://crbug.com/1302469 (http://b/222407003)
+  "inputs.PhysicalKeyboardKoreanTyping",
+  "inputs.PhysicalKeyboardAutocorrect.en_us_2",
+
+  # https://crbug.com/1300941
+  "ui.WebUIJSErrors",
+
+  # https://crbug.com/1306316
+  "policy.URLCheck.whitelist",  # nocheck
+  "policy.URLCheck.blacklist",  # nocheck
+  "policy.UserNativePrintersAllowed",  # nocheck
 ]
 
 # To disable a specific test in lacros_all_tast_tests, add it the following
 # list and cite a bug.
-tast_disabled_tests_from_lacros_all = [
-  # crbug.com/1250036
-  "a11y.Smoke.lacros",
-  "a11y.Smoke.lacros_rootfs",
-]
+tast_disabled_tests_from_lacros_all = []

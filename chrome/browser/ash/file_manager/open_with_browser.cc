@@ -11,12 +11,12 @@
 #include "ash/public/cpp/new_window_delegate.h"
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/cxx17_backports.h"
 #include "base/logging.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/ash/drive/drive_integration_service.h"
+#include "chrome/browser/ash/file_manager/file_tasks.h"
 #include "chrome/browser/ash/file_manager/filesystem_api_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
@@ -54,7 +54,7 @@ constexpr const base::FilePath::CharType* kFileExtensionsViewableInBrowser[] = {
 
 // Returns true if |file_path| is viewable in the browser (ex. HTML file).
 bool IsViewableInBrowser(const base::FilePath& file_path) {
-  for (size_t i = 0; i < base::size(kFileExtensionsViewableInBrowser); i++) {
+  for (size_t i = 0; i < std::size(kFileExtensionsViewableInBrowser); i++) {
     if (file_path.MatchesExtension(kFileExtensionsViewableInBrowser[i]))
       return true;
   }
@@ -167,7 +167,10 @@ bool OpenFileWithBrowser(Profile* profile,
     return true;
   }
 
-  if (action_id == "open-web-drive-office") {
+  if (action_id == ::file_manager::file_tasks::kActionIdWebDriveOfficeWord ||
+      action_id == ::file_manager::file_tasks::kActionIdWebDriveOfficeExcel ||
+      action_id ==
+          ::file_manager::file_tasks::kActionIdWebDriveOfficePowerPoint) {
     drive::DriveIntegrationService* integration_service =
         drive::DriveIntegrationServiceFactory::FindForProfile(profile);
     base::FilePath path;

@@ -105,9 +105,12 @@ class USER_MANAGER_EXPORT KnownUser final {
 
   // Returns true if |account_id| preference by |path| does exist,
   // fills in |out_value|. Otherwise returns false.
-  bool GetPref(const AccountId& account_id,
-               const std::string& path,
-               const base::Value** out_value);
+  bool GetPrefForTest(const AccountId& account_id,
+                      const std::string& path,
+                      const base::Value** out_value);
+
+  const base::Value* FindPath(const AccountId& account_id,
+                              const std::string& path) const;
 
   // Removes user's identified by |account_id| preference |path|.
   void RemovePref(const AccountId& account_id, const std::string& path);
@@ -290,33 +293,6 @@ class USER_MANAGER_EXPORT KnownUser final {
 namespace known_user {
 // Methods for storage/retrieval of per-user properties in Local State.
 
-// Updates user's identified by |account_id| string preference |path|.
-// TODO(https://crbug.com/1150434): Deprecated, use KnownUser::SetStringPref
-// instead.
-void USER_MANAGER_EXPORT SetStringPref(const AccountId& account_id,
-                                       const std::string& path,
-                                       const std::string& in_value);
-
-// Updates user's identified by |account_id| boolean preference |path|.
-// TODO(https://crbug.com/1150434): Deprecated, use KnownUser::SetBooleanPref
-// instead.
-void USER_MANAGER_EXPORT SetBooleanPref(const AccountId& account_id,
-                                        const std::string& path,
-                                        const bool in_value);
-
-// Returns true if |account_id| preference by |path| does exist,
-// fills in |out_value|. Otherwise returns false.
-// TODO(https://crbug.com/1150434): Deprecated, use KnownUser::GetPref instead.
-bool USER_MANAGER_EXPORT GetPref(const AccountId& account_id,
-                                 const std::string& path,
-                                 const base::Value** out_value);
-
-// Removes user's identified by |account_id| preference |path|.
-// TODO(https://crbug.com/1150434): Deprecated, use KnownUser::RemovePref
-// instead.
-void USER_MANAGER_EXPORT RemovePref(const AccountId& account_id,
-                                    const std::string& path);
-
 // Returns the list of known AccountIds.
 // TODO(https://crbug.com/1150434): Deprecated, use
 // KnownUser::GetKnownAccountIds instead.
@@ -330,21 +306,6 @@ std::vector<AccountId> USER_MANAGER_EXPORT GetKnownAccountIds();
 AccountId USER_MANAGER_EXPORT GetAccountId(const std::string& user_email,
                                            const std::string& id,
                                            const AccountType& account_type);
-
-// Updates |account_id.account_type_| and |account_id.GetGaiaId()| or
-// |account_id.GetObjGuid()| for user with |account_id|.
-// TODO(https://crbug.com/1150434): Deprecated, use KnownUser::UpdateId instead.
-void USER_MANAGER_EXPORT UpdateId(const AccountId& account_id);
-
-// Setter and getter for DeviceId known user string preference.
-// TODO(https://crbug.com/1150434): Deprecated, use KnownUser::SetDeviceId
-// instead.
-void USER_MANAGER_EXPORT SetDeviceId(const AccountId& account_id,
-                                     const std::string& device_id);
-
-// TODO(https://crbug.com/1150434): Deprecated, use KnownUser::GetDeviceId
-// instead.
-std::string USER_MANAGER_EXPORT GetDeviceId(const AccountId& account_id);
 
 }  // namespace known_user
 }  // namespace user_manager

@@ -12,7 +12,9 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/observer_list.h"
 #include "base/trace_event/trace_event.h"
+#include "components/page_load_metrics/browser/metrics_lifecycle_observer.h"
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
 #include "components/page_load_metrics/browser/page_load_metrics_memory_tracker.h"
 #include "components/page_load_metrics/browser/page_load_metrics_update_dispatcher.h"
@@ -35,6 +37,7 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_errors.h"
+#include "net/http/http_response_headers.h"
 #include "services/network/public/mojom/fetch_api.mojom-shared.h"
 #include "third_party/blink/public/common/loader/resource_type_util.h"
 #include "third_party/blink/public/common/mobile_metrics/mobile_friendliness.h"
@@ -139,7 +142,7 @@ void MetricsWebContentsObserver::WebContentsDestroyed() {
 
   // Do this before clearing committed_load_, so that the observers don't hit
   // the DCHECK in MetricsWebContentsObserver::GetDelegateForCommittedLoad.
-  for (auto& observer : testing_observers_)
+  for (auto& observer : lifecycle_observers_)
     observer.OnGoingAway();
 
   // We tear down PageLoadTrackers in WebContentsDestroyed, rather than in the
@@ -285,7 +288,7 @@ void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
           !has_navigated_, navigation_handle, user_initiated_info)));
   DCHECK(insertion_result.second)
       << "provisional_loads_ already contains NavigationHandle.";
-  for (auto& observer : testing_observers_)
+  for (auto& observer : lifecycle_observers_)
     observer.OnTrackerCreated(insertion_result.first->second.get());
 }
 
@@ -623,7 +626,7 @@ void MetricsWebContentsObserver::HandleCommittedNavigationForTrackedLoad(
   raw_tracker->Commit(navigation_handle);
   DCHECK(raw_tracker->did_commit());
 
-  for (auto& observer : testing_observers_)
+  for (auto& observer : lifecycle_observers_)
     observer.OnCommit(raw_tracker);
 
   auto* render_frame_host = navigation_handle->GetRenderFrameHost();
@@ -709,7 +712,7 @@ bool MetricsWebContentsObserver::MaybeActivatePageLoadTracker(
   } else if (navigation_handle->IsPrerenderedPageActivation()) {
     committed_load_->DidActivatePrerenderedPage(navigation_handle);
   }
-  for (auto& observer : testing_observers_)
+  for (auto& observer : lifecycle_observers_)
     observer.OnActivate(committed_load_.get());
 
   return true;
@@ -914,7 +917,6 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     const std::vector<mojom::ResourceDataUpdatePtr>& resources,
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing,
-    mojom::DeferredResourceCountsPtr new_deferred_resource_data,
     mojom::InputTimingPtr input_timing_delta,
     const absl::optional<blink::MobileFriendliness>& mobile_friendliness) {
   PageLoadTracker* tracker = GetPageLoadTracker(render_frame_host);
@@ -938,8 +940,8 @@ void MetricsWebContentsObserver::OnTimingUpdated(
     tracker->metrics_update_dispatcher()->UpdateMetrics(
         render_frame_host, std::move(timing), std::move(metadata),
         std::move(new_features), resources, std::move(render_data),
-        std::move(cpu_timing), std::move(new_deferred_resource_data),
-        std::move(input_timing_delta), std::move(mobile_friendliness));
+        std::move(cpu_timing), std::move(input_timing_delta),
+        std::move(mobile_friendliness));
   }
 }
 
@@ -967,15 +969,13 @@ void MetricsWebContentsObserver::UpdateTiming(
     std::vector<mojom::ResourceDataUpdatePtr> resources,
     mojom::FrameRenderDataUpdatePtr render_data,
     mojom::CpuTimingPtr cpu_timing,
-    mojom::DeferredResourceCountsPtr new_deferred_resource_data,
     mojom::InputTimingPtr input_timing_delta,
     const absl::optional<blink::MobileFriendliness>& mobile_friendliness) {
   content::RenderFrameHost* render_frame_host =
       page_load_metrics_receivers_.GetCurrentTargetFrame();
   OnTimingUpdated(render_frame_host, std::move(timing), std::move(metadata),
                   new_features, resources, std::move(render_data),
-                  std::move(cpu_timing), std::move(new_deferred_resource_data),
-                  std::move(input_timing_delta),
+                  std::move(cpu_timing), std::move(input_timing_delta),
                   std::move(mobile_friendliness));
 }
 
@@ -1046,37 +1046,15 @@ void MetricsWebContentsObserver::OnBrowserFeatureUsage(
   }
 }
 
-void MetricsWebContentsObserver::AddTestingObserver(TestingObserver* observer) {
-  if (!testing_observers_.HasObserver(observer))
-    testing_observers_.AddObserver(observer);
+void MetricsWebContentsObserver::AddLifecycleObserver(
+    MetricsLifecycleObserver* observer) {
+  if (!lifecycle_observers_.HasObserver(observer))
+    lifecycle_observers_.AddObserver(observer);
 }
 
-void MetricsWebContentsObserver::RemoveTestingObserver(
-    TestingObserver* observer) {
-  testing_observers_.RemoveObserver(observer);
-}
-
-MetricsWebContentsObserver::TestingObserver::TestingObserver(
-    content::WebContents* web_contents)
-    : observer_(page_load_metrics::MetricsWebContentsObserver::FromWebContents(
-          web_contents)) {
-  observer_->AddTestingObserver(this);
-}
-
-MetricsWebContentsObserver::TestingObserver::~TestingObserver() {
-  if (observer_) {
-    observer_->RemoveTestingObserver(this);
-    observer_ = nullptr;
-  }
-}
-
-void MetricsWebContentsObserver::TestingObserver::OnGoingAway() {
-  observer_ = nullptr;
-}
-
-const PageLoadMetricsObserverDelegate*
-MetricsWebContentsObserver::TestingObserver::GetDelegateForCommittedLoad() {
-  return observer_ ? &observer_->GetDelegateForCommittedLoad() : nullptr;
+void MetricsWebContentsObserver::RemoveLifecycleObserver(
+    MetricsLifecycleObserver* observer) {
+  lifecycle_observers_.RemoveObserver(observer);
 }
 
 void MetricsWebContentsObserver::OnPrefetchLikely() {

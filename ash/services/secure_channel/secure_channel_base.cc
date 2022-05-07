@@ -4,9 +4,7 @@
 
 #include "ash/services/secure_channel/secure_channel_base.h"
 
-namespace chromeos {
-
-namespace secure_channel {
+namespace ash::secure_channel {
 
 SecureChannelBase::SecureChannelBase() = default;
 
@@ -17,6 +15,4 @@ void SecureChannelBase::BindReceiver(
   receivers_.Add(this, std::move(receiver));
 }
 
-}  // namespace secure_channel
-
-}  // namespace chromeos
+}  // namespace ash::secure_channel

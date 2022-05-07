@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/core/dom/whitespace_attacher.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_types_util.h"
+#include "third_party/blink/renderer/platform/heap/collection_support/heap_hash_map.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
 #include "third_party/blink/renderer/platform/region_capture_crop_id.h"
 #include "third_party/blink/renderer/platform/text/text_direction.h"
@@ -299,7 +300,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   //   https://dom.spec.whatwg.org/#concept-element-attributes-get-by-name
   AtomicString LowercaseIfNecessary(AtomicString) const;
   WTF::AtomicStringTable::WeakResult WeakLowercaseIfNecessary(
-      const StringView&) const;
+      const AtomicString&) const;
 
   // NoncedElement implementation: this is only used by HTMLElement and
   // SVGElement, but putting the implementation here allows us to use
@@ -1042,8 +1043,20 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   bool AffectedByNonSubjectHas() const;
   void SetAffectedByNonSubjectHas();
-  bool AncestorsAffectedByHas() const;
-  void SetAncestorsAffectedByHas();
+  bool AncestorsOrAncestorSiblingsAffectedByHas() const;
+  void SetAncestorsOrAncestorSiblingsAffectedByHas();
+  bool SiblingsAffectedByHas() const;
+  void SetSiblingsAffectedByHas();
+  bool AffectedByPseudoInHas() const;
+  void SetAffectedByPseudoInHas();
+  bool AncestorsOrSiblingsAffectedByHoverInHas() const;
+  void SetAncestorsOrSiblingsAffectedByHoverInHas();
+  bool AncestorsOrSiblingsAffectedByActiveInHas() const;
+  void SetAncestorsOrSiblingsAffectedByActiveInHas();
+  bool AncestorsOrSiblingsAffectedByFocusInHas() const;
+  void SetAncestorsOrSiblingsAffectedByFocusInHas();
+  bool AncestorsOrSiblingsAffectedByFocusVisibleInHas() const;
+  void SetAncestorsOrSiblingsAffectedByFocusVisibleInHas();
 
   void SaveIntrinsicSize(ResizeObserverSize* size);
   const ResizeObserverSize* LastIntrinsicSize() const;

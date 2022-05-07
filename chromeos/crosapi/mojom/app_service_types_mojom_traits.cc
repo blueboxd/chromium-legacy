@@ -274,6 +274,8 @@ EnumTraits<crosapi::mojom::AppType, apps::AppType>::ToMojom(
       return crosapi::mojom::AppType::kSystemWeb;
     case apps::AppType::kStandaloneBrowserChromeApp:
       return crosapi::mojom::AppType::kStandaloneBrowserChromeApp;
+    case apps::AppType::kStandaloneBrowserExtension:
+      return crosapi::mojom::AppType::kStandaloneBrowserExtension;
     case apps::AppType::kBuiltIn:
     case apps::AppType::kCrostini:
     case apps::AppType::kChromeApp:
@@ -306,6 +308,9 @@ bool EnumTraits<crosapi::mojom::AppType, apps::AppType>::FromMojom(
       return true;
     case crosapi::mojom::AppType::kStandaloneBrowserChromeApp:
       *output = apps::AppType::kStandaloneBrowserChromeApp;
+      return true;
+    case crosapi::mojom::AppType::kStandaloneBrowserExtension:
+      *output = apps::AppType::kStandaloneBrowserExtension;
       return true;
   }
 
@@ -598,6 +603,8 @@ EnumTraits<crosapi::mojom::PatternMatchType, apps::PatternMatchType>::ToMojom(
       return crosapi::mojom::PatternMatchType::kFileExtension;
     case apps::PatternMatchType::kIsDirectory:
       return crosapi::mojom::PatternMatchType::kIsDirectory;
+    case apps::PatternMatchType::kSuffix:
+      return crosapi::mojom::PatternMatchType::kSuffix;
   }
 
   NOTREACHED();
@@ -627,6 +634,9 @@ bool EnumTraits<crosapi::mojom::PatternMatchType, apps::PatternMatchType>::
       return true;
     case crosapi::mojom::PatternMatchType::kIsDirectory:
       *output = apps::PatternMatchType::kIsDirectory;
+      return true;
+    case crosapi::mojom::PatternMatchType::kSuffix:
+      *output = apps::PatternMatchType::kSuffix;
       return true;
   }
 

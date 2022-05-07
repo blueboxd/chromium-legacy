@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+import {assert} from '../../assert.js';
 import {
   Facing,
   PreviewVideo,
@@ -19,6 +20,7 @@ import {
 
 /**
  * Crops out maximum possible centered square from the image blob.
+ *
  * @return Promise with result cropped square image.
  */
 async function cropSquare(blob: Blob): Promise<Blob> {
@@ -73,7 +75,7 @@ export class Square extends Photo {
   constructor(
       video: PreviewVideo,
       facing: Facing,
-      captureResolution: Resolution,
+      captureResolution: Resolution|null,
       handler: PhotoHandler,
   ) {
     super(video, facing, captureResolution, new SquarePhotoHandler(handler));
@@ -84,7 +86,9 @@ export class Square extends Photo {
  * Factory for creating square mode capture object.
  */
 export class SquareFactory extends PhotoFactory {
-  produce(): ModeBase {
+  override produce(): ModeBase {
+    assert(this.previewVideo !== null);
+    assert(this.facing !== null);
     return new Square(
         this.previewVideo, this.facing, this.captureResolution, this.handler);
   }

@@ -6,18 +6,13 @@
  * @fileoverview ChromeVox pointer handler. A pointer, in this context, is
  * either user touch or mouse input.
  */
-
-goog.provide('PointerHandler');
-
-goog.require('constants');
-goog.require('AutomationTreeWalker');
-goog.require('BaseAutomationHandler');
+import {DesktopAutomationInterface} from './desktop_automation_interface.js';
 
 const AutomationEvent = chrome.automation.AutomationEvent;
 const EventType = chrome.automation.EventType;
 const RoleType = chrome.automation.RoleType;
 
-PointerHandler = class extends BaseAutomationHandler {
+export class PointerHandler extends BaseAutomationHandler {
   constructor() {
     super(null);
 
@@ -193,11 +188,12 @@ PointerHandler = class extends BaseAutomationHandler {
     }
 
     Output.forceModeForNextSpeechUtterance(QueueMode.FLUSH);
-    DesktopAutomationHandler.instance.onEventDefault(new CustomAutomationEvent(
-        EventType.HOVER, target,
-        {eventFromAction: chrome.automation.ActionType.HIT_TEST}));
+    DesktopAutomationInterface.instance.onEventDefault(
+        new CustomAutomationEvent(
+            EventType.HOVER, target,
+            {eventFromAction: chrome.automation.ActionType.HIT_TEST}));
   }
-};
+}
 
 /** @const {number} */
 PointerHandler.MIN_NO_POINTER_ANCHOR_SOUND_DELAY_MS = 500;

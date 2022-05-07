@@ -785,6 +785,17 @@ Web e PWAs. No momento, com suporte apenas no
 
       Consulte a política <ph name="PINNED_LAUNCHER_APPS_POLICY_NAME" /> para fixar apps na estante do <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="186719019195685253">Ação a ser executada quando o tempo de inatividade for atingido durante operação com alimentação CA</translation>
+<translation id="1869688072690234823">Se a política for definida, ela vai controlar quais fatores de WebAuthn podem ser usados.
+
+      Para permitir:
+
+      * todos os fatores de WebAuthn, use ["all"], que inclui os fatores que ainda serão adicionados;
+
+      * apenas o PIN, use ["PIN"];
+
+      * o desbloqueio com PIN e impressão digital, use ["PIN", "FINGERPRINT"].
+
+      Se a política for definida como uma lista vazia ou for deixada sem definição, nenhum fator de WebAuthn vai ficar disponível para dispositivos gerenciados.</translation>
 <translation id="1881649377321404593">
       Esta política foi removida na versão M80 porque não é mais necessária já que o
       WebDriver agora é compatível com todas as políticas existentes.
@@ -1205,13 +1216,6 @@ Web e PWAs. No momento, com suporte apenas no
 
           Esta política não terá efeito se for definida como "Ativada", deixada vazia ou sem definição.</translation>
 <translation id="229322770310505679">Ativar o conceito de grupos atômicos de política</translation>
-<translation id="2293378264822766451">Se a política for ativada, políticas associadas a uma conta do <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME" /> poderão ter precedência se estiverem em conflito com políticas do <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />.
-
-      Apenas políticas originárias de usuários seguros podem ser mescladas. Um usuário seguro é afiliado à organização que gerencia o navegador com o <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />. Todas as outras políticas do usuário terão precedência por padrão.
-
-      A política pode ser combinada com <ph name="POLICY_CLOUDPOLICYOVERRIDESPLATFORMPOLICY" />. Se ambas as políticas forem ativadas, as políticas da nuvem de usuários também poderão ter precedência sobre as políticas em conflito da plataforma.
-
-      Se a política for desativada ou deixada sem definição, as políticas da nuvem de usuários terão prioridade por padrão.</translation>
 <translation id="22941467117331786">Se a política for definida como verdadeira, um botão grande e vermelho para sair da conta será exibido na bandeja do sistema em sessões ativas em que a tela não esteja bloqueada.
 
       Se ela for definida como falsa ou não for definida, nenhum botão será exibido.</translation>
@@ -1552,6 +1556,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="2664391398878045611">A página "Nova guia" não vai mostrar o aviso abaixo da caixa de pesquisa, mesmo se ele estiver disponível</translation>
 <translation id="2664682171745499686">Suprimir alertas de domínios parecidos em domínios</translation>
 <translation id="2665422249821137126">Ativar o cursor grande na tela de login</translation>
+<translation id="2667894101494585925">Ativar a busca do guia de otimização</translation>
 <translation id="2672012807430078509">Controles que ativam o NTLM como protocolo de autenticação para ativações de PMEs</translation>
 <translation id="2678503605767349615">Certificados do cliente em todo o dispositivo obrigatórios</translation>
 <translation id="268577405881275241">Ativar o recurso de proxy de compactação de dados</translation>
@@ -1981,6 +1986,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
       Este recurso depende da ativação do tipo de dado <ph name="WIFI_CONFIGURATIONS_DATATYPE_NAME" /> na <ph name="CHROME_SYNC_NAME" />. Se o tipo de dado <ph name="WIFI_CONFIGURATIONS_DATATYPE_NAME" /> estiver desativado na política <ph name="SYNC_TYPES_LIST_DISABLED_POLICY_NAME" /> ou se a <ph name="CHROME_SYNC_NAME" /> estiver desativada na política <ph name="SYNC_DISABLED_POLICY_NAME" />, este recurso não será ativado.
 
       Se esta política for deixada sem definição, o comportamento padrão será não permitir a sincronização para usuários gerenciados.</translation>
+<translation id="3138514192363246220">Desativar a busca de metadados para carregamento de página e dos modelos de aprendizado de máquina que melhoram a experiência de navegação</translation>
 <translation id="3142410959002029864">A definição da política substitui o modo duplex de impressão padrão. Se o modo não estiver disponível, a política será ignorada.</translation>
 <translation id="3144173889708944482">Se <ph name="PRINTERS_BLOCKLIST" /> for escolhida para <ph name="DEVICE_PRINTERS_ACCESS_MODE_POLICY_NAME" />, a definição de <ph name="DEVICE_PRINTERS_BLOCKLIST_POLICY_NAME" /> especificará quais impressoras os usuários não podem usar. Todas as impressoras estão disponíveis para os usuários, com exceção dos IDs listados nesta política. Os IDs precisam corresponder aos campos <ph name="ID_FIELD" /> ou <ph name="GUID_FIELD" /> no arquivo especificado na <ph name="DEVICE_PRINTERS_POLICY_NAME" />.</translation>
 <translation id="3146711617256415776">Proibir as vozes aprimoradas da conversão de texto em voz da rede ao usar o Selecionar para ouvir</translation>
@@ -2036,6 +2042,17 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
       Se a política for desativada, esses softwares poderão injetar os códigos executáveis nos processos do <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3182503302060513467">A página "Nova guia" vai mostrar o anúncio do slot do meio, se ele estiver disponível</translation>
 <translation id="3184161739683646075">Controla o modo de DNS sobre HTTPS</translation>
+<translation id="3184638144755436350">O Chrome vai bloquear a navegação para protocolos externos no
+      iframe dentro do sandbox. Consulte https://chromestatus.com/features/5680742077038592.
+
+      Se esta política for definida como verdadeira, o Chrome vai bloquear esse tipo de navegação.
+
+      Se ela for definida como falsa, o Chrome não vai bloquear esse tipo de navegação.
+
+      Por padrão, a política é definida como verdadeira, com o recurso de segurança ativado.
+
+      Ela pode ser usada por administradores que precisam de mais tempo para atualizar os sites internos afetados pela nova restrição. A política corporativa é temporária e será removida após a versão 117 do <ph name="PRODUCT_NAME" />.
+      </translation>
 <translation id="3185009703220253572">desde a versão <ph name="SINCE_VERSION" /></translation>
 <translation id="3185895671618336039">Define as configurações para o ciclo de vida dos dados de navegação do <ph name="PRODUCT_NAME" />. Esta política permite que os administradores configurem (para cada tipo de dado) quando os dados serão excluídos pelo navegador. Isso é útil para clientes que trabalham com dados sensíveis de consumidores. A política só entrará em vigor se a <ph name="SYNC_DISABLED_POLICY_NAME" /> for definida como verdadeira.
 
@@ -2083,6 +2100,8 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
 <translation id="3219421230122020860">Modo de navegação anônima disponível</translation>
 <translation id="3220624000494482595">Se o aplicativo de quiosque for um app Android, ele não terá nenhum controle sobre a versão do <ph name="PRODUCT_OS_NAME" />, mesmo se esta política estiver definida como <ph name="TRUE" />.</translation>
 <translation id="322359555555487980">Determina a disponibilidade de variações no <ph name="PRODUCT_OS_NAME" /></translation>
+<translation id="3229163415739929305">Se a política for ativada ou deixada sem definição, a busca de metadados para carregamento de página e dos modelos de aprendizado de máquina que melhoram a experiência de navegação serão ativados.
+      Se a política for desativada, é possível que alguns recursos não funcionem corretamente.</translation>
 <translation id="3231837273069128027">A definição da política configura a disponibilidade e o comportamento das atualizações de firmware para <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Especifique configurações individuais nas propriedades JSON:
@@ -2397,6 +2416,7 @@ Se esta política não for definida, a tela de privacidade ficará desativada in
           Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
 
           Se esta política não for definida, o "Selecionar para ouvir" será desativado inicialmente, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
+<translation id="3587482841069643663">Tudo</translation>
 <translation id="3589193811812796052">Impedir módulos WebAssembly de serem enviados em origem cruzada</translation>
 <translation id="3591527072193107424">Ativa o recurso "Suporte a navegadores legados".</translation>
 <translation id="3591584750136265240">Configura o comportamento de autenticação de login</translation>
@@ -2952,18 +2972,12 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
       A partir da versão 92 do <ph name="PRODUCT_NAME" />, esta política também será compatível com o modo headless.
 
       No <ph name="MS_WIN_NAME" />, essa funcionalidade está disponível apenas em instâncias associadas a um domínio do <ph name="MS_AD_NAME" />, executadas no Windows 10 Pro ou registradas no <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />. No <ph name="MAC_OS_NAME" />, essa funcionalidade está disponível apenas em instâncias gerenciadas por MDM ou associadas a um domínio via MCX.</translation>
-<translation id="4268014245533736105">O Chrome vai bloquear a navegação para protocolos externos no
-      iframe dentro do sandbox. Consulte https://chromestatus.com/features/5680742077038592.
-
-      Se esta política for definida como verdadeira, o Chrome vai bloquear esse tipo de navegação.
-
-      Se ela for definida como falsa, o Chrome não vai bloquear esse tipo de navegação.
-
-      Por padrão, a política é definida como verdadeira, com o recurso de segurança ativado.
-
-      Ela pode ser usada por administradores que precisam de mais tempo para atualizar os sites internos afetados pela nova restrição. A política corporativa é temporária e será removida após a versão 104 do <ph name="PRODUCT_NAME" />.
-      </translation>
 <translation id="4268586991084547853">Mais compatível com as listas de sites do modo empresarial do Microsoft IE/Edge.</translation>
+<translation id="4269798992490176617">Se esta política for ativada, a <ph name="CHROME_REMOTE_DESKTOP_PRODUCT_NAME" /> poderá executar solicitações de API do WebAuthn originadas de uma sessão de navegação em um host remoto.
+
+      Se a política for desativada ou deixada sem definição, o comportamento padrão será aplicado.
+
+      Observe que somente o ambiente da rede interna do Google tem suporte a esse recurso.</translation>
 <translation id="4269859918103560644">Permitir que o usuário decida</translation>
 <translation id="4274691295133617461">Se a política for definida como "3", os sites poderão pedir acesso de leitura de arquivos e diretórios no sistema de arquivos do sistema operacional do host com a API File System. Se for definida como "2", o acesso será negado.
 
@@ -4028,6 +4042,7 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
 <translation id="5586942249556966598">Não fazer nada</translation>
 <translation id="5598417829613725146">Canvas (compatível desde a versão 90)</translation>
 <translation id="5599461642204007579">Configurações de gerenciamento do <ph name="MS_AD_NAME" /></translation>
+<translation id="5601503069213153581">PIN</translation>
 <translation id="5614865701790130558">Registros de eventos para instalações de extensão com base em políticas</translation>
 <translation id="5618398258385745432">A configuração associada foi usada antes de a reautenticação na visualização de senhas ter sido introduzida. Desde então, a configuração e, consequentemente, esta política não têm efeito no comportamento do Chrome. O comportamento atual do Chrome agora é o mesmo que seria se a política tivesse sido definida para desativar a visualização de senhas em texto não criptografado na página de configurações do gerenciador de senhas. Isso quer dizer que a página de configurações contém apenas um marcador, e o Chrome só mostrará a senha depois que o usuário clicar em "Mostrar" (e reautenticar, se aplicável). A descrição original da política é a mostrada a seguir.
 
@@ -4356,6 +4371,7 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
        Valores válidos: • 0 = Desativada • 1 = Ativada • 2 =Lupa em área fixa ativada
 
           Observação: se <ph name="DEVICE_LOGIN_SCREEN_SCREEN_MAGNIFIER_TYPE_POLICY_NAME" /> for especificada, ela substituirá esta política.</translation>
+<translation id="6011193465932186973">Impressão digital</translation>
 <translation id="6011969832398368671">Permitir que sites peçam ao usuário para conceder acesso de gravação de arquivos e diretórios</translation>
 <translation id="6012952794649558174">Usar comportamento do navegador padrão.</translation>
 <translation id="6015281292796053435">Esta política controla a permissão de fornecimento de informações do "Navegação segura", incluindo o número de avisos e de cliques no aviso.
@@ -4731,6 +4747,12 @@ Se esta política for definida como "Falsa", o <ph name="PRODUCT_NAME" /> não u
       Se esta política for definida como desativada ou não for definida, o menu de acessibilidade flutuante nunca será exibido.</translation>
 <translation id="6424485010103067949"><ph name="OMA_URI" />:</translation>
 <translation id="6424486395812679373">Realizar as verificações do "Navegação segura" em todos os arquivos transferidos por download</translation>
+<translation id="6435570845618943258">Quando esta configuração estiver ativada, o <ph name="PRODUCT_NAME" /> vai verificar os certificados do servidor usando o verificador integrado de certificados.
+      Quando ela estiver desativada, o <ph name="PRODUCT_NAME" /> vai verificar os certificados do servidor usando o verificador legado disponibilizado pela plataforma.
+      Quando a configuração não for definida, tanto o verificador de certificados integrado quanto o legado poderão ser usados.
+
+      Esta política será removida no <ph name="PRODUCT_NAME" /> para <ph name="MAC_OS_NAME" /> versão 107, quando o suporte para o verificador de certificados legado no <ph name="MAC_OS_NAME" /> também será removido.
+      </translation>
 <translation id="6436052172226685535">Comportamento padrão para LBS.</translation>
 <translation id="6438364096042399634">Se a política for definida, será configurada uma lista de dispositivos USB que o usuário pode remover do driver de kernel dele para uso pela API chrome.usb diretamente dentro de um app da Web. As entradas são pares de um identificador de fornecedor e um identificador de produto USB para reconhecer um hardware específico.
 
@@ -5368,6 +5390,7 @@ Se esta configuração estiver desativada ou se nenhum valor for definido, o Mod
 <translation id="7063895219334505671">Permitir pop-ups nestes sites</translation>
 <translation id="7066292150801784098">Desativar a interação de usuários remotos com janelas elevadas em sessões de assistência remota</translation>
 <translation id="706669471845501145">Permitir que os sites exibam notificações da área de trabalho</translation>
+<translation id="70681795425744184">Não permitir que a Área de trabalho remota do Google Chrome execute solicitações de API do WebAuthn transmitidas por proxy de um host remoto.</translation>
 <translation id="7070525176564511548">A senha precisa ser digitada uma vez por semana (a cada 168 horas).</translation>
 <translation id="7072208053150563108">Taxa de alteração da senha da máquina</translation>
 <translation id="7072567600438630966">Permitir a ativação do recurso "Seu smartphone".</translation>
@@ -5655,6 +5678,7 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
 <translation id="7407441173422042771">Esta política controla a previsão de rede no <ph name="PRODUCT_NAME" />. Ela controla a pré-busca de DNS, a pré-conexão SSL e TCP e a pré-renderização das páginas da Web.
 
       Se você definir a política, os usuários não poderão mudá-la. Se ela não for definida, a previsão de rede será ativada, mas os usuários poderão mudar a configuração.</translation>
+<translation id="7410074797376205571">Permitir que a <ph name="CHROME_REMOTE_DESKTOP_PRODUCT_NAME" /> execute solicitações de API do WebAuthn transmitidas por proxy de um host remoto.</translation>
 <translation id="7412456346709338637">Ativar acesso a dados de periféricos Thunderbolt/USB4</translation>
 <translation id="7417438464912687020">Permitir conexões de acesso remoto a esta máquina</translation>
 <translation id="7417972229667085380">Percentual pelo qual calcular o intervalo de inatividade no modo de apresentação (uso suspenso)</translation>
@@ -5743,6 +5767,7 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Os campos <ph name="ENTERPRISE_CONNECTOR_CUSTOM_MESSAGES_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_MESSAGE_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_LEARN_MORE_URL_FIELD" />, <ph name="ENTERPRISE_CONNECTOR_LANGUAGE_FIELD" /> e <ph name="ENTERPRISE_CONNECTOR_TAG_FIELD" /> são usados para configurar uma mensagem que informa ao usuário quando um aviso é mostrado após uma verificação apresentar um veredito não limpo. O campo "message" contém o texto que é mostrado ao usuário e pode ter no máximo 200 caracteres. O campo "learn_more_url" contém um URL fornecido pelo administrador em que o usuário pode clicar para receber mais informações fornecidas pelo cliente sobre o motivo de a ação ter sido bloqueada. O campo "language" é opcional e contém o idioma da mensagem. Deixar esse campo vazio ou com um valor "default" (padrão) indica uma mensagem que será usada quando o idioma do usuário não tiver mensagens. O campo "tag" especifica para quais tipos de verificação a mensagem é mostrada. A lista "custom_messages" pode ter zero ou mais entradas e cada uma delas precisa ter campos "message" e "tag" não vazios.
 
       Configurações extras são necessárias para que essa política seja aplicada. Acesse https://support.google.com/chrome/a?p=chrome_enterprise_connector_policies_setting para mais informações.</translation>
+<translation id="7482768039644066614">Ativar a busca de metadados para carregamento de página e dos modelos de aprendizado de máquina para melhorar a experiência de navegação</translation>
 <translation id="7485481791539008776">Regras de seleção de impressora padrão</translation>
 <translation id="7486205887492534734">Pedir quando houver várias correspondências de certificado na tela de login</translation>
 <translation id="7491720878670299691">Frequência da pesquisa por dados de rede e da verificação de eventos. O mínimo permitido é de um minuto.
@@ -5903,6 +5928,13 @@ Essas políticas são ignoradas se a Área de trabalho remota do Google Chrome n
       Se ela for definida como falsa ou for deixada sem definição, os relatórios serão desativados.
       Em ambos os casos, as regras definidas com o nível de restrições ALLOW na DataLeakPreventionRulesList não criarão relatórios de eventos.</translation>
 <translation id="7648907905084499629">Use o comportamento <ph name="FEATURE_NAME_SAMESITE_BY_DEFAULT_COOKIES" /> para cookies em todos os sites</translation>
+<translation id="765347139142030086">Se a política for ativada, políticas associadas a uma conta do <ph name="GOOGLE_WORKSPACE_PRODUCT_NAME" /> poderão ter precedência se entrarem em conflito com políticas do <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />.
+
+      Apenas políticas originárias de usuários seguros podem ter precedência. Um usuário seguro é afiliado à organização que gerencia o navegador com o <ph name="CHROME_BROWSER_CLOUD_MANAGEMENT_NAME" />. Todas as outras políticas do usuário terão precedência por padrão.
+
+      A política pode ser combinada com a <ph name="POLICY_CLOUDPOLICYOVERRIDESPLATFORMPOLICY" />. Se as duas forem ativadas, as políticas de nuvem do usuário também poderão ter precedência sobre as políticas em conflito da plataforma.
+
+      Se a política for desativada ou deixada sem definição, as políticas de nuvem do usuário terão prioridade por padrão.</translation>
 <translation id="7657261947024629645">Otimiza o desempenho.</translation>
 <translation id="7666228839913571182">Permitir cookies de terceiros</translation>
 <translation id="7668830462800981702">Se a política for definida como "Ativada", uma pesquisa padrão será realizada quando o usuário digitar um texto na barra de endereço que não seja um URL. Para especificar o provedor de pesquisa padrão, configure o restante das políticas de pesquisa padrão. Se essas políticas forem deixadas em branco, o usuário poderá escolher o provedor padrão. Se a política for definida como "Desativada", nenhuma pesquisa será realizada quando o usuário digitar um texto na barra de endereço que não seja um URL.
@@ -6583,6 +6615,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
        Se ela for definida como "Disabled", as caixas de diálogo de JavaScript acionadas por um subframe de origem diferente não serão bloqueadas.
 
        Esta política será removida na versão 95 do <ph name="PRODUCT_NAME" />.</translation>
+<translation id="8427466947904008809">Permitir que a Área de trabalho remota do Google Chrome execute solicitações de API do WebAuthn transmitidas por proxy de um host remoto.</translation>
 <translation id="8433186206711564395">Configurações de rede</translation>
 <translation id="8433769814000220721">Permitir conteúdo sugerido</translation>
 <translation id="843609873781525167">Se a política for definida como verdadeira, o <ph name="PRODUCT_NAME" /> precisará sempre verificar se é o navegador padrão na inicialização e, se possível, registrar-se automaticamente. Se a política for definida como falsa, o<ph name="PRODUCT_NAME" /> deixará de verificar se ele é o navegador padrão e os controles do usuário para essa opção serão desativados.
@@ -6766,6 +6799,7 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
       Defini-la como "Desativada" desativa NTLMv2.
 
       Todas as versões recentes dos servidores Samba e <ph name="MS_WIN_NAME" /> são compatíveis com NTLMv2. Como a desativação diminui a segurança da autenticação, só a realize se precisar de compatibilidade com versões anteriores.</translation>
+<translation id="8605627672203601098">Configurar os fatores de WebAuthn permitidos</translation>
 <translation id="8606263947930257189">Controla se o <ph name="PRODUCT_NAME" /> pode congelar as guias que estão em segundo plano há pelo menos 5 minutos.
 
       Se a política for definida como verdadeira, as guias que estiverem em segundo plano há pelo menos 5 minutos poderão ser congeladas. O congelamento de guias reduz o uso de CPU, bateria e memória. O <ph name="PRODUCT_NAME" /> usa a heurística para evitar o congelamento de guias que fazem um bom trabalho em segundo plano (por exemplo, exibir notificações, reproduzir som, fazer streaming de vídeo). Os desenvolvedores da Web também podem desativar o congelamento nos respectivos sites (https://chromium.googlesource.com/chromium/src/+/HEAD/chrome/browser/performance_manager/docs/freezing_opt_out_opt_in.md).

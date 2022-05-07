@@ -4,7 +4,8 @@
 
 import {fakeHelpContentList, fakeSearchRequest, fakeSearchResponse} from 'chrome://os-feedback/fake_data.js';
 import {FakeHelpContentProvider} from 'chrome://os-feedback/fake_help_content_provider.js';
-import {HelpContentList, mojoString16ToString, SearchResponse} from 'chrome://os-feedback/feedback_types.js';
+import {HelpContentList, SearchResponse} from 'chrome://os-feedback/feedback_types.js';
+import {mojoString16ToString} from 'chrome://resources/ash/common/mojo_utils.js';
 
 import {assertDeepEquals, assertEquals} from '../../chai_assert.js';
 
@@ -25,21 +26,21 @@ export function fakeHelpContentProviderTestSuite() {
    * Test that the fake help content provider returns the non-empty list which
    * was set explicitly.
    */
-  test('getHelpContents', () => {
+  test('getHelpContents', async () => {
     provider.setFakeSearchResponse(fakeSearchResponse);
 
-    return provider.getHelpContents(fakeSearchRequest).then((response) => {
-      assertDeepEquals(fakeHelpContentList, response.response.results);
-      assertEquals(
-          fakeSearchResponse.totalResults, response.response.totalResults);
-    });
+    const response = await provider.getHelpContents(fakeSearchRequest);
+
+    assertDeepEquals(fakeHelpContentList, response.response.results);
+    assertEquals(
+        fakeSearchResponse.totalResults, response.response.totalResults);
   });
 
   /**
    * Test that the fake help content provider returns the empty list which was
    * set explicitly.
    */
-  test('getHelpContentsEmpty', () => {
+  test('getHelpContentsEmpty', async () => {
     /** @type {!HelpContentList} */
     const expectedList = [];
 
@@ -48,13 +49,13 @@ export function fakeHelpContentProviderTestSuite() {
       results: expectedList,
       totalResults: 0,
     };
-
     provider.setFakeSearchResponse(emptyResponse);
-    return provider.getHelpContents(fakeSearchRequest).then((response) => {
-      assertDeepEquals(expectedList, response.response.results);
-      assertEquals(emptyResponse.totalResults, response.response.totalResults);
-      assertEquals(
-          mojoString16ToString(fakeSearchRequest.query), provider.lastQuery);
-    });
+
+    const response = await provider.getHelpContents(fakeSearchRequest);
+
+    assertDeepEquals(expectedList, response.response.results);
+    assertEquals(emptyResponse.totalResults, response.response.totalResults);
+    assertEquals(
+        mojoString16ToString(fakeSearchRequest.query), provider.lastQuery);
   });
 }

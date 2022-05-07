@@ -11,6 +11,7 @@
 #include "build/build_config.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
 #include "gpu/config/gpu_preferences.h"
+#include "media/base/media_log.h"
 #include "media/base/media_switches.h"
 #include "media/gpu/buildflags.h"
 #include "media/gpu/gpu_video_accelerator_util.h"
@@ -70,9 +71,11 @@ std::unique_ptr<VideoEncodeAccelerator> CreateVTVEA() {
 // Creates a MediaFoundationVEA for Win 7 or later. If |compatible_with_win7| is
 // true, VEA is limited to a subset of features that is compatible with Win 7.
 std::unique_ptr<VideoEncodeAccelerator> CreateMediaFoundationVEA(
-    bool compatible_with_win7) {
+    const gpu::GpuPreferences& gpu_preferences,
+    const gpu::GpuDriverBugWorkarounds& gpu_workarounds) {
   return base::WrapUnique<VideoEncodeAccelerator>(
-      new MediaFoundationVideoEncodeAccelerator(compatible_with_win7));
+      new MediaFoundationVideoEncodeAccelerator(gpu_preferences,
+                                                gpu_workarounds));
 }
 #endif
 
@@ -110,8 +113,7 @@ std::vector<VEAFactoryFunction> GetVEAFactoryFunctions(
 #endif
 #if BUILDFLAG(IS_WIN)
   vea_factory_functions.push_back(base::BindRepeating(
-      &CreateMediaFoundationVEA,
-      gpu_preferences.enable_media_foundation_vea_on_windows7));
+      &CreateMediaFoundationVEA, gpu_preferences, gpu_workarounds));
 #endif
   return vea_factory_functions;
 }
@@ -146,13 +148,14 @@ GpuVideoEncodeAcceleratorFactory::CreateVEA(
     const VideoEncodeAccelerator::Config& config,
     VideoEncodeAccelerator::Client* client,
     const gpu::GpuPreferences& gpu_preferences,
-    const gpu::GpuDriverBugWorkarounds& gpu_workarounds) {
+    const gpu::GpuDriverBugWorkarounds& gpu_workarounds,
+    std::unique_ptr<MediaLog> media_log) {
   for (const auto& create_vea :
        GetVEAFactoryFunctions(gpu_preferences, gpu_workarounds)) {
     std::unique_ptr<VideoEncodeAccelerator> vea = create_vea.Run();
     if (!vea)
       continue;
-    if (!vea->Initialize(config, client)) {
+    if (!vea->Initialize(config, client, media_log->Clone())) {
       DLOG(ERROR) << "VEA initialize failed (" << config.AsHumanReadableString()
                   << ")";
       continue;

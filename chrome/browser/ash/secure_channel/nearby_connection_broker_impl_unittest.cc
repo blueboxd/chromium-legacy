@@ -30,10 +30,6 @@ namespace ash {
 namespace secure_channel {
 namespace {
 
-// TODO(https://crbug.com/1164001): remove after
-// ash/services/secure_channel is moved to namespace ash.
-namespace mojom = ::chromeos::secure_channel::mojom;
-
 using ::location::nearby::connections::mojom::BytesPayload;
 using ::location::nearby::connections::mojom::ConnectionInfo;
 using ::location::nearby::connections::mojom::ConnectionLifecycleListener;
@@ -536,7 +532,7 @@ TEST_F(NearbyConnectionBrokerImplTest, FileTransferUpdateForRegisteredPayload) {
                                  /*bytes_transferred=*/1000));
   file_payload_listener().FlushForTesting();
 
-  EXPECT_EQ(2, file_transfer_updates().size());
+  EXPECT_EQ(2u, file_transfer_updates().size());
   EXPECT_EQ(file_transfer_updates().at(0),
             mojom::FileTransferUpdate::New(
                 payload_id, mojom::FileTransferStatus::kInProgress,
@@ -587,7 +583,7 @@ TEST_F(NearbyConnectionBrokerImplTest, FileTransferUpdateForCompletedPayload) {
                                  /*bytes_transferred=*/200));
   file_payload_listener().FlushForTesting();
 
-  EXPECT_EQ(1, file_transfer_updates().size());
+  EXPECT_EQ(1u, file_transfer_updates().size());
   EXPECT_EQ(file_transfer_updates().at(0),
             mojom::FileTransferUpdate::New(payload_id,
                                            mojom::FileTransferStatus::kFailure,
@@ -643,7 +639,7 @@ TEST_F(NearbyConnectionBrokerImplTest, FileTransferCanceledOnDisconnect) {
   InvokeDisconnectedCallback();
   file_payload_listener().FlushForTesting();
 
-  EXPECT_EQ(2, file_transfer_updates().size());
+  EXPECT_EQ(2u, file_transfer_updates().size());
   EXPECT_EQ(file_transfer_updates().at(0),
             mojom::FileTransferUpdate::New(
                 payload_id, mojom::FileTransferStatus::kInProgress,
@@ -680,7 +676,7 @@ TEST_F(NearbyConnectionBrokerImplTest, FileTransferCanceledOnMojoDisconnect) {
   InvokeDisconnectedCallback();
   file_payload_listener().FlushForTesting();
 
-  EXPECT_EQ(2, file_transfer_updates().size());
+  EXPECT_EQ(2u, file_transfer_updates().size());
   EXPECT_EQ(file_transfer_updates().at(0),
             mojom::FileTransferUpdate::New(
                 payload_id, mojom::FileTransferStatus::kInProgress,

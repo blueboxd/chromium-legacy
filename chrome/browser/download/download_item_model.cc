@@ -11,6 +11,7 @@
 #include "base/i18n/rtl.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/field_trial.h"
+#include "base/observer_list.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/supports_user_data.h"
@@ -141,8 +142,26 @@ DownloadUIModel::DownloadUIModelPtr DownloadItemModel::Wrap(
   return model;
 }
 
+// static
+DownloadUIModel::DownloadUIModelPtr DownloadItemModel::Wrap(
+    download::DownloadItem* download,
+    std::unique_ptr<DownloadUIModel::StatusTextBuilderBase>
+        status_text_builder) {
+  DownloadUIModel::DownloadUIModelPtr model(
+      new DownloadItemModel(download, std::move(status_text_builder)),
+      base::OnTaskRunnerDeleter(base::ThreadTaskRunnerHandle::Get()));
+  return model;
+}
+
 DownloadItemModel::DownloadItemModel(DownloadItem* download)
     : download_(download) {
+  download_->AddObserver(this);
+}
+
+DownloadItemModel::DownloadItemModel(
+    download::DownloadItem* download,
+    std::unique_ptr<DownloadUIModel::StatusTextBuilderBase> status_text_builder)
+    : DownloadUIModel(std::move(status_text_builder)), download_(download) {
   download_->AddObserver(this);
 }
 
@@ -614,7 +633,6 @@ bool DownloadItemModel::IsCommandEnabled(
     case DownloadCommands::CANCEL:
     case DownloadCommands::RESUME:
     case DownloadCommands::COPY_TO_CLIPBOARD:
-    case DownloadCommands::ANNOTATE:
     case DownloadCommands::DISCARD:
     case DownloadCommands::KEEP:
     case DownloadCommands::LEARN_MORE_SCANNING:
@@ -659,7 +677,6 @@ bool DownloadItemModel::IsCommandChecked(
     case DownloadCommands::LEARN_MORE_INTERRUPTED:
     case DownloadCommands::LEARN_MORE_MIXED_CONTENT:
     case DownloadCommands::COPY_TO_CLIPBOARD:
-    case DownloadCommands::ANNOTATE:
     case DownloadCommands::DEEP_SCAN:
     case DownloadCommands::BYPASS_DEEP_SCANNING:
       return false;
@@ -789,7 +806,6 @@ void DownloadItemModel::ExecuteCommand(DownloadCommands* download_commands,
     case DownloadCommands::PAUSE:
     case DownloadCommands::RESUME:
     case DownloadCommands::COPY_TO_CLIPBOARD:
-    case DownloadCommands::ANNOTATE:
       DownloadUIModel::ExecuteCommand(download_commands, command);
       break;
     case DownloadCommands::DEEP_SCAN:

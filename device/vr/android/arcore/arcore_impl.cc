@@ -19,7 +19,6 @@
 #include "device/vr/android/arcore/type_converters.h"
 #include "device/vr/public/mojom/pose.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
-#include "skia/ext/skia_matrix_44.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
@@ -233,7 +232,7 @@ device::mojom::XRReflectionProbePtr GetReflectionProbe(
       &cube_map->negative_y, &cube_map->positive_z, &cube_map->negative_z};
 
   static_assert(
-      base::size(cube_map_faces) == base::size(arcore_cube_map),
+      std::size(cube_map_faces) == std::size(arcore_cube_map),
       "`ArImageCubemap` and `device::mojom::XRCubeMap` are expected to "
       "have the same number of faces (6).");
 
@@ -241,7 +240,7 @@ device::mojom::XRReflectionProbePtr GetReflectionProbe(
                 "`device::mojom::XRCubeMap::kNumComponentsPerPixel` is "
                 "expected to be 4 (RGBA)`, as that's the format ArCore uses.");
 
-  for (size_t i = 0; i < base::size(arcore_cube_map); ++i) {
+  for (size_t i = 0; i < std::size(arcore_cube_map); ++i) {
     auto* arcore_cube_map_face = arcore_cube_map[i];
     if (!arcore_cube_map_face) {
       DVLOG(1) << "`ArLightEstimate_acquireEnvironmentalHdrCubemap` failed to "

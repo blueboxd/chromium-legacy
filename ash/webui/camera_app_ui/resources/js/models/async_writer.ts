@@ -20,7 +20,9 @@ export interface AsyncOps {
  */
 export class AsyncWriter {
   private readonly queue = new AsyncJobQueue();
+
   private closed = false;
+
   constructor(private readonly ops: AsyncOps) {}
 
   /**
@@ -32,6 +34,7 @@ export class AsyncWriter {
 
   /**
    * Writes the blob asynchronously.
+   *
    * @return Resolved when the data is written.
    */
   async write(blob: Blob): Promise<void> {
@@ -41,6 +44,7 @@ export class AsyncWriter {
 
   /**
    * Seeks to the specified |offset|.
+   *
    * @return Resolved when the seek operation is finished.
    */
   async seek(offset: number): Promise<void> {
@@ -53,6 +57,7 @@ export class AsyncWriter {
 
   /**
    * Closes the writer. No more write operations are allowed.
+   *
    * @return Resolved when all write operations are finished.
    */
   async close(): Promise<void> {
@@ -71,22 +76,23 @@ export class AsyncWriter {
   /**
    * Combines multiple writers into one writer such that the blob would be
    * written to each of them.
+   *
    * @return The combined writer.
    */
   static combine(...writers: AsyncWriter[]): AsyncWriter {
-    const write = async (blob: Blob) => {
+    async function write(blob: Blob) {
       await Promise.all(writers.map((writer) => writer.write(blob)));
-    };
+    }
 
     const allSeekable = writers.every((writer) => writer.seekable());
-    const seekAll = async (offset: number) => {
+    async function seekAll(offset: number) {
       await Promise.all(writers.map((writer) => writer.seek(offset)));
-    };
+    }
     const seek = allSeekable ? seekAll : null;
 
-    const close = async () => {
+    async function close() {
       await Promise.all(writers.map((writer) => writer.close()));
-    };
+    }
 
     return new AsyncWriter({write, seek, close});
   }

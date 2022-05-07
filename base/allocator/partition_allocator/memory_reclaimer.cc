@@ -14,48 +14,47 @@
 // cause significant jank.
 #define PA_STARSCAN_ENABLE_STARSCAN_ON_RECLAIM 0
 
-namespace base {
+namespace partition_alloc {
 
 // static
-PartitionAllocMemoryReclaimer* PartitionAllocMemoryReclaimer::Instance() {
-  static NoDestructor<PartitionAllocMemoryReclaimer> instance;
+MemoryReclaimer* MemoryReclaimer::Instance() {
+  static base::NoDestructor<MemoryReclaimer> instance;
   return instance.get();
 }
 
-void PartitionAllocMemoryReclaimer::RegisterPartition(
-    PartitionRoot<>* partition) {
-  internal::PartitionAutoLock lock(lock_);
+void MemoryReclaimer::RegisterPartition(PartitionRoot<>* partition) {
+  internal::ScopedGuard lock(lock_);
   PA_DCHECK(partition);
   auto it_and_whether_inserted = partitions_.insert(partition);
   PA_DCHECK(it_and_whether_inserted.second);
 }
 
-void PartitionAllocMemoryReclaimer::UnregisterPartition(
+void MemoryReclaimer::UnregisterPartition(
     PartitionRoot<internal::ThreadSafe>* partition) {
-  internal::PartitionAutoLock lock(lock_);
+  internal::ScopedGuard lock(lock_);
   PA_DCHECK(partition);
   size_t erased_count = partitions_.erase(partition);
   PA_DCHECK(erased_count == 1u);
 }
 
-PartitionAllocMemoryReclaimer::PartitionAllocMemoryReclaimer() = default;
-PartitionAllocMemoryReclaimer::~PartitionAllocMemoryReclaimer() = default;
+MemoryReclaimer::MemoryReclaimer() = default;
+MemoryReclaimer::~MemoryReclaimer() = default;
 
-void PartitionAllocMemoryReclaimer::ReclaimAll() {
-  constexpr int kFlags = PartitionPurgeDecommitEmptySlotSpans |
-                         PartitionPurgeDiscardUnusedSystemPages |
-                         PartitionPurgeAggressiveReclaim;
+void MemoryReclaimer::ReclaimAll() {
+  constexpr int kFlags = PurgeFlags::kDecommitEmptySlotSpans |
+                         PurgeFlags::kDiscardUnusedSystemPages |
+                         PurgeFlags::kAggressiveReclaim;
   Reclaim(kFlags);
 }
 
-void PartitionAllocMemoryReclaimer::ReclaimNormal() {
-  constexpr int kFlags = PartitionPurgeDecommitEmptySlotSpans |
-                         PartitionPurgeDiscardUnusedSystemPages;
+void MemoryReclaimer::ReclaimNormal() {
+  constexpr int kFlags = PurgeFlags::kDecommitEmptySlotSpans |
+                         PurgeFlags::kDiscardUnusedSystemPages;
   Reclaim(kFlags);
 }
 
-void PartitionAllocMemoryReclaimer::Reclaim(int flags) {
-  internal::PartitionAutoLock lock(
+void MemoryReclaimer::Reclaim(int flags) {
+  internal::ScopedGuard lock(
       lock_);  // Has to protect from concurrent (Un)Register calls.
 
   // PCScan quarantines freed slots. Trigger the scan first to let it call
@@ -70,7 +69,7 @@ void PartitionAllocMemoryReclaimer::Reclaim(int flags) {
 #if PA_STARSCAN_ENABLE_STARSCAN_ON_RECLAIM
   {
     using PCScan = internal::PCScan;
-    const auto invocation_mode = flags & PartitionPurgeAggressiveReclaim
+    const auto invocation_mode = flags & PurgeFlags::kAggressiveReclaim
                                      ? PCScan::InvocationMode::kForcedBlocking
                                      : PCScan::InvocationMode::kBlocking;
     PCScan::PerformScanIfNeeded(invocation_mode);
@@ -81,17 +80,17 @@ void PartitionAllocMemoryReclaimer::Reclaim(int flags) {
   // Don't completely empty the thread cache outside of low memory situations,
   // as there is periodic purge which makes sure that it doesn't take too much
   // space.
-  if (flags & PartitionPurgeAggressiveReclaim)
-    internal::ThreadCacheRegistry::Instance().PurgeAll();
+  if (flags & PurgeFlags::kAggressiveReclaim)
+    base::internal::ThreadCacheRegistry::Instance().PurgeAll();
 #endif
 
   for (auto* partition : partitions_)
     partition->PurgeMemory(flags);
 }
 
-void PartitionAllocMemoryReclaimer::ResetForTesting() {
-  internal::PartitionAutoLock lock(lock_);
+void MemoryReclaimer::ResetForTesting() {
+  internal::ScopedGuard lock(lock_);
   partitions_.clear();
 }
 
-}  // namespace base
+}  // namespace partition_alloc

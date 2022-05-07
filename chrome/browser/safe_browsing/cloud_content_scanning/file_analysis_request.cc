@@ -7,7 +7,7 @@
 #include "base/feature_list.h"
 #include "base/files/memory_mapped_file.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_piece_forward.h"
+#include "base/strings/string_piece.h"
 #include "base/task/post_task.h"
 #include "base/task/thread_pool.h"
 #include "chrome/browser/file_util_service.h"
@@ -113,7 +113,7 @@ GetFileDataBlocking(const base::FilePath& path, bool detect_mime_type) {
   }
 
   file_data.hash.resize(crypto::kSHA256Length);
-  secure_hash->Finish(base::data(file_data.hash), crypto::kSHA256Length);
+  secure_hash->Finish(std::data(file_data.hash), crypto::kSHA256Length);
   file_data.hash =
       base::HexEncode(base::as_bytes(base::make_span(file_data.hash)));
 

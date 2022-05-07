@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">Հնարավոր չէ վերանվանել «<ph name="FILE_NAME" />»-ը: <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">անգլերեն (ԱՄՆ)՝ Dvorak ստեղնաշարով</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – Հոսթ</translation>
+<translation id="1521655867290435174">Google Աղյուսակներ</translation>
 <translation id="1538729222189715449">Լինուքսի ֆայլերը բացվում են…</translation>
 <translation id="1547964879613821194">Կանադական (անգլիական)</translation>
 <translation id="1556189134700913550">Կիրառել բոլորին</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">Իսկորոշման վկայագիրը մերժվել է ցանցի կողմից</translation>
 <translation id="2547921442987553570">Ավելացնել <ph name="EXTENSION_NAME" />-ում</translation>
 <translation id="255937426064304553">ԱՄՆ (միջազգային)</translation>
-<translation id="2562685439590298522">Փաստաթղթեր</translation>
 <translation id="2563185590376525700">Գորտ</translation>
 <translation id="2578394532502990878">թամիլերեն (հնչյունային)</translation>
 <translation id="2579959351793446050">օրիյա</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">ԱՄՆ ընդլայնված</translation>
 <translation id="290843123675549676">մարաթի</translation>
 <translation id="2923240520113693977">Էստոնական</translation>
-<translation id="2925966894897775835">Աղյուսակներ</translation>
 <translation id="2938685643439809023">Մոնղոլական</translation>
-<translation id="2943400156390503548">Սլայդներ</translation>
 <translation id="2943503720238418293">Նշեք ավելի կարճ անուն</translation>
 <translation id="2949781154072577687">«<ph name="DRIVE_NAME" />» կրիչը ձևաչափվում է…</translation>
 <translation id="2951236788251446349">Մեդուզա</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, կառավարվում է ձեր ադմինիստրատորի կողմից, մանրամասներ</translation>
 <translation id="4387004326333427325">Իսկորոշման վկայագիրը մերժվել է հեռակա կարգով</translation>
 <translation id="4394214039309501350">Արտաքին հղում</translation>
+<translation id="4401287888955153199">Դուրս բերել բոլորը</translation>
 <translation id="4418686080762064601">Ստեղծեք դյուրանցում ձեր ֆայլերի համար</translation>
 <translation id="4425149324548788773">Իմ դրայվը</translation>
 <translation id="4439427728133035643">Ցանց <ph name="NETWORK_INDEX" />՝ <ph name="NETWORK_COUNT" />-ից, <ph name="NETWORK_NAME" />, ազդանշանի ուժգնությունը՝ <ph name="SIGNAL_STRENGTH" />%, կապակցում</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">Ֆայլերը հասանելի դարձրեք առանց ինտերնետի օգտագործելու համար</translation>
 <translation id="4658782175094886150">Մարդը ձյան մեջ</translation>
 <translation id="4669606053856530811">«<ph name="SOURCE_NAME" />»-ի անդամներն այլևս չեն կարողանա օգտագործել այս տարրերը, եթե դրանց համար չտրվի ընդհանուր հասանելիություն։</translation>
+<translation id="467809019005607715">Google Սլայդներ</translation>
 <translation id="4690246192099372265">Շվեդական</translation>
 <translation id="4693155481716051732">Սուշի</translation>
 <translation id="4694604912444486114">Կապիկ</translation>
@@ -657,6 +657,7 @@
 <translation id="6732801395666424405">Վկայագրերը չեն բեռնվել</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">Ընտրված է 1 պանակ</translation>
+<translation id="6755827872271341378">ChromeOS Flex սարք</translation>
 <translation id="6790428901817661496">Նվագարկել</translation>
 <translation id="6795884519221689054">Պանդա</translation>
 <translation id="6806699711453372963">Կառավարել Լինուքսի օգտագործումը</translation>
@@ -734,6 +735,7 @@
 <translation id="7343393116438664539">վիետնամերեն (տելեքս)</translation>
 <translation id="7359359531237882347">Պատճենվում է <ph name="NUMBER_OF_ITEMS" /> տարր...</translation>
 <translation id="7375951387215729722">Ֆայլերի ցանկը տեսակավորված է ըստ «<ph name="COLUMN_NAME" />» ցուցանիշի՝ նվազման կարգով։</translation>
+<translation id="7402503521691663770">ChromeOS Flex սարքեր</translation>
 <translation id="7408870451288633753">չեխերեն</translation>
 <translation id="7417453074306512035">Եթովպերենի ստեղնաշար</translation>
 <translation id="7417705661718309329">Google քարտեզ</translation>
@@ -949,6 +951,7 @@
 <translation id="9172592259078059678">գուջարատերեն (տառադարձություն)</translation>
 <translation id="9173120999827300720">անգլերեն (ԱՄՆ)՝ միջազգային ստեղնաշարով</translation>
 <translation id="9174050671906956834">Աղբարկղի տարրերը 30 օր հետո ընդմիշտ ջնջվում են։</translation>
+<translation id="9183302530794969518">Google Փաստաթղթեր</translation>
 <translation id="9189836632794948435">ղազախերեն</translation>
 <translation id="9213073329713032541">Տեղադրումը սկսվեց:</translation>
 <translation id="9219103736887031265">Պատկերներ</translation>

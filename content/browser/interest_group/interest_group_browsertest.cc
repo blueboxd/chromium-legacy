@@ -882,17 +882,8 @@ class InterestGroupFencedFrameBrowserTest
       ASSERT_EQ(GURL(url::kAboutBlankURL), expected_url);
     }
 
-    switch (GetParam()) {
-      case blink::features::FencedFramesImplementationType::kShadowDOM: {
-        observer.Wait();
-        break;
-      }
-      case blink::features::FencedFramesImplementationType::kMPArch: {
-        // Wait for the load to complete.
-        FencedFrame* fenced_frame = GetFencedFrame(execution_target);
-        fenced_frame->WaitForDidStopLoadingForTesting();
-      }
-    }
+    // Wait for the load to complete.
+    observer.Wait();
 
     RenderFrameHost* fenced_frame_host =
         GetFencedFrameRenderFrameHost(execution_target);
@@ -2077,6 +2068,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, RunAdAuctionWithWinner) {
     interestGroupBuyers: [$1],
     auctionSignals: {x: 1},
     sellerSignals: {yet: 'more', info: 1},
+    sellerTimeout: 200,
     perBuyerSignals: {$1: {even: 'more', x: 4.5}},
     perBuyerTimeouts: {$1: 100, '*': 150}
                 })",
@@ -3261,17 +3253,7 @@ IN_PROC_BROWSER_TEST_P(InterestGroupFencedFrameBrowserTest,
   WaitForURL(new_url);
 
   // Wait for the load to complete.
-  switch (GetParam()) {
-    case blink::features::FencedFramesImplementationType::kShadowDOM: {
-      observer.Wait();
-      break;
-    }
-    case blink::features::FencedFramesImplementationType::kMPArch: {
-      // Wait for the load to complete.
-      FencedFrame* fenced_frame = GetFencedFrame(shell());
-      fenced_frame->WaitForDidStopLoadingForTesting();
-    }
-  }
+  observer.Wait();
 
   // Navigating the ad fenced frame may result in it using a new
   // RenderFrameHost, invalidating the old `ad_frame`.
@@ -3475,6 +3457,149 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
                               "a.test", "/interest_group/decision_logic.js"))));
 }
 
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, ComponentAuction) {
+  GURL test_url = https_server_->GetURL("a.test", "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+  GURL ad_url = https_server_->GetURL("c.test", "/echo?render_cars");
+
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      /*owner=*/test_origin,
+      /*name=*/"cars",
+      /*bidding_url=*/
+      https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
+      /*ads=*/{{{ad_url, /*metadata=*/absl::nullopt}}}));
+
+  std::string auction_config = JsReplace(
+      R"({
+        seller: $1,
+        decisionLogicUrl: $2,
+        // Signal to the top-level seller to allow participation in a component
+        // auction.
+        auctionSignals: "sellerAllowsComponentAuction",
+        componentAuctions: [{
+          seller: $1,
+          decisionLogicUrl: $2,
+          interestGroupBuyers: [$1],
+          // Signal to the bidder and component seller to allow participation in
+          // a component auction.
+          auctionSignals: "bidderAllowsComponentAuction,"+
+                          "sellerAllowsComponentAuction"
+        }]
+      })",
+      test_origin,
+      https_server_->GetURL("a.test", "/interest_group/decision_logic.js"));
+  RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad_url);
+}
+
+// Test the case of a component argument in the case a bidder refuses to
+// participate in component auctions.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       ComponentAuctionBidderRefuses) {
+  GURL test_url = https_server_->GetURL("a.test", "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+  GURL ad_url = https_server_->GetURL("c.test", "/echo?render_cars");
+
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      /*owner=*/test_origin,
+      /*name=*/"cars",
+      /*bidding_url=*/
+      https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
+      /*ads=*/{{{ad_url, /*metadata=*/absl::nullopt}}}));
+
+  std::string auction_config = JsReplace(
+      R"({
+        seller: $1,
+        decisionLogicUrl: $2,
+        // Signal to the top-level seller to allow participation in a component
+        // auction.
+        auctionSignals: "sellerAllowsComponentAuction",
+        componentAuctions: [{
+          seller: $1,
+          decisionLogicUrl: $2,
+          interestGroupBuyers: [$1],
+          // Signal to the component seller to allow participation in a
+          // component auction.
+          auctionSignals: "sellerAllowsComponentAuction"
+        }]
+      })",
+      test_origin,
+      https_server_->GetURL("a.test", "/interest_group/decision_logic.js"));
+  EXPECT_EQ(nullptr, RunAuctionAndWait(auction_config));
+}
+
+// Test the case of a component argument in the case the top-level seller
+// refuses to participate in component auctions.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       ComponentAuctionTopLevelSellerRefuses) {
+  GURL test_url = https_server_->GetURL("a.test", "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+  GURL ad_url = https_server_->GetURL("c.test", "/echo?render_cars");
+
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      /*owner=*/test_origin,
+      /*name=*/"cars",
+      /*bidding_url=*/
+      https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
+      /*ads=*/{{{ad_url, /*metadata=*/absl::nullopt}}}));
+
+  std::string auction_config = JsReplace(
+      R"({
+        seller: $1,
+        decisionLogicUrl: $2,
+        componentAuctions: [{
+          seller: $1,
+          decisionLogicUrl: $2,
+          interestGroupBuyers: [$1],
+          // Signal to the bidder and component seller to allow participation in
+          // a component auction.
+          auctionSignals: "bidderAllowsComponentAuction,"+
+                          "sellerAllowsComponentAuction"
+        }]
+      })",
+      test_origin,
+      https_server_->GetURL("a.test", "/interest_group/decision_logic.js"));
+  EXPECT_EQ(nullptr, RunAuctionAndWait(auction_config));
+}
+
+// Test the case of a component argument in the case a component seller refuses
+// to participate in component auctions.
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       ComponentAuctionComponentSellerRefuses) {
+  GURL test_url = https_server_->GetURL("a.test", "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+  GURL ad_url = https_server_->GetURL("c.test", "/echo?render_cars");
+
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      /*owner=*/test_origin,
+      /*name=*/"cars",
+      /*bidding_url=*/
+      https_server_->GetURL("a.test", "/interest_group/bidding_logic.js"),
+      /*ads=*/{{{ad_url, /*metadata=*/absl::nullopt}}}));
+
+  std::string auction_config = JsReplace(
+      R"({
+        seller: $1,
+        decisionLogicUrl: $2,
+        // Signal to the top-level seller to allow participation in a component
+        // auction.
+        auctionSignals: "sellerAllowsComponentAuction",
+        componentAuctions: [{
+          seller: $1,
+          decisionLogicUrl: $2,
+          interestGroupBuyers: [$1],
+          // Signal to the bidder to allow participation in a component auction.
+          auctionSignals: "bidderAllowsComponentAuction"
+        }]
+      })",
+      test_origin,
+      https_server_->GetURL("a.test", "/interest_group/decision_logic.js"));
+  EXPECT_EQ(nullptr, RunAuctionAndWait(auction_config));
+}
+
 // Use bidder and seller worklet files that validate their arguments all have
 // the expected values.
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, ValidateWorkletParameters) {
@@ -3548,6 +3673,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest, ValidateWorkletParameters) {
     interestGroupBuyers: [$4, $5],
     auctionSignals: {so: 'I', hear: ['you', 'like', 'json']},
     sellerSignals: {signals: 'from', the: ['seller']},
+    sellerTimeout: 200,
     perBuyerSignals: {$4: {signalsForBuyer: 1}, $5: {signalsForBuyer: 2}},
     perBuyerTimeouts: {$4: 110, $5: 120, '*': 150}
   });
@@ -3569,7 +3695,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
   // Use different hostnames for each participant.
   //
   // Match assignments in above test as closely as possible, to make scripts
-  // similar,
+  // similar.
   constexpr char kBidderHost[] = "a.test";
   constexpr char kTopLevelSellerHost[] = "b.test";
   constexpr char kTopFrameHost[] = "c.test";
@@ -3626,6 +3752,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
     trustedScoringSignalsUrl: $3,
     auctionSignals: ["top-level auction signals"],
     sellerSignals: ["top-level seller signals"],
+    sellerTimeout: 300,
     perBuyerSignals: {$7: ["top-level buyer signals"]},
     perBuyerTimeouts: {$7: 110, '*': 150},
     componentAuctions: [{
@@ -3635,6 +3762,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
       interestGroupBuyers: [$7],
       auctionSignals: ["component auction signals"],
       sellerSignals: ["component seller signals"],
+      sellerTimeout: 200,
       perBuyerSignals: {$7: ["component buyer signals"]},
       perBuyerTimeouts: {$7: 200},
     }],
@@ -4031,7 +4159,7 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
 // Bidders' generateBid() scripts that run forever should timeout. They will not
 // affect other bidders or fail the auction.
 IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
-                       RunAdAuctionWithPerBuyerTimeouts) {
+                       RunAdAuctionWithCustomPerBuyerTimeouts) {
   const char kHostA[] = "a.test";
   const char kHostB[] = "b.test";
   // Navigate to other bidder site, and add an interest group.
@@ -4093,6 +4221,36 @@ IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
     // Bidder b won the auction.
     RunAuctionAndWaitForURLAndNavigateIframe(auction_config, ad_url_b);
   }
+}
+
+IN_PROC_BROWSER_TEST_F(InterestGroupBrowserTest,
+                       RunAdAuctionWithCustomSellerTimeout) {
+  const char kHostA[] = "a.test";
+  GURL test_url = https_server_->GetURL(kHostA, "/page_with_iframe.html");
+  ASSERT_TRUE(NavigateToURL(shell(), test_url));
+  url::Origin test_origin = url::Origin::Create(test_url);
+  GURL ad_url = https_server_->GetURL(kHostA, "/echo?render_cars");
+
+  EXPECT_TRUE(JoinInterestGroupAndWaitInJs(
+      /*owner=*/test_origin,
+      /*name=*/"cars",
+      /*bidding_url=*/
+      https_server_->GetURL(kHostA, "/interest_group/bidding_logic.js"),
+      /*ads=*/{{{ad_url, /*metadata=*/absl::nullopt}}}));
+
+  // The auction fails, since seller's scoreAd() script times out after 1 ms.
+  EXPECT_EQ(
+      nullptr,
+      RunAuctionAndWait(JsReplace(
+          R"({
+    seller: $1,
+    decisionLogicUrl: $2,
+    interestGroupBuyers: [$1],
+    sellerTimeout: 1,
+                })",
+          test_origin,
+          https_server_->GetURL(
+              "a.test", "/interest_group/decision_logic_loop_forever.js"))));
 }
 
 // This test exercises the interest group and ad auction services directly,

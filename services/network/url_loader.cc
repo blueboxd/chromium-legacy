@@ -377,9 +377,18 @@ bool ShouldAllowCredentials(mojom::CredentialsMode credentials_mode) {
 bool ShouldSendClientCertificates(mojom::CredentialsMode credentials_mode) {
   switch (credentials_mode) {
     case mojom::CredentialsMode::kInclude:
-    case mojom::CredentialsMode::kOmit:
     case mojom::CredentialsMode::kSameOrigin:
       return true;
+
+    // TODO(https://crbug.com/775438): Due to a bug, the default behavior does
+    // not properly correspond to Fetch's "credentials mode", in that client
+    // certificates will be sent if available, or the handshake will be aborted
+    // to allow selecting a client cert.
+    // With the feature kOmitCorsClientCert enabled, the correct
+    // behavior is done; omit all client certs and continue the handshake
+    // without sending one if requested.
+    case mojom::CredentialsMode::kOmit:
+      return !base::FeatureList::IsEnabled(features::kOmitCorsClientCert);
 
     case mojom::CredentialsMode::kOmitBug_775438_Workaround:
       return false;
@@ -1127,7 +1136,7 @@ int URLLoader::OnConnected(net::URLRequest* url_request,
   // be called and the URLLoader will continue as normal.
   if (!hints.empty()) {
     accept_ch_frame_observer_->OnAcceptCHFrameReceived(
-        url_request->url(), hints, std::move(callback));
+        url::Origin::Create(url_request->url()), hints, std::move(callback));
     return net::ERR_IO_PENDING;
   }
 
@@ -2052,9 +2061,11 @@ void URLLoader::NotifyEarlyResponse(
     origin_trial_tokens.push_back(value);
   }
 
+  mojom::ReferrerPolicy referrer_policy = ParseReferrerPolicy(*headers);
+
   url_loader_client_.Get()->OnReceiveEarlyHints(
-      mojom::EarlyHints::New(std::move(parsed_headers), ip_address_space,
-                             std::move(origin_trial_tokens)));
+      mojom::EarlyHints::New(std::move(parsed_headers), referrer_policy,
+                             ip_address_space, std::move(origin_trial_tokens)));
 }
 
 void URLLoader::SetRawRequestHeadersAndNotify(
@@ -2290,9 +2301,12 @@ URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb(
   // Send empty body to the real URLLoaderClient.
   mojo::ScopedDataPipeProducerHandle producer_handle;
   mojo::ScopedDataPipeConsumerHandle consumer_handle;
-  CHECK_EQ(mojo::CreateDataPipe(kBlockedBodyAllocationSize, producer_handle,
-                                consumer_handle),
-           MOJO_RESULT_OK);
+  MojoResult result = mojo::CreateDataPipe(kBlockedBodyAllocationSize,
+                                           producer_handle, consumer_handle);
+  if (result != MOJO_RESULT_OK) {
+    NotifyCompleted(net::ERR_INSUFFICIENT_RESOURCES);
+    return kWillCancelRequest;
+  }
   producer_handle.reset();
 
   if (base::FeatureList::IsEnabled(features::kCombineResponseBody)) {

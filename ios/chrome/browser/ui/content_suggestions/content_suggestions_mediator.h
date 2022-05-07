@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "components/prefs/pref_service.h"
+#import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_consumer.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_consumer.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_recent_tab_removal_observer_bridge.h"
 
@@ -26,7 +27,7 @@ class PrefRegistrySyncable;
 }  // namespace user_prefs
 
 @protocol ContentSuggestionsCommands;
-@protocol ContentSuggestionsConsumer;
+@protocol ContentSuggestionsCollectionConsumer;
 @protocol ContentSuggestionsGestureCommands;
 @protocol ContentSuggestionsHeaderProvider;
 @protocol DiscoverFeedDelegate;
@@ -37,14 +38,10 @@ class ReadingListModel;
 class WebStateList;
 
 // Mediator for ContentSuggestions.
-// TODO(crbug.com/1200303): Update comment once this file has been cleaned up.
-// This means removing legacy Feed and non refactored NTP code.
 @interface ContentSuggestionsMediator
     : NSObject <StartSurfaceRecentTabObserving>
 
 // Default initializer.
-// TODO(crbug.com/1200303): Update comment once this file has been cleaned up.
-// This means removing legacy Feed and non refactored NTP code.
 - (instancetype)
          initWithLargeIconService:(favicon::LargeIconService*)largeIconService
                    largeIconCache:(LargeIconCache*)largeIconCache
@@ -71,6 +68,8 @@ class WebStateList;
 @property(nonatomic, weak) id<DiscoverFeedDelegate> discoverFeedDelegate;
 
 // The consumer that will be notified when the data change.
+@property(nonatomic, weak) id<ContentSuggestionsCollectionConsumer>
+    collectionConsumer;
 @property(nonatomic, weak) id<ContentSuggestionsConsumer> consumer;
 
 // WebStateList associated with this mediator.

@@ -137,18 +137,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'avd_generic_android29',
+            'caches': 'generic_android29',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'avd_generic_android29',
-          'path': '.android',
-        },
-        {
-          'name': 'system_images_android_29_google_apis_x86',
-          'path': '.emulator_sdk',
+          'name': 'generic_android29',
+          'path': '.android_emulator/generic_android29',
         },
       ]
     },
@@ -164,18 +160,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'avd_generic_android30',
+            'caches': 'generic_android30',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'avd_generic_android30',
-          'path': '.android',
-        },
-        {
-          'name': 'system_images_android_30_google_apis_x86',
-          'path': '.emulator_sdk',
+          'name': 'generic_android30',
+          'path': '.android_emulator/generic_android30',
         },
       ]
     },
@@ -191,18 +183,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'avd_generic_android31',
+            'caches': 'generic_android31',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'avd_generic_android31',
-          'path': '.android',
-        },
-        {
-          'name': 'system_images_android_31_google_apis_x64',
-          'path': '.emulator_sdk',
+          'name': 'generic_android31',
+          'path': '.android_emulator/generic_android31',
         },
       ]
     },
@@ -404,15 +392,6 @@
       },
     },
   },
-  'flounder': {
-    # Nexus 9
-    'swarming': {
-      'dimensions': {
-        'device_type': 'flounder',
-        'os': 'Android',
-      },
-    },
-  },
   'fuchsia-code-coverage': {
     '$mixin_append': {
       'args': [
@@ -447,6 +426,14 @@
       'dimensions': {
         'pool': 'chromium.tests.gpu',
       },
+    },
+  },
+  'gtest_run_disabled_only': {
+    '$mixin_append': {
+      'args': [
+        '--gtest_also_run_disabled_tests',
+        '--gtest_filter=*DISABLE*',
+      ],
     },
   },
   'hammerhead': {
@@ -539,6 +526,18 @@
       },
     },
   },
+  'ios_runtime_cache_15_4': {
+    '$mixin_append': {
+      'swarming': {
+        'named_caches': [
+          {
+            'name': 'runtime_ios_15_4',
+            'path': 'Runtime-ios-15.4',
+          },
+        ],
+      },
+    },
+  },
   'isolate_profile_data': {
     'isolate_profile_data': True,
   },
@@ -547,6 +546,29 @@
       'dimensions': {
         'device_os': 'KTU84P',
       },
+    },
+  },
+  'kitkat-x86-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--avd-config=../../tools/android/avd/proto/generic_android19.textpb',
+      ],
+    },
+    'swarming': {
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'generic_android19',
+          }
+        ],
+      },
+      'named_caches': [
+        {
+          'name': 'generic_android19',
+          'path': '.android_emulator/generic_android19',
+        },
+      ]
     },
   },
   'limited_capacity_bot': {
@@ -654,11 +676,27 @@
       },
     },
   },
-  'lollipop': {
+  'lollipop-x86-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--avd-config=../../tools/android/avd/proto/generic_android22.textpb',
+      ],
+    },
     'swarming': {
-      'dimensions': {
-        'device_os': 'LMY48M',
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'generic_android22',
+          }
+        ],
       },
+      'named_caches': [
+        {
+          'name': 'generic_android22',
+          'path': '.android_emulator/generic_android22',
+        },
+      ]
     },
   },
   'mac-archive-rel-args': {
@@ -877,18 +915,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'avd_generic_android23',
+            'caches': 'generic_android23',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'avd_generic_android23',
-          'path': '.android',
-        },
-        {
-          'name': 'system_images_android_23_google_apis_x86',
-          'path': '.emulator_sdk',
+          'name': 'generic_android23',
+          'path': '.android_emulator/generic_android23',
         },
       ]
     },
@@ -916,6 +950,29 @@
       },
     },
   },
+  'nougat-x86-emulator': {
+    '$mixin_append': {
+      'args': [
+        '--avd-config=../../tools/android/avd/proto/generic_android25.textpb',
+      ],
+    },
+    'swarming': {
+      # soft affinity so that bots with caches will be picked first
+      'optional_dimensions': {
+        '60': [
+          {
+            'caches': 'generic_android25',
+          }
+        ],
+      },
+      'named_caches': [
+        {
+          'name': 'generic_android25',
+          'path': '.android_emulator/generic_android25',
+        },
+      ]
+    },
+  },
   'nougat_generic': {
     'swarming': {
       'dimensions': {
@@ -934,18 +991,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'avd_generic_android27',
+            'caches': 'generic_android27',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'avd_generic_android27',
-          'path': '.android',
-        },
-        {
-          'name': 'system_images_android_27_google_apis_x86',
-          'path': '.emulator_sdk',
+          'name': 'generic_android27',
+          'path': '.android_emulator/generic_android27',
         },
       ]
     },
@@ -986,18 +1039,14 @@
       'optional_dimensions': {
         '60': [
           {
-            'caches': 'avd_generic_android28',
+            'caches': 'generic_android28',
           }
         ],
       },
       'named_caches': [
         {
-          'name': 'avd_generic_android28',
-          'path': '.android',
-        },
-        {
-          'name': 'system_images_android_28_google_apis_x86',
-          'path': '.emulator_sdk',
+          'name': 'generic_android28',
+          'path': '.android_emulator/generic_android28',
         },
       ]
     },
@@ -1253,13 +1302,13 @@
     '$mixin_append': {
       'args': [
         '--xcode-build-version',
-        '13c100'
+        '13e5104i'
       ],
     },
     'swarming': {
       'named_caches': [
         {
-          'name': 'xcode_ios_13c100',
+          'name': 'xcode_ios_13e5104i',
           'path': 'Xcode.app',
         },
       ],

@@ -72,6 +72,9 @@ class WallpaperControllerClientImpl
   void FetchImagesForCollection(
       const std::string& collection_id,
       FetchImagesForCollectionCallback callback) override;
+  void FetchGooglePhotosPhoto(const AccountId& account_id,
+                              const std::string& id,
+                              FetchGooglePhotosPhotoCallback callback) override;
   void SaveWallpaperToDriveFs(
       const AccountId& account_id,
       const base::FilePath& origin,
@@ -98,17 +101,17 @@ class WallpaperControllerClientImpl
                           bool preview_mode);
   void SetOnlineWallpaper(
       const ash::OnlineWallpaperParams& params,
-      ash::WallpaperController::SetOnlineWallpaperCallback callback);
+      ash::WallpaperController::SetWallpaperCallback callback);
   void SetGooglePhotosWallpaper(
       const ash::GooglePhotosWallpaperParams& params,
-      ash::WallpaperController::SetGooglePhotosWallpaperCallback callback);
+      ash::WallpaperController::SetWallpaperCallback callback);
   void SetOnlineWallpaperIfExists(
       const ash::OnlineWallpaperParams& params,
-      ash::WallpaperController::SetOnlineWallpaperCallback callback);
+      ash::WallpaperController::SetWallpaperCallback callback);
   void SetOnlineWallpaperFromData(
       const ash::OnlineWallpaperParams& params,
       const std::string& image_data,
-      ash::WallpaperController::SetOnlineWallpaperCallback callback);
+      ash::WallpaperController::SetWallpaperCallback callback);
   void SetCustomizedDefaultWallpaperPaths(
       const base::FilePath& customized_default_small_path,
       const base::FilePath& customized_default_large_path);
@@ -120,8 +123,8 @@ class WallpaperControllerClientImpl
                               const gfx::ImageSkia& image);
   void ConfirmPreviewWallpaper();
   void CancelPreviewWallpaper();
-  void UpdateCustomWallpaperLayout(const AccountId& account_id,
-                                   ash::WallpaperLayout layout);
+  void UpdateCurrentWallpaperLayout(const AccountId& account_id,
+                                    ash::WallpaperLayout layout);
   void ShowUserWallpaper(const AccountId& account_id);
   void ShowSigninWallpaper();
   void ShowAlwaysOnTopWallpaper(const base::FilePath& image_path);
@@ -188,6 +191,11 @@ class WallpaperControllerClientImpl
       const std::string& collection_id,
       const std::vector<backdrop::Image>& images);
 
+  void OnGooglePhotosPhotoFetched(
+      FetchGooglePhotosPhotoCallback callback,
+      ash::personalization_app::mojom::FetchGooglePhotosPhotosResponsePtr
+          response);
+
   void ObserveVolumeManagerForAccountId(const AccountId& account_id);
 
   // WallpaperController interface in ash.
@@ -205,6 +213,10 @@ class WallpaperControllerClientImpl
 
   std::unique_ptr<wallpaper_handlers::BackdropSurpriseMeImageFetcher>
       surprise_me_image_fetcher_;
+
+  std::map<AccountId,
+           std::unique_ptr<wallpaper_handlers::GooglePhotosPhotosFetcher>>
+      google_photos_photos_fetchers_;
 
   base::ScopedMultiSourceObservation<file_manager::VolumeManager,
                                      file_manager::VolumeManagerObserver>

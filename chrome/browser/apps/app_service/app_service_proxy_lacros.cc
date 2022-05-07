@@ -21,8 +21,9 @@
 #include "chrome/browser/apps/app_service/launch_utils.h"
 #include "chrome/browser/apps/app_service/publishers/extension_apps.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/app_service/web_apps_publisher_host.h"
+#include "chrome/browser/web_applications/app_service/lacros_web_apps_controller.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
+#include "chrome/browser/web_applications/web_app_utils.h"
 #include "chromeos/lacros/lacros_service.h"
 #include "components/services/app_service/app_service_mojom_impl.h"
 #include "components/services/app_service/public/cpp/icon_types.h"
@@ -53,7 +54,7 @@ absl::optional<IconKey> AppServiceProxyLacros::InnerIconLoader::GetIconKey(
   absl::optional<IconKey> icon_key;
   host_->app_registry_cache_.ForApp(
       app_id,
-      [&icon_key](const AppUpdate& update) { icon_key = update.GetIconKey(); });
+      [&icon_key](const AppUpdate& update) { icon_key = update.IconKey(); });
   return icon_key;
 }
 
@@ -85,10 +86,8 @@ AppServiceProxyLacros::InnerIconLoader::LoadIconFromIconKey(
     std::move(callback).Run(std::make_unique<IconValue>());
   } else {
     service->GetRemote<crosapi::mojom::AppServiceProxy>()->LoadIcon(
-        app_id,
-        std::make_unique<IconKey>(icon_key.timeline, icon_key.resource_id,
-                                  icon_key.icon_effects),
-        icon_type, size_hint_in_dip, std::move(callback));
+        app_id, icon_key.Clone(), icon_type, size_hint_in_dip,
+        std::move(callback));
   }
   return nullptr;
 }
@@ -137,19 +136,21 @@ AppServiceProxyLacros::AppServiceProxyLacros(Profile* profile)
       outer_icon_loader_(&icon_coalescer_,
                          apps::IconCache::GarbageCollectionPolicy::kEager),
       profile_(profile) {
-  auto* service = chromeos::LacrosService::Get();
-  if (service && service->init_params()->web_apps_enabled &&
-      service->IsAvailable<crosapi::mojom::BrowserAppInstanceRegistry>()) {
-    browser_app_instance_tracker_ =
-        std::make_unique<apps::BrowserAppInstanceTracker>(profile_,
-                                                          app_registry_cache_);
-    auto& registry =
-        chromeos::LacrosService::Get()
-            ->GetRemote<crosapi::mojom::BrowserAppInstanceRegistry>();
-    DCHECK(registry);
-    browser_app_instance_forwarder_ =
-        std::make_unique<apps::BrowserAppInstanceForwarder>(
-            *browser_app_instance_tracker_, registry);
+  if (web_app::IsWebAppsCrosapiEnabled()) {
+    auto* service = chromeos::LacrosService::Get();
+    if (service &&
+        service->IsAvailable<crosapi::mojom::BrowserAppInstanceRegistry>()) {
+      browser_app_instance_tracker_ =
+          std::make_unique<apps::BrowserAppInstanceTracker>(
+              profile_, app_registry_cache_);
+      auto& registry =
+          chromeos::LacrosService::Get()
+              ->GetRemote<crosapi::mojom::BrowserAppInstanceRegistry>();
+      DCHECK(registry);
+      browser_app_instance_forwarder_ =
+          std::make_unique<apps::BrowserAppInstanceForwarder>(
+              *browser_app_instance_tracker_, registry);
+    }
   }
 }
 
@@ -163,9 +164,9 @@ void AppServiceProxyLacros::Initialize() {
   browser_app_launcher_ = std::make_unique<apps::BrowserAppLauncher>(profile_);
 
   if (profile_->IsMainProfile()) {
-    web_apps_publisher_host_ =
-        std::make_unique<web_app::WebAppsPublisherHost>(profile_);
-    web_apps_publisher_host_->Init();
+    lacros_web_apps_controller_ =
+        std::make_unique<web_app::LacrosWebAppsController>(profile_);
+    lacros_web_apps_controller_->Init();
   }
 
   // Make the chrome://app-icon/ resource available.
@@ -475,11 +476,11 @@ std::vector<IntentLaunchInfo> AppServiceProxyLacros::GetAppsForIntent(
         [&intent_launch_info, &intent, &exclude_browsers,
          &exclude_browser_tab_apps](const apps::AppUpdate& update) {
           if (!apps_util::IsInstalled(update.Readiness()) ||
-              update.ShowInLauncher() != apps::mojom::OptionalBool::kTrue) {
+              !update.ShowInLauncher().value_or(false)) {
             return;
           }
           if (exclude_browser_tab_apps &&
-              update.WindowMode() == mojom::WindowMode::kBrowser) {
+              update.WindowMode() == WindowMode::kBrowser) {
             return;
           }
           std::set<std::string> existing_activities;
@@ -592,14 +593,14 @@ void AppServiceProxyLacros::FlushMojoCallsForTesting() {
   crosapi_receiver_.FlushForTesting();
 }
 
-web_app::WebAppsPublisherHost*
-AppServiceProxyLacros::WebAppsPublisherHostForTesting() {
-  return web_apps_publisher_host_.get();
+web_app::LacrosWebAppsController*
+AppServiceProxyLacros::LacrosWebAppsControllerForTesting() {
+  return lacros_web_apps_controller_.get();
 }
 
 void AppServiceProxyLacros::Shutdown() {
-  if (web_apps_publisher_host_) {
-    web_apps_publisher_host_->Shutdown();
+  if (lacros_web_apps_controller_) {
+    lacros_web_apps_controller_->Shutdown();
   }
 }
 

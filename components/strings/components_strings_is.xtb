@@ -458,6 +458,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="2310021320168182093">Chou2 (umslag)</translation>
 <translation id="2316887270356262533">Losar minna en 1 MB. Lengri tíma gæti tekið að sækja sum vefsvæði þegar þú heimsækir þau næst.</translation>
 <translation id="2317259163369394535"><ph name="DOMAIN" /> þarf notandanafn og aðgangsorð.</translation>
+<translation id="2318594867107319532">Síðasti tímastimpill reglu:</translation>
 <translation id="2328651992442742497">Heimilað (sjálfgefið)</translation>
 <translation id="2329182534073751090">gluggastaðsetningu</translation>
 <translation id="2330137317877982892"><ph name="CREDIT_CARD" />, rennur út <ph name="EXPIRATION_DATE_ABBR" /></translation>
@@ -492,6 +493,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="2430968933669123598">Stjórnaðu Google reikningnum þínum, ýttu á Enter til að stjórna upplýsingum, persónuvernd og öryggi á Google reikningnum þínum</translation>
 <translation id="2436186046335138073">Leyfa <ph name="HANDLER_HOSTNAME" /> að opna alla <ph name="PROTOCOL" />-tengla?</translation>
 <translation id="2438874542388153331">Fjögur göt hægra megin</translation>
+<translation id="2448295565072560657">Jaðartæki tengd þessu tæki þegar þú ert innskráð(ur)</translation>
 <translation id="2450021089947420533">Ferðir</translation>
 <translation id="2463739503403862330">Fylla út</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
@@ -499,6 +501,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="2465688316154986572">Hefti</translation>
 <translation id="2465914000209955735">Stjórna skrám sem þú hefur sótt í Chrome</translation>
 <translation id="2466004615675155314">Birta upplýsingar af vefnum</translation>
+<translation id="2467272921457885625">Tæknilýsing vélbúnaðar tækis og talnagögn á borð við notkunarferil örgjörva/vinnsluminnis</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />Keyrir netgreiningu<ph name="END_LINK" /></translation>
 <translation id="2469153820345007638">Röðun 1 til N</translation>
 <translation id="2470767536994572628">Þegar þú breytir textaskýringum fer þetta skjal aftur í einnar síðu snið og upprunalega stöðu</translation>
@@ -525,6 +528,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="2539524384386349900">Greina</translation>
 <translation id="2540701853218677861">Innskráningar-/útskráningarferill tækis, með tímastimplum og misheppnuðum tilraunum</translation>
 <translation id="2541219929084442027">Síður sem þú skoðar á huliðsflipum verða vistaðar í vafraferlinum, fótsporageymslunni eða leitarferlinum eftir að þú lokar öllum huliðsflipum. Skrár sem þú sækir eða bókamerki sem þú býrð til verða áfram til staðar.</translation>
+<translation id="2544546346215446551">Stjórnandinn endurræsti tækið þitt</translation>
 <translation id="2544644783021658368">Stakt skjal</translation>
 <translation id="2546283357679194313">Fótspor og gögn vefsvæða</translation>
 <translation id="254947805923345898">Gildi reglunnar er ógilt.</translation>
@@ -939,7 +943,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="385051799172605136">Til baka</translation>
 <translation id="3858027520442213535">Uppfæra dagsetningu og tíma</translation>
 <translation id="3858860766373142691">Heiti</translation>
-<translation id="3879224246272917991">Talnagögn tækis eins og notkun örgjörva/vinnsluminnis og tæknilýsing vélbúnaðar</translation>
 <translation id="3881478300875776315">Sýna færri línur</translation>
 <translation id="3884278016824448484">Ósamræmi í auðkenni tækis</translation>
 <translation id="3885155851504623709">Sókn</translation>
@@ -974,6 +977,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="3990250421422698716">Jöfnuð offsetprentun</translation>
 <translation id="3996311196211510766">Vefsvæðið <ph name="ORIGIN" /> hefur beðið um að upprunaregla
     gildi fyrir allar beiðnir þess, en ekki er hægt að nota þessa reglu eins og er.</translation>
+<translation id="4006465311664329701">Greiðslumátar, tilboð og heimilisföng sem nota Google Pay</translation>
 <translation id="4009243425692662128">Efni síðna sem þú prentar er sent til Google Cloud eða þriðju aðila til greiningar. Þær gætu til dæmis verið skannaðar í leit að viðkvæmum upplýsingum.</translation>
 <translation id="4010758435855888356">Veita aðgang að geymslurými?</translation>
 <translation id="4014128326099193693">{COUNT,plural, =1{PDF-skjal með {COUNT} síðu}one{PDF-skjal með {COUNT} síðu}other{PDF-skjal með {COUNT} síðum}}</translation>
@@ -1253,6 +1257,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="4825496307559726072"><ph name="CREATE_GOOGLE_SHEET_FOCUSED_FRIENDLY_MATCH_TEXT" />, ýttu á Tab og svo Enter til að búa til nýjan Google töflureikni á skjótan hátt</translation>
 <translation id="4825507807291741242">Kraftmikið</translation>
 <translation id="483241715238664915">Kveikja á viðvörunum</translation>
+<translation id="4834250788637067901">Greiðslumátar, tilboð og heimilisföng sem nota Google Pay</translation>
 <translation id="4838327282952368871">Draumkennt</translation>
 <translation id="4840250757394056958">Skoða Chrome ferilinn þinn</translation>
 <translation id="484462545196658690">Sjálfvirkt</translation>
@@ -1380,7 +1385,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="5205222826937269299">Heiti er nauðsynlegt</translation>
 <translation id="5209518306177824490">SHA-1 fingrafar</translation>
 <translation id="5209670883520018268">Bakki 20</translation>
-<translation id="5215116848420601511">Greiðslumátar og heimilisföng sem nota Google Pay</translation>
 <translation id="5215363486134917902">Folio-Sp</translation>
 <translation id="521659676233207110">Bakki 13</translation>
 <translation id="5216942107514965959">Síðast opnað í dag</translation>
@@ -1659,6 +1663,7 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="6157754950574419155">Fjarlægja allt úr ferli</translation>
 <translation id="6157877588268064908">Veldu heimilisfang til að sjá sendingarmáta og kröfur</translation>
 <translation id="6165508094623778733">Frekari upplýsingar</translation>
+<translation id="6167577165590485365">Síðast reynt að sækja:</translation>
 <translation id="6169916984152623906">Nú geturðu vafrað í næði og aðrir notendur tækisins geta ekki séð það sem þú gerir. Niðurhal og bókamerki eru hinsvegar vistuð.</translation>
 <translation id="6177128806592000436">Tenging þín við þetta vefsvæði er ekki örugg</translation>
 <translation id="6180316780098470077">Tími milli tilrauna</translation>
@@ -2293,7 +2298,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="8241712895048303527">Útiloka á þessu vefsvæði</translation>
 <translation id="8242426110754782860">Halda áfram</translation>
 <translation id="8249296373107784235">Hætta</translation>
-<translation id="8249320324621329438">Síðast sótt:</translation>
 <translation id="8253091569723639551">Heimilisfangs greiðanda er krafist</translation>
 <translation id="8257387598443225809">Þetta forrit er hannað fyrir farsíma</translation>
 <translation id="825929999321470778">Sýna öll vistuð aðgangsorð</translation>
@@ -2496,7 +2500,6 @@ Ef þú gerir það ekki loka persónuverndarstillingar þínar á þennan aðga
 <translation id="8975012916872825179">Upplýsingar á borð við símanúmer, netföng og heimilisföng</translation>
 <translation id="8975263830901772334">Heiti skráa sem þú prentar</translation>
 <translation id="8978053250194585037">Örugg vefnotkun Google <ph name="BEGIN_LINK" />greindi nýlega vefveiðar<ph name="END_LINK" /> á <ph name="SITE" />. Vefveiðasíður þykjast vera önnur vefsvæði til að gabba þig.</translation>
-<translation id="8983003182662520383">Greiðslumátar og heimilisföng sem nota Google Pay</translation>
 <translation id="8983369100812962543">Nú geturðu breytt stærð forritsins</translation>
 <translation id="8987245424886630962"><ph name="VIEW_CHROME_HISTORY_FOCUSED_FRIENDLY_MATCH_TEXT" />, ýttu á dálkalykilinn (Tab) og svo á Enter til að skoða vafraferilinn þinn í Chrome</translation>
 <translation id="8987927404178983737">Mánuður</translation>

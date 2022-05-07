@@ -44,6 +44,7 @@
 <translation id="3344973607274501920">Chromium no ha podido comprobar tus contraseñas. Revisa tu conexión a Internet.</translation>
 <translation id="3472200483164753384">No compatible con Chromium Canary</translation>
 <translation id="3639997914391704523">Chromium puede comprobar tus contraseñas cuando inicias sesión con tu cuenta de Google.</translation>
+<translation id="3650632991272923014"><ph name="USER_EMAIL1" /> ha usado Chromium y ha dejado marcadores, contraseñas y otras configuraciones en este dispositivo.</translation>
 <translation id="3805899903892079518">Chromium no puede acceder a tus fotos y vídeos (para permitirlo, ve a Ajustes de iOS &gt; Privacidad &gt; Fotos).</translation>
 <translation id="4043291146360695975">Las contraseñas se guardan en el gestor de contraseñas solo en este dispositivo.</translation>
 <translation id="4099085513035183040">No compatible con Chromium Beta</translation>
@@ -55,6 +56,15 @@
 <translation id="4828317641996116749">Chromium no ha podido comprobar todas las contraseñas. Vuelve a intentarlo más tarde.</translation>
 <translation id="4985291216379576555">Sin conexión, Chromium no puede comprobar si hay actualizaciones</translation>
 <translation id="4999538639245140991">Al cerrar sesión en una cuenta gestionada por <ph name="SIGNOUT_MANAGED_DOMAIN" />, se eliminan tus datos de Chromium en este dispositivo, pero permanecen en tu cuenta de Google.</translation>
+<translation id="5039881550736388123">Si esta opción está activada:
+<ph name="BEGIN_INDENT" />  • Ayuda a mejorar Chromium para las personas que lo usan de la misma manera que tú.<ph name="END_INDENT" />
+
+Notas importantes:
+<ph name="BEGIN_INDENT" />  • Se envía información a Google sobre el uso que haces de Chromium, pero no está vinculada a ti.
+
+  • Si Chromium falla, puede que los detalles sobre el fallo incluyan alguna información personal.
+
+  • Si activas la sincronización, puede que las métricas también incluyan información sobre las URLs que visites.<ph name="END_INDENT" /></translation>
 <translation id="5171868502429358653">Inicia sesión en Chromium</translation>
 <translation id="5224391634244552924">No hay ninguna contraseña guardada. Chromium puede comprobar tus contraseñas si las guardas.</translation>
 <translation id="5308226104666789935">Chromium no puede comprobar si hay actualizaciones</translation>
@@ -65,6 +75,7 @@
 <translation id="5777187867430702742">Página de Chromium</translation>
 <translation id="5862307444128926510">Te damos la bienvenida a Chromium</translation>
 <translation id="5945387852661427312">Estás iniciando sesión con una cuenta gestionada por <ph name="DOMAIN" /> y vas a otorgar a su administrador el control sobre tus datos de Chromium. Tus datos se vincularán de forma permanente a esta cuenta. Al cerrar sesión en Chromium, tus datos se eliminarán de este dispositivo, pero permanecerán almacenados en tu cuenta de Google.</translation>
+<translation id="5983312940147103417">Mejorar Chromium</translation>
 <translation id="602807004951640891">Al usar Chromium, aceptas los <ph name="BEGIN_LINK_TOS" />Términos del Servicio<ph name="END_LINK_TOS" />.</translation>
 <translation id="6119647025869519954">Para establecer Chromium como navegador predeterminado, haz lo siguiente:
 1. Abre Configuración

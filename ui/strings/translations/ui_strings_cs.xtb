@@ -62,7 +62,6 @@
 <translation id="2666092431469916601">Nahoru</translation>
 <translation id="2701330563083355633">Sdíleno ze zařízení <ph name="DEVICE_NAME" /></translation>
 <translation id="271033894570825754">Nové</translation>
-<translation id="2743387203779672305">Zkopírovat do schránky</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{před 1 rokem}few{před # lety}many{před # roku}other{před # lety}}</translation>
 <translation id="2878511608894704031">Smazat vše</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{za 1 d}few{za # d}many{za # d}other{za # d}}</translation>
@@ -94,10 +93,11 @@
 <translation id="3889424535448813030">Klávesa šipka vpravo</translation>
 <translation id="3897092660631435901">Nabídka</translation>
 <translation id="3909791450649380159">Vyjmou&amp;t</translation>
+<translation id="3924145049010392604">Meta</translation>
 <translation id="3990502903496589789">Pravý okraj</translation>
 <translation id="3994749195054421561">Sloupec <ph name="COLUMN_NAME" /> je seřazen vzestupně.</translation>
+<translation id="4031910098617850788">F5</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 nepřečtené oznámení}few{# nepřečtená oznámení}many{# nepřečteného oznámení}other{# nepřečtených oznámení}}</translation>
-<translation id="4250229828105606438">Snímek obrazovky</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{před 1 měsícem}few{před # měsíci}many{před # měsíce}other{před # měsíci}}</translation>
 <translation id="4289300219472526559">Začít mluvit</translation>
 <translation id="4289540628985791613">Přehled</translation>
@@ -204,7 +204,6 @@
 <translation id="8730621377337864115">Hotovo</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 h}few{# h}many{# h}other{# h}}</translation>
 <translation id="8798099450830957504">Výchozí</translation>
-<translation id="883911313571074303">Přidat k obrázku poznámku</translation>
 <translation id="8841375032071747811">Tlačítko Zpět</translation>
 <translation id="8867568208303837180">Odesílání...</translation>
 <translation id="8876215549894133151">Formát:</translation>

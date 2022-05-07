@@ -2,22 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/omnibox/browser/history_quick_provider.h"
-
 #include <memory>
 #include <random>
 #include <string>
 
-#include "base/cxx17_backports.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/thread_pool/thread_pool_instance.h"
 #include "base/test/task_environment.h"
+#include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/history/core/browser/history_backend.h"
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/history/core/test/history_service_test_util.h"
 #include "components/omnibox/browser/fake_autocomplete_provider_client.h"
+#include "components/omnibox/browser/history_quick_provider.h"
 #include "components/omnibox/browser/history_test_util.h"
 #include "components/omnibox/browser/in_memory_url_index_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -33,7 +33,7 @@ std::string GenerateFakeHashedString(size_t sym_count) {
       "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789,/=+?#";
   static std::mt19937 engine;
   std::uniform_int_distribution<size_t> index_distribution(
-      0, base::size(kSyms) - 2 /* trailing \0 */);
+      0, std::size(kSyms) - 2 /* trailing \0 */);
 
   std::string res;
   res.reserve(sym_count);
@@ -101,9 +101,9 @@ class HQPPerfTestOnePopularURL : public testing::Test {
  private:
   base::TimeDelta RunTest(const std::u16string& text);
 
+  base::ScopedTempDir history_dir_;
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<FakeAutocompleteProviderClient> client_;
-
   scoped_refptr<HistoryQuickProvider> provider_;
 };
 
@@ -111,13 +111,28 @@ void HQPPerfTestOnePopularURL::SetUp() {
   if (base::ThreadTicks::IsSupported())
     base::ThreadTicks::WaitUntilInitialized();
   client_ = std::make_unique<FakeAutocompleteProviderClient>();
+
+  CHECK(history_dir_.CreateUniqueTempDir());
+  client_->set_history_service(
+      history::CreateHistoryService(history_dir_.GetPath(), true));
+  client_->set_bookmark_model(bookmarks::TestBookmarkClient::CreateModel());
+  client_->set_in_memory_url_index(std::make_unique<InMemoryURLIndex>(
+      client_->GetBookmarkModel(), client_->GetHistoryService(), nullptr,
+      history_dir_.GetPath(), SchemeSet()));
+  client_->GetInMemoryURLIndex()->Init();
+
   ASSERT_TRUE(client_->GetHistoryService());
   ASSERT_NO_FATAL_FAILURE(PrepareData());
 }
 
 void HQPPerfTestOnePopularURL::TearDown() {
+  base::RunLoop run_loop;
+  auto* history_service = client_->GetHistoryService();
+  history_service->SetOnBackendDestroyTask(run_loop.QuitClosure());
   provider_ = nullptr;
   client_.reset();
+  run_loop.Run();
+  base::ThreadPoolInstance::Get()->FlushForTesting();
   task_environment_.RunUntilIdle();
 }
 

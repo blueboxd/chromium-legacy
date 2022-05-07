@@ -260,7 +260,8 @@ class HistoryService : public KeyedService {
   // the caller is interested in the visits (each time the URL is visited),
   // set `want_visits` to true. If these are not needed, the function will be
   // faster by setting this to false.
-  base::CancelableTaskTracker::TaskId QueryURL(
+  // Note: Virtual needed for mocking.
+  virtual base::CancelableTaskTracker::TaskId QueryURL(
       const GURL& url,
       bool want_visits,
       QueryURLCallback callback,
@@ -411,7 +412,7 @@ class HistoryService : public KeyedService {
 
   // Delete all the information related to a list of urls.  (Deleting
   // URLs one by one is slow as it has to flush to disk each time.)
-  void DeleteURLs(const std::vector<GURL>& urls);
+  virtual void DeleteURLs(const std::vector<GURL>& urls);
 
   // Removes all visits in the selected time range (including the
   // start time), updating the URLs accordingly. This deletes any

@@ -14,7 +14,6 @@
 #include "base/thread_annotations.h"
 #include "base/time/time.h"
 #include "third_party/webrtc/rtc_base/system/rtc_export.h"
-#include "third_party/webrtc_overrides/metronome_provider.h"
 #include "third_party/webrtc_overrides/metronome_source.h"
 
 namespace blink {
@@ -31,12 +30,11 @@ RTC_EXPORT extern const base::Feature kWebRtcTimerUsesMetronome;
 // available, the timer has high precision.
 //
 // Prefer this timer for WebRTC use cases that does not require high precision.
-class RTC_EXPORT WebRtcTimer : public MetronomeProviderListener {
+class RTC_EXPORT WebRtcTimer final {
  public:
-  WebRtcTimer(scoped_refptr<MetronomeProvider> metronome_provider,
-              scoped_refptr<base::SequencedTaskRunner> task_runner,
+  WebRtcTimer(scoped_refptr<base::SequencedTaskRunner> task_runner,
               base::RepeatingCallback<void()> callback);
-  ~WebRtcTimer() override;
+  ~WebRtcTimer();
   // Must be called prior to destruction. Unregisters from the metronome
   // provider.
   void Shutdown();
@@ -66,7 +64,7 @@ class RTC_EXPORT WebRtcTimer : public MetronomeProviderListener {
    public:
     SchedulableCallback(scoped_refptr<base::SequencedTaskRunner> task_runner,
                         base::RepeatingCallback<void()> callback,
-                        scoped_refptr<MetronomeSource> metronome,
+                        bool use_metronome,
                         base::TimeDelta repeated_delay);
     ~SchedulableCallback();
 
@@ -83,8 +81,7 @@ class RTC_EXPORT WebRtcTimer : public MetronomeProviderListener {
 
     const scoped_refptr<base::SequencedTaskRunner> task_runner_;
     const base::RepeatingCallback<void()> callback_;
-    // If set, aligns the scheduling to metronome ticks.
-    const scoped_refptr<MetronomeSource> metronome_;
+    const bool use_metronome_;
 
     // Only accessed on |task_runner_|.
     bool is_currently_running_ = false;
@@ -108,16 +105,11 @@ class RTC_EXPORT WebRtcTimer : public MetronomeProviderListener {
   // latest settings. Used e.g. when we start or stop using the metronome.
   void RescheduleCallback() EXCLUSIVE_LOCKS_REQUIRED(lock_);
 
-  // MetronomeProviderListener:
-  void OnStartUsingMetronome(scoped_refptr<MetronomeSource> metronome) override;
-  void OnStopUsingMetronome() override;
-
-  const scoped_refptr<MetronomeProvider> metronome_provider_;
   const base::RepeatingCallback<void()> callback_;
+  const bool use_metronome_;
   base::Lock lock_;
   bool is_shutdown_ GUARDED_BY(lock_) = false;
   scoped_refptr<base::SequencedTaskRunner> task_runner_ GUARDED_BY(lock_);
-  scoped_refptr<MetronomeSource> metronome_ GUARDED_BY(lock_);
   scoped_refptr<SchedulableCallback> schedulable_callback_ GUARDED_BY(lock_);
   // If not repeating this is zero.
   base::TimeDelta repeated_delay_ GUARDED_BY(lock_);

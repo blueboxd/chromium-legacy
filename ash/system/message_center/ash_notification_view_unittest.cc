@@ -12,6 +12,7 @@
 #include "ash/style/icon_button.h"
 #include "ash/system/message_center/ash_notification_expand_button.h"
 #include "ash/system/message_center/message_center_style.h"
+#include "ash/system/message_center/metrics_utils.h"
 #include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/message_center/unified_message_list_view.h"
@@ -19,6 +20,7 @@
 #include "ash/test/ash_test_base.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animator.h"
@@ -109,16 +111,20 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
   // Create a test notification that is used in the view.
   std::unique_ptr<Notification> CreateTestNotification(
       bool has_image = false,
-      bool show_snooze_button = false) {
+      bool show_snooze_button = false,
+      bool has_message = true,
+      message_center::NotificationType notification_type =
+          message_center::NOTIFICATION_TYPE_BASE_FORMAT) {
     message_center::RichNotificationData data;
     data.settings_button_handler =
         message_center::SettingsButtonHandler::INLINE;
     data.should_show_snooze_button = show_snooze_button;
 
+    std::u16string message = has_message ? u"message" : u"";
+
     std::unique_ptr<Notification> notification = std::make_unique<Notification>(
-        message_center::NOTIFICATION_TYPE_BASE_FORMAT,
-        base::NumberToString(current_id_++), u"title", u"message",
-        CreateTestImage(80, 80), u"display source", GURL(),
+        notification_type, base::NumberToString(current_id_++), u"title",
+        message, CreateTestImage(80, 80), u"display source", GURL(),
         message_center::NotifierId(message_center::NotifierType::APPLICATION,
                                    "extension_id"),
         data, delegate_);
@@ -191,10 +197,11 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
       EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
     }
 
-    // Ensure there is one more frame presented after animation finishes to
-    // allow animation throughput data to be passed from cc to ui.
-    std::ignore =
-        ui::WaitForNextFrameToBePresented(compositor, base::Milliseconds(200));
+    // Force a frame then wait, ensuring there is one more frame presented after
+    // animation finishes to allow animation throughput data to be passed from
+    // cc to ui.
+    compositor->ScheduleFullRedraw();
+    EXPECT_TRUE(ui::WaitForNextFrameToBePresented(compositor));
 
     // Smoothness should be recorded.
     histograms.ExpectTotalCount(animation_histogram_name, data_point_count);
@@ -217,6 +224,9 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
   }
   NotificationHeaderView* GetHeaderRow(AshNotificationView* view) {
     return view->header_row();
+  }
+  views::View* GetLeftContent(AshNotificationView* view) {
+    return view->left_content();
   }
   views::View* GetTitleRowDivider(AshNotificationView* view) {
     return view->title_row_->title_row_divider_;
@@ -246,6 +256,9 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
   views::View* GetActionsRow(AshNotificationView* view) {
     return view->actions_row();
   }
+  views::View* GetActionButtonsRow(AshNotificationView* view) {
+    return view->action_buttons_row();
+  }
   std::vector<views::LabelButton*> GetActionButtons(AshNotificationView* view) {
     return view->action_buttons();
   }
@@ -253,9 +266,11 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
       AshNotificationView* view) {
     return view->inline_reply();
   }
+  views::View* GetInlineSettingsRow(AshNotificationView* view) {
+    return view->inline_settings_row();
+  }
 
   AshNotificationView* notification_view() { return notification_view_.get(); }
-  views::View* left_content() { return notification_view_->left_content(); }
   views::View* content_row() { return notification_view_->content_row(); }
   RoundedImageView* app_icon_view() {
     return notification_view_->app_icon_view_;
@@ -266,9 +281,6 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
   }
   views::FlexLayoutView* expand_button_container() {
     return notification_view_->expand_button_container_;
-  }
-  views::View* inline_settings_row() {
-    return notification_view()->inline_settings_row();
   }
   views::LabelButton* turn_off_notifications_button() {
     return notification_view_->turn_off_notifications_button_;
@@ -294,9 +306,9 @@ class AshNotificationViewTest : public AshTestBase, public views::ViewObserver {
 TEST_F(AshNotificationViewTest, UpdateViewsOrderingTest) {
   EXPECT_NE(nullptr, title_row());
   EXPECT_NE(nullptr, GetMessageLabel(notification_view()));
-  EXPECT_EQ(0, left_content()->GetIndexOf(title_row()));
-  EXPECT_EQ(1,
-            left_content()->GetIndexOf(GetMessageLabel(notification_view())));
+  EXPECT_EQ(0, GetLeftContent(notification_view())->GetIndexOf(title_row()));
+  EXPECT_EQ(1, GetLeftContent(notification_view())
+                   ->GetIndexOf(GetMessageLabel(notification_view())));
 
   std::unique_ptr<Notification> notification = CreateTestNotification();
   notification->set_title(std::u16string());
@@ -305,8 +317,8 @@ TEST_F(AshNotificationViewTest, UpdateViewsOrderingTest) {
 
   EXPECT_EQ(nullptr, title_row());
   EXPECT_NE(nullptr, GetMessageLabel(notification_view()));
-  EXPECT_EQ(0,
-            left_content()->GetIndexOf(GetMessageLabel(notification_view())));
+  EXPECT_EQ(0, GetLeftContent(notification_view())
+                   ->GetIndexOf(GetMessageLabel(notification_view())));
 
   notification->set_title(u"title");
 
@@ -314,9 +326,9 @@ TEST_F(AshNotificationViewTest, UpdateViewsOrderingTest) {
 
   EXPECT_NE(nullptr, title_row());
   EXPECT_NE(nullptr, GetMessageLabel(notification_view()));
-  EXPECT_EQ(0, left_content()->GetIndexOf(title_row()));
-  EXPECT_EQ(1,
-            left_content()->GetIndexOf(GetMessageLabel(notification_view())));
+  EXPECT_EQ(0, GetLeftContent(notification_view())->GetIndexOf(title_row()));
+  EXPECT_EQ(1, GetLeftContent(notification_view())
+                   ->GetIndexOf(GetMessageLabel(notification_view())));
 }
 
 TEST_F(AshNotificationViewTest, CreateOrUpdateTitle) {
@@ -495,14 +507,14 @@ TEST_F(AshNotificationViewTest, ExpandButtonVisibility) {
 TEST_F(AshNotificationViewTest, LeftContentNotVisibleInGroupedNotifications) {
   auto notification = CreateTestNotification();
 
-  EXPECT_TRUE(left_content()->GetVisible());
+  EXPECT_TRUE(GetLeftContent(notification_view())->GetVisible());
 
   auto group_child = CreateTestNotification();
   notification_view()->AddGroupNotification(*group_child.get(), false);
-  EXPECT_FALSE(left_content()->GetVisible());
+  EXPECT_FALSE(GetLeftContent(notification_view())->GetVisible());
 
   notification_view()->RemoveGroupNotification(group_child->id());
-  EXPECT_TRUE(left_content()->GetVisible());
+  EXPECT_TRUE(GetLeftContent(notification_view())->GetVisible());
 }
 
 TEST_F(AshNotificationViewTest, WarningLevelInSummaryText) {
@@ -537,7 +549,7 @@ TEST_F(AshNotificationViewTest, InlineSettingsBlockAll) {
   notification_view()->UpdateWithNotification(*notification);
 
   ToggleInlineSettings(notification_view());
-  EXPECT_TRUE(inline_settings_row()->GetVisible());
+  EXPECT_TRUE(GetInlineSettingsRow(notification_view())->GetVisible());
 
   // Clicking the turn off button should disable notifications.
   views::test::ButtonTestApi test_api(turn_off_notifications_button());
@@ -550,13 +562,13 @@ TEST_F(AshNotificationViewTest, InlineSettingsCancel) {
   notification_view()->UpdateWithNotification(*notification);
 
   ToggleInlineSettings(notification_view());
-  EXPECT_TRUE(inline_settings_row()->GetVisible());
+  EXPECT_TRUE(GetInlineSettingsRow(notification_view())->GetVisible());
 
   // Clicking the cancel button should not disable notifications.
   views::test::ButtonTestApi test_api(inline_settings_cancel_button());
   test_api.NotifyClick(DummyEvent());
 
-  EXPECT_FALSE(inline_settings_row()->GetVisible());
+  EXPECT_FALSE(GetInlineSettingsRow(notification_view())->GetVisible());
   EXPECT_FALSE(delegate()->disable_notification_called());
 }
 
@@ -671,15 +683,25 @@ TEST_F(AshNotificationViewTest, ImageExpandCollapseAnimationsRecordSmoothness) {
   GetPrimaryUnifiedSystemTray()->ShowBubble();
   auto* notification_view =
       GetNotificationViewFromMessageCenter(notification->id());
-  notification_view->SetExpanded(false);
 
+  // When we use different images for icon view and image container view, we
+  // fade out and scale down image container view when changing to collapsed
+  // state. We fade in, scale and translate when changing to expanded state.
+  EXPECT_TRUE(notification_view->IsExpanded());
   base::HistogramTester histograms;
+  notification_view->ToggleExpand();
+  EXPECT_FALSE(notification_view->IsExpanded());
+
+  CheckSmoothnessRecorded(
+      histograms, GetImageContainerView(notification_view),
+      "Ash.NotificationView.ImageContainerView.FadeOut.AnimationSmoothness");
+  CheckSmoothnessRecorded(histograms, GetImageContainerView(notification_view),
+                          "Ash.NotificationView.ImageContainerView."
+                          "ScaleDown.AnimationSmoothness");
+
   notification_view->ToggleExpand();
   EXPECT_TRUE(notification_view->IsExpanded());
 
-  // When we use different images for icon view and image container view, we
-  // will fade in, scale and translate image container view when changing to
-  // expand state.
   CheckSmoothnessRecorded(
       histograms, GetImageContainerView(notification_view),
       "Ash.NotificationView.ImageContainerView.FadeIn.AnimationSmoothness");
@@ -740,8 +762,16 @@ TEST_F(AshNotificationViewTest, GroupExpandCollapseAnimationsRecordSmoothness) {
   // recorded here.
   CheckSmoothnessRecorded(
       histograms_expanded,
+      GetCollapsedSummaryView(
+          GetFirstGroupedChildNotificationView(notification_view)),
+      "Ash.NotificationView.CollapsedSummaryView.FadeOut.AnimationSmoothness");
+  CheckSmoothnessRecorded(
+      histograms_expanded,
       GetMainView(GetFirstGroupedChildNotificationView(notification_view)),
       "Ash.NotificationView.MainView.FadeIn.AnimationSmoothness");
+  CheckSmoothnessRecorded(
+      histograms_expanded, GetExpandButton(notification_view)->label_for_test(),
+      "Ash.NotificationView.ExpandButtonLabel.FadeOut.AnimationSmoothness");
   CheckSmoothnessRecorded(
       histograms_expanded, GetExpandButton(notification_view),
       "Ash.NotificationView.ExpandButton.BoundsChange.AnimationSmoothness");
@@ -752,6 +782,10 @@ TEST_F(AshNotificationViewTest, GroupExpandCollapseAnimationsRecordSmoothness) {
 
   // All the animations of views in collapsed state should be performed and
   // recorded here.
+  CheckSmoothnessRecorded(
+      histograms_collapsed,
+      GetMainView(GetFirstGroupedChildNotificationView(notification_view)),
+      "Ash.NotificationView.MainView.FadeOut.AnimationSmoothness");
   CheckSmoothnessRecorded(
       histograms_collapsed,
       GetCollapsedSummaryView(
@@ -790,13 +824,23 @@ TEST_F(AshNotificationViewTest, InlineReplyAnimationsRecordSmoothness) {
   message_center::MessageCenter::Get()->UpdateNotification(
       notification->id(), std::move(notification));
 
-  // Clicking inline reply button and check fade in animation.
+  // Clicking inline reply button and check animations.
   EXPECT_TRUE(notification_view->IsExpanded());
   views::test::ButtonTestApi test_api(GetActionButtons(notification_view)[1]);
   test_api.NotifyClick(DummyEvent());
+
+  CheckSmoothnessRecorded(
+      histograms, GetActionButtonsRow(notification_view),
+      "Ash.NotificationView.ActionButtonsRow.FadeOut.AnimationSmoothness");
   CheckSmoothnessRecorded(
       histograms, GetInlineReply(notification_view),
       "Ash.NotificationView.InlineReply.FadeIn.AnimationSmoothness");
+
+  // Toggle expand to close inline reply. It should fade out.
+  notification_view->ToggleExpand();
+  CheckSmoothnessRecorded(
+      histograms, GetInlineReply(notification_view),
+      "Ash.NotificationView.InlineReply.FadeOut.AnimationSmoothness");
 }
 
 TEST_F(AshNotificationViewTest, InlineSettingsAnimationsRecordSmoothness) {
@@ -813,21 +857,91 @@ TEST_F(AshNotificationViewTest, InlineSettingsAnimationsRecordSmoothness) {
   GetPrimaryUnifiedSystemTray()->ShowBubble();
   auto* notification_view =
       GetNotificationViewFromMessageCenter(notification->id());
-  EXPECT_TRUE(notification_view->IsExpanded());
 
-  // Toggle inline settings. Main right view should fade in and histogram
-  // recorded.
+  // Set to collapsed state so that header row will fade out when coming back to
+  // main notification view.
+  notification_view->SetExpanded(false);
+
+  // Toggle inline settings to access inline settings view.
   ToggleInlineSettings(notification_view);
+
+  // Check fade out views.
+  CheckSmoothnessRecorded(
+      histograms, GetLeftContent(notification_view),
+      "Ash.NotificationView.LeftContent.FadeOut.AnimationSmoothness");
+  CheckSmoothnessRecorded(
+      histograms, GetExpandButton(notification_view),
+      "Ash.NotificationView.ExpandButton.FadeOut.AnimationSmoothness");
+  CheckSmoothnessRecorded(
+      histograms, GetIconView(notification_view),
+      "Ash.NotificationView.IconView.FadeOut.AnimationSmoothness");
+
+  // Check fade in main right view.
   CheckSmoothnessRecorded(
       histograms, GetMainRightView(notification_view),
       "Ash.NotificationView.MainRightView.FadeIn.AnimationSmoothness");
 
-  // Toggle inline settings again and same thing should happen.
+  // Toggle inline settings again to come back.
   ToggleInlineSettings(notification_view);
+
+  CheckSmoothnessRecorded(
+      histograms, GetInlineSettingsRow(notification_view),
+      "Ash.NotificationView.InlineSettingsRow.FadeOut.AnimationSmoothness");
+
   CheckSmoothnessRecorded(
       histograms, GetMainRightView(notification_view),
       "Ash.NotificationView.MainRightView.FadeIn.AnimationSmoothness",
       /*data_point_count=*/2);
+}
+
+TEST_F(AshNotificationViewTest, RecordExpandButtonClickAction) {
+  base::HistogramTester histograms;
+  auto notification = CreateTestNotification();
+  notification_view()->UpdateWithNotification(*notification);
+
+  notification_view()->SetExpanded(false);
+  notification_view()->ToggleExpand();
+  histograms.ExpectBucketCount(
+      "Ash.NotificationView.ExpandButton.ClickAction",
+      metrics_utils::ExpandButtonClickAction::EXPAND_INDIVIDUAL, 1);
+
+  notification_view()->ToggleExpand();
+  histograms.ExpectBucketCount(
+      "Ash.NotificationView.ExpandButton.ClickAction",
+      metrics_utils::ExpandButtonClickAction::COLLAPSE_INDIVIDUAL, 1);
+
+  notification->SetGroupParent();
+  notification_view()->UpdateWithNotification(*notification);
+
+  notification_view()->SetExpanded(false);
+  notification_view()->ToggleExpand();
+  histograms.ExpectBucketCount(
+      "Ash.NotificationView.ExpandButton.ClickAction",
+      metrics_utils::ExpandButtonClickAction::EXPAND_GROUP, 1);
+
+  notification_view()->ToggleExpand();
+  histograms.ExpectBucketCount(
+      "Ash.NotificationView.ExpandButton.ClickAction",
+      metrics_utils::ExpandButtonClickAction::COLLAPSE_GROUP, 1);
+}
+
+TEST_F(AshNotificationViewTest, OnThemeChangedWithoutMessageLabel) {
+  EXPECT_NE(nullptr, GetMessageLabel(notification_view()));
+
+  std::unique_ptr<Notification> notification = CreateTestNotification(
+      /*has_image=*/false, /*show_snooze_button=*/false, /*has_message=*/true,
+      message_center::NOTIFICATION_TYPE_PROGRESS);
+  notification_view()->UpdateWithNotification(*notification);
+  EXPECT_EQ(nullptr, GetMessageLabel(notification_view()));
+
+  notification = CreateTestNotification(
+      /*has_image=*/false, /*show_snooze_button=*/false, /*has_message=*/false);
+  notification_view()->UpdateWithNotification(*notification);
+  EXPECT_EQ(nullptr, GetMessageLabel(notification_view()));
+
+  // Verify OnThemeChanged doesn't break with a null message_label()
+  notification_view()->OnThemeChanged();
+  EXPECT_EQ(nullptr, GetMessageLabel(notification_view()));
 }
 
 }  // namespace ash

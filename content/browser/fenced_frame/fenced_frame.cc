@@ -82,7 +82,8 @@ FencedFrame::~FencedFrame() {
   frame_tree_.reset();
 }
 
-void FencedFrame::Navigate(const GURL& url) {
+void FencedFrame::Navigate(const GURL& url,
+                           base::TimeTicks navigation_start_time) {
   FrameTreeNode* inner_root = frame_tree_->root();
 
   // TODO(crbug.com/1237552): Resolve the discussion around navigations being
@@ -107,12 +108,7 @@ void FencedFrame::Navigate(const GURL& url) {
       /*post_body=*/nullptr, /*extra_headers=*/"",
       /*blob_url_loader_factory=*/nullptr,
       network::mojom::SourceLocation::New(), /*has_user_gesture=*/false,
-      absl::nullopt);
-}
-
-void FencedFrame::DidStopLoading() {
-  if (on_did_finish_loading_callback_for_testing_)
-    std::move(on_did_finish_loading_callback_for_testing_).Run();
+      /*impression=*/absl::nullopt, navigation_start_time);
 }
 
 bool FencedFrame::IsHidden() {
@@ -171,7 +167,9 @@ void FencedFrame::CreateProxyAndAttachToOuterFrameTree() {
   RenderViewHost* rvh =
       inner_render_manager->current_frame_host()->GetRenderViewHost();
   if (!inner_render_manager->InitRenderView(
-          inner_render_manager->current_frame_host()->GetSiteInstance(),
+          inner_render_manager->current_frame_host()
+              ->GetSiteInstance()
+              ->group(),
           static_cast<RenderViewHostImpl*>(rvh), nullptr)) {
     return;
   }
@@ -189,21 +187,9 @@ const base::UnguessableToken& FencedFrame::GetDevToolsFrameToken() const {
   return frame_tree_->GetMainFrame()->GetDevToolsFrameToken();
 }
 
-void FencedFrame::WaitForDidStopLoadingForTesting() {
-  if (!frame_tree_->IsLoading())
-    return;
-
-  base::RunLoop run_loop;
-  on_did_finish_loading_callback_for_testing_ = run_loop.QuitClosure();
-  run_loop.Run();
-}
-
 void FencedFrame::NotifyNavigationStateChanged(InvalidateTypes changed_flags) {}
 
-void FencedFrame::NotifyBeforeFormRepostWarningShow() {
-  // TODO(https://crbug.com/1263557): Should we call
-  // web_contents_->NotifyBeforeFormRepostWarningShow()?
-}
+void FencedFrame::NotifyBeforeFormRepostWarningShow() {}
 
 void FencedFrame::NotifyNavigationEntryCommitted(
     const LoadCommittedDetails& load_details) {}
@@ -217,8 +203,8 @@ void FencedFrame::NotifyNavigationListPruned(
 void FencedFrame::NotifyNavigationEntriesDeleted() {}
 
 void FencedFrame::ActivateAndShowRepostFormWarningDialog() {
-  // TODO(https://crbug.com/1263557): The continuation callback would goto the
-  // wrong NavigationController so perhaps we need to pass a callback in?
+  // Not supported, cancel pending reload.
+  frame_tree_->controller().CancelPendingReload();
 }
 
 bool FencedFrame::ShouldPreserveAbortedURLs() {

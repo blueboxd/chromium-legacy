@@ -51,6 +51,7 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/first_party_sets_handler.h"
 #include "content/public/browser/network_context_client_base.h"
 #include "content/public/browser/network_service_instance.h"
 #include "content/public/common/content_switches.h"
@@ -64,6 +65,7 @@
 #include "net/cookies/cookie_util.h"
 #include "net/net_buildflags.h"
 #include "net/third_party/uri_template/uri_template.h"
+#include "sandbox/features.h"
 #include "sandbox/policy/features.h"
 #include "services/cert_verifier/public/mojom/cert_verifier_service_factory.mojom.h"
 #include "services/network/network_service.h"
@@ -597,13 +599,8 @@ void SystemNetworkContextManager::OnNetworkServiceCreated(
 
   component_updater::FirstPartySetsComponentInstallerPolicy::
       ReconfigureAfterNetworkRestart(base::BindOnce([](base::File sets_file) {
-        // We use a fresh pointer here (instead of using `network_service`
-        // from the enclosing scope) to avoid use-after-free bugs, since
-        // `network_service` is not guaranteed to live until the
-        // invocation of this callback.
-        network::mojom::NetworkService* network_service =
-            content::GetNetworkService();
-        network_service->SetFirstPartySets(std::move(sets_file));
+        content::FirstPartySetsHandler::GetInstance()->SetPublicFirstPartySets(
+            std::move(sets_file));
       }));
 
   UpdateExplicitlyAllowedNetworkPorts();
@@ -742,7 +739,7 @@ SystemNetworkContextManager::GetNetExportFileWriter() {
 // static
 bool SystemNetworkContextManager::IsNetworkSandboxEnabled() {
 #if BUILDFLAG(IS_WIN)
-  if (!sandbox::policy::features::IsWinNetworkServiceSandboxSupported())
+  if (!sandbox::features::IsAppContainerSandboxSupported())
     return false;
   auto* local_state = g_browser_process->local_state();
   if (local_state &&

@@ -149,12 +149,33 @@ chromium-metrics-reviews@google.com.
 </variants>
 
 <histogram name="Accessibility.ActiveTime" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>aleventhal@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
   <summary>
     The amount of time accessibility was enabled and actively used. Reported
     when we switch states from active to inactive.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.Android.Cache.MaxNodesInCache" units="count"
+    expires_after="2022-08-22">
+  <owner>mschillaci@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Tracks the maximum number of AccessibilityNodeInfo objects that were stored
+    in the Java-side cache during a single session.
+  </summary>
+</histogram>
+
+<histogram name="Accessibility.Android.Cache.PercentageRetrievedFromCache"
+    units="%" expires_after="2022-08-22">
+  <owner>mschillaci@google.com</owner>
+  <owner>chrome-a11y-core@google.com</owner>
+  <summary>
+    Tracks the percentage of calls from the Android framework to create a new
+    AccessibilityNodeInfo object that were serviced from the cache rather than
+    constructing the object from scratch during a single session.
   </summary>
 </histogram>
 
@@ -169,7 +190,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Android.OnDemand.OneHundredPercentEventsDropped"
-    units="count" expires_after="2022-06-26">
+    units="count" expires_after="2022-09-11">
   <owner>mschillaci@google.com</owner>
   <owner>abigailbklein@google.com</owner>
   <summary>
@@ -200,7 +221,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Android.OnDemand.PercentageDropped" units="%"
-    expires_after="2022-08-07">
+    expires_after="2022-09-11">
   <owner>mschillaci@google.com</owner>
   <owner>abigailbklein@google.com</owner>
   <summary>
@@ -258,7 +279,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Android.UserFontSizePref.Change" units="%"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>twellington@chromium.org</owner>
   <owner>skym@chromium.org</owner>
   <summary>
@@ -269,7 +290,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Android.UserFontSizePref.OnStartup" units="%"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>twellington@chromium.org</owner>
   <owner>skym@chromium.org</owner>
   <summary>
@@ -307,7 +328,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.AutoDisabled.DisabledTime" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>abigailbklein@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -327,7 +348,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.AutoDisabled.EventCount" units="count"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>abigailbklein@google.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
@@ -999,7 +1020,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.InactiveTime" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>aleventhal@chromium.org</owner>
   <owner>abigailbklein@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
@@ -1316,7 +1337,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Performance.ProcessDeferredAccessibilityEvents"
-    units="ms" expires_after="2022-06-26">
+    units="ms" expires_after="2022-08-28">
   <owner>aleventhal@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1328,7 +1349,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.Performance.SendPendingAccessibilityEvents"
-    units="ms" expires_after="2022-06-26">
+    units="ms" expires_after="2022-08-28">
   <owner>aleventhal@chromium.org</owner>
   <owner>janewman@microsoft.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
@@ -1491,10 +1512,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.WinAPIs.GetPropertyValue"
-    enum="AccessibilityWinAPIGetPropertyValueEnum" expires_after="2022-03-19">
+    enum="AccessibilityWinAPIGetPropertyValueEnum" expires_after="2022-09-19">
   <owner>aleventhal@chromium.org</owner>
   <owner>nektar@chromium.org</owner>
-  <owner>kbabbitt@microsoft.com</owner>
+  <owner>dlibby@microsoft.com</owner>
   <owner>chrome-a11y-core@google.com</owner>
   <summary>
     Tracks properties requested via UI Automation GetPropertyValue().
@@ -1502,7 +1523,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Accessibility.WinHighContrastTheme"
-    enum="AccessibilityHighContrastColorScheme" expires_after="2022-06-12">
+    enum="AccessibilityHighContrastColorScheme" expires_after="2022-08-21">
   <owner>aleventhal@chromium.org</owner>
   <owner>almaher@microsoft.com</owner>
   <owner>weblayoutdev@microsoft.com</owner>
@@ -1735,7 +1756,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.ReaderShownForPageLoad" enum="Boolean"
-    expires_after="2022-06-26">
+    expires_after="2022-08-28">
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records if the panel became visible at any point after a page was navigated.
@@ -1853,7 +1874,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="DomDistiller.Time.ViewingReaderModePage" units="ms"
-    expires_after="2022-06-19">
+    expires_after="2022-08-21">
   <owner>mdjones@chromium.org</owner>
   <summary>
     Records the amount of time a user spent on a Reader Mode Page.
@@ -1965,7 +1986,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="TextToSpeech.Utterance.HasVoiceName"
-    enum="TextToSpeechHasVoiceName" expires_after="2022-06-19">
+    enum="TextToSpeechHasVoiceName" expires_after="2022-08-21">
   <owner>katie@chromium.org</owner>
   <summary>
     True if an utterance spoken via synthesized text-to-speech requested a

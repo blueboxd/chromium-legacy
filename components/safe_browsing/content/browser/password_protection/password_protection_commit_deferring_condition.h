@@ -5,7 +5,7 @@
 #ifndef COMPONENTS_SAFE_BROWSING_CONTENT_BROWSER_PASSWORD_PROTECTION_PASSWORD_PROTECTION_COMMIT_DEFERRING_CONDITION_H_
 #define COMPONENTS_SAFE_BROWSING_CONTENT_BROWSER_PASSWORD_PROTECTION_PASSWORD_PROTECTION_COMMIT_DEFERRING_CONDITION_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/commit_deferring_condition.h"
 
 namespace content {
@@ -31,7 +31,7 @@ class PasswordProtectionCommitDeferringCondition
  public:
   PasswordProtectionCommitDeferringCondition(
       content::NavigationHandle& navigation_handle,
-      scoped_refptr<PasswordProtectionRequestContent> request);
+      PasswordProtectionRequestContent& request);
 
   PasswordProtectionCommitDeferringCondition(
       const PasswordProtectionCommitDeferringCondition&) = delete;
@@ -56,19 +56,23 @@ class PasswordProtectionCommitDeferringCondition
   // WillCommitNavigation will not defer the commit.
   void ResumeNavigation();
 
-  // Returns whether the NavigationHandle tried to commit but was deferred from
-  // doing so by this condition.
-  bool is_deferred_for_testing() const { return !resume_.is_null(); }
+  // For testing only. Registers a callback that will be invoked when
+  // WillCommitNavigatoin is called by the navigation. This is useful for
+  // yielding in a test when this condition is invoked.
+  void register_invoke_callback_for_testing(base::OnceClosure callback) {
+    invoke_callback_for_testing_ = std::move(callback);
+  }
 
  private:
   // A pointer to the PasswordProtectionRequestContent on whose behalf this
   // condition is deferring navigations.
-  // TODO(bokan): Replace with a WeakPtr.
-  scoped_refptr<PasswordProtectionRequestContent> request_;
+  base::WeakPtr<PasswordProtectionRequestContent> request_;
 
   // The resume closure used to resume the navigation past this
   // CommitDeferringCondition.
   base::OnceClosure resume_;
+
+  base::OnceClosure invoke_callback_for_testing_;
 
   // Set to true to indicate the request has asked to resume the navigation,
   // i.e. the request result didn't result in a modal being shown, or the user

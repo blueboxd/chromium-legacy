@@ -1,7 +1,32 @@
 <style>
   #container {
-    display: flex;
-    flex-flow: row wrap;
+    align-items: flex-start;
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    padding: 16px 0;
+  }
+  .image-container {
+    cursor: pointer;
+    height: 64px;
+    position: relative;
+    width: 64px;
+  }
+  .image-container img {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 50%;
+    height: 62px;
+    width: 62px;
+  }
+  .image-container img:focus-visible {
+    outline: 2px solid var(--cros-focus-ring-color);
+  }
+  .image-container img:hover {
+    background-color: var(--cros-highlight-color-focus);
+  }
+  paper-ripple {
+    color: rgba(var(--cros-ripple-color-rgb), 1);
+    --paper-ripple-opacity: var(--cros-button-primary-ripple-opacity);
   }
   avatar-camera {
     bottom: 0;
@@ -11,42 +36,93 @@
     top: 0;
   }
   .folder-container {
-    background-color: rgb(151, 208, 235);
+    background-color: var(--cros-highlight-color);
     border-radius: 100%;
+    cursor: pointer;
     display: inline-block;
-    height: 96px;
-    line-height: 96px;
+    height: 64px;
+    line-height: 64px;
+    position: relative;
     text-align: center;
     vertical-align: middle;
-    width: 96px;
+    width: 64px;
+  }
+  .folder-container:hover {
+    background-color: var(--cros-text-highlight-color);
+  }
+  .folder-container:focus-visible {
+    outline: 2px solid var(--cros-focus-ring-color);
+  }
+  .folder-container paper-ripple {
+    color: rgba(var(--cros-ripple-color-prominent-rgb), 1);
+    --paper-ripple-opacity: var(--cros-button-primary-ripple-opacity);
   }
   #folderIcon {
     line-height: inherit;
+    --iron-icon-height: 20px;
+    --iron-icon-width: 20px;
+    --iron-icon-fill-color: var(--cros-link-color);
+  }
+  .image-container iron-icon[icon='personalization:checkmark'] {
+    --iron-icon-height: 20px;
+    --iron-icon-width: 20px;
+    bottom: 0;
+    position: absolute;
+    right: 0;
+  }
+  .image-container:not([aria-selected='true'])
+      iron-icon[icon='personalization:checkmark'] {
+    display: none;
   }
 </style>
 <div id="container">
-  <p>Avatar list</p>
   <template is="dom-if" if="[[isCameraPresent_]]">
     <div id="openCamera" on-click="openCamera_">
       <!-- TODO(cowmoo) placeholder string -->
       <p>Open Camera</p>
     </div>
+    <div id="openVideo" on-click="openVideo_">
+      <!-- TODO(cowmoo) placeholder string -->
+      <p>Open Video</p>
+    </div>
   </template>
   <div class="folder-container">
-    <iron-icon id="folderIcon" icon="cr:folder-filled"
+    <paper-ripple class="circle"></paper-ripple>
+    <iron-icon id="folderIcon" icon="personalization:folder"
         on-click="onSelectImageFromDisk_" on-keypress="onSelectImageFromDisk_">
     </iron-icon>
   </div>
+  <template is="dom-if" if="[[lastExternalUserImageUrl_]]">
+    <div class="image-container"
+        aria-selected$="[[getExternalImageAriaSelected_(image_, lastExternalUserImageUrl_)]]">
+      <paper-ripple class="circle"></paper-ripple>
+      <img id="lastExternalImage" src="[[lastExternalUserImageUrl_.url]]"
+          on-click="onSelectLastExternalUserImage_"
+          on-keypress="onSelectLastExternalUserImage_">
+      <iron-icon icon="personalization:checkmark"></iron-icon>
+    </div>
+  </template>
   <template is="dom-if" if="[[profileImage_]]">
-    <img id="profileImage" src$="[[profileImage_.url]]"
-        on-click="onSelectProfileImage_"
-        on-keypress="onSelectProfileImage_">
+    <div class="image-container"
+        aria-selected$="[[getProfileImageAriaSelected_(profileImage_, image_)]]">
+      <paper-ripple class="circle"></paper-ripple>
+      <img id="profileImage" src="[[profileImage_.url]]"
+          on-click="onSelectProfileImage_"
+          on-keypress="onSelectProfileImage_">
+      <iron-icon icon="personalization:checkmark"></iron-icon>
+    </div>
   </template>
   <template is="dom-repeat" items="[[defaultUserImages_]]">
-    <img src="[[item.url.url]]" data-id$="[[item.index]]"
-        on-click="onSelectDefaultImage_" on-keypress="onSelectDefaultImage_">
+    <div class="image-container"
+        aria-selected$="[[getDefaultUserImageAriaSelected_(item, image_)]]">
+      <paper-ripple class="circle"></paper-ripple>
+      <img src="[[item.url.url]]" data-id$="[[item.index]]"
+          on-click="onSelectDefaultImage_" on-keypress="onSelectDefaultImage_">
+      <iron-icon icon="personalization:checkmark"></iron-icon>
+    </div>
   </template>
 </div>
-<template is="dom-if" if="[[shouldShowCameraUi_]]" restamp>
-  <avatar-camera on-close="onCameraClosed_"></avatar-camera>
+<template is="dom-if" if="[[cameraMode_]]" restamp>
+  <avatar-camera on-close="onCameraClosed_" mode="[[cameraMode_]]">
+  </avatar-camera>
 </template>

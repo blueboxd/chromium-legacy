@@ -275,6 +275,15 @@ void DeviceCloudPolicyInitializer::TryToStartConnection() {
     return;
   }
 
+  if (!policy_store_->is_initialized() || !policy_store_->has_policy()) {
+    return;
+  }
+
+  if (!policy_manager_store_ready_notified_) {
+    policy_manager_store_ready_notified_ = true;
+    policy_manager_->OnPolicyStoreReady(install_attributes_);
+  }
+
   // TODO(crbug.com/1304636): Move this and all other checks from here to a
   // separate method.
   if (!policy_manager_->HasSchemaRegistry()) {
@@ -291,10 +300,10 @@ void DeviceCloudPolicyInitializer::TryToStartConnection() {
   // policy on state keys being available on reven.
   // TODO(b/208705225): Remove this special case when reven supports state keys.
   const bool allow_init_without_state_keys = ash::switches::IsRevenBranding();
+
   // TODO(b/181140445): If we had a separate state keys upload request to DM
   // Server we could drop the `state_keys_broker_->available()` requirement.
-  if (policy_store_->is_initialized() && policy_store_->has_policy() &&
-      (allow_init_without_state_keys || state_keys_broker_->available())) {
+  if (allow_init_without_state_keys || state_keys_broker_->available()) {
     StartConnection(CreateClient(enterprise_service_));
   }
 }

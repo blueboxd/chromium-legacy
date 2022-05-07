@@ -12,15 +12,18 @@
 #include "base/metrics/field_trial_params.h"
 #include "build/build_config.h"
 
-namespace password_manager {
+#if BUILDFLAG(IS_ANDROID)
+#include "components/password_manager/core/common/password_manager_feature_variations_android.h"
+#endif
 
-namespace features {
+namespace password_manager::features {
 
 // All features in alphabetical order. The features should be documented
 // alongside the definition of their values in the .cc file.
 
 extern const base::Feature kBiometricTouchToFill;
 extern const base::Feature kDetectFormSubmissionOnFormClear;
+extern const base::Feature kEnableFaviconForPasswords;
 extern const base::Feature kEnableManualPasswordGeneration;
 extern const base::Feature kEnableOverwritingPlaceholderUsernames;
 extern const base::Feature kEnablePasswordsAccountStorage;
@@ -34,6 +37,7 @@ extern const base::Feature kInferConfirmationPasswordField;
 extern const base::Feature kIOSEnablePasswordManagerBrandingUpdate;
 extern const base::Feature kMuteCompromisedPasswords;
 extern const base::Feature kPasswordNotes;
+extern const base::Feature kSendPasswords;
 extern const base::Feature kLeakDetectionUnauthenticated;
 extern const base::Feature kPasswordChange;
 extern const base::Feature kPasswordChangeOnlyRecentCredentials;
@@ -65,6 +69,7 @@ extern const base::Feature kUnifiedPasswordManagerShadowAndroid;
 extern const base::Feature kUnifiedPasswordManagerShadowWriteOperationsAndroid;
 extern const base::Feature kUnifiedPasswordManagerSyncUsingAndroidBackendOnly;
 #endif
+extern const base::Feature kUnifiedPasswordManagerDesktop;
 extern const base::Feature kUsernameFirstFlow;
 extern const base::Feature kUsernameFirstFlowFilling;
 extern const base::Feature kUsernameFirstFlowFallbackCrowdsourcing;
@@ -73,6 +78,16 @@ extern const base::Feature kUsernameFirstFlowFallbackCrowdsourcing;
 extern const base::FeatureParam<bool> kPasswordChangeLiveExperimentParam;
 #if BUILDFLAG(IS_ANDROID)
 extern const base::FeatureParam<int> kMigrationVersion;
+constexpr base::FeatureParam<UpmExperimentVariation>::Option
+    kUpmExperimentVariationOption[] = {
+        {UpmExperimentVariation::kEnableForSyncingUsers, "0"},
+        {UpmExperimentVariation::kShadowSyncingUsers, "1"}};
+
+constexpr base::FeatureParam<UpmExperimentVariation>
+    kUpmExperimentVariationParam{&kUnifiedPasswordManagerAndroid, "stage",
+                                 UpmExperimentVariation::kEnableForSyncingUsers,
+                                 &kUpmExperimentVariationOption};
+
 #endif
 
 // Field trial and corresponding parameters.
@@ -96,8 +111,12 @@ extern const char kPasswordChangeInSettingsWithForcedWarningForEverySite[];
 // enabled.
 bool IsPasswordScriptsFetchingEnabled();
 
-}  // namespace features
+#if BUILDFLAG(IS_ANDROID)
+// Returns true if the unified password manager feature is active and in a stage
+// that allows to use the new UI.
+bool UsesUnifiedPasswordManagerUi();
+#endif  // IS_ANDROID
 
-}  // namespace password_manager
+}  // namespace password_manager::features
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_COMMON_PASSWORD_MANAGER_FEATURES_H_

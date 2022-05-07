@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <limits>
 #include <memory>
 #include <string>
 
@@ -15,6 +16,7 @@
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
 
 #if defined(USE_SYSTEM_MINIZIP)
@@ -46,6 +48,10 @@ class WriterDelegate {
   // may apply some of the permissions (for example, the executable bit) to the
   // output file.
   virtual void SetPosixFilePermissions(int mode) {}
+
+  // Called if an error occurred while extracting the file. The WriterDelegate
+  // can then remove and clean up the partially extracted data.
+  virtual void OnError() {}
 };
 
 // This class is used for reading ZIP archives. A typical use case of this class
@@ -60,8 +66,7 @@ class WriterDelegate {
 //
 //   while (const ZipReader::entry* entry = reader.Next()) {
 //     auto writer = CreateFilePathWriterDelegate(extract_dir, entry->path);
-//     if (!reader.ExtractCurrentEntry(
-//         writer, std::numeric_limits<uint64_t>::max())) {
+//     if (!reader.ExtractCurrentEntry(writer)) {
 //           // Cannot extract
 //           return;
 //     }
@@ -129,22 +134,6 @@ class ZipReader {
     int posix_mode;
   };
 
-  // TODO(crbug.com/1295127) Remove this struct once transition to Entry is
-  // finished.
-  struct EntryInfo : Entry {
-    const Entry& entry() const { return *this; }
-    const std::string& file_path_in_original_encoding() const {
-      return entry().path_in_original_encoding;
-    }
-    const base::FilePath& file_path() const { return entry().path; }
-    int64_t original_size() const { return entry().original_size; }
-    base::Time last_modified() const { return entry().last_modified; }
-    bool is_directory() const { return entry().is_directory; }
-    bool is_unsafe() const { return entry().is_unsafe; }
-    bool is_encrypted() const { return entry().is_encrypted; }
-    int posix_mode() const { return entry().posix_mode; }
-  };
-
   ZipReader();
 
   ZipReader(const ZipReader&) = delete;
@@ -177,88 +166,82 @@ class ZipReader {
   // the ZIP archive.
   void SetPassword(std::string password) { password_ = std::move(password); }
 
-  // Gets the next entry. Returns null if there is no more entry. The returned
-  // Entry is owned by this ZipReader, and is valid until Next() is called
-  // again or until this ZipReader is closed.
+  // Gets the next entry. Returns null if there is no more entry, or if an error
+  // occurred while scanning entries. The returned Entry is owned by this
+  // ZipReader, and is valid until Next() is called again or until this
+  // ZipReader is closed.
   //
-  // This function is used to scan entries:
+  // This function should be called before operations over the current entry
+  // like ExtractCurrentEntryToFile().
+  //
   // while (const ZipReader::Entry* entry = reader.Next()) {
   //   // Do something with the current entry here.
   //   ...
   // }
+  //
+  // // Finished scanning entries.
+  // // Check if the scanning stopped because of an error.
+  // if (!reader.ok()) {
+  //   // There was an error.
+  //   ...
+  // }
   const Entry* Next();
 
-  // Returns true if the enumeration of entries was successful.
+  // Returns true if the enumeration of entries was successful, or false if it
+  // stopped because of an error.
   bool ok() const { return ok_; }
 
-  // Returns true if there is at least one entry to read. This function is
-  // used to scan entries with AdvanceToNextEntry(), like:
-  //
-  // while (reader.HasMore()) {
-  //   // Do something with the current file here.
-  //   reader.AdvanceToNextEntry();
-  // }
-  //
-  // TODO(crbug.com/1295127) Remove this method.
-  bool HasMore();
-
-  // Advances the next entry. Returns true on success.
-  //
-  // TODO(crbug.com/1295127) Remove this method.
-  bool AdvanceToNextEntry();
-
-  // Opens the current entry in the ZIP archive. On success, returns true and
-  // updates the current entry state (i.e. current_entry_info() is updated).
-  // This function should be called before operations over the current entry
-  // like ExtractCurrentEntryToFile().
-  //
-  // Note that there is no CloseCurrentEntryInZip(). The current entry state is
-  // reset automatically as needed.
-  //
-  // TODO(crbug.com/1295127) Remove this method.
-  bool OpenCurrentEntryInZip();
-
   // Extracts |num_bytes_to_extract| bytes of the current entry to |delegate|,
-  // starting from the beginning of the entry. Return value specifies whether
-  // the entire file was extracted.
+  // starting from the beginning of the entry.
+  //
+  // Returns true if the entire file was extracted without error.
+  //
+  // Precondition: Next() returned a non-null Entry.
   bool ExtractCurrentEntry(WriterDelegate* delegate,
-                           uint64_t num_bytes_to_extract) const;
+                           uint64_t num_bytes_to_extract =
+                               std::numeric_limits<uint64_t>::max()) const;
 
-  // Asynchronously extracts the current entry to the given output file path.
-  // If the current entry is a directory it just creates the directory
-  // synchronously instead.  OpenCurrentEntryInZip() must be called beforehand.
-  // success_callback will be called on success and failure_callback will be
-  // called on failure.  progress_callback will be called at least once.
+  // Asynchronously extracts the current entry to the given output file path. If
+  // the current entry is a directory it just creates the directory
+  // synchronously instead.
+  //
+  // |success_callback| will be called on success and |failure_callback| will be
+  // called on failure. |progress_callback| will be called at least once.
   // Callbacks will be posted to the current MessageLoop in-order.
+  //
+  // Precondition: Next() returned a non-null Entry.
   void ExtractCurrentEntryToFilePathAsync(
       const base::FilePath& output_file_path,
       SuccessCallback success_callback,
       FailureCallback failure_callback,
-      const ProgressCallback& progress_callback);
+      ProgressCallback progress_callback);
 
   // Extracts the current entry into memory. If the current entry is a
-  // directory, the |output| parameter is set to the empty string. If the
-  // current entry is a file, the |output| parameter is filled with its
-  // contents. OpenCurrentEntryInZip() must be called beforehand. Note: the
-  // |output| parameter can be filled with a big amount of data, avoid passing
-  // it around by value, but by reference or pointer. Note: the value returned
-  // by EntryInfo::original_size() cannot be trusted, so the real size of the
-  // uncompressed contents can be different. |max_read_bytes| limits the ammount
-  // of memory used to carry the entry. Returns true if the entire content is
-  // read. If the entry is bigger than |max_read_bytes|, returns false and
-  // |output| is filled with |max_read_bytes| of data. If an error occurs,
-  // returns false, and |output| is set to the empty string.
+  // directory, |*output| is set to the empty string. If the current entry is a
+  // file, |*output| is filled with its contents.
+  //
+  // The value in |Entry::original_size| cannot be trusted, so the real size of
+  // the uncompressed contents can be different. |max_read_bytes| limits the
+  // amount of memory used to carry the entry.
+  //
+  // Returns true if the entire content is read without error. If the content is
+  // bigger than |max_read_bytes|, this function returns false and |*output| is
+  // filled with |max_read_bytes| of data. If an error occurs, this function
+  // returns false and |*output| contains the content extracted so far, which
+  // might be garbage data.
+  //
+  // Precondition: Next() returned a non-null Entry.
   bool ExtractCurrentEntryToString(uint64_t max_read_bytes,
                                    std::string* output) const;
 
-  // Returns the current entry info. Returns NULL if the current entry is
-  // not yet opened. OpenCurrentEntryInZip() must be called beforehand.
-  //
-  // TODO(crbug.com/1295127) Remove this method.
-  EntryInfo* current_entry_info() const { return current_entry_; }
+  bool ExtractCurrentEntryToString(std::string* output) const {
+    return ExtractCurrentEntryToString(
+        base::checked_cast<uint64_t>(output->max_size()), output);
+  }
 
   // Returns the number of entries in the ZIP archive.
-  // Open() must be called beforehand.
+  //
+  // Precondition: one of the Open() methods returned true.
   int num_entries() const { return num_entries_; }
 
  private:
@@ -268,12 +251,19 @@ class ZipReader {
   // Resets the internal state.
   void Reset();
 
+  // Opens the current entry in the ZIP archive. On success, returns true and
+  // updates the current entry state |entry_|.
+  //
+  // Note that there is no matching CloseEntry(). The current entry state is
+  // reset automatically as needed.
+  bool OpenEntry();
+
   // Extracts a chunk of the file to the target.  Will post a task for the next
   // chunk and success/failure/progress callbacks as necessary.
   void ExtractChunk(base::File target_file,
                     SuccessCallback success_callback,
                     FailureCallback failure_callback,
-                    const ProgressCallback& progress_callback,
+                    ProgressCallback progress_callback,
                     const int64_t offset);
 
   std::string encoding_;
@@ -283,13 +273,13 @@ class ZipReader {
   int next_index_;
   bool reached_end_;
   bool ok_;
-  EntryInfo entry_ = {};
-  EntryInfo* current_entry_ = nullptr;
+  Entry entry_;
 
   base::WeakPtrFactory<ZipReader> weak_ptr_factory_{this};
 };
 
-// A writer delegate that writes to a given File.
+// A writer delegate that writes to a given File. This file is expected to be
+// initially empty.
 class FileWriterDelegate : public WriterDelegate {
  public:
   // Constructs a FileWriterDelegate that manipulates |file|. The delegate will
@@ -298,17 +288,14 @@ class FileWriterDelegate : public WriterDelegate {
   explicit FileWriterDelegate(base::File* file);
 
   // Constructs a FileWriterDelegate that takes ownership of |file|.
-  explicit FileWriterDelegate(std::unique_ptr<base::File> file);
+  explicit FileWriterDelegate(base::File owned_file);
 
   FileWriterDelegate(const FileWriterDelegate&) = delete;
   FileWriterDelegate& operator=(const FileWriterDelegate&) = delete;
 
-  // Truncates the file to the number of bytes written.
   ~FileWriterDelegate() override;
 
-  // WriterDelegate methods:
-
-  // Seeks to the beginning of the file, returning false if the seek fails.
+  // Returns true if the file handle passed to the constructor is valid.
   bool PrepareOutput() override;
 
   // Writes |num_bytes| bytes of |data| to the file, returning false on error or
@@ -322,49 +309,41 @@ class FileWriterDelegate : public WriterDelegate {
   // executable.
   void SetPosixFilePermissions(int mode) override;
 
-  // Return the actual size of the file.
+  // Empties the file to avoid leaving garbage data in it.
+  void OnError() override;
+
+  // Gets the number of bytes written into the file.
   int64_t file_length() { return file_length_; }
 
- private:
-  // The file the delegate modifies.
-  base::File* file_;
-
+ protected:
   // The delegate can optionally own the file it modifies, in which case
   // owned_file_ is set and file_ is an alias for owned_file_.
-  std::unique_ptr<base::File> owned_file_;
+  base::File owned_file_;
+
+  // The file the delegate modifies.
+  base::File* const file_ = &owned_file_;
 
   int64_t file_length_ = 0;
 };
 
 // A writer delegate that writes a file at a given path.
-class FilePathWriterDelegate : public WriterDelegate {
+class FilePathWriterDelegate : public FileWriterDelegate {
  public:
-  explicit FilePathWriterDelegate(const base::FilePath& output_file_path);
+  explicit FilePathWriterDelegate(base::FilePath output_file_path);
 
   FilePathWriterDelegate(const FilePathWriterDelegate&) = delete;
   FilePathWriterDelegate& operator=(const FilePathWriterDelegate&) = delete;
 
   ~FilePathWriterDelegate() override;
 
-  // WriterDelegate methods:
-
   // Creates the output file and any necessary intermediate directories.
   bool PrepareOutput() override;
 
-  // Writes |num_bytes| bytes of |data| to the file, returning false if not all
-  // bytes could be written.
-  bool WriteBytes(const char* data, int num_bytes) override;
-
-  // Sets the last-modified time of the data.
-  void SetTimeModified(const base::Time& time) override;
-
-  // On POSIX systems, sets the file to be executable if the source file was
-  // executable.
-  void SetPosixFilePermissions(int mode) override;
+  // Deletes the file.
+  void OnError() override;
 
  private:
-  base::FilePath output_file_path_;
-  base::File file_;
+  const base::FilePath output_file_path_;
 };
 
 }  // namespace zip

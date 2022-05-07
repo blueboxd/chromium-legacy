@@ -61,6 +61,7 @@
 <translation id="1497522201463361063">Soubor „<ph name="FILE_NAME" />“ se nepodařilo přejmenovat. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="1499943022354839699">angličtina (USA) s klávesnicí Dvorak</translation>
 <translation id="1515909359182093592"><ph name="INPUT_LABEL" /> – hostitelský server</translation>
+<translation id="1521655867290435174">Tabulky Google</translation>
 <translation id="1538729222189715449">Otevírání souborů systému Linux...</translation>
 <translation id="1547964879613821194">Kanadská anglická klávesnice</translation>
 <translation id="1556189134700913550">Použít na vše</translation>
@@ -185,7 +186,6 @@
 <translation id="2544853746127077729">Ověřovací certifikát byl sítí odmítnut</translation>
 <translation id="2547921442987553570">Přidat do rozšíření <ph name="EXTENSION_NAME" /></translation>
 <translation id="255937426064304553">Americká klávesnice (mezinárodní)</translation>
-<translation id="2562685439590298522">Dokumenty</translation>
 <translation id="2563185590376525700">Žába</translation>
 <translation id="2578394532502990878">tamilština (fonetická)</translation>
 <translation id="2579959351793446050">urijština</translation>
@@ -221,9 +221,7 @@
 <translation id="2902734494705624966">Americká klávesnice (rozšířená)</translation>
 <translation id="290843123675549676">maráthština</translation>
 <translation id="2923240520113693977">estonština</translation>
-<translation id="2925966894897775835">Tabulky</translation>
 <translation id="2938685643439809023">mongolština</translation>
-<translation id="2943400156390503548">Prezentace</translation>
 <translation id="2943503720238418293">Použijte kratší název</translation>
 <translation id="2949781154072577687">Formátování disku <ph name="DRIVE_NAME" />...</translation>
 <translation id="2951236788251446349">Medúza</translation>
@@ -385,6 +383,7 @@
 <translation id="4380245540200674032">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, <ph name="NETWORK_PROVIDER_NAME" />, <ph name="CONNECTION_STATUS" /> síla signálu: <ph name="SIGNAL_STRENGTH" /> %, spravováno administrátorem, podrobnosti</translation>
 <translation id="4387004326333427325">Ověřovací certifikát byl vzdáleně odmítnut</translation>
 <translation id="4394214039309501350">Externí odkaz</translation>
+<translation id="4401287888955153199">Extrahovat vše</translation>
 <translation id="4418686080762064601">Vytvořte zástupce svých souborů</translation>
 <translation id="4425149324548788773">Můj disk</translation>
 <translation id="4439427728133035643">Síť <ph name="NETWORK_INDEX" /> z <ph name="NETWORK_COUNT" />, <ph name="NETWORK_NAME" />, síla signálu: <ph name="SIGNAL_STRENGTH" /> %, připojit</translation>
@@ -414,6 +413,7 @@
 <translation id="4656777537938206294">Dostupnost souborů v režimu offline</translation>
 <translation id="4658782175094886150">Člověk ve sněhu</translation>
 <translation id="4669606053856530811">Pokud s nimi tyto položky nejsou sdíleny, ztratí k nim členové týmu <ph name="SOURCE_NAME" /> přístup.</translation>
+<translation id="467809019005607715">Prezentace Google</translation>
 <translation id="4690246192099372265">švédština</translation>
 <translation id="4693155481716051732">Suši</translation>
 <translation id="4694604912444486114">Opice</translation>
@@ -657,6 +657,7 @@
 <translation id="6732801395666424405">Certifikáty nebyly načteny</translation>
 <translation id="6736329909263487977"><ph name="ISSUED_BY" /> [<ph name="ISSUED_TO" />]</translation>
 <translation id="6751256176799620176">Je vybrána 1 složka</translation>
+<translation id="6755827872271341378">Zařízení se systémem ChromeOS Flex</translation>
 <translation id="6790428901817661496">Přehrát</translation>
 <translation id="6795884519221689054">Panda</translation>
 <translation id="6806699711453372963">Spravovat sdílení v systému Linux</translation>
@@ -734,6 +735,7 @@
 <translation id="7343393116438664539">vietnamština (telex)</translation>
 <translation id="7359359531237882347">Kopírování <ph name="NUMBER_OF_ITEMS" /> položek...</translation>
 <translation id="7375951387215729722">Seznam souborů seřazený sestupně podle sloupce <ph name="COLUMN_NAME" />.</translation>
+<translation id="7402503521691663770">Zařízení se systémem ChromeOS Flex</translation>
 <translation id="7408870451288633753">čeština</translation>
 <translation id="7417453074306512035">Etiopská klávesnice</translation>
 <translation id="7417705661718309329">Mapa Google</translation>
@@ -949,6 +951,7 @@
 <translation id="9172592259078059678">gudžarátština (přepis)</translation>
 <translation id="9173120999827300720">angličtina (USA) s mezinárodní klávesnicí</translation>
 <translation id="9174050671906956834">Položky jsou z koše po 30 dnech navždy smazány.</translation>
+<translation id="9183302530794969518">Dokumenty Google</translation>
 <translation id="9189836632794948435">kazaština</translation>
 <translation id="9213073329713032541">Instalace byla úspěšně spuštěna.</translation>
 <translation id="9219103736887031265">Obrázky</translation>

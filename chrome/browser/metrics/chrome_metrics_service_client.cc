@@ -82,6 +82,7 @@
 #include "components/metrics/demographics/demographic_metrics_provider.h"
 #include "components/metrics/drive_metrics_provider.h"
 #include "components/metrics/entropy_state_provider.h"
+#include "components/metrics/form_factor_metrics_provider.h"
 #include "components/metrics/metrics_log_uploader.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_reporting_default_state.h"
@@ -136,10 +137,6 @@
 #include "extensions/browser/extension_registry.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/extension.h"
-#endif
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/browser/metrics/plugin_metrics_provider.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
@@ -521,10 +518,6 @@ void ChromeMetricsServiceClient::RegisterPrefs(PrefRegistrySimple* registry) {
   ChromeAndroidMetricsProvider::RegisterPrefs(registry);
 #endif  // BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-  PluginMetricsProvider::RegisterPrefs(registry);
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
-
 #if BUILDFLAG(IS_CHROMEOS_ASH)
   metrics::PerUserStateManagerChromeOS::RegisterPrefs(registry);
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
@@ -536,6 +529,11 @@ void ChromeMetricsServiceClient::RegisterProfilePrefs(
   metrics::PerUserStateManagerChromeOS::RegisterProfilePrefs(registry);
 }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+variations::SyntheticTrialRegistry*
+ChromeMetricsServiceClient::GetSyntheticTrialRegistry() {
+  return synthetic_trial_registry_.get();
+}
 
 metrics::MetricsService* ChromeMetricsServiceClient::GetMetricsService() {
   return metrics_service_.get();
@@ -628,15 +626,6 @@ base::TimeDelta ChromeMetricsServiceClient::GetStandardUploadInterval() {
   return metrics::GetUploadInterval(metrics::ShouldUseCellularUploadInterval());
 }
 
-void ChromeMetricsServiceClient::OnPluginLoadingError(
-    const base::FilePath& plugin_path) {
-#if BUILDFLAG(ENABLE_PLUGINS)
-  plugin_metrics_provider_->LogPluginLoadingError(plugin_path);
-#else
-  NOTREACHED();
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
-}
-
 bool ChromeMetricsServiceClient::IsReportingPolicyManaged() {
   return IsMetricsReportingPolicyManaged();
 }
@@ -649,6 +638,10 @@ ChromeMetricsServiceClient::GetMetricsReportingDefaultState() {
 
 void ChromeMetricsServiceClient::Initialize() {
   PrefService* local_state = g_browser_process->local_state();
+
+  synthetic_trial_registry_ =
+      std::make_unique<variations::SyntheticTrialRegistry>(
+          IsExternalExperimentAllowlistEnabled());
 
   metrics_service_ = std::make_unique<metrics::MetricsService>(
       metrics_state_manager_, this, local_state);
@@ -718,6 +711,9 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
   metrics_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ScreenInfoMetricsProvider>());
 
+  metrics_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::FormFactorMetricsProvider>());
+
   metrics_service_->RegisterMetricsProvider(CreateFileMetricsProvider(
       metrics_state_manager_->IsMetricsReportingEnabled()));
 
@@ -779,12 +775,6 @@ void ChromeMetricsServiceClient::RegisterMetricsServiceProviders() {
       std::make_unique<DesktopPlatformFeaturesMetricsProvider>());
 #endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || (BUILDFLAG(IS_LINUX) ||
         // BUILDFLAG(IS_CHROMEOS_LACROS))
-
-#if BUILDFLAG(ENABLE_PLUGINS)
-  plugin_metrics_provider_ = new PluginMetricsProvider(local_state);
-  metrics_service_->RegisterMetricsProvider(
-      std::unique_ptr<metrics::MetricsProvider>(plugin_metrics_provider_));
-#endif  // BUILDFLAG(ENABLE_PLUGINS)
 
 #if BUILDFLAG(IS_CHROMEOS_LACROS)
   metrics_service_->RegisterMetricsProvider(
@@ -898,7 +888,11 @@ void ChromeMetricsServiceClient::RegisterUKMProviders() {
   ukm_service_->RegisterMetricsProvider(
       std::make_unique<metrics::ScreenInfoMetricsProvider>());
 
-  ukm_service_->RegisterMetricsProvider(ukm::CreateFieldTrialsProviderForUkm());
+  ukm_service_->RegisterMetricsProvider(
+      std::make_unique<metrics::FormFactorMetricsProvider>());
+
+  ukm_service_->RegisterMetricsProvider(
+      ukm::CreateFieldTrialsProviderForUkm(synthetic_trial_registry_.get()));
 
   ukm_service_->RegisterMetricsProvider(
       std::make_unique<PrivacyBudgetMetricsProvider>(

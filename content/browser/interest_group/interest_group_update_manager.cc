@@ -33,6 +33,13 @@ namespace {
 // updates, so don't let this get too large.
 constexpr size_t kMaxUpdateSize = 10 * 1024;
 
+// The maximum amount of time that the update process can run before it gets
+// cancelled for taking too long.
+constexpr base::TimeDelta kMaxUpdateRoundDuration = base::Minutes(10);
+
+// The maximum number of groups that can be updated at the same time.
+constexpr int kMaxParallelUpdates = 5;
+
 constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
     net::DefineNetworkTrafficAnnotation("interest_group_update_fetcher", R"(
         semantics {
@@ -179,7 +186,10 @@ namespace content {
 InterestGroupUpdateManager::InterestGroupUpdateManager(
     InterestGroupManagerImpl* manager,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : manager_(manager), url_loader_factory_(std::move(url_loader_factory)) {}
+    : manager_(manager),
+      max_update_round_duration_(kMaxUpdateRoundDuration),
+      max_parallel_updates_(kMaxParallelUpdates),
+      url_loader_factory_(std::move(url_loader_factory)) {}
 
 InterestGroupUpdateManager::~InterestGroupUpdateManager() = default;
 
@@ -188,6 +198,16 @@ void InterestGroupUpdateManager::UpdateInterestGroupsOfOwner(
     network::mojom::ClientSecurityStatePtr client_security_state) {
   owners_to_update_.Enqueue(owner, std::move(client_security_state));
   MaybeContinueUpdatingCurrentOwner();
+}
+
+void InterestGroupUpdateManager::set_max_update_round_duration_for_testing(
+    base::TimeDelta delta) {
+  max_update_round_duration_ = delta;
+}
+
+void InterestGroupUpdateManager::set_max_parallel_updates_for_testing(
+    int max_parallel_updates) {
+  max_parallel_updates_ = max_parallel_updates;
 }
 
 InterestGroupUpdateManager::OwnersToUpdate::OwnersToUpdate() = default;
@@ -230,10 +250,27 @@ void InterestGroupUpdateManager::OwnersToUpdate::Clear() {
 }
 
 void InterestGroupUpdateManager::MaybeContinueUpdatingCurrentOwner() {
-  if (owners_to_update_.Empty() || num_in_flight_updates_ > 0 ||
-      waiting_on_db_read_) {
+  if (num_in_flight_updates_ > 0 || waiting_on_db_read_)
+    return;
+
+  if (owners_to_update_.Empty()) {
+    // This update round is finished, there's no more work to do.
+    last_update_started_ = base::TimeTicks::Min();
     return;
   }
+
+  if (last_update_started_ == base::TimeTicks::Min()) {
+    // It appears we're staring a new update round; mark the time we started the
+    // round.
+    last_update_started_ = base::TimeTicks::Now();
+  } else if (base::TimeTicks::Now() - last_update_started_ >
+             max_update_round_duration_) {
+    // We've been updating for too long; cancel all outstanding updates.
+    owners_to_update_.Clear();
+    last_update_started_ = base::TimeTicks::Min();
+    return;
+  }
+
   GetInterestGroupsForUpdate(
       owners_to_update_.FrontOwner(),
       base::BindOnce(
@@ -247,7 +284,8 @@ void InterestGroupUpdateManager::GetInterestGroupsForUpdate(
   DCHECK_EQ(num_in_flight_updates_, 0);
   DCHECK(!waiting_on_db_read_);
   waiting_on_db_read_ = true;
-  manager_->GetInterestGroupsForUpdate(owner, std::move(callback));
+  manager_->GetInterestGroupsForUpdate(
+      owner, /*groups_limit=*/max_parallel_updates_, std::move(callback));
 }
 
 void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerDbLoad(
@@ -256,6 +294,8 @@ void InterestGroupUpdateManager::DidUpdateInterestGroupsOfOwnerDbLoad(
   DCHECK_EQ(owner, owners_to_update_.FrontOwner());
   DCHECK_EQ(num_in_flight_updates_, 0);
   DCHECK(waiting_on_db_read_);
+  DCHECK_LE(storage_groups.size(),
+            static_cast<unsigned int>(max_parallel_updates_));
   waiting_on_db_read_ = false;
   if (storage_groups.empty()) {
     // All interest groups for `owner` are up to date, so we can pop it off the

@@ -45,19 +45,30 @@
 #include "ash/components/arc/session/arc_service_manager.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS)
 #include "net/base/url_util.h"
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+#include "chromeos/crosapi/mojom/arc.mojom.h"
+#include "chromeos/crosapi/mojom/web_app_service.mojom.h"
+#include "chromeos/lacros/lacros_service.h"
 #endif
 
 namespace web_app {
 
 namespace {
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 const char kChromeOsPlayPlatform[] = "chromeos_play";
 const char kPlayIntentPrefix[] =
     "https://play.google.com/store/apps/details?id=";
 const char kPlayStorePackage[] = "com.android.vending";
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
+#if BUILDFLAG(IS_CHROMEOS_ASH)
 constexpr bool kAddAppsToQuickLaunchBarByDefault = false;
 
 #else
@@ -82,7 +93,7 @@ bool IsEmptyIconBitmapsForIconUrl(const IconsMap& icons_map,
   return true;
 }
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
 struct PlayStoreIntent {
   std::string app_id;
   std::string intent;
@@ -118,7 +129,32 @@ absl::optional<PlayStoreIntent> GetPlayStoreIntentFromManifest(
   }
   return absl::nullopt;
 }
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+bool ShouldInteractWithArc() {
+  auto* lacros_service = chromeos::LacrosService::Get();
+  return lacros_service &&
+         // Check if the feature is enabled.
+         lacros_service->init_params()->web_apps_enabled &&
+         // Only use ARC installation flow if we know that remote ash-chrome is
+         // capable of installing from Play Store in lacros-chrome, to avoid
+         // redirecting users to the Play Store if they cannot install
+         // anything.
+         lacros_service->IsAvailable<crosapi::mojom::WebAppService>();
+}
+
+mojo::Remote<crosapi::mojom::Arc>* GetArcRemoteWithMinVersion(
+    uint32_t minVersion) {
+  auto* lacros_service = chromeos::LacrosService::Get();
+  if (lacros_service && lacros_service->IsAvailable<crosapi::mojom::Arc>() &&
+      lacros_service->GetInterfaceVersion(crosapi::mojom::Arc::Uuid_) >=
+          static_cast<int>(minVersion)) {
+    return &lacros_service->GetRemote<crosapi::mojom::Arc>();
+  }
+  return nullptr;
+}
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
 
 }  // namespace
 
@@ -201,7 +237,6 @@ void WebAppInstallTask::InstallWebAppFromManifest(
   CheckInstallPreconditions();
 
   Observe(contents);
-  installing_web_contents_ = contents;
   dialog_callback_ = std::move(dialog_callback);
   install_callback_ = std::move(install_callback);
   install_source_ = install_source;
@@ -228,7 +263,6 @@ void WebAppInstallTask::InstallWebAppFromManifestWithFallback(
   CheckInstallPreconditions();
 
   Observe(contents);
-  installing_web_contents_ = contents;
   dialog_callback_ = std::move(dialog_callback);
   install_callback_ = std::move(install_callback);
   install_source_ = install_source;
@@ -248,7 +282,6 @@ void WebAppInstallTask::LoadAndInstallWebAppFromManifestWithFallback(
   CheckInstallPreconditions();
 
   Observe(contents);
-  installing_web_contents_ = contents;
   if (ShouldStopInstall())
     return;
 
@@ -272,7 +305,6 @@ void WebAppInstallTask::LoadAndInstallSubAppFromURL(
   CheckInstallPreconditions();
 
   Observe(contents);
-  installing_web_contents_ = contents;
   if (ShouldStopInstall())
     return;
 
@@ -359,7 +391,6 @@ void WebAppInstallTask::InstallWebAppWithParams(
   CheckInstallPreconditions();
 
   Observe(contents);
-  installing_web_contents_ = contents;
   SetInstallParams(install_params);
   install_callback_ = std::move(install_callback);
   install_source_ = install_source;
@@ -404,7 +435,7 @@ std::unique_ptr<content::WebContents> WebAppInstallTask::CreateWebContents(
 }
 
 content::WebContents* WebAppInstallTask::GetInstallingWebContents() {
-  return installing_web_contents_;
+  return web_contents();
 }
 
 base::WeakPtr<WebAppInstallTask> WebAppInstallTask::GetWeakPtr() {
@@ -691,11 +722,11 @@ void WebAppInstallTask::CheckForPlayStoreIntentOrGetIcons(
     std::vector<GURL> icon_urls,
     ForInstallableSite for_installable_site,
     bool skip_page_favicons) {
-#if BUILDFLAG(IS_CHROMEOS_ASH)
   // Background installations are not a user-triggered installs, and thus
   // cannot be sent to the store.
   if (for_installable_site == ForInstallableSite::kYes &&
       !background_installation_ && opt_manifest) {
+#if BUILDFLAG(IS_CHROMEOS_ASH)
     absl::optional<PlayStoreIntent> intent =
         GetPlayStoreIntentFromManifest(*opt_manifest);
     if (intent) {
@@ -714,9 +745,27 @@ void WebAppInstallTask::CheckForPlayStoreIntentOrGetIcons(
         }
       }
     }
-  }
-
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+    if (ShouldInteractWithArc()) {
+      absl::optional<PlayStoreIntent> intent =
+          GetPlayStoreIntentFromManifest(*opt_manifest);
+      mojo::Remote<crosapi::mojom::Arc>* opt_arc = GetArcRemoteWithMinVersion(
+          crosapi::mojom::Arc::MethodMinVersions::kIsInstallableMinVersion);
+      if (opt_arc && intent) {
+        mojo::Remote<crosapi::mojom::Arc>& arc = *opt_arc;
+        arc->IsInstallable(
+            intent->app_id,
+            base::BindOnce(
+                &WebAppInstallTask::OnDidCheckForIntentToPlayStoreLacros,
+                GetWeakPtr(), std::move(web_app_info), std::move(icon_urls),
+                for_installable_site, skip_page_favicons, intent->intent));
+        return;
+      }
+    }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+  }
   OnDidCheckForIntentToPlayStore(std::move(web_app_info), std::move(icon_urls),
                                  for_installable_site, skip_page_favicons,
                                  /*intent=*/"",
@@ -747,12 +796,41 @@ void WebAppInstallTask::OnDidCheckForIntentToPlayStore(
   }
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+  if (ShouldInteractWithArc() && should_intent_to_store && !intent.empty()) {
+    mojo::Remote<crosapi::mojom::Arc>* opt_arc = GetArcRemoteWithMinVersion(
+        crosapi::mojom::Arc::MethodMinVersions::kHandleUrlMinVersion);
+    if (opt_arc) {
+      mojo::Remote<crosapi::mojom::Arc>& arc = *opt_arc;
+      arc->HandleUrl(intent, kPlayStorePackage);
+      CallInstallCallback(AppId(),
+                          webapps::InstallResultCode::kIntentToPlayStore);
+      return;
+    }
+  }
+#endif  // BUILDFLAG(IS_CHROMEOS_LACROS)
+
   data_retriever_->GetIcons(
-      web_contents(), icon_urls, skip_page_favicons,
+      web_contents(), std::move(icon_urls), skip_page_favicons,
       base::BindOnce(&WebAppInstallTask::OnIconsRetrievedShowDialog,
                      GetWeakPtr(), std::move(web_app_info),
                      for_installable_site));
 }
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+void WebAppInstallTask::OnDidCheckForIntentToPlayStoreLacros(
+    std::unique_ptr<WebAppInstallInfo> web_app_info,
+    std::vector<GURL> icon_urls,
+    ForInstallableSite for_installable_site,
+    bool skip_page_favicons,
+    const std::string& intent,
+    crosapi::mojom::IsInstallableResult result) {
+  OnDidCheckForIntentToPlayStore(
+      std::move(web_app_info), std::move(icon_urls), for_installable_site,
+      skip_page_favicons, intent,
+      result == crosapi::mojom::IsInstallableResult::kInstallable);
+}
+#endif
 
 void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
     content::WebContents* web_contents,
@@ -762,7 +840,6 @@ void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
   CheckInstallPreconditions();
 
   Observe(web_contents);
-  installing_web_contents_ = web_contents;
   if (ShouldStopInstall())
     return;
 
@@ -775,9 +852,11 @@ void WebAppInstallTask::InstallWebAppFromInfoRetrieveIcons(
 
   // Skip downloading the page favicons as everything in is the URL list.
   data_retriever_->GetIcons(
-      web_contents, icon_urls, /*skip_page_favicons=*/true,
+      web_contents, std::move(icon_urls),
+      /*skip_page_favicons=*/true,
       base::BindOnce(&WebAppInstallTask::OnIconsRetrieved, GetWeakPtr(),
-                     std::move(web_application_info), finalize_options));
+                     std::move(web_application_info),
+                     std::move(finalize_options)));
 }
 
 void WebAppInstallTask::OnIconsRetrieved(
@@ -801,7 +880,7 @@ void WebAppInstallTask::OnIconsRetrieved(
                            icons_http_results);
 
   install_finalizer_->FinalizeInstall(
-      *web_app_info, finalize_options,
+      *web_app_info, std::move(finalize_options),
       base::BindOnce(&WebAppInstallTask::OnInstallFinalized, GetWeakPtr()));
 }
 

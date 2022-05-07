@@ -49,6 +49,7 @@
 #include "components/autofill_assistant/browser/script_executor.h"
 #include "components/autofill_assistant/browser/selector.h"
 #include "components/autofill_assistant/browser/service.pb.h"
+#include "components/autofill_assistant/browser/service/mock_service.h"
 #include "components/autofill_assistant/browser/string_conversions_util.h"
 #include "components/autofill_assistant/browser/top_padding.h"
 #include "components/autofill_assistant/browser/trigger_context.h"
@@ -59,6 +60,7 @@
 #include "components/autofill_assistant/browser/web/element_finder.h"
 #include "components/autofill_assistant/browser/web/element_store.h"
 #include "components/autofill_assistant/content/common/autofill_assistant_agent.mojom.h"
+#include "components/autofill_assistant/content/common/autofill_assistant_types.mojom.h"
 #include "components/autofill_assistant/content/common/node_data.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -84,6 +86,8 @@ using ::testing::_;
 using ::testing::AnyOf;
 using ::testing::IsEmpty;
 using ::testing::Return;
+using ::testing::SaveArg;
+using ::testing::WithArgs;
 
 class MockAutofillAssistantAgent : public mojom::AutofillAssistantAgent {
  public:
@@ -96,24 +100,17 @@ class MockAutofillAssistantAgent : public mojom::AutofillAssistantAgent {
                   std::move(handle)));
   }
 
-  MOCK_METHOD(
-      void,
-      GetSemanticNodes,
-      (int32_t role,
-       int32_t objective,
-       base::OnceCallback<void(bool, const std::vector<NodeData>&)> callback),
-      (override));
+  MOCK_METHOD(void,
+              GetSemanticNodes,
+              (int32_t role,
+               int32_t objective,
+               base::TimeDelta model_timeout,
+               base::OnceCallback<void(mojom::NodeDataStatus,
+                                       const std::vector<NodeData>&)> callback),
+              (override));
 
  private:
   mojo::AssociatedReceiverSet<mojom::AutofillAssistantAgent> receivers_;
-};
-
-class FakeAnnotateDomModelService : public AnnotateDomModelService {
- public:
-  FakeAnnotateDomModelService()
-      : AnnotateDomModelService(/* opt_guide= */ nullptr,
-                                /* background_task_runner= */ nullptr) {}
-  ~FakeAnnotateDomModelService() override = default;
 };
 
 }  // namespace
@@ -142,9 +139,11 @@ class WebControllerBrowserTest : public autofill_assistant::BaseBrowserTest,
                   base::Unretained(&autofill_assistant_agent_)));
         }));
 
+    annotate_dom_model_service_ = std::make_unique<AnnotateDomModelService>(
+        /* opt_guide= */ nullptr, /* background_task_runner= */ nullptr);
     web_controller_ = WebController::CreateForWebContents(
         shell()->web_contents(), &user_data_, &log_info_,
-        &annotate_dom_model_service_);
+        annotate_dom_model_service_.get(), /*enable_full_stack_traces= */ true);
 
     Observe(shell()->web_contents());
   }
@@ -254,11 +253,8 @@ class WebControllerBrowserTest : public autofill_assistant::BaseBrowserTest,
     std::move(done_callback).Run();
   }
 
-  void OnProcessedAction(
-      base::OnceClosure done_callback,
-      ClientStatus* status_output,
-      std::unique_ptr<ProcessedActionProto> processed_action) {
-    *status_output = ClientStatus(processed_action->status());
+  void OnScriptFinished(base::OnceClosure done_callback,
+                        const ScriptExecutor::Result& result) {
     std::move(done_callback).Run();
   }
 
@@ -935,26 +931,86 @@ document.getElementById("overlay_in_frame").style.visibility='hidden';
           base::flat_map<std::string, std::string>{
               {"ENABLE_OBSERVER_WAIT_FOR_DOM", "true"}}));
     }
+
+    MockService mock_service;
+    ActionsResponseProto actions_response;
+    *actions_response.add_actions() = wait_for_dom_action;
+    std::string serialized_actions_response;
+    actions_response.SerializeToString(&serialized_actions_response);
+    EXPECT_CALL(mock_service, OnGetActions)
+        .WillOnce(RunOnceCallback<5>(200, serialized_actions_response));
+
+    std::vector<ProcessedActionProto> captured_processed_actions;
+    EXPECT_CALL(mock_service, OnGetNextActions)
+        .WillOnce(WithArgs<3, 5>(
+            [&captured_processed_actions](
+                const std::vector<ProcessedActionProto>& processed_actions,
+                Service::ResponseCallback& callback) {
+              captured_processed_actions = processed_actions;
+
+              // Send empty response to stop the script executor.
+              std::move(callback).Run(200, std::string());
+            }));
     ON_CALL(mock_script_executor_delegate, GetTriggerContext())
         .WillByDefault(Return(&trigger_context));
+    ON_CALL(mock_script_executor_delegate, GetService())
+        .WillByDefault(Return(&mock_service));
+    GURL test_script_url("https://example.com");
+    ON_CALL(mock_script_executor_delegate, GetScriptURL())
+        .WillByDefault(testing::ReturnRef(test_script_url));
     std::vector<std::unique_ptr<Script>> ordered_interrupts;
     FakeScriptExecutorUiDelegate fake_script_executor_ui_delegate;
+    UserData fake_user_data;
     ScriptExecutor script_executor(
-        /* script_path= */ std::string(), /* additional_context= */ nullptr,
+        /* script_path= */ std::string(),
+        /* additional_context= */ std::make_unique<TriggerContext>(),
         /* global_payload= */ std::string(),
         /* script_payload= */ std::string(),
         /* listener= */ nullptr, &ordered_interrupts,
         &mock_script_executor_delegate, &fake_script_executor_ui_delegate);
-
-    WaitForDomAction action(&script_executor, wait_for_dom_action);
     base::RunLoop run_loop;
-    ClientStatus status;
-    action.ProcessAction(base::BindOnce(
-        &WebControllerBrowserTest::OnProcessedAction, base::Unretained(this),
-        run_loop.QuitClosure(), &status));
+    script_executor.Run(
+        &fake_user_data,
+        base::BindOnce(&WebControllerBrowserTest::OnScriptFinished,
+                       base::Unretained(this), run_loop.QuitClosure()));
     run_loop.Run();
     std::move(run_expectations).Run(&script_executor);
-    return status;
+
+    CHECK_EQ(captured_processed_actions.size(), 1u);
+    return ClientStatus(captured_processed_actions[0].status());
+  }
+
+  int GetBackendNodeId(Selector selector, ClientStatus* status_out) {
+    std::unique_ptr<ElementFinder::Result> element_result;
+    int backend_node_id = -1;
+
+    base::RunLoop run_loop_1;
+    web_controller_->FindElement(
+        selector, true,
+        base::BindLambdaForTesting(
+            [&](const ClientStatus& status,
+                std::unique_ptr<ElementFinder::Result> result) {
+              element_result = std::move(result);
+              *status_out = status;
+              run_loop_1.Quit();
+            }));
+    run_loop_1.Run();
+    if (!status_out->ok()) {
+      return backend_node_id;
+    }
+
+    // Second part in sequence, lookup backend node id.
+    base::RunLoop run_loop_2;
+    web_controller_->GetBackendNodeId(
+        *element_result,
+        base::BindLambdaForTesting([&](const ClientStatus& status, int id) {
+          *status_out = status;
+          backend_node_id = id;
+          run_loop_2.Quit();
+        }));
+    run_loop_2.Run();
+
+    return backend_node_id;
   }
 
  protected:
@@ -963,7 +1019,7 @@ document.getElementById("overlay_in_frame").style.visibility='hidden';
   UserModel user_model_;
   ProcessedActionStatusDetailsProto log_info_;
   MockAutofillAssistantAgent autofill_assistant_agent_;
-  FakeAnnotateDomModelService annotate_dom_model_service_;
+  std::unique_ptr<AnnotateDomModelService> annotate_dom_model_service_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ElementExistenceCheck) {
@@ -2463,6 +2519,28 @@ document.getElementById("touch_area_one").getBoundingClientRect().bottom
   RunLaxElementCheck(target, false);
 }
 
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, OnTopVeryTallElement) {
+  Selector target({"#triple_height_section"});
+  RunLaxElementCheck(target, true);
+  auto* on_top = target.proto.add_filters()->mutable_on_top();
+
+  // Apply on_top without scrolling.
+  on_top->set_scroll_into_view_if_needed(false);
+  RunLaxElementCheck(target, false);
+
+  // Allow on_top to scroll.
+  on_top->set_scroll_into_view_if_needed(true);
+  RunLaxElementCheck(target, true);
+
+  // Scroll until #triple_height_section is partially inside the viewport.
+  EXPECT_TRUE(ExecJs(shell(), R"(
+    const el = document.getElementById("triple_height_section");
+    const pos = el.getBoundingClientRect().top - window.innerHeight + 100;
+    window.scrollBy(0, pos);
+  )"));
+  RunLaxElementCheck(target, true);
+}
+
 IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ALabelIsNotAnOverlay) {
   Selector input({"#input1"});
   RunLaxElementCheck(input, true);
@@ -3268,6 +3346,134 @@ IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ExecuteJSWithPromise) {
                      &reject_status));
   reject_run_loop.Run();
   EXPECT_EQ(UNEXPECTED_JS_ERROR, reject_status.proto_status());
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest, ExecuteJSWithException) {
+  ClientStatus element_status;
+  ElementFinder::Result element;
+  FindElement(Selector({"#input1"}), &element_status, &element);
+  ASSERT_EQ(ACTION_APPLIED, element_status.proto_status());
+
+  ClientStatus result_status;
+  base::RunLoop run_loop;
+  web_controller_->ExecuteJS(
+      R"( // <-- this is line 0.
+          function inner() {
+            throw new Error('Test');
+          }
+          function outer() {
+            inner();
+          }
+          outer();
+          )",
+      element,
+      base::BindOnce(&WebControllerBrowserTest::OnClientStatus,
+                     base::Unretained(this), run_loop.QuitClosure(),
+                     &result_status));
+  run_loop.Run();
+  EXPECT_EQ(UNEXPECTED_JS_ERROR, result_status.proto_status());
+  EXPECT_THAT(result_status.details()
+                  .unexpected_error_info()
+                  .js_exception_line_numbers(),
+              testing::ElementsAre(2, 5, 7));
+  EXPECT_THAT(result_status.details()
+                  .unexpected_error_info()
+                  .js_exception_column_numbers(),
+              testing::ElementsAre(18, 12, 10));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       ElementExistenceCheckWithSemanticModel) {
+  SelectorProto proto;
+  auto* semantic_information = proto.mutable_semantic_information();
+  semantic_information->set_semantic_role(1);
+  semantic_information->set_objective(2);
+
+  ClientStatus status;
+  int backend_node_id = GetBackendNodeId(Selector({"#button"}), &status);
+  EXPECT_TRUE(status.ok());
+
+  NodeData node_data;
+  node_data.backend_node_id = backend_node_id;
+  EXPECT_CALL(autofill_assistant_agent_,
+              GetSemanticNodes(1, 2, base::Milliseconds(5000), _))
+      .WillOnce(RunOnceCallback<3>(mojom::NodeDataStatus::kSuccess,
+                                   std::vector<NodeData>{node_data}))
+      // Capture any other frames.
+      .WillRepeatedly(RunOnceCallback<3>(
+          mojom::NodeDataStatus::kUnexpectedError, std::vector<NodeData>()));
+
+  // We pretend that the button is the correct element.
+  RunStrictElementCheck(Selector(proto), true);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       ElementExistenceCheckWithSemanticModelOOPIF) {
+  SelectorProto proto;
+  auto* semantic_information = proto.mutable_semantic_information();
+  semantic_information->set_semantic_role(1);
+  semantic_information->set_objective(2);
+
+  ClientStatus status;
+  int backend_node_id =
+      GetBackendNodeId(Selector({"#iframeExternal", "#button"}), &status);
+  EXPECT_TRUE(status.ok());
+
+  NodeData node_data;
+  node_data.backend_node_id = backend_node_id;
+  EXPECT_CALL(autofill_assistant_agent_,
+              GetSemanticNodes(1, 2, base::Milliseconds(5000), _))
+      .WillOnce(RunOnceCallback<3>(mojom::NodeDataStatus::kSuccess,
+                                   std::vector<NodeData>{node_data}))
+      // Capture any other frames.
+      .WillRepeatedly(RunOnceCallback<3>(
+          mojom::NodeDataStatus::kUnexpectedError, std::vector<NodeData>()));
+
+  // We pretend that the button is the correct element.
+  RunStrictElementCheck(Selector(proto), true);
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       ElementExistenceCheckWithSemanticModelNotFound) {
+  SelectorProto proto;
+  auto* semantic_information = proto.mutable_semantic_information();
+  semantic_information->set_semantic_role(1);
+  semantic_information->set_objective(2);
+
+  // All frames return an empty list as a result.
+  EXPECT_CALL(autofill_assistant_agent_,
+              GetSemanticNodes(1, 2, base::Milliseconds(5000), _))
+      .WillRepeatedly(RunOnceCallback<3>(mojom::NodeDataStatus::kSuccess,
+                                         std::vector<NodeData>{}));
+
+  FindElementExpectEmptyResult(Selector(proto));
+}
+
+IN_PROC_BROWSER_TEST_F(WebControllerBrowserTest,
+                       ElementExistenceCheckWithSemanticMultipleFound) {
+  SelectorProto proto;
+  auto* semantic_information = proto.mutable_semantic_information();
+  semantic_information->set_semantic_role(1);
+  semantic_information->set_objective(2);
+
+  NodeData node_data;
+  node_data.backend_node_id = 5;
+  NodeData node_data_other;
+  node_data_other.backend_node_id = 13;
+  EXPECT_CALL(autofill_assistant_agent_,
+              GetSemanticNodes(1, 2, base::Milliseconds(5000), _))
+      .WillOnce(RunOnceCallback<3>(mojom::NodeDataStatus::kSuccess,
+                                   std::vector<NodeData>{node_data}))
+      .WillOnce(RunOnceCallback<3>(mojom::NodeDataStatus::kSuccess,
+                                   std::vector<NodeData>{node_data_other}))
+      // Capture any other frames.
+      .WillRepeatedly(RunOnceCallback<3>(
+          mojom::NodeDataStatus::kUnexpectedError, std::vector<NodeData>()));
+
+  // Two elements are found in different frames.
+  ClientStatus status;
+  FindElement(Selector(proto), &status, nullptr);
+  EXPECT_EQ(TOO_MANY_ELEMENTS, status.proto_status());
 }
 
 }  // namespace autofill_assistant

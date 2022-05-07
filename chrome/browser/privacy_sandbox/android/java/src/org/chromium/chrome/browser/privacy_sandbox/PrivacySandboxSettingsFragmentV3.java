@@ -6,12 +6,13 @@ package org.chromium.chrome.browser.privacy_sandbox;
 
 import android.content.Context;
 import android.os.Bundle;
+import android.text.SpannableString;
+import android.text.Spanned;
 import android.text.style.ForegroundColorSpan;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
@@ -20,7 +21,6 @@ import org.chromium.components.browser_ui.settings.ChromeBasePreference;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
-import org.chromium.ui.text.SpanApplier;
 
 /**
  * Settings fragment for privacy sandbox settings.
@@ -69,12 +69,12 @@ public class PrivacySandboxSettingsFragmentV3
         privacySandboxToggle.setChecked(PrivacySandboxBridge.isPrivacySandboxEnabled());
 
         ChromeBasePreference learnMorePreference = findPreference(LEARN_MORE_PREFERENCE);
-
-        learnMorePreference.setSummary(SpanApplier.applySpans(
-                learnMorePreference.getSummary().toString(),
-                new SpanApplier.SpanInfo("<link>", "</link>",
-                        new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                                getResources(), R.color.default_text_color_link_baseline)))));
+        SpannableString spannableString = new SpannableString(
+                getResources().getString(R.string.privacy_sandbox_consent_dropdown_button));
+        spannableString.setSpan(new ForegroundColorSpan(getContext().getColor(
+                                        R.color.default_text_color_link_baseline)),
+                0, spannableString.length(), Spanned.SPAN_INCLUSIVE_EXCLUSIVE);
+        learnMorePreference.setSummary(spannableString);
 
         parseAndRecordReferrer();
     }

@@ -62,7 +62,6 @@
 <translation id="2666092431469916601">Наверх</translation>
 <translation id="2701330563083355633">С устройства "<ph name="DEVICE_NAME" />"</translation>
 <translation id="271033894570825754">Новый</translation>
-<translation id="2743387203779672305">Скопировать в буфер</translation>
 <translation id="2824719307700604149">{YEARS,plural, =1{год назад}one{# год назад}few{# года назад}many{# лет назад}other{# года назад}}</translation>
 <translation id="2878511608894704031">Удалить все</translation>
 <translation id="2907671656515444832">{DAYS,plural, =1{через 1 д.}one{через # д.}few{через # д.}many{через # д.}other{через # д.}}</translation>
@@ -94,10 +93,11 @@
 <translation id="3889424535448813030">Стрелка вправо</translation>
 <translation id="3897092660631435901">Меню</translation>
 <translation id="3909791450649380159">Выре&amp;зать</translation>
+<translation id="3924145049010392604">Meta</translation>
 <translation id="3990502903496589789">Правый край</translation>
 <translation id="3994749195054421561">Значения в столбце "<ph name="COLUMN_NAME" />" упорядочены по возрастанию.</translation>
+<translation id="4031910098617850788">F5</translation>
 <translation id="40579289237549812">{UNREAD_NOTIFICATIONS,plural, =1{1 непрочитанное уведомление}one{# непрочитанное уведомление}few{# непрочитанных уведомления}many{# непрочитанных уведомлений}other{# непрочитанного уведомления}}</translation>
-<translation id="4250229828105606438">Скриншот</translation>
 <translation id="4266252015790371705">{MONTHS,plural, =1{месяц назад}one{# месяц назад}few{# месяца назад}many{# месяцев назад}other{# месяца назад}}</translation>
 <translation id="4289300219472526559">Начать голосовой ввод</translation>
 <translation id="4289540628985791613">Обзор</translation>
@@ -204,7 +204,6 @@
 <translation id="8730621377337864115">Готово</translation>
 <translation id="8772073294905169192">{HOURS,plural, =1{1 ч.}one{# ч.}few{# ч.}many{# ч.}other{# ч.}}</translation>
 <translation id="8798099450830957504">По умолчанию</translation>
-<translation id="883911313571074303">Добавить примечание к изображению</translation>
 <translation id="8841375032071747811">Назад</translation>
 <translation id="8867568208303837180">Отправка...</translation>
 <translation id="8876215549894133151">Формат:</translation>

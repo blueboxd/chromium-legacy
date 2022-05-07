@@ -15,12 +15,9 @@ import "url/mojom/url.mojom";
 interface EventDispatcher {
     // Sent to the renderer to dispatch an event to a listener.
     DispatchEvent(DispatchEventParams params,
-                  mojo_base.mojom.ListValue event_args);
+                  mojo_base.mojom.DeprecatedListValue event_args);
 };
 
-// Typemapped to extensions::EventFilteringInfo.
-// TODO(yochio): Convert extensions::EventFilteringInfo usage to
-// extensions::mojom::EventFilteringInfo (https://crbug.com/1222550)
 struct EventFilteringInfo {
   url.mojom.Url? url;
 

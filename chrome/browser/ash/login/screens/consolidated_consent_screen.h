@@ -107,14 +107,19 @@ class ConsolidatedConsentScreen
   void OnOwnershipStatusCheckDone(
       DeviceSettingsService::OwnershipStatus status);
 
+  void ReportUsageOptIn(bool is_enabled);
+
   // Exits the screen with `Result::ACCEPTED` in the normal flow, and
   // `Result::ACCEPTED_DEMO_ONLINE` or `Result::ACCEPTED_DEMO_OFFLINE` in the
   // demo setup flow.
   void ExitScreenWithAcceptedResult();
 
-  bool is_child_account_ = false;
+  // Updates the state of the metrics toggle.
+  void UpdateMetricsMode(bool enabled, bool managed);
 
-  bool is_enterprise_managed_account_ = false;
+  absl::optional<bool> is_owner_;
+
+  bool is_child_account_ = false;
 
   // To track if optional ARC features are managed preferences.
   bool backup_restore_managed_ = false;

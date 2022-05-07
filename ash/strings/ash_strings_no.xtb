@@ -84,7 +84,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="1351937230027495976">Skjul menyen</translation>
 <translation id="1364382257761975320">For å låse opp Chromebooken, bruk fingeravtrykket</translation>
 <translation id="1364618750746929654">Kan ikke generere transkripsjon</translation>
-<translation id="1383597849754832576">Kan ikke laste ned talefiler. Prøv igjen senere.</translation>
+<translation id="1383597849754832576">Kan ikke laste ned talefiler. Prøv på nytt senere.</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1391102559483454063">På</translation>
 <translation id="1407069428457324124">Mørkt tema</translation>
@@ -266,6 +266,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="2653659639078652383">Send inn</translation>
 <translation id="2658778018866295321">Klikk og dra</translation>
 <translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" /> og <ph name="UNAVAILABLE_APPS_TWO" /> er ikke på denne enheten.</translation>
+<translation id="2673968385134502798">Spill</translation>
 <translation id="2678852583403169292">Tekstopplesing-menyen</translation>
 <translation id="2689613560355655046">Skrivebord 8</translation>
 <translation id="2700493154570097719">Velg tastatur</translation>
@@ -672,6 +673,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="5078796286268621944">Feil personlig kode</translation>
 <translation id="5083553833479578423">Lås opp flere Assistent-funksjoner.</translation>
 <translation id="5106223312672646208">Tilpass</translation>
+<translation id="5107522548814527560">Nettet</translation>
 <translation id="5117590920725113268">Se neste måned</translation>
 <translation id="5136175204352732067">Et annet tastatur er koblet til</translation>
 <translation id="5147567197700016471">Ulåst</translation>
@@ -790,6 +792,7 @@ Her er noen ting du kan prøve til å begynne med.</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5901630391730855834">Gul</translation>
 <translation id="5909862606227538307">Inaktivt skrivebord.</translation>
+<translation id="5911231045062997865">Lacros-vinduer støttes ikke for øyeblikket. Andre apper blir lagret.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">På</translation>
 <translation id="5920710855273935292">Lyden for mikrofonen er kuttet.</translation>

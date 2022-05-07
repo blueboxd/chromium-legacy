@@ -5,6 +5,10 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+    <org.chromium.components.browser_ui.settings.TextMessagePreference
+        android:title="@string/privacy_sandbox_ad_personalization_subtitle"
+        android:selectable="false"
+        app:allowDividerBelow="false" />
 
     <org.chromium.components.browser_ui.settings.LongSummaryTextMessagePreference
         android:key="ad_personalization_description"
@@ -25,13 +29,5 @@
         android:title="@string/privacy_sandbox_remove_interest_title"
         android:fragment="org.chromium.chrome.browser.privacy_sandbox.AdPersonalizationRemovedFragment"
         app:userAction="Settings.PrivacySandbox.RemovedInterests.Opened"/>
-
-    <PreferenceCategory
-        android:title="@string/privacy_sandbox_fledge_interests_category" />
-
-    <Preference
-        android:summary="@string/privacy_sandbox_fledge_under_development_notice"
-        android:selectable="false"
-        app:allowDividerBelow="false"/>
 
 </PreferenceScreen>

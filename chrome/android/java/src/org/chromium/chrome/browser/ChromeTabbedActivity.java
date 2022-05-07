@@ -1653,7 +1653,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
     protected RootUiCoordinator createRootUiCoordinator() {
         return new TabbedRootUiCoordinator(this, this::onOmniboxFocusChanged,
                 getShareDelegateSupplier(), getActivityTabProvider(), mTabModelProfileSupplier,
-                mBookmarkBridgeSupplier, this::getContextualSearchManager,
+                mBookmarkBridgeSupplier, getContextualSearchManagerSupplier(),
                 getTabModelSelectorSupplier(), mStartSurfaceSupplier,
                 mIntentMetadataOneshotSupplier, mLayoutStateProviderOneshotSupplier,
                 mStartSurfaceParentTabSupplier, getBrowserControlsManager(), getWindowAndroid(),
@@ -1751,6 +1751,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
 
         mInactivityTracker = new ChromeInactivityTracker(
                 ChromePreferenceKeys.TABBED_ACTIVITY_LAST_BACKGROUNDED_TIME_MS_PREF);
+        TabUsageTracker.initialize(this.getLifecycleDispatcher(), tabModelSelector);
 
         assert getActivityTabStartupMetricsTracker() != null;
         boolean shouldShowOverviewPageOnStart = shouldShowOverviewPageOnStart();
@@ -2693,7 +2694,7 @@ public class ChromeTabbedActivity extends ChromeActivity<ChromeActivityComponent
         // TODO(crbug.com/1157310): Transition this::method refs to dedicated suppliers.
         mTabModalHandler = new TabModalLifetimeHandler(this, getLifecycleDispatcher(), manager,
                 this::getAppBrowserControlsVisibilityDelegate, this::getTabObscuringHandler,
-                this::getToolbarManager, this::getContextualSearchManager,
+                this::getToolbarManager, getContextualSearchManagerSupplier(),
                 getTabModelSelectorSupplier(), this::getBrowserControlsManager,
                 this::getFullscreenManager);
         return manager;

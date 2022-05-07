@@ -657,6 +657,41 @@ bool CopyPerBuyerTimeoutsFromIdlToMojo(const ScriptState& script_state,
   return true;
 }
 
+bool CopyPerBuyerGroupLimitsFromIdlToMojo(
+    const ScriptState& script_state,
+    ExceptionState& exception_state,
+    const AuctionAdConfig& input,
+    mojom::blink::AuctionAdConfig& output) {
+  if (!input.hasPerBuyerGroupLimits())
+    return true;
+  for (const auto& per_buyer_group_limit : input.perBuyerGroupLimits()) {
+    if (per_buyer_group_limit.second <= 0) {
+      exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
+          input, "perBuyerGroupLimits value",
+          String::Number(per_buyer_group_limit.second),
+          "must be greater than 0."));
+      return false;
+    }
+    if (per_buyer_group_limit.first == "*") {
+      output.auction_ad_config_non_shared_params->all_buyers_group_limit =
+          per_buyer_group_limit.second;
+      continue;
+    }
+    scoped_refptr<const SecurityOrigin> buyer =
+        ParseOrigin(per_buyer_group_limit.first);
+    if (!buyer) {
+      exception_state.ThrowTypeError(ErrorInvalidAuctionConfig(
+          input, "perBuyerGroupLimits buyer", per_buyer_group_limit.first,
+          "must be \"*\" (wildcard) or a valid https origin."));
+      return false;
+    }
+    output.auction_ad_config_non_shared_params->per_buyer_group_limits.insert(
+        buyer, per_buyer_group_limit.second);
+  }
+
+  return true;
+}
+
 // Attempts to convert the AuctionAdConfig `config`, passed in via Javascript,
 // to a `mojom::blink::AuctionAdConfig`. Throws a Javascript exception and
 // return null on failure.
@@ -683,7 +718,9 @@ mojom::blink::AuctionAdConfigPtr IdlAuctionConfigToMojo(
       !CopyPerBuyerSignalsFromIdlToMojo(script_state, exception_state, config,
                                         *mojo_config) ||
       !CopyPerBuyerTimeoutsFromIdlToMojo(script_state, exception_state, config,
-                                         *mojo_config)) {
+                                         *mojo_config) ||
+      !CopyPerBuyerGroupLimitsFromIdlToMojo(script_state, exception_state,
+                                            config, *mojo_config)) {
     return mojom::blink::AuctionAdConfigPtr();
   }
 
@@ -764,6 +801,18 @@ void AddWarningMessageToConsole(ScriptState* script_state,
           /*discard_duplicates=*/true);
 }
 
+void RecordCommonFledgeUseCounters(Document* document) {
+  if (!document)
+    return;
+  UseCounter::Count(document, mojom::blink::WebFeature::kFledge);
+  // Only record the ads APIs counter if enabled in that manner.
+  if (RuntimeEnabledFeatures::PrivacySandboxAdsAPIsEnabled(
+          document->GetExecutionContext())) {
+    UseCounter::Count(document,
+                      mojom::blink::WebFeature::kPrivacySandboxAdsAPIs);
+  }
+}
+
 }  // namespace
 
 NavigatorAuction::NavigatorAuction(Navigator& navigator)
@@ -799,6 +848,7 @@ void NavigatorAuction::joinAdInterestGroup(ScriptState* script_state,
   if (!CopyOwnerFromIdlToMojo(*context, exception_state, *group, *mojo_group))
     return;
   mojo_group->name = group->name();
+  mojo_group->priority = (group->hasPriority()) ? group->priority() : 0.0;
   if (!CopyBiddingLogicUrlFromIdlToMojo(*context, exception_state, *group,
                                         *mojo_group)) {
     return;
@@ -849,6 +899,7 @@ void NavigatorAuction::joinAdInterestGroup(ScriptState* script_state,
                                            const AuctionAdInterestGroup* group,
                                            double duration_seconds,
                                            ExceptionState& exception_state) {
+  RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   const ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kJoinAdInterestGroup)) {
@@ -888,6 +939,7 @@ void NavigatorAuction::leaveAdInterestGroup(ScriptState* script_state,
                                             Navigator& navigator,
                                             const AuctionAdInterestGroup* group,
                                             ExceptionState& exception_state) {
+  RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kJoinAdInterestGroup)) {
@@ -915,6 +967,7 @@ void NavigatorAuction::updateAdInterestGroups() {
 void NavigatorAuction::updateAdInterestGroups(ScriptState* script_state,
                                               Navigator& navigator,
                                               ExceptionState& exception_state) {
+  RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kJoinAdInterestGroup)) {
@@ -956,6 +1009,7 @@ ScriptPromise NavigatorAuction::runAdAuction(ScriptState* script_state,
                                              Navigator& navigator,
                                              const AuctionAdConfig* config,
                                              ExceptionState& exception_state) {
+  RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   const ExecutionContext* context = ExecutionContext::From(script_state);
   if (!context->IsFeatureEnabled(
           blink::mojom::PermissionsPolicyFeature::kRunAdAuction)) {
@@ -980,6 +1034,7 @@ Vector<String> NavigatorAuction::adAuctionComponents(
     Navigator& navigator,
     uint16_t num_ad_components,
     ExceptionState& exception_state) {
+  RecordCommonFledgeUseCounters(navigator.DomWindow()->document());
   const auto& ad_auction_components =
       navigator.DomWindow()->document()->Loader()->AdAuctionComponents();
   Vector<String> out;

@@ -263,6 +263,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="2653659639078652383">Invia</translation>
 <translation id="2658778018866295321">Fai clic e trascina</translation>
 <translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" /> e <ph name="UNAVAILABLE_APPS_TWO" /> non sono disponibili su questo dispositivo.</translation>
+<translation id="2673968385134502798">Giochi</translation>
 <translation id="2678852583403169292">Menu Seleziona per ascoltare</translation>
 <translation id="2689613560355655046">Scrivania 8</translation>
 <translation id="2700493154570097719">Imposta la tastiera</translation>
@@ -666,10 +667,11 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="504465286040788597">Paragrafo precedente</translation>
 <translation id="5045550434625856497">Password non corretta</translation>
 <translation id="5071064518267176975">Un'app vuole usare il microfono</translation>
-<translation id="5075554201838155866">Avvia sottotitoli</translation>
+<translation id="5075554201838155866">Avvia sottotitoli codificati</translation>
 <translation id="5078796286268621944">PIN errato</translation>
 <translation id="5083553833479578423">Sblocca altre funzioni dell'assistente.</translation>
 <translation id="5106223312672646208">Personalizza</translation>
+<translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Mostra mese successivo</translation>
 <translation id="5136175204352732067">Tastiera diversa collegata</translation>
 <translation id="5147567197700016471">Sbloccato</translation>
@@ -788,6 +790,7 @@ Ecco alcune cose che puoi provare per iniziare.</translation>
 <translation id="5901316534475909376">MAIUSC+ESC</translation>
 <translation id="5901630391730855834">Giallo</translation>
 <translation id="5909862606227538307">Scrivania inattiva.</translation>
+<translation id="5911231045062997865">Al momento le finestre Lacros non sono supportate. Le altre app verranno salvate.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">On</translation>
 <translation id="5920710855273935292">L'audio del microfono è disattivato.</translation>
@@ -1143,7 +1146,7 @@ Nuova installazione</translation>
 <translation id="8120151603115102514">Sul tuo telefono non è presente una schermata di blocco. Per sbloccare Chromebook, inserisci la password.</translation>
 <translation id="8129620843620772246"><ph name="TEMPERATURE_C" /> °C</translation>
 <translation id="8131740175452115882">Conferma</translation>
-<translation id="8132487352815776550">Interrompi sottotitoli</translation>
+<translation id="8132487352815776550">Interrompi sottotitoli codificati</translation>
 <translation id="8132793192354020517">Connesso a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inizializzazione...</translation>
 <translation id="8142441511840089262">Doppio clic</translation>

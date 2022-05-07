@@ -107,6 +107,40 @@ chromium-metrics-reviews@google.com.
   <variant name=".NTPSnippets" summary="NTP snippets"/>
 </variants>
 
+<histogram name="Android.ActivityStop.NumberOfTabsUsed" units="%"
+    expires_after="2022-07-31">
+  <owner>gauravjj@google.com</owner>
+  <owner>skavuluru@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Captures the number of regular and incognito tabs used. Used tabs are
+    calculated by identifying the number of tabs that were selected between
+    ChromeTabbedActivity onResumeWithNative() and onStopWithNative(). This is
+    recorded when onStopWithNative() is called by backgrounding the app or by
+    opening another activity like SettingsActivity. If multiple instances are
+    running, each instance will only track and record usage of tabs that it
+    contains.
+  </summary>
+</histogram>
+
+<histogram name="Android.ActivityStop.PercentageOfTabsUsed" units="%"
+    expires_after="2022-07-31">
+  <owner>gauravjj@google.com</owner>
+  <owner>skavuluru@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Captures the percentage of regular and incognito tabs used. This is
+    calculated by finding the ratio of the number of tabs used to the total
+    number of tabs available between ChromeTabbedActivity onResumedWithNative
+    and onStopWithNative. Total number of tabs available is the sum of the tab
+    count when CTA is resumed and any new tabs that are opened before CTA is
+    stopped. This is recorded when ChromeTabbedActivity#onStopWithNative() is
+    called by backgrounding the app or by opening another activity like
+    SettingsActivity. If multiple instances are running, each instance will only
+    track and record usage of tabs that it contains.
+  </summary>
+</histogram>
+
 <histogram name="Android.AdaptiveToolbarButton.Clicked"
     enum="AdaptiveToolbarButtonVariant" expires_after="2022-08-21">
   <owner>bttk@chromium.org</owner>
@@ -1072,10 +1106,24 @@ chromium-metrics-reviews@google.com.
     timing when the image data associated with the URI is needed. Another metric
     Android.DragDrop.Image.OpenFileTime.FirstExpired only records at most once
     per URI, to avoid counting in retries from drop target app when Chrome
-    rejects the expired URI. This metric is recoreded when Chrome receives an
+    rejects the expired URI. This metric is recorded when Chrome receives an
     expired URI to retrieve data. If the URI is not the latest expired one, the
-    metric will not be recoreded because we could not calcuate the elapsed time
-    for older URIs. Android only.
+    metric will not be recorded because we do not calculate the elapsed time for
+    older URIs. Android only.
+  </summary>
+</histogram>
+
+<histogram name="Android.DragDrop.Image.OpenFileTime.FirstAttempt" units="ms"
+    expires_after="2022-07-01">
+  <owner>shuyng@google.com</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    Records the duration between receiving Android Drag End event and the first
+    ContentProvider#openFile attempted by the drop target app. The duration is
+    calculated during the first ContentProvider#openFile for each URI. Another
+    metric Android.DragDrop.Image.OpenFileTime.LastAttempt is recorded for the
+    last ContentProvider#openFile. Record 0 if the duration is negative (e.g.
+    ContentProvider#openFile is accessed before drag ends). Android only.
   </summary>
 </histogram>
 
@@ -1092,9 +1140,9 @@ chromium-metrics-reviews@google.com.
     per URI. Another metric Android.DragDrop.Image.OpenFileTime.AllExpired
     records multiple times per URI, to gives us the holistic view about the
     timing when the image data associated with the URI is needed. This metric is
-    recoreded when Chrome receives an expired URI to retrieve data. If the URI
-    is not the latest expired one, the metric will not be recoreded because we
-    could not calcuate the elapsed time for older URIs. Android only.
+    recorded when Chrome receives an expired URI to retrieve data. If the URI is
+    not the latest expired one, the metric will not be recorded because we do
+    not calculate the elapsed time for older URIs. Android only.
   </summary>
 </histogram>
 
@@ -1105,8 +1153,12 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records the duration between receiving Android Drag End event and the last
     ContentProvider#openFile attempted by the drop target app. The duration is
-    calculated when the image data expired at the designated time limit. Android
-    only.
+    calculated when the image data expired at the designated time limit. It is
+    not recorded if the image data is replaced before the time limit due to the
+    start of the next image drag. Another metric
+    Android.DragDrop.Image.OpenFileTime.FirstAttempt is recorded for the first
+    ContentProvider#openFile. Record 0 if the duration is negative (e.g.
+    ContentProvider#openFile is accessed before drag ends). Android only.
   </summary>
 </histogram>
 
@@ -3041,11 +3093,42 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.TabNavigationInterceptResult.For{ProtocolType}"
+    enum="NavigationInterceptResult" expires_after="2023-03-24">
+  <owner>blundell@chromium.org</owner>
+  <owner>mthiesse@chromium.org</owner>
+  <owner>tedchoc@chromium.org</owner>
+  <summary>
+    The distribution of results when running ExternalNavigationHandler for
+    navigations that have an {ProtocolType}. This shows how often we send
+    intents to be handled by other applications.
+  </summary>
+  <token key="ProtocolType">
+    <variant name="ExternalProtocol" summary="external protocol"/>
+    <variant name="InternalProtocol" summary="internal protocol"/>
+  </token>
+</histogram>
+
 <histogram name="Android.TabPersistentStore.MetadataFileSize" units="units"
     expires_after="M85">
   <owner>wnwen@chromium.org</owner>
   <owner>twellington@chromium.org</owner>
   <summary>The number of bytes written for the tab metadata file.</summary>
+</histogram>
+
+<histogram name="Android.TabStrip.TimeToSwitchTab" units="ms"
+    expires_after="2022-07-31">
+  <owner>gauravjj@google.com</owner>
+  <owner>twellington@chromium.org</owner>
+  <owner>clank-large-form-factors@google.com</owner>
+  <summary>
+    This captures the time taken for a user to select a tab after scrolling the
+    tab strip as one measure of tab strip switching efficiency. This is recorded
+    only when a tab switch event occurs within 60 seconds of the most recent tab
+    strip scroll. In the event of multiple back-to-back scrolls, this metric is
+    recorded so long as the sequence of scrolls occur within 60 seconds of each
+    other and is capped at 3 minutes.
+  </summary>
 </histogram>
 
 <histogram name="Android.TaskScheduling.BootstrapTaskRunnerType"

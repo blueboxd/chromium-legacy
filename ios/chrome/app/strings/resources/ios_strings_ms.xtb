@@ -124,6 +124,7 @@ Enjin carian anda ialah <ph name="DSE_NAME" />. Lihat arahan enjin carian itu un
 <translation id="199425419756152024">Lihat Kata Laluan</translation>
 <translation id="2015722694326466240">Untuk melihat kata laluan, mula-mula anda mesti menetapkan kod laluan pada peranti anda.</translation>
 <translation id="2021670401941426298">Lihat arahan enjin carian anda untuk memadamkan sejarah carian anda, jika berkenaan.</translation>
+<translation id="202292859882676807">Akses Mikrofon Dibenarkan</translation>
 <translation id="2073572773299281212">Aktif <ph name="DAYS" /> Hari Yang Lalu</translation>
 <translation id="2074131957428911366">Anda boleh memilih item yang hendak disegerakkan dalam <ph name="BEGIN_LINK" />tetapan<ph name="END_LINK" /> pada bila-bila masa.</translation>
 <translation id="2079545284768500474">Buat asal</translation>
@@ -336,7 +337,7 @@ Ikut langkah di bawah:</translation>
 <translation id="3989635538409502728">Log Keluar</translation>
 <translation id="3995521777587992544">Bar kemajuan pemuatan halaman, <ph name="EMAIL" /> dimuatkan.</translation>
 <translation id="4002066346123236978">Tajuk</translation>
-<translation id="4004204301268239848">Kata laluan disimpan dalam Akaun Google anda supaya anda dapat menggunakannya pada mana-mana peranti.</translation>
+<translation id="4004204301268239848">Kata laluan disimpan dalam Google Account anda supaya anda dapat menggunakannya pada mana-mana peranti.</translation>
 <translation id="4006921758705478413">Hantar ke Peranti Anda</translation>
 <translation id="4018310736049373830">Urus Aktiviti</translation>
 <translation id="4038354071007134711">Tiada aplikasi pada peranti ini yang dapat membuka fail itu.</translation>
@@ -369,6 +370,7 @@ Ikut langkah di bawah:</translation>
 <translation id="430967081421617822">Sepanjang Masa</translation>
 <translation id="4334428914252001502">1 artikel belum dibaca.</translation>
 <translation id="4338650699862464074">Menghantar URL halaman yang anda lawati kepada Google.</translation>
+<translation id="4343046787186034850">Akses Kamera dan Mikrofon Dibenarkan</translation>
 <translation id="4359125752503270327">Halaman ini akan dibuka dalam aplikasi lain.</translation>
 <translation id="4375040482473363939">Carian kod QR</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -388,7 +390,6 @@ Ikut langkah di bawah:</translation>
 <translation id="4536418791685807335">Cuba log masuk semula.</translation>
 <translation id="4540780316273593836">Kesilapan Telah Berlaku</translation>
 <translation id="457386861538956877">Lagi...</translation>
-<translation id="458449952965618888">Akses Mikrofon dibenarkan</translation>
 <translation id="4592368184551360546">Papan kekunci</translation>
 <translation id="461440297010471931">Mencari dengan Google</translation>
 <translation id="4619564267100705184">Sahkan orang itu ialah anda</translation>
@@ -409,7 +410,6 @@ Data anda disulitkan dengan ungkapan laluan segerak anda. Masukkannya untuk memu
 <translation id="4689564913179979534">Urus Kaedah Pembayaran...</translation>
 <translation id="4697071790493980729">Tiada Hasil Carian Ditemukan</translation>
 <translation id="470966556546083668">Jangan Hidupkan Penyegerakan</translation>
-<translation id="4727245048156789470">Akses Kamera dan Mikrofon dibenarkan</translation>
 <translation id="4737560986434232178">Cari Tab Terkini</translation>
 <translation id="473775607612524610">Kemas kini</translation>
 <translation id="4747097190499141774">Penyulitan ungkapan laluan tidak termasuk kaedah pembayaran dan alamat daripada Google Pay. Hanya orang yang mempunyai ungkapan laluan anda boleh membaca data anda yang disulitkan. Ungkapan laluan tidak dihantar atau disimpan oleh Google. Jika anda terlupa ungkapan laluan atau ingin menukar tetapan ini, anda perlu menetapkan semula penyegerakan. <ph name="BEGIN_LINK" />Ketahui lebih lanjut<ph name="END_LINK" /></translation>
@@ -512,6 +512,7 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versi <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{Kini memaparkan 1 tetingkap Chrome}other{Kini memaparkan {count} tetingkap Chrome}}</translation>
+<translation id="5701270923492462699">Akses Kamera Dibenarkan</translation>
 <translation id="5704908597376970822">Tidak dapat log masuk.</translation>
 <translation id="5706552126692816153">Aktif 1 Hari Yang Lalu</translation>
 <translation id="5711039611392265845">Untuk mendapatkan pelbagai lagi tetapan yang berkaitan dengan privasi, keselamatan dan pengumpulan data, lihat <ph name="BEGIN_LINK" />Penyegerakan dan Perkhidmatan Google<ph name="END_LINK" />.</translation>
@@ -540,7 +541,6 @@ Serah mestilah turut didayakan dalam bahagian Umum pada Tetapan dan peranti anda
 <translation id="5896576662943111387">Dibina untuk iOS</translation>
 <translation id="5897956970858271241">Lawati Pautan Disalin</translation>
 <translation id="5899314093904173337">Untuk berkongsi dengan orang yang berdekatan, benarkan mereka mengimbas kod QR ini dengan kamera atau apl pengimbas QR mereka</translation>
-<translation id="5902639236448164449">Urus kebenaran laman untuk <ph name="URL" />. Kebenaran ini akan ditetapkan semula apabila anda menutup tab.</translation>
 <translation id="5911030830365207728">Google Terjemah</translation>
 <translation id="5913600720976431809">Pilihan untuk Menterjemah halaman</translation>
 <translation id="5938160824633642847">Peranti anda hampir penuh. Kosongkan ruang dan cuba lagi.</translation>
@@ -825,7 +825,6 @@ Tapak boleh menggunakan kuki untuk melihat aktiviti penyemakan imbas anda merent
 <translation id="8283172974887967105">Tetapkan…</translation>
 <translation id="8299417921174340354">Untuk menggunakan kata laluan, anda mesti menetapkan kod laluan pada peranti anda dahulu.</translation>
 <translation id="8299613349954694191">Buka tab Inkognito untuk menyemak imbas web secara tertutup.</translation>
-<translation id="8304831996890817401">Akses Kamera dibenarkan</translation>
 <translation id="8319076807703933069">Carian Baharu</translation>
 <translation id="8323906514956095947">Sentuh &amp; tahan untuk melihat lagi pilihan tab</translation>
 <translation id="8328777765163860529">Tutup Semua</translation>

@@ -38,6 +38,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.app.AlertDialog;
 
+import org.chromium.base.BuildInfo;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.IntentUtils;
@@ -195,11 +196,13 @@ public class ExternalNavigationHandler {
      * Result types for checking if we should override URL loading.
      * NOTE: this enum is used in UMA, do not reorder values. Changes should be append only.
      * Values should be numerated from 0 and can't have gaps.
+     * NOTE: NUM_ENTRIES must be added inside the IntDef{} to work around crbug.com/1300585. It
+     * should be removed from the IntDef{} if an alternate solution for that bug is found.
      */
     @IntDef({OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
             OverrideUrlLoadingResultType.OVERRIDE_WITH_CLOBBERING_TAB,
             OverrideUrlLoadingResultType.OVERRIDE_WITH_ASYNC_ACTION,
-            OverrideUrlLoadingResultType.NO_OVERRIDE})
+            OverrideUrlLoadingResultType.NO_OVERRIDE, OverrideUrlLoadingResultType.NUM_ENTRIES})
     @Retention(RetentionPolicy.SOURCE)
     public @interface OverrideUrlLoadingResultType {
         /* We should override the URL loading and launch an intent. */
@@ -367,7 +370,7 @@ public class ExternalNavigationHandler {
         }
 
         if (canLaunchExternalFallback) {
-            if (shouldBlockAllExternalAppLaunches(params)) {
+            if (shouldBlockAllExternalAppLaunches(params, isIncomingIntentRedirect(params))) {
                 throw new SecurityException("Context is not allowed to launch an external app.");
             }
             if (!params.isIncognito()) {
@@ -471,7 +474,12 @@ public class ExternalNavigationHandler {
     /**
      * http://crbug.com/441284 : Disallow firing external intent while the app is in the background.
      */
-    private boolean blockExternalNavWhileBackgrounded(ExternalNavigationParams params) {
+    private boolean blockExternalNavWhileBackgrounded(
+            ExternalNavigationParams params, boolean incomingIntentRedirect) {
+        // If the redirect is from an intent Chrome could still be transitioning to the foreground.
+        // Alternatively, the user may have sent Chrome to the background by this point, but for
+        // navigations started by another app that should still be safe.
+        if (incomingIntentRedirect) return false;
         if (params.isApplicationMustBeInForeground() && !mDelegate.isApplicationInForeground()) {
             if (DEBUG) Log.i(TAG, "App is not in foreground");
             return true;
@@ -480,7 +488,12 @@ public class ExternalNavigationHandler {
     }
 
     /** http://crbug.com/464669 : Disallow firing external intent from background tab. */
-    private boolean blockExternalNavFromBackgroundTab(ExternalNavigationParams params) {
+    private boolean blockExternalNavFromBackgroundTab(
+            ExternalNavigationParams params, boolean incomingIntentRedirect) {
+        // See #blockExternalNavWhileBackgrounded - isBackgroundTabNavigation is effectively
+        // checking both that the tab is foreground, and the app is foreground, so we can skip it
+        // for intent launches for the same reason.
+        if (incomingIntentRedirect) return false;
         if (params.isBackgroundTabNavigation()
                 && !params.areIntentLaunchesAllowedInBackgroundTabs()) {
             if (DEBUG) Log.i(TAG, "Navigation in background tab");
@@ -1264,9 +1277,12 @@ public class ExternalNavigationHandler {
     }
 
     // Check if we're navigating under conditions that should never launch an external app.
-    private boolean shouldBlockAllExternalAppLaunches(ExternalNavigationParams params) {
-        return blockExternalNavFromAutoSubframe(params) || blockExternalNavWhileBackgrounded(params)
-                || blockExternalNavFromBackgroundTab(params) || ignoreBackForwardNav(params);
+    private boolean shouldBlockAllExternalAppLaunches(
+            ExternalNavigationParams params, boolean incomingIntentRedirect) {
+        return blockExternalNavFromAutoSubframe(params)
+                || blockExternalNavWhileBackgrounded(params, incomingIntentRedirect)
+                || blockExternalNavFromBackgroundTab(params, incomingIntentRedirect)
+                || ignoreBackForwardNav(params);
     }
 
     private void recordIntentSelectorMetrics(GURL targetUrl, Intent targetIntent) {
@@ -1285,7 +1301,11 @@ public class ExternalNavigationHandler {
         // Don't allow external fallback URLs by default.
         canLaunchExternalFallbackResult.set(false);
 
-        if (shouldBlockAllExternalAppLaunches(params)) {
+        // http://crbug.com/170925: We need to show the intent picker when we receive an intent from
+        // another app that 30x redirects to a YouTube/Google Maps/Play Store/Google+ URL etc.
+        boolean incomingIntentRedirect = isIncomingIntentRedirect(params);
+
+        if (shouldBlockAllExternalAppLaunches(params, incomingIntentRedirect)) {
             return OverrideUrlLoadingResult.forNoOverride();
         }
 
@@ -1318,19 +1338,10 @@ public class ExternalNavigationHandler {
         }
 
         int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
-        boolean isLink = pageTransitionCore == PageTransition.LINK;
+        boolean isLink = params.isLinkTransition();
+        boolean isFromIntent = params.isFromIntent();
         boolean isFormSubmit = pageTransitionCore == PageTransition.FORM_SUBMIT;
-        boolean isFromIntent = (params.getPageTransition() & PageTransition.FROM_API) != 0;
         boolean linkNotFromIntent = isLink && !isFromIntent;
-
-        boolean isOnEffectiveIntentRedirect = params.getRedirectHandler() == null
-                ? false
-                : params.getRedirectHandler().isOnEffectiveIntentRedirectChain();
-
-        // http://crbug.com/170925: We need to show the intent picker when we receive an intent from
-        // another app that 30x redirects to a YouTube/Google Maps/Play Store/Google+ URL etc.
-        boolean incomingIntentRedirect =
-                (isLink && isFromIntent && params.isRedirect()) || isOnEffectiveIntentRedirect;
 
         if (handleCCTRedirectsToInstantApps(params, isExternalProtocol, incomingIntentRedirect)) {
             return OverrideUrlLoadingResult.forExternalIntent();
@@ -2038,6 +2049,10 @@ public class ExternalNavigationHandler {
      */
     @VisibleForTesting
     protected boolean shouldRequestFileAccess(GURL url) {
+        // TODO(https://crbug.com/1316672): Replace READ_EXTERNAL_STORAGE with READ_MEDIA_*
+        //       permissions to restore capability to open file:// on Android T.
+        if (BuildInfo.isAtLeastT()) return false;
+
         // If the tab is null, then do not attempt to prompt for access.
         if (!mDelegate.hasValidTab()) return false;
         assert url.getScheme().equals(UrlConstants.FILE_SCHEME);
@@ -2087,5 +2102,16 @@ public class ExternalNavigationHandler {
         if (referrerUrl == null || referrerUrl.isEmpty()) return false;
 
         return UrlUtilitiesJni.get().isGoogleSubDomainUrl(referrerUrl.getSpec());
+    }
+
+    /**
+     * @return whether this navigation is a redirect from an intent.
+     */
+    private static boolean isIncomingIntentRedirect(ExternalNavigationParams params) {
+        boolean isOnEffectiveIntentRedirect = params.getRedirectHandler() == null
+                ? false
+                : params.getRedirectHandler().isOnEffectiveIntentRedirectChain();
+        return (params.isLinkTransition() && params.isFromIntent() && params.isRedirect())
+                || isOnEffectiveIntentRedirect;
     }
 }

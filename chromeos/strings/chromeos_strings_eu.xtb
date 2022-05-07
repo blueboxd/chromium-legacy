@@ -52,6 +52,7 @@
 <translation id="1468664791493211953">Eskaintzak</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> domeinuak kudeatzen du gailu hau, eta baliteke zure jardueren jarraipena egin ahal izatea.</translation>
 <translation id="1478594628797167447">Eskanerra</translation>
+<translation id="1486019694341708158">Aktibatu etengailua pantaila-babeslearen aukerak hautatzeko</translation>
 <translation id="1491076385728777984"><ph name="DEVICE_NAME" /> gailuaren firmwarea eguneratzen</translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> domeinuak kudeatzen du erabiltzaile hau, eta baliteke urrunetik haren ezarpenak kudeatzea eta jarduerak gainbegiratzea.</translation>
 <translation id="150962533380566081">PUK kodeak ez du balio.</translation>
@@ -84,7 +85,7 @@
 <translation id="1792647875738159689">Eskaneatzeko prozesua bertan behera uzten</translation>
 <translation id="1807246157184219062">Argia</translation>
 <translation id="1827738518074806965">Arte-galeria</translation>
-<translation id="1851218745569890714">Bideo-konferentziak</translation>
+<translation id="1851218745569890714">Bideokonferentziak</translation>
 <translation id="1852934301711881861">Instalatu ChromeOS Flex</translation>
 <translation id="1856388568474281774">Behera gezi-tekla</translation>
 <translation id="1874612839560830905">MTU</translation>
@@ -106,6 +107,7 @@
 <translation id="2105810540595158374">Gailua bideo-jokoen kontrolagailu bat da.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, <ph name="MILESTONE_VERSION" /> bertsioa</translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" /> GB / <ph name="TOTAL_MEMORY" /> GB daude erabilgarri</translation>
+<translation id="2138109643290557664">Flotatu airean</translation>
 <translation id="2141644705054017895">% <ph name="PERCENTAGE_VALUE" /></translation>
 <translation id="2152882202543497059"><ph name="NUMBER" /> argazki</translation>
 <translation id="2157959690810728433">ILARAN</translation>
@@ -268,6 +270,7 @@
 <translation id="4271957103967917607">Ikusi pantaila osoan</translation>
 <translation id="4275799948641988986">Konpodu ondoren, nork erabiliko du gailu hau?</translation>
 <translation id="4289540628985791613">Ikuspegi orokorra</translation>
+<translation id="4289849978083912975">Diapositiba-aurkezpena</translation>
 <translation id="4297501883039923494">Geldituta: errore ezezaguna</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> irudi</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> sakatuta dago</translation>
@@ -445,6 +448,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="6106186594183574873">Amaitzeko, idatzi pasahitz zaharra</translation>
 <translation id="6108689792487843350">Ezin da konektatu atebidera</translation>
 <translation id="6113701710518389813">Gora gezi-tekla</translation>
+<translation id="6117895505466548728"><ph name="TITLE" /> eta beste <ph name="NUMBER" /> album</translation>
 <translation id="6122191549521593678">Konektatu</translation>
 <translation id="6137767437444130246">Erabiltzaile-ziurtagiria</translation>
 <translation id="6146993107019042706">Amaitzeko, idatzi pasahitz berria</translation>
@@ -539,10 +543,12 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="7175037578838465313">Konfiguratu <ph name="NAME" /></translation>
 <translation id="7177485034254901881"><ph name="MANAGER" /> domeinuak kudeatzen du <ph name="DEVICE_TYPE" /> gailua. Baliteke administratzaileek urrunetik konfiguratzea gailua.</translation>
 <translation id="7180611975245234373">Freskatu</translation>
+<translation id="7191009787982536050">Pantaila-babeslearen animazioa</translation>
 <translation id="7212734716605298123">Kanpoko gailuen firmware-eguneratzeak</translation>
 <translation id="7216409898977639127">Zerbitzu mugikorraren hornitzailea</translation>
 <translation id="7271040990581020067">Eskanerra erabiltzen ari zara. Saiatu berriro geroago.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7281657306185710294">Sentitu haize gozoa</translation>
 <translation id="7287310195820267359">Horma-paperen bildumak</translation>
 <translation id="7297226631177386107">Ezin da konektatu HTTPS darabilten webguneetara suebakiaren bidez</translation>
 <translation id="7302860742311162920">ICCIDa</translation>
@@ -577,7 +583,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="7658239707568436148">Utzi</translation>
 <translation id="7690294790491645610">Berretsi pasahitz berria</translation>
 <translation id="7701040980221191251">Bat ere ez</translation>
-<translation id="7705524343798198388">VPN</translation>
+<translation id="7705524343798198388">VPNa</translation>
 <translation id="773153675489693198">Ziklo kopurua</translation>
 <translation id="7747039790905080783">Aurrez partekatutako gakoa</translation>
 <translation id="7762130827864645708">Aldatu da pasahitza. Aurrerantzean, erabili pasahitz berria.</translation>

@@ -20,6 +20,7 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_context_impl.h"
 #include "content/browser/browser_main_loop.h"
+#include "content/browser/browsing_topics/browsing_topics_document_host.h"
 #include "content/browser/contacts/contacts_manager_impl.h"
 #include "content/browser/content_index/content_index_service_impl.h"
 #include "content/browser/cookie_store/cookie_store_manager.h"
@@ -845,11 +846,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host, mojo::BinderMap* map) {
                             base::Unretained(host)));
   }
 
-  if (IsFedCmEnabled()) {
-    map->Add<blink::mojom::FederatedAuthRequest>(base::BindRepeating(
-        &RenderFrameHostImpl::BindFederatedAuthRequestReceiver,
-        base::Unretained(host)));
-  }
+  map->Add<blink::mojom::FederatedAuthRequest>(base::BindRepeating(
+      &RenderFrameHostImpl::BindFederatedAuthRequestReceiver,
+      base::Unretained(host)));
 
   map->Add<blink::mojom::WebUsbService>(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(host)));
@@ -1082,6 +1081,10 @@ void PopulateBinderMapWithContext(
       &EmptyBinderForFrame<blink::mojom::AnchorElementMetricsHost>));
   map->Add<blink::mojom::CredentialManager>(base::BindRepeating(
       &EmptyBinderForFrame<blink::mojom::CredentialManager>));
+  if (base::FeatureList::IsEnabled(blink::features::kBrowsingTopics)) {
+    map->Add<blink::mojom::BrowsingTopicsDocumentService>(
+        base::BindRepeating(&BrowsingTopicsDocumentHost::CreateMojoService));
+  }
 #if !BUILDFLAG(IS_ANDROID)
   if (SiteIsolationPolicy::IsApplicationIsolationLevelEnabled()) {
     map->Add<blink::mojom::DirectSocketsService>(

@@ -7,6 +7,7 @@
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/threading/platform_thread.h"
 #include "base/values.h"
 #include "build/build_config.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
@@ -27,6 +28,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/gfx/geometry/point_conversions.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -73,8 +75,6 @@ class AttributionSourceDisabledBrowserTest : public ContentBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
 };
 
-}  // namespace
-
 // Verifies that impressions are not logged when the Runtime feature isn't
 // enabled.
 IN_PROC_BROWSER_TEST_F(AttributionSourceDisabledBrowserTest,
@@ -102,6 +102,7 @@ class AttributionSourceDeclarationBrowserTest
     // Sets up the blink runtime feature for ConversionMeasurement.
     command_line->AppendSwitch(
         switches::kEnableExperimentalWebPlatformFeatures);
+    command_line->AppendSwitch(switches::kEnableBlinkTestFeatures);
   }
 };
 
@@ -426,39 +427,38 @@ IN_PROC_BROWSER_TEST_F(AttributionSourceDeclarationBrowserTest,
 // TODO(johnidel): SimulateMouseClickAt() does not work on Android, find a
 // different way to invoke the context menu that works on Android.
 #if !BUILDFLAG(IS_ANDROID)
-// https://crbug.com/1219907 started flaking after Field Trial Testing Config
-// was enabled for content_browsertests.
 IN_PROC_BROWSER_TEST_F(AttributionSourceDeclarationBrowserTest,
-                       DISABLED_ContextMenuShownForImpression_ImpressionSet) {
-  // Navigate to a page with the non-https server.
+                       ContextMenuShownForImpression_ImpressionSet) {
   EXPECT_TRUE(NavigateToURL(
       web_contents(),
       https_server()->GetURL("b.test", "/page_with_impression_creator.html")));
 
-  EXPECT_TRUE(ExecJs(web_contents(), R"(
-    createImpressionTag({id: 'link',
-                        url: 'page_with_conversion_redirect.html',
-                        data: '10',
-                        destination: 'https://dest.com',
-                        left: 100,
-                        top: 100});)"));
+  GURL register_url =
+      https_server()->GetURL("c.test", "/register_source_headers.html");
+  EXPECT_TRUE(ExecJs(web_contents(), JsReplace(R"(
+  createAttributionSrcAnchor({url: 'page_with_conversion_redirect.html',
+                              attributionsrc: $1,
+                              id: 'link2'});)",
+                                               register_url)));
+
+  // Allow the anchor to be rendered before trying to click on it.
+  base::PlatformThread::Sleep(base::Milliseconds(50));
 
   auto context_menu_interceptor =
       std::make_unique<content::ContextMenuInterceptor>(
           web_contents()->GetMainFrame(),
           ContextMenuInterceptor::ShowBehavior::kPreventShow);
 
-  content::SimulateMouseClickAt(web_contents(), 0,
-                                blink::WebMouseEvent::Button::kRight,
-                                gfx::Point(100, 100));
+  content::SimulateMouseClickAt(
+      web_contents(), 0, blink::WebMouseEvent::Button::kRight,
+      gfx::ToFlooredPoint(
+          GetCenterCoordinatesOfElementWithId(web_contents(), "link2")));
 
   context_menu_interceptor->Wait();
   blink::UntrustworthyContextMenuParams params =
       context_menu_interceptor->get_params();
   EXPECT_TRUE(params.impression);
-  EXPECT_EQ(10UL, params.impression->impression_data);
-  EXPECT_EQ(url::Origin::Create(GURL("https://dest.com")),
-            params.impression->conversion_destination);
+  EXPECT_TRUE(params.impression->attribution_src_token.has_value());
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
 
@@ -620,67 +620,19 @@ IN_PROC_BROWSER_TEST_F(AttributionSourceDeclarationBrowserTest,
       https_server()->GetURL("b.test", "/page_with_impression_creator.html");
   EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
 
+  GURL register_url = https_server()->GetURL(
+      "a.test", "/attribution_reporting/register_source_headers.html");
+
   // Navigate the page using window.open and set an impression.
-  EXPECT_TRUE(ExecJs(web_contents(), R"(
-    window.open("https://a.com", "_top",
-    "attributionsourceeventid=1,attributiondestination=https://a.com,\
-    attributionreportto=https://report.com,attributionexpiry=1000,\
-    attributionsourcepriority=10");)"));
+  EXPECT_TRUE(ExecJs(web_contents(), JsReplace(R"(
+    window.open("https://d.test", "_top", "attributionsrc="+$1);)",
+                                               register_url)));
 
   // Wait for the impression to be seen by the observer.
   blink::Impression last_impression = source_observer.Wait();
 
   // Verify the attributes of the impression are set as expected.
-  EXPECT_EQ(1UL, last_impression.impression_data);
-  EXPECT_EQ(url::Origin::Create(GURL("https://a.com")),
-            last_impression.conversion_destination);
-  EXPECT_EQ(url::Origin::Create(GURL("https://report.com")),
-            last_impression.reporting_origin);
-  EXPECT_EQ(base::Milliseconds(1000), *last_impression.expiry);
-  EXPECT_EQ(10, last_impression.priority);
-}
-
-// TODO(crbug.com/1215063): Flaky timeout on serveral builders.
-IN_PROC_BROWSER_TEST_F(
-    AttributionSourceDeclarationBrowserTest,
-    DISABLED_WindowOpenAttributionSourceFeatures_FeaturesHandled) {
-  struct {
-    std::string features;
-    bool expected;
-  } kTestCases[] = {
-      {"", false},
-      {"attributionsourceeventid=1", false},
-      {"attributiondestination=1", false},
-      {"attributionexpiry=1", false},
-      {"attributionsourcepriority=10", false},
-      {"attributionsourceeventid=1,attributiondestination=1234", false},
-      {"attributionsourceeventid=1,attributiondestination=abcdefg", false},
-      {"attributionsourceeventid=1,attributiondestination=http://a.com", false},
-      {"attributionsourceeventid=1,attributiondestination=https://a.com", true},
-      {"attributionsourceeventid=bb,attributiondestination=https://a.com",
-       true},
-      {"attributionsourceeventid=bb,attributiondestination=https://"
-       "a.com,attributionsourcepriority=10",
-       true},
-  };
-
-  for (const auto& test_case : kTestCases) {
-    SourceObserver source_observer(web_contents());
-    GURL page_url =
-        https_server()->GetURL("b.test", "/page_with_impression_creator.html");
-    EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
-
-    // Navigate the page using window.open and set an impression.
-    EXPECT_TRUE(ExecJs(web_contents(),
-                       JsReplace(R"(window.open("https://a.com", "_top", $1);)",
-                                 test_case.features)));
-
-    // Wait for the impression to be seen by the observer.
-    if (test_case.expected)
-      source_observer.Wait();
-    else
-      EXPECT_TRUE(source_observer.WaitForNavigationWithNoImpression());
-  }
+  EXPECT_TRUE(last_impression.attribution_src_token.has_value());
 }
 
 IN_PROC_BROWSER_TEST_F(AttributionSourceDeclarationBrowserTest,
@@ -769,4 +721,5 @@ IN_PROC_BROWSER_TEST_F(AttributionSourceDeclarationBrowserTest,
   EXPECT_TRUE(source_observer.WaitForNavigationWithNoImpression());
 }
 
+}  // namespace
 }  // namespace content

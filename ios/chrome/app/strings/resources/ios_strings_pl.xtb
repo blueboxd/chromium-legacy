@@ -124,6 +124,7 @@ Twoja wyszukiwarka to <ph name="DSE_NAME" />. Zapoznaj się z jej instrukcjami,
 <translation id="199425419756152024">Wyświetl hasło</translation>
 <translation id="2015722694326466240">Aby wyświetlić hasła, musisz najpierw ustawić kod dostępu na urządzeniu.</translation>
 <translation id="2021670401941426298">Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wyszukiwarki.</translation>
+<translation id="202292859882676807">Przyznano dostęp do mikrofonu</translation>
 <translation id="2073572773299281212">Aktywność <ph name="DAYS" /> dni temu</translation>
 <translation id="2074131957428911366">W <ph name="BEGIN_LINK" />ustawieniach<ph name="END_LINK" /> możesz wybrać, co chcesz synchronizować.</translation>
 <translation id="2079545284768500474">Cofnij</translation>
@@ -367,6 +368,7 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="430967081421617822">Od początku</translation>
 <translation id="4334428914252001502">Jeden nieprzeczytany artykuł.</translation>
 <translation id="4338650699862464074">Adresy URL odwiedzanych stron będą wysyłane do Google.</translation>
+<translation id="4343046787186034850">Przyznano dostęp do aparatu i mikrofonu</translation>
 <translation id="4359125752503270327">Strona zostanie otwarta w innej aplikacji.</translation>
 <translation id="4375040482473363939">Wyszukiwanie z użyciem kodu QR</translation>
 <translation id="4378154925671717803">Telefon</translation>
@@ -386,7 +388,6 @@ Jeśli chcesz usunąć historię wyszukiwania, zapoznaj się z instrukcjami wys
 <translation id="4536418791685807335">Spróbuj zalogować się jeszcze raz.</translation>
 <translation id="4540780316273593836">Coś poszło nie tak</translation>
 <translation id="457386861538956877">Więcej</translation>
-<translation id="458449952965618888">Przyznano dostęp do mikrofonu</translation>
 <translation id="4592368184551360546">Klawiatura</translation>
 <translation id="461440297010471931">Wyszukiwanie z Google</translation>
 <translation id="4619564267100705184">Potwierdź, że to Ty</translation>
@@ -407,7 +408,6 @@ Dane zostały zaszyfrowane z użyciem Twojego hasła synchronizacji. Wpisz je, 
 <translation id="4689564913179979534">Zarządzaj formami płatności…</translation>
 <translation id="4697071790493980729">Nie znaleziono wyników</translation>
 <translation id="470966556546083668">Nie włączaj synchronizacji</translation>
-<translation id="4727245048156789470">Przyznano dostęp do kamery i mikrofonu</translation>
 <translation id="4737560986434232178">Szukaj w ostatnio przeglądanych kartach</translation>
 <translation id="473775607612524610">Aktualizuj</translation>
 <translation id="4747097190499141774">Szyfrowanie hasłem nie obejmuje form płatności ani adresów w Google Pay. Twoje zaszyfrowane dane może odczytać tylko ktoś znający hasło. Google nie otrzyma Twojego hasła ani nie będzie go przechowywać. Jeśli je zapomnisz lub zechcesz zmienić to ustawienie, konieczne będzie zresetowanie synchronizacji. <ph name="BEGIN_LINK" />Więcej informacji<ph name="END_LINK" /></translation>
@@ -510,6 +510,7 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Wersja <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{Pokazuję 1 okno Chrome}few{Pokazuję {count} okna Chrome}many{Pokazuję {count} okien Chrome}other{Pokazuję {count} okna Chrome}}</translation>
+<translation id="5701270923492462699">Przyznano dostęp do aparatu</translation>
 <translation id="5704908597376970822">Nie można się zalogować.</translation>
 <translation id="5706552126692816153">Aktywność 1 dzień temu</translation>
 <translation id="5711039611392265845">Więcej ustawień związanych z prywatnością, bezpieczeństwem i zbieraniem danych znajdziesz w sekcji <ph name="BEGIN_LINK" />Synchronizacja i usługi Google<ph name="END_LINK" />.</translation>
@@ -538,7 +539,6 @@ Funkcja Handoff musi być też włączona w sekcji Ogólne w Ustawieniach, a urz
 <translation id="5896576662943111387">Stworzona dla iOS</translation>
 <translation id="5897956970858271241">Otwórz skopiowany link</translation>
 <translation id="5899314093904173337">Aby udostępnić ten kod QR osobom w pobliżu, pozwól im go zeskanować za pomocą aparatu lub aplikacji do skanowania kodów QR</translation>
-<translation id="5902639236448164449">Zarządzanie uprawnieniami witryny <ph name="URL" />. Po zamknięciu karty uprawnienia zostaną zresetowane.</translation>
 <translation id="5911030830365207728">Tłumacz Google</translation>
 <translation id="5913600720976431809">Opcje tłumaczenia strony</translation>
 <translation id="5938160824633642847">Na urządzeniu brakuje wolnego miejsca. Zwolnij miejsce i spróbuj ponownie.</translation>
@@ -823,7 +823,6 @@ Witryny mogą używać plików cookie do śledzenia Twojej aktywności związane
 <translation id="8283172974887967105">Ustaw…</translation>
 <translation id="8299417921174340354">Aby użyć haseł, musisz najpierw ustawić kod dostępu na urządzeniu.</translation>
 <translation id="8299613349954694191">Otwórz kartę incognito, aby przeglądać strony prywatnie.</translation>
-<translation id="8304831996890817401">Przyznano dostęp do kamery</translation>
 <translation id="8319076807703933069">Nowe wyszukiwanie</translation>
 <translation id="8323906514956095947">Naciśnij i przytrzymaj, by zobaczyć więcej opcji</translation>
 <translation id="8328777765163860529">Zamknij wszystkie</translation>

@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.text.method.LinkMovementMethod;
 import android.util.AttributeSet;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,10 +24,12 @@ import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 import androidx.appcompat.widget.SwitchCompat;
+import androidx.core.content.res.ResourcesCompat;
 
 import org.chromium.base.StrictModeContext;
 import org.chromium.components.browser_ui.widget.DualControlLayout;
 import org.chromium.components.browser_ui.widget.RadioButtonLayout;
+import org.chromium.ui.widget.ChromeImageView;
 
 import java.util.List;
 
@@ -293,6 +296,28 @@ public final class InfoBarControlLayout extends ViewGroup {
     }
 
     /**
+     * Adds a center justified image.
+     *
+     * -----------------------------------------------------
+     * |                       IMAGE                       |
+     * -----------------------------------------------------
+     *
+     * @param imageResourceId Resource ID of the image.
+     */
+    public View addLeadImage(int imageResourceId) {
+        ChromeImageView imageView = new ChromeImageView(getContext());
+        LinearLayout.LayoutParams lp =
+                new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.CENTER;
+        imageView.setLayoutParams(lp);
+
+        addView(imageView, new ControlLayoutParams());
+        imageView.setImageResource(imageResourceId);
+
+        return imageView;
+    }
+
+    /**
      * Adds an icon with a descriptive message to the Title.
      *
      * -----------------------------------------------------
@@ -504,6 +529,14 @@ public final class InfoBarControlLayout extends ViewGroup {
      * Creates and adds a full-width control with additional text describing what an InfoBar is for.
      */
     public View addDescription(CharSequence message) {
+        return addDescription(message, ResourcesCompat.ID_NULL);
+    }
+
+    /**
+     * Creates and adds a full-width control with additional text describing what an InfoBar is for.
+     * This method overload allows setting text appearance.
+     */
+    public View addDescription(CharSequence message, int textAppearanceId) {
         ControlLayoutParams params = new ControlLayoutParams();
         params.mMustBeFullWidth = true;
 
@@ -512,6 +545,9 @@ public final class InfoBarControlLayout extends ViewGroup {
         addView(descriptionView, params);
 
         descriptionView.setText(message);
+        if (textAppearanceId != ResourcesCompat.ID_NULL) {
+            descriptionView.setTextAppearance(getContext(), textAppearanceId);
+        }
         descriptionView.setMovementMethod(LinkMovementMethod.getInstance());
         return descriptionView;
     }

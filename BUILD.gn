@@ -347,6 +347,7 @@ group("gn_all") {
 
   if (is_android) {
     deps += [
+      "//android_webview/tools/js_sandbox_tests:webview_js_sandbox_test_app",
       "//base:base_junit_tests",
       "//base/android/jni_generator:jni_generator_tests",
       "//base/android/linker:chromium_android_linker",
@@ -1188,7 +1189,14 @@ if (!is_ios) {
     }
 
     if (is_mac) {
-      data += [ "//third_party/apache-mac/" ]
+      data += [
+        "//third_party/apache-mac/",
+        "//third_party/apache-mac-arm64/",
+      ]
+    }
+
+    if (is_linux || is_fuchsia) {
+      data += [ "//third_party/apache-linux/" ]
     }
 
     if (is_android) {

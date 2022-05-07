@@ -124,6 +124,7 @@ Tu motor de búsqueda es <ph name="DSE_NAME" />. Consulta las instrucciones para
 <translation id="199425419756152024">Ver contraseña</translation>
 <translation id="2015722694326466240">Para ver las contraseñas, primero debes establecer una en tu dispositivo.</translation>
 <translation id="2021670401941426298">Consulta las instrucciones de tu motor de búsqueda para borrar el historial de búsqueda (si corresponde).</translation>
+<translation id="202292859882676807">Acceso al micrófono permitido</translation>
 <translation id="2073572773299281212">Activo hace <ph name="DAYS" /> días</translation>
 <translation id="2074131957428911366">En la <ph name="BEGIN_LINK" />configuración<ph name="END_LINK" />, puedes elegir los datos para sincronizar en cualquier momento.</translation>
 <translation id="2079545284768500474">Deshacer</translation>
@@ -369,6 +370,7 @@ Realiza los siguientes pasos:</translation>
 <translation id="430967081421617822">Todo el tiempo</translation>
 <translation id="4334428914252001502">1 artículo sin leer.</translation>
 <translation id="4338650699862464074">Envía a Google las URL de las páginas que visitas.</translation>
+<translation id="4343046787186034850">Acceso a la cámara y al micrófono permitido</translation>
 <translation id="4359125752503270327">Esta página se abrirá en otra aplicación.</translation>
 <translation id="4375040482473363939">Búsqueda mediante código QR</translation>
 <translation id="4378154925671717803">Teléfono</translation>
@@ -388,7 +390,6 @@ Realiza los siguientes pasos:</translation>
 <translation id="4536418791685807335">Intenta volver a acceder.</translation>
 <translation id="4540780316273593836">Se produjo un error</translation>
 <translation id="457386861538956877">Más...</translation>
-<translation id="458449952965618888">Acceso al micrófono permitido</translation>
 <translation id="4592368184551360546">Teclado</translation>
 <translation id="461440297010471931">Búsqueda con Google</translation>
 <translation id="4619564267100705184">Verificar tu identidad</translation>
@@ -409,7 +410,6 @@ Tus datos están encriptados con tu frase de contraseña para sincronización. D
 <translation id="4689564913179979534">Administrar formas de pago…</translation>
 <translation id="4697071790493980729">No se encontraron resultados</translation>
 <translation id="470966556546083668">No activar la sincronización</translation>
-<translation id="4727245048156789470">Acceso a la cámara y al micrófono permitido</translation>
 <translation id="4737560986434232178">Buscar pestañas recientes</translation>
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="4747097190499141774">La encriptación de la frase de contraseña no incluye formas de pago ni direcciones de Google Pay. Solo las personas que tengan tu frase de contraseña pueden leer los datos encriptados. Google no envía ni almacena la frase de contraseña. Si la olvidas o quieres cambiar esta configuración, deberás restablecer la sincronización. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
@@ -512,6 +512,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versión <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{Se muestra 1 ventana de Chrome}other{Se muestran {count} ventanas de Chrome}}</translation>
+<translation id="5701270923492462699">Acceso a la cámara permitido</translation>
 <translation id="5704908597376970822">No se puede acceder.</translation>
 <translation id="5706552126692816153">Activo hace 1 día</translation>
 <translation id="5711039611392265845">Para ver más opciones de configuración relacionadas con la privacidad, seguridad y recopilación de datos, visita <ph name="BEGIN_LINK" />Sincronización y servicios<ph name="END_LINK" />.</translation>
@@ -540,7 +541,6 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5896576662943111387">Diseñado para iOS</translation>
 <translation id="5897956970858271241">Visitar el vínculo copiado</translation>
 <translation id="5899314093904173337">Para habilitar el uso compartido con personas cercanas, permíteles que escaneen este código QR con la cámara o una app de lectura de código QR</translation>
-<translation id="5902639236448164449">Administra los permisos de sitios de <ph name="URL" />. Estos permisos se restablecerán cuando cierres la pestaña.</translation>
 <translation id="5911030830365207728">Google Traductor</translation>
 <translation id="5913600720976431809">Opciones para traducir la página</translation>
 <translation id="5938160824633642847">El dispositivo está casi lleno. Libera espacio y vuelve a intentarlo.</translation>
@@ -825,7 +825,6 @@ También pueden usar cookies para ver la actividad de navegación en diferentes 
 <translation id="8283172974887967105">Establecer…</translation>
 <translation id="8299417921174340354">Para usar contraseñas, primero debes establecer una en tu dispositivo.</translation>
 <translation id="8299613349954694191">Abre una pestaña de incógnito para navegar por la Web de forma privada.</translation>
-<translation id="8304831996890817401">Acceso a la cámara permitido</translation>
 <translation id="8319076807703933069">Nueva búsqueda</translation>
 <translation id="8323906514956095947">Mantén presionado el botón para ver más opciones de pestañas</translation>
 <translation id="8328777765163860529">Cerrar todas</translation>

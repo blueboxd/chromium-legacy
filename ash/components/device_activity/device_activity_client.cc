@@ -28,7 +28,7 @@ namespace {
 constexpr base::TimeDelta kTimeToRepeat = base::Hours(1);
 
 // General upper bound of expected Fresnel response size in bytes.
-constexpr size_t kMaxFresnelResponseSizeBytes = 1 << 20;  // 1MB;
+constexpr size_t kMaxFresnelResponseSizeBytes = 5 << 20;  // 5MB;
 
 // Timeout for each Fresnel request.
 constexpr base::TimeDelta kHealthCheckRequestTimeout = base::Seconds(10);
@@ -63,11 +63,11 @@ const char kDeviceActiveClientQueryMembershipResult[] =
 
 // Record the minute the device activity client transitions out of idle.
 const char kDeviceActiveClientTransitionOutOfIdleMinute[] =
-    "Ash.DeviceActiveClient.TransitionOutOfIdleMinute";
+    "Ash.DeviceActiveClient.RecordedTransitionOutOfIdleMinute";
 
 // Record the minute the device activity client transitions to check in.
 const char kDeviceActiveClientTransitionToCheckInMinute[] =
-    "Ash.DeviceActiveClient.TransitionToCheckInMinute";
+    "Ash.DeviceActiveClient.RecordedTransitionToCheckInMinute";
 
 // Generates the full histogram name for histogram variants based on state.
 std::string HistogramVariantName(const std::string& histogram_prefix,
@@ -99,28 +99,26 @@ void RecordQueryMembershipResultBoolean(bool is_member) {
 }
 
 // Return the minute of the current UTC time.
-base::TimeDelta GetCurrentMinute() {
+int GetCurrentMinute() {
   base::Time cur_time = base::Time::Now();
 
   // Extract minute from exploded |cur_time| in UTC.
   base::Time::Exploded exploded_utc;
   cur_time.UTCExplode(&exploded_utc);
 
-  return base::Minutes(exploded_utc.minute);
+  return exploded_utc.minute;
 }
 
 void RecordTransitionOutOfIdleMinute() {
-  base::UmaHistogramCustomTimes(kDeviceActiveClientTransitionOutOfIdleMinute,
-                                GetCurrentMinute(), base::Minutes(0),
-                                base::Minutes(59),
-                                60 /* number of histogram buckets */);
+  base::UmaHistogramCustomCounts(kDeviceActiveClientTransitionOutOfIdleMinute,
+                                 GetCurrentMinute(), 0, 59,
+                                 60 /* number of histogram buckets */);
 }
 
 void RecordTransitionToCheckInMinute() {
-  base::UmaHistogramCustomTimes(kDeviceActiveClientTransitionToCheckInMinute,
-                                GetCurrentMinute(), base::Minutes(0),
-                                base::Minutes(59),
-                                60 /* number of histogram buckets */);
+  base::UmaHistogramCustomCounts(kDeviceActiveClientTransitionToCheckInMinute,
+                                 GetCurrentMinute(), 0, 59,
+                                 60 /* number of histogram buckets */);
 }
 
 // Histogram sliced by duration and state.
@@ -378,28 +376,38 @@ void DeviceActivityClient::TransitionOutOfIdle(
 
     switch (current_use_case->GetPsmUseCase()) {
       case psm_rlwe::RlweUseCase::CROS_FRESNEL_DAILY:
+        // Check membership continues when the cached local state pref
+        // is not set. The local state pref may not be set if the device is
+        // new, powerwashed, recovered, RMA, or the local state was corrupted.
         if (base::FeatureList::IsEnabled(
-                features::kDeviceActiveClientDailyCheckMembership)) {
+                features::kDeviceActiveClientDailyCheckMembership) &&
+            (current_use_case->GetLastKnownPingTimestamp() ==
+             base::Time::UnixEpoch())) {
           TransitionToCheckMembershipOprf(current_use_case);
           return;
         } else {
-          // During rollout, we perform CheckIn without CheckMembership for
-          // powerwash, recovery, or RMA devices.
+          // |TransitionToCheckIn| if the local state pref is set.
           TransitionToCheckIn(current_use_case);
           return;
         }
       case psm_rlwe::RlweUseCase::CROS_FRESNEL_MONTHLY:
+        // Check membership continues when the cached local state pref is not
+        // set. The local state pref may not be set if the device is
+        // new, powerwashed, recovered, RMA, or the local state was corrupted.
+        if (base::FeatureList::IsEnabled(
+                features::kDeviceActiveClientMonthlyCheckMembership) &&
+            (current_use_case->GetLastKnownPingTimestamp() ==
+             base::Time::UnixEpoch())) {
+          TransitionToCheckMembershipOprf(current_use_case);
+          return;
+        }
+
+        // |TransitionToCheckIn| if the local state pref is set.
         if (base::FeatureList::IsEnabled(
                 features::kDeviceActiveClientMonthlyCheckIn)) {
           // During rollout, we perform CheckIn without CheckMembership for
           // powerwash, recovery, or RMA devices.
           TransitionToCheckIn(current_use_case);
-          return;
-        }
-
-        if (base::FeatureList::IsEnabled(
-                features::kDeviceActiveClientMonthlyCheckMembership)) {
-          TransitionToCheckMembershipOprf(current_use_case);
           return;
         }
 
@@ -647,10 +655,10 @@ void DeviceActivityClient::OnCheckMembershipQueryDone(
 
   psm_rlwe::PrivateMembershipRlweQueryResponse query_response =
       psm_query_response.rlwe_query_response();
-
   auto status_or_response =
       current_use_case->GetPsmRlweClient()->ProcessQueryResponse(
           query_response);
+
   if (!status_or_response.ok()) {
     RecordDurationStateMetric(state_, state_timer_.Elapsed());
     TransitionToIdle(current_use_case);
@@ -661,11 +669,8 @@ void DeviceActivityClient::OnCheckMembershipQueryDone(
   // regarding the current PSM ID.
   psm_rlwe::RlweMembershipResponses rlwe_membership_responses =
       status_or_response.value();
-  if (rlwe_membership_responses.membership_responses_size() != 1 ||
-      rlwe_membership_responses.membership_responses(0)
-              .plaintext_id()
-              .sensitive_id() !=
-          current_use_case->GetPsmIdentifier().value().sensitive_id()) {
+
+  if (rlwe_membership_responses.membership_responses_size() != 1) {
     RecordDurationStateMetric(state_, state_timer_.Elapsed());
     TransitionToIdle(current_use_case);
     return;

@@ -150,6 +150,13 @@ class CronetContext {
   // flush any remaining writes to disk.
   void StopNetLog();
 
+  // Destroys the URLRequestContext associated to `network` if `network` has
+  // disconnected and it has no pending URLRequests. This must be called on
+  // the network thread while destroying a CronetURLRequest as that might
+  // mark a URLRequestContext as eligible for destruction.
+  void MaybeDestroyURLRequestContext(
+      net::NetworkChangeNotifier::NetworkHandle network);
+
   // Default net::LOAD flags used to create requests.
   int default_load_flags() const;
 
@@ -183,10 +190,8 @@ class CronetContext {
     // Invoked off the network thread.
     // `listen_to_network_changes` is a temporary parameter to allow
     // multi-network testing for the time being.
-    // TODO(1284972): Remove listen_to_network_changes once that has been fixed.
     NetworkTasks(std::unique_ptr<URLRequestContextConfig> config,
-                 std::unique_ptr<CronetContext::Callback> callback,
-                 bool listen_to_network_changes = false);
+                 std::unique_ptr<CronetContext::Callback> callback);
 
     NetworkTasks(const NetworkTasks&) = delete;
     NetworkTasks& operator=(const NetworkTasks&) = delete;
@@ -263,6 +268,9 @@ class CronetContext {
 
     // Stops NetLog logging.
     void StopNetLog();
+
+    void MaybeDestroyURLRequestContext(
+        net::NetworkChangeNotifier::NetworkHandle network);
 
     // Callback for StopObserving() that unblocks the client thread and
     // signals that it is safe to access the NetLog files.
@@ -345,10 +353,6 @@ class CronetContext {
 
     // Callback implemented by the client.
     std::unique_ptr<CronetContext::Callback> callback_;
-
-    // Whether `this` should listen to network changes and destroy network-bound
-    // contexts when their network goes away.
-    bool listen_to_network_changes_;
 
     THREAD_CHECKER(network_thread_checker_);
   };

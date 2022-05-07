@@ -52,6 +52,7 @@
 <translation id="1468664791493211953">ការផ្តល់ជូន</translation>
 <translation id="1476467821656042872"><ph name="MANAGER" /> គ្រប់គ្រង​ឧបករណ៍នេះ ហើយ​ប្រហែលជាអាច​តាមដាន​សកម្មភាព​របស់អ្នកបាន។</translation>
 <translation id="1478594628797167447">ម៉ាស៊ីនស្កេន</translation>
+<translation id="1486019694341708158">បើកប៊ូតុងបិទ/បើក ដើម្បីជ្រើសរើសជម្រើសធាតុរក្សាអេក្រង់</translation>
 <translation id="1491076385728777984">កំពុងដំឡើងកំណែកម្មវិធី​បង្កប់នៅលើ <ph name="DEVICE_NAME" /></translation>
 <translation id="1499900233129743732"><ph name="MANAGER" /> គ្រប់គ្រង​អ្នកប្រើប្រាស់នេះ និង​អាចតាមដាន​សកម្មភាពអ្នកប្រើប្រាស់ និង​គ្រប់គ្រង​ការកំណត់ពីចម្ងាយបាន។</translation>
 <translation id="150962533380566081">PUK មិនត្រឹមត្រូវ។</translation>
@@ -106,6 +107,7 @@
 <translation id="2105810540595158374">ឧបករណ៍គឺជាឧបករណ៍បញ្ជាហ្គេម។</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, កំណែ <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736">អាចប្រើបាន <ph name="AVAILABLE_MEMORY" /> GB នៃ <ph name="TOTAL_MEMORY" /> GB</translation>
+<translation id="2138109643290557664">រសាត់កាត់ពីលើ</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
 <translation id="2152882202543497059">រូបថត <ph name="NUMBER" /> សន្លឹក</translation>
 <translation id="2157959690810728433">បានដាក់ជាជួរ</translation>
@@ -268,6 +270,7 @@
 <translation id="4271957103967917607">មើល​ពេញអេក្រង់</translation>
 <translation id="4275799948641988986">បន្ទាប់ពីជួសជុលហើយ តើនរណានឹងប្រើឧបករណ៍នេះ?</translation>
 <translation id="4289540628985791613">ទិដ្ឋភាពទូទៅ</translation>
+<translation id="4289849978083912975">បញ្ចាំងស្លាយ</translation>
 <translation id="4297501883039923494">បានឈប់ - មានបញ្ហា​ដែលមិនស្គាល់</translation>
 <translation id="4300073214558989">រូបភាព <ph name="IMAGE_COUNT" /></translation>
 <translation id="4333390807948134856">បានចុច​គ្រាប់ចុច <ph name="KEY_NAME" /></translation>
@@ -444,6 +447,7 @@
 <translation id="6106186594183574873">ដើម្បី​បញ្ចប់ សូម​បញ្ចូល​ពាក្យសម្ងាត់​ចាស់​របស់អ្នក</translation>
 <translation id="6108689792487843350">មិនអាចភ្ជាប់ជាមួយច្រកបានទេ</translation>
 <translation id="6113701710518389813">ព្រួញ​ឡើង​លើ</translation>
+<translation id="6117895505466548728"><ph name="TITLE" />, អាល់ប៊ុម +<ph name="NUMBER" /> ទៀត</translation>
 <translation id="6122191549521593678">លើអ៊ីនធឺណិត</translation>
 <translation id="6137767437444130246">វិញ្ញាបនបត្រ​អ្នក​ប្រើប្រាស់</translation>
 <translation id="6146993107019042706">ដើម្បី​បញ្ចប់ សូម​បញ្ចូល​ពាក្យសម្ងាត់​ថ្មីរបស់អ្នក</translation>
@@ -538,10 +542,12 @@
 <translation id="7175037578838465313">កំណត់​រចនាសម្ព័ន្ធ <ph name="NAME" /></translation>
 <translation id="7177485034254901881"><ph name="DEVICE_TYPE" /> នេះស្ថិតក្រោម​ការគ្រប់គ្រងរបស់ <ph name="MANAGER" />។ អ្នកគ្រប់គ្រង​អាចកំណត់រចនាសម្ព័ន្ធ​ឧបករណ៍​នេះពីចម្ងាយបាន។</translation>
 <translation id="7180611975245234373">ធ្វើឲ្យថ្មីឡើងវិញ…</translation>
+<translation id="7191009787982536050">រូបមានចលនានៃធាតុរក្សាអេក្រង់</translation>
 <translation id="7212734716605298123">ការដំឡើងកំណែកម្មវិធីបង្កប់សម្រាប់ឧបករណ៍ខាងក្រៅ</translation>
 <translation id="7216409898977639127">ក្រុមហ៊ុន​ផ្តល់សេវា​ទូរសព្ទ</translation>
 <translation id="7271040990581020067">បច្ចុប្បន្ននេះ ម៉ាស៊ីនស្កេន​កំពុងស្ថិតក្នុង​ការប្រើប្រាស់។ សូមព្យាយាមម្ដងទៀតនៅពេលក្រោយ។</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7281657306185710294">ខ្យល់បក់ត្រសៀកៗ</translation>
 <translation id="7287310195820267359">បណ្ដុំ​ផ្ទាំងរូបភាព</translation>
 <translation id="7297226631177386107">មិនអាចភ្ជាប់ទៅគេហទំព័រ HTTPS តាមរយៈជញ្ជាំងភ្លើងបានទេ</translation>
 <translation id="7302860742311162920">ICCID</translation>

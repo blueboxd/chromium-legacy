@@ -124,6 +124,7 @@
 <translation id="199425419756152024">Посмотреть пароль</translation>
 <translation id="2015722694326466240">Чтобы просматривать пароли, настройте на устройстве код доступа.</translation>
 <translation id="2021670401941426298">Изучите инструкции по удалению истории поиска в справочных материалах используемой поисковой системы.</translation>
+<translation id="202292859882676807">Доступ к микрофону разрешен</translation>
 <translation id="2073572773299281212">Последние действия: <ph name="DAYS" /> дн. назад</translation>
 <translation id="2074131957428911366">Вы всегда можете выбрать, что синхронизировать, в <ph name="BEGIN_LINK" />настройках<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Отмена</translation>
@@ -369,6 +370,7 @@
 <translation id="430967081421617822">Все время</translation>
 <translation id="4334428914252001502">1 непрочитанная статья.</translation>
 <translation id="4338650699862464074">Отправлять URL страниц, которые вы посещаете, в Google.</translation>
+<translation id="4343046787186034850">Доступ к камере и микрофону разрешен</translation>
 <translation id="4359125752503270327">Страница откроется в другом приложении.</translation>
 <translation id="4375040482473363939">Поиск по QR-коду</translation>
 <translation id="4378154925671717803">Телефон</translation>
@@ -388,7 +390,6 @@
 <translation id="4536418791685807335">Войдите в аккаунт снова.</translation>
 <translation id="4540780316273593836">Ошибка</translation>
 <translation id="457386861538956877">Ещё...</translation>
-<translation id="458449952965618888">Доступ к микрофону разрешен.</translation>
 <translation id="4592368184551360546">Клавиатура</translation>
 <translation id="461440297010471931">Поиск с помощью Google</translation>
 <translation id="4619564267100705184">Подтвердить личность</translation>
@@ -409,7 +410,6 @@
 <translation id="4689564913179979534">Настроить способы оплаты</translation>
 <translation id="4697071790493980729">Ничего не найдено.</translation>
 <translation id="470966556546083668">Не включать синхронизацию</translation>
-<translation id="4727245048156789470">Доступ к камере и микрофону разрешен.</translation>
 <translation id="4737560986434232178">Искать в недавних вкладках</translation>
 <translation id="473775607612524610">Обновить</translation>
 <translation id="4747097190499141774">Шифрование с помощью кодовой фразы не применяется к способам оплаты и адресам из Google Pay. Доступ к зашифрованным данным будет только у тех, кто знает кодовую фразу. Она не пересылается и не хранится в Google. Если вы забудете фразу или решите изменить эту настройку, вам придется сбросить параметры синхронизации. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
@@ -512,6 +512,7 @@
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Версия <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{Показано одно окно Chrome}one{Показано {count} окно Chrome}few{Показано {count} окна Chrome}many{Показано {count} окон Chrome}other{Показано {count} окна Chrome}}</translation>
+<translation id="5701270923492462699">Доступ к камере разрешен</translation>
 <translation id="5704908597376970822">Не удается войти.</translation>
 <translation id="5706552126692816153">Последние действия: 1 день назад</translation>
 <translation id="5711039611392265845">Остальные настройки конфиденциальности, безопасности и сбора данных вы можете найти в разделе <ph name="BEGIN_LINK" />Синхронизация сервисов Google<ph name="END_LINK" />.</translation>
@@ -540,7 +541,6 @@
 <translation id="5896576662943111387">Специально для iOS</translation>
 <translation id="5897956970858271241">Открыть скопированную ссылку</translation>
 <translation id="5899314093904173337">Чтобы предоставить доступ пользователям поблизости, попросите их отсканировать этот QR-код с помощью камеры или специального приложения.</translation>
-<translation id="5902639236448164449">Управление разрешениями для <ph name="URL" />. Настройки разрешений будут сброшены, когда вы закроете вкладку.</translation>
 <translation id="5911030830365207728">Google Переводчик</translation>
 <translation id="5913600720976431809">Параметры перевода страницы</translation>
 <translation id="5938160824633642847">Освободите место на устройстве и повторите попытку.</translation>
@@ -825,7 +825,6 @@
 <translation id="8283172974887967105">Да</translation>
 <translation id="8299417921174340354">Чтобы использовать пароли, установите на устройстве код доступа.</translation>
 <translation id="8299613349954694191">Чтобы просматривать веб-страницы анонимно, используйте режим инкогнито.</translation>
-<translation id="8304831996890817401">Доступ к камере разрешен.</translation>
 <translation id="8319076807703933069">Новый поиск</translation>
 <translation id="8323906514956095947">Нажмите и удерживайте, чтобы открыть список дополнительных действий с вкладками</translation>
 <translation id="8328777765163860529">Закрыть все</translation>

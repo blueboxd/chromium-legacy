@@ -66,6 +66,7 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kViewportHeightClientHintHeader;
 BLINK_COMMON_EXPORT extern const base::Feature kFullUserAgent;
 BLINK_COMMON_EXPORT extern const base::Feature kPath2DPaintCache;
+BLINK_COMMON_EXPORT extern const base::Feature kPrivacySandboxAdsAPIs;
 
 enum class FencedFramesImplementationType {
   kShadowDOM,
@@ -467,6 +468,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kAllowURNsInIframes;
 BLINK_COMMON_EXPORT bool IsAllowURNsInIframeEnabled();
 
 BLINK_COMMON_EXPORT extern const base::Feature kBrowsingTopics;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<base::TimeDelta>
+    kBrowsingTopicsTimePeriodPerEpoch;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsNumberOfEpochsToExpose;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
@@ -474,9 +477,19 @@ BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsUseRandomTopicProbabilityPercent;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsNumberOfEpochsOfObservationDataToUseForFiltering;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsMaxNumberOfApiUsageContextDomainsToKeepPerTopic;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsMaxNumberOfApiUsageContextEntriesToLoadPerEpoch;
 BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsMaxNumberOfApiUsageContextDomainsToStorePerPageLoad;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
     kBrowsingTopicsConfigVersion;
+BLINK_COMMON_EXPORT extern const base::FeatureParam<int>
+    kBrowsingTopicsTaxonomyVersion;
+BLINK_COMMON_EXPORT extern const base::Feature
+    kBrowsingTopicsBypassIPIsPubliclyRoutableCheck;
 
 // Control switch for minimizing processing in the WebRTC APM when all audio
 // tracks are disabled.
@@ -577,6 +590,12 @@ BLINK_COMMON_EXPORT extern const base::Feature
 BLINK_COMMON_EXPORT extern const base::Feature kCSSCascadeLayers;
 
 BLINK_COMMON_EXPORT extern const base::Feature kSetTimeoutWithoutClamp;
+// window.setTimeout() has a feature to remove 1ms clamp to improve performance
+// and battery life. Enterprise policy can override this to control the feature.
+// Normally, the result of this feature calculation is cached; allow tests
+// to clear the cache to recompute the feature value.
+BLINK_COMMON_EXPORT void
+ClearSetTimeoutWithout1MsClampPolicyOverrideCacheForTesting();
 BLINK_COMMON_EXPORT bool IsSetTimeoutWithoutClampEnabled();
 
 BLINK_COMMON_EXPORT extern const base::Feature
@@ -682,6 +701,8 @@ BLINK_COMMON_EXPORT extern const base::Feature kZeroCopyTabCapture;
 BLINK_COMMON_EXPORT extern const base::Feature kUserAgentOverrideExperiment;
 
 BLINK_COMMON_EXPORT extern const base::Feature kWebSQLAccess;
+
+BLINK_COMMON_EXPORT extern const base::Feature kUACHOverrideBlank;
 
 }  // namespace features
 }  // namespace blink

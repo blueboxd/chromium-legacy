@@ -17,6 +17,7 @@
 #include "media/base/bitrate.h"
 #include "media/base/mac/video_frame_mac.h"
 #include "media/base/media_log.h"
+#include "media/base/media_util.h"
 
 // This is a min version of macOS where we want to support SVC encoding via
 // EnableLowLatencyRateControl flag. The flag is actually supported since 11.3,
@@ -137,13 +138,13 @@ VTVideoEncodeAccelerator::GetSupportedProfiles() {
   SupportedProfiles profiles;
   const bool rv = CreateCompressionSession(
       gfx::Size(kDefaultResolutionWidth, kDefaultResolutionHeight));
-  DestroyCompressionSession();
   if (!rv) {
     VLOG(1)
         << "Hardware encode acceleration is not available on this platform.";
     return profiles;
   }
 
+  DestroyCompressionSession();
   SupportedProfile profile;
   profile.max_framerate_numerator = kMaxFrameRateNumerator;
   profile.max_framerate_denominator = kMaxFrameRateDenominator;
@@ -157,12 +158,34 @@ VTVideoEncodeAccelerator::GetSupportedProfiles() {
   return profiles;
 }
 
+VideoEncodeAccelerator::SupportedProfiles
+VTVideoEncodeAccelerator::GetSupportedProfilesLight() {
+  DVLOG(3) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  SupportedProfiles profiles;
+
+  SupportedProfile profile;
+  profile.max_framerate_numerator = kMaxFrameRateNumerator;
+  profile.max_framerate_denominator = kMaxFrameRateDenominator;
+  profile.max_resolution = gfx::Size(kMaxResolutionWidth, kMaxResolutionHeight);
+  for (const auto& supported_profile : kSupportedProfiles) {
+    profile.profile = supported_profile;
+    profiles.push_back(profile);
+  }
+  return profiles;
+}
+
 bool VTVideoEncodeAccelerator::Initialize(const Config& config,
                                           Client* client,
                                           std::unique_ptr<MediaLog> media_log) {
   DVLOG(3) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
   DCHECK(client);
+
+  // NullMediaLog silently and safely does nothing.
+  if (!media_log)
+    media_log = std::make_unique<media::NullMediaLog>();
 
   // Clients are expected to call Flush() before reinitializing the encoder.
   DCHECK_EQ(pending_encodes_, 0);
@@ -558,10 +581,8 @@ bool VTVideoEncodeAccelerator::ResetCompressionSession() {
   DestroyCompressionSession();
 
   bool session_rv = CreateCompressionSession(input_visible_size_);
-  if (!session_rv) {
-    DestroyCompressionSession();
+  if (!session_rv)
     return false;
-  }
 
   const bool configure_rv = ConfigureCompressionSession();
   if (configure_rv)
@@ -611,6 +632,12 @@ bool VTVideoEncodeAccelerator::CreateCompressionSession(
       &VTVideoEncodeAccelerator::CompressionCallback,
       reinterpret_cast<void*>(this), compression_session_.InitializeInto());
   if (status != noErr) {
+    // IMPORTANT: ScopedCFTypeRef::release() doesn't call CFRelease().
+    // In case of an error VTCompressionSessionCreate() is not supposed to
+    // write a non-null value into compression_session_, but just in case,
+    // we'll clear it without calling CFRelease() because it can be unsafe
+    // to call on a not fully created session.
+    (void)compression_session_.release();
     DLOG(ERROR) << " VTCompressionSessionCreate failed: " << status;
     return false;
   }

@@ -54,6 +54,10 @@ void VirtualCardEnrollBubbleControllerImpl::ShowBubble(
 
   is_user_gesture_ = false;
   Show();
+
+  LogVirtualCardEnrollBubbleCardArtAvailable(
+      virtual_card_enrollment_fields_.card_art_image,
+      virtual_card_enrollment_fields_.virtual_card_enrollment_source);
 }
 
 void VirtualCardEnrollBubbleControllerImpl::ReshowBubble() {
@@ -109,6 +113,14 @@ VirtualCardEnrollBubbleControllerImpl::GetVirtualCardEnrollBubbleView() const {
   return bubble_view();
 }
 
+#if !BUILDFLAG(IS_ANDROID)
+void VirtualCardEnrollBubbleControllerImpl::HideIconAndBubble() {
+  HideBubble();
+  bubble_state_ = BubbleState::kHidden;
+  UpdatePageActionIcon();
+}
+#endif
+
 void VirtualCardEnrollBubbleControllerImpl::OnAcceptButton() {
   std::move(accept_virtual_card_callback_).Run();
   decline_virtual_card_callback_.Reset();
@@ -127,7 +139,12 @@ void VirtualCardEnrollBubbleControllerImpl::OnDeclineButton() {
 #endif
 }
 
-void VirtualCardEnrollBubbleControllerImpl::OnLinkClicked(const GURL& url) {
+void VirtualCardEnrollBubbleControllerImpl::OnLinkClicked(
+    VirtualCardEnrollmentLinkType link_type,
+    const GURL& url) {
+  LogVirtualCardEnrollmentLinkClickedMetric(
+      link_type, GetVirtualCardEnrollmentBubbleSource());
+
   web_contents()->OpenURL(content::OpenURLParams(
       url, content::Referrer(), WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_LINK, false));

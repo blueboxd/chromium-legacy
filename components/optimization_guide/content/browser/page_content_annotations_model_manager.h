@@ -57,18 +57,11 @@ class PageContentAnnotationsModelManager : public PageContentAnnotator {
   void Annotate(BatchAnnotationCallback callback,
                 const std::vector<std::string>& inputs,
                 AnnotationType annotation_type) override;
-
-  // Requests that the given model for |type| be loaded in the background and
-  // then runs |callback| with true when the model is ready to execute. If the
-  // model is ready now, the callback is run immediately. If the model file will
-  // never be available, the callback is run with false.
+  absl::optional<ModelInfo> GetModelInfoForType(
+      AnnotationType type) const override;
   void RequestAndNotifyWhenModelAvailable(
       AnnotationType type,
-      base::OnceCallback<void(bool)> callback);
-
-  // Returns the model info associated with the given AnnotationType, if it is
-  // available and loaded.
-  absl::optional<ModelInfo> GetModelInfoForType(AnnotationType type) const;
+      base::OnceCallback<void(bool)> callback) override;
 
   // Returns the version of the page topics model that is currently being used
   // to annotate page content. Will return |absl::nullopt| if no model is being

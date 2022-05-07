@@ -111,6 +111,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // new window with the default blank tab.
   void NewWindow(bool incognito, bool should_trigger_session_restore);
 
+  // Performs a full restore of the lacros browser. This must be done after
+  // Lacros has been launched from a background state.
+  void OpenForFullRestore();
+
   // Returns true if crosapi interface supports NewWindowForDetachingTab API.
   bool NewWindowForDetachingTabSupported() const;
 
@@ -225,6 +229,10 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   // for a graceful exit.
   void Shutdown();
 
+  void set_relaunch_requested_for_testing(bool relaunch_requested) {
+    relaunch_requested_ = relaunch_requested;
+  }
+
   // Parameters used to launch Lacros that are calculated on a background
   // sequence. Public so that it can be used from private static functions.
   struct LaunchParamsFromBackground {
@@ -284,6 +292,8 @@ class BrowserManager : public session_manager::SessionManagerObserver,
   FRIEND_TEST_ALL_PREFIXES(BrowserManagerTest, LacrosKeepAlive);
   FRIEND_TEST_ALL_PREFIXES(BrowserManagerTest,
                            LacrosKeepAliveReloadsWhenUpdateAvailable);
+  FRIEND_TEST_ALL_PREFIXES(BrowserManagerTest,
+                           LacrosKeepAliveDoesNotBlockRestart);
   friend class apps::StandaloneBrowserExtensionApps;
   // App service require the lacros-chrome to keep alive for web apps to:
   // 1. Have lacros-chrome running before user open the browser so we can

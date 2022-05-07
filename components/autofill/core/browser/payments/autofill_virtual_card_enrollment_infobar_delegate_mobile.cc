@@ -79,8 +79,9 @@ AutofillVirtualCardEnrollmentInfoBarDelegateMobile::GetIssuerLegalMessage()
 }
 
 void AutofillVirtualCardEnrollmentInfoBarDelegateMobile::OnInfobarLinkClicked(
-    GURL url) {
-  virtual_card_enroll_bubble_controller_->OnLinkClicked(url);
+    GURL url,
+    VirtualCardEnrollmentLinkType link_type) {
+  virtual_card_enroll_bubble_controller_->OnLinkClicked(link_type, url);
 }
 
 infobars::InfoBarDelegate::InfoBarIdentifier
@@ -89,10 +90,7 @@ AutofillVirtualCardEnrollmentInfoBarDelegateMobile::GetIdentifier() const {
 }
 
 int AutofillVirtualCardEnrollmentInfoBarDelegateMobile::GetIconId() const {
-  // TODO(crbug.com/1298224): Change the icon to
-  // IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER after adding the top icon as the
-  // divider currently causes the title to wrap to second line.
-  return IDR_AUTOFILL_GOOGLE_PAY;
+  return IDR_AUTOFILL_GOOGLE_PAY_WITH_DIVIDER;
 }
 
 std::u16string
@@ -116,12 +114,12 @@ AutofillVirtualCardEnrollmentInfoBarDelegateMobile::GetButtonLabel(
 }
 
 void AutofillVirtualCardEnrollmentInfoBarDelegateMobile::InfoBarDismissed() {
-  OnInfobarClosed(PaymentsBubbleClosedReason::kClosed);
+  OnInfobarClosed(PaymentsBubbleClosedReason::kCancelled);
   virtual_card_enroll_bubble_controller_->OnDeclineButton();
 }
 
 bool AutofillVirtualCardEnrollmentInfoBarDelegateMobile::Cancel() {
-  OnInfobarClosed(PaymentsBubbleClosedReason::kClosed);
+  OnInfobarClosed(PaymentsBubbleClosedReason::kCancelled);
   virtual_card_enroll_bubble_controller_->OnDeclineButton();
   return true;
 }

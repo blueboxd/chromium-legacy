@@ -47,6 +47,7 @@ import org.chromium.base.IntentUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Batch;
+import org.chromium.base.test.util.MaxAndroidSdkLevel;
 import org.chromium.components.external_intents.ExternalNavigationDelegate.IntentToAutofillAllowingAppResult;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingAsyncActionType;
 import org.chromium.components.external_intents.ExternalNavigationHandler.OverrideUrlLoadingResult;
@@ -525,6 +526,31 @@ public class ExternalNavigationHandlerTest {
                 .withIsRedirect(true)
                 .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
                         START_OTHER_ACTIVITY);
+
+        // http://crbug.com/1310795
+        mDelegate.setIsChromeAppInForeground(false);
+        checkUrl(YOUTUBE_URL)
+                .withPageTransition(transitionTypeIncomingIntent)
+                .withIsRedirect(true)
+                .withChromeAppInForegroundRequired(true)
+                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_EXTERNAL_INTENT,
+                        START_OTHER_ACTIVITY);
+    }
+
+    @Test
+    @SmallTest
+    public void testIncomingIntentRedirect_FallbackUrl() {
+        // IMDB app isn't installed.
+        mDelegate.setCanResolveActivityForExternalSchemes(false);
+        mDelegate.setIsChromeAppInForeground(false);
+        int transitionTypeIncomingIntent = PageTransition.LINK | PageTransition.FROM_API;
+
+        // http://crbug.com/1310795
+        checkUrl(INTENT_URL_WITH_FALLBACK_URL)
+                .withPageTransition(transitionTypeIncomingIntent)
+                .withIsRedirect(true)
+                .withChromeAppInForegroundRequired(true)
+                .expecting(OverrideUrlLoadingResultType.OVERRIDE_WITH_CLOBBERING_TAB, IGNORE);
     }
 
     @Test
@@ -1783,6 +1809,7 @@ public class ExternalNavigationHandlerTest {
     @Test
     @SuppressLint("SdCardPath")
     @SmallTest
+    @MaxAndroidSdkLevel(Build.VERSION_CODES.S)
     public void testFileAccess() {
         String fileUrl = "file:///sdcard/Downloads/test.html";
 

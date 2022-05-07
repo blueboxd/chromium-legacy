@@ -2,7 +2,7 @@ Name: Crashpad
 Short Name: crashpad
 URL: https://crashpad.chromium.org/
 Version: unknown
-Revision: cd13ea34ebca8f993d4d60fa40dc7fde3a95bee3
+Revision: 25e67e285c01b2b0c7d654dc2238176f0f1a56c3
 License: Apache 2.0
 License File: crashpad/LICENSE
 Security Critical: yes
@@ -46,3 +46,5 @@ Local Modifications:
  - CloseMultipleNowOrOnExec has been updated to invoke the new
    base::subtle::ResetFDOwnership() API
  - FALLTHROUGH macro has been replaced with C++17 attribute [[fallthrough]]
+ - Cherry picked 646bba733b2339b0fa5f3ae0de659a11fb00bbf9
+ - Cherry picked 68aba08c48bb428b7b159b3371163f86e8d5a126

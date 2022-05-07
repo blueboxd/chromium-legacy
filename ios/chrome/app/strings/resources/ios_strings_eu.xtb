@@ -124,6 +124,7 @@
 <translation id="199425419756152024">Ikusi pasahitza</translation>
 <translation id="2015722694326466240">Pasahitzak ikusteko, lehenik, pasakode bat ezarri behar duzu gailuan.</translation>
 <translation id="2021670401941426298">Behar izanez gero, joan bilatzailearen argibideetara bilaketa-historia ezabatzeari buruzko informazio gehiago lortzeko.</translation>
+<translation id="202292859882676807">Mikrofonorako sarbidea gaituta dago</translation>
 <translation id="2073572773299281212">Aktibo duela <ph name="DAYS" /> egun</translation>
 <translation id="2074131957428911366">Zer sinkronizatu nahi duzun aukeratzeko, joan <ph name="BEGIN_LINK" />Ezarpenak<ph name="END_LINK" /> atalera.</translation>
 <translation id="2079545284768500474">Desegin</translation>
@@ -369,6 +370,7 @@ Jarraitu beheko urratsei:</translation>
 <translation id="430967081421617822">Orain artekoak</translation>
 <translation id="4334428914252001502">Irakurri gabeko artikulu bat.</translation>
 <translation id="4338650699862464074">Bisitatzen dituzun orrien URLak bidaltzen dizkio Google-ri.</translation>
+<translation id="4343046787186034850">Kamerarako eta mikrofonorako sarbideak gaituta daude</translation>
 <translation id="4359125752503270327">Beste aplikazio batean irekiko da orri hau.</translation>
 <translation id="4375040482473363939">QR kode bidezko bilaketa</translation>
 <translation id="4378154925671717803">Telefonoa</translation>
@@ -388,7 +390,6 @@ Jarraitu beheko urratsei:</translation>
 <translation id="4536418791685807335">Hasi saioa berriro.</translation>
 <translation id="4540780316273593836">Arazo bat izan da</translation>
 <translation id="457386861538956877">Gehiago…</translation>
-<translation id="458449952965618888">Mikrofonorako sarbidea gaituta dago</translation>
 <translation id="4592368184551360546">Teklatua</translation>
 <translation id="461440297010471931">Google-rekin bilatzen</translation>
 <translation id="4619564267100705184">Egiaztatu zeu zarela</translation>
@@ -409,7 +410,6 @@ Sinkronizatzeko pasaesaldiaren bidez daude enkriptatuta datuak. Idatz ezazu sink
 <translation id="4689564913179979534">Kudeatu ordainketa-metodoak…</translation>
 <translation id="4697071790493980729">Ez da aurkitu emaitzarik</translation>
 <translation id="470966556546083668">Ez aktibatu sinkronizazioa</translation>
-<translation id="4727245048156789470">Kamerarako eta mikrofonorako sarbideak gaituta daude</translation>
 <translation id="4737560986434232178">Bilatu erabilitako azken fitxetan</translation>
 <translation id="473775607612524610">Eguneratu</translation>
 <translation id="4747097190499141774">Pasaesaldi bidezko enkriptatzeak ez ditu hartzen barne Google Pay-ko ordainketa-metodoak eta helbideak. Pasaesaldia dutenek soilik irakur ditzakete enkriptatutako datuak. Pasaesaldia ez da bidaltzen Google-ra, ezta bertan gordetzen ere. Pasaesaldia ahazten bazaizu edo ezarpena aldatu nahi baduzu, sinkronizazioa berrezarri beharko duzu. <ph name="BEGIN_LINK" />Lortu informazio gehiago<ph name="END_LINK" /></translation>
@@ -512,6 +512,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783"><ph name="PRODUCT_VERSION" /> bertsioa</translation>
 <translation id="5690398455483874150">{count,plural, =1{Chrome-ko leiho bat dago ikusgai}other{Chrome-ko {count} leiho daude ikusgai}}</translation>
+<translation id="5701270923492462699">Kamerarako sarbidea gaituta dago</translation>
 <translation id="5704908597376970822">Ezin da hasi saioa.</translation>
 <translation id="5706552126692816153">Aktibo duela 1 egun</translation>
 <translation id="5711039611392265845">Pribatutasunarekin, segurtasunarekin eta datu-bilketarekin lotutako ezarpen gehiago ikusteko, joan <ph name="BEGIN_LINK" />Sinkronizazioa eta Google-ren zerbitzuak<ph name="END_LINK" /> atalera.</translation>
@@ -540,7 +541,6 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="5896576662943111387">iOS-erako egina</translation>
 <translation id="5897956970858271241">Joan kopiatu duzun estekara</translation>
 <translation id="5899314093904173337">Ingurukoekin partekatu nahi izanez gero, eska iezaiezu QR kode hau eskaneatzeko kamera edo QR kodeak eskaneatzeko aplikazio baten bidez</translation>
-<translation id="5902639236448164449">Kudeatu <ph name="URL" /> webgunearen baimenak. Fitxa itxi ondoren berrezarriko dira baimenok.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5913600720976431809">Orria itzultzeko aukerak</translation>
 <translation id="5938160824633642847">Gailua ia beteta dago. Egin toki pixka bat eta saiatu berriro.</translation>
@@ -567,7 +567,7 @@ Ezarpena aldatzeko, <ph name="BEGIN_LINK" />berrezarri sinkronizazioa<ph name="E
 <translation id="6066301408025741299">Sakatu bertan behera uzteko</translation>
 <translation id="60829778314739003">Onartu eta egin aurrera</translation>
 <translation id="6084848228346514841">Hautatu fitxak</translation>
-<translation id="6103540626693881831">Gailuan bertan enkriptatzea</translation>
+<translation id="6103540626693881831">Gailuan bertan enkriptatzeko aukera</translation>
 <translation id="6108923351542677676">Konfigurazioa abian da…</translation>
 <translation id="6119050551270742952">Web-orri hau ezkutuko moduan dago</translation>
 <translation id="6122191549521593678">Konektatu</translation>
@@ -825,7 +825,6 @@ Webguneek cookieak erabil ditzakete beste webguneetan egiten dituzun arakatze-ja
 <translation id="8283172974887967105">Ezarri…</translation>
 <translation id="8299417921174340354">Pasahitzak erabiltzeko, lehenik, pasakode bat ezarri behar duzu gailuan.</translation>
 <translation id="8299613349954694191">Sarea modu pribatuan arakatzeko, ireki ezkutuko moduko fitxa bat.</translation>
-<translation id="8304831996890817401">Kamerarako sarbidea gaituta dago</translation>
 <translation id="8319076807703933069">Bilaketa berria</translation>
 <translation id="8323906514956095947">Eduki sakatuta fitxetako aukera gehiago ikusteko</translation>
 <translation id="8328777765163860529">Itxi guztiak</translation>

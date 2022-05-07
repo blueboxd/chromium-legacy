@@ -69,6 +69,7 @@ CONTENT_EXPORT extern const base::Feature kDesktopCaptureLacrosV2;
 #endif
 CONTENT_EXPORT extern const base::Feature kDesktopPWAsTabStrip;
 CONTENT_EXPORT extern const base::Feature kDevicePosture;
+CONTENT_EXPORT extern const base::Feature kDigitalGoodsApi;
 CONTENT_EXPORT extern const base::Feature kDocumentPolicy;
 CONTENT_EXPORT extern const base::Feature kDocumentPolicyNegotiation;
 CONTENT_EXPORT extern const base::Feature kEarlyEstablishGpuChannel;
@@ -165,6 +166,7 @@ CONTENT_EXPORT extern const base::Feature kPepper3DImageChromium;
 CONTENT_EXPORT extern const base::Feature kPepperCrossOriginRedirectRestriction;
 CONTENT_EXPORT extern const base::Feature kPictureInPictureV2;
 CONTENT_EXPORT extern const base::Feature kHighPriorityBeforeUnload;
+CONTENT_EXPORT extern const base::Feature kPrivacySandboxAdsAPIsOverride;
 CONTENT_EXPORT extern const base::Feature kPrivateNetworkAccessForWorkers;
 CONTENT_EXPORT extern const base::Feature
     kPrivateNetworkAccessRespectPreflightResults;

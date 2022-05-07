@@ -5,7 +5,9 @@
 #include "components/segmentation_platform/internal/execution/mock_model_provider.h"
 
 #include <utility>
+
 #include "base/callback.h"
+#include "base/containers/contains.h"
 
 namespace segmentation_platform {
 
@@ -46,6 +48,18 @@ std::unique_ptr<ModelProvider> TestModelProviderFactory::CreateProvider(
   auto provider = std::make_unique<MockModelProvider>(
       segment_id, base::BindRepeating(&StoreClientCallback, segment_id, data_));
   data_->model_providers.emplace(std::make_pair(segment_id, provider.get()));
+  return provider;
+}
+
+std::unique_ptr<ModelProvider> TestModelProviderFactory::CreateDefaultProvider(
+    optimization_guide::proto::OptimizationTarget segment_id) {
+  if (!base::Contains(data_->segments_supporting_default_model, segment_id))
+    return nullptr;
+
+  auto provider = std::make_unique<MockModelProvider>(
+      segment_id, base::BindRepeating(&StoreClientCallback, segment_id, data_));
+  data_->default_model_providers.emplace(
+      std::make_pair(segment_id, provider.get()));
   return provider;
 }
 

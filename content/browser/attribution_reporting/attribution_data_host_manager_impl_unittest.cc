@@ -100,8 +100,8 @@ TEST_F(AttributionDataHostManagerImplTest, SourceDataHost_SourceRegistered) {
 
   data_host_manager_.reset();
 
-  histograms.ExpectBucketCount("Conversions.RegisteredSourcesPerDataHost", 1,
-                               1);
+  histograms.ExpectUniqueSample("Conversions.RegisteredSourcesPerDataHost", 1,
+                                1);
 }
 
 TEST_F(AttributionDataHostManagerImplTest,
@@ -166,11 +166,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   data_host_manager_.reset();
 
-  histograms.ExpectBucketCount("Conversions.RegisteredSourcesPerDataHost", 1,
-                               3);
-  // Untrustworthy source origin doesn't register data host.
-  histograms.ExpectBucketCount("Conversions.RegisteredSourcesPerDataHost", 0,
-                               2);
+  histograms.ExpectUniqueSample("Conversions.RegisteredSourcesPerDataHost", 1,
+                                3);
 }
 
 TEST_F(AttributionDataHostManagerImplTest,
@@ -297,8 +294,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   data_host_manager_.reset();
 
-  histograms.ExpectBucketCount("Conversions.RegisteredSourcesPerDataHost", 2,
-                               1);
+  histograms.ExpectUniqueSample("Conversions.RegisteredSourcesPerDataHost", 2,
+                                1);
 }
 
 TEST_F(AttributionDataHostManagerImplTest,
@@ -487,11 +484,8 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   data_host_manager_.reset();
 
-  histograms.ExpectBucketCount("Conversions.RegisteredTriggersPerDataHost", 1,
-                               3);
-  // Untrustworthy destination origin doesn't register data host.
-  histograms.ExpectBucketCount("Conversions.RegisteredTriggersPerDataHost", 0,
-                               1);
+  histograms.ExpectUniqueSample("Conversions.RegisteredTriggersPerDataHost", 1,
+                                3);
 }
 
 TEST_F(AttributionDataHostManagerImplTest,
@@ -693,8 +687,8 @@ TEST_F(AttributionDataHostManagerImplTest,
   data_host_manager_.reset();
 
   histograms.ExpectTotalCount("Conversions.RegisteredSourcesPerDataHost", 0);
-  histograms.ExpectBucketCount("Conversions.RegisteredTriggersPerDataHost", 3,
-                               1);
+  histograms.ExpectUniqueSample("Conversions.RegisteredTriggersPerDataHost", 3,
+                                1);
 }
 
 TEST_F(AttributionDataHostManagerImplTest,
@@ -756,8 +750,75 @@ TEST_F(AttributionDataHostManagerImplTest,
 
   data_host_manager_.reset();
 
-  histograms.ExpectBucketCount("Conversions.RegisteredSourcesPerDataHost", 3,
-                               1);
+  histograms.ExpectUniqueSample("Conversions.RegisteredSourcesPerDataHost", 3,
+                                1);
+  histograms.ExpectTotalCount("Conversions.RegisteredTriggersPerDataHost", 0);
+}
+
+TEST_F(AttributionDataHostManagerImplTest,
+       SourceDataHost_NavigationSourceRegistered) {
+  const auto page_origin = url::Origin::Create(GURL("https://page.example"));
+  const auto destination_origin =
+      url::Origin::Create(GURL("https://trigger.example"));
+  const auto reporting_origin =
+      url::Origin::Create(GURL("https://reporter.example"));
+  EXPECT_CALL(mock_manager_,
+              HandleSource(AllOf(
+                  SourceTypeIs(AttributionSourceType::kNavigation),
+                  SourceEventIdIs(10), ConversionOriginIs(destination_origin),
+                  ImpressionOriginIs(page_origin), SourcePriorityIs(20),
+                  SourceDebugKeyIs(789),
+                  AggregatableSourceAre(AttributionAggregatableSource::Create(
+                      AggregatableSourceProtoBuilder()
+                          .AddKey("key", AggregatableKeyProtoBuilder()
+                                             .SetHighBits(5)
+                                             .SetLowBits(345)
+                                             .Build())
+                          .Build())))));
+
+  const blink::AttributionSrcToken attribution_src_token;
+
+  mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
+  data_host_manager_->RegisterNavigationDataHost(
+      data_host_remote.BindNewPipeAndPassReceiver(), attribution_src_token);
+
+  data_host_manager_->NotifyNavigationForDataHost(
+      attribution_src_token, page_origin, destination_origin);
+
+  auto source_data = blink::mojom::AttributionSourceData::New();
+  source_data->source_event_id = 10;
+  source_data->destination = destination_origin;
+  source_data->reporting_origin = reporting_origin;
+  source_data->priority = 20;
+  source_data->debug_key = blink::mojom::AttributionDebugKey::New(789);
+  source_data->filter_data = blink::mojom::AttributionFilterData::New();
+  source_data->aggregatable_source =
+      AggregatableSourceMojoBuilder()
+          .AddKey(/*key_id=*/"key",
+                  blink::mojom::AttributionAggregatableKey::New(
+                      /*high_bits=*/5, /*low_bits=*/345))
+          .Build();
+  data_host_remote->SourceDataAvailable(std::move(source_data));
+  data_host_remote.FlushForTesting();
+}
+
+// Ensures correct behavior in
+// `AttributionDataHostManagerImpl::OnDataHostDisconnected()` when a data host
+// is registered but disconnects before registering a source or trigger.
+TEST_F(AttributionDataHostManagerImplTest, NoSourceOrTrigger) {
+  base::HistogramTester histograms;
+
+  auto page_origin = url::Origin::Create(GURL("https://page.example"));
+
+  mojo::Remote<blink::mojom::AttributionDataHost> data_host_remote;
+  data_host_manager_->RegisterDataHost(
+      data_host_remote.BindNewPipeAndPassReceiver(), page_origin);
+  data_host_remote.reset();
+  task_environment_.RunUntilIdle();
+
+  data_host_manager_.reset();
+
+  histograms.ExpectTotalCount("Conversions.RegisteredSourcesPerDataHost", 0);
   histograms.ExpectTotalCount("Conversions.RegisteredTriggersPerDataHost", 0);
 }
 

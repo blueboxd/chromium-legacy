@@ -77,6 +77,7 @@
 <translation id="2687403674020088961">Bloquear todas las cookies (no recomendado)</translation>
 <translation id="2704606927547763573">Copiado</translation>
 <translation id="2717722538473713889">Direcciones de correo electrónico</translation>
+<translation id="2750481671343847896">Los sitios pueden mostrar solicitudes de inicio de sesión de servicios de identidad.</translation>
 <translation id="2785051990912111074">Se borrarán las cookies de <ph name="WEBSITE" />.</translation>
 <translation id="2822354292072154809">¿Seguro que quieres restablecer todos los permisos de los sitios de <ph name="CHOSEN_OBJECT_NAME" />?</translation>
 <translation id="2870560284913253234">Sitio</translation>
@@ -102,7 +103,7 @@
 <translation id="3333961966071413176">Todos los contactos</translation>
 <translation id="3386292677130313581">Preguntar antes de permitir que los sitios detecten tu ubicación (recomendado)</translation>
 <translation id="3538390592868664640">No permitir que los sitios creen un mapa 3D de tu entorno o hagan un seguimiento de la posición de la cámara</translation>
-<translation id="3551268116566418498">¿Salir del modo de incógnito?</translation>
+<translation id="3551268116566418498">¿Salir del modo Incógnito?</translation>
 <translation id="3586500876634962664">Uso de cámara y micrófono</translation>
 <translation id="358794129225322306">Permitir que un sitio web descargue varios archivos automáticamente.</translation>
 <translation id="3594780231884063836">Silenciar vídeo</translation>
@@ -112,6 +113,7 @@
 <translation id="3763247130972274048">Toca dos veces a la derecha o a la izquierda del vídeo para saltar 10 s</translation>
 <translation id="3797520601150691162">El tema oscuro no se aplica a un sitio específico</translation>
 <translation id="381841723434055211">Números de teléfono</translation>
+<translation id="3826050100957962900">Inicio de sesión de terceros</translation>
 <translation id="3835233591525155343">Uso de tu dispositivo</translation>
 <translation id="385051799172605136">Volver</translation>
 <translation id="3859306556332390985">Buscar hacia delante</translation>
@@ -156,11 +158,11 @@
 <translation id="5014906230196386306">¿Borrar cookies?</translation>
 <translation id="5039804452771397117">Permitir</translation>
 <translation id="5048398596102334565">Permitir que los sitios accedan a los sensores de movimiento (recomendado)</translation>
-<translation id="5050380848339752099">Este sitio va a compartir información con una aplicación fuera del modo de incógnito.</translation>
+<translation id="5050380848339752099">Este sitio va a compartir información con una aplicación fuera del modo Incógnito.</translation>
 <translation id="5063480226653192405">Uso</translation>
 <translation id="509133520954049755">Solicita la vista para ordenador</translation>
 <translation id="5100237604440890931">Contraído (hacer clic para ampliar)</translation>
-<translation id="5123685120097942451">Pestaña de incógnito</translation>
+<translation id="5123685120097942451">Pestaña de Incógnito</translation>
 <translation id="5134599672855298214">Solicita la vista para móvil (recomendada)</translation>
 <translation id="5186036860380548585">Opción disponible cerca de la parte superior de la pantalla</translation>
 <translation id="5197729504361054390">Los contactos que selecciones se compartirán con <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" />.</translation>
@@ -235,6 +237,7 @@
 <translation id="6643016212128521049">Borrar</translation>
 <translation id="6689172468748959065">Fotos de perfil</translation>
 <translation id="6697925417670533197">Descargas activas</translation>
+<translation id="6722828510648505498">Bloquea las solicitudes de inicio de sesión de servicios de identidad.</translation>
 <translation id="6746124502594467657">Bajar</translation>
 <translation id="6749077623962119521">¿Restablecer permisos?</translation>
 <translation id="6766622839693428701">Desliza el dedo hacia abajo para cerrarla.</translation>

@@ -134,6 +134,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       break;
     }
     case ItemTypePermissionsDescription:
+      cell.selectionStyle = UITableViewCellSelectionStyleNone;
       break;
   }
   return cell;
@@ -232,26 +233,28 @@ typedef NS_ENUM(NSInteger, ItemType) {
                        tableViewLoaded:(BOOL)tableViewLoaded {
   if ([self.tableViewModel hasItemForItemType:itemType
                             sectionIdentifier:SectionIdentifierContent]) {
+    NSIndexPath* index = [self.tableViewModel indexPathForItemType:itemType];
+
     // Remove the switch item if the permission is not accessible.
     if (state == web::PermissionStateNotAccessible) {
-      [self.tableViewModel removeItemWithType:itemType
-                    fromSectionWithIdentifier:SectionIdentifierContent];
-      return;
-    }
-
-    NSIndexPath* index = [self.tableViewModel indexPathForItemType:itemType];
-    TableViewSwitchItem* currentItem =
-        base::mac::ObjCCastStrict<TableViewSwitchItem>(
-            [self.tableViewModel itemAtIndexPath:index]);
-    TableViewSwitchCell* currentCell =
-        base::mac::ObjCCastStrict<TableViewSwitchCell>(
-            [self.tableView cellForRowAtIndexPath:index]);
-    currentItem.on = state == web::PermissionStateAllowed;
-
-    // Reload the switch cell if its value is outdated.
-    if (currentItem.isOn != currentCell.switchView.isOn) {
-      [self.tableView reloadRowsAtIndexPaths:@[ index ]
+      [self removeFromModelItemAtIndexPaths:@[ index ]];
+      [self.tableView deleteRowsAtIndexPaths:@[ index ]
                             withRowAnimation:UITableViewRowAnimationAutomatic];
+      [self.presentationHandler resizeInfobarModal];
+    } else {
+      TableViewSwitchItem* currentItem =
+          base::mac::ObjCCastStrict<TableViewSwitchItem>(
+              [self.tableViewModel itemAtIndexPath:index]);
+      TableViewSwitchCell* currentCell =
+          base::mac::ObjCCastStrict<TableViewSwitchCell>(
+              [self.tableView cellForRowAtIndexPath:index]);
+      currentItem.on = state == web::PermissionStateAllowed;
+      // Reload the switch cell if its value is outdated.
+      if (currentItem.isOn != currentCell.switchView.isOn) {
+        [self.tableView
+            reloadRowsAtIndexPaths:@[ index ]
+                  withRowAnimation:UITableViewRowAnimationAutomatic];
+      }
     }
     return;
   }
@@ -282,10 +285,10 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   if (tableViewLoaded) {
-    [self.presentationHandler resizeInfobarModal];
     NSIndexPath* index = [self.tableViewModel indexPathForItemType:itemType];
     [self.tableView insertRowsAtIndexPaths:@[ index ]
                           withRowAnimation:UITableViewRowAnimationAutomatic];
+    [self.presentationHandler resizeInfobarModal];
   }
 }
 

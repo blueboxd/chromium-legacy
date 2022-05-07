@@ -102,8 +102,12 @@ bool IsOriginSessionOnly(
   return false;
 }
 
-void RecordCreateReportStatus(AttributionTrigger::EventLevelResult status) {
-  base::UmaHistogramEnumeration("Conversions.CreateReportStatus", status);
+void RecordCreateReportStatus(CreateReportResult result) {
+  base::UmaHistogramEnumeration("Conversions.CreateReportStatus",
+                                result.event_level_status());
+  base::UmaHistogramEnumeration(
+      "Conversions.AggregatableReport.CreateReportStatus",
+      result.aggregatable_status());
 }
 
 ConversionReportSendOutcome ConvertToConversionReportSendOutcome(
@@ -486,9 +490,7 @@ void AttributionManagerImpl::ProcessNextEvent(bool is_debug_cookie_set) {
 }
 
 void AttributionManagerImpl::OnReportStored(CreateReportResult result) {
-  RecordCreateReportStatus(result.event_level_status());
-
-  // TODO(crbug.com/1285319): Log metrics for aggregatable reports.
+  RecordCreateReportStatus(result);
 
   if (std::vector<AttributionReport>& new_reports = result.new_reports();
       !new_reports.empty()) {
@@ -502,13 +504,18 @@ void AttributionManagerImpl::OnReportStored(CreateReportResult result) {
   }
 
   if (result.event_level_status() !=
-          AttributionTrigger::EventLevelResult::kInternalError ||
-      result.aggregatable_status() !=
-          AttributionTrigger::AggregatableResult::kInternalError) {
-    // Sources are changed here because storing a report can cause sources to be
-    // deleted or become associated with a dedup key.
+      AttributionTrigger::EventLevelResult::kInternalError) {
+    // Sources are changed here because storing an event-level report can
+    // cause sources to reach event-level attribution limit or become
+    // associated with a dedup key.
     NotifySourcesChanged();
     NotifyReportsChanged(AttributionReport::ReportType::kEventLevel);
+  }
+
+  if (result.aggregatable_status() ==
+      AttributionTrigger::AggregatableResult::kSuccess) {
+    NotifyReportsChanged(
+        AttributionReport::ReportType::kAggregatableAttribution);
   }
 
   for (auto& observer : observers_)
@@ -735,31 +742,28 @@ void AttributionManagerImpl::OnReportSent(base::OnceClosure done,
             },
             std::move(done), weak_factory_.GetWeakPtr(), *report.ReportId(),
             report.report_time()));
-  } else {
-    attribution_storage_.AsyncCall(&AttributionStorage::DeleteReport)
-        .WithArgs(*report.ReportId())
-        .Then(base::BindOnce(
-            [](base::OnceClosure done,
-               base::WeakPtr<AttributionManagerImpl> manager,
-               AttributionReport::Id report_id, bool success) {
-              std::move(done).Run();
 
-              if (manager && success) {
-                manager->MarkReportCompleted(report_id);
-                manager->NotifyReportsChanged(GetReportType(report_id));
-              }
-            },
-            std::move(done), weak_factory_.GetWeakPtr(), *report.ReportId()));
+    // TODO(apaseltiner): Consider surfacing retry attempts in internals UI.
 
-    LogMetricsOnReportCompleted(report, info.status);
-  }
-
-  // TODO(apaseltiner): Consider surfacing retry attempts in internals UI.
-  if (info.status != SendResult::Status::kSent &&
-      info.status != SendResult::Status::kFailure &&
-      info.status != SendResult::Status::kDropped) {
     return;
   }
+
+  attribution_storage_.AsyncCall(&AttributionStorage::DeleteReport)
+      .WithArgs(*report.ReportId())
+      .Then(base::BindOnce(
+          [](base::OnceClosure done,
+             base::WeakPtr<AttributionManagerImpl> manager,
+             AttributionReport::Id report_id, bool success) {
+            std::move(done).Run();
+
+            if (manager && success) {
+              manager->MarkReportCompleted(report_id);
+              manager->NotifyReportsChanged(GetReportType(report_id));
+            }
+          },
+          std::move(done), weak_factory_.GetWeakPtr(), *report.ReportId()));
+
+  LogMetricsOnReportCompleted(report, info.status);
 
   NotifyReportSent(/*is_debug_report=*/false, std::move(report), info);
 }

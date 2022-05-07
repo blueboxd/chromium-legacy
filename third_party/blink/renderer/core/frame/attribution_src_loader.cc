@@ -180,9 +180,11 @@ AttributionSrcLoader::RegisterResult AttributionSrcLoader::RegisterSources(
 
 absl::optional<WebImpression> AttributionSrcLoader::RegisterNavigation(
     const KURL& src_url) {
+  // TODO(apaseltiner): Add tests to ensure that this method can't be used to
+  // register triggers.
   RegisterResult result;
   ResourceClient* client =
-      CreateAndSendRequest(src_url, nullptr, SrcType::kUndetermined,
+      CreateAndSendRequest(src_url, nullptr, SrcType::kSource,
                            /*associated_with_navigation=*/true, result);
   if (!client)
     return absl::nullopt;
@@ -202,7 +204,12 @@ AttributionSrcLoader::CreateAndSendRequest(
     RegisterResult& out_register_result) {
   // Detached frames cannot/should not register new attributionsrcs.
   if (!local_frame_->IsAttached()) {
-    out_register_result = RegisterResult::kSuccess;
+    out_register_result = RegisterResult::kFailedToRegister;
+    return nullptr;
+  }
+
+  if (resource_clients_.size() >= kMaxConcurrentRequests) {
+    out_register_result = RegisterResult::kFailedToRegister;
     return nullptr;
   }
 
@@ -280,7 +287,7 @@ AttributionSrcLoader::CanRegisterAttribution(
   LocalDOMWindow* window = local_frame_->DomWindow();
   DCHECK(window);
 
-  if (!RuntimeEnabledFeatures::ConversionMeasurementEnabled(window))
+  if (!RuntimeEnabledFeatures::AttributionReportingEnabled(window))
     return RegisterResult::kNotAllowed;
 
   const bool feature_policy_enabled = window->IsFeatureEnabled(
@@ -314,6 +321,13 @@ AttributionSrcLoader::CanRegisterAttribution(
             : AttributionReportingIssueType::kAttributionUntrustworthyOrigin,
         reporting_origin->ToString(), element, request_id);
     return RegisterResult::kUntrustworthyOrigin;
+  }
+
+  UseCounter::Count(window, mojom::blink::WebFeature::kConversionAPIAll);
+
+  // Only record the ads APIs counter if enabled in that manner.
+  if (RuntimeEnabledFeatures::PrivacySandboxAdsAPIsEnabled(window)) {
+    UseCounter::Count(window, mojom::blink::WebFeature::kPrivacySandboxAdsAPIs);
   }
 
   return RegisterResult::kSuccess;

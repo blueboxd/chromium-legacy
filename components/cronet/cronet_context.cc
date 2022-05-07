@@ -176,6 +176,16 @@ void SetQuicHint(net::URLRequestContext* context,
       base::Time::Max(), quic::ParsedQuicVersionVector());
 }
 
+// net::NetworkChangeNotifier doesn't provide an API to query if a specific
+// network has become disconnected. For these network though, it will return
+// CONNECTION_UNKNOWN as their connection type. This should be a good enough
+// approximation for the time being.
+bool IsNetworkNoLongerConnected(
+    net::NetworkChangeNotifier::NetworkHandle network) {
+  return net::NetworkChangeNotifier::GetNetworkConnectionType(network) ==
+         net::NetworkChangeNotifier::CONNECTION_UNKNOWN;
+}
+
 }  // namespace
 
 namespace cronet {
@@ -209,13 +219,11 @@ CronetContext::~CronetContext() {
 
 CronetContext::NetworkTasks::NetworkTasks(
     std::unique_ptr<URLRequestContextConfig> context_config,
-    std::unique_ptr<CronetContext::Callback> callback,
-    bool listen_to_network_changes)
+    std::unique_ptr<CronetContext::Callback> callback)
     : default_context_(nullptr),
       is_default_context_initialized_(false),
       context_config_(std::move(context_config)),
-      callback_(std::move(callback)),
-      listen_to_network_changes_(listen_to_network_changes) {
+      callback_(std::move(callback)) {
   DETACH_FROM_THREAD(network_thread_checker_);
 }
 
@@ -233,7 +241,7 @@ CronetContext::NetworkTasks::~NetworkTasks() {
     network_quality_estimator_->RemoveRTTAndThroughputEstimatesObserver(this);
   }
 
-  if (listen_to_network_changes_)
+  if (net::NetworkChangeNotifier::AreNetworkHandlesSupported())
     net::NetworkChangeNotifier::RemoveNetworkObserver(this);
 }
 
@@ -521,7 +529,7 @@ void CronetContext::NetworkTasks::Initialize(
       BuildDefaultURLRequestContext(std::move(proxy_config_service));
   default_context_ = contexts_[default_network].get();
 
-  if (listen_to_network_changes_)
+  if (net::NetworkChangeNotifier::AreNetworkHandlesSupported())
     net::NetworkChangeNotifier::AddNetworkObserver(this);
 
   callback_->OnInitNetworkThread();
@@ -556,6 +564,26 @@ net::URLRequestContext* CronetContext::NetworkTasks::GetURLRequestContext(
   if (contexts_.find(network) == contexts_.end())
     contexts_[network] = BuildNetworkBoundURLRequestContext(network);
   return contexts_[network].get();
+}
+
+void CronetContext::NetworkTasks::MaybeDestroyURLRequestContext(
+    net::NetworkChangeNotifier::NetworkHandle network) {
+  DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
+
+  // Default network context is never deleted.
+  if (network == net::NetworkChangeNotifier::kInvalidNetworkHandle)
+    return;
+  if (!contexts_.contains(network))
+    return;
+
+  auto& context = contexts_[network];
+  // For a URLRequestContext to be destroyed, two conditions must be satisfied:
+  // 1. The network associated to that context must be no longer connected
+  // 2. There must be no URLRequests associated to that context
+  if (context->url_requests()->size() == 0 &&
+      IsNetworkNoLongerConnected(network)) {
+    contexts_.erase(network);
+  }
 }
 
 // Request context getter for CronetContext.
@@ -661,6 +689,12 @@ void CronetContext::StopNetLog() {
                                 base::Unretained(network_tasks_)));
 }
 
+void CronetContext::MaybeDestroyURLRequestContext(
+    net::NetworkChangeNotifier::NetworkHandle network) {
+  DCHECK(IsOnNetworkThread());
+  network_tasks_->MaybeDestroyURLRequestContext(network);
+}
+
 int CronetContext::default_load_flags() const {
   return default_load_flags_;
 }
@@ -723,11 +757,17 @@ void CronetContext::NetworkTasks::OnThroughputObservation(
 void CronetContext::NetworkTasks::OnNetworkDisconnected(
     net::NetworkChangeNotifier::NetworkHandle network) {
   DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
-  DCHECK(listen_to_network_changes_);
 
-  // TODO(stefanoduo): Properly cancel pending requests before destroying the
-  // context.
-  contexts_.erase(network);
+  if (!contexts_.contains(network))
+    return;
+
+  auto& context = contexts_[network];
+  // After `network` disconnects, we can delete the URLRequestContext
+  // associated with it only if it has no pending URLRequests.
+  // If there are, their destruction procedure will take care of destroying
+  // this context (see MaybeDestroyURLRequestContext for more info).
+  if (context->url_requests()->size() == 0)
+    contexts_.erase(network);
 }
 
 void CronetContext::NetworkTasks::OnNetworkConnected(

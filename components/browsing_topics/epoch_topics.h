@@ -24,7 +24,7 @@ class EpochTopics {
               size_t padded_top_topics_start_index,
               size_t taxonomy_size,
               int taxonomy_version,
-              int model_version,
+              int64_t model_version,
               base::Time calculation_time);
 
   EpochTopics(const EpochTopics&) = delete;
@@ -49,21 +49,52 @@ class EpochTopics {
                                      const HashedDomain& hashed_context_domain,
                                      ReadOnlyHmacKey hmac_key) const;
 
-  bool HasValidTopics() const {
-    return !top_topics_and_observing_domains_.empty();
-  }
+  // Similar to `TopicForSite`, but this does not apply the filtering based on a
+  // calling context, and only returns a topic if the candidate topic is a true
+  // top topic (as opposed to the random topic, or the randomly padded top
+  // topic). This method is used for displaying the candidate topics for a site
+  // for the UX.
+  absl::optional<Topic> TopicForSiteForDisplay(const std::string& top_domain,
+                                               ReadOnlyHmacKey hmac_key) const;
+
+  // Whether `top_topics_and_observing_domains_` is empty.
+  bool empty() const { return top_topics_and_observing_domains_.empty(); }
 
   // Clear `top_topics_and_observing_domains_` and
   // reset `padded_top_topics_start_index_` to 0.
   void ClearTopics();
 
+  // Clear an entry in `top_topics_and_observing_domains_` that matches `topic`.
+  void ClearTopic(Topic topic);
+
+  // Clear the domains in `top_topics_and_observing_domains_`  that match
+  // `hashed_context_domain`.
+  void ClearContextDomain(const HashedDomain& hashed_context_domain);
+
+  const std::vector<TopicAndDomains>& top_topics_and_observing_domains() const {
+    return top_topics_and_observing_domains_;
+  }
+
+  size_t padded_top_topics_start_index() const {
+    return padded_top_topics_start_index_;
+  }
+
+  size_t taxonomy_size() const { return taxonomy_size_; }
+
   int taxonomy_version() const { return taxonomy_version_; }
 
-  int model_version() const { return model_version_; }
+  int64_t model_version() const { return model_version_; }
 
   base::Time calculation_time() const { return calculation_time_; }
 
  private:
+  absl::optional<Topic> TopicForSiteHelper(
+      const std::string& top_domain,
+      bool need_filtering,
+      bool allow_random_or_padded_topic,
+      const HashedDomain& hashed_context_domain,
+      ReadOnlyHmacKey hmac_key) const;
+
   // The top topics for this epoch, and the context domains that observed each
   // topic across
   // `kBrowsingTopicsNumberOfEpochsOfObservationDataToUseForFiltering` epochs.
@@ -88,7 +119,7 @@ class EpochTopics {
   int taxonomy_version_ = 0;
 
   // The version of the model used to calculate this epoch's topics.
-  int model_version_ = 0;
+  int64_t model_version_ = 0;
 
   // The calculation start time. This also determines the time range of the
   // underlying topics data.

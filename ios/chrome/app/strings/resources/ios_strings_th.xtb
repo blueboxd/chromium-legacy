@@ -124,6 +124,7 @@
 <translation id="199425419756152024">ดูรหัสผ่าน</translation>
 <translation id="2015722694326466240">หากต้องการดูรหัสผ่าน คุณต้องตั้งพาสโค้ดในอุปกรณ์ก่อน</translation>
 <translation id="2021670401941426298">ดูวิธีลบประวัติการค้นหา (หากมี) ของเครื่องมือค้นหาที่คุณใช้</translation>
+<translation id="202292859882676807">อนุญาตให้เข้าถึงไมโครโฟน</translation>
 <translation id="2073572773299281212">ใช้งานเมื่อ <ph name="DAYS" /> วันที่ผ่านมา</translation>
 <translation id="2074131957428911366">คุณเลือกสิ่งที่ต้องการซิงค์ได้เสมอใน<ph name="BEGIN_LINK" />การตั้งค่า<ph name="END_LINK" /></translation>
 <translation id="2079545284768500474">เลิกทำ</translation>
@@ -369,6 +370,7 @@
 <translation id="430967081421617822">ตั้งแต่ต้น</translation>
 <translation id="4334428914252001502">บทความที่ยังไม่ได้อ่าน 1 รายการ</translation>
 <translation id="4338650699862464074">ส่ง URL ของหน้าที่คุณเข้าชมไปยัง Google</translation>
+<translation id="4343046787186034850">อนุญาตให้เข้าถึงกล้องและไมโครโฟน</translation>
 <translation id="4359125752503270327">หน้านี้จะเปิดในแอปพลิเคชันอื่น</translation>
 <translation id="4375040482473363939">ค้นหาโค้ด QR</translation>
 <translation id="4378154925671717803">โทรศัพท์</translation>
@@ -388,7 +390,6 @@
 <translation id="4536418791685807335">ลองลงชื่อเข้าใช้อีกครั้ง</translation>
 <translation id="4540780316273593836">เกิดข้อผิดพลาด</translation>
 <translation id="457386861538956877">เพิ่มเติม...</translation>
-<translation id="458449952965618888">อนุญาตให้เข้าถึงไมโครโฟน</translation>
 <translation id="4592368184551360546">แป้นพิมพ์</translation>
 <translation id="461440297010471931">กำลังค้นหาด้วย Google</translation>
 <translation id="4619564267100705184">ยืนยันว่าเป็นคุณ</translation>
@@ -409,7 +410,6 @@
 <translation id="4689564913179979534">จัดการวิธีการชำระเงิน...</translation>
 <translation id="4697071790493980729">ไม่พบผลการค้นหา</translation>
 <translation id="470966556546083668">ไม่ต้องเปิดการซิงค์</translation>
-<translation id="4727245048156789470">อนุญาตให้เข้าถึงกล้องและไมโครโฟน</translation>
 <translation id="4737560986434232178">ค้นหาในแท็บล่าสุด</translation>
 <translation id="473775607612524610">อัปเดต</translation>
 <translation id="4747097190499141774">การเข้ารหัสลับด้วยรหัสผ่านจะไม่รวมข้อมูลวิธีการชำระเงินและที่อยู่จาก Google Pay เฉพาะผู้ที่มีรหัสผ่านของคุณเท่านั้นจึงจะอ่านข้อมูลที่เข้ารหัสได้ Google จะไม่ได้รับหรือจัดเก็บรหัสผ่านนี้ คุณจะต้องรีเซ็ตการซิงค์หากลืมรหัสผ่านหรือต้องการเปลี่ยนแปลงการตั้งค่านี้ <ph name="BEGIN_LINK" />ดูข้อมูลเพิ่มเติม<ph name="END_LINK" /></translation>
@@ -512,6 +512,7 @@
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">รุ่น <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{กำลังแสดงหน้าต่าง Chrome 1 หน้าต่าง}other{กำลังแสดงหน้าต่าง Chrome {count} หน้าต่าง}}</translation>
+<translation id="5701270923492462699">อนุญาตให้เข้าถึงกล้อง</translation>
 <translation id="5704908597376970822">ลงชื่อเข้าใช้ไม่ได้</translation>
 <translation id="5706552126692816153">ใช้งานเมื่อ 1 วันที่ผ่านมา</translation>
 <translation id="5711039611392265845">ดูการตั้งค่าเพิ่มเติมเกี่ยวกับความเป็นส่วนตัว ความปลอดภัย และการรวบรวมข้อมูลได้ที่<ph name="BEGIN_LINK" />การซิงค์และบริการต่างๆ ของ Google<ph name="END_LINK" /></translation>
@@ -540,7 +541,6 @@
 <translation id="5896576662943111387">สร้างขึ้นเพื่อ iOS</translation>
 <translation id="5897956970858271241">ไปที่ลิงก์ที่คัดลอก</translation>
 <translation id="5899314093904173337">ให้คนที่อยู่ใกล้ๆ สแกนคิวอาร์โค้ดนี้โดยใช้กล้องหรือแอปสแกนคิวอาร์โค้ดเพื่อแชร์</translation>
-<translation id="5902639236448164449">จัดการสิทธิ์ของเว็บไซต์สำหรับ <ph name="URL" /> สิทธิ์เหล่านี้จะถูกรีเซ็ตเมื่อคุณปิดแท็บ</translation>
 <translation id="5911030830365207728">Google แปลภาษา</translation>
 <translation id="5913600720976431809">ตัวเลือกในการแปลหน้า</translation>
 <translation id="5938160824633642847">พื้นที่ในอุปกรณ์เกือบเต็มแล้ว เพิ่มพื้นที่ว่างแล้วลองอีกครั้ง</translation>
@@ -825,7 +825,6 @@
 <translation id="8283172974887967105">ตั้งค่า…</translation>
 <translation id="8299417921174340354">หากต้องการใช้รหัสผ่าน คุณต้องตั้งรหัสผ่านในอุปกรณ์ก่อน</translation>
 <translation id="8299613349954694191">เปิดแท็บที่ไม่ระบุตัวตนเพื่อท่องเว็บในแบบส่วนตัว</translation>
-<translation id="8304831996890817401">อนุญาตให้เข้าถึงกล้อง</translation>
 <translation id="8319076807703933069">ค้นหาใหม่</translation>
 <translation id="8323906514956095947">แตะค้างไว้เพื่อดูตัวเลือกแท็บเพิ่มเติม</translation>
 <translation id="8328777765163860529">ปิดทั้งหมด</translation>

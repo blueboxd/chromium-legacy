@@ -192,6 +192,9 @@ extern const char kAutofillEnableGoogleIssuedCardDescription[];
 extern const char kAutofillEnableMerchantBoundVirtualCardsName[];
 extern const char kAutofillEnableMerchantBoundVirtualCardsDescription[];
 
+extern const char kAutofillEnableManualFallbackForVirtualCardsName[];
+extern const char kAutofillEnableManualFallbackForVirtualCardsDescription[];
+
 extern const char kAutofillEnableOfferNotificationForPromoCodesName[];
 extern const char kAutofillEnableOfferNotificationForPromoCodesDescription[];
 
@@ -722,6 +725,9 @@ extern const char kEnableWebAuthenticationCableDiscoCredsDescription[];
 extern const char kEnableWebAuthenticationChromeOSAuthenticatorName[];
 extern const char kEnableWebAuthenticationChromeOSAuthenticatorDescription[];
 
+extern const char kEnableWebAuthenticationPasskeysUIExperimentName[];
+extern const char kEnableWebAuthenticationPasskeysUIExperimentDescription[];
+
 extern const char kEnableZeroCopyTabCaptureName[];
 extern const char kEnableZeroCopyTabCaptureDescription[];
 
@@ -1225,6 +1231,9 @@ extern const char kPrivacyAdvisorDescription[];
 extern const char kPrivacyGuideName[];
 extern const char kPrivacyGuideDescription[];
 
+extern const char kPrivacySandboxAdsAPIsOverrideName[];
+extern const char kPrivacySandboxAdsAPIsOverrideDescription[];
+
 extern const char kPrivacySandboxV3Name[];
 extern const char kPrivacySandboxV3Description[];
 
@@ -1313,6 +1322,9 @@ extern const char kSidePanelDescription[];
 extern const char kSidePanelDragAndDropFlagId[];
 extern const char kSidePanelDragAndDropName[];
 extern const char kSidePanelDragAndDropDescription[];
+
+extern const char kSidePanelImprovedClobberingName[];
+extern const char kSidePanelImprovedClobberingDescription[];
 
 extern const char kSharedClipboardUIName[];
 extern const char kSharedClipboardUIDescription[];
@@ -2606,27 +2618,6 @@ extern const char kQuickSettingsPWANotificationsDescription[];
 extern const char kDriveFsBidirectionalNativeMessagingName[];
 extern const char kDriveFsBidirectionalNativeMessagingDescription[];
 
-extern const char kCrOSDspBasedAecAllowedName[];
-extern const char kCrOSDspBasedAecAllowedDescription[];
-
-extern const char kCrOSDspBasedNsAllowedName[];
-extern const char kCrOSDspBasedNsAllowedDescription[];
-
-extern const char kCrOSDspBasedAgcAllowedName[];
-extern const char kCrOSDspBasedAgcAllowedDescription[];
-
-extern const char kCrOSEnforceSystemAecName[];
-extern const char kCrOSEnforceSystemAecDescription[];
-
-extern const char kCrOSEnforceSystemAecAgcName[];
-extern const char kCrOSEnforceSystemAecAgcDescription[];
-
-extern const char kCrOSEnforceSystemAecNsName[];
-extern const char kCrOSEnforceSystemAecNsDescription[];
-
-extern const char kCrOSEnforceSystemAecNsAgcName[];
-extern const char kCrOSEnforceSystemAecNsAgcDescription[];
-
 extern const char kEnableAppReinstallZeroStateName[];
 extern const char kEnableAppReinstallZeroStateDescription[];
 
@@ -3211,6 +3202,27 @@ extern const char
 
 extern const char kBluetoothAdvertisementMonitoringName[];
 extern const char kBluetoothAdvertisementMonitoringDescription[];
+
+extern const char kCrOSDspBasedAecAllowedName[];
+extern const char kCrOSDspBasedAecAllowedDescription[];
+
+extern const char kCrOSDspBasedNsAllowedName[];
+extern const char kCrOSDspBasedNsAllowedDescription[];
+
+extern const char kCrOSDspBasedAgcAllowedName[];
+extern const char kCrOSDspBasedAgcAllowedDescription[];
+
+extern const char kCrOSEnforceSystemAecName[];
+extern const char kCrOSEnforceSystemAecDescription[];
+
+extern const char kCrOSEnforceSystemAecAgcName[];
+extern const char kCrOSEnforceSystemAecAgcDescription[];
+
+extern const char kCrOSEnforceSystemAecNsName[];
+extern const char kCrOSEnforceSystemAecNsDescription[];
+
+extern const char kCrOSEnforceSystemAecNsAgcName[];
+extern const char kCrOSEnforceSystemAecNsAgcDescription[];
 
 extern const char kDefaultCalculatorWebAppName[];
 extern const char kDefaultCalculatorWebAppDescription[];

@@ -124,6 +124,7 @@ Votre moteur de recherche est <ph name="DSE_NAME" />. Lisez les instructions pou
 <translation id="199425419756152024">Afficher le mot de passe</translation>
 <translation id="2015722694326466240">Pour afficher les mots de passe, vous devez d'abord définir un code secret sur votre appareil.</translation>
 <translation id="2021670401941426298">Lisez les instructions du moteur de recherche pour supprimer l'historique de vos recherches, le cas échéant.</translation>
+<translation id="202292859882676807">Accès au micro autorisé</translation>
 <translation id="2073572773299281212">Actif il y a <ph name="DAYS" /> jours</translation>
 <translation id="2074131957428911366">Vous avez toujours la possibilité de sélectionner les éléments à synchroniser dans les <ph name="BEGIN_LINK" />paramètres<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">Annuler</translation>
@@ -369,6 +370,7 @@ Suivez les étapes ci-dessous :</translation>
 <translation id="430967081421617822">Toutes les données</translation>
 <translation id="4334428914252001502">1 article non lu.</translation>
 <translation id="4338650699862464074">Envoie à Google les URL des pages que vous consultez.</translation>
+<translation id="4343046787186034850">Accès à la caméra et au micro autorisé</translation>
 <translation id="4359125752503270327">Cette page va s'ouvrir dans une autre application.</translation>
 <translation id="4375040482473363939">Rechercher via un code QR</translation>
 <translation id="4378154925671717803">Téléphone</translation>
@@ -388,7 +390,6 @@ Suivez les étapes ci-dessous :</translation>
 <translation id="4536418791685807335">Veuillez essayer de vous reconnecter.</translation>
 <translation id="4540780316273593836">Un problème est survenu</translation>
 <translation id="457386861538956877">Autres...</translation>
-<translation id="458449952965618888">Accès au micro autorisé</translation>
 <translation id="4592368184551360546">Clavier</translation>
 <translation id="461440297010471931">Recherche sur Google</translation>
 <translation id="4619564267100705184">Confirmer votre identité</translation>
@@ -409,7 +410,6 @@ Vos données sont chiffrées avec votre phrase secrète de synchronisation. Sais
 <translation id="4689564913179979534">Gérer les modes de paiement…</translation>
 <translation id="4697071790493980729">Aucun résultat trouvé</translation>
 <translation id="470966556546083668">Ne pas synchroniser</translation>
-<translation id="4727245048156789470">Accès à la caméra et au micro autorisé</translation>
 <translation id="4737560986434232178">Rechercher dans les onglets récents</translation>
 <translation id="473775607612524610">Mettre à jour</translation>
 <translation id="4747097190499141774">Le chiffrement par phrase secrète ne s'applique pas aux modes de paiement et adresses Google Pay. Seule une personne connaissant votre phrase secrète peut lire vos données chiffrées. La phrase secrète n'est pas envoyée à Google et Google ne la stocke pas. Si vous l'oubliez ou si vous souhaitez modifier ce paramètre, vous devrez réinitialiser la synchronisation. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
@@ -512,6 +512,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Version <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{1 fenêtre Chrome actuellement affichée}one{{count} fenêtre Chrome actuellement affichée}other{{count} fenêtres Chrome actuellement affichées}}</translation>
+<translation id="5701270923492462699">Accès à la caméra autorisé</translation>
 <translation id="5704908597376970822">Impossible de se connecter.</translation>
 <translation id="5706552126692816153">Actif il y a 1 jour</translation>
 <translation id="5711039611392265845">Pour accéder à d'autres paramètres liés à la confidentialité, à la sécurité et à la collecte de données, consultez la section <ph name="BEGIN_LINK" />Services Google/Synchronisation<ph name="END_LINK" />.</translation>
@@ -540,7 +541,6 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="5896576662943111387">Conçu pour iOS</translation>
 <translation id="5897956970858271241">Consulter le lien copié</translation>
 <translation id="5899314093904173337">Pour partager un contenu avec des personnes à proximité, laissez-les scanner ce code QR avec leur appareil photo ou leur application de lecture de codes QR</translation>
-<translation id="5902639236448164449">Gérez les autorisations du site pour <ph name="URL" />. Celles-ci seront réinitialisées après fermeture de l'onglet.</translation>
 <translation id="5911030830365207728">Google Traduction</translation>
 <translation id="5913600720976431809">Options de traduction de la page</translation>
 <translation id="5938160824633642847">Votre appareil est presque saturé. Libérez de l'espace et réessayez.</translation>
@@ -826,7 +826,6 @@ Ils peuvent également s'en servir pour voir votre activité de navigation sur l
 <translation id="8283172974887967105">Définir…</translation>
 <translation id="8299417921174340354">Pour utiliser les mots de passe, vous devez d'abord définir un code secret sur votre appareil.</translation>
 <translation id="8299613349954694191">Ouvrez un onglet de navigation privée pour naviguer sur le Web en mode privé.</translation>
-<translation id="8304831996890817401">Accès à la caméra autorisé</translation>
 <translation id="8319076807703933069">Nouvelle recherche</translation>
 <translation id="8323906514956095947">Appuyez de manière prolongée pour afficher plus d'options d'onglets</translation>
 <translation id="8328777765163860529">Tout fermer</translation>

@@ -39,9 +39,16 @@ extern const base::Feature kPushNotifications;
 extern const base::Feature kOptimizationGuideMetadataValidation;
 extern const base::Feature kPageTopicsBatchAnnotations;
 extern const base::Feature kPageVisibilityBatchAnnotations;
+extern const base::Feature kPageEntitiesModelResetOnShutdown;
+extern const base::Feature kPageEntitiesModelBypassFilters;
 extern const base::Feature kUseLocalPageEntitiesMetadataProvider;
 extern const base::Feature kBatchAnnotationsValidation;
 extern const base::Feature kPreventLongRunningPredictionModels;
+
+// Enables use of task runner with trait CONTINUE_ON_SHUTDOWN for page content
+// annotations on-device models.
+extern const base::Feature
+    kOptimizationGuideUseContinueOnShutdownForPageContentAnnotations;
 
 // The grace period duration for how long to give outstanding page text dump
 // requests to respond after DidFinishLoad.
@@ -232,13 +239,6 @@ bool ShouldExtractRelatedSearches();
 // Returns whether the page entities model should be executed on page content
 // for a user using |locale| as their browser language.
 bool ShouldExecutePageEntitiesModelOnPageContent(const std::string& locale);
-
-// Whether the path to the filters should be provided to the page entities
-// model.
-bool ShouldProvideFilterPathForPageEntitiesModel();
-
-// Returns whether the page entities model should be reset on shutdown.
-bool ShouldResetPageEntitiesModelOnShutdown();
 
 // Returns whether the page visibility model should be executed on page content
 // for a user using |locale| as their browser language.

@@ -43,8 +43,18 @@ class PrivacySandboxDialogDelegate : public views::DialogDelegate {
 
   bool OnCloseRequested(views::Widget::ClosedReason close_reason) override {
     // Any close reason is sufficient to close the notice.
-    if (dialog_type_ == PrivacySandboxService::DialogType::kNotice)
+    if (dialog_type_ == PrivacySandboxService::DialogType::kNotice) {
+      // If the notice was dismissed via esc inform the Privacy Sandbox service.
+      if (close_reason == views::Widget::ClosedReason::kEscKeyPressed) {
+        if (auto* privacy_sandbox_serivce =
+                PrivacySandboxServiceFactory::GetForProfile(
+                    browser_->profile())) {
+          privacy_sandbox_serivce->DialogActionOccurred(
+              PrivacySandboxService::DialogAction::kNoticeDismiss);
+        }
+      }
       return true;
+    }
 
     // Only an unspecified close reason, which only occurs when the user has
     // actually made a choice and not for things like pressing escape, is
@@ -112,9 +122,8 @@ PrivacySandboxDialogView::PrivacySandboxDialogView(
                      base::Unretained(this)),
       base::BindOnce(&PrivacySandboxDialogView::ShowNativeView,
                      base::Unretained(this)),
-      base::BindOnce(
-          &PrivacySandboxDialogView::OpenPrivacySandboxAdPersonalization,
-          base::Unretained(this)),
+      base::BindOnce(&PrivacySandboxDialogView::OpenPrivacySandboxSettings,
+                     base::Unretained(this)),
       dialog_type);
 
   SetUseDefaultFillLayout(true);
@@ -142,9 +151,9 @@ void PrivacySandboxDialogView::ShowNativeView() {
                           base::TimeTicks::Now() - dialog_created_time_);
 }
 
-void PrivacySandboxDialogView::OpenPrivacySandboxAdPersonalization() {
+void PrivacySandboxDialogView::OpenPrivacySandboxSettings() {
   DCHECK(browser_);
-  chrome::ShowPrivacySandboxAdPersonalization(browser_);
+  chrome::ShowPrivacySandboxSettings(browser_);
 }
 
 BEGIN_METADATA(PrivacySandboxDialogView, views::View)

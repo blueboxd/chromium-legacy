@@ -104,7 +104,7 @@ Seu mecanismo de pesquisa é o <ph name="DSE_NAME" />. Veja as instruções para
 <translation id="1753905327828125965">Mais visitados</translation>
 <translation id="1803264062614276815">Nome do titular do cartão</translation>
 <translation id="1809939268435598390">Excluir pasta</translation>
-<translation id="1813414402673211292">Limpar dados de navegação</translation>
+<translation id="1813414402673211292">Remover dados de navegação</translation>
 <translation id="1815941218935345331">Senha</translation>
 <translation id="1820259098641718022">Adicionada à lista de leitura</translation>
 <translation id="1832848789136765277">Para garantir o acesso aos seus dados sincronizados, confirme sua identidade</translation>
@@ -124,6 +124,7 @@ Seu mecanismo de pesquisa é o <ph name="DSE_NAME" />. Veja as instruções para
 <translation id="199425419756152024">Ver senha</translation>
 <translation id="2015722694326466240">Para ver as senhas, defina uma senha no dispositivo primeiro.</translation>
 <translation id="2021670401941426298">Veja as instruções do seu mecanismo de pesquisa para excluir o histórico de pesquisa, se aplicável.</translation>
+<translation id="202292859882676807">Acesso ao microfone permitido</translation>
 <translation id="2073572773299281212">Ativado há <ph name="DAYS" /> dias</translation>
 <translation id="2074131957428911366">Nas <ph name="BEGIN_LINK" />configurações<ph name="END_LINK" />, é possível escolher a qualquer momento o que é sincronizado.</translation>
 <translation id="2079545284768500474">Desfazer</translation>
@@ -228,7 +229,7 @@ Eles também não podem usar cookies para ver sua atividade de navegação em di
 <translation id="2964349545761222050">Bloquear cookies de terceiros</translation>
 <translation id="2969979262385602596">Falha durante o login. Tente novamente mais tarde.</translation>
 <translation id="2975121486251958312">Apenas o modo de navegação anônima está disponível</translation>
-<translation id="2982481275546140226">Limpar dados</translation>
+<translation id="2982481275546140226">Remover dados</translation>
 <translation id="298306318844797842">Adicionar forma de pagamento…</translation>
 <translation id="2989805286512600854">Abrir em uma nova guia</translation>
 <translation id="3037605927509011580">Ah, não!</translation>
@@ -369,6 +370,7 @@ Siga estas etapas:</translation>
 <translation id="430967081421617822">Todo o período</translation>
 <translation id="4334428914252001502">1 artigo não lido.</translation>
 <translation id="4338650699862464074">Envia URLs das páginas que você visita para o Google.</translation>
+<translation id="4343046787186034850">Acesso à câmera e ao microfone permitido</translation>
 <translation id="4359125752503270327">Esta página será aberta em outro aplicativo.</translation>
 <translation id="4375040482473363939">Pesquisa por código QR</translation>
 <translation id="4378154925671717803">Telefone</translation>
@@ -388,7 +390,6 @@ Siga estas etapas:</translation>
 <translation id="4536418791685807335">Tente fazer login novamente.</translation>
 <translation id="4540780316273593836">Ocorreu um erro</translation>
 <translation id="457386861538956877">Mais...</translation>
-<translation id="458449952965618888">Acesso ao microfone autorizado</translation>
 <translation id="4592368184551360546">Teclado</translation>
 <translation id="461440297010471931">Pesquisando com o Google</translation>
 <translation id="4619564267100705184">Confirmar sua identidade</translation>
@@ -409,7 +410,6 @@ Seus dados são criptografados com sua senha longa de sincronização. Informe-a
 <translation id="4689564913179979534">Gerenciar formas de pagamento…</translation>
 <translation id="4697071790493980729">Nenhum resultado encontrado</translation>
 <translation id="470966556546083668">Não ative a sincronização</translation>
-<translation id="4727245048156789470">Acesso à câmera e ao microfone autorizado</translation>
 <translation id="4737560986434232178">Pesquisar guias recentes</translation>
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="4747097190499141774">A criptografia por senha longa não inclui formas de pagamento e endereços do Google Pay. Só alguém com acesso a sua senha longa pode ler seus dados criptografados. Essa senha não é enviada ou armazenada pelo Google. Se você esquecer a senha longa ou quiser alterar essa configuração, será necessário redefinir a sincronização. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -512,6 +512,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Versão <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{Mostrando agora 1 janela do Chrome}one{Mostrando agora {count} janela do Chrome}other{Mostrando agora {count} janelas do Chrome}}</translation>
+<translation id="5701270923492462699">Acesso à câmera permitido</translation>
 <translation id="5704908597376970822">Não é possível fazer login.</translation>
 <translation id="5706552126692816153">Ativado há um dia</translation>
 <translation id="5711039611392265845">Para ver mais configurações relacionadas à privacidade, segurança e coleta de dados, acesse <ph name="BEGIN_LINK" />Serviços do Google e de sincronização<ph name="END_LINK" />.</translation>
@@ -540,7 +541,6 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5896576662943111387">Desenvolvido para iOS</translation>
 <translation id="5897956970858271241">Visitar link copiado</translation>
 <translation id="5899314093904173337">Para compartilhar com pessoas próximas, permita que elas leiam esse código QR com a câmera ou um app adequado</translation>
-<translation id="5902639236448164449">Gerenciar permissões de site para <ph name="URL" />. Essas permissões serão redefinidas quando você fechar a guia.</translation>
 <translation id="5911030830365207728">Google Tradutor</translation>
 <translation id="5913600720976431809">Opções para traduzir a página</translation>
 <translation id="5938160824633642847">Seu dispositivo está quase cheio. Libere espaço e tente novamente.</translation>
@@ -825,7 +825,6 @@ Eles também podem usar cookies para ver sua atividade de navegação em diferen
 <translation id="8283172974887967105">Definir…</translation>
 <translation id="8299417921174340354">Para usar senhas, defina uma no dispositivo primeiro.</translation>
 <translation id="8299613349954694191">Abra uma guia anônima para navegar com privacidade.</translation>
-<translation id="8304831996890817401">Acesso à câmera autorizado</translation>
 <translation id="8319076807703933069">Nova pesquisa</translation>
 <translation id="8323906514956095947">Toque no botão e mantenha-o pressionado para ver mais opções da guia</translation>
 <translation id="8328777765163860529">Fechar todos</translation>

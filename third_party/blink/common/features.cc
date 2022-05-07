@@ -4,11 +4,13 @@
 
 #include "third_party/blink/public/common/features.h"
 
+#include "base/command_line.h"
 #include "base/feature_list.h"
 #include "build/build_config.h"
 #include "build/chromeos_buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/forcedark/forcedark_switches.h"
+#include "third_party/blink/public/common/switches.h"
 
 namespace blink {
 namespace features {
@@ -149,6 +151,9 @@ const base::Feature kPath2DPaintCache{"Path2DPaintCache",
 // Enable by default. This feature is for a kill switch.
 const base::Feature kLayoutNGBlockInInline{"LayoutNGBlockInInline",
                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
+const base::Feature kPrivacySandboxAdsAPIs{"PrivacySandboxAdsAPIs",
+                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kMixedContentAutoupgrade{"AutoupgradeMixedContent",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
@@ -1045,6 +1050,9 @@ const base::Feature kBrowsingTopics{"BrowsingTopics",
 // requesting contexts.
 const base::FeatureParam<int> kBrowsingTopicsNumberOfEpochsToExpose{
     &kBrowsingTopics, "number_of_epochs_to_expose", 3};
+// The periodic topics calculation interval.
+const base::FeatureParam<base::TimeDelta> kBrowsingTopicsTimePeriodPerEpoch{
+    &kBrowsingTopics, "time_period_per_epoch", base::Days(7)};
 // The number of top topics to derive and to keep for each epoch (week).
 const base::FeatureParam<int> kBrowsingTopicsNumberOfTopTopicsPerEpoch{
     &kBrowsingTopics, "number_of_top_topics_per_epoch", 5};
@@ -1055,6 +1063,18 @@ const base::FeatureParam<int> kBrowsingTopicsNumberOfTopTopicsPerEpoch{
 // topic instead of one of the top topics.
 const base::FeatureParam<int> kBrowsingTopicsUseRandomTopicProbabilityPercent{
     &kBrowsingTopics, "use_random_topic_probability_percent", 5};
+// How many epochs (weeks) of API usage data (i.e. topics observations) will be
+// based off for the filtering of topics for a calling context.
+const base::FeatureParam<int>
+    kBrowsingTopicsNumberOfEpochsOfObservationDataToUseForFiltering{
+        &kBrowsingTopics,
+        "number_of_epochs_of_observation_data_to_use_for_filtering", 3};
+// The max number of observed-by context domains to keep for each top topic.
+// The intent is to cap the in-use memory.
+const base::FeatureParam<int>
+    kBrowsingTopicsMaxNumberOfApiUsageContextDomainsToKeepPerTopic{
+        &kBrowsingTopics,
+        "max_number_of_api_usage_context_domains_to_keep_per_topic", 1000};
 // The max number of entries allowed to be retrieved from the
 // `BrowsingTopicsSiteDataStorage` database for each query for the API usage
 // contexts. The query will occur once per epoch (week) at topics calculation
@@ -1063,11 +1083,28 @@ const base::FeatureParam<int>
     kBrowsingTopicsMaxNumberOfApiUsageContextEntriesToLoadPerEpoch{
         &kBrowsingTopics,
         "max_number_of_api_usage_context_entries_to_load_per_epoch", 100000};
-// Encodes the rest of the configuration parameters. Each version number should
-// only be mapped to one configuration set. In practice, this can be guaranteed
-// by always bumping up the version number whenever parameters are updated.
+// The max number of API usage context domains allowed to be stored per page
+// load.
+const base::FeatureParam<int>
+    kBrowsingTopicsMaxNumberOfApiUsageContextDomainsToStorePerPageLoad{
+        &kBrowsingTopics,
+        "max_number_of_api_usage_context_domains_to_store_per_page_load", 30};
+// Encodes the configuration parameters above. Each version number should only
+// be mapped to one configuration set. In practice, this can be guaranteed by
+// always bumping up the version number whenever parameters are updated.
 const base::FeatureParam<int> kBrowsingTopicsConfigVersion{&kBrowsingTopics,
                                                            "config_version", 1};
+// The taxonomy version. This only affects the topics classification that occurs
+// during this browser session, and doesn't affect the pre-existing epochs.
+const base::FeatureParam<int> kBrowsingTopicsTaxonomyVersion{
+    &kBrowsingTopics, "taxonomy_version", 1};
+
+// If enabled, the check for whether the IP address is publicly routable will be
+// bypassed when determining the eligibility for a page to be included in topics
+// calculation. This is useful for developers to test in local environment.
+const base::Feature kBrowsingTopicsBypassIPIsPubliclyRoutableCheck{
+    "BrowsingTopicsBypassIPIsPubliclyRoutableCheck",
+    base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable the ability to minimize processing in the WebRTC APM when all audio
 // tracks are disabled. If disabled, the APM in WebRTC will ignore attempts to
@@ -1191,8 +1228,59 @@ const base::Feature kCSSCascadeLayers{"CSSCascadeLayers",
 // Tracking bug: https://crbug.com/402694.
 const base::Feature kSetTimeoutWithoutClamp{"SetTimeoutWithoutClamp",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+namespace {
+
+enum class SetTimeoutWithout1MsClampPolicyOverride {
+  kNoOverride,
+  kForceDisable,
+  kForceEnable
+};
+
+bool g_set_timeout_without_1m_clamp_policy_override_cached = false;
+
+// Returns the SetTimeoutWithout1MsClamp policy settings. This is calculated
+// once on first access and cached.
+SetTimeoutWithout1MsClampPolicyOverride
+GetSetTimeoutWithout1MsClampPolicyOverride() {
+  static SetTimeoutWithout1MsClampPolicyOverride policy =
+      SetTimeoutWithout1MsClampPolicyOverride::kNoOverride;
+  if (g_set_timeout_without_1m_clamp_policy_override_cached)
+    return policy;
+
+  // Otherwise, check the command-line for the renderer. Only values of "0"
+  // and "1" are valid, anything else is ignored (and allows the base::Feature
+  // to control the feature). This slow path will only be hit once per renderer
+  // process.
+  std::string value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kSetTimeoutWithout1MsClampPolicy);
+  if (value == switches::kSetTimeoutWithout1MsClampPolicy_ForceEnable) {
+    policy = SetTimeoutWithout1MsClampPolicyOverride::kForceEnable;
+  } else if (value == switches::kSetTimeoutWithout1MsClampPolicy_ForceDisable) {
+    policy = SetTimeoutWithout1MsClampPolicyOverride::kForceDisable;
+  } else {
+    policy = SetTimeoutWithout1MsClampPolicyOverride::kNoOverride;
+  }
+  g_set_timeout_without_1m_clamp_policy_override_cached = true;
+  return policy;
+}
+
+}  // namespace
+
+void ClearSetTimeoutWithout1MsClampPolicyOverrideCacheForTesting() {
+  // Tests may want to force recalculation of the cached policy value when
+  // exercising different configs.
+  g_set_timeout_without_1m_clamp_policy_override_cached = false;
+}
+
 bool IsSetTimeoutWithoutClampEnabled() {
-  return base::FeatureList::IsEnabled(blink::features::kSetTimeoutWithoutClamp);
+  // If policy is present then respect it.
+  auto policy = GetSetTimeoutWithout1MsClampPolicyOverride();
+  if (policy != SetTimeoutWithout1MsClampPolicyOverride::kNoOverride)
+    return policy == SetTimeoutWithout1MsClampPolicyOverride::kForceEnable;
+  // Otherwise respect the base::Feature.
+  return base::FeatureList::IsEnabled(features::kSetTimeoutWithoutClamp);
 }
 
 // If enabled, the setTimeout(..., 0) will clamp to 4ms after a custom `nesting`
@@ -1331,6 +1419,11 @@ const base::Feature kUserAgentOverrideExperiment{
 // Allow access to WebSQL APIs.
 const base::Feature kWebSQLAccess{"kWebSQLAccess",
                                   base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Changes behavior of User-Agent Client Hints to send blank headers when the
+// User-Agent string is overridden, instead of disabling the headers altogether.
+const base::Feature kUACHOverrideBlank{"UACHOverrideBlank",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 }  // namespace features
 }  // namespace blink

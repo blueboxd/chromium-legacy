@@ -9,6 +9,7 @@
 #include "base/hash/sha1.h"
 #include "chrome/browser/ash/arc/session/arc_service_launcher.h"
 #include "chrome/browser/ash/login/oobe_screen.h"
+#include "chrome/browser/ash/login/test/device_state_mixin.h"
 #include "chrome/browser/ash/login/test/fake_arc_tos_mixin.h"
 #include "chrome/browser/ash/login/test/fake_eula_mixin.h"
 #include "chrome/browser/ash/login/test/js_checker.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ash/login/ui/login_display_host.h"
 #include "chrome/browser/ash/login/ui/webui_login_view.h"
 #include "chrome/browser/ash/login/wizard_controller.h"
+#include "chrome/browser/ash/policy/core/device_policy_cros_browser_test.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
 #include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
@@ -597,14 +599,17 @@ IN_PROC_BROWSER_TEST_F(ConsolidatedConsentScreenManagedUserTest,
                     ArcManagedOptin::kManagedDisabled);
 }
 
-// When both ARC opt ins are managed, skip the screen.
-// TODO(crbug.com/1273975): this test should be updated once the per user
-// metrics is integrated into consolidated consent.
-IN_PROC_BROWSER_TEST_F(ConsolidatedConsentScreenManagedUserTest, Skip) {
-  SetUpArcEnabledPolicy();
-  SetUpManagedOptIns(ArcManagedOptin::kManagedEnabled,
-                     ArcManagedOptin::kManagedEnabled);
-  LoginManagedUser();
+class ConsolidatedConsentScreenManagedDeviceTest
+    : public ConsolidatedConsentScreenTest {
+ private:
+  DeviceStateMixin device_state_{
+      &mixin_host_, DeviceStateMixin::State::OOBE_COMPLETED_CLOUD_ENROLLED};
+};
+
+// TODO(https://crbug.com/1311968): Update test to test all skipping conditions.
+IN_PROC_BROWSER_TEST_F(ConsolidatedConsentScreenManagedDeviceTest,
+                       DISABLED_Skip) {
+  LoginAsRegularUser();
   WaitForScreenExit();
   EXPECT_EQ(screen_result_.value(),
             ConsolidatedConsentScreen::Result::NOT_APPLICABLE);

@@ -266,6 +266,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="2653659639078652383">Prześlij</translation>
 <translation id="2658778018866295321">Kliknij i przeciągnij</translation>
 <translation id="2665788051462227163">Aplikacji <ph name="UNAVAILABLE_APPS_ONE" /> ani <ph name="UNAVAILABLE_APPS_TWO" /> nie ma na tym urządzeniu.</translation>
+<translation id="2673968385134502798">Gry</translation>
 <translation id="2678852583403169292">Menu Przeczytaj na głos</translation>
 <translation id="2689613560355655046">Biurko 8</translation>
 <translation id="2700493154570097719">Ustaw klawiaturę</translation>
@@ -672,6 +673,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="5078796286268621944">Błędny kod PIN</translation>
 <translation id="5083553833479578423">Poznaj więcej funkcji Asystenta.</translation>
 <translation id="5106223312672646208">Personalizacja</translation>
+<translation id="5107522548814527560">Internet</translation>
 <translation id="5117590920725113268">Pokaż przyszły miesiąc</translation>
 <translation id="5136175204352732067">Podłączono inną klawiaturę</translation>
 <translation id="5147567197700016471">Odblokowano</translation>
@@ -790,6 +792,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5901630391730855834">Żółty</translation>
 <translation id="5909862606227538307">Biurko nieaktywne.</translation>
+<translation id="5911231045062997865">Okna Lacros nie są obecnie obsługiwane. Inne aplikacje zostaną zapisane.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Włączone</translation>
 <translation id="5920710855273935292">Mikrofon jest wyciszony.</translation>
@@ -1256,7 +1259,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="8853703225951107899">Nadal nie udało się zweryfikować Twojego hasła ani kodu PIN. Uwaga: jeśli Twoje hasło zostało ostatnio zmienione, użyj starego hasła. Nowe hasło zacznie obowiązywać, gdy się wylogujesz.</translation>
 <translation id="8870509716567206129">Aplikacja nie obsługuje dzielonego ekranu.</translation>
 <translation id="8871580645200179206">Przełącz ciemny motyw. <ph name="STATE_TEXT" /></translation>
-<translation id="8874184842967597500">Brak połączenia</translation>
+<translation id="8874184842967597500">Nie połączono</translation>
 <translation id="8876661425082386199">Sprawdź połączenie</translation>
 <translation id="8877788021141246043">Ustaw przypomnienie</translation>
 <translation id="8878886163241303700">Rozszerzony ekran</translation>

@@ -87,11 +87,19 @@ class GPUTelemetryTestGenerator(BaseGenerator):
   def generate(self, waterfall, tester_name, tester_config, input_tests):
     isolated_scripts = []
     for test_name, test_config in sorted(input_tests.items()):
-      test = self.bb_gen.generate_gpu_telemetry_test(
-          waterfall, tester_name, tester_config, test_name, test_config,
-          self._is_android_webview)
-      if test:
-        isolated_scripts.append(test)
+      # Variants allow more than one definition for a given test, and is defined
+      # in array format from resolve_variants().
+      if not isinstance(test_config, list):
+        test_config = [test_config]
+
+      for config in test_config:
+        test = self.bb_gen.generate_gpu_telemetry_test(waterfall, tester_name,
+                                                       tester_config, test_name,
+                                                       config,
+                                                       self._is_android_webview)
+        if test:
+          isolated_scripts.append(test)
+
     return isolated_scripts
 
   def sort(self, tests):
@@ -1629,7 +1637,9 @@ class BBJSONGenerator(object):  # pylint: disable=useless-object-inheritance
           if bot_name in builders_that_dont_exist:
             continue  # pragma: no cover
           if bot_name not in bot_names:
-            if waterfall['name'] in ['client.v8.chromium', 'client.v8.fyi']:
+            if waterfall['name'] in [
+                'client.v8.chromium', 'client.v8.fyi', 'tryserver.v8'
+            ]:
               # TODO(thakis): Remove this once these bots move to luci.
               continue  # pragma: no cover
             if waterfall['name'] in ['tryserver.webrtc',

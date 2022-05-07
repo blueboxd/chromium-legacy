@@ -13,6 +13,10 @@ namespace base {
 class TimeDelta;
 }
 
+namespace base {
+class TimeDelta;
+}
+
 namespace autofill {
 
 // Metrics to record user interaction with the virtual card enrollment bubble.
@@ -56,14 +60,33 @@ enum class VirtualCardEnrollmentBubbleSource {
   kMaxValue = VIRTUAL_CARD_ENROLLMENT_SETTINGS_PAGE_SOURCE,
 };
 
-// Bubble shown and closed related metrics.
-void LogVirtualCardEnrollmentBubbleShownMetric(
-    VirtualCardEnrollmentBubbleSource source,
-    bool is_reshow);
-void LogVirtualCardEnrollmentBubbleResultMetric(
-    VirtualCardEnrollmentBubbleResult result,
-    VirtualCardEnrollmentBubbleSource source,
-    bool is_reshow);
+// Used to determine the type of link that was clicked for logging purposes. A
+// java IntDef@ is generated from this.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.autofill
+enum class VirtualCardEnrollmentLinkType {
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+
+  // User selected the Google Payments terms of service link.
+  VIRTUAL_CARD_ENROLLMENT_GOOGLE_PAYMENTS_TOS_LINK = 0,
+  // User selected the issuer terms of service link.
+  VIRTUAL_CARD_ENROLLMENT_ISSUER_TOS_LINK = 1,
+  // User selected the learn more about virtual cards link.
+  VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK = 2,
+  kMaxValue = VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK,
+};
+
+// Metrics to measure strikes logged or cleared in strike database.
+enum class VirtualCardEnrollmentStrikeDatabaseEvent {
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
+
+  // Strike logged as enrollment bubble was not accepted.
+  VIRTUAL_CARD_ENROLLMENT_STRIKE_DATABASE_STRIKE_LOGGED = 0,
+  // All strikes cleared as user accepted virtual card enrollment.
+  VIRTUAL_CARD_ENROLLMENT_STRIKE_DATABASE_STRIKES_CLEARED = 1,
+  kMaxValue = VIRTUAL_CARD_ENROLLMENT_STRIKE_DATABASE_STRIKES_CLEARED,
+};
 
 // GetDetailsForEnrollmentRequest related metrics. Attempts and results should
 // be 1:1 mapping.
@@ -82,14 +105,11 @@ void LogUpdateVirtualCardEnrollmentRequestResult(
     VirtualCardEnrollmentRequestType type,
     bool succeeded);
 
-// Helper function used to convert VirtualCardEnrollmentBubbleSource enum to
-// name suffix.
-std::string VirtualCardEnrollmentBubbleSourceToMetricSuffix(
-    VirtualCardEnrollmentBubbleSource source);
-
-// Helper function used to convert VirtualCardEnrollmentSource enum to
-// name suffix.
-const std::string VirtualCardEnrollmentSourceToMetricSuffix(
+// Virtual card enrollment bubble card art available metric. Logs whether the
+// card art was used in the enroll bubble depending on if it was passed to the
+// enrollment controller.
+void LogVirtualCardEnrollBubbleCardArtAvailable(
+    bool card_art_available,
     VirtualCardEnrollmentSource source);
 
 // Latency Since Upstream metrics. Used to determine the time that it takes for
@@ -97,6 +117,44 @@ const std::string VirtualCardEnrollmentSourceToMetricSuffix(
 // when the Virtual Card Enroll Bubble is shown.
 void LogVirtualCardEnrollBubbleLatencySinceUpstream(
     const base::TimeDelta& latency);
+
+// Bubble shown and closed related metrics.
+void LogVirtualCardEnrollmentBubbleResultMetric(
+    VirtualCardEnrollmentBubbleResult result,
+    VirtualCardEnrollmentBubbleSource source,
+    bool is_reshow);
+void LogVirtualCardEnrollmentBubbleShownMetric(
+    VirtualCardEnrollmentBubbleSource source,
+    bool is_reshow);
+
+// Virtual card enrollment bubble link clicked metrics.
+void LogVirtualCardEnrollmentLinkClickedMetric(
+    VirtualCardEnrollmentLinkType link_type,
+    VirtualCardEnrollmentBubbleSource source);
+
+// Virtual card enrollment strike database event metrics.
+void LogVirtualCardEnrollmentStrikeDatabaseEvent(
+    VirtualCardEnrollmentSource source,
+    VirtualCardEnrollmentStrikeDatabaseEvent strike_event);
+
+// Virtual card enrollment strike database max strikes limit reached metrics.
+void LogVirtualCardEnrollmentBubbleMaxStrikesLimitReached(
+    VirtualCardEnrollmentSource source);
+
+// Helper function used to convert VirtualCardEnrollmentBubbleSource enum to
+// name suffix.
+std::string VirtualCardEnrollmentBubbleSourceToMetricSuffix(
+    VirtualCardEnrollmentBubbleSource source);
+
+// Helper function used to convert VirtualCardEnrollmentLinkType enum to
+// name suffix.
+const std::string VirtualCardEnrollmentLinkTypeToMetricSuffix(
+    VirtualCardEnrollmentLinkType link_type);
+
+// Helper function used to convert VirtualCardEnrollmentSource enum to
+// name suffix.
+const std::string VirtualCardEnrollmentSourceToMetricSuffix(
+    VirtualCardEnrollmentSource source);
 
 }  // namespace autofill
 

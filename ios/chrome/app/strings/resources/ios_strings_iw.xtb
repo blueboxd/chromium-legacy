@@ -124,6 +124,7 @@
 <translation id="199425419756152024">הצגת הסיסמה</translation>
 <translation id="2015722694326466240">רוצה להציג את הסיסמאות? תחילה עליך להגדיר קוד גישה במכשיר.</translation>
 <translation id="2021670401941426298">ניתן לעיין בהוראות של מנוע החיפוש שמשמש אותך לגבי מחיקת היסטוריית החיפושים, אם רלוונטי.</translation>
+<translation id="202292859882676807">יש הרשאת גישה למיקרופון</translation>
 <translation id="2073572773299281212">פעילות אחרונה: לפני <ph name="DAYS" /> ימים</translation>
 <translation id="2074131957428911366">אפשר לבחור מה לסנכרן בכל שלב דרך <ph name="BEGIN_LINK" />ההגדרות<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">ביטול הפעולה</translation>
@@ -369,6 +370,7 @@
 <translation id="430967081421617822">משחר ההיסטוריה</translation>
 <translation id="4334428914252001502">מאמר אחד שלא נקרא.</translation>
 <translation id="4338650699862464074">‏שליחת כתובות URL של דפים שנכנסת אליהם אל Google.</translation>
+<translation id="4343046787186034850">יש הרשאות גישה למצלמה ולמיקרופון</translation>
 <translation id="4359125752503270327">הדף הזה ייפתח באפליקציה אחרת.</translation>
 <translation id="4375040482473363939">‏חיפוש של קוד QR</translation>
 <translation id="4378154925671717803">טלפון</translation>
@@ -388,7 +390,6 @@
 <translation id="4536418791685807335">יש לנסות להיכנס שוב.</translation>
 <translation id="4540780316273593836">משהו השתבש</translation>
 <translation id="457386861538956877">עוד...</translation>
-<translation id="458449952965618888">יש הרשאת גישה למיקרופון</translation>
 <translation id="4592368184551360546">מקלדת</translation>
 <translation id="461440297010471931">‏חיפוש באמצעות Google</translation>
 <translation id="4619564267100705184">אימות הזהות שלך</translation>
@@ -409,7 +410,6 @@
 <translation id="4689564913179979534">ניהול אמצעי תשלום...</translation>
 <translation id="4697071790493980729">לא נמצאו תוצאות</translation>
 <translation id="470966556546083668">אין להפעיל את הסנכרון</translation>
-<translation id="4727245048156789470">יש הרשאות גישה למצלמה ולמיקרופון</translation>
 <translation id="4737560986434232178">חיפוש בכרטיסיות האחרונות</translation>
 <translation id="473775607612524610">עדכון</translation>
 <translation id="4747097190499141774">‏הצפנה באמצעות ביטוי סיסמה לא כוללת אמצעי תשלום וכתובות מ-Google Pay. רק מי שיודע את ביטוי הסיסמה שלך יכול לקרוא את הנתונים המוצפנים. ביטוי הסיסמה לא נשלח אל Google והיא אינה מאחסנת אותו. אם שוכחים את ביטוי הסיסמה או רוצים לשנות את ההגדרה הזו, צריך לאפס את הסנכרון. <ph name="BEGIN_LINK" />מידע נוסף<ph name="END_LINK" /></translation>
@@ -512,6 +512,7 @@
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">גרסה <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{‏כרגע מוצג חלון Chrome אחד}two{‏כרגע מוצגים {count} חלונות Chrome}many{‏כרגע מוצגים {count} חלונות Chrome}other{‏כרגע מוצגים {count} חלונות Chrome}}</translation>
+<translation id="5701270923492462699">יש הרשאת גישה למצלמה</translation>
 <translation id="5704908597376970822">אי אפשר להיכנס.</translation>
 <translation id="5706552126692816153">פעילות אחרונה: לפני יום אחד</translation>
 <translation id="5711039611392265845">‏אפשר למצוא הגדרות נוספות בנושא פרטיות, אבטחה ואיסוף נתונים בדף <ph name="BEGIN_LINK" />סנכרון ושירותי Google<ph name="END_LINK" />.</translation>
@@ -540,7 +541,6 @@
 <translation id="5896576662943111387">‏מותאם ל-iOS</translation>
 <translation id="5897956970858271241">מעבר לקישור שהועתק</translation>
 <translation id="5899314093904173337">‏כדי לשתף עם אנשים שנמצאים בסביבה הקרובה, הם יכולים לסרוק את קוד ה-QR הזה באמצעות המצלמה שלהם או באמצעות אפליקציית סורק QR.</translation>
-<translation id="5902639236448164449">ניהול של הרשאות האתר עבור <ph name="URL" />. ההרשאות האלה יאופסו עם סגירת הכרטיסייה על ידך.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5913600720976431809">אפשרויות לתרגום הדף</translation>
 <translation id="5938160824633642847">המכשיר שלך כמעט מלא. צריך לפנות מקום ולנסות שוב.</translation>
@@ -825,7 +825,6 @@
 <translation id="8283172974887967105">להגדרה…</translation>
 <translation id="8299417921174340354">כדי שניתן יהיה להשתמש בסיסמאות, יש להגדיר תחילה קוד גישה במכשיר.</translation>
 <translation id="8299613349954694191">אפשר לפתוח כרטיסיית מצב אנונימי כדי לגלוש בפרטיות באינטרנט.</translation>
-<translation id="8304831996890817401">יש הרשאת גישה למצלמה</translation>
 <translation id="8319076807703933069">חיפוש חדש</translation>
 <translation id="8323906514956095947">לחיצה ארוכה תציג אפשרויות נוספות של כרטיסיות</translation>
 <translation id="8328777765163860529">סגירת הכול</translation>

@@ -253,15 +253,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'd37eac59fbeb03bf57fbd924cc5b048bc26d633e',
+  'skia_revision': 'e72c4af441c8c842236343f3c218bf4a349df9be',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': 'b003970395b7efcc309eb30b4ca06dd8385acd55',
+  'v8_revision': '038025c396f285a96cee650993c800a5d0ea965f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': '1e6643d55a90f33d7e7ea9798a18b333d6a8cbac',
+  'angle_revision': 'e37380e62a427cbb7172b6c17f8752ab96abf356',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -269,7 +269,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': 'c2710889e7eda2f88f6e8b1323bd3b971bbb885a',
+  'pdfium_revision': 'f4c62094abe20ade3a29328bc370238b7e7812b2',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling BoringSSL
   # and whatever else without interference from each other.
@@ -368,7 +368,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
-  'dawn_revision': '28a3c8947e8f1f4abec6d67ebcba695a619ca63c',
+  'dawn_revision': '211e96c6069c66c6d503cfa2b35226c7118c7927',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling feed
   # and whatever else without interference from each other.
@@ -523,15 +523,39 @@ deps = {
     'condition': '(host_os == "linux")',
   },
 
+  # We don't know target_cpu at deps time. At least until there's a universal
+  # binary of httpd-php, pull both intel and arm versions in DEPS and then pick
+  # the right one at runtime.
   'src/third_party/apache-mac': {
     'packages': [
       {
-        'package': 'infra/3pp/tools/httpd-php/${{platform}}',
-        'version': 'version:2@httpd2.4.38.php7.3.31.chromium.2',
+        'package': 'infra/3pp/tools/httpd-php/mac-amd64',
+        'version': 'version:2@httpd2.4.38.php7.3.31.chromium.3',
       },
     ],
     'dep_type': 'cipd',
     'condition': '(host_os == "mac")',
+  },
+  'src/third_party/apache-mac-arm64': {
+    'packages': [
+      {
+        'package': 'infra/3pp/tools/httpd-php/mac-arm64',
+        'version': 'version:2@httpd2.4.38.php7.3.31.chromium.3',
+      },
+    ],
+    'dep_type': 'cipd',
+    'condition': '(host_os == "mac")',
+  },
+
+  'src/third_party/apache-linux': {
+    'packages': [
+      {
+        'package': 'infra/3pp/tools/httpd-php/${{platform}}',
+        'version': 'version:2@httpd2.4.38.php7.3.31.chromium.3',
+      },
+    ],
+    'dep_type': 'cipd',
+    'condition': '(host_os == "linux")',
   },
 
   'src/android_webview/tools/cts_archive': {
@@ -899,7 +923,7 @@ deps = {
     'packages': [
       {
           'package': 'chromium/third_party/androidx',
-          'version': '4144ITIgXUisP3mBnV8td3mdaIKKku5UW_bQjgoP9r8C',
+          'version': 'k4t_4yTm03LpWgvtVabkki_hjYZ0-R6vK2R68XEEKFwC',
       },
     ],
     'condition': 'checkout_android',
@@ -1621,7 +1645,7 @@ deps = {
   },
 
   'src/third_party/requests/src': {
-      'url': Var('chromium_git') + '/external/github.com/kennethreitz/requests.git' + '@' + 'refs/tags/v2.23.0',
+      'url': Var('chromium_git') + '/external/github.com/kennethreitz/requests.git' + '@' + 'c7e0fc087ceeadb8b4c84a0953a422c474093d6d',
       'condition': 'checkout_android',
   },
 
@@ -1637,7 +1661,7 @@ deps = {
   },
 
   'src/third_party/ruy/src':
-    Var('chromium_git') + '/external/github.com/google/ruy.git' + '@' + '2d950b3bfa7ebfbe7a97ecb44b1cc4da5ac1d6f0',
+    Var('chromium_git') + '/external/github.com/google/ruy.git' + '@' + '7ef39c5745a61f43071e699c6a96da41701ae59f',
 
   'src/third_party/skia':
     Var('skia_git') + '/skia.git' + '@' +  Var('skia_revision'),
@@ -1731,7 +1755,7 @@ deps = {
     Var('chromium_git') + '/external/github.com/gpuweb/cts.git' + '@' + 'a630866d89f74aa95cf3aecd78987637ee195b68',
 
   'src/third_party/webrtc':
-    Var('webrtc_git') + '/src.git' + '@' + '026cfa3c8bde814ebbe5e94d0803dfd173c9bb02',
+    Var('webrtc_git') + '/src.git' + '@' + '34e12465a46da3c220eab0489881cd89a4d659d2',
 
   'src/third_party/libgifcodec':
      Var('skia_git') + '/libgifcodec' + '@'+  Var('libgifcodec_revision'),
@@ -1801,7 +1825,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@bae1be5e4019eebb379cf7d45a972b45168c58d7',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@93fce5be71544c80936c7462a1c985e63ece64c3',
     'condition': 'checkout_src_internal',
   },
 

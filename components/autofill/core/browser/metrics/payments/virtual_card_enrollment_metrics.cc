@@ -31,41 +31,6 @@ const char* GetVirtualCardEnrollmentRequestType(
 
 }  // namespace
 
-// Converts the VirtualCardEnrollmentSource to string to be used in histograms.
-const std::string VirtualCardEnrollmentSourceToMetricSuffix(
-    VirtualCardEnrollmentSource source) {
-  switch (source) {
-    case VirtualCardEnrollmentSource::kUpstream:
-      return "Upstream";
-    case VirtualCardEnrollmentSource::kDownstream:
-      return "Downstream";
-    case VirtualCardEnrollmentSource::kSettingsPage:
-      return "SettingsPage";
-    case VirtualCardEnrollmentSource::kNone:
-      return "Unknown";
-  }
-}
-
-void LogVirtualCardEnrollmentBubbleShownMetric(
-    VirtualCardEnrollmentBubbleSource source,
-    bool is_reshow) {
-  base::UmaHistogramBoolean(
-      "Autofill.VirtualCardEnrollBubble.Shown." +
-          VirtualCardEnrollmentBubbleSourceToMetricSuffix(source),
-      is_reshow);
-}
-
-void LogVirtualCardEnrollmentBubbleResultMetric(
-    VirtualCardEnrollmentBubbleResult result,
-    VirtualCardEnrollmentBubbleSource source,
-    bool is_reshow) {
-  base::UmaHistogramEnumeration(
-      "Autofill.VirtualCardEnrollBubble.Result." +
-          VirtualCardEnrollmentBubbleSourceToMetricSuffix(source) +
-          (is_reshow ? ".Reshows" : ".FirstShow"),
-      result);
-}
-
 void LogGetDetailsForEnrollmentRequestAttempt(
     VirtualCardEnrollmentSource source) {
   base::UmaHistogramBoolean(
@@ -105,6 +70,67 @@ void LogUpdateVirtualCardEnrollmentRequestResult(
       succeeded);
 }
 
+void LogVirtualCardEnrollBubbleCardArtAvailable(
+    bool card_art_available,
+    VirtualCardEnrollmentSource source) {
+  base::UmaHistogramBoolean(
+      "Autofill.VirtualCardEnroll.CardArtImageUsed." +
+          VirtualCardEnrollmentSourceToMetricSuffix(source),
+      card_art_available);
+}
+
+void LogVirtualCardEnrollBubbleLatencySinceUpstream(
+    const base::TimeDelta& latency) {
+  base::UmaHistogramTimes(
+      "Autofill.VirtualCardEnrollBubble.LatencySinceUpstream", latency);
+}
+
+void LogVirtualCardEnrollmentBubbleResultMetric(
+    VirtualCardEnrollmentBubbleResult result,
+    VirtualCardEnrollmentBubbleSource source,
+    bool is_reshow) {
+  base::UmaHistogramEnumeration(
+      "Autofill.VirtualCardEnrollBubble.Result." +
+          VirtualCardEnrollmentBubbleSourceToMetricSuffix(source) +
+          (is_reshow ? ".Reshows" : ".FirstShow"),
+      result);
+}
+
+void LogVirtualCardEnrollmentBubbleShownMetric(
+    VirtualCardEnrollmentBubbleSource source,
+    bool is_reshow) {
+  base::UmaHistogramBoolean(
+      "Autofill.VirtualCardEnrollBubble.Shown." +
+          VirtualCardEnrollmentBubbleSourceToMetricSuffix(source),
+      is_reshow);
+}
+
+void LogVirtualCardEnrollmentLinkClickedMetric(
+    VirtualCardEnrollmentLinkType link_type,
+    VirtualCardEnrollmentBubbleSource source) {
+  base::UmaHistogramBoolean(
+      "Autofill.VirtualCardEnroll.LinkClicked." +
+          VirtualCardEnrollmentBubbleSourceToMetricSuffix(source) + "." +
+          VirtualCardEnrollmentLinkTypeToMetricSuffix(link_type),
+      true);
+}
+
+void LogVirtualCardEnrollmentStrikeDatabaseEvent(
+    VirtualCardEnrollmentSource source,
+    VirtualCardEnrollmentStrikeDatabaseEvent strike_event) {
+  base::UmaHistogramEnumeration(
+      "Autofill.VirtualCardEnrollmentStrikeDatabase." +
+          VirtualCardEnrollmentSourceToMetricSuffix(source),
+      strike_event);
+}
+
+void LogVirtualCardEnrollmentBubbleMaxStrikesLimitReached(
+    VirtualCardEnrollmentSource source) {
+  DCHECK_NE(source, VirtualCardEnrollmentSource::kSettingsPage);
+  base::UmaHistogramEnumeration(
+      "Autofill.VirtualCardEnrollBubble.MaxStrikesLimitReached", source);
+}
+
 std::string VirtualCardEnrollmentBubbleSourceToMetricSuffix(
     VirtualCardEnrollmentBubbleSource source) {
   switch (source) {
@@ -123,10 +149,31 @@ std::string VirtualCardEnrollmentBubbleSourceToMetricSuffix(
   }
 }
 
-void LogVirtualCardEnrollBubbleLatencySinceUpstream(
-    const base::TimeDelta& latency) {
-  base::UmaHistogramTimes(
-      "Autofill.VirtualCardEnrollBubble.LatencySinceUpstream", latency);
+const std::string VirtualCardEnrollmentLinkTypeToMetricSuffix(
+    VirtualCardEnrollmentLinkType link_type) {
+  switch (link_type) {
+    case VirtualCardEnrollmentLinkType::
+        VIRTUAL_CARD_ENROLLMENT_GOOGLE_PAYMENTS_TOS_LINK:
+      return "GoogleLegalMessageLink";
+    case VirtualCardEnrollmentLinkType::VIRTUAL_CARD_ENROLLMENT_ISSUER_TOS_LINK:
+      return "IssuerLegalMessageLink";
+    case VirtualCardEnrollmentLinkType::VIRTUAL_CARD_ENROLLMENT_LEARN_MORE_LINK:
+      return "LearnMoreLink";
+  }
+}
+
+const std::string VirtualCardEnrollmentSourceToMetricSuffix(
+    VirtualCardEnrollmentSource source) {
+  switch (source) {
+    case VirtualCardEnrollmentSource::kUpstream:
+      return "Upstream";
+    case VirtualCardEnrollmentSource::kDownstream:
+      return "Downstream";
+    case VirtualCardEnrollmentSource::kSettingsPage:
+      return "SettingsPage";
+    case VirtualCardEnrollmentSource::kNone:
+      return "Unknown";
+  }
 }
 
 }  // namespace autofill

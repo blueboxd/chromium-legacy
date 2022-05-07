@@ -5,12 +5,13 @@
 #ifndef COMPONENTS_SEGMENTATION_PLATFORM_INTERNAL_SELECTION_SEGMENT_SELECTOR_IMPL_H_
 #define COMPONENTS_SEGMENTATION_PLATFORM_INTERNAL_SELECTION_SEGMENT_SELECTOR_IMPL_H_
 
-#include "base/memory/raw_ptr.h"
-#include "components/segmentation_platform/internal/selection/segment_selector.h"
-
 #include "base/callback_helpers.h"
+#include "base/containers/flat_map.h"
+#include "base/memory/raw_ptr.h"
 #include "components/segmentation_platform/internal/database/segment_info_database.h"
 #include "components/segmentation_platform/internal/platform_options.h"
+#include "components/segmentation_platform/internal/selection/segment_result_provider.h"
+#include "components/segmentation_platform/internal/selection/segment_selector.h"
 #include "components/segmentation_platform/public/segment_selection_result.h"
 
 namespace base {
@@ -20,7 +21,8 @@ class Clock;
 namespace segmentation_platform {
 
 struct Config;
-class ModelExecutionScheduler;
+class ModelExecutionManager;
+class DefaultModelManager;
 class SegmentationResultPrefs;
 class SignalStorageConfig;
 
@@ -31,19 +33,19 @@ class SegmentSelectorImpl : public SegmentSelector {
                       SegmentationResultPrefs* result_prefs,
                       const Config* config,
                       base::Clock* clock,
-                      const PlatformOptions& platform_options);
+                      const PlatformOptions& platform_options,
+                      DefaultModelManager* default_model_manager);
 
   ~SegmentSelectorImpl() override;
 
   // SegmentSelector overrides.
+  void OnPlatformInitialized(ModelExecutionManager* execution_manager) override;
   void GetSelectedSegment(SegmentSelectionCallback callback) override;
   SegmentSelectionResult GetCachedSegmentResult() override;
 
   // Helper function to update the selected segment in the prefs. Auto-extends
   // the selection if the new result is unknown.
   virtual void UpdateSelectedSegment(OptimizationTarget new_selection);
-
-  // ModelExecutionScheduler::Observer overrides.
 
   // Called whenever a model eval completes. Runs segment selection to find the
   // best segment, and writes it to the pref.
@@ -53,36 +55,47 @@ class SegmentSelectorImpl : public SegmentSelector {
   // For testing.
   friend class SegmentSelectorTest;
 
-  // Helper method to run segment selection if possible.
-  void RunSegmentSelection(
-      std::unique_ptr<SegmentInfoDatabase::SegmentInfoList> all_segments);
+  using SegmentRanks = base::flat_map<OptimizationTarget, int>;
 
   // Determines whether segment selection can be run based on whether all
   // segments have met signal collection requirement, have valid results, and
   // segment selection TTL has expired.
-  bool CanComputeSegmentSelection(
-      const SegmentInfoDatabase::SegmentInfoList& all_segments);
+  bool CanComputeSegmentSelection();
+
+  // Gets ranks for each segment from SegmentResultProvider, and then computes
+  // segment selection.
+  void GetRankForNextSegment(std::unique_ptr<SegmentRanks> ranks);
+
+  // Callback used to get result from SegmentResultProvider for each segment.
+  void OnGetResultForSegmentSelection(
+      std::unique_ptr<SegmentRanks> ranks,
+      OptimizationTarget current_segment_id,
+      std::unique_ptr<SegmentResultProvider::SegmentResult> result);
 
   // Loops through all segments, performs discrete mapping, honors finch
-  // supplied tie-breakers, TTL, inertia etc, and finds the highest score.
+  // supplied tie-breakers, TTL, inertia etc, and finds the highest rank.
   // Ignores the segments that have no results.
-  OptimizationTarget FindBestSegment(
-      const SegmentInfoDatabase::SegmentInfoList& all_segments);
+  OptimizationTarget FindBestSegment(const SegmentRanks& segment_scores);
+
+  std::unique_ptr<SegmentResultProvider> segment_result_provider_;
 
   // The database storing metadata and results.
-  raw_ptr<SegmentInfoDatabase> segment_database_;
+  const raw_ptr<SegmentInfoDatabase> segment_database_;
 
   // The database to determine whether the signal storage requirements are met.
-  raw_ptr<SignalStorageConfig> signal_storage_config_;
+  const raw_ptr<SignalStorageConfig> signal_storage_config_;
+
+  // The default model manager is used for the default model fallbacks.
+  const raw_ptr<DefaultModelManager> default_model_manager_;
 
   // Helper class to read/write results to the prefs.
-  raw_ptr<SegmentationResultPrefs> result_prefs_;
+  const raw_ptr<SegmentationResultPrefs> result_prefs_;
 
   // The config for providing configuration params.
-  raw_ptr<const Config> config_;
+  const raw_ptr<const Config> config_;
 
   // The time provider.
-  raw_ptr<base::Clock> clock_;
+  const raw_ptr<base::Clock> clock_;
 
   const PlatformOptions platform_options_;
 

@@ -266,6 +266,7 @@
 <translation id="2653659639078652383">पेश गर्नुहोस्</translation>
 <translation id="2658778018866295321">क्लिक गरेर ड्र्याग गर्नुहोस्</translation>
 <translation id="2665788051462227163">यो डिभाइसमा <ph name="UNAVAILABLE_APPS_ONE" /> र <ph name="UNAVAILABLE_APPS_TWO" /> उपलब्ध छैनन्।</translation>
+<translation id="2673968385134502798">गेमहरू</translation>
 <translation id="2678852583403169292">'सेलेक्ट टु स्पिक' सुविधाको मेनु</translation>
 <translation id="2689613560355655046">डेस्क ८</translation>
 <translation id="2700493154570097719">आफ्नो किबोर्ड सेट गर्नुहोस्‌</translation>
@@ -672,6 +673,7 @@
 <translation id="5078796286268621944">गलत PIN</translation>
 <translation id="5083553833479578423">सहायकका थप सुविधाहरू अनलक गर्नुहोस्।</translation>
 <translation id="5106223312672646208">पर्सनलाइज गर्नुहोस्</translation>
+<translation id="5107522548814527560">वेब</translation>
 <translation id="5117590920725113268">अर्को महिना देखाउनुहोस्</translation>
 <translation id="5136175204352732067">भिन्न किबोर्ड जडान गरियो</translation>
 <translation id="5147567197700016471">अनलक गरिएको छ</translation>
@@ -780,7 +782,7 @@
 <translation id="584525477304726060">अधिकतम बनाउन होल्ड गर्नुहोस्</translation>
 <translation id="5856638668464565213"><ph name="NETWORK_NAME" /> एक्टिभेट गरिएको छैन।</translation>
 <translation id="5860033963881614850">बन्द</translation>
-<translation id="5860491529813859533">सक्रिय गर्नुहोस्</translation>
+<translation id="5860491529813859533">अन गर्नुहोस्</translation>
 <translation id="5867217927013474703">नेटवर्कसम्बन्धी जानकारी सङ्कलन गरिँदै छ</translation>
 <translation id="5876666360658629066">अभिभावकको कोड प्रविष्टि गर्नुहोस्</translation>
 <translation id="5881540930187678962">फोन हब पछि सेटअप गर्नुहोस्</translation>
@@ -790,6 +792,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5901630391730855834">पहेँलो</translation>
 <translation id="5909862606227538307">निष्क्रिय डेस्क।</translation>
+<translation id="5911231045062997865">Lacros विन्डो हाल प्रयोग गर्न मिल्दैन। अन्य एपहरू सेभ गरिने छन्।</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">अन</translation>
 <translation id="5920710855273935292">माइक म्युट गरिएको छ।</translation>

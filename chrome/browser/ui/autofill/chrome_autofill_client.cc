@@ -391,6 +391,17 @@ void ChromeAutofillClient::ShowVirtualCardEnrollDialog(
                          std::move(decline_virtual_card_callback));
 }
 
+#if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
+void ChromeAutofillClient::HideVirtualCardEnrollBubbleAndIconIfVisible() {
+  VirtualCardEnrollBubbleControllerImpl::CreateForWebContents(web_contents());
+  VirtualCardEnrollBubbleControllerImpl* controller =
+      VirtualCardEnrollBubbleControllerImpl::FromWebContents(web_contents());
+
+  if (controller && controller->IsIconVisible())
+    controller->HideIconAndBubble();
+}
+#endif
+
 #if !BUILDFLAG(IS_ANDROID)
 std::vector<std::string>
 ChromeAutofillClient::GetAllowedMerchantsForVirtualCards() {
@@ -805,10 +816,11 @@ void ChromeAutofillClient::OnVirtualCardDataAvailable(
 
   GetFormDataImporter()->CacheFetchedVirtualCard(credit_card->LastFourDigits());
 #if BUILDFLAG(IS_ANDROID)
-  // Show the virtual card snackbar only if the keyboard accessory feature is
-  // enabled. This is because the ManualFillingComponent for credit cards is
-  // only enabled when keyboard accessory is enabled.
-  if (features::IsAutofillManualFallbackEnabled()) {
+  // Show the virtual card snackbar only if the ManualFillingComponent component
+  // is enabled for credit cards.
+  if (features::IsAutofillManualFallbackEnabled() ||
+      base::FeatureList::IsEnabled(
+          autofill::features::kAutofillEnableManualFallbackForVirtualCards)) {
     (new AutofillSnackbarControllerImpl(web_contents()))->Show();
   }
 #else

@@ -26,6 +26,15 @@ function compareDefault(a, b) {
 }
 
 /**
+ * @param {string} key
+ * @param {*} value
+ * @return {*}
+ */
+function bigint_replacer(key, value) {
+  return typeof value === 'bigint' ? value.toString() : value;
+}
+
+/**
  * @template T
  * @abstract
  */
@@ -427,6 +436,7 @@ class Source {
     this.sourceType = SourceTypeToText(mojo.sourceType);
     this.priority = mojo.priority;
     this.filterData = JSON.stringify(mojo.filterData, null, ' ');
+    this.aggregatableSource = JSON.stringify(mojo.aggregatableSource, bigint_replacer, ' ');
     this.debugKey = mojo.debugKey ? mojo.debugKey.value : '';
     this.dedupKeys = mojo.dedupKeys.join(', ');
     this.status = AttributabilityToText(mojo.attributability);
@@ -440,6 +450,7 @@ class SourceTableModel extends TableModel {
 
     this.cols = [
       new ValueColumn('Source Event ID', (e) => e.sourceEventId),
+      new ValueColumn('Status', (e) => e.status),
       new ValueColumn('Source Origin', (e) => e.impressionOrigin),
       new ValueColumn('Destination', (e) => e.attributionDestination),
       new ValueColumn('Report To', (e) => e.reportingOrigin),
@@ -448,15 +459,15 @@ class SourceTableModel extends TableModel {
       new ValueColumn('Source Type', (e) => e.sourceType),
       new ValueColumn('Priority', (e) => e.priority),
       new CodeColumn('Filter Data', (e) => e.filterData),
+      new CodeColumn('Aggregatable Source', (e) => e.aggregatableSource),
       new ValueColumn('Debug Key', (e) => e.debugKey),
       new ValueColumn('Dedup Keys', (e) => e.dedupKeys, /*compare=*/ null),
-      new ValueColumn('Status', (e) => e.status),
     ];
 
     this.emptyRowText = 'No sources.';
 
     // Sort by source registration time by default.
-    this.sortIdx = 4;
+    this.sortIdx = 5;
 
     /** @type {!Array<!Source>} */
     this.unstoredSources = [];
@@ -589,9 +600,7 @@ class AggregatableAttributionReport extends Report {
     super(mojo, mojo.data.aggregatableAttributionData.id);
 
     this.contributions = JSON.stringify(
-        mojo.data.aggregatableAttributionData.contributions,
-        (key, value) =>
-            typeof value === 'bigint' ? value.toString() : value);
+        mojo.data.aggregatableAttributionData.contributions, bigint_replacer, ' ');
   }
 }
 
@@ -672,6 +681,7 @@ class EventLevelReportTableModel extends ReportTableModel {
     this.cols = [
       this.selectionColumn,
       new CodeColumn('Report Body', (e) => e.reportBody),
+      new ValueColumn('Status', (e) => e.status),
       new ValueColumn('Destination', (e) => e.attributionDestination),
       new ValueColumn('Report URL', (e) => e.reportUrl),
       new DateColumn('Trigger Time', (e) => e.triggerTime),
@@ -679,11 +689,10 @@ class EventLevelReportTableModel extends ReportTableModel {
       new ValueColumn('Report Priority', (e) => e.reportPriority),
       new ValueColumn(
           'Fake Report', (e) => e.attributedTruthfully ? 'no' : 'yes'),
-      new ValueColumn('Status', (e) => e.status),
     ];
 
     // Sort by report time by default.
-    this.sortIdx = 5;
+    this.sortIdx = 6;
   }
 }
 
@@ -695,16 +704,16 @@ class AggregatableAttributionReportTableModel extends ReportTableModel {
     this.cols = [
       this.selectionColumn,
       new CodeColumn('Report Body', (e) => e.reportBody),
+      new ValueColumn('Status', (e) => e.status),
       new ValueColumn('Destination', (e) => e.attributionDestination),
       new ValueColumn('Report URL', (e) => e.reportUrl),
       new DateColumn('Trigger Time', (e) => e.triggerTime),
       new DateColumn('Report Time', (e) => e.reportTime),
       new CodeColumn('Histograms', (e) => e.contributions),
-      new ValueColumn('Status', (e) => e.status),
     ];
 
     // Sort by report time by default.
-    this.sortIdx = 5;
+    this.sortIdx = 6;
   }
 }
 

@@ -124,6 +124,7 @@
 <translation id="199425419756152024">پاس ورڈ دیکھیں</translation>
 <translation id="2015722694326466240">پاسورڈز دیکھنے کے لیے، آپ کو اپنے آلے پر پہلے پاس کوڈ سیٹ کرنا چاہئے۔</translation>
 <translation id="2021670401941426298">اگر قابل اطلاق ہو تو اپنی تلاش کی سرگزشت کو حذف کرنے کے لیے اپنے سرچ انجن کی ہدایات دیکھیں۔</translation>
+<translation id="202292859882676807">مائیکروفون تک رسائی کی اجازت ہے</translation>
 <translation id="2073572773299281212"><ph name="DAYS" /> دن پہلے فعال تھا</translation>
 <translation id="2074131957428911366">آپ <ph name="BEGIN_LINK" />ترتیبات<ph name="END_LINK" /> میں کسی بھی وقت اس بات کا انتخاب کر سکتے ہیں کہ کس چیز کی مطابقت پذیری کرنی ہے۔</translation>
 <translation id="2079545284768500474">کالعدم کریں</translation>
@@ -369,6 +370,7 @@
 <translation id="430967081421617822">ابھی تک</translation>
 <translation id="4334428914252001502">1 نہ پڑھا ہوا مضمون۔</translation>
 <translation id="4338650699862464074">‏Google کو آپ کے ملاحظہ کردہ صفحات کے URLs بھیجتا ہے۔</translation>
+<translation id="4343046787186034850">کیمرے اور مائیکروفون تک رسائی کی اجازت ہے</translation>
 <translation id="4359125752503270327">یہ صفحہ کسی دوسری ایپلیکیشن میں کھلے گا۔</translation>
 <translation id="4375040482473363939">‏QR کوڈ کی تلاش</translation>
 <translation id="4378154925671717803">فون</translation>
@@ -388,7 +390,6 @@
 <translation id="4536418791685807335">دوبارہ سائن ان کرنے کی کوشش کریں۔</translation>
 <translation id="4540780316273593836">کچھ غلط ہو گیا</translation>
 <translation id="457386861538956877">مزید…</translation>
-<translation id="458449952965618888">مائیکروفون تک رسائی کی اجازت ہے</translation>
 <translation id="4592368184551360546">کی بورڈ</translation>
 <translation id="461440297010471931">‏Google کے ذریعے تلاش کیا جا رہا ہے</translation>
 <translation id="4619564267100705184">توثیق کریں کہ یہ آپ ہیں</translation>
@@ -409,7 +410,6 @@
 <translation id="4689564913179979534">ادائیگی کے طریقوں کا نظم کریں...</translation>
 <translation id="4697071790493980729">کوئی نتیجہ نہیں ملا</translation>
 <translation id="470966556546083668">مطابقت پذیری کو آن نہ کریں</translation>
-<translation id="4727245048156789470">کیمرے اور مائیکروفون تک رسائی کی اجازت ہے</translation>
 <translation id="4737560986434232178">حالیہ ٹیبز تلاش کریں</translation>
 <translation id="473775607612524610">اپ ڈيٹ کریں</translation>
 <translation id="4747097190499141774">‏پاس فریز کی مرموز کاری میں Google Pay کے ادائیگی کے طریقے اور پتے شامل نہیں ہوتے ہیں۔ آپ کے پاس فریز کا حامل شخص ہی آپ کے مرموز کردہ ڈیٹا کو پڑھ سکتا ہے۔ پاس فریز Google کو نہیں بھیجا جاتا ہے اور نہ ہی Google اسے اسٹور کرتا ہے۔ اگر آپ اپنا پاس فریز بھول جاتے ہیں یا اس ترتیب کو تبدیل کرنا چاہتے ہیں تو آپ کو مطابقت پذیری کو دوبارہ ترتیب دینے کی ضرورت ہوگی۔ <ph name="BEGIN_LINK" />مزید جانیں<ph name="END_LINK" /></translation>
@@ -512,6 +512,7 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">ورژن <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{‏ابھی 1 Chrome ونڈو نظر آ رہا ہے}other{‏ابھی {count} Chrome ونڈوز نظر آ رہے ہیں}}</translation>
+<translation id="5701270923492462699">کیمرے تک رسائی کی اجازت ہے</translation>
 <translation id="5704908597376970822">سائن نہیں کیا جا سکتا۔</translation>
 <translation id="5706552126692816153">1 دن پہلے فعال تھا</translation>
 <translation id="5711039611392265845">‏رازداری، سیکیورٹی اور ڈیٹا کو جمع کرنے سے متعلق مزید ترتیبات کے لیے، <ph name="BEGIN_LINK" />مطابقت پذیری اور Google سروسز<ph name="END_LINK" /> دیکھیں۔</translation>
@@ -540,7 +541,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="5896576662943111387">‏iOS کیلئے بنایا گیا</translation>
 <translation id="5897956970858271241">کاپی کردہ لنک ملاحظہ کریں</translation>
 <translation id="5899314093904173337">‏قریبی لوگوں سے اشتراک کرنے کے لیے، انہیں اس QR کوڈ کو ان کے کیمرے یا QR اسکینر ایپ سے اسکین کرنے دیں</translation>
-<translation id="5902639236448164449"><ph name="URL" /> کے لیے سائٹ کی اجازتوں کا نظم کریں۔ جب آپ ٹیب کو بند کریں تو یہ اجازتیں ری سیٹ کی جائیں گی۔</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5913600720976431809">صفحہ کا ترجمہ کرنے کے اختیارات</translation>
 <translation id="5938160824633642847">آپ کے آلہ کا اسٹوریج تقریباً بھرا ہوا ہے۔ جگہ خالی کر کے دوبارہ کوشش کریں۔</translation>
@@ -825,7 +825,6 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="8283172974887967105">سیٹ کریں…</translation>
 <translation id="8299417921174340354">پاس ورڈز استعمال کرنے کے ليے، آپ کو اپنے آلے پر پہلے پاس کوڈ سیٹ کرنا ہوگا۔</translation>
 <translation id="8299613349954694191">ویب کو نجی طور پر براؤز کرنے کے لیے ایک پوشیدگی ٹیب کھولیں۔</translation>
-<translation id="8304831996890817401">کیمرے تک رسائی کی اجازت ہے</translation>
 <translation id="8319076807703933069">نئی تلاش</translation>
 <translation id="8323906514956095947">ٹیب کے مزید اختیارات کیلئے ٹچ کریں اور دبائے رکھیں</translation>
 <translation id="8328777765163860529">تمام بند کریں</translation>

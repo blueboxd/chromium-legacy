@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_element_identifiers.h"
+#include "chrome/browser/ui/side_search/side_search_config.h"
 #include "chrome/browser/ui/side_search/side_search_tab_contents_helper.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_search/side_search_browser_controller.h"
@@ -30,8 +31,12 @@ SideSearchIconView::SideSearchIconView(
           browser,
           base::BindRepeating(&SideSearchIconView::UpdateIconImage,
                               base::Unretained(this))) {
+  image()->SetFlipCanvasOnPaintForRTLUI(false);
   SetProperty(views::kElementIdentifierKey, kSideSearchButtonElementId);
   SetVisible(false);
+  SetLabel(l10n_util::GetStringUTF16(
+      IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED));
+  SetUpForInOutAnimation();
 }
 
 SideSearchIconView::~SideSearchIconView() = default;
@@ -51,10 +56,23 @@ void SideSearchIconView::UpdateImpl() {
   // TODO(tluk): Setup conditions for `AnimateIn()`.
   auto* tab_contents_helper =
       SideSearchTabContentsHelper::FromWebContents(active_contents);
+  if (!tab_contents_helper)
+    return;
+
+  const bool was_visible = GetVisible();
   const bool should_show =
       tab_contents_helper->CanShowSidePanelForCommittedNavigation() &&
       !tab_contents_helper->toggled_open();
   SetVisible(should_show);
+
+  auto* side_search_config =
+      SideSearchConfig::Get(active_contents->GetBrowserContext());
+  if (should_show && !was_visible &&
+      side_search_config->should_show_page_action_label()) {
+    side_search_config->set_should_show_page_action_label(false);
+    should_extend_label_shown_duration_ = true;
+    AnimateIn(absl::nullopt);
+  }
 }
 
 void SideSearchIconView::OnExecuting(PageActionIconView::ExecuteSource source) {
@@ -68,7 +86,8 @@ views::BubbleDialogDelegate* SideSearchIconView::GetBubble() const {
 }
 
 const gfx::VectorIcon& SideSearchIconView::GetVectorIcon() const {
-  return gfx::kNoneIcon;
+  // Default to the kSearchIcon if the DSE icon image is not available.
+  return vector_icons::kSearchIcon;
 }
 
 ui::ImageModel SideSearchIconView::GetSizedIconImage(int size) const {
@@ -78,6 +97,27 @@ ui::ImageModel SideSearchIconView::GetSizedIconImage(int size) const {
 std::u16string SideSearchIconView::GetTextForTooltipAndAccessibleName() const {
   return l10n_util::GetStringUTF16(
       IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED);
+}
+
+void SideSearchIconView::AnimationProgressed(const gfx::Animation* animation) {
+  PageActionIconView::AnimationProgressed(animation);
+  // When the label is fully revealed pause the animation for
+  // kLabelPersistDuration before resuming the animation and allowing the label
+  // to animate out.
+  // TODO(crbug.com/1314206): This approach of inspecting the animation progress
+  // to extend the animation duration is quite hacky. This should be removed and
+  // the IconLabelBubbleView API expanded to support a finer level of control.
+  constexpr double kAnimationValueWhenLabelFullyShown = 0.5;
+  constexpr base::TimeDelta kLabelPersistDuration = base::Milliseconds(3200);
+  if (should_extend_label_shown_duration_ &&
+      GetAnimationValue() >= kAnimationValueWhenLabelFullyShown) {
+    should_extend_label_shown_duration_ = false;
+    PauseAnimation();
+    animate_out_timer_.Start(
+        FROM_HERE, kLabelPersistDuration,
+        base::BindOnce(&SideSearchIconView::UnpauseAnimation,
+                       base::Unretained(this)));
+  }
 }
 
 BEGIN_METADATA(SideSearchIconView, PageActionIconView)

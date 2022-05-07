@@ -135,7 +135,8 @@ class CameraDeviceDelegateTest : public ::testing::Test {
  public:
   CameraDeviceDelegateTest()
       : mock_camera_device_receiver_(&mock_camera_device_),
-        device_delegate_thread_("DeviceDelegateThread") {}
+        device_delegate_thread_("DeviceDelegateThread"),
+        hal_delegate_thread_("HalDelegateThread") {}
 
   CameraDeviceDelegateTest(const CameraDeviceDelegateTest&) = delete;
   CameraDeviceDelegateTest& operator=(const CameraDeviceDelegateTest&) = delete;
@@ -143,20 +144,19 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   void SetUp() override {
     VideoCaptureDeviceFactoryChromeOS::SetGpuBufferManager(
         &mock_gpu_memory_buffer_manager_);
-    camera_hal_delegate_ = std::make_unique<CameraHalDelegate>();
-    if (!camera_hal_delegate_->Init()) {
-      LOG(ERROR) << "Failed to initialize CameraHalDelegate";
-      camera_hal_delegate_.reset();
-      return;
-    }
-    auto get_camera_info =
-        base::BindRepeating(&CameraHalDelegate::GetCameraInfoFromDeviceId,
-                            base::Unretained(camera_hal_delegate_.get()));
+    hal_delegate_thread_.Start();
+    camera_hal_delegate_ =
+        new CameraHalDelegate(hal_delegate_thread_.task_runner());
+    auto get_camera_info = base::BindRepeating(
+        &CameraHalDelegate::GetCameraInfoFromDeviceId, camera_hal_delegate_);
     camera_hal_delegate_->SetCameraModule(
         mock_camera_module_.GetPendingRemote());
   }
 
-  void TearDown() override { camera_hal_delegate_->Reset(); }
+  void TearDown() override {
+    camera_hal_delegate_->Reset();
+    hal_delegate_thread_.Stop();
+  }
 
   void AllocateDevice() {
     ASSERT_FALSE(device_delegate_thread_.IsRunning());
@@ -175,7 +175,7 @@ class CameraDeviceDelegateTest : public ::testing::Test {
     device_delegate_thread_.Start();
 
     camera_device_delegate_ = std::make_unique<CameraDeviceDelegate>(
-        devices_info[0].descriptor, camera_hal_delegate_.get(),
+        devices_info[0].descriptor, camera_hal_delegate_,
         device_delegate_thread_.task_runner());
   }
 
@@ -516,7 +516,7 @@ class CameraDeviceDelegateTest : public ::testing::Test {
 
  protected:
   base::test::TaskEnvironment task_environment_;
-  std::unique_ptr<CameraHalDelegate> camera_hal_delegate_;
+  scoped_refptr<CameraHalDelegate> camera_hal_delegate_;
   std::unique_ptr<CameraDeviceDelegate> camera_device_delegate_;
 
   testing::StrictMock<unittest_internal::MockCameraModule> mock_camera_module_;
@@ -533,6 +533,7 @@ class CameraDeviceDelegateTest : public ::testing::Test {
   ClientType client_type_;
 
  private:
+  base::Thread hal_delegate_thread_;
   std::unique_ptr<base::RunLoop> run_loop_;
 };
 

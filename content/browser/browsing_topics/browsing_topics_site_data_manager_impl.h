@@ -33,15 +33,19 @@ class CONTENT_EXPORT BrowsingTopicsSiteDataManagerImpl
 
   void ExpireDataBefore(base::Time time) override;
 
+  void ClearContextDomain(
+      const browsing_topics::HashedDomain& hashed_context_domain) override;
+
   void GetBrowsingTopicsApiUsage(
       base::Time begin_time,
       base::Time end_time,
       GetBrowsingTopicsApiUsageCallback callback) override;
 
   void OnBrowsingTopicsApiUsed(
-      const browsing_topics::HashedHost& hashed_top_host,
+      const browsing_topics::HashedHost& hashed_main_frame_host,
       const base::flat_set<browsing_topics::HashedDomain>&
-          hashed_context_domains) override;
+          hashed_context_domains,
+      base::Time time) override;
 
  private:
   base::SequenceBound<BrowsingTopicsSiteDataStorage> storage_;

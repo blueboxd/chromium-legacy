@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.keyboard_accessory;
 
+import static org.chromium.chrome.browser.flags.ChromeFeatureList.AUTOFILL_ENABLE_MANUAL_FALLBACK_FOR_VIRTUAL_CARDS;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.AUTOFILL_KEYBOARD_ACCESSORY;
 import static org.chromium.chrome.browser.flags.ChromeFeatureList.AUTOFILL_MANUAL_FALLBACK_ANDROID;
 import static org.chromium.chrome.browser.keyboard_accessory.ManualFillingProperties.KEYBOARD_EXTENSION_STATE;
@@ -486,8 +487,12 @@ class ManualFillingMediator extends EmptyTabObserver
         if (VrModuleProvider.getDelegate().isInVr()) return false;
 
         // Don't open the accessory inside the contextual search panel.
-        ContextualSearchManager contextualSearch = mActivity.getContextualSearchManager();
-        if (contextualSearch != null && contextualSearch.isSearchPanelOpened()) return false;
+        ObservableSupplier<ContextualSearchManager> contextualSearchSupplier =
+                mActivity.getContextualSearchManagerSupplier();
+        if (contextualSearchSupplier != null && contextualSearchSupplier.hasValue()
+                && contextualSearchSupplier.get().isSearchPanelOpened()) {
+            return false;
+        }
 
         // If an accessory sheet was opened, the accessory bar must be visible.
         if (mAccessorySheet.isShown()) return true;
@@ -657,7 +662,10 @@ class ManualFillingMediator extends EmptyTabObserver
     private boolean canCreateSheet(@AccessoryTabType int tabType) {
         if (!isInitialized()) return false;
         switch (tabType) {
-            case AccessoryTabType.CREDIT_CARDS: // Intentional fallthrough.
+            case AccessoryTabType.CREDIT_CARDS:
+                return ChromeFeatureList.isEnabled(AUTOFILL_MANUAL_FALLBACK_ANDROID)
+                        || ChromeFeatureList.isEnabled(
+                                AUTOFILL_ENABLE_MANUAL_FALLBACK_FOR_VIRTUAL_CARDS);
             case AccessoryTabType.ADDRESSES:
                 return ChromeFeatureList.isEnabled(AUTOFILL_MANUAL_FALLBACK_ANDROID);
             case AccessoryTabType.PASSWORDS:

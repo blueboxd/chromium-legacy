@@ -90,12 +90,26 @@ OnDeviceClusteringBackend::OnDeviceClusteringBackend(
     : template_url_service_(template_url_service),
       entity_metadata_provider_(entity_metadata_provider),
       engagement_score_provider_(engagement_score_provider),
+      user_visible_task_traits_(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}),
+      continue_on_shutdown_user_visible_task_traits_(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
       user_visible_priority_background_task_runner_(
           base::ThreadPool::CreateSequencedTaskRunner(
-              {base::MayBlock(), base::TaskPriority::USER_VISIBLE})),
+              GetConfig().use_continue_on_shutdown
+                  ? continue_on_shutdown_user_visible_task_traits_
+                  : user_visible_task_traits_)),
+      best_effort_task_traits_(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT}),
+      continue_on_shutdown_best_effort_task_traits_(
+          {base::MayBlock(), base::TaskPriority::BEST_EFFORT,
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN}),
       best_effort_priority_background_task_runner_(
           base::ThreadPool::CreateSequencedTaskRunner(
-              {base::MayBlock(), base::TaskPriority::BEST_EFFORT})),
+              GetConfig().use_continue_on_shutdown
+                  ? continue_on_shutdown_best_effort_task_traits_
+                  : best_effort_task_traits_)),
       engagement_score_cache_last_refresh_timestamp_(base::TimeTicks::Now()),
       engagement_score_cache_(
           GetFieldTrialParamByFeatureAsInt(features::kUseEngagementScoreCache,
@@ -134,6 +148,10 @@ void OnDeviceClusteringBackend::GetClusters(
   for (const auto& visit : visits) {
     for (const auto& entity :
          visit.content_annotations.model_annotations.entities) {
+      // Only put the entity IDs in if they exceed a certain threshold.
+      if (entity.weight < GetConfig().entity_relevance_threshold) {
+        continue;
+      }
       entity_ids.insert(entity.id);
     }
   }
@@ -297,11 +315,12 @@ void OnDeviceClusteringBackend::ProcessBatchOfVisits(
           .entities.clear();
       cluster_visit.annotated_visit.content_annotations.model_annotations
           .categories.clear();
-      base::flat_set<std::string> inserted_categories;
+      base::flat_map<std::string, int> inserted_categories;
       for (const auto& entity :
            visit.content_annotations.model_annotations.entities) {
         auto entity_metadata_it = entity_metadata_map.find(entity.id);
-        if (entity_metadata_it == entity_metadata_map.end()) {
+        if (entity_metadata_it == entity_metadata_map.end() ||
+            entity.weight < GetConfig().entity_relevance_threshold) {
           continue;
         }
 
@@ -313,13 +332,23 @@ void OnDeviceClusteringBackend::ProcessBatchOfVisits(
 
         for (const auto& category :
              entity_metadata_it->second.human_readable_categories) {
-          if (inserted_categories.find(category.first) ==
-              inserted_categories.end()) {
-            cluster_visit.annotated_visit.content_annotations.model_annotations
-                .categories.push_back(
-                    {category.first, static_cast<int>(100 * category.second)});
-            inserted_categories.insert(category.first);
+          auto category_it = inserted_categories.find(category.first);
+          int category_score =
+              static_cast<int>(category.second * entity.weight);
+          // Just take the max category score (which is weighted by entity) as
+          // the canonical score for the category.
+          if (category_it == inserted_categories.end() ||
+              category_it->second < category_score) {
+            inserted_categories[category.first] = category_score;
           }
+        }
+      }
+
+      // Only add the category to the visit if it exceeds the threshold.
+      for (const auto& category : inserted_categories) {
+        if (category.second > GetConfig().category_relevance_threshold) {
+          cluster_visit.annotated_visit.content_annotations.model_annotations
+              .categories.push_back({category.first, category.second});
         }
       }
     }

@@ -31,6 +31,7 @@
 <translation id="1301069673413256657">GSM</translation>
 <translation id="1308754910631152188">புதுப்பிப்பிக்கிறது (<ph name="PERCENTAGE_VALUE" />% நிறைவடைந்துள்ளது)</translation>
 <translation id="1310380015393971138"><ph name="NETWORK_NAME" /> நெட்வொர்க் எதுவுமில்லை</translation>
+<translation id="131421566576084655">கடைசியாக டேட்டாவை ரீசெட் செய்த தேதி தெரியவில்லை</translation>
 <translation id="1314565355471455267">Android VPN</translation>
 <translation id="131461803491198646">உள்ளூர் நெட்வொர்க், ரோமிங் இல்லை</translation>
 <translation id="1327977588028644528">கேட்வே</translation>
@@ -44,12 +45,14 @@
 <translation id="1416836038590872660">EAP-MD5</translation>
 <translation id="142228117786570094">என்னிடம் குறியீட்டு இணை உள்ளது</translation>
 <translation id="1423591390236870726"><ph name="KEY_NAME" /> பட்டன் அழுத்தப்படவில்லை</translation>
+<translation id="1435763214710588005">தேர்ந்தெடுத்த நாளில் ஒவ்வொரு மாதமும் டேட்டா உபயோகத்தைத் தானாக ரீசெட் செய்யும்</translation>
 <translation id="1442433966118452622">பட ஆதாரம்</translation>
 <translation id="1451536289672181509">சாதனம் ஒரு கீபோர்டு.</translation>
 <translation id="1459693405370120464">வானிலை</translation>
 <translation id="1468664791493211953">ஆஃபர்கள்</translation>
 <translation id="1476467821656042872">இந்தச் சாதனத்தை <ph name="MANAGER" /> நிர்வகிக்கிறது. இது உங்கள் செயல்பாட்டையும் கண்காணிக்கக்கூடும்.</translation>
 <translation id="1478594628797167447">ஸ்கேனர்</translation>
+<translation id="1486019694341708158">ஸ்கிரீன் சேவர் விருப்பங்களைத் தேர்ந்தெடுக்க, நிலைமாற்றும் பட்டனை இயக்கவும்</translation>
 <translation id="1491076385728777984"><ph name="DEVICE_NAME" /> இல் நிலைபொருளைப் புதுப்பிக்கிறது</translation>
 <translation id="1499900233129743732">இந்தப் பயனரை <ph name="MANAGER" /> நிர்வகிக்கிறது. இது தொலைநிலையிலிருந்து அமைப்புகளை நிர்வகிக்கலாம், அத்துடன் பயனர் செயல்பாட்டையும் கண்காணிக்கலாம்.</translation>
 <translation id="150962533380566081">தவறான PUK.</translation>
@@ -59,6 +62,7 @@
 <translation id="1565038567006703504"><ph name="DEVICE_NAME" /> ஐப் புதுப்பிக்க முடியவில்லை</translation>
 <translation id="1567064801249837505">ஆல்பங்கள்</translation>
 <translation id="1572585716423026576">வால்பேப்பராக அமை</translation>
+<translation id="1615335640928990664"><ph name="FRIENDLY_DATE" /> வரையிலான டேட்டா உபயோகம்</translation>
 <translation id="1621067168122174824">சார்ஜ் சோதனையை இயக்கு</translation>
 <translation id="1639239467298939599">ஏற்றுகிறது</translation>
 <translation id="1641857168437328880">டாக்குமெண்ட் ஃபீடர் (ஒரு பக்கம்)</translation>
@@ -103,6 +107,7 @@
 <translation id="2105810540595158374">சாதனம் ஒரு கேம் கண்ட்ரோலர்.</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, பதிப்பு <ph name="MILESTONE_VERSION" /></translation>
 <translation id="2126937207024182736"><ph name="AVAILABLE_MEMORY" />/<ph name="TOTAL_MEMORY" /> ஜி.பை. உள்ளது</translation>
+<translation id="2138109643290557664">மிதக்கும் நினைவுகள்</translation>
 <translation id="2141644705054017895"><ph name="PERCENTAGE_VALUE" />%</translation>
 <translation id="2152882202543497059"><ph name="NUMBER" /> படங்கள்</translation>
 <translation id="2157959690810728433">வரிசையிலுள்ளது</translation>
@@ -265,6 +270,7 @@
 <translation id="4271957103967917607">முழுத்திரையில் காட்டும்</translation>
 <translation id="4275799948641988986">பழுது நீக்கியபிறகு, இந்தச் சாதனத்தை யார் பயன்படுத்துவார்கள்?</translation>
 <translation id="4289540628985791613">மேலோட்டம்</translation>
+<translation id="4289849978083912975">ஸ்லைடு ஷோ</translation>
 <translation id="4297501883039923494">அறியப்படாத பிழை காரணமாக அச்சிட முடியவில்லை</translation>
 <translation id="4300073214558989"><ph name="IMAGE_COUNT" /> படங்கள்</translation>
 <translation id="4333390807948134856"><ph name="KEY_NAME" /> பட்டன் அழுத்தப்பட்டது</translation>
@@ -428,6 +434,7 @@
 <translation id="5939518447894949180">மீட்டமை</translation>
 <translation id="594552776027197022">ரேண்டம் குறியீட்டு இணையை உருவாக்கு</translation>
 <translation id="5972388717451707488">Update Engine</translation>
+<translation id="6034694447310538551">மாதந்தோறும் தானாக ரீசெட் செய்வதை இயக்கு</translation>
 <translation id="6037291330010597344">ஸ்கேனரின் டாக்குமெண்ட் ஃபீடர் காலியாக உள்ளது. ஆவணங்களைச் சேர்த்துவிட்டு மீண்டும் முயலவும்.</translation>
 <translation id="6040143037577758943">மூடு</translation>
 <translation id="6040852767465482106">அநாமதேய அடையாளம்</translation>
@@ -441,6 +448,7 @@
 <translation id="6106186594183574873">நிறைவுசெய்ய தற்போதைய கடவுச்சொல்லை உள்ளிடவும்</translation>
 <translation id="6108689792487843350">கேட்வேயை அணுக முடியவில்லை</translation>
 <translation id="6113701710518389813">மேல்நோக்கிய அம்புக்குறி</translation>
+<translation id="6117895505466548728"><ph name="TITLE" />, மேலும் <ph name="NUMBER" /> ஆல்பங்கள்</translation>
 <translation id="6122191549521593678">ஆன்லைன்</translation>
 <translation id="6137767437444130246">பயனர் சான்றிதழ்</translation>
 <translation id="6146993107019042706">நிறைவுசெய்ய புதிய கடவுச்சொல்லை உள்ளிடவும்</translation>
@@ -452,6 +460,7 @@
 <translation id="6213737986933151570">CDMA1XRTT</translation>
 <translation id="6223752125779001553">ஸ்கேனர்கள் எதுவுமில்லை</translation>
 <translation id="6232017090690406397">பேட்டரி</translation>
+<translation id="6235460611964961764">டேட்டா உபயோகத்தை நீங்களே ரீசெட் செய்யுங்கள்</translation>
 <translation id="6243280677745499710">தற்போது அமைக்கப்பட்டுள்ளது</translation>
 <translation id="6275224645089671689">வலது அம்புக்குறி</translation>
 <translation id="6278428485366576908">தீம்</translation>
@@ -534,10 +543,12 @@
 <translation id="7175037578838465313"><ph name="NAME" />ஐ உள்ளமை</translation>
 <translation id="7177485034254901881">இந்த <ph name="DEVICE_TYPE" /> சாதனத்தை <ph name="MANAGER" /> நிர்வகிக்கிறது. நிர்வாகிகள் இந்தச் சாதனத்தைத் தொலைநிலையிலிருந்து உள்ளமைக்கக்கூடும்.</translation>
 <translation id="7180611975245234373">புதுப்பி</translation>
+<translation id="7191009787982536050">ஸ்கிரீன் சேவர் அனிமேஷன்</translation>
 <translation id="7212734716605298123">வெளிப்புறச் சாதனங்களுக்கான நிலைபொருள் புதுப்பிப்புகள்</translation>
 <translation id="7216409898977639127">செல்லுலார் வழங்குநர்</translation>
 <translation id="7271040990581020067">ஸ்கேனர் தற்போது உபயோகத்தில் உள்ளது. பிறகு முயலவும்.</translation>
 <translation id="7274587244503383581"><ph name="PRINTED_PAGES_NUMBER" />/<ph name="TOTAL_PAGES_NUMBER" /></translation>
+<translation id="7281657306185710294">மனதை வருடும் நினைவுகள்</translation>
 <translation id="7287310195820267359">வால்பேப்பர் தொகுப்புகள்</translation>
 <translation id="7297226631177386107">HTTPS இணையதளங்களுடன் இணைப்பதை ஃபயர்வால் தடுக்கிறது</translation>
 <translation id="7302860742311162920">ICCID</translation>
@@ -674,6 +685,7 @@
 <translation id="8910721771319628100">இயல்புநிலை நெட்வொர்க்கில் ஏற்படும் தாமதம் வரம்பை மீறி உள்ளது</translation>
 <translation id="8918637186205009138"><ph name="GIVEN_NAME" /> இன் <ph name="DEVICE_TYPE" /></translation>
 <translation id="8919837981463578619">பிரிண்டரில் டிரே இல்லாததால் அச்சிட முடியவில்லை</translation>
+<translation id="8923267550422472772">ரீசெட் செய்ய வேண்டிய நாள்</translation>
 <translation id="8928727111548978589">காகிதம் இல்லாததால் அச்சிட முடியவில்லை</translation>
 <translation id="8930521118335213258">பியர்</translation>
 <translation id="8930622219860340959">கம்பியில்லா</translation>

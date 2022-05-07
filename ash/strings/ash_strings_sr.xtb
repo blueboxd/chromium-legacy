@@ -132,7 +132,7 @@
 <translation id="1708345662127501511">Радна површина: <ph name="DESK_NAME" /></translation>
 <translation id="1709762881904163296">Подешавања мреже</translation>
 <translation id="1715293566947629045">Профил се онемогућава. Сачекајте неколико минута.</translation>
-<translation id="1715874602234207">F</translation>
+<translation id="1715874602234207">П</translation>
 <translation id="1719094688023114093">Титл уживо је укључен.</translation>
 <translation id="1720011244392820496">Укључите WiFi синхронизацију</translation>
 <translation id="1736898441010944794">Ставка „<ph name="NAME" />“ је видљива за Bluetooth уређаје.</translation>
@@ -266,6 +266,7 @@
 <translation id="2653659639078652383">Пошаљи</translation>
 <translation id="2658778018866295321">Кликните и превуците</translation>
 <translation id="2665788051462227163">Апликације<ph name="UNAVAILABLE_APPS_ONE" /> и <ph name="UNAVAILABLE_APPS_TWO" /> нису на овом уређају.</translation>
+<translation id="2673968385134502798">Игре</translation>
 <translation id="2678852583403169292">Мени функције Изаберите за говор</translation>
 <translation id="2689613560355655046">Радна површина 8</translation>
 <translation id="2700493154570097719">Подесите тастатуру</translation>
@@ -672,6 +673,7 @@
 <translation id="5078796286268621944">Нетачан PIN</translation>
 <translation id="5083553833479578423">Откључајте још функција Помоћника.</translation>
 <translation id="5106223312672646208">Персонализујте</translation>
+<translation id="5107522548814527560">Веб</translation>
 <translation id="5117590920725113268">Прикажи следећи месец</translation>
 <translation id="5136175204352732067">Нека друга тастатура је повезана</translation>
 <translation id="5147567197700016471">Откључано</translation>
@@ -790,6 +792,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5901630391730855834">Жута</translation>
 <translation id="5909862606227538307">Неактивна радна површина.</translation>
+<translation id="5911231045062997865">Lacros прозори тренутно нису подржани. Друге апликације ће бити сачуване.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Укључено</translation>
 <translation id="5920710855273935292">Микрофон је искључен.</translation>
@@ -1161,7 +1164,7 @@
 <translation id="8200772114523450471">Настави</translation>
 <translation id="8203795194971602413">Десни клик</translation>
 <translation id="8209010265547628927">Ресетуј</translation>
-<translation id="8219451629189078428">Chromebook треба да остане укључен и повезан на напајање током тог периода. Уверите се да су каблови пуњача или адаптера исправно прикључени, и у Chromebook и у утичницу Не искључујте Chromebook.</translation>
+<translation id="8219451629189078428">Chromebook треба да остане укључен и повезан на извор напајања током тог периода. Уверите се да су каблови пуњача или адаптера исправно прикључени, и у Chromebook и у утичницу Не искључујте Chromebook.</translation>
 <translation id="8236042855478648955">Време је за паузу</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, јачина сигнала <ph name="SIGNAL_STRENGTH" />, батерија телефона <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, апликација</translation>

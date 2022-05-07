@@ -420,6 +420,14 @@ void BrowserManager::NewWindow(bool incognito,
       incognito, should_trigger_session_restore, base::DoNothing());
 }
 
+void BrowserManager::OpenForFullRestore() {
+  if (!browser_service_) {
+    LOG(ERROR) << "BrowserService is disconnected, cannot perform Full Restore";
+    return;
+  }
+  browser_service_->service->OpenForFullRestore();
+}
+
 bool BrowserManager::NewWindowForDetachingTabSupported() const {
   return browser_service_.has_value() &&
          browser_service_->interface_version >=
@@ -1244,8 +1252,11 @@ void BrowserManager::StopKeepAlive(Feature feature) {
 }
 
 void BrowserManager::LaunchForKeepAliveIfNecessary() {
+  // KeepAlive should not start lacros in a windowless state if a relaunch has
+  // been requested. Lacros restart will instead be handled in
+  // `OnLacrosChromeTerminated()`.
   if (state_ == State::STOPPED && !shutdown_requested_ &&
-      !keep_alive_features_.empty()) {
+      !keep_alive_features_.empty() && !relaunch_requested_) {
     CHECK(browser_util::IsLacrosEnabled());
     CHECK(browser_util::IsLacrosAllowedToLaunch());
     MaybeStart(browser_util::InitialBrowserAction(

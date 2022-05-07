@@ -60,11 +60,40 @@ chromium-metrics-reviews@google.com.
   </variant>
 </variants>
 
+<variants name="DIPSCookieMode">
+  <variant name=".Block3PC"
+      summary="in a NON-off-the-record profile, with third-party cookies
+               blocked"/>
+  <variant name=".OffTheRecord"
+      summary="in an off-the-record profile, with third-party cookies enabled"/>
+  <variant name=".OffTheRecord_Block3PC"
+      summary="in an off-the-record profile, with third-party cookies blocked"/>
+  <variant name=".Standard"
+      summary="in a NON-off-the-record profile, with third-party cookies
+               enabled"/>
+</variants>
+
 <variants name="GridTabSwitcherMessageTypes">
   <variant name="PriceAlertsMessageCard"
       summary="the promo message for price notifications"/>
   <variant name="PriceWelcomeMessageCard"
       summary="the message introducing price chips"/>
+</variants>
+
+<variants name="InterestGroupRequestType">
+  <variant name="BiddingScriptJS" summary="buyer JavaScript bidding script"/>
+  <variant name="BiddingScriptWasm" summary="buyer WebAssembly bidding script"/>
+  <variant name="DebugLossReport"
+      summary="post-auction forDebuggingOnly.reportAdAuctionLoss() report"/>
+  <variant name="DebugWinReport"
+      summary="post-auction forDebuggingOnly.reportAdAuctionWin() report"/>
+  <variant name="ScoringScriptJS" summary="seller JavaScript scoring script"/>
+  <variant name="SendReportToReport"
+      summary="post-auction sendReportTo() report (from either the winning
+               bidder or the seller)"/>
+  <variant name="TrustedBidding" summary="trusted bidding signals"/>
+  <variant name="TrustedScoring" summary="trusted scoring signals"/>
+  <variant name="Update" summary="interest group update"/>
 </variants>
 
 <variants name="MerchantTrustMessageStarRating">
@@ -241,7 +270,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ads.InterestGroup.Auction.CompletedWithoutWinnerTime"
-    units="ms" expires_after="2022-03-31">
+    units="ms" expires_after="2022-08-31">
   <owner>mmenke@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <summary>
@@ -257,7 +286,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ads.InterestGroup.Auction.First6AuctionsBitsPerPage"
-    units="bitfield" expires_after="2022-03-31">
+    units="bitfield" expires_after="2022-08-31">
   <owner>caraitto@chromium.org</owner>
   <owner>pauljensen@chromium.org</owner>
   <owner>privacy-sandbox-dev@chromium.org</owner>
@@ -279,8 +308,30 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ads.InterestGroup.Auction.GroupFreshness.{Type}"
+    units="minutes" expires_after="2022-08-31">
+  <owner>caraitto@chromium.org</owner>
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    For every interest group that participates in an auction, the time duration
+    since the last join or update of that interest group.
+
+    This metric only measures {Type}.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+  <token key="Type">
+    <variant name="NoDailyUpdates"
+        summary="interest groups that don't specify a dailyUpdateUrl"/>
+    <variant name="WithDailyUpdates"
+        summary="interest groups that specify a dailyUpdateUrl"/>
+  </token>
+</histogram>
+
 <histogram name="Ads.InterestGroup.Auction.NumAuctionsPerPage" units="auctions"
-    expires_after="2022-03-31">
+    expires_after="2022-08-31">
   <owner>caraitto@chromium.org</owner>
   <owner>pauljensen@chromium.org</owner>
   <owner>privacy-sandbox-dev@chromium.org</owner>
@@ -297,7 +348,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ads.InterestGroup.Auction.NumAuctionsSkippedDueToAuctionLimit"
-    units="auctions" expires_after="2022-03-31">
+    units="auctions" expires_after="2022-08-31">
   <owner>caraitto@chromium.org</owner>
   <owner>pauljensen@chromium.org</owner>
   <owner>privacy-sandbox-dev@chromium.org</owner>
@@ -328,7 +379,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ads.InterestGroup.Auction.NumOwnersWithInterestGroups"
-    units="owners" expires_after="2022-07-31">
+    units="owners" expires_after="2022-08-31">
   <owner>mmenke@chromium.org</owner>
   <owner>morlovich@chromium.org</owner>
   <summary>
@@ -345,7 +396,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ads.InterestGroup.Auction.PercentAuctionsSuccessfulPerPage"
-    units="%" expires_after="2022-03-31">
+    units="%" expires_after="2022-08-31">
   <owner>caraitto@chromium.org</owner>
   <owner>pauljensen@chromium.org</owner>
   <owner>privacy-sandbox-dev@chromium.org</owner>
@@ -376,7 +427,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ads.InterestGroup.Auction.TimeSinceLastAuctionPerPage"
-    units="ms" expires_after="2022-03-31">
+    units="ms" expires_after="2022-08-31">
   <owner>caraitto@chromium.org</owner>
   <owner>pauljensen@chromium.org</owner>
   <owner>privacy-sandbox-dev@chromium.org</owner>
@@ -389,6 +440,37 @@ chromium-metrics-reviews@google.com.
     See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
     version of the FLEDGE explainer.
   </summary>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Net.RequestUrlSizeBytes.{Type}"
+    units="bytes" expires_after="2022-08-31">
+  <owner>caraitto@chromium.org</owner>
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    The number of bytes sent for {Type} requests, reported upon each request.
+    This is just the size of the request URL; it doesn't include the size of the
+    HTTP headers or the word &quot;GET&quot;.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+  <token key="Type" variants="InterestGroupRequestType"/>
+</histogram>
+
+<histogram name="Ads.InterestGroup.Net.ResponseSizeBytes.{Type}" units="bytes"
+    expires_after="2022-08-31">
+  <owner>caraitto@chromium.org</owner>
+  <owner>pauljensen@chromium.org</owner>
+  <owner>privacy-sandbox-dev@chromium.org</owner>
+  <summary>
+    The number of bytes received for {Type} requests, reported upon receving a
+    response.
+
+    See https://github.com/WICG/turtledove/blob/main/FLEDGE.md for the latest
+    version of the FLEDGE explainer.
+  </summary>
+  <token key="Type" variants="InterestGroupRequestType"/>
 </histogram>
 
 <histogram name="Ads.Media.Duration" units="ms" expires_after="2022-08-28">
@@ -3068,6 +3150,19 @@ chromium-metrics-reviews@google.com.
     Measures how often aggregatable reports are assembled successfully or failed
     and why. Recorded once for each aggregatable report processed by the
     aggregation service on each send attempt.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.AggregatableReport.CreateReportStatus"
+    enum="ConversionCreateAggregatableReportStatus" expires_after="2022-09-17">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Measures how often aggregatable reports are stored successfully or rejected
+    and why. Recorded once for each trigger event processed by the attribution
+    storage layer. `kNoHistograms` will be logged if the trigger doesn't declare
+    aggregatable trigger data.
   </summary>
 </histogram>
 
@@ -9508,28 +9603,32 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Privacy.DIPS.TimeFromInteractionToStorage" units="ms"
-    expires_after="2022-07-01">
+<histogram name="Privacy.DIPS.TimeFromInteractionToStorage{DIPSCookieMode}"
+    units="ms" expires_after="2022-07-01">
   <owner>bcl@chromium.org</owner>
   <owner>jdh@chromium.org</owner>
   <owner>rtarpine@chromium.org</owner>
   <summary>
     The amount of time after a user interacts with a site until the site
-    persists state (e.g. cookies) (where site = eTLD+1). Not recorded if state
-    is written before interaction takes place (see analogous histogram below).
+    persists state (e.g. cookies), {DIPSCookieMode} (where site = eTLD+1). Not
+    recorded if state is written before interaction takes place (see analogous
+    histogram below).
   </summary>
+  <token key="DIPSCookieMode" variants="DIPSCookieMode"/>
 </histogram>
 
-<histogram name="Privacy.DIPS.TimeFromStorageToInteraction" units="ms"
-    expires_after="2022-07-01">
+<histogram name="Privacy.DIPS.TimeFromStorageToInteraction{DIPSCookieMode}"
+    units="ms" expires_after="2022-07-01">
   <owner>bcl@chromium.org</owner>
   <owner>jdh@chromium.org</owner>
   <owner>rtarpine@chromium.org</owner>
   <summary>
     The amount of time after a site persists state (e.g. cookies) until the user
-    interacts with the site (where site = eTLD+1). Not recorded if interaction
-    takes place before state is written (see analogous histogram above).
+    interacts with the site, {DIPSCookieMode} (where site = eTLD+1). Not
+    recorded if interaction takes place before state is written (see analogous
+    histogram above).
   </summary>
+  <token key="DIPSCookieMode" variants="DIPSCookieMode"/>
 </histogram>
 
 <histogram name="Privacy.DoNotTrackSetting" enum="BooleanEnabled"

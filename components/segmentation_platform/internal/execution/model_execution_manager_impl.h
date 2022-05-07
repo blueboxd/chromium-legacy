@@ -53,7 +53,7 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
  public:
   ModelExecutionManagerImpl(
       const base::flat_set<OptimizationTarget>& segment_ids,
-      std::unique_ptr<ModelProviderFactory> model_provider_factory,
+      ModelProviderFactory* model_provider_factory,
       base::Clock* clock,
       SegmentInfoDatabase* segment_database,
       SignalDatabase* signal_database,
@@ -68,6 +68,7 @@ class ModelExecutionManagerImpl : public ModelExecutionManager {
 
   // ModelExecutionManager overrides.
   void ExecuteModel(const proto::SegmentInfo& segment_info,
+                    ModelProvider* explicit_provider,
                     ModelExecutionCallback callback) override;
 
  private:

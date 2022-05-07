@@ -330,6 +330,12 @@ const char kAutofillEnableMerchantBoundVirtualCardsDescription[] =
     "When enabled, Autofill will offer to use merchant bound virtual cards in "
     "payment forms.";
 
+const char kAutofillEnableManualFallbackForVirtualCardsName[] =
+    "Show manual fallback for virtual cards";
+const char kAutofillEnableManualFallbackForVirtualCardsDescription[] =
+    "When enabled, manual fallback will be enabled for virtual cards on "
+    "Android.";
+
 const char kAutofillEnableOfferNotificationForPromoCodesName[] =
     "Extend Autofill offers and rewards notification to promo code offers";
 const char kAutofillEnableOfferNotificationForPromoCodesDescription[] =
@@ -1286,6 +1292,11 @@ const char kEnableWebAuthenticationChromeOSAuthenticatorDescription[] =
     "Enable the ChromeOS platform authenticator for the Web Authentication "
     "API.";
 
+const char kEnableWebAuthenticationPasskeysUIExperimentName[] =
+    "Passkeys UI exploration";
+const char kEnableWebAuthenticationPasskeysUIExperimentDescription[] =
+    "Enable some experimental tweaks to the WebAuthn UI for passkeys.";
+
 const char kEnableZeroCopyTabCaptureName[] = "Zero-copy tab capture";
 const char kEnableZeroCopyTabCaptureDescription[] =
     "Enable zero-copy content tab for getDisplayMedia() APIs.";
@@ -2174,6 +2185,11 @@ const char kPrivacyGuideDescription[] =
     "Shows a new subpage in Settings that helps the user to review various "
     "privacy settings.";
 
+const char kPrivacySandboxAdsAPIsOverrideName[] = "Privacy Sandbox Ads APIs";
+const char kPrivacySandboxAdsAPIsOverrideDescription[] =
+    "Enables Privacy Sandbox APIs: Attribtuion Reporting, Fledge, Topics and "
+    "their associated features.";
+
 const char kPrivacySandboxV3Name[] = "Privacy Sandbox V3";
 const char kPrivacySandboxV3Description[] =
     "Enables an updated Privacy Sandbox UI. Also enables some related "
@@ -2319,6 +2335,11 @@ const char kSidePanelDragAndDropFlagId[] = "side-panel-drag-and-drop";
 const char kSidePanelDragAndDropName[] = "Side panel drag and drop";
 const char kSidePanelDragAndDropDescription[] =
     "Enables drag and drop of bookmarks within the side panel.";
+
+const char kSidePanelImprovedClobberingName[] =
+    "Side panel improved clobbering";
+const char kSidePanelImprovedClobberingDescription[] =
+    "Improves the side panel clobbering experience for RHS side panels.";
 
 const char kSharedClipboardUIName[] =
     "Enable shared clipboard feature signals to be handled";
@@ -2585,9 +2606,12 @@ const char kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesName[] =
 const char
     kThrottleDisplayNoneAndVisibilityHiddenCrossOriginIframesDescription[] =
         "When enabled, all cross-origin iframes with zero visibility (either "
-        "display:none or zero area) will be throttled, regardless of whether "
-        "they are same-process or cross-process. When disabled, only cross-"
-        "process iframes will be throttled.";
+        "display:none or zero viewport intersection with non-zero area) will be"
+        " throttled, regardless of whether they are same-process or "
+        "cross-process. When disabled, throttling for cross-process iframes is "
+        "the same, but for same-process iframes throttling only occurs when "
+        "the frame has zero viewport intersection, a non-zero area, and is "
+        "not display:none.";
 
 const char kTouchDragDropName[] = "Touch initiated drag and drop";
 const char kTouchDragDropDescription[] =
@@ -4547,40 +4571,6 @@ const char kDriveFsBidirectionalNativeMessagingName[] =
 const char kDriveFsBidirectionalNativeMessagingDescription[] =
     "Enable enhanced native messaging host to communicate with DriveFS.";
 
-const char kCrOSDspBasedAecAllowedName[] =
-    "Allow CRAS to use a DSP-based AEC if available";
-const char kCrOSDspBasedAecAllowedDescription[] =
-    "Allows the system variant of the AEC in CRAS to be run on DSP ";
-
-const char kCrOSDspBasedNsAllowedName[] =
-    "Allow CRAS to use a DSP-based NS if available";
-const char kCrOSDspBasedNsAllowedDescription[] =
-    "Allows the system variant of the NS in CRAS to be run on DSP ";
-
-const char kCrOSDspBasedAgcAllowedName[] =
-    "Allow CRAS to use a DSP-based AGC if available";
-const char kCrOSDspBasedAgcAllowedDescription[] =
-    "Allows the system variant of the AGC in CRAS to be run on DSP ";
-
-const char kCrOSEnforceSystemAecName[] = "Enforce using the system AEC in CrAS";
-const char kCrOSEnforceSystemAecDescription[] =
-    "Enforces using the system variant in CrAS of the AEC";
-
-const char kCrOSEnforceSystemAecAgcName[] =
-    "Enforce using the system AEC and AGC in CrAS";
-const char kCrOSEnforceSystemAecAgcDescription[] =
-    "Enforces using the system variants in CrAS of the AEC and AGC.";
-
-const char kCrOSEnforceSystemAecNsName[] =
-    "Enforce using the system AEC and NS in CrAS";
-const char kCrOSEnforceSystemAecNsDescription[] =
-    "Enforces using the system variants in CrAS of the AEC and NS.";
-
-const char kCrOSEnforceSystemAecNsAgcName[] =
-    "Enforce using the system AEC, NS and AGC in CrAS";
-const char kCrOSEnforceSystemAecNsAgcDescription[] =
-    "Enforces using the system variants in CrAS of the AEC, NS and AGC.";
-
 const char kEnableAppReinstallZeroStateName[] =
     "Enable Zero State App Reinstall Suggestions.";
 const char kEnableAppReinstallZeroStateDescription[] =
@@ -5581,6 +5571,40 @@ const char kBluetoothAdvertisementMonitoringDescription[] =
     "Advertisement monitoring allows applications to register low energy "
     "scanners that filter low energy advertisements in a power-efficient "
     "manner.";
+
+const char kCrOSDspBasedAecAllowedName[] =
+    "Allow CRAS to use a DSP-based AEC if available";
+const char kCrOSDspBasedAecAllowedDescription[] =
+    "Allows the system variant of the AEC in CRAS to be run on DSP ";
+
+const char kCrOSDspBasedNsAllowedName[] =
+    "Allow CRAS to use a DSP-based NS if available";
+const char kCrOSDspBasedNsAllowedDescription[] =
+    "Allows the system variant of the NS in CRAS to be run on DSP ";
+
+const char kCrOSDspBasedAgcAllowedName[] =
+    "Allow CRAS to use a DSP-based AGC if available";
+const char kCrOSDspBasedAgcAllowedDescription[] =
+    "Allows the system variant of the AGC in CRAS to be run on DSP ";
+
+const char kCrOSEnforceSystemAecName[] = "Enforce using the system AEC in CrAS";
+const char kCrOSEnforceSystemAecDescription[] =
+    "Enforces using the system variant in CrAS of the AEC";
+
+const char kCrOSEnforceSystemAecAgcName[] =
+    "Enforce using the system AEC and AGC in CrAS";
+const char kCrOSEnforceSystemAecAgcDescription[] =
+    "Enforces using the system variants in CrAS of the AEC and AGC.";
+
+const char kCrOSEnforceSystemAecNsName[] =
+    "Enforce using the system AEC and NS in CrAS";
+const char kCrOSEnforceSystemAecNsDescription[] =
+    "Enforces using the system variants in CrAS of the AEC and NS.";
+
+const char kCrOSEnforceSystemAecNsAgcName[] =
+    "Enforce using the system AEC, NS and AGC in CrAS";
+const char kCrOSEnforceSystemAecNsAgcDescription[] =
+    "Enforces using the system variants in CrAS of the AEC, NS and AGC.";
 
 const char kDefaultCalculatorWebAppName[] = "Default install Calculator PWA";
 const char kDefaultCalculatorWebAppDescription[] =

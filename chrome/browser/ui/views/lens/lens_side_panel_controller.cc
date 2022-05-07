@@ -74,6 +74,8 @@ void LensSidePanelController::OpenWithURL(
         base::UserMetricsAction("LensSidePanel.HideChromeSidePanel"));
   }
 
+  browser_view_->MaybeClobberAllSideSearchSidePanels();
+
   if (browser_view_->toolbar()->side_panel_button()) {
     browser_view_->toolbar()->side_panel_button()->SetTooltipText(
         l10n_util::GetStringUTF16(IDS_TOOLTIP_SIDE_PANEL_HIDE));
@@ -103,6 +105,7 @@ void LensSidePanelController::Close() {
         GURL(), content::Referrer(), ui::PAGE_TRANSITION_FROM_API,
         std::string());
     side_panel_->SetVisible(false);
+    browser_view_->RightAlignedSidePanelWasClosed();
     base::RecordAction(base::UserMetricsAction("LensSidePanel.Hide"));
   }
   if (browser_view_->toolbar()->side_panel_button()) {

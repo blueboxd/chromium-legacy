@@ -124,6 +124,7 @@
 <translation id="199425419756152024">Нууц үгийг харах</translation>
 <translation id="2015722694326466240">Нууц үгийг харахын тулд та эхлээд төхөөрөмждөө нууц код тохируулах шаардлагатай.</translation>
 <translation id="2021670401941426298">Хэрэв боломжтой бол хайлтын түүхээ устгахын тулд хайлтын системийн зааварчилгаагаа харна уу.</translation>
+<translation id="202292859882676807">Микрофоны хандалтыг зөвшөөрсөн</translation>
 <translation id="2073572773299281212"><ph name="DAYS" /> өдрийн өмнөөс идэвхтэй</translation>
 <translation id="2074131957428911366">Та синк хийх зүйлээ хүссэн үедээ <ph name="BEGIN_LINK" />тохиргооноос<ph name="END_LINK" /> сонгож болно.</translation>
 <translation id="2079545284768500474">Буцаах</translation>
@@ -369,6 +370,7 @@
 <translation id="430967081421617822">Бүх цаг</translation>
 <translation id="4334428914252001502">Уншаагүй 1 нийтлэл.</translation>
 <translation id="4338650699862464074">Таны зочилсон хуудасны URL-г Google-д илгээдэг.</translation>
+<translation id="4343046787186034850">Камер болон микрофоны хандалтыг зөвшөөрсөн</translation>
 <translation id="4359125752503270327">Энэ хуудас өөр апп-д нээгдэх болно.</translation>
 <translation id="4375040482473363939">QR кодоор хайх</translation>
 <translation id="4378154925671717803">Утас</translation>
@@ -388,7 +390,6 @@
 <translation id="4536418791685807335">Дахин нэвтрэхээр оролдоно уу.</translation>
 <translation id="4540780316273593836">Алдаа гарлаа</translation>
 <translation id="457386861538956877">Илүү ихийг ...</translation>
-<translation id="458449952965618888">Микрофоны хандалтыг зөвшөөрсөн</translation>
 <translation id="4592368184551360546">Гар</translation>
 <translation id="461440297010471931">Google-р хайж байна</translation>
 <translation id="4619564267100705184">Өөрийгөө мөн болохыг бататгах</translation>
@@ -409,7 +410,6 @@
 <translation id="4689564913179979534">Төлбөрийн хэрэгслийг удирдах...</translation>
 <translation id="4697071790493980729">Илэрц олдсонгүй</translation>
 <translation id="470966556546083668">Синк хийхийг бүү асаа</translation>
-<translation id="4727245048156789470">Камер болон микрофоны хандалтыг зөвшөөрсөн</translation>
 <translation id="4737560986434232178">Саяхны табуудыг хайх</translation>
 <translation id="473775607612524610">Шинэчлэх</translation>
 <translation id="4747097190499141774">Нэвтрэх үгийн шифрлэлтэд Google Pay-н төлбөрийн хэрэгслүүд болон хаягуудыг агуулдаггүй. Зөвхөн таны нэвтрэх үгийг мэддэг хүн л таны шифрлэсэн өгөгдлийг унших боломжтой. Нэвтрэх үгийг Google-д илгээхгүй бөгөөд Google-с хадгалахгүй. Хэрэв та нэвтрэх үгээ мартсан эсвэл энэ тохиргоог өөрчлөхийг хүсвэл синкийг шинэчлэх шаардлагатай. <ph name="BEGIN_LINK" />Нэмэлт мэдээлэл авах<ph name="END_LINK" /></translation>
@@ -511,6 +511,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">Хувилбар <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{Одоо Chrome-н 1 цонхыг харуулж байна}other{Одоо Chrome-н {count} цонхыг харуулж байна}}</translation>
+<translation id="5701270923492462699">Камерын хандалтыг зөвшөөрсөн</translation>
 <translation id="5704908597376970822">Нэвтрэх боломжгүй.</translation>
 <translation id="5706552126692816153">1 өдрийн өмнө идэвхтэй</translation>
 <translation id="5711039611392265845">Нууцлал, аюулгүй байдал болон өгөгдөл цуглуулахтай холбоотой бусад тохиргоог <ph name="BEGIN_LINK" />Синк хийх болон Google-н үйлчилгээ<ph name="END_LINK" />-с харна уу.</translation>
@@ -539,7 +540,6 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="5896576662943111387">iOS-д зориулан бүтээсэн</translation>
 <translation id="5897956970858271241">Хуулсан холбоосонд зочлох</translation>
 <translation id="5899314093904173337">Ойролцоо байгаа хүмүүстэй хуваалцахын тулд тэдэнд энэ QR кодыг камер эсвэл QR код скан хийдэг аппаар скан хийхийг зөвшөөрнө үү</translation>
-<translation id="5902639236448164449"><ph name="URL" />-н сайтын зөвшөөрлийг удирдана. Таныг табыг хаах үед эдгээр зөвшөөрлийг шинэчлэх болно.</translation>
 <translation id="5911030830365207728">Google Translate</translation>
 <translation id="5913600720976431809">Хуудсыг орчуулах сонголтууд</translation>
 <translation id="5938160824633642847">Таны төхөөрөмж бараг дүүрсэн байна. Зай гаргаад дахин оролдоно уу.</translation>
@@ -824,7 +824,6 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="8283172974887967105">Тохируулах…</translation>
 <translation id="8299417921174340354">Нууц үгсийг ашиглахын тулд та эхлээд төхөөрөмж дээрээ нууц код тохируулах ёстой.</translation>
 <translation id="8299613349954694191">Вебийг нууцлалтайгаар үзэхийн тулд Нууцлалтай табыг нээнэ үү</translation>
-<translation id="8304831996890817401">Камерын хандалтыг зөвшөөрсөн</translation>
 <translation id="8319076807703933069">Шинэ хайлт</translation>
 <translation id="8323906514956095947">Табын бусад сонголтыг харахын тулд удаан дарна уу</translation>
 <translation id="8328777765163860529">Бүгдийг хаах</translation>

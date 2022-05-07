@@ -110,7 +110,7 @@
 <translation id="1525508553941733066">ОТФРЛИ</translation>
 <translation id="1528259147807435347">Изменето во изминатата седмица</translation>
 <translation id="1536604384701784949">За да ја користите <ph name="USER_EMAIL_ADDRESS" />, прво треба да се одјавите од сите сметки. За да се одјавите, изберете „Откажи“ за да се вратите назад. Потоа, изберете го времето за да се отвори статусната област и изберете „Одјави се“. Потоа, повторно најавете се на <ph name="USER_EMAIL_ADDRESS_2" />.</translation>
-<translation id="15373452373711364">Голем курсор на глувчето</translation>
+<translation id="15373452373711364">Голем покажувач на глувчето</translation>
 <translation id="1546492247443594934">Биро 2</translation>
 <translation id="1550523713251050646">Кликни за повеќе опции</translation>
 <translation id="1555130319947370107">Сина</translation>
@@ -266,6 +266,7 @@
 <translation id="2653659639078652383">Испрати</translation>
 <translation id="2658778018866295321">Кликни и повлечи</translation>
 <translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" /> и <ph name="UNAVAILABLE_APPS_TWO" /> не се на уредов.</translation>
+<translation id="2673968385134502798">Игри</translation>
 <translation id="2678852583403169292">Мени за „Изберете за говор“</translation>
 <translation id="2689613560355655046">Работна површина 8</translation>
 <translation id="2700493154570097719">Поставете ја вашата тастатура</translation>
@@ -355,7 +356,7 @@
 <translation id="3202010236269062730">{NUM_DEVICES,plural, =1{Поврзан со уред}one{Поврзан со # уред}other{Поврзан со # уреди}}</translation>
 <translation id="320207200541803018">Постави тајмер</translation>
 <translation id="3203405173652969239">„Пристапот со прекинувачи“ е овозможен</translation>
-<translation id="3207953481422525583">Поставки на корисникот</translation>
+<translation id="3207953481422525583">Кориснички поставки</translation>
 <translation id="3208321278970793882">Апликација</translation>
 <translation id="3217205077783620295">Јачината на звук е вклучена. Ако смените, ќе се исклучи звукот на аудиото.</translation>
 <translation id="3226991577105957773">и уште <ph name="COUNT" /></translation>
@@ -673,6 +674,7 @@
 <translation id="5078796286268621944">Неточен PIN</translation>
 <translation id="5083553833479578423">Отклучете повеќе функции на „Помошникот“.</translation>
 <translation id="5106223312672646208">Персонализација</translation>
+<translation id="5107522548814527560">Интернет</translation>
 <translation id="5117590920725113268">Прикажи го следниот месец</translation>
 <translation id="5136175204352732067">Поврзана е друга тастатура</translation>
 <translation id="5147567197700016471">Отклучено</translation>
@@ -791,6 +793,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5901630391730855834">Жолта боја</translation>
 <translation id="5909862606227538307">Неактивна работна површина.</translation>
+<translation id="5911231045062997865">Прозорци Lacros не се поддржани во моментов. Другите апликации ќе се зачуваат.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Вклучено</translation>
 <translation id="5920710855273935292">Звукот на микрофонот е исклучен.</translation>

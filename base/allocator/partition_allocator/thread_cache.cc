@@ -186,7 +186,13 @@ void ThreadCacheRegistry::ForcePurgeAllThreadAfterForkUnsafe() {
     // passes. See crbug.com/1216964.
     tcache->cached_memory_ = tcache->CachedMemory();
 
-    tcache->TryPurge();
+    // At this point, we should call |TryPurge|. However, due to the thread
+    // cache being possibly inconsistent at this point, this may crash. Rather
+    // than crash, we'd prefer to simply not purge, even though this may leak
+    // memory in some cases.
+    //
+    // see crbug.com/1289092 for details of the crashes.
+
     tcache = tcache->next_;
   }
 }
@@ -276,6 +282,17 @@ void ThreadCacheRegistry::RunPeriodicPurge() {
     periodic_purge_next_interval_ =
         std::min(kMaxPurgeInterval, periodic_purge_next_interval_ * 2);
   }
+
+  // Make sure that the next interval is in the right bounds. Even though the
+  // logic above should eventually converge to a reasonable interval, if a
+  // sleeping background thread holds onto a large amount of cached memory, then
+  // |PurgeAll()| will not free any memory from it, and the first branch above
+  // can be taken repeatedly until the interval gets very small, as the amount
+  // of cached memory cannot change between calls (since we do not purge
+  // background threads, but only ask them to purge their own cache at the next
+  // allocation).
+  periodic_purge_next_interval_ = std::clamp(
+      periodic_purge_next_interval_, kMinPurgeInterval, kMaxPurgeInterval);
 
   PurgeAll();
 }

@@ -125,6 +125,7 @@
 <translation id="199425419756152024">عرض كلمة المرور</translation>
 <translation id="2015722694326466240">للاطلاع على كلمات المرور، يجب عليك أولاً تعيين رمز مرور على جهازك.</translation>
 <translation id="2021670401941426298">اطّلِع على تعليمات محرك البحث بشأن حذف سجلّ البحث، إن أمكن.</translation>
+<translation id="202292859882676807">الوصول إلى الميكروفون مسموح به.</translation>
 <translation id="2073572773299281212">نشط قبل <ph name="DAYS" /> من الأيام</translation>
 <translation id="2074131957428911366">يمكنك دائمًا اختيار ما تريد مزامنته في <ph name="BEGIN_LINK" />الإعدادات<ph name="END_LINK" />.</translation>
 <translation id="2079545284768500474">تراجع</translation>
@@ -370,6 +371,7 @@
 <translation id="430967081421617822">جميع الأوقات</translation>
 <translation id="4334428914252001502">مقالة واحدة غير مقروءة</translation>
 <translation id="4338650699862464074">‏إرسال عناوين URL للصفحات التي تزورها إلى Google</translation>
+<translation id="4343046787186034850">الوصول إلى الكاميرا والميكروفون مسموح به.</translation>
 <translation id="4359125752503270327">ستفتح هذه الصفحة في تطبيق آخر.</translation>
 <translation id="4375040482473363939">البحث عن رمز الاستجابة السريعة</translation>
 <translation id="4378154925671717803">هاتف</translation>
@@ -389,7 +391,6 @@
 <translation id="4536418791685807335">حاول تسجيل الدخول مرة أخرى.</translation>
 <translation id="4540780316273593836">حدث خطأٌ</translation>
 <translation id="457386861538956877">المزيد...</translation>
-<translation id="458449952965618888">الوصول إلى الميكروفون مسموح به.</translation>
 <translation id="4592368184551360546">لوحة المفاتيح</translation>
 <translation id="461440297010471931">‏البحث من خلال Google</translation>
 <translation id="4619564267100705184">إثبات هويّتك</translation>
@@ -410,7 +411,6 @@
 <translation id="4689564913179979534">جارٍ إدارة طُرق الدفع...</translation>
 <translation id="4697071790493980729">لم يتم العثور على نتائج.</translation>
 <translation id="470966556546083668">عدم تفعيل المزامنة</translation>
-<translation id="4727245048156789470">الوصول إلى الكاميرا والميكروفون مسموح به.</translation>
 <translation id="4737560986434232178">البحث في علامات التبويب الأخيرة</translation>
 <translation id="473775607612524610">تحديث</translation>
 <translation id="4747097190499141774">‏لا يتضمّن التشفير باستخدام عبارة المرور طرق الدفع والعناوين من Google Pay. ولن يتمكّن أي شخص من الاطّلاع على بياناتك المشفرة إلا من يعرف عبارة مرورك. لا تُرسَل عبارة المرور إلى شركة Google ولا تُخزّن لديها. في حال نسيان عبارة المرور أو الرغبة في تغيير هذا الإعداد، ستحتاج إلى إعادة ضبط المزامنة. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
@@ -513,6 +513,7 @@
 <translation id="5669528293118408608">www</translation>
 <translation id="567881659373499783">الإصدار <ph name="PRODUCT_VERSION" /></translation>
 <translation id="5690398455483874150">{count,plural, =1{‏يتم الآن عرض نافذة Chrome واحدة.}zero{‏يتم الآن عرض {count} نافذة Chrome.}two{‏يتم الآن عرض نافذتَي Chrome.({count})}few{‏يتم الآن عرض {count} نوافذ Chrome.}many{‏يتم الآن عرض {count} نافذة Chrome.}other{‏يتم الآن عرض {count} نافذة Chrome.}}</translation>
+<translation id="5701270923492462699">الوصول إلى الكاميرا مسموح به.</translation>
 <translation id="5704908597376970822">تعذّر تسجيل الدخول.</translation>
 <translation id="5706552126692816153">نشط قبل يوم واحد</translation>
 <translation id="5711039611392265845">‏لعرض مزيد من الإعدادات المتعلّقة بالخصوصية والأمان وجمع البيانات، يُرجى الاطّلاع على <ph name="BEGIN_LINK" />خدمات Google والمزامنة<ph name="END_LINK" />.</translation>
@@ -541,7 +542,6 @@
 <translation id="5896576662943111387">‏مُخصّص لنظام التشغيل iOS</translation>
 <translation id="5897956970858271241">الانتقال إلى الرابط المنسوخ</translation>
 <translation id="5899314093904173337">يمكنك مشاركته مع المستخدمين القريبين من خلال السماح لهم بمسح رمز الاستجابة السريعة ضوئيًا باستخدام الكاميرا أو تطبيق ماسح رمز الاستجابة السريعة.</translation>
-<translation id="5902639236448164449">يمكنك إدارة أذونات الموقع الإلكتروني للموقع الإلكتروني <ph name="URL" />. ستتم إعادة ضبط هذه الأذونات عند إغلاق علامة التبويب.</translation>
 <translation id="5911030830365207728">‏الترجمة من Google</translation>
 <translation id="5913600720976431809">خيارات ترجمة الصفحة</translation>
 <translation id="5938160824633642847">جهازك ممتلئ تقريبًا. يمكنك إخلاء بعض المساحة وإعادة المحاولة.</translation>
@@ -826,7 +826,6 @@
 <translation id="8283172974887967105">ضبط…</translation>
 <translation id="8299417921174340354">لاستخدام كلمات المرور، عليك أولاً إعداد رمز مرور على جهازك.</translation>
 <translation id="8299613349954694191">يمكنك فتح علامة تبويب في وضع التصفُّح المتخفي لتصفُّح المواقع الإلكترونية بخصوصية تامّة.</translation>
-<translation id="8304831996890817401">الوصول إلى الكاميرا مسموح به.</translation>
 <translation id="8319076807703933069">بحث جديد</translation>
 <translation id="8323906514956095947">النقر مع الاستمرار لعرض المزيد من خيارات علامات التبويب</translation>
 <translation id="8328777765163860529">إغلاق الكل</translation>

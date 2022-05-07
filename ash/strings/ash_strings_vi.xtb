@@ -266,6 +266,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="2653659639078652383">Gửi</translation>
 <translation id="2658778018866295321">Nhấp và kéo</translation>
 <translation id="2665788051462227163"><ph name="UNAVAILABLE_APPS_ONE" /> và <ph name="UNAVAILABLE_APPS_TWO" /> không có trên thiết bị này.</translation>
+<translation id="2673968385134502798">Trò chơi</translation>
 <translation id="2678852583403169292">Trình đơn Chọn để nói</translation>
 <translation id="2689613560355655046">Không gian làm việc 8</translation>
 <translation id="2700493154570097719">Đặt bàn phím</translation>
@@ -672,6 +673,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="5078796286268621944">Mã PIN không chính xác</translation>
 <translation id="5083553833479578423">Mở khóa các tính năng khác của Trợ lý.</translation>
 <translation id="5106223312672646208">Cá nhân hoá</translation>
+<translation id="5107522548814527560">Web</translation>
 <translation id="5117590920725113268">Hiển thị tháng tiếp theo</translation>
 <translation id="5136175204352732067">Đã kết nối bàn phím khác</translation>
 <translation id="5147567197700016471">Đã mở khóa</translation>
@@ -790,6 +792,7 @@ Dưới đây là một số việc bạn có thể thử để bắt đầu.</t
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5901630391730855834">Vàng</translation>
 <translation id="5909862606227538307">Không gian làm việc không hoạt động.</translation>
+<translation id="5911231045062997865">Hiện chúng tôi không hỗ trợ cửa sổ Lacros. Các ứng dụng khác sẽ được lưu.</translation>
 <translation id="5911909173233110115"><ph name="USERNAME" /> (<ph name="MAIL" />)</translation>
 <translation id="5916664084637901428">Bật</translation>
 <translation id="5920710855273935292">Micrô đang tắt.</translation>
@@ -1167,7 +1170,7 @@ Mới cài đặt</translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, Ứng dụng</translation>
 <translation id="8255234195843591763">Hãy đặt lại để cập nhật</translation>
 <translation id="826107067893790409">Nhấn Enter để mở khóa cho <ph name="USER_EMAIL_ADDRESS" /></translation>
-<translation id="8261506727792406068">Xóa</translation>
+<translation id="8261506727792406068">Xoá</translation>
 <translation id="8270450402312105425">{0,plural, =1{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước trong vòng 1 giờ}other{Hạ cấp hệ điều hành trên thiết bị về phiên bản trước trong vòng # giờ}}</translation>
 <translation id="8284362522226889623">Hãy vuốt sang trái bằng 4 ngón tay để chuyển sang không gian làm việc trước</translation>
 <translation id="828708037801473432">Đang tắt</translation>

@@ -215,7 +215,7 @@ class CONTENT_EXPORT FrameTree {
   // Initializes the main frame for this FrameTree. That is it creates the
   // initial RenderFrameHost in the root node's RenderFrameHostManager, and also
   // creates an initial NavigationEntry (if the InitialNavigationEntry feature
-  // is enabled) that potentially inherits `opener`'s origin in its
+  // is enabled) that potentially inherits `opener_for_origin`'s origin in its
   // NavigationController. This method will call back into the delegates so it
   // should only be called once they have completed their initialization. Pass
   // in frame_policy so that it can be set in the root node's replication_state.
@@ -224,7 +224,7 @@ class CONTENT_EXPORT FrameTree {
   void Init(SiteInstance* main_frame_site_instance,
             bool renderer_initiated_creation,
             const std::string& main_frame_name,
-            RenderFrameHostImpl* opener,
+            RenderFrameHostImpl* opener_for_origin,
             const blink::FramePolicy& frame_policy);
 
   Type type() const { return type_; }
@@ -536,6 +536,9 @@ class CONTENT_EXPORT FrameTree {
   // more RenderFrameHosts or RenderFrameProxyHosts using it.
   RenderViewHostMap render_view_host_map_;
 
+  // Indicates type of frame tree.
+  const Type type_;
+
   // This is an owned ptr to the root FrameTreeNode, which never changes over
   // the lifetime of the FrameTree. It is not a scoped_ptr because we need the
   // pointer to remain valid even while the FrameTreeNode is being destroyed,
@@ -551,9 +554,6 @@ class CONTENT_EXPORT FrameTree {
   // unsafe to show the pending URL. Usually false unless another window tries
   // to modify the blank page.  Always false after the first commit.
   bool has_accessed_initial_main_document_ = false;
-
-  // Indicates type of frame tree.
-  const Type type_;
 
   bool is_being_destroyed_ = false;
 

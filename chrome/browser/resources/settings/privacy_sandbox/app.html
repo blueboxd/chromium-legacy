@@ -84,9 +84,13 @@
     font-weight: 500;
   }
 
-  a {
+  #learnMoreLink {
+    background: none;
+    border: none;
     color: var(--cr-link-color);
     cursor: pointer;
+    margin: 0;
+    padding: 0;
   }
 
   .dialog-description {
@@ -117,6 +121,10 @@
     justify-content: space-between;
     min-height: 36px;
     padding-bottom: 8px;
+  }
+
+  .ad-personalization-body {
+    height: 530px;
   }
 
   .ad-personalization-section-title {
@@ -153,32 +161,30 @@
     --paper-tooltip-delay-in: 300;
     --paper-tooltip-duration-in: 300;
     --paper-tooltip-opacity: 1;
-    /* CSS mixin goes against style guide, but this is the only way to style
-     * the paper tooltip without changing the source code (which is in
-     * third_party)
-     */
-    --paper-tooltip: {
-      border-radius: 4px;
-      box-shadow: var(--cr-elevation-2);
-      font-family: Roboto, Arial, sans-serif;
-      font-size: inherit;
-      font-weight: 400;
-      line-height: 154%;  /* 20px. */
-      margin: 0 4px;
-    };
   }
 </style>
 
 <settings-prefs id="prefs" prefs="{{prefs}}"></settings-prefs>
 <div id="page-container">
   <h1 id="page-heading">$i18n{privacySandboxTitle}</h1>
-  <picture>
-    <source class="banner"
-        srcset="chrome://settings/images/privacy_sandbox_banner_dark.svg"
-        media="(prefers-color-scheme: dark)">
-    <img class="banner" alt=""
-        src="chrome://settings/images/privacy_sandbox_banner.svg">
-  </picture>
+  <template is="dom-if" if="[[!privacySandboxSettings3Enabled_]]">
+    <picture>
+      <source class="banner"
+          srcset="chrome://settings/images/privacy_sandbox_banner_dark.svg"
+          media="(prefers-color-scheme: dark)">
+      <img class="banner" alt=""
+          src="chrome://settings/images/privacy_sandbox_banner.svg">
+    </picture>
+  </template>
+  <template is="dom-if" if="[[privacySandboxSettings3Enabled_]]">
+    <picture>
+      <source class="banner"
+          srcset="chrome://settings/images/privacy_sandbox_banner_v3_dark.svg"
+          media="(prefers-color-scheme: dark)">
+      <img class="banner" alt=""
+          src="chrome://settings/images/privacy_sandbox_banner_v3.svg">
+    </picture>
+  </template>
   <template is="dom-if" if="[[privacySandboxSettings3Enabled_]]">
     <div id="trialsCardSettings3" class="card">
       <settings-toggle-button id="trialsToggle"
@@ -189,9 +195,9 @@
       <div id="trialsDescription" class="cr-row continuation">
         <div class="secondary">
           $i18n{privacySandboxTrialsSummary}
-          <a id="learnMoreLink" on-click="onLearnMoreClick_">
+          <button id="learnMoreLink" on-click="onLearnMoreClick_">
             $i18n{privacySandboxTrialsSummaryLearnMore}
-          </a>
+          </button>
         </div>
       </div>
       <cr-link-row id="adPersonalizationRow"
@@ -280,7 +286,7 @@
           <div class="ad-personalization-title" slot="title">
             $i18n{privacySandboxAdPersonalizationDialogTitle}
           </div>
-          <div slot="body">
+          <div slot="body" class="ad-personalization-body">
             <div class="dialog-description">
               [[getAdPersonalizationDialogDescription_(
                     prefs.privacy_sandbox.apis_enabled_v2.value,
@@ -289,9 +295,10 @@
             </div>
             <div class="ad-personalization-section-title">
               $i18n{privacySandboxAdPersonalizationDialogTopicsTitle}
-              <iron-icon id="topicsTooltipIcon" tabindex="0"
+              <iron-icon id="topicsTooltipIcon" tabindex="0" role="button"
                   aria-describedby="topicsTooltip" icon="cr:info-outline"
-                  on-focus="onShowTooltip_" on-mouseenter="onShowTooltip_">
+                  on-focus="onShowTooltip_" on-mouseenter="onShowTooltip_"
+                  aria-label="$i18n{privacySandboxAdPersonalizationDialogTopicsTitle}">
               </iron-icon>
               <paper-tooltip id="topicsTooltip" for="topicsTooltipIcon"
                   position="bottom" manual-mode fit-to-visible-bounds>
@@ -326,12 +333,13 @@
             </div>
             <div class="ad-personalization-section-title">
               $i18n{privacySandboxAdPersonalizationDialogFledgeTitle}
-              <iron-icon id="fledgeTooltipIcon" tabindex="0"
+              <iron-icon id="fledgeTooltipIcon" tabindex="0" role="button"
                   aria-describedby="fledgeTooltip" icon="cr:info-outline"
-                  on-focus="onShowTooltip_" on-mouseenter="onShowTooltip_">
+                  on-focus="onShowTooltip_" on-mouseenter="onShowTooltip_"
+                  aria-label="$i18n{privacySandboxAdPersonalizationDialogFledgeTitle}">
               </iron-icon>
               <paper-tooltip id="fledgeTooltip" for="fledgeTooltipIcon"
-                  position="top" manual-mode fit-to-visible-bounds>
+                  position="bottom" manual-mode fit-to-visible-bounds>
                 <div class="dialog-description">
                   $i18n{privacySandboxAdPersonalizationDialogFledgeLearnMore1}
                 </div>
@@ -369,14 +377,14 @@
                     privacySandboxSettingsView_)]]">
           <div class="ad-personalization-title" slot="title">
             <cr-icon-button id="adPersonalizationBackButton"
-                class="icon-arrow-back"
+                class="icon-arrow-back" aria-label="$i18n{back}"
                 on-click="onAdPersonalizationBackButtonClick_">
             </cr-icon-button>
             <span class="flex">
               $i18n{privacySandboxAdPersonalizationRemovedDialogTitle}
             </span>
           </div>
-          <div slot="body">
+          <div slot="body" class="ad-personalization-body">
             <div class="dialog-description">
               $i18n{privacySandboxAdPersonalizationRemovedDialogDescription}
             </div>

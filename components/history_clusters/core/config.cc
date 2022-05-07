@@ -87,6 +87,20 @@ Config::Config() {
           features::kOnDeviceClustering, "navigation_time_cutoff_minutes",
           cluster_navigation_time_cutoff.InMinutes()));
 
+  entity_relevance_threshold = GetFieldTrialParamByFeatureAsInt(
+      features::kOnDeviceClustering, "entity_relevance_threshold",
+      entity_relevance_threshold);
+  // Ensure that the value is [0 and 100].
+  DCHECK_GE(entity_relevance_threshold, 0);
+  DCHECK_LE(entity_relevance_threshold, 100);
+
+  category_relevance_threshold = GetFieldTrialParamByFeatureAsInt(
+      features::kOnDeviceClustering, "category_relevance_threshold",
+      category_relevance_threshold);
+  // Ensure that the value is [0 and 100].
+  DCHECK_GE(category_relevance_threshold, 0);
+  DCHECK_LE(category_relevance_threshold, 100);
+
   content_clustering_enabled = GetFieldTrialParamByFeatureAsBool(
       features::kOnDeviceClustering, "content_clustering_enabled",
       content_clustering_enabled);
@@ -195,6 +209,17 @@ Config::Config() {
   should_label_clusters = GetFieldTrialParamByFeatureAsBool(
       features::kOnDeviceClustering, "should_label_clusters",
       should_label_clusters);
+
+  const base::FeatureParam<std::string> kHostsToSkipClusteringFor{
+      &features::kOnDeviceClusteringBlocklists, "hosts_to_skip_clustering_for",
+      ""};
+  auto hosts = base::SplitString(kHostsToSkipClusteringFor.Get(), ",",
+                                 base::WhitespaceHandling::TRIM_WHITESPACE,
+                                 base::SplitResult::SPLIT_WANT_NONEMPTY);
+  hosts_to_skip_clustering_for = {hosts.begin(), hosts.end()};
+
+  use_continue_on_shutdown = base::FeatureList::IsEnabled(
+      internal::kHistoryClustersUseContinueOnShutdown);
 }
 
 Config::Config(const Config& other) = default;

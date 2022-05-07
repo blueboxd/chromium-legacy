@@ -49,8 +49,6 @@
 @property(nonatomic, strong) AuthenticationFlow* authenticationFlow;
 // Sync service.
 @property(nonatomic, assign) syncer::SyncService* syncService;
-// Whether the setting screen was presented.
-@property(nonatomic, assign) BOOL settingsScreenShown;
 
 @end
 
@@ -183,8 +181,6 @@
     (AuthenticationFlow*)authenticationFlow {
   DCHECK(!self.authenticationFlow);
 
-  self.settingsScreenShown = YES;
-
   [self.consumer setUIEnabled:NO];
 
   self.authenticationFlow = authenticationFlow;
@@ -263,10 +259,6 @@
 
   // TODO(crbug.com/1254359): Dedupe duplicated code, here and in
   // user_signin_mediator.
-
-  [self.logger logSigninCompletedWithResult:SigninCoordinatorResultSuccess
-                               addedAccount:self.addedAccount
-                      advancedSettingsShown:self.settingsScreenShown];
 
   // Set sync consent.
   sync_pb::UserConsentTypes::SyncConsent syncConsent;

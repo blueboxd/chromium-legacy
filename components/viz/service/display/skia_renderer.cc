@@ -1429,20 +1429,34 @@ void SkiaRenderer::DrawQuadParams::ApplyScissor(
   // device space, it will be contained in in the original scissor.
   // Applying the scissor explicitly means avoiding a clipRect() call and
   // allows more quads to be batched together in a DrawEdgeAAImageSet call
-  float x_epsilon = kAAEpsilon / content_device_transform.matrix().get(0, 0);
-  float y_epsilon = kAAEpsilon / content_device_transform.matrix().get(1, 1);
+  float left_inset = local_scissor.x() - visible_rect.x();
+  float top_inset = local_scissor.y() - visible_rect.y();
+  float right_inset = visible_rect.right() - local_scissor.right();
+  float bottom_inset = visible_rect.bottom() - local_scissor.bottom();
 
-  // The scissor is a non-AA clip, so unset the bit flag for clipped edges.
-  if (local_scissor.x() - visible_rect.x() >= x_epsilon)
+  // The scissor is a non-AA clip, so we unset the bit flag for clipped edges.
+  if (left_inset >= kAAEpsilon) {
     aa_flags &= ~SkCanvas::kLeft_QuadAAFlag;
-  if (local_scissor.y() - visible_rect.y() >= y_epsilon)
+  } else {
+    left_inset = 0;
+  }
+  if (top_inset >= kAAEpsilon) {
     aa_flags &= ~SkCanvas::kTop_QuadAAFlag;
-  if (visible_rect.right() - local_scissor.right() >= x_epsilon)
+  } else {
+    top_inset = 0;
+  }
+  if (right_inset >= kAAEpsilon) {
     aa_flags &= ~SkCanvas::kRight_QuadAAFlag;
-  if (visible_rect.bottom() - local_scissor.bottom() >= y_epsilon)
+  } else {
+    right_inset = 0;
+  }
+  if (bottom_inset >= kAAEpsilon) {
     aa_flags &= ~SkCanvas::kBottom_QuadAAFlag;
+  } else {
+    bottom_inset = 0;
+  }
 
-  visible_rect.Intersect(local_scissor);
+  visible_rect.Inset(left_inset, top_inset, right_inset, bottom_inset);
   vis_tex_coords = visible_rect;
   scissor_rect.reset();
 }

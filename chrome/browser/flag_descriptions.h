@@ -653,9 +653,9 @@ extern const char kEnableFirmwareUpdaterAppDescription[];
 extern const char kEnableGamepadButtonAxisEventsName[];
 extern const char kEnableGamepadButtonAxisEventsDescription[];
 
-extern const char kEnableLensStandaloneFlagId[];
-extern const char kEnableLensStandaloneName[];
-extern const char kEnableLensStandaloneDescription[];
+extern const char kEnableLensRegionSearchFlagId[];
+extern const char kEnableLensRegionSearchName[];
+extern const char kEnableLensRegionSearchDescription[];
 
 extern const char kEnableLoginDetectionName[];
 extern const char kEnableLoginDetectionDescription[];
@@ -1274,9 +1274,6 @@ extern const char kSamePartyCookiesConsideredFirstPartyDescription[];
 
 extern const char kPartitionedCookiesName[];
 extern const char kPartitionedCookiesDescription[];
-// TODO(crbug.com/1296161): Remove this when the CHIPS OT ends.
-extern const char kPartitionedCookiesBypassOriginTrialName[];
-extern const char kPartitionedCookiesBypassOriginTrialDescription[];
 
 extern const char kScrollableTabStripFlagId[];
 extern const char kScrollableTabStripName[];

@@ -192,7 +192,7 @@ void LensRegionSearchController::OnCaptureCompleted(
     core_tab_helper->SearchWithLensInNewTab(
         image, captured_image.Size(),
         lens::EntryPoint::CHROME_REGION_SEARCH_MENU_ITEM,
-        lens::features::IsLensSidePanelEnabled());
+        lens::features::kEnableSidePanelForLensRegionSearch.Get());
   } else {
     core_tab_helper->SearchByImageInNewTab(image, captured_image.Size());
   }

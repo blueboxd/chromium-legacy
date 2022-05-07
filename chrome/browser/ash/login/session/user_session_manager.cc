@@ -806,7 +806,8 @@ void UserSessionManager::SetAppModeChromeClientOAuthInfo(
   chrome_client_secret_ = chrome_client_secret;
 }
 
-void UserSessionManager::DoBrowserLaunch(Profile* profile) {
+void UserSessionManager::DoBrowserLaunch(Profile* profile,
+                                         LoginDisplayHost* login_host) {
   auto* session_manager = session_manager::SessionManager::Get();
   const auto current_session_state = session_manager->session_state();
   // LOGGED_IN_NOT_ACTIVE should only be set from OOBE, LOGIN_PRIMARY, or
@@ -819,7 +820,7 @@ void UserSessionManager::DoBrowserLaunch(Profile* profile) {
   }
 
   ui_shown_time_ = base::Time::Now();
-  DoBrowserLaunchInternal(profile, /*locale_pref_checked=*/false);
+  DoBrowserLaunchInternal(profile, login_host, false /* locale_pref_checked */);
 }
 
 bool UserSessionManager::RespectLocalePreference(
@@ -1822,7 +1823,7 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
     }
   }
 
-  DoBrowserLaunch(profile);
+  DoBrowserLaunch(profile, LoginDisplayHost::default_host());
   return true;
 }
 
@@ -2166,6 +2167,7 @@ EasyUnlockKeyManager* UserSessionManager::GetEasyUnlockKeyManager() {
 }
 
 void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
+                                                 LoginDisplayHost* login_host,
                                                  bool locale_pref_checked) {
   if (browser_shutdown::IsTryingToQuit() || chrome::IsAttemptingShutdown())
     return;
@@ -2174,7 +2176,7 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
     RespectLocalePreferenceWrapper(
         profile, base::BindRepeating(
                      &UserSessionManager::DoBrowserLaunchInternal, AsWeakPtr(),
-                     profile, /*locale_pref_checked=*/true));
+                     profile, login_host, true /* locale_pref_checked */));
     return;
   }
 
@@ -2195,9 +2197,9 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
     return;
   }
 
-  if (LoginDisplayHost::default_host()) {
-    LoginDisplayHost::default_host()->SetStatusAreaVisible(true);
-    LoginDisplayHost::default_host()->BeforeSessionStart();
+  if (login_host) {
+    login_host->SetStatusAreaVisible(true);
+    login_host->BeforeSessionStart();
   }
 
   BootTimesRecorder::Get()->AddLoginTimeMarker("BrowserLaunched", false);
@@ -2251,9 +2253,8 @@ void UserSessionManager::DoBrowserLaunchInternal(Profile* profile,
   // Mark login host for deletion after browser starts.  This
   // guarantees that the message loop will be referenced by the
   // browser before it is dereferenced by the login host.
-  if (LoginDisplayHost::default_host()) {
-    LoginDisplayHost::default_host()->Finalize(
-        std::move(login_host_finalized_callback));
+  if (login_host) {
+    login_host->Finalize(std::move(login_host_finalized_callback));
   } else {
     std::move(login_host_finalized_callback).Run();
   }

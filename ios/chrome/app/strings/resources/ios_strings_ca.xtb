@@ -178,7 +178,7 @@ Els llocs web no poden fer servir galetes per veure la teva activitat de navegac
 <translation id="2600682495497606169">Esborra les galetes del lloc web</translation>
 <translation id="2625189173221582860">S'ha copiat la contrasenya</translation>
 <translation id="2626236249646841566">Comprova la connexió i torna a provar d'iniciar la sessió.</translation>
-<translation id="2637313651144986786">Cerca pestanyes</translation>
+<translation id="2637313651144986786">Cerca a les pestanyes...</translation>
 <translation id="2647269890314209800">Galetes en ús</translation>
 <translation id="2648803196158606475">Suprimeix els elements llegits</translation>
 <translation id="2653659639078652383">Envia</translation>
@@ -505,7 +505,6 @@ Handoff també ha d'estar activat a la secció General de Configuració, i els v
 <translation id="5580834567471114021">Vols afegir-la a la llista de lectura per a més tard?</translation>
 <translation id="5592679540098330836">Activa la sincronització per a <ph name="NAME" /></translation>
 <translation id="560322036295180549">Desactivat per l'organització</translation>
-<translation id="560999923643681074">Accés d'edició</translation>
 <translation id="5614553682702429503">Vols desar la contrasenya?</translation>
 <translation id="5626245204502895507">No s'ha pogut baixar el fitxer en aquest moment.</translation>
 <translation id="5631164295104953411">Afegeix una forma de pagament</translation>
@@ -830,7 +829,6 @@ Els llocs web poden fer servir galetes per veure la teva activitat de navegació
 <translation id="8319076807703933069">Cerca nova</translation>
 <translation id="8323906514956095947">Mantén premut el botó per veure més opcions de pestanyes</translation>
 <translation id="8328777765163860529">Tanca-ho tot</translation>
-<translation id="8364085047956854021">Els permisos per a <ph name="SITE_NAME" /> es restabliran a desactivats quan surtis d'aquest lloc web.</translation>
 <translation id="8378714024927312812">Gestionat per la teva organització</translation>
 <translation id="8386068868580335421">Restableix</translation>
 <translation id="8407669440184693619">No s'ha trobat cap contrasenya per a aquest lloc web</translation>

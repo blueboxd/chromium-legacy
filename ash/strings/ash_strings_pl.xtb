@@ -1159,7 +1159,6 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="8236042855478648955">Czas na przerwę</translation>
 <translation id="8247060538831475781"><ph name="CONNECTION_STATUS" />, siła sygnału: <ph name="SIGNAL_STRENGTH" />, bateria telefonu: <ph name="BATTERY_STATUS" /></translation>
 <translation id="8247998213073982446"><ph name="APP_NAME" />, aplikacja</translation>
-<translation id="8248728785693203669">Kabel USB-C może nie łączyć się prawidłowo z wyświetlaczami</translation>
 <translation id="8255234195843591763">Zresetuj, aby zaktualizować</translation>
 <translation id="826107067893790409">Naciśnij Enter, by odblokować dla: <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Usuń</translation>
@@ -1252,7 +1251,7 @@ Oto kilka rzeczy, które możesz wypróbować na początek.</translation>
 <translation id="8853703225951107899">Nadal nie udało się zweryfikować Twojego hasła ani kodu PIN. Uwaga: jeśli Twoje hasło zostało ostatnio zmienione, użyj starego hasła. Nowe hasło zacznie obowiązywać, gdy się wylogujesz.</translation>
 <translation id="8870509716567206129">Aplikacja nie obsługuje dzielonego ekranu.</translation>
 <translation id="8871580645200179206">Przełącz ciemny motyw. <ph name="STATE_TEXT" /></translation>
-<translation id="8874184842967597500">Nie połączono</translation>
+<translation id="8874184842967597500">Brak połączenia</translation>
 <translation id="8876661425082386199">Sprawdź połączenie</translation>
 <translation id="8877788021141246043">Ustaw przypomnienie</translation>
 <translation id="8878886163241303700">Rozszerzony ekran</translation>

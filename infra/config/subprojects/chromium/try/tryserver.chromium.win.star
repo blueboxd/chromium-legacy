@@ -4,7 +4,6 @@
 """Definitions of builders in the tryserver.chromium.win builder group."""
 
 load("//lib/branches.star", "branches")
-load("//lib/builder_config.star", "builder_config")
 load("//lib/builders.star", "goma", "os")
 load("//lib/try.star", "try_")
 load("//lib/consoles.star", "consoles")
@@ -91,10 +90,6 @@ try_.builder(
 
 try_.builder(
     name = "win_chromium_x64_rel_ng",
-    mirrors = [
-        "ci/Win x64 Builder",
-        "ci/Win 7 Tests x64 (1)",
-    ],
 )
 
 try_.builder(
@@ -122,10 +117,6 @@ try_.builder(
 
 try_.builder(
     name = "win11-x64-fyi-rel",
-    mirrors = [
-        "ci/Win x64 Builder",
-        "ci/Win11 Tests x64",
-    ],
     builderless = True,
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
@@ -134,12 +125,6 @@ try_.builder(
 
 try_.builder(
     name = "win10_chromium_inverse_fieldtrials_x64_fyi_rel_ng",
-    mirrors = [
-        "ci/Win x64 Builder",
-        "ci/Win10 Tests x64",
-        "ci/GPU Win x64 Builder",
-        "ci/Win10 x64 Release (NVIDIA)",
-    ],
     os = os.WINDOWS_10,
 )
 
@@ -147,17 +132,6 @@ try_.orchestrator_builder(
     name = "win10_chromium_x64_rel_ng",
     compilator = "win10_chromium_x64_rel_ng-compilator",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
-    mirrors = [
-        "ci/Win x64 Builder",
-        "ci/Win10 Tests x64",
-        "ci/GPU Win x64 Builder",
-        "ci/Win10 x64 Release (NVIDIA)",
-    ],
-    try_settings = builder_config.try_settings(
-        rts_config = builder_config.rts_config(
-            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
-        ),
-    ),
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],
     main_list_view = "try",

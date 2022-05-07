@@ -8,7 +8,6 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/timer/elapsed_timer.h"
 #include "components/optimization_guide/core/entity_annotator_native_library.h"
-#include "components/optimization_guide/core/optimization_guide_features.h"
 #include "components/optimization_guide/core/optimization_guide_model_provider.h"
 #include "components/optimization_guide/proto/page_entities_model_metadata.pb.h"
 
@@ -31,9 +30,7 @@ EntityAnnotatorHolder::EntityAnnotatorHolder(
 EntityAnnotatorHolder::~EntityAnnotatorHolder() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
 
-  if (features::ShouldResetPageEntitiesModelOnShutdown()) {
-    ResetEntityAnnotator();
-  }
+  ResetEntityAnnotator();
 }
 
 void EntityAnnotatorHolder::

@@ -505,7 +505,6 @@ Du måste även aktivera Handoff i avsnittet Allmänt i inställningarna och sam
 <translation id="5580834567471114021">Vill du lägga till i läslistan för att läsa senare?</translation>
 <translation id="5592679540098330836">Aktivera synkronisering för <ph name="NAME" /></translation>
 <translation id="560322036295180549">Inaktiverat av organisationen</translation>
-<translation id="560999923643681074">Redigeringsåtkomst</translation>
 <translation id="5614553682702429503">Vill du spara lösenordet?</translation>
 <translation id="5626245204502895507">Det gick inte att ladda ned filen just nu.</translation>
 <translation id="5631164295104953411">Lägg till betalningsmetod</translation>
@@ -830,7 +829,6 @@ Webbplatser får se din webbaktivitet på olika webbplatser med hjälp av cookie
 <translation id="8319076807703933069">Ny sökning</translation>
 <translation id="8323906514956095947">Tryck länge för fler flikalternatv</translation>
 <translation id="8328777765163860529">Stäng alla</translation>
-<translation id="8364085047956854021">Behörigheterna för <ph name="SITE_NAME" /> inaktiveras igen när du lämnar webbplatsen.</translation>
 <translation id="8378714024927312812">Hanteras av organisationen</translation>
 <translation id="8386068868580335421">Återställ</translation>
 <translation id="8407669440184693619">Inga lösenord hittades för webbplatsen</translation>

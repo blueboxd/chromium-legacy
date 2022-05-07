@@ -23,7 +23,7 @@ void DumpDatabaseHandler::RegisterMessages() {
   web_ui()->RegisterDeprecatedMessageCallback(
       "getDatabaseDump",
       base::BindRepeating(&DumpDatabaseHandler::HandleGetDatabaseDump,
-                          weak_factory_.GetWeakPtr()));
+                          base::Unretained(this)));
 }
 
 void DumpDatabaseHandler::HandleGetDatabaseDump(const base::ListValue* args) {
@@ -32,7 +32,7 @@ void DumpDatabaseHandler::HandleGetDatabaseDump(const base::ListValue* args) {
       SyncFileSystemServiceFactory::GetForProfile(profile_);
   if (sync_service) {
     sync_service->DumpDatabase(base::BindOnce(
-        &DumpDatabaseHandler::DidGetDatabaseDump, weak_factory_.GetWeakPtr(),
+        &DumpDatabaseHandler::DidGetDatabaseDump, base::Unretained(this),
         args->GetListDeprecated()[0].GetString() /* callback_id */));
   }
 }

@@ -233,30 +233,6 @@ bool CorruptIndexRootPage(const base::FilePath& db_path,
   return file.WriteAndCheck(page_offset, page_buffer);
 }
 
-bool CorruptIndexRootPage(const base::FilePath& db_path,
-                          base::StringPiece index_name) {
-  absl::optional<int> page_size = ReadPageSize(db_path);
-  if (!page_size.has_value())
-    return false;
-
-  sql::Database db;
-  if (!db.Open(db_path))
-    return false;
-
-  absl::optional<int> page_number = GetRootPage(db, index_name);
-  db.Close();
-  if (!page_number.has_value())
-    return false;
-
-  std::vector<uint8_t> page_buffer(page_size.value());
-  const int64_t page_offset = int64_t{page_number.value()} * page_size.value();
-
-  base::File file(db_path, base::File::FLAG_OPEN | base::File::FLAG_READ |
-                               base::File::FLAG_WRITE);
-  if (!file.IsValid())
-    return false;
-  return file.WriteAndCheck(page_offset, page_buffer);
-}
 size_t CountSQLTables(sql::Database* db) {
   return CountSQLItemsOfType(db, "table");
 }

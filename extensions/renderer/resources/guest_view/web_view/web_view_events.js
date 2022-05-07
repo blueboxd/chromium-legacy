@@ -27,9 +27,7 @@ function WebViewEvents(webViewImpl) {
 }
 
 function createOnMessageEvent(name, schema, options, webviewId) {
-  // There is a dependency on these IDs between the renderer and
-  // the browser, so this cannot use GetNextScopedId.
-  var subEventName = name + '/' + IdGenerator.GetNextId();
+  var subEventName = name + '/' + IdGenerator.GetNextScopedId();
   var newEvent = bindingUtil.createCustomEvent(
       subEventName, false /* supports filters */,
       false /* supports lazy listeners */);

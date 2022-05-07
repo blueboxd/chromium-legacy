@@ -1807,7 +1807,8 @@ void WizardController::OnOobeFlowFinished() {
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE, base::BindOnce(&UserSessionManager::DoBrowserLaunch,
                                 UserSessionManager::GetInstance()->AsWeakPtr(),
-                                ProfileManager::GetActiveUserProfile()));
+                                ProfileManager::GetActiveUserProfile(),
+                                GetLoginDisplayHost()));
 }
 
 void WizardController::OnDeviceDisabledChecked(bool device_disabled) {

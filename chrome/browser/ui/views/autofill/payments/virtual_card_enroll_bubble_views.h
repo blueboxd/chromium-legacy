@@ -56,13 +56,11 @@ class VirtualCardEnrollBubbleViews : public AutofillBubbleBase,
   void OnDialogDeclined();
 
  private:
-  friend class VirtualCardEnrollBubbleViewsInteractiveUiTest;
-
   std::unique_ptr<views::View> CreateLegalMessageView();
 
   void LearnMoreLinkClicked();
-  void GoogleLegalMessageClicked(const GURL& url);
-  void IssuerLegalMessageClicked(const GURL& url);
+
+  void LegalMessageClicked(const GURL& url);
 
   raw_ptr<VirtualCardEnrollBubbleController> controller_;
 

@@ -56,9 +56,6 @@ const char kPropertyCustomizationID[] = "customizationId";
 // Key which corresponds to the oem_device_requisition setting.
 const char kPropertyDeviceRequisition[] = "deviceRequisition";
 
-// Key which corresponds to the isMeetDevice property in JS.
-const char kPropertyMeetDevice[] = "isMeetDevice";
-
 // Key which corresponds to the home provider property.
 const char kPropertyHomeProvider[] = "homeProvider";
 
@@ -310,14 +307,6 @@ std::unique_ptr<base::Value> ChromeosInfoPrivateGetFunction::GetValue(
     provider->GetMachineStatistic(chromeos::system::kOemDeviceRequisitionKey,
                                   &device_requisition);
     return std::make_unique<base::Value>(device_requisition);
-  }
-
-  if (property_name == kPropertyMeetDevice) {
-#if BUILDFLAG(PLATFORM_CFM)
-    return std::make_unique<base::Value>(true);
-#else
-    return std::make_unique<base::Value>(false);
-#endif
   }
 
   if (property_name == kPropertyHomeProvider) {

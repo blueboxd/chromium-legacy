@@ -285,9 +285,8 @@ WatchHangsInScope::~WatchHangsInScope() {
   // If a hang is currently being captured we should block here so execution
   // stops and we avoid recording unrelated stack frames in the crash.
   if (current_hang_watch_state->IsFlagSet(
-          internal::HangWatchDeadline::Flag::kShouldBlockOnHang)) {
+          internal::HangWatchDeadline::Flag::kShouldBlockOnHang))
     base::HangWatcher::GetInstance()->BlockIfCaptureInProgress();
-  }
 
 #if DCHECK_IS_ON()
   // Verify that no Scope was destructed out of order.
@@ -325,14 +324,8 @@ void HangWatcher::InitializeOnMainThread(ProcessType process_type) {
   DCHECK(g_main_thread_log_level == LoggingLevel::kNone);
   DCHECK(g_threadpool_log_level == LoggingLevel::kNone);
 
-  bool enable_hang_watcher = base::FeatureList::IsEnabled(kEnableHangWatcher);
-
-  // Do not start HangWatcher in the GPU process until the issue related to
-  // invalid magic signature in the GPU WatchDog is fixed
-  // (https://crbug.com/1297760).
-  if (process_type == ProcessType::kGPUProcess)
-    enable_hang_watcher = false;
-
+  const bool enable_hang_watcher =
+      base::FeatureList::IsEnabled(kEnableHangWatcher);
   g_use_hang_watcher.store(enable_hang_watcher, std::memory_order_relaxed);
 
   // Keep the process type.
@@ -746,9 +739,8 @@ void HangWatcher::WatchStateSnapShot::Init(
         static_cast<HangWatcher::ThreadType>(i);
     if (hang_count != kInvalidHangCount &&
         ThreadTypeLoggingLevelGreaterOrEqual(thread_type,
-                                             LoggingLevel::kUmaOnly)) {
+                                             LoggingLevel::kUmaOnly))
       LogHungThreadCountHistogram(thread_type, hang_count);
-    }
   }
 
   // Three cases can invalidate this snapshot and prevent the capture of the
@@ -937,7 +929,7 @@ void HangWatcher::SetTickClockForTesting(const base::TickClock* tick_clock) {
 
 void HangWatcher::BlockIfCaptureInProgress() {
   // Makes a best-effort attempt to block execution if a hang is currently being
-  // captured. Only block on |capture_lock| if |capture_in_progress_| hints that
+  // captured.Only block on |capture_lock| if |capture_in_progress_| hints that
   // it's already held to avoid serializing all threads on this function when no
   // hang capture is in-progress.
   if (capture_in_progress_.load(std::memory_order_relaxed))

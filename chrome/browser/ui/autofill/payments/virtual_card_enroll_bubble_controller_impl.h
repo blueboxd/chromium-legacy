@@ -48,14 +48,9 @@ class VirtualCardEnrollBubbleControllerImpl
       const override;
   AutofillBubbleBase* GetVirtualCardEnrollBubbleView() const override;
 
-#if !BUILDFLAG(IS_ANDROID)
-  void HideIconAndBubble() override;
-#endif
-
   void OnAcceptButton() override;
   void OnDeclineButton() override;
-  void OnLinkClicked(VirtualCardEnrollmentLinkType link_type,
-                     const GURL& url) override;
+  void OnLinkClicked(const GURL& url) override;
   void OnBubbleClosed(PaymentsBubbleClosedReason closed_reason) override;
   bool IsIconVisible() const override;
 

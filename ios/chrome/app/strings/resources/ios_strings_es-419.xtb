@@ -505,7 +505,6 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="5580834567471114021">¿Deseas agregar la página a la Lista de lectura para retomarla más tarde?</translation>
 <translation id="5592679540098330836">Activa la sincronización para <ph name="NAME" /></translation>
 <translation id="560322036295180549">Tu organización desactivó la opción.</translation>
-<translation id="560999923643681074">Editar acceso</translation>
 <translation id="5614553682702429503">¿Quieres guardar la contraseña?</translation>
 <translation id="5626245204502895507">No se pudo descargar el archivo esta vez.</translation>
 <translation id="5631164295104953411">Agregar forma de pago</translation>
@@ -830,7 +829,6 @@ También pueden usar cookies para ver la actividad de navegación en diferentes 
 <translation id="8319076807703933069">Nueva búsqueda</translation>
 <translation id="8323906514956095947">Mantén presionado el botón para ver más opciones de pestañas</translation>
 <translation id="8328777765163860529">Cerrar todas</translation>
-<translation id="8364085047956854021">Los permisos de "<ph name="SITE_NAME" />" se desactivarán cuando abandones este sitio.</translation>
 <translation id="8378714024927312812">Administrado por tu organización</translation>
 <translation id="8386068868580335421">Restablecer</translation>
 <translation id="8407669440184693619">No se encontraron contraseñas para este sitio</translation>

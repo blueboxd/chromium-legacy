@@ -410,14 +410,7 @@ views::BubbleArrowSide GetOptimalArrowSide(
     }
   }
 
-  // As a fallback, render the popup on top of the element if there is more
-  // space than below the element.
-  if (element_bounds.y() - content_area_bounds.y() >
-      content_area_bounds.bottom() - element_bounds.bottom()) {
-    return views::BubbleArrowSide::kBottom;
-  }
-
-  return views::BubbleArrowSide::kTop;
+  return views::BubbleArrowSide::kBottom;
 }
 
 BubbleBorder::Arrow GetOptimalPopupPlacement(

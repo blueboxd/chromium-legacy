@@ -15,13 +15,6 @@ def _get_identity_hash(i):
     raise
 
 
-def _get_identity_hash(i):
-    if i == '[IDENTITY]':
-        return 'identity'
-
-    raise
-
-
 class TestGetParts(unittest.TestCase):
 
     def test_get_parts_no_base(self):

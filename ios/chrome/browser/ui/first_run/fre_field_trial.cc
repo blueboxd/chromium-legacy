@@ -25,7 +25,7 @@ const char kFREDefaultPromoTestingShortDelayParam[] =
 const char kFREUIIdentitySwitcherPositionParam[] =
     "signin_sync_screen_identity_position";
 const char kFREUIStringsSetParam[] = "signin_sync_screen_strings_set";
-const char kFREThirdUITrialName[] = "EnableFREUIModuleIOSV3";
+const char kFRESecondUITrialName[] = "EnableFREUIModuleIOSV2";
 
 // Group names for the second trial of the FRE UI.
 const char kIdentitySwitcherInTopAndOldStringsSetGroup[] =
@@ -76,7 +76,6 @@ namespace {
 // String local state preference with the name of the assigned trial group.
 // Empty if no group has been assigned yet.
 const char kTrialGroupPrefName[] = "fre_refactoring.trial_group";
-const char kTrialGroupV3PrefName[] = "fre_refactoringV3.trial_group";
 
 // Group names for the default browser promo trial.
 const char kFREDefaultBrowserAndSmallDelayBeforeOtherPromosGroup[] =
@@ -97,15 +96,15 @@ const variations::VariationID
 // Group name for the FRE disabled group.
 const char kDisabledGroup[] = "Disabled";
 // Experiment IDs defined for the second trial of the FRE UI.
-const variations::VariationID kDisabledTrialID = 3346917;
+const variations::VariationID kDisabledTrialID = 3344682;
 const variations::VariationID kIdentitySwitcherInTopAndOldStringsSetID =
-    3346918;
+    3344678;
 const variations::VariationID kIdentitySwitcherInTopAndNewStringsSetID =
-    3346919;
+    3344679;
 const variations::VariationID kIdentitySwitcherInBottomAndOldStringsSetID =
-    3346920;
+    3344680;
 const variations::VariationID kIdentitySwitcherInBottomAndNewStringsSetID =
-    3346921;
+    3344681;
 
 // Default local state pref value.
 const int kDefaultPrefValue = -1;
@@ -142,9 +141,8 @@ void AssociateFieldTrialParamsForFRESecondTrialGroup(
   base::FieldTrialParams params;
   params[kFREUIIdentitySwitcherPositionParam] = position;
   params[kFREUIStringsSetParam] = stringsSet;
-  bool association_result = base::AssociateFieldTrialParams(
-      kEnableFREUIModuleIOS.name, group_name, params);
-  DCHECK(association_result);
+  DCHECK(base::AssociateFieldTrialParams(kEnableFREUIModuleIOS.name, group_name,
+                                         params));
 }
 
 // Sets the parameter value of the new MICE FRE parameter.
@@ -328,7 +326,7 @@ int CreateFirstRunSecondTrial(
   }
 
   // Set up the trial and groups.
-  FirstRunFieldTrialConfig config(kFREThirdUITrialName);
+  FirstRunFieldTrialConfig config(kFRESecondUITrialName);
 
   config.AddGroup(kIdentitySwitcherInTopAndOldStringsSetGroup,
                   kIdentitySwitcherInTopAndOldStringsSetID,
@@ -472,12 +470,18 @@ int CreateNewMobileIdentityConsistencyFRETrial(
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kTrialGroupPrefName, kDefaultPrefValue);
-  registry->RegisterIntegerPref(kTrialGroupV3PrefName, kDefaultPrefValue);
 }
 
 void Create(const base::FieldTrial::EntropyProvider& low_entropy_provider,
             base::FeatureList* feature_list,
             PrefService* local_state) {
+  int trial_group = local_state->GetInteger(kTrialGroupPrefName);
+  if (trial_group == kDefaultPrefValue && !FirstRun::IsChromeFirstRun()) {
+    // Do not bucket existing users that have not been already been grouped. The
+    // experiment wants to only add users who have not seen the First Run
+    // Experience yet.
+    return;
+  }
   // Don't create the trial if it was already created for testing. This is only
   // expected when the browser is used for development purpose. The trial
   // created when the about flag is set will have the same name as the feature.
@@ -490,15 +494,10 @@ void Create(const base::FieldTrial::EntropyProvider& low_entropy_provider,
           signin::kNewMobileIdentityConsistencyFRE.name)) {
     // Create trial and group user for the first time, or tag users again to
     // ensure the experiment can be used to filter UMA metrics.
-    int trial_group =
-        CreateFirstRunSecondTrial(low_entropy_provider, feature_list);
-    // Persist the assigned group for subsequent runs.
-    local_state->SetInteger(kTrialGroupV3PrefName, trial_group);
-  } else if (local_state->GetInteger(kTrialGroupV3PrefName) !=
-             kDefaultPrefValue) {
-    // The user was assigned to a group in a previous run.
-    CreateFirstRunSecondTrial(low_entropy_provider, feature_list);
+    trial_group = CreateFirstRunSecondTrial(low_entropy_provider, feature_list);
   }
+  // Persist the assigned group for subsequent runs.
+  local_state->SetInteger(kTrialGroupPrefName, trial_group);
 }
 
 }  // namespace fre_field_trial

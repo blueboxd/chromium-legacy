@@ -2068,7 +2068,7 @@ class PDFExtensionRegionSearchTest : public PDFExtensionTest {
  protected:
   std::vector<base::Feature> GetEnabledFeatures() const override {
     auto enabled = PDFExtensionTest::GetEnabledFeatures();
-    enabled.push_back(lens::features::kLensStandalone);
+    enabled.push_back(lens::features::kLensRegionSearch);
     return enabled;
   }
 };

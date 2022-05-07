@@ -52,15 +52,6 @@ namespace sql::test {
 [[nodiscard]] bool CorruptIndexRootPage(const base::FilePath& db_path,
                                         base::StringPiece index_name);
 
-// Simulates total index corruption by zeroing the root page of an index B-tree.
-//
-// The corrupted database will still open successfully. SELECTs on the table
-// associated with the index will work, as long as they don't access the index.
-// However, any query that accesses the index will fail with SQLITE_CORRUPT.
-// DROPping the table or the index will fail.
-[[nodiscard]] bool CorruptIndexRootPage(const base::FilePath& db_path,
-                                        base::StringPiece index_name);
-
 // Return the number of tables in sqlite_schema.
 [[nodiscard]] size_t CountSQLTables(sql::Database* db);
 

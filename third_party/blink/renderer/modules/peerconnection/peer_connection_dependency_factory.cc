@@ -893,7 +893,6 @@ void PeerConnectionDependencyFactory::ContextDestroyed() {
 
 void PeerConnectionDependencyFactory::CleanupPeerConnectionFactory() {
   DVLOG(1) << "PeerConnectionDependencyFactory::CleanupPeerConnectionFactory()";
-  webrtc_video_perf_reporter_.Shutdown();
   socket_factory_ = nullptr;
   pc_factory_ = nullptr;
   if (network_manager_) {

@@ -9,7 +9,6 @@ import static org.mockito.Mockito.doReturn;
 import android.content.ClipData;
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.drawable.VectorDrawable;
 import android.util.Pair;
 import android.view.DragEvent;
 import android.view.View;
@@ -197,19 +196,6 @@ public class DragAndDropDelegateImplUnitTest {
         assertDropInWebContentHistogramsRecorded();
         Assert.assertNull("Cached Image bytes should be cleaned since drop is not handled.",
                 DropDataContentProvider.getImageBytesForTesting());
-    }
-
-    @Test
-    public void testIgnoreDragStartedElsewhere() {
-        final View containerView = new View(mContext);
-        mDragAndDropDelegateImpl.onDrag(containerView, mockDragEvent(DragEvent.ACTION_DROP));
-        mDragAndDropDelegateImpl.onDrag(containerView, mockDragEvent(DragEvent.ACTION_DRAG_ENDED));
-
-        assertDragTypeNotRecorded("Drag dropped on the same view.");
-        assertHistogramRecorded("Android.DragDrop.FromWebContent.DropInWebContent.Duration", false,
-                "Only tracking drag started by mDragAndDropDelegateImpl#startDragAndDrop.");
-        assertHistogramRecorded("Android.DragDrop.FromWebContent.DropInWebContent.DistanceDip",
-                false, "Only tracking drag started by mDragAndDropDelegateImpl#startDragAndDrop.");
     }
 
     @Test

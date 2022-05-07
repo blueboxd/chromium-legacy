@@ -505,7 +505,6 @@ Handoff må også være aktivert i Generelt-delen av Innstillinger, og enhetene 
 <translation id="5580834567471114021">Vil du legge til siden på leselisten for å lese den senere?</translation>
 <translation id="5592679540098330836">Slå på synkronisering for <ph name="NAME" /></translation>
 <translation id="560322036295180549">Organisasjonen din har slått av denne funksjonen</translation>
-<translation id="560999923643681074">Redigeringstilgang</translation>
 <translation id="5614553682702429503">Vil du lagre passordet?</translation>
 <translation id="5626245204502895507">Filen kan ikke lastes ned for øyeblikket.</translation>
 <translation id="5631164295104953411">Legg til betalingsmåte</translation>
@@ -830,7 +829,6 @@ Nettsteder kan bruke informasjonskapsler til å se nettleseraktiviteten din på 
 <translation id="8319076807703933069">Nytt søk</translation>
 <translation id="8323906514956095947">Trykk og hold inne for flere fanealternativer</translation>
 <translation id="8328777765163860529">Lukk alle</translation>
-<translation id="8364085047956854021">Tillatelsene for «<ph name="SITE_NAME" />» blir tilbakestilt til å være avslått når du forlater dette nettstedet.</translation>
 <translation id="8378714024927312812">Administreres av organisasjonen din</translation>
 <translation id="8386068868580335421">Tilbakestill</translation>
 <translation id="8407669440184693619">Fant ingen passord for dette nettstedet</translation>

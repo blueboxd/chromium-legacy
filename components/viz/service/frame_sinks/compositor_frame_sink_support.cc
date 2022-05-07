@@ -894,56 +894,35 @@ void CompositorFrameSinkSupport::UpdateNeedsBeginFramesInternal() {
 
   // We require a begin frame if there's a callback pending, or if the client
   // requested it, or if the client needs to get some frame timing details.
-  needs_begin_frame_ =
+  bool needs_begin_frame =
       (client_needs_begin_frame_ || !frame_timing_details_.empty() ||
        !pending_surfaces_.empty() ||
        (compositor_frame_callback_ && !callback_received_begin_frame_) ||
-       surface_animation_manager_.NeedsBeginFrame());
+       surface_animation_manager_.NeedsBeginFrame()) &&
+      !bundle_id_.has_value();
 
-  if (bundle_id_.has_value()) {
-    // When bundled with other sinks, observation of BeginFrame notifications is
-    // always delegated to the bundle.
-    if (added_frame_observer_) {
-      StopObservingBeginFrameSource();
-    }
-    if (auto* bundle = frame_sink_manager_->GetFrameSinkBundle(*bundle_id_)) {
-      bundle->SetSinkNeedsBeginFrame(frame_sink_id_.sink_id(),
-                                     needs_begin_frame_);
-    }
-    return;
-  }
-
-  if (needs_begin_frame_ == added_frame_observer_)
+  if (needs_begin_frame == added_frame_observer_)
     return;
 
-  if (needs_begin_frame_) {
-    StartObservingBeginFrameSource();
+  added_frame_observer_ = needs_begin_frame;
+  if (needs_begin_frame) {
+    begin_frame_source_->AddObserver(this);
+    if (power_mode_voter_) {
+      power_mode_voter_->VoteFor(
+          frame_sink_type_ == mojom::CompositorFrameSinkType::kMediaStream ||
+                  frame_sink_type_ == mojom::CompositorFrameSinkType::kVideo
+              ? power_scheduler::PowerMode::kVideoPlayback
+              : power_scheduler::PowerMode::kAnimation);
+    }
   } else {
-    StopObservingBeginFrameSource();
-  }
-}
-
-void CompositorFrameSinkSupport::StartObservingBeginFrameSource() {
-  added_frame_observer_ = true;
-  begin_frame_source_->AddObserver(this);
-  if (power_mode_voter_) {
-    power_mode_voter_->VoteFor(
-        frame_sink_type_ == mojom::CompositorFrameSinkType::kMediaStream ||
-                frame_sink_type_ == mojom::CompositorFrameSinkType::kVideo
-            ? power_scheduler::PowerMode::kVideoPlayback
-            : power_scheduler::PowerMode::kAnimation);
-  }
-}
-
-void CompositorFrameSinkSupport::StopObservingBeginFrameSource() {
-  added_frame_observer_ = false;
-  begin_frame_source_->RemoveObserver(this);
-  if (power_mode_voter_) {
-    power_mode_voter_->ResetVoteAfterTimeout(
-        frame_sink_type_ == mojom::CompositorFrameSinkType::kMediaStream ||
-                frame_sink_type_ == mojom::CompositorFrameSinkType::kVideo
-            ? power_scheduler::PowerModeVoter::kVideoTimeout
-            : power_scheduler::PowerModeVoter::kAnimationTimeout);
+    begin_frame_source_->RemoveObserver(this);
+    if (power_mode_voter_) {
+      power_mode_voter_->ResetVoteAfterTimeout(
+          frame_sink_type_ == mojom::CompositorFrameSinkType::kMediaStream ||
+                  frame_sink_type_ == mojom::CompositorFrameSinkType::kVideo
+              ? power_scheduler::PowerModeVoter::kVideoTimeout
+              : power_scheduler::PowerModeVoter::kAnimationTimeout);
+    }
   }
 }
 

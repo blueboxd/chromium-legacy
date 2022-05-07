@@ -58,6 +58,8 @@ std::string GetSliceBaseName(const std::string& slice,
 EntityAnnotatorNativeLibrary::EntityAnnotatorNativeLibrary(
     base::NativeLibrary native_library)
     : native_library_(std::move(native_library)) {
+  DCHECK(native_library_.is_valid());
+
   LoadFunctions();
 }
 EntityAnnotatorNativeLibrary::~EntityAnnotatorNativeLibrary() = default;
@@ -106,109 +108,89 @@ DISABLE_CFI_ICALL
 void EntityAnnotatorNativeLibrary::LoadFunctions() {
   get_max_supported_feature_flag_func_ =
       reinterpret_cast<GetMaxSupportedFeatureFlagFunc>(
-          base::GetFunctionPointerFromNativeLibrary(
-              native_library_,
+          native_library_.GetFunctionPointer(
               "OptimizationGuideEntityAnnotatorGetMaxSupportedFeatureFlag"));
 
   create_from_options_func_ = reinterpret_cast<CreateFromOptionsFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_,
+      native_library_.GetFunctionPointer(
           "OptimizationGuideEntityAnnotatorCreateFromOptions"));
-  get_creation_error_func_ = reinterpret_cast<GetCreationErrorFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_, "OptimizationGuideEntityAnnotatorGetCreationError"));
+  get_creation_error_func_ =
+      reinterpret_cast<GetCreationErrorFunc>(native_library_.GetFunctionPointer(
+          "OptimizationGuideEntityAnnotatorGetCreationError"));
   delete_func_ =
-      reinterpret_cast<DeleteFunc>(base::GetFunctionPointerFromNativeLibrary(
-          native_library_, "OptimizationGuideEntityAnnotatorDelete"));
+      reinterpret_cast<DeleteFunc>(native_library_.GetFunctionPointer(
+          "OptimizationGuideEntityAnnotatorDelete"));
 
   annotate_job_create_func_ = reinterpret_cast<AnnotateJobCreateFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_,
+      native_library_.GetFunctionPointer(
           "OptimizationGuideEntityAnnotatorAnnotateJobCreate"));
   annotate_job_delete_func_ = reinterpret_cast<AnnotateJobDeleteFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_,
+      native_library_.GetFunctionPointer(
           "OptimizationGuideEntityAnnotatorAnnotateJobDelete"));
-  run_annotate_job_func_ = reinterpret_cast<RunAnnotateJobFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_, "OptimizationGuideEntityAnnotatorRunAnnotateJob"));
+  run_annotate_job_func_ =
+      reinterpret_cast<RunAnnotateJobFunc>(native_library_.GetFunctionPointer(
+          "OptimizationGuideEntityAnnotatorRunAnnotateJob"));
   annotate_get_output_metadata_at_index_func_ = reinterpret_cast<
-      AnnotateGetOutputMetadataAtIndexFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_,
-          "OptimizationGuideEntityAnnotatorAnnotateGetOutputMetadataAtIndex"));
+      AnnotateGetOutputMetadataAtIndexFunc>(native_library_.GetFunctionPointer(
+      "OptimizationGuideEntityAnnotatorAnnotateGetOutputMetadataAtIndex"));
   annotate_get_output_metadata_score_at_index_func_ =
       reinterpret_cast<AnnotateGetOutputMetadataScoreAtIndexFunc>(
-          base::GetFunctionPointerFromNativeLibrary(
-              native_library_,
+          native_library_.GetFunctionPointer(
               "OptimizationGuideEntityAnnotatorAnnotateGetOutputMetadataScoreAt"
               "Index"));
 
   entity_metadata_job_create_func_ =
       reinterpret_cast<EntityMetadataJobCreateFunc>(
-          base::GetFunctionPointerFromNativeLibrary(
-              native_library_,
+          native_library_.GetFunctionPointer(
               "OptimizationGuideEntityAnnotatorEntityMetadataJobCreate"));
   entity_metadata_job_delete_func_ =
       reinterpret_cast<EntityMetadataJobDeleteFunc>(
-          base::GetFunctionPointerFromNativeLibrary(
-              native_library_,
+          native_library_.GetFunctionPointer(
               "OptimizationGuideEntityAnnotatorEntityMetadataJobDelete"));
   run_entity_metadata_job_func_ = reinterpret_cast<RunEntityMetadataJobFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_,
+      native_library_.GetFunctionPointer(
           "OptimizationGuideEntityAnnotatorRunEntityMetadataJob"));
 
-  options_create_func_ = reinterpret_cast<OptionsCreateFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_, "OptimizationGuideEntityAnnotatorOptionsCreate"));
+  options_create_func_ =
+      reinterpret_cast<OptionsCreateFunc>(native_library_.GetFunctionPointer(
+          "OptimizationGuideEntityAnnotatorOptionsCreate"));
   options_set_model_file_path_func_ =
       reinterpret_cast<OptionsSetModelFilePathFunc>(
-          base::GetFunctionPointerFromNativeLibrary(
-              native_library_,
+          native_library_.GetFunctionPointer(
               "OptimizationGuideEntityAnnotatorOptionsSetModelFilePath"));
   options_set_model_metadata_file_path_func_ = reinterpret_cast<
-      OptionsSetModelMetadataFilePathFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_,
-          "OptimizationGuideEntityAnnotatorOptionsSetModelMetadataFilePath"));
+      OptionsSetModelMetadataFilePathFunc>(native_library_.GetFunctionPointer(
+      "OptimizationGuideEntityAnnotatorOptionsSetModelMetadataFilePath"));
   options_set_word_embeddings_file_path_func_ = reinterpret_cast<
-      OptionsSetWordEmbeddingsFilePathFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_,
-          "OptimizationGuideEntityAnnotatorOptionsSetWordEmbeddingsFilePath"));
+      OptionsSetWordEmbeddingsFilePathFunc>(native_library_.GetFunctionPointer(
+      "OptimizationGuideEntityAnnotatorOptionsSetWordEmbeddingsFilePath"));
   options_add_model_slice_func_ = reinterpret_cast<OptionsAddModelSliceFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_,
+      native_library_.GetFunctionPointer(
           "OptimizationGuideEntityAnnotatorOptionsAddModelSlice"));
-  options_delete_func_ = reinterpret_cast<OptionsDeleteFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_, "OptimizationGuideEntityAnnotatorOptionsDelete"));
+  options_delete_func_ =
+      reinterpret_cast<OptionsDeleteFunc>(native_library_.GetFunctionPointer(
+          "OptimizationGuideEntityAnnotatorOptionsDelete"));
 
   entity_metadata_get_entity_id_func_ =
       reinterpret_cast<EntityMetadataGetEntityIdFunc>(
-          base::GetFunctionPointerFromNativeLibrary(
-              native_library_, "OptimizationGuideEntityMetadataGetEntityID"));
+          native_library_.GetFunctionPointer(
+              "OptimizationGuideEntityMetadataGetEntityID"));
   entity_metadata_get_human_readable_name_func_ =
       reinterpret_cast<EntityMetadataGetHumanReadableNameFunc>(
-          base::GetFunctionPointerFromNativeLibrary(
-              native_library_,
+          native_library_.GetFunctionPointer(
               "OptimizationGuideEntityMetadataGetHumanReadableName"));
   entity_metadata_get_human_readable_categories_count_func_ = reinterpret_cast<
       EntityMetadataGetHumanReadableCategoriesCountFunc>(
-      base::GetFunctionPointerFromNativeLibrary(
-          native_library_,
+      native_library_.GetFunctionPointer(
           "OptimizationGuideEntityMetadataGetHumanReadableCategoriesCount"));
   entity_metadata_get_human_readable_category_name_at_index_func_ =
       reinterpret_cast<EntityMetadataGetHumanReadableCategoryNameAtIndexFunc>(
-          base::GetFunctionPointerFromNativeLibrary(
-              native_library_,
+          native_library_.GetFunctionPointer(
               "OptimizationGuideEntityMetadataGetHumanReadableCategoryNameAtInd"
               "ex"));
   entity_metadata_get_human_readable_category_score_at_index_func_ =
       reinterpret_cast<EntityMetadataGetHumanReadableCategoryScoreAtIndexFunc>(
-          base::GetFunctionPointerFromNativeLibrary(
-              native_library_,
+          native_library_.GetFunctionPointer(
               "OptimizationGuideEntityMetadataGetHumanReadableCategoryScoreAtIn"
               "dex"));
 }

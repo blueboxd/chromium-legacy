@@ -46,6 +46,7 @@
 
 namespace blink {
 
+class DedicatedWorker;
 class DedicatedWorkerObjectProxy;
 class DedicatedWorkerThread;
 class PostMessageOptions;
@@ -174,6 +175,14 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
     return parent_token_;
   }
 
+  // Adds a DedicatedWorker. This is called when a DedicatedWorker is created in
+  // this ExecutionContext.
+  void AddDedicatedWorker(DedicatedWorker* dedicated_worker);
+
+  // Removes a DedicatedWorker This is called when a DedicatedWorker is
+  // destroyed in this ExecutionContext.
+  void RemoveDedicatedWorker(DedicatedWorker* dedicated_worker);
+
  private:
   struct ParsedCreationParams {
     std::unique_ptr<GlobalScopeCreationParams> creation_params;
@@ -222,6 +231,9 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       this};
   HeapMojoRemote<mojom::blink::BackForwardCacheControllerHost>
       back_forward_cache_controller_host_{this};
+
+  // The set of DedicatedWorkers that are created in this ExecutionContext.
+  HeapHashSet<Member<DedicatedWorker>> dedicated_workers_;
 
   // The total bytes buffered by all network requests in this worker while
   // frozen due to back-forward cache. This number gets reset when the worker

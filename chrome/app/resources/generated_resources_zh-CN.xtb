@@ -268,7 +268,6 @@
 <translation id="125220115284141797">默认</translation>
 <translation id="1252987234827889034">发生个人资料错误</translation>
 <translation id="1254593899333212300">直接连接到互联网</translation>
-<translation id="1258144502260926473">您的计算机包含一个安全模块，该模块可用于在 CloudReady 2.0 中实现许多关键的安全功能。如需了解详情，请访问 Chromebook 帮助中心：https://support.google.com/chromebook/?p=sm</translation>
 <translation id="1258491128795710625">新变化</translation>
 <translation id="1259152067760398571">昨天运行过安全检查</translation>
 <translation id="1260451001046713751">始终允许 <ph name="HOST" /> 显示弹出式窗口和进行重定向</translation>
@@ -291,7 +290,6 @@
 <translation id="1276994519141842946">无法卸载 <ph name="APP_NAME" /></translation>
 <translation id="1277020343994096713">请创建一个与您的当前 PIN 码不同的新 PIN 码</translation>
 <translation id="1278859221870828664">查看 Google Play 应用和服务</translation>
-<translation id="1279024913354609713">不允许</translation>
 <translation id="127946606521051357">附近的设备正在分享内容</translation>
 <translation id="1280965841156951489">修改文件</translation>
 <translation id="1282465000333679776">分享系统中的音频</translation>
@@ -500,7 +498,6 @@
 <translation id="1481537595330271162">调整磁盘大小时出错</translation>
 <translation id="1482626744466814421">为此标签页添加书签…</translation>
 <translation id="1483493594462132177">发送</translation>
-<translation id="1484599694148543901">您想为 CloudReady 2.0 启用 ChromeVox（内置屏幕阅读器）吗？</translation>
 <translation id="1484979925941077974">此网站正在使用蓝牙</translation>
 <translation id="1485015260175968628">该程序现在可以：</translation>
 <translation id="1485141095922496924">版本 <ph name="PRODUCT_VERSION" />（<ph name="PRODUCT_CHANNEL" />）<ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -1199,8 +1196,6 @@
 <translation id="2154502158735983655">读取 Chrome 操作系统设备信息和设备数据。</translation>
 <translation id="2155772377859296191">有效分辨率：<ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="2156294658807918600">Service Worker：<ph name="SCRIPT_URL" /></translation>
-<translation id="2156557113115192526">在此应用中打开这种文件格式时不再询问：
-<ph name="FILE_FORMAT" /></translation>
 <translation id="2156877321344104010">再次运行安全检查</translation>
 <translation id="2157474325782140681">要获得更多功能，请使用由戴尔专为这款 Chromebook 设计的基座。</translation>
 <translation id="215753907730220065">退出全屏模式</translation>
@@ -1517,7 +1512,7 @@
 <translation id="2454524890947537054">批准网站请求？</translation>
 <translation id="245650153866130664">若想自动刷新票据，请选中“记住密码”。系统便会将您的密码仅保存在您的设备上。</translation>
 <translation id="2457246892030921239">“<ph name="APP_NAME" />”想从 <ph name="VOLUME_NAME" />复制文件。</translation>
-<translation id="2457842160081795172">目前位于<ph name="CHANNEL_NAME" />渠道</translation>
+<translation id="2457842160081795172">目前为<ph name="CHANNEL_NAME" />版本</translation>
 <translation id="2458379781610688953">更新帐号，<ph name="EMAIL" /></translation>
 <translation id="2458591546854598341">设备管理令牌无效。</translation>
 <translation id="2459703812219683497">检测到激活码</translation>
@@ -2085,7 +2080,6 @@
 <translation id="3012804260437125868">仅限同一网站的安全连接</translation>
 <translation id="3012917896646559015">请立即与您的硬件制造商联系，将您的计算机送至维修机构。</translation>
 <translation id="301525898020410885">语言由贵单位设置</translation>
-<translation id="3015425363367310551">您想为 CloudReady 2.0 启用 ChromeVox（内置屏幕阅读器）吗？如要启用，请同时按住两个音量键 5 秒钟。</translation>
 <translation id="3015639418649705390">立即重新启动</translation>
 <translation id="3016381065346027039">没有日志条目</translation>
 <translation id="3016641847947582299">组件已更新</translation>
@@ -2208,7 +2202,6 @@
 <translation id="3142562627629111859">新建组</translation>
 <translation id="3143515551205905069">取消同步</translation>
 <translation id="3143754809889689516">从头播放</translation>
-<translation id="3144023778624018265">CloudReady 2.0 设置同步</translation>
 <translation id="3144647712221361880">以其他身份打开链接</translation>
 <translation id="3149510190863420837">Chrome 应用</translation>
 <translation id="3150693969729403281">立即进行安全检查</translation>
@@ -2338,6 +2331,7 @@
 <translation id="33022249435934718">GDI 句柄</translation>
 <translation id="3302388252085547855">输入理由…</translation>
 <translation id="3303260552072730022">某个扩展程序触发了全屏模式。</translation>
+<translation id="3303795387212510132">允许应用打开 <ph name="PROTOCOL_SCHEME" /> 链接？</translation>
 <translation id="3303818374450886607">份数</translation>
 <translation id="3303855915957856445">未找到任何搜索结果</translation>
 <translation id="3304212451103136496">直降 <ph name="DISCOUNT_AMOUNT" /></translation>
@@ -2482,7 +2476,6 @@
 <translation id="3445288400492335833"><ph name="MINUTES" />分钟</translation>
 <translation id="3445925074670675829">USB-C 设备</translation>
 <translation id="3446274660183028131">请启动 Parallels Desktop 以安装 Windows。</translation>
-<translation id="3446286111407214190">Google CloudReady 2.0 条款内容</translation>
 <translation id="344630545793878684">读取您在一些网站上的数据</translation>
 <translation id="3446650212859500694">此文件包含敏感内容</translation>
 <translation id="3447644283769633681">拦截所有第三方 Cookie</translation>
@@ -2710,7 +2703,6 @@
 <translation id="3672681487849735243">检测到出厂错误</translation>
 <translation id="3673097791729989571">由 <ph name="SAML_DOMAIN" /> 托管的登录服务</translation>
 <translation id="3673622964532248901">您不得投射到此设备。</translation>
-<translation id="3675511132463531771">需要更新 CloudReady 2.0</translation>
 <translation id="367645871420407123">如果您要将根密码设为默认的测试图片值，则将此字段留空</translation>
 <translation id="3677106374019847299">请输入自定义提供商</translation>
 <translation id="3677911431265050325">请求切换到移动版网站</translation>
@@ -2957,7 +2949,6 @@
 <translation id="3886446263141354045">系统已将您想访问此网站的请求发送给<ph name="NAME" /></translation>
 <translation id="3887022758415973389">显示设备列表</translation>
 <translation id="3888053818972567950">“<ph name="WEB_DRIVE" />”连接</translation>
-<translation id="3888491127874785636">CouldReady 2.0 系统映像写入工具</translation>
 <translation id="3888550877729210209">使用“<ph name="LOCK_SCREEN_APP_NAME" />”创建记事</translation>
 <translation id="3888586133700543064">这些信息有助于我们更好地了解您所遇到的 Google 助理问题。这些信息最多会存储 90 天，且仅限相关的工程团队和反馈团队访问。</translation>
 <translation id="3888900458694486810">关闭侧边搜索</translation>
@@ -3047,7 +3038,6 @@
 <translation id="3962119236270174787">针对已知危险网站、下载内容和扩展程序提供标准保护</translation>
 <translation id="3963721102035795474">阅读器模式</translation>
 <translation id="3964480518399667971">关闭移动网络</translation>
-<translation id="39650333289039736">您的应用、设置和其他自定义项会在您使用 Google 帐号登录的所有 CloudReady 2.0 设备上保持同步。</translation>
 <translation id="3965811923470826124">使用</translation>
 <translation id="3965965397408324205">退出<ph name="PROFILE_NAME" /></translation>
 <translation id="3966072572894326936">选择其他文件夹...</translation>
@@ -3118,6 +3108,7 @@
 <translation id="4033963223187371752">安全网站可能会内嵌不安全的内容，例如图片或 Web 框架</translation>
 <translation id="4034824040120875894">打印机</translation>
 <translation id="4035758313003622889">任务管理器(&amp;T)</translation>
+<translation id="4035877632587724847">不允许</translation>
 <translation id="4036778507053569103">从服务器下载的政策无效。</translation>
 <translation id="4037084878352560732">马</translation>
 <translation id="403725336528835653">先试用一下</translation>
@@ -3243,7 +3234,6 @@
 <translation id="4167686856635546851">网站通常会使用 JavaScript 来显示互动功能（例如视频游戏或网络表单）</translation>
 <translation id="4168015872538332605">属于<ph name="PRIMARY_EMAIL" />的部分设置现在也会用于您的帐号。仅当您使用多帐号登录时，这些设置才会影响您的帐号。</translation>
 <translation id="4168651806173792090"><ph name="NETWORK_NAME" />，后四位数字为 <ph name="LAST_FOUR_DIGITS" /></translation>
-<translation id="4169535189173047238">不允许</translation>
 <translation id="4170314459383239649">退出时清除</translation>
 <translation id="417096670996204801">选择一份个人资料</translation>
 <translation id="4175137578744761569">浅紫色和白色</translation>
@@ -3316,7 +3306,6 @@
 <translation id="425573743389990240">电池放电率（单位为瓦，负值表示电池正在充电）</translation>
 <translation id="4256316378292851214">视频存储为(&amp;V)...</translation>
 <translation id="4258348331913189841">文件系统</translation>
-<translation id="4258786365875464621"><ph name="APP_ORIGIN" /> 想打开这些文件：</translation>
 <translation id="4259388776256904261">该过程可能需要一点时间</translation>
 <translation id="4260182282978351200"><ph name="FILE_NAME" /> 可能含有危险内容。发送给 Google 高级保护进行扫描？按 Shift+F6 可切换到“下载内容栏”区域。</translation>
 <translation id="4261429981378979799">扩展程序权限</translation>
@@ -3422,7 +3411,6 @@
 <translation id="4369121877634339065">在任一图片上拖动光标即可搜索</translation>
 <translation id="4369215744064167350">网站请求已获批准</translation>
 <translation id="4370975561335139969">您输入的电子邮件地址和密码不匹配。</translation>
-<translation id="4371179719793593133">您的应用和设置会在您使用自己的 Google 帐号登录的所有 CloudReady 2.0 设备上保持同步。如需了解浏览器同步选项，请转到 <ph name="LINK_BEGIN" />Chrome 设置<ph name="LINK_END" />。</translation>
 <translation id="4373966964907728675">正在投射桌面</translation>
 <translation id="4374831787438678295">Linux 安装程序</translation>
 <translation id="4375035964737468845">打开已下载的文件</translation>
@@ -3529,7 +3517,6 @@
 <translation id="4477015793815781985">必须以 Ctrl 键、Alt 键或 ⌘ 键开头</translation>
 <translation id="4478664379124702289">链接存储为(&amp;K)...</translation>
 <translation id="4479424953165245642">管理自助服务终端应用</translation>
-<translation id="4479481745547029647">Google Chrome 和 CloudReady 2.0 附加条款</translation>
 <translation id="4479639480957787382">以太网</translation>
 <translation id="4479877282574735775">正在配置虚拟机。这可能需要几分钟的时间。</translation>
 <translation id="4480590691557335796">Chrome 可以查找您计算机上的有害软件并将其移除</translation>
@@ -4683,7 +4670,6 @@
 <translation id="5648166631817621825">过去 7 天</translation>
 <translation id="5651308944918885595">“附近分享”功能的设备可侦测性</translation>
 <translation id="5653154844073528838">您有 <ph name="PRINTER_COUNT" /> 台已保存的打印机。</translation>
-<translation id="5654266266024827740">您想为 CloudReady 2.0 启用 ChromeVox（内置屏幕阅读器）吗？如要启用，请按空格键。</translation>
 <translation id="5655296450510165335">设备注册</translation>
 <translation id="5656845498778518563">向 Google 发送反馈</translation>
 <translation id="5657156137487675418">允许所有 Cookie</translation>
@@ -4767,7 +4753,6 @@
 <translation id="5747552184818312860">到期时间</translation>
 <translation id="5747785204778348146">开发者版本 - 不稳定</translation>
 <translation id="5747809636523347288">粘贴并转到 <ph name="URL" /></translation>
-<translation id="5747845802829012825">若要完成 Linux 设置，请更新 CloudReady 2.0 并重试。</translation>
 <translation id="5755022574660047665">Google 相册中的“回忆”集锦</translation>
 <translation id="5756163054456765343">帮助中心(&amp;E)</translation>
 <translation id="5757375109985023827">选择一个标签页即可预览</translation>
@@ -4953,7 +4938,6 @@
 <translation id="5939719276406088041">无法创建快捷方式</translation>
 <translation id="594048410531370124">无法识别此键。按任意键即可<ph name="RESPONSE" />。</translation>
 <translation id="5941153596444580863">添加用户…</translation>
-<translation id="5941176400377813459">读取 CloudReady 2.0 设备序列号和组件序列号。</translation>
 <translation id="5941343993301164315">请登录 <ph name="TOKEN_NAME" />。</translation>
 <translation id="5941711191222866238">最小化</translation>
 <translation id="5942779427914696408">设备公开范围</translation>
@@ -4966,24 +4950,6 @@
 <translation id="5950819593680344519">Chrome 在您的计算机上未发现有害软件 • 昨天检查过</translation>
 <translation id="5951303645598168883"><ph name="ORIGIN" /> 想使用本地字体</translation>
 <translation id="5951624318208955736">显示器</translation>
-<translation id="5953627503079109298"><ph name="BEGIN_H3" />调试功能<ph name="END_H3" />
-      <ph name="BR" />
-      您可在 CloudReady 2.0 设备上启用调试功能，以便在相应设备上安装并测试自定义代码。启用这些功能后，您可以：<ph name="BR" />
-      <ph name="BEGIN_LIST" />
-        <ph name="LIST_ITEM" />取消根文件系统验证，以便修改操作系统文件
-        <ph name="LIST_ITEM" />允许使用标准测试密钥以 SSH 方式访问设备，以便使用 <ph name="BEGIN_CODE" />cros flash<ph name="END_CODE" /> 等工具访问设备
-        <ph name="LIST_ITEM" />允许从 U 盘启动设备，以便通过 U 盘安装操作系统映像
-        <ph name="LIST_ITEM" />将 Dev 和系统根登录密码均设为自定义值，以便手动以 SSH 方式访问设备
-      <ph name="END_LIST" />
-      <ph name="BR" />
-      如果您启用了此项设置，那么即使在企业管理的设备上执行了 Powerwash 或数据擦除操作，大部分调试功能仍将保持启用状态。要完全停用所有调试功能，请执行 Chrome 操作系统恢复过程 (https://support.google.com/chromebook/answer/1080595)。
-      <ph name="BR" />
-      <ph name="BR" />
-      如需详细了解调试功能，请访问：<ph name="BR" />
-      https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
-      <ph name="BR" />
-      <ph name="BR" />
-      <ph name="BEGIN_BOLD" />注意<ph name="END_BOLD" />：在此过程中，系统将会重新启动。</translation>
 <translation id="5955282598396714173">您的密码已过期。请退出并重新登录以更改密码。</translation>
 <translation id="5955304353782037793">应用</translation>
 <translation id="5955721306465922729">有个网站想打开此应用。</translation>
@@ -5842,9 +5808,7 @@
 <translation id="6813907279658683733">整个屏幕</translation>
 <translation id="6817174620439930047">当网站想使用系统专有消息访问 MIDI 设备时询问您（推荐）</translation>
 <translation id="6818198425579322765">要翻译的网页语言</translation>
-<translation id="6818640747323584611">帮助改进 CloudReady 2.0 功能和性能</translation>
 <translation id="6818802132960437751">内置病毒防护功能</translation>
-<translation id="6819741204334296334">具有“kiosk_only”这项清单属性的应用必须在 CloudReady 2.0 自助服务终端模式下进行安装</translation>
 <translation id="682123305478866682">投射桌面</translation>
 <translation id="6823174134746916417">触控板点按即点击</translation>
 <translation id="6824564591481349393">复制电子邮件地址(&amp;E)</translation>
@@ -6307,7 +6271,6 @@
 <translation id="730515362922783851">与本地网络或互联网中的任何设备交换数据</translation>
 <translation id="7306521477691455105">请打开“设置”以将 <ph name="USB_DEVICE_NAME" /> 连接到 <ph name="USB_VM_NAME" /></translation>
 <translation id="7307129035224081534">已暂停</translation>
-<translation id="7307719647623535470">在 CloudReady 2.0 设置中管理安全 DNS</translation>
 <translation id="7308643132139167865">网站语言</translation>
 <translation id="7310598146671372464">未能成功登录。服务器不支持指定的 Kerberos 加密类型。请与您的管理员联系。</translation>
 <translation id="7312210124139670355">您的管理员正在重置您的 eSIM 卡。这可能需要几分钟的时间。</translation>
@@ -6551,8 +6514,6 @@
 <translation id="7552846755917812628">请尝试按以下提示操作：</translation>
 <translation id="7553012839257224005">正在检查 Linux 容器</translation>
 <translation id="7553242001898162573">输入您的密码</translation>
-<translation id="7553347517399115470">在此应用中打开这些文件格式时不再询问：
-<ph name="FILE_FORMATS" /></translation>
 <translation id="755472745191515939">您的管理员不允许使用该语言</translation>
 <translation id="7554791636758816595">新标签页</translation>
 <translation id="7556033326131260574">Smart Lock 无法验证您的帐号，您需要输入密码才能进入。</translation>
@@ -6960,7 +6921,6 @@
 <translation id="7935451262452051102">已完成 <ph name="PERCENT" />%</translation>
 <translation id="7938594894617528435">当前处于离线状态</translation>
 <translation id="7939062555109487992">高级选项</translation>
-<translation id="7939321852721702336">您正在启用 CloudReady 2.0 调试功能，这些功能将设置 sshd 守护程序并允许从 U 盘启动设备。</translation>
 <translation id="7939412583708276221">仍然保留</translation>
 <translation id="7942349550061667556">红色</translation>
 <translation id="7943368935008348579">下载 PDF 文件</translation>
@@ -7668,7 +7628,6 @@
 <translation id="8665110742939124773">您输入的访问代码不正确。请重试。</translation>
 <translation id="8665180165765946056">备份完成</translation>
 <translation id="866611985033792019">信任该证书，以便标识电子邮件用户的身份</translation>
-<translation id="8666224701549693691">运行 CloudReady 2.0 诊断测试。</translation>
 <translation id="8666584013686199826">当网站要访问 USB 设备时询问您</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> 现处于全屏模式并已隐藏鼠标指针。</translation>
 <translation id="8668052347555487755">颜色模式</translation>
@@ -7721,7 +7680,6 @@
 <translation id="8719472795285728850">正在监听扩展程序活动…</translation>
 <translation id="8719653885894320876"><ph name="PLUGIN_NAME" /> 下载失败</translation>
 <translation id="8720200012906404956">正在查找移动网络。<ph name="BEGIN_LINK" />了解详情<ph name="END_LINK" /></translation>
-<translation id="8720781020694544444">很遗憾，您的计算机配置了格式错误的硬件 ID。这导致 CloudReady 2.0 无法使用最新的安全修正程序进行更新，以致您的计算机<ph name="BEGIN_BOLD" />很容易遭到恶意攻击<ph name="END_BOLD" />。</translation>
 <translation id="8720816553731218127">安装时间属性的初始化已超时。</translation>
 <translation id="8722912030556880711">发送使用情况数据和诊断数据。目前，此设备会自动向 Google 发送诊断数据、设备数据和应用使用情况数据。这些数据会被用来帮助提高系统和应用的稳定性以及实现其他方面的改进。部分汇总数据也会对 Google 应用和合作伙伴（例如 Android 开发者）有所帮助。如果您已开启“其他网络与应用活动记录”设置，这些数据可能会被保存到您的 Google 帐号中。<ph name="BEGIN_LINK2" />了解详情<ph name="END_LINK2" /></translation>
 <translation id="8724405322205516354">当您看见此图标时，请使用您的指纹进行身份验证或批准购买交易。</translation>
@@ -7908,7 +7866,6 @@
 <translation id="8890516388109605451">来源</translation>
 <translation id="8890529496706615641">无法重命名配置文件。请重试，或者向您的运营商寻求技术支持。</translation>
 <translation id="8892168913673237979">搞定了！</translation>
-<translation id="8893116021193670489">您的计算机包含可信平台模块 (TPM) 安全设备，该设备可用于在 CloudReady 2.0 中实现许多关键的安全功能。如需了解详情，请访问 Chromebook 帮助中心：https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="8893801527741465188">已卸载完毕</translation>
 <translation id="8893928184421379330">抱歉，系统无法识别设备“<ph name="DEVICE_LABEL" />”。</translation>
 <translation id="8894761918470382415">外围设备数据访问保护</translation>
@@ -8072,7 +8029,6 @@
 <translation id="9062468308252555888">14 倍</translation>
 <translation id="9063208415146866933">第 <ph name="ERROR_LINE_START" /> 行到第 <ph name="ERROR_LINE_END" /> 行存在错误</translation>
 <translation id="9064275926664971810">启用自动填充功能后，只需点击一次即可填写多个表单</translation>
-<translation id="9064599787951583960">读取 CloudReady 2.0 设备信息和设备数据。</translation>
 <translation id="9065203028668620118">编辑</translation>
 <translation id="9066394310994446814">这项内容是系统根据您以前使用 Google 服务的活动记录向您显示的。您可在 <ph name="BEGIN_LINK1" />myactivity.google.com<ph name="END_LINK1" /> 上查看/删除您的数据以及更改您的设置。
         <ph name="BREAK" />

@@ -85,8 +85,10 @@ MountDlc::~MountDlc() = default;
 void MountDlc::RunInternal(BorealisContext* context) {
   // TODO(b/172279567): Ensure the DLC is present before trying to install,
   // otherwise we will silently download borealis here.
+  dlcservice::InstallRequest install_request;
+  install_request.set_id(kBorealisDlcName);
   chromeos::DlcserviceClient::Get()->Install(
-      kBorealisDlcName,
+      install_request,
       base::BindOnce(&MountDlc::OnMountDlc, weak_factory_.GetWeakPtr(),
                      context),
       base::DoNothing());

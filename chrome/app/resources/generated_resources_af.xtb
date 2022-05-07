@@ -270,7 +270,6 @@
 <translation id="125220115284141797">Verstek</translation>
 <translation id="1252987234827889034">Profielfout het voorgekom</translation>
 <translation id="1254593899333212300">Direkte internetverbinding</translation>
-<translation id="1258144502260926473">Jou rekenaar bevat 'n veilige module wat gebruik word om baie belangrike sekuriteitskenmerke in CloudReady 2.0 te implementeer. Besoek die Chromebook-hulpsentrum om meer te wete te kom: https://support.google.com/chromebook/?p=sm</translation>
 <translation id="1258491128795710625">Wat's nuut</translation>
 <translation id="1259152067760398571">Veiligheidskontrole het gister plaasgevind</translation>
 <translation id="1260451001046713751">Laat altyd opspringers en herleidings van <ph name="HOST" /> af toe</translation>
@@ -293,7 +292,6 @@
 <translation id="1276994519141842946">Kon nie <ph name="APP_NAME" /> deïnstalleer nie</translation>
 <translation id="1277020343994096713">Skep 'n nuwe PIN wat van jou huidige PIN verskil</translation>
 <translation id="1278859221870828664">Gaan Google Play-programme en -dienste na</translation>
-<translation id="1279024913354609713">Moenie toelaat nie</translation>
 <translation id="127946606521051357">Toestel naby aan jou deel tans</translation>
 <translation id="1280965841156951489">Wysig lêers</translation>
 <translation id="1282465000333679776">Deel stelseloudio</translation>
@@ -505,7 +503,6 @@ Toestemmings wat jy reeds aan programme gegee het, kan op hierdie rekening van t
 <translation id="1481537595330271162">Kon nie skyfgrootte verander nie</translation>
 <translation id="1482626744466814421">Boekmerk hierdie oortjie …</translation>
 <translation id="1483493594462132177">Stuur</translation>
-<translation id="1484599694148543901">Wil jy ChromeVox, die ingeboude skermleser vir CloudReady 2.0, aktiveer?</translation>
 <translation id="1484979925941077974">Werf gebruik tans Bluetooth</translation>
 <translation id="1485015260175968628">Dit kan nou:</translation>
 <translation id="1485141095922496924">Weergawe <ph name="PRODUCT_VERSION" /> (<ph name="PRODUCT_CHANNEL" />) <ph name="PRODUCT_MODIFIER" /> <ph name="PRODUCT_VERSION_BITS" /></translation>
@@ -1218,8 +1215,6 @@ Jy kan hierdie rekening se instellings bestuur deur die Family Link-program op j
 <translation id="2154502158735983655">Lees Chrome-bedryfstelselinligting en -toesteldata.</translation>
 <translation id="2155772377859296191">Lyk soos <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
 <translation id="2156294658807918600">Dienswerker: <ph name="SCRIPT_URL" /></translation>
-<translation id="2156557113115192526">Moenie weer vra wanneer hierdie lêerformaat in hierdie program oopgemaak word nie:
-<ph name="FILE_FORMAT" /></translation>
 <translation id="2156877321344104010">Doen veiligheidskontrole weer</translation>
 <translation id="2157474325782140681">Gebruik 'n Dell-dokstasie wat ontwerp is om saam met hierdie Chromebook te gebruik om bykomende kenmerke te kry.</translation>
 <translation id="215753907730220065">Gaan by Volskerm uit</translation>
@@ -2110,7 +2105,6 @@ en Ctrl+Alt+Verlaag Helderheid om uit te zoem</translation>
 <translation id="3012804260437125868">Net veilige verbindings met dieselfde werf</translation>
 <translation id="3012917896646559015">Kontak jou hardeware-vervaardiger onmiddellik om jou rekenaar na 'n herstelplek te stuur.</translation>
 <translation id="301525898020410885">Jou organisasie stel die taal</translation>
-<translation id="3015425363367310551">Wil jy ChromeVox, die ingeboude skermleser vir CloudReady 2.0, aktiveer? Indien wel, druk en hou albei volumesleutels vyf sekondes lank.</translation>
 <translation id="3015639418649705390">Herbegin nou</translation>
 <translation id="3016381065346027039">Geen loglêerinskrywings nie</translation>
 <translation id="3016641847947582299">Komponent opgedateer</translation>
@@ -2233,7 +2227,6 @@ en Ctrl+Alt+Verlaag Helderheid om uit te zoem</translation>
 <translation id="3142562627629111859">Nuwe groep</translation>
 <translation id="3143515551205905069">Kanselleer sinkronisering</translation>
 <translation id="3143754809889689516">Speel van die begin af</translation>
-<translation id="3144023778624018265">CloudReady 2.0-instellingsinkronisering</translation>
 <translation id="3144647712221361880">Maak skakel oop as</translation>
 <translation id="3149510190863420837">Chrome-programme</translation>
 <translation id="3150693969729403281">Doen veiligheidskontrole nou</translation>
@@ -2363,6 +2356,7 @@ en Ctrl+Alt+Verlaag Helderheid om uit te zoem</translation>
 <translation id="33022249435934718">GDI-handvatsels</translation>
 <translation id="3302388252085547855">Voer regverdiging in …</translation>
 <translation id="3303260552072730022">'n Uitbreiding het volskerm veroorsaak.</translation>
+<translation id="3303795387212510132">Laat program toe om <ph name="PROTOCOL_SCHEME" />-skakels oop te maak?</translation>
 <translation id="3303818374450886607">Kopieë</translation>
 <translation id="3303855915957856445">Geen soekresultate gevind nie</translation>
 <translation id="3304212451103136496">Afslag van <ph name="DISCOUNT_AMOUNT" /></translation>
@@ -2507,7 +2501,6 @@ en Ctrl+Alt+Verlaag Helderheid om uit te zoem</translation>
 <translation id="3445288400492335833"><ph name="MINUTES" /> min.</translation>
 <translation id="3445925074670675829">USB C-toestel</translation>
 <translation id="3446274660183028131">Begin Parallels Desktop om Windows te installeer.</translation>
-<translation id="3446286111407214190">Inhoud van Google CloudReady 2.0 se bepalings</translation>
 <translation id="344630545793878684">Lees jou data op 'n aantal webwerwe</translation>
 <translation id="3446650212859500694">Hierdie lêer het sensitiewe inhoud</translation>
 <translation id="3447644283769633681">Blokkeer alle derdepartywebkoekies</translation>
@@ -2735,7 +2728,6 @@ en Ctrl+Alt+Verlaag Helderheid om uit te zoem</translation>
 <translation id="3672681487849735243">'n Fabriekfout is bespeur</translation>
 <translation id="3673097791729989571">Gasheer van aanmelding is <ph name="SAML_DOMAIN" /></translation>
 <translation id="3673622964532248901">Jy het nie toestemming om nie na hierdie toestel uit te saai nie.</translation>
-<translation id="3675511132463531771">CloudReady 2.0-opdatering word vereis</translation>
 <translation id="367645871420407123">laat leeg as jy die kernwagwoord op die verstektoetsprentwaarde wil stel</translation>
 <translation id="3677106374019847299">Voer gepasmaakte verskaffer in</translation>
 <translation id="3677911431265050325">Versoek mobiele werf</translation>
@@ -2982,7 +2974,6 @@ en Ctrl+Alt+Verlaag Helderheid om uit te zoem</translation>
 <translation id="3886446263141354045">Jou versoek om by hierdie werf in te gaan, is na <ph name="NAME" /> gestuur</translation>
 <translation id="3887022758415973389">Wys toestellys</translation>
 <translation id="3888053818972567950"><ph name="WEB_DRIVE" />-verbinding</translation>
-<translation id="3888491127874785636">CloudReady 2.0-stelselprentskrywer</translation>
 <translation id="3888550877729210209">Maak tans notas met <ph name="LOCK_SCREEN_APP_NAME" /></translation>
 <translation id="3888586133700543064">Hierdie inligting help ons om jou Assistent-kwessie beter te verstaan. Dit word tot 90 dae lank geberg en toegang word tot toepaslike ingenieur- en terugvoerspanne beperk.</translation>
 <translation id="3888900458694486810">Maak kantkieslys toe</translation>
@@ -3073,7 +3064,6 @@ en Ctrl+Alt+Verlaag Helderheid om uit te zoem</translation>
 <translation id="3962119236270174787">Standaardbeskerming teen webwerwe, aflaaie en uitbreidings wat bekend is daarvoor dat hulle gevaarlik is</translation>
 <translation id="3963721102035795474">Lesermodus</translation>
 <translation id="3964480518399667971">Skakel sellulêre netwerk af</translation>
-<translation id="39650333289039736">Jou programme, instellings en ander pasmakings sal gesinkroniseer word op alle CloudReady 2.0-toestelle waarop jy met jou Google-rekening aangemeld is.</translation>
 <translation id="3965811923470826124">Met</translation>
 <translation id="3965965397408324205">Verlaat <ph name="PROFILE_NAME" /></translation>
 <translation id="3966072572894326936">Kies 'n ander vouer …</translation>
@@ -3144,6 +3134,7 @@ en Ctrl+Alt+Verlaag Helderheid om uit te zoem</translation>
 <translation id="4033963223187371752">Veilige werwe kan dalk inhoud, soos prente en webrame wat nie veilig is nie, inbed</translation>
 <translation id="4034824040120875894">Drukker</translation>
 <translation id="4035758313003622889">Taakbestuurder</translation>
+<translation id="4035877632587724847">Moenie toelaat nie</translation>
 <translation id="4036778507053569103">Die beleid wat van die bediener afgelaai is, is ongeldig.</translation>
 <translation id="4037084878352560732">Perd</translation>
 <translation id="403725336528835653">Probeer dit eers</translation>
@@ -3269,7 +3260,6 @@ en Ctrl+Alt+Verlaag Helderheid om uit te zoem</translation>
 <translation id="4167686856635546851">Werwe gebruik gewoonlik JavaScript om interaktiewe kenmerke te wys, soos vidoespeletjies of webvorms</translation>
 <translation id="4168015872538332605">Sommige instellings wat aan <ph name="PRIMARY_EMAIL" /> behoort, word met jou gedeel. Hierdie instellings affekteer net jou rekening wanneer jy veelvuldige aanmelding gebruik.</translation>
 <translation id="4168651806173792090"><ph name="NETWORK_NAME" /> wat met <ph name="LAST_FOUR_DIGITS" /> eindig</translation>
-<translation id="4169535189173047238">Moenie toelaat nie</translation>
 <translation id="4170314459383239649">Vee uit wanneer uitgegaan is</translation>
 <translation id="417096670996204801">Kies 'n profiel</translation>
 <translation id="4175137578744761569">Ligpers en wit</translation>
@@ -3342,7 +3332,6 @@ en Ctrl+Alt+Verlaag Helderheid om uit te zoem</translation>
 <translation id="425573743389990240">Battery-ontladingspoed in Watt (negatiewe waarde beteken battery laai tans)</translation>
 <translation id="4256316378292851214">Stoor video as …</translation>
 <translation id="4258348331913189841">Lêerstelsels</translation>
-<translation id="4258786365875464621"><ph name="APP_ORIGIN" /> wil hierdie lêers oopmaak:</translation>
 <translation id="4259388776256904261">Dit kan 'n rukkie neem</translation>
 <translation id="4260182282978351200"><ph name="FILE_NAME" /> kan gevaarlik wees. Stuur dit na Google Gevorderde Beskerming toe om te skandeer? Druk Shift+F6 om na die aflaaibalk toe te gaan.</translation>
 <translation id="4261429981378979799">Uitbreidingtoestemmings</translation>
@@ -3450,7 +3439,6 @@ en Ctrl+Alt+Verlaag Helderheid om uit te zoem</translation>
 <translation id="4369121877634339065">Sleep oor enige prent om te soek</translation>
 <translation id="4369215744064167350">Webwerfversoek is goedgekeur</translation>
 <translation id="4370975561335139969">Die e-posadres en wagwoord wat jy ingevoer het, pas nie</translation>
-<translation id="4371179719793593133">Jou programme en instellings sal gesinkroniseer word op alle CloudReady 2.0-toestelle waarop jy met jou Google-rekening aangemeld is. Gaan na <ph name="LINK_BEGIN" />Chrome-instellings<ph name="LINK_END" /> toe vir blaaiersinkroniseringopsies.</translation>
 <translation id="4373966964907728675">Saai tans werkskerm uit</translation>
 <translation id="4374831787438678295">Linux-installeerder</translation>
 <translation id="4375035964737468845">Maak afgelaaide lêers oop</translation>
@@ -3557,7 +3545,6 @@ en Ctrl+Alt+Verlaag Helderheid om uit te zoem</translation>
 <translation id="4477015793815781985">Sluit Ctrl, Alt of ⌘ in</translation>
 <translation id="4478664379124702289">Stoor skakel as …</translation>
 <translation id="4479424953165245642">Bestuur kioskprogramme</translation>
-<translation id="4479481745547029647">Google Chrome en CloudReady 2.0 se bykomende bepalings</translation>
 <translation id="4479639480957787382">Ethernet</translation>
 <translation id="4479877282574735775">Stel tans die virtuele masjien op. Dit kan 'n paar minute neem.</translation>
 <translation id="4480590691557335796">Chrome kan skadelike sagteware op jou rekenaar opspoor en dit verwyder</translation>
@@ -4713,7 +4700,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5648166631817621825">Afgelope 7 dae</translation>
 <translation id="5651308944918885595">Nabydeling: opspoorbaarheid</translation>
 <translation id="5653154844073528838">Jy het <ph name="PRINTER_COUNT" /> gestoorde drukkers.</translation>
-<translation id="5654266266024827740">Wil jy ChromeVox, die ingeboude skermleser vir CloudReady 2.0, aktiveer? Indien wel, druk die spasiebalk.</translation>
 <translation id="5655296450510165335">Toestelinskrywing</translation>
 <translation id="5656845498778518563">Stuur terugvoer na Google</translation>
 <translation id="5657156137487675418">Laat alle webkoekies toe</translation>
@@ -4797,7 +4783,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5747552184818312860">Verval</translation>
 <translation id="5747785204778348146">Ontwikkelaar – onstabiel</translation>
 <translation id="5747809636523347288">Plak en gaan na <ph name="URL" /></translation>
-<translation id="5747845802829012825">Dateer CloudReady 2.0 op en probeer weer om Linux klaar op te stel.</translation>
 <translation id="5755022574660047665">herinneringe van Google Foto's af</translation>
 <translation id="5756163054456765343">Hulpsentrum</translation>
 <translation id="5757375109985023827">Kies 'n oortjie om te voorbeskou</translation>
@@ -4983,7 +4968,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5939719276406088041">Kan nie kortpad skep nie</translation>
 <translation id="594048410531370124">Sleutel nie herken nie. Druk enige sleutel en <ph name="RESPONSE" />.</translation>
 <translation id="5941153596444580863">Voeg persoon by …</translation>
-<translation id="5941176400377813459">Lees CloudReady 2.0-toestel- en komponentreeksnommers.</translation>
 <translation id="5941343993301164315">Meld asseblief by <ph name="TOKEN_NAME" /> aan.</translation>
 <translation id="5941711191222866238">Maak kleiner</translation>
 <translation id="5942779427914696408">Toestelsigbaarheid</translation>
@@ -4996,24 +4980,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="5950819593680344519">Chrome het nie enige skadelike sagteware op jou rekenaar gekry nie • Gister nagegaan</translation>
 <translation id="5951303645598168883"><ph name="ORIGIN" /> wil plaaslike lettertipes gebruik</translation>
 <translation id="5951624318208955736">Monitor</translation>
-<translation id="5953627503079109298"><ph name="BEGIN_H3" />Ontfoutingkenmerke<ph name="END_H3" />
-    <ph name="BR" />
-    Jy kan die ontfoutingkenmerke op jou CloudReady 2.0-toestel aktiveer om gepasmaakte kode on jou toestel te installeer en te toets. Dit sal jou in staat stel om:<ph name="BR" />
-    <ph name="BEGIN_LIST" />
-      <ph name="LIST_ITEM" />rootfs-verifikasie te verwyder sodat jy bedryfstelsellêers kan wysig
-      <ph name="LIST_ITEM" />SSH-toegang tot die toestel met die standaardtoetssleutels te aktiveer sodat jy nutsgoed soos <ph name="BEGIN_CODE" />'cros flash'<ph name="END_CODE" /> kan gebruik om toegang tot die toestel te verkry
-      <ph name="LIST_ITEM" />Selflaai vanaf USB te aktiveer sodat jy 'n bedryfstelselkopie van 'n USB-skyf af kan installeer 
-      <ph name="LIST_ITEM" />Sowel die ontwikkelaar- as die stelselkernaanmeldwagwoord op 'n gepasmaakte waarde te stel sodat jy handmatig in die toestel in kan SSH
-    <ph name="END_LIST" />
-    <ph name="BR" />
-    Sodra dit geaktiveer is, sal die meeste van die ontfoutingkenmerke geaktiveer bly selfs nadat 'n kragwas uitgevoer of die data op 'n ondernemingbestuurde toestel uitgevee is. Om alle ontfoutingkenmerke heeltemal te deaktiveer, voltooi die Chrome-bedryfstelselterugstellingproses (https://support.google.com/chromebook/answer/1080595).
-    <ph name="BR" />
-    <ph name="BR" />
-    Vir meer inligting oor die ontfoutingkenmerke, sien:<ph name="BR" />
-    https://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-features
-    <ph name="BR" />
-    <ph name="BR" />
-    <ph name="BEGIN_BOLD" />Let wel:<ph name="END_BOLD" /> Die stelsel sal tydens die proses herselflaai.</translation>
 <translation id="5955282598396714173">Jou wagwoord het verval. Meld af en meld dan weer aan om dit te verander.</translation>
 <translation id="5955304353782037793">program</translation>
 <translation id="5955721306465922729">'n Webwerf wil hierdie program oopmaak.</translation>
@@ -5873,9 +5839,7 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="6813907279658683733">Hele skerm</translation>
 <translation id="6817174620439930047">Vra wanneer 'n werf stelseleksklusiewe boodskappe wil gebruik om toegang tot MIDI-toestelle te kry (aanbeveel)</translation>
 <translation id="6818198425579322765">Bladsytaal om te vertaal</translation>
-<translation id="6818640747323584611">Help om CloudReady 2.0 se kenmerke en werkverrigting beter te maak</translation>
 <translation id="6818802132960437751">Ingeboude virusbeskerming</translation>
-<translation id="6819741204334296334">Program met "net_kiosk"-manifeseienskap moet in CloudReady 2.0 se kioskmodus geïnstalleer word</translation>
 <translation id="682123305478866682">Saai werkskerm uit</translation>
 <translation id="6823174134746916417">Raakpaneel – tik-om-te-klik</translation>
 <translation id="6824564591481349393">Kopieer e-posadres</translation>
@@ -6338,7 +6302,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="730515362922783851">Ruil data uit met enige toestel in die plaaslike netwerk of internet</translation>
 <translation id="7306521477691455105">Maak Instellings oop om <ph name="USB_DEVICE_NAME" /> aan <ph name="USB_VM_NAME" /> te koppel</translation>
 <translation id="7307129035224081534">Wag tans</translation>
-<translation id="7307719647623535470">Bestuur veilige DNS in CloudReady 2.0-instellings</translation>
 <translation id="7308643132139167865">Webwerftale</translation>
 <translation id="7310598146671372464">Kon nie aanmeld nie. Die bediener steun nie gespesifiseerde Kerberos-enkripsietipes nie. Kontak asseblief jou administrateur.</translation>
 <translation id="7312210124139670355">Jou administrateur stel tans jou e-SIM terug. Dit kan 'n paar minute neem.</translation>
@@ -6582,8 +6545,6 @@ Maak seker jy wys nie enige sensitiewe inligting nie.</translation>
 <translation id="7552846755917812628">Probeer die volgende wenke:</translation>
 <translation id="7553012839257224005">Gaan tans die Linux-houer na</translation>
 <translation id="7553242001898162573">Voer jou wagwoord in</translation>
-<translation id="7553347517399115470">Moenie weer vra wanneer hierdie lêerformate in hierdie program oopgemaak word nie:
-<ph name="FILE_FORMATS" /></translation>
 <translation id="755472745191515939">Jou administrateur laat nie hierdie taal toe nie</translation>
 <translation id="7554791636758816595">Nuwe oortjie</translation>
 <translation id="7556033326131260574">Smart Lock kon nie jou rekening verifieer nie. Voer jou wagwoord in om in te gaan.</translation>
@@ -6993,7 +6954,6 @@ Druk 'n toegewese skakelaar of sleutel om toewysing te verwyder.</translation>
 <translation id="7935451262452051102"><ph name="PERCENT" />% voltooi</translation>
 <translation id="7938594894617528435">Tans vanlyn</translation>
 <translation id="7939062555109487992">Gevorderde opsies</translation>
-<translation id="7939321852721702336">Jy aktiveer tans CloudReady 2.0-bedryfstelselontfoutingkenmerke wat sshd daemon sal opstel en selflaai van USB-datastokkies af moontlik sal maak.</translation>
 <translation id="7939412583708276221">Hou in elk geval</translation>
 <translation id="7942349550061667556">Rooi</translation>
 <translation id="7943368935008348579">Laai PDF's af</translation>
@@ -7700,7 +7660,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8665110742939124773">Jy het 'n verkeerde toegangskode ingevoer. Probeer weer.</translation>
 <translation id="8665180165765946056">Rugsteun is voltooi</translation>
 <translation id="866611985033792019">Vertrou hierdie sertifikaat om e-posgebruikers te identifiseer</translation>
-<translation id="8666224701549693691">Voer CloudReady 2.0- diagnostiese toetse uit.</translation>
 <translation id="8666584013686199826">Vra wanneer 'n werf toegang tot USB-toestelle wil verkry</translation>
 <translation id="8667328578593601900"><ph name="FULLSCREEN_ORIGIN" /> is nou volskerm en het jou muismerker gedeaktiveer.</translation>
 <translation id="8668052347555487755">Kleurmodus</translation>
@@ -7753,7 +7712,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8719472795285728850">Luister tans vir uitbreidingaktiwiteite …</translation>
 <translation id="8719653885894320876">Kon nie <ph name="PLUGIN_NAME" /> aflaai nie</translation>
 <translation id="8720200012906404956">Soek tans 'n selnetwerk. <ph name="BEGIN_LINK" />Kom meer te wete<ph name="END_LINK" /></translation>
-<translation id="8720781020694544444">Ongelukkig is jou rekenaar opgestel met 'n misvormde hardeware-ID. Dit verhinder CloudReady 2.0 om met die nuutste sekuriteitsoplossings op te dateer en jou rekenaar <ph name="BEGIN_BOLD" />kan dalk blootgestel word aan kwaadwillige aanvalle<ph name="END_BOLD" />.</translation>
 <translation id="8720816553731218127">Die inisialisering van kenmerke by installering het uitgetel.</translation>
 <translation id="8722912030556880711">Stuur gebruik- en diagnostiese data. Hierdie toestel stuur tans diagnostiese, toestel- en programgebruikdata outomaties na Google toe. Dit sal met stelsel- en programstabiliteit en ander verbeteringe help. Sekere saamgestelde data sal ook Google-programme en -vennote, soos Android-ontwikkelaars, help. As jou bykomende Web- en Programaktiwiteit-instelling aangeskakel is, kan hierdie data in jou Google-rekening gestoor word. <ph name="BEGIN_LINK2" />Kom meer te wete<ph name="END_LINK2" /></translation>
 <translation id="8724405322205516354">Gebruik jou vingerafdruk vir identifikasie om aankope goed te keur wanneer jy hierdie ikoon sien.</translation>
@@ -7940,7 +7898,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="8890516388109605451">Bronne</translation>
 <translation id="8890529496706615641">Profiel kon nie hernoem word nie. Probeer weer of kontak jou diensverskaffer vir tegniese steundiens.</translation>
 <translation id="8892168913673237979">Gereed!</translation>
-<translation id="8893116021193670489">Jou rekenaar bevat 'n Vertroude Platform-module- (VPM-) sekuriteitstoestel, wat gebruik word om baie belangrike sekuriteitskenmerke in CloudReady 2.0 te implementeer. Besoek die Chromebook-hulpsentrum om meer te wete te kom: https://support.google.com/chromebook/?p=tpm</translation>
 <translation id="8893801527741465188">Deïnstallering is voltooi</translation>
 <translation id="8893928184421379330">Jammer, die toestel <ph name="DEVICE_LABEL" /> kon nie herken word nie.</translation>
 <translation id="8894761918470382415">Datatoegangbeskerming vir randtoestelle</translation>
@@ -8104,7 +8061,6 @@ Hou jou sleutellêer op 'n veilige plek. Jy gaan dit nodig hê om nuwe weergawes
 <translation id="9062468308252555888">14x</translation>
 <translation id="9063208415146866933">Fout vanaf reël <ph name="ERROR_LINE_START" /> tot <ph name="ERROR_LINE_END" /></translation>
 <translation id="9064275926664971810">Aktiveer outovul om webvorms met 'n enkele klik in te vul</translation>
-<translation id="9064599787951583960">Lees CloudReady 2.0-toestelinligting en -toesteldata.</translation>
 <translation id="9065203028668620118">Wysig</translation>
 <translation id="9066394310994446814">Jy sien hierdie item op grond van jou vorige aktiwiteit met Google-dienste. Jy kan jou data by <ph name="BEGIN_LINK1" />myactivity.google.com<ph name="END_LINK1" /> sien, dit uitvee en jou instellings verander.
         <ph name="BREAK" />

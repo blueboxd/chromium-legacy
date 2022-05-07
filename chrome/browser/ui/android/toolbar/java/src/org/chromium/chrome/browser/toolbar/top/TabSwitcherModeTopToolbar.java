@@ -378,14 +378,6 @@ public class TabSwitcherModeTopToolbar extends OptimizedFrameLayout
     }
 
     /**
-     * @return Whether or not tab stack button should be visible based on the enabled features and
-     *         incognito status.
-     */
-    private boolean shouldShowTabStackButton() {
-        return !(mIsGridTabSwitcherEnabled && mIsIncognitoModeEnabledSupplier.getAsBoolean());
-    }
-
-    /**
      * @return Whether or not new tab variant should be enabled based on if incognito tabs exists
      * and form factor. Always returns true for tablets.
      */

@@ -20,10 +20,8 @@ bool CSSOMKeywords::ValidKeywordForProperty(CSSPropertyID id,
     return false;
   }
 
-  if (css_parsing_utils::IsCSSWideKeyword(valueID)) {
-    // TODO(crbug.com/1310761): Support CSS-wide keywords in custom props.
-    return id != CSSPropertyID::kVariable;
-  }
+  if (css_parsing_utils::IsCSSWideKeyword(valueID))
+    return true;
 
   switch (id) {
   {% for property in properties if property.keywordIDs and 'Keyword' in property.typedom_types %}

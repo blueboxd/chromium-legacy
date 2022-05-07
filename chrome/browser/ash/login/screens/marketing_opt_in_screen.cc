@@ -154,8 +154,6 @@ void MarketingOptInScreen::HideImpl() {
 }
 
 void MarketingOptInScreen::OnGetStarted(bool chromebook_email_opt_in) {
-  if (is_hidden())
-    return;
   DCHECK(initialized_);
 
   // UMA Metrics & API call only when the toggle is visible

@@ -29,29 +29,13 @@ class CalendarEventFetch;
 // which represents the return value of a query from the GoogleCalendar API.
 using SingleDayEventList = std::list<google_apis::calendar::CalendarEvent>;
 
-// Errors that indicate an event-fetch failure that did not come from Google
-// Calendar API.
-enum class FetchInternalErrorCode {
-  // Went too long without a response.
-  TIMEOUT = 0,
-
-  // A resource we need is not present.
-  RESOURCE_UNAVAILABLE = 1,
-
-  kMaxValue = RESOURCE_UNAVAILABLE,
-};
-
 // Controller of the `CalendarView`.
-class ASH_EXPORT CalendarModel : public SessionObserver {
+class ASH_EXPORT CalendarModel {
  public:
   CalendarModel();
   CalendarModel(const CalendarModel& other) = delete;
   CalendarModel& operator=(const CalendarModel& other) = delete;
-  ~CalendarModel() override;
-
-  // SessionObserver:
-  void OnSessionStateChanged(session_manager::SessionState state) override;
-  void OnActiveUserSessionChanged(const AccountId& account_id) override;
+  virtual ~CalendarModel();
 
   // Number of months, before and after the month currently on-display, that we
   // cache-ahead.
@@ -74,10 +58,6 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
-
-  // Completely, unconditionally clears out any cached events. Intended for when
-  // we log out or switch users.
-  void ClearAllCachedEvents();
 
   // Requests events that fall in |months|.
   void FetchEvents(const std::set<base::Time>& months);
@@ -180,8 +160,6 @@ class ASH_EXPORT CalendarModel : public SessionObserver {
 
   // Time difference between the UTC time and the local time in minutes.
   absl::optional<int> time_difference_minutes_;
-
-  ScopedSessionObserver session_observer_;
 
   base::ObserverList<Observer> observers_;
 

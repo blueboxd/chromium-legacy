@@ -1522,22 +1522,6 @@ const FeatureEntry::FeatureVariation kDiscountConsentV2Variations[] = {
      std::size(kDiscountConsentNtpDialog), nullptr},
 };
 
-// The following are consent v2 variations in the Chrome Cart module.
-const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpStringChange[] = {
-    {ntp_features::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "1"}};
-const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpInline[] = {
-    {ntp_features::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "2"}};
-const flags_ui::FeatureEntry::FeatureParam kDiscountConsentNtpDialog[] = {
-    {ntp_features::kNtpChromeCartModuleDiscountConsentNtpVariationParam, "3"}};
-const FeatureEntry::FeatureVariation kDiscountConsentV2Variations[] = {
-    {"Changing string", kDiscountConsentNtpStringChange,
-     base::size(kDiscountConsentNtpStringChange), nullptr},
-    {"Inline Consent", kDiscountConsentNtpInline,
-     base::size(kDiscountConsentNtpInline), nullptr},
-    {"Dialog Consent", kDiscountConsentNtpDialog,
-     base::size(kDiscountConsentNtpDialog), nullptr},
-};
-
 const FeatureEntry::FeatureParam kNtpRecipeTasksModuleFakeData[] = {
     {ntp_features::kNtpRecipeTasksModuleDataParam, "fake"}};
 const FeatureEntry::FeatureVariation kNtpRecipeTasksModuleVariations[] = {
@@ -1916,7 +1900,6 @@ const FeatureEntry::FeatureParam kTabGridLayoutAndroid_NewTabTile[] = {
     {"tab_grid_layout_android_new_tab_tile", "NewTabTile"}};
 
 const FeatureEntry::FeatureParam kTabGridLayoutAndroid_TallNTV[] = {
-    {"thumbnail_aspect_ratio", "0.85"},
     {"allow_to_refetch", "true"},
     {"tab_grid_layout_android_new_tab", "NewTabVariation"},
     {"enable_launch_polish", "true"},
@@ -7654,12 +7637,10 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          autofill::features::kAutofillSuggestVirtualCardsOnIncompleteForm)},
 
-    {flag_descriptions::kEnableLensStandaloneFlagId,
-     flag_descriptions::kEnableLensStandaloneName,
-     flag_descriptions::kEnableLensStandaloneDescription, kOsDesktop,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(lens::features::kLensStandalone,
-                                    kLensStandaloneVariations,
-                                    "GoogleLensDesktopContextMenuSearch")},
+    {flag_descriptions::kEnableLensRegionSearchFlagId,
+     flag_descriptions::kEnableLensRegionSearchName,
+     flag_descriptions::kEnableLensRegionSearchDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(lens::features::kLensRegionSearch)},
 
     {"enable-penetrating-image-selection",
      flag_descriptions::kEnablePenetratingImageSelectionName,
@@ -7829,13 +7810,8 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(net::features::kSamePartyCookiesConsideredFirstParty)},
 
     {"partitioned-cookies", flag_descriptions::kPartitionedCookiesName,
-     flag_descriptions::kPartitionedCookiesDescription, kOsAll,
+     flag_descriptions::kPartitionedCookiesDescription, kOsDesktop | kOsAndroid,
      FEATURE_VALUE_TYPE(net::features::kPartitionedCookies)},
-    // TODO(crbug.com/1296161): Remove this flag when the CHIPS OT ends.
-    {"partitioned-cookies-bypass-origin-trial",
-     flag_descriptions::kPartitionedCookiesBypassOriginTrialName,
-     flag_descriptions::kPartitionedCookiesBypassOriginTrialDescription, kOsAll,
-     FEATURE_VALUE_TYPE(net::features::kPartitionedCookiesBypassOriginTrial)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {kBorealisBigGlInternalName, flag_descriptions::kBorealisBigGlName,

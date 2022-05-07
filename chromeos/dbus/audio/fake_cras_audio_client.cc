@@ -207,7 +207,6 @@ void FakeCrasAudioClient::SetNoiseCancellationSupported(
 
 void FakeCrasAudioClient::SetNoiseCancellationEnabled(
     bool noise_cancellation_on) {
-  noise_cancellation_enabled_ = noise_cancellation_on;
   ++noise_cancellation_enabled_counter_;
 }
 

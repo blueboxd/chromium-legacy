@@ -272,9 +272,6 @@ class COMPONENT_EXPORT(ASH_COMPONENTS_AUDIO) CrasAudioHandler
   // Gets the state of input noise cancellation.
   bool GetNoiseCancellationState() const;
 
-  // Refreshes the input device noise cancellation state.
-  void RefreshNoiseCancellationState();
-
   // Sends a DBus signal to set the state of input noise cancellation.
   void SetNoiseCancellationState(bool state);
 

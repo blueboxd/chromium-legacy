@@ -505,7 +505,6 @@ Funkce Handoff musí být povolena také v Nastavení v sekci Obecné a zaříze
 <translation id="5580834567471114021">Přidat do seznamu četby na později?</translation>
 <translation id="5592679540098330836">Zapnout synchronizaci pro: <ph name="NAME" /></translation>
 <translation id="560322036295180549">Vypnuto vaší organizací</translation>
-<translation id="560999923643681074">Přístup s oprávněním upravovat</translation>
 <translation id="5614553682702429503">Uložit heslo?</translation>
 <translation id="5626245204502895507">Soubor v tuto chvíli nelze stáhnout.</translation>
 <translation id="5631164295104953411">Přidat platební metodu</translation>
@@ -830,7 +829,6 @@ Weby pomocí souborů cookie mohou sledovat vaši aktivitu prohlížení na růz
 <translation id="8319076807703933069">Nové vyhledávání</translation>
 <translation id="8323906514956095947">Přidržením zobrazíte další možnosti karet</translation>
 <translation id="8328777765163860529">Zavřít vše</translation>
-<translation id="8364085047956854021">Až web „<ph name="SITE_NAME" />“ opustíte, jeho oprávnění budou resetována.</translation>
 <translation id="8378714024927312812">Spravováno vaší organizací</translation>
 <translation id="8386068868580335421">Obnovit</translation>
 <translation id="8407669440184693619">Pro tento web nebyla nalezena žádná hesla</translation>

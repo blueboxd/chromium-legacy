@@ -795,7 +795,10 @@ BrowserView::BrowserView(std::unique_ptr<Browser> browser)
   }
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (lens::features::IsLensSidePanelEnabled()) {
+  if ((base::FeatureList::IsEnabled(lens::features::kLensStandalone) &&
+       lens::features::kEnableSidePanelForLensImageSearch.Get()) ||
+      (base::FeatureList::IsEnabled(lens::features::kLensRegionSearch) &&
+       lens::features::kEnableSidePanelForLensRegionSearch.Get())) {
     lens_side_panel_ = AddChildView(std::make_unique<SidePanel>(this));
     // If the separator was not already created, create one.
     if (!right_aligned_side_panel_separator_)
@@ -2614,6 +2617,11 @@ bool BrowserView::CanActivate() const {
     return true;
   }
 
+#if defined(USE_AURA) && BUILDFLAG(IS_CHROMEOS_ASH)
+  // On Aura window manager controls all windows so settings focus via PostTask
+  // will make only worse because posted task will keep trying to steal focus.
+  queue->ActivateModalDialog();
+#else
   // If another browser is app modal, flash and activate the modal browser. This
   // has to be done in a post task, otherwise if the user clicked on a window
   // that doesn't have the modal dialog the windows keep trying to get the focus
@@ -2621,6 +2629,7 @@ bool BrowserView::CanActivate() const {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&BrowserView::ActivateAppModalDialog,
                                 weak_ptr_factory_.GetWeakPtr()));
+#endif
   return false;
 }
 

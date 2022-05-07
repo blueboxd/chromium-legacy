@@ -19,6 +19,7 @@
 #include "ui/gfx/text_elider.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/styled_label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/flex_layout.h"
 #include "ui/views/layout/layout_provider.h"
@@ -33,6 +34,7 @@ FileHandlerLaunchDialogView::FileHandlerLaunchDialogView(
     chrome::WebAppLaunchAcceptanceCallback close_callback)
     : LaunchAppUserChoiceDialogView(profile, app_id, std::move(close_callback)),
       file_paths_(file_paths) {
+  DCHECK(!file_paths.empty());
   auto* layout_provider = views::LayoutProvider::Get();
   gfx::Insets dialog_insets = layout_provider->GetDialogInsetsForContentType(
       views::DialogContentType::kControl, views::DialogContentType::kControl);
@@ -43,6 +45,12 @@ FileHandlerLaunchDialogView::FileHandlerLaunchDialogView(
   set_margins(dialog_insets);
   set_fixed_width(layout_provider->GetDistanceMetric(
       views::DISTANCE_MODAL_DIALOG_PREFERRED_WIDTH));
+  SetButtonLabel(
+      ui::DIALOG_BUTTON_OK,
+      l10n_util::GetStringUTF16(IDS_WEB_APP_FILE_HANDLING_POSITIVE_BUTTON));
+  SetButtonLabel(
+      ui::DIALOG_BUTTON_CANCEL,
+      l10n_util::GetStringUTF16(IDS_WEB_APP_FILE_HANDLING_NEGATIVE_BUTTON));
 }
 
 FileHandlerLaunchDialogView::~FileHandlerLaunchDialogView() = default;
@@ -78,27 +86,16 @@ FileHandlerLaunchDialogView::CreateAboveAppInfoView() {
 
 std::unique_ptr<views::View>
 FileHandlerLaunchDialogView::CreateBelowAppInfoView() {
-  auto* layout_provider = views::LayoutProvider::Get();
+  if (file_paths_.size() == 1)
+    return nullptr;
 
-  // Description of permission that's being requested.
+  auto* layout_provider = views::LayoutProvider::Get();
   auto description_view = std::make_unique<views::View>();
   description_view->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical,
       /*inside_border_insets=*/gfx::Insets(),
       layout_provider->GetDistanceMetric(
           views::DISTANCE_UNRELATED_CONTROL_VERTICAL)));
-
-  // Question label.
-  auto* question_label = description_view->AddChildView(
-      std::make_unique<views::Label>(l10n_util::GetStringFUTF16(
-          file_paths_.size() > 1
-              ? IDS_WEB_APP_FILE_HANDLING_PERMISSION_DESCRIPTION_MULTIPLE
-              : IDS_WEB_APP_FILE_HANDLING_PERMISSION_DESCRIPTION,
-          base::UTF8ToUTF16(web_app::WebAppProvider::GetForWebApps(profile())
-                                ->registrar()
-                                .GetAppShortName(app_id())))));
-  question_label->SetMultiLine(true);
-  question_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
 
   // File icon and name list.
   auto* files_view =
@@ -107,8 +104,8 @@ FileHandlerLaunchDialogView::CreateBelowAppInfoView() {
       ->SetOrientation(views::LayoutOrientation::kHorizontal)
       .SetCrossAxisAlignment(views::LayoutAlignment::kStart);
 
-  // TODO(tluk): We should be sourcing the size of the file icon from the layout
-  // provider rather than relying on hardcoded constants.
+  // TODO(tluk): We should be sourcing the size of the file icon from the
+  // layout provider rather than relying on hardcoded constants.
   constexpr int kIconSize = 16;
   auto* icon = files_view->AddChildView(
       std::make_unique<views::ImageView>(ui::ImageModel::FromVectorIcon(

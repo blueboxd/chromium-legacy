@@ -505,7 +505,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="5580834567471114021">Желите да додате на листу за читање за касније?</translation>
 <translation id="5592679540098330836">Укључите синхронизацију за: <ph name="NAME" /></translation>
 <translation id="560322036295180549">Искључила је организација</translation>
-<translation id="560999923643681074">Измените приступ</translation>
 <translation id="5614553682702429503">Желите ли да сачувате лозинку?</translation>
 <translation id="5626245204502895507">Тренутно није могуће преузети датотеку.</translation>
 <translation id="5631164295104953411">Додај начина плаћања</translation>
@@ -830,7 +829,6 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8319076807703933069">Нова претрага</translation>
 <translation id="8323906514956095947">Додирните и задржите ако желите више опција за картице</translation>
 <translation id="8328777765163860529">Затвори све</translation>
-<translation id="8364085047956854021">Дозволе за „<ph name="SITE_NAME" />“ подразумевано ће се искључити када напустите овај сајт.</translation>
 <translation id="8378714024927312812">Овим управља организација</translation>
 <translation id="8386068868580335421">Ресетуј</translation>
 <translation id="8407669440184693619">Није пронађена ниједна лозинка за овај сајт</translation>

@@ -34,13 +34,13 @@ public class DropDataContentProvider extends ContentProvider {
      * Implement {@link ContentProvider.PipeDataWriter} to be used by {@link
      * ContentProvider#openPipeHelper}, in order to stream image data to drop target.
      */
-    private static class DropPipeDataWriter implements ContentProvider.PipeDataWriter<byte[]> {
+    private static class DropPipeDataWriter implements ContentProvider.PipeDataWriter<Void> {
         @Override
-        public void writeDataToPipe(ParcelFileDescriptor output, Uri uri, String mimeType,
-                Bundle opts, byte[] imageBytes) {
+        public void writeDataToPipe(
+                ParcelFileDescriptor output, Uri uri, String mimeType, Bundle opts, Void unused) {
             try (OutputStream out = new FileOutputStream(output.getFileDescriptor())) {
-                if (imageBytes != null) {
-                    out.write(imageBytes);
+                if (sImageBytes != null) {
+                    out.write(sImageBytes);
                 } else {
                     // TODO: add error handle here
                 }
@@ -59,7 +59,6 @@ public class DropDataContentProvider extends ContentProvider {
     private static int sClearCachedDataIntervalMs = DEFAULT_CLEAR_CACHED_DATA_INTERVAL_MS;
     private static byte[] sImageBytes;
     private static String sEncodingFormat;
-    private static String sMimeType;
     /** The URI handled by this content provider. */
     private static Uri sContentProviderUri;
     private static String sTimestamp;
@@ -104,7 +103,7 @@ public class DropDataContentProvider extends ContentProvider {
                              .scheme(ContentResolver.SCHEME_CONTENT)
                              .authority(ContextUtils.getApplicationContext().getPackageName()
                                      + URI_AUTHORITY_SUFFIX)
-                             .path(timestamp)
+                             .path(sTimestamp)
                              .build();
         sContentProviderUri = newUri;
         int sizeInKB = imageBytes.length / BYTES_PER_KILOBYTE;
@@ -187,23 +186,19 @@ public class DropDataContentProvider extends ContentProvider {
 
     @Override
     public String getType(Uri uri) {
-        synchronized (LOCK) {
-            if (uri == null || !uri.equals(sContentProviderUri)) {
-                return null;
-            }
-            return sMimeType;
+        if (uri == null || !uri.equals(sContentProviderUri)) {
+            return null;
         }
+
+        return MimeTypeMap.getSingleton().getMimeTypeFromExtension(sEncodingFormat);
     }
 
     @Override
     public String[] getStreamTypes(Uri uri, String mimeTypeFilter) {
-        String mimeType;
-        synchronized (LOCK) {
-            if (uri == null || !uri.equals(sContentProviderUri)) {
-                return null;
-            }
-            mimeType = sMimeType;
+        if (uri == null || !uri.equals(sContentProviderUri)) {
+            return null;
         }
+        String mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(sEncodingFormat);
         return matchMimeType(mimeType, mimeTypeFilter) ? new String[] {mimeType} : null;
     }
 
@@ -250,16 +245,8 @@ public class DropDataContentProvider extends ContentProvider {
     @Override
     public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs,
             String sortOrder) {
-        String timestamp;
-        String encodingFormat;
-        byte[] imageBytes;
-        synchronized (LOCK) {
-            if (uri == null || !uri.equals(sContentProviderUri)) {
-                return new MatrixCursor(COLUMNS, 0);
-            }
-            timestamp = sTimestamp;
-            encodingFormat = sEncodingFormat;
-            imageBytes = sImageBytes;
+        if (uri == null || !uri.equals(sContentProviderUri)) {
+            return new MatrixCursor(COLUMNS, 0);
         }
         if (projection == null) {
             projection = COLUMNS;
@@ -284,12 +271,12 @@ public class DropDataContentProvider extends ContentProvider {
         if (hasDisplayName) {
             cols[index] = OpenableColumns.DISPLAY_NAME;
             // TODO(crbug.com/1296795): Use the real file name from DropDataAndroid
-            values[index] = timestamp + "." + encodingFormat;
+            values[index] = sTimestamp + "." + sEncodingFormat;
             index++;
         }
         if (hasSize) {
             cols[index] = OpenableColumns.SIZE;
-            values[index] = imageBytes.length;
+            values[index] = sImageBytes.length;
         }
         MatrixCursor cursor = new MatrixCursor(cols, 1);
         cursor.addRow(values);

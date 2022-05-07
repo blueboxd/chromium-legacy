@@ -395,28 +395,4 @@ TEST_F(ManagedSessionServiceTest, KioskLoginFailure) {
 
   ASSERT_EQ(ObservedKioskLoginFailureCount(), 1);
 }
-
-TEST_F(ManagedSessionServiceTest, LoggedInProfileNotCreated) {
-  const AccountId account_id = AccountId::FromUserEmail("user0@managed.com");
-  auto* const user = user_manager()->AddUser(account_id);
-  // User logged in but profile is not created.
-  user_manager()->LoginUser(account_id, /*set_profile_created_flag=*/false);
-
-  ManagedSessionService managed_session_service;
-  managed_session_service.AddObserver(this);
-
-  EXPECT_EQ(ObservedLoginCount(), 0);
-
-  // Simulate user profile loaded.
-  TestingProfile::Builder profile_builder;
-  profile_builder.SetProfileName(account_id.GetUserEmail());
-  auto profile = profile_builder.Build();
-  ash::ProfileHelper::Get()->SetUserToProfileMappingForTesting(user,
-                                                               profile.get());
-  user_manager()->SimulateUserProfileLoad(account_id);
-  session_manager()->NotifyUserProfileLoaded(account_id);
-
-  ASSERT_EQ(ObservedLoginCount(), 1);
-  EXPECT_TRUE(profile->IsSameOrParent(logged_in_));
-}
 }  // namespace policy

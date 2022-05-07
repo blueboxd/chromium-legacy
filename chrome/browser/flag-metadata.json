@@ -2349,7 +2349,7 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-lens-standalone",
+    "name": "enable-lens-region-search",
     "owners": [ "stanfield@google.com", "benwgold@google.com", "juanmojica@google.com" ],
     "expiry_milestone": 103
   },
@@ -3423,8 +3423,7 @@
   {
     "name": "force-color-profile",
     "owners": [ "ccameron" ],
-    // Used by developers and manual testing to test custom color profiles.
-    "expiry_milestone": -1
+    "expiry_milestone": 99
   },
   {
     "name": "force-control-face-ae",
@@ -4357,11 +4356,6 @@
     "expiry_milestone":105
   },
   {
-    "name": "ntp-photos-opt-in-art-work",
-    "owners": [ "mplg", "tiborg"],
-    "expiry_milestone":105
-  },
-  {
     "name": "ntp-photos-opt-in-title",
     "owners": [ "mplg", "tiborg"],
     "expiry_milestone":105
@@ -4801,12 +4795,7 @@
   {
     "name": "partitioned-cookies",
     "owners": [ "dylancutler" ],
-    "expiry_milestone": 110
-  },
-  {
-    "name": "partitioned-cookies-bypass-origin-trial",
-    "owners": [ "dylancutler" ],
-    "expiry_milestone": 110
+    "expiry_milestone": 100
   },
   {
     "name": "password-change-in-settings",

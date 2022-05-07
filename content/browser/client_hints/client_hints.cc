@@ -1009,18 +1009,8 @@ ParseAndPersistAcceptCHForNavigation(
   DCHECK(context);
   DCHECK(parsed_headers);
 
-  if (!parsed_headers->accept_ch) {
-    if (base::FeatureList::IsEnabled(net::features::kPartitionedCookies) &&
-        !base::FeatureList::IsEnabled(
-            net::features::kPartitionedCookiesBypassOriginTrial)) {
-      if (auto* cookie_manager = frame_tree_node->current_frame_host()
-                                     ->GetStoragePartition()
-                                     ->GetCookieManagerForBrowserProcess()) {
-        cookie_manager->ConvertPartitionedCookiesToUnpartitioned(url);
-      }
-    }
+  if (!parsed_headers->accept_ch)
     return absl::nullopt;
-  }
 
   if (!IsValidURLForClientHints(origin))
     return absl::nullopt;

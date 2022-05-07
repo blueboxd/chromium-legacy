@@ -41,8 +41,11 @@ extern const base::FeatureParam<bool> kEnableUKMLoggingForRegionSearch;
 // Enables UKM logging for the LensStandalone feature.
 extern const base::FeatureParam<bool> kEnableUKMLoggingForImageSearch;
 
-// Enables the side panel for Lens features on Chrome where supported.
-extern const base::FeatureParam<bool> kEnableSidePanelForLens;
+// Enables the side panel for Lens Region Search.
+extern const base::FeatureParam<bool> kEnableSidePanelForLensRegionSearch;
+
+// Enables the side panel for Lens Image Search.
+extern const base::FeatureParam<bool> kEnableSidePanelForLensImageSearch;
 
 // Returns whether to enable UKM logging for Lens Region Search feature.
 extern bool GetEnableUKMLoggingForRegionSearch();
@@ -61,10 +64,10 @@ extern int GetMaxAreaForRegionSearch();
 extern int GetMaxPixelsForImageSearch();
 
 // The URL for the Lens home page.
-extern std::string GetHomepageURLForLens();
+extern std::string GetHomepageURLForImageSearch();
 
-// Returns whether the Lens side panel is enabled.
-extern bool IsLensSidePanelEnabled();
+// The URL for the Lens home page as defined by Lens Region Search feature.
+extern std::string GetHomepageURLForRegionSearch();
 
 }  // namespace features
 }  // namespace lens

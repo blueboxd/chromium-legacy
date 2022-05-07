@@ -889,8 +889,7 @@
       origin_trial_feature_name: "DigitalGoodsV2",
       origin_trial_os: ["android", "chromeos"],
       status: {
-        // Experimental on Android since we can't have it on WebView. crbug.com/1312509
-        "Android": "experimental",
+        "Android": "stable",
         "ChromeOS_Ash": "stable",
         "ChromeOS_Lacros": "stable",
         // crbug.com/1143079: Web tests cannot differentiate ChromeOS and Linux,
@@ -1330,7 +1329,7 @@
     {
       name: "LayoutNGBlockInInline",
       depends_on: ["LayoutNG"],
-      status: "test",
+      status: "stable",
     },
     {
       // Block fragmentation support in the flex layout algorithm.

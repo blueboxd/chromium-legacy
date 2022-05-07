@@ -857,12 +857,12 @@
               "external/wpt/html/cross-origin-embedder-policy/anonymous-iframe/",
               "http/tests/cookies/partitioned-cookies",
               "http/tests/inspector-protocol/network/"],
-    "args": ["--enable-features=PartitionedCookies,PartitionedCookiesBypassOriginTrial"]
+    "args": ["--enable-features=PartitionedCookies"]
   },
   {
     "prefix": "partitioned-cookies-first-party-sets",
     "bases": ["http/tests/inspector-protocol/network/"],
-    "args": ["--enable-features=PartitionedCookies,PartitionedCookiesBypassOriginTrial",
+    "args": ["--enable-features=PartitionedCookies",
              "--use-first-party-set=https://devtools.test,https://example.test"]
   },
   {
@@ -1011,7 +1011,7 @@
       "http/tests/inspector-protocol/fenced-frame",
       "external/wpt/html/cross-origin-embedder-policy/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch,Prerender2,PartitionedCookies,PartitionedCookiesBypassOriginTrial"]
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,Prerender2,PartitionedCookies"]
   },
   {
     "prefix": "fenced-frame-shadow-dom",
@@ -1020,7 +1020,7 @@
       "wpt_internal/fenced_frame",
       "external/wpt/html/cross-origin-embedder-policy/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,Prerender2,PartitionedCookies,PartitionedCookiesBypassOriginTrial"]
+    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,Prerender2,PartitionedCookies"]
   },
   {
     "prefix": "disable-custom-element-default-style",

@@ -505,7 +505,6 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="5580834567471114021">Adicionar à Lista de leitura para mais tarde?</translation>
 <translation id="5592679540098330836">Ativar sincronização de <ph name="NAME" /></translation>
 <translation id="560322036295180549">Desativado pela organização</translation>
-<translation id="560999923643681074">Editar acesso</translation>
 <translation id="5614553682702429503">Salvar senha?</translation>
 <translation id="5626245204502895507">Não foi possível fazer download do arquivo neste momento.</translation>
 <translation id="5631164295104953411">Adicionar forma de pagamento.</translation>
@@ -830,7 +829,6 @@ Eles também podem usar cookies para ver sua atividade de navegação em diferen
 <translation id="8319076807703933069">Nova pesquisa</translation>
 <translation id="8323906514956095947">Toque no botão e mantenha-o pressionado para ver mais opções da guia</translation>
 <translation id="8328777765163860529">Fechar todos</translation>
-<translation id="8364085047956854021">As permissões do "<ph name="SITE_NAME" />" serão redefinidas como desativadas quando você sair deste site.</translation>
 <translation id="8378714024927312812">Gerenciado pela sua organização</translation>
 <translation id="8386068868580335421">Redefinir</translation>
 <translation id="8407669440184693619">Nenhuma senha encontrada para este site</translation>

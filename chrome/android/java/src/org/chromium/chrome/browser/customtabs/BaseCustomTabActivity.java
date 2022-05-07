@@ -154,7 +154,7 @@ public abstract class BaseCustomTabActivity extends ChromeActivity<BaseCustomTab
         mBaseCustomTabRootUiCoordinator = new BaseCustomTabRootUiCoordinator(this,
                 getShareDelegateSupplier(),
                 getActivityTabProvider(), mTabModelProfileSupplier, mBookmarkBridgeSupplier,
-                getContextualSearchManagerSupplier(), getTabModelSelectorSupplier(),
+                this::getContextualSearchManager, getTabModelSelectorSupplier(),
                 getBrowserControlsManager(), getWindowAndroid(), getLifecycleDispatcher(),
                 getLayoutManagerSupplier(),
                 /* menuOrKeyboardActionController= */ this, this::getActivityThemeColor,

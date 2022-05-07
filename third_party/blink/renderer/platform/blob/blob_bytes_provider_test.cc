@@ -52,7 +52,8 @@ class BlobBytesProviderTest : public testing::Test {
 
   std::unique_ptr<BlobBytesProvider> CreateProvider(
       scoped_refptr<RawData> data = nullptr) {
-    auto result = std::make_unique<BlobBytesProvider>();
+    auto result = BlobBytesProvider::CreateForTesting(
+        blink::scheduler::GetSequencedTaskRunnerForTesting());
     if (data)
       result->AppendData(std::move(data));
     return result;
@@ -72,8 +73,6 @@ class BlobBytesProviderTest : public testing::Test {
 
 TEST_F(BlobBytesProviderTest, Consolidation) {
   auto data = CreateProvider();
-  DCHECK_CALLED_ON_VALID_SEQUENCE(data->sequence_checker_);
-
   data->AppendData(base::make_span("abc", 3));
   data->AppendData(base::make_span("def", 3));
   data->AppendData(base::make_span("ps1", 3));

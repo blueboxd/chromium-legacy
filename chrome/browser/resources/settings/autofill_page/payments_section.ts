@@ -397,7 +397,8 @@ export class SettingsPaymentsSectionElement extends
 
   private shouldShowAddVirtualCardButton_(): boolean {
     if (!this.virtualCardEnrollmentEnabled_ ||
-        this.activeCreditCard_ === null || !this.activeCreditCard_!.metadata) {
+        this.activeCreditCard_ === null ||
+        this.activeCreditCard_.metadata === null) {
       return false;
     }
     return !!this.activeCreditCard_!.metadata!
@@ -407,7 +408,8 @@ export class SettingsPaymentsSectionElement extends
 
   private shouldShowRemoveVirtualCardButton_(): boolean {
     if (!this.virtualCardEnrollmentEnabled_ ||
-        this.activeCreditCard_ === null || !this.activeCreditCard_!.metadata) {
+        this.activeCreditCard_ === null ||
+        this.activeCreditCard_.metadata === null) {
       return false;
     }
     return !!this.activeCreditCard_!.metadata!

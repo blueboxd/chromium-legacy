@@ -6,17 +6,8 @@ import os.path
 import unittest
 from unittest import mock
 
-from . import model, test_common
+from . import model
 from .test_config import TestConfig
-
-mock = test_common.import_mock()
-
-
-def _get_identity_hash(i):
-    if i == '[IDENTITY]':
-        return 'identity'
-
-    raise
 
 
 def _get_identity_hash(i):

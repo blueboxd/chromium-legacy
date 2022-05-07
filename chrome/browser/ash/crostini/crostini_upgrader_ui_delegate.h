@@ -53,7 +53,7 @@ class CrostiniUpgraderUIDelegate {
   // chooser.
   virtual void Backup(const ContainerId& container_id,
                       bool show_file_chooser,
-                      base::WeakPtr<content::WebContents> web_contents) = 0;
+                      content::WebContents* web_contents) = 0;
 
   virtual void StartPrechecks() = 0;
 
@@ -62,7 +62,7 @@ class CrostiniUpgraderUIDelegate {
 
   // Restore the container to the backed up state if an upgrade has failed.
   virtual void Restore(const ContainerId& container_id,
-                       base::WeakPtr<content::WebContents> web_contents) = 0;
+                       content::WebContents* web_contents) = 0;
 
   // Cancel the ongoing upgrade.
   virtual void Cancel() = 0;

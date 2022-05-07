@@ -16,7 +16,6 @@ chrome.app.runtime.onLaunched.addListener(function() {
       'deviceType',
       'stylusStatus',
       'assistantStatus',
-      'isMeetDevice',
     ], chrome.test.callbackPass(function(values) {
           switch (testName) {
             case 'kiosk':
@@ -60,12 +59,6 @@ chrome.app.runtime.onLaunched.addListener(function() {
               break;
             case 'assistant supported':
               chrome.test.assertEq('supported', values['assistantStatus']);
-              break;
-            case 'Is Meet Device - True' :
-              chrome.test.assertTrue(values['isMeetDevice']);
-              break;
-            case 'Is Meet Device - False' :
-              chrome.test.assertFalse(values['isMeetDevice']);
               break;
           }
         }));

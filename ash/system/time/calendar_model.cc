@@ -35,8 +35,6 @@ constexpr int kAdditionalNumberOfMonthsCached = 4;
 constexpr int kMaxNumberOfMonthsCached =
     kMinNumberOfMonthsCached + kAdditionalNumberOfMonthsCached;
 
-constexpr base::TimeDelta kTimeoutMs = base::Milliseconds(1000);
-
 // Methods for debugging and gathering of metrics.
 
 [[maybe_unused]] int GetEventMapSize(
@@ -58,9 +56,7 @@ namespace ash {
 
 CalendarModel::CalendarModel() = default;
 
-void CalendarModel::OnActiveUserSessionChanged(const AccountId& account_id) {
-  ClearAllCachedEvents();
-}
+CalendarModel::~CalendarModel() = default;
 
 void CalendarModel::AddObserver(Observer* observer) {
   if (observer)
@@ -136,17 +132,6 @@ void CalendarModel::QueuePrunableMonth(base::Time start_of_month) {
 
   // start_of_month is now the most-recently-used.
   prunable_months_mru_.push_front(start_of_month);
-}
-
-void CalendarModel::ClearAllCachedEvents() {
-  // Destroy all outstanding fetch requests.
-  pending_fetches_.clear();
-
-  // Destroy the list used to decide who gets pruned.
-  prunable_months_mru_.clear();
-
-  // Destroy the events themselves.
-  event_months_.clear();
 }
 
 void CalendarModel::FetchEvents(const std::set<base::Time>& months) {

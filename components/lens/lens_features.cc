@@ -13,41 +13,51 @@ namespace features {
 const base::Feature kLensStandalone{"LensStandalone",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kLensRegionSearch{"LensRegionSearch",
+                                      base::FEATURE_ENABLED_BY_DEFAULT};
+
 const base::FeatureParam<bool> kRegionSearchMacCursorFix{
-    &kLensStandalone, "region-search-mac-cursor-fix", true};
+    &kLensRegionSearch, "region-search-mac-cursor-fix", true};
 
 const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText1{
-    &kLensStandalone, "use-menu-item-alt-text-1", false};
+    &kLensRegionSearch, "use-menu-item-alt-text-1", false};
 
 const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText2{
-    &kLensStandalone, "use-menu-item-alt-text-2", false};
+    &kLensRegionSearch, "use-menu-item-alt-text-2", false};
 
 const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText3{
-    &kLensStandalone, "use-menu-item-alt-text-3", false};
+    &kLensRegionSearch, "use-menu-item-alt-text-3", false};
 
 const base::FeatureParam<bool> kRegionSearchUseMenuItemAltText4{
-    &kLensStandalone, "use-menu-item-alt-text-4", true};
+    &kLensRegionSearch, "use-menu-item-alt-text-4", true};
 
 const base::FeatureParam<bool> kEnableUKMLoggingForRegionSearch{
-    &kLensStandalone, "region-search-enable-ukm-logging", true};
+    &kLensRegionSearch, "region-search-enable-ukm-logging", true};
 
 const base::FeatureParam<bool> kEnableUKMLoggingForImageSearch{
     &kLensStandalone, "enable-ukm-logging", true};
 
-const base::FeatureParam<bool> kEnableSidePanelForLens{
+const base::FeatureParam<bool> kEnableSidePanelForLensRegionSearch{
+    &kLensRegionSearch, "region-search-enable-side-panel", false};
+
+const base::FeatureParam<bool> kEnableSidePanelForLensImageSearch{
     &kLensStandalone, "enable-side-panel", false};
 
 constexpr base::FeatureParam<int> kMaxPixelsForRegionSearch{
-    &kLensStandalone, "region-search-dimensions-max-pixels", 1000};
+    &kLensRegionSearch, "region-search-dimensions-max-pixels", 1000};
 
 constexpr base::FeatureParam<int> kMaxAreaForRegionSearch{
-    &kLensStandalone, "region-search-dimensions-max-area", 1000000};
+    &kLensRegionSearch, "region-search-dimensions-max-area", 1000000};
 
 constexpr base::FeatureParam<int> kMaxPixelsForImageSearch{
     &kLensStandalone, "dimensions-max-pixels", 1000};
 
-constexpr base::FeatureParam<std::string> kHomepageURLForLens{
+constexpr base::FeatureParam<std::string> kHomepageURLForImageSearch{
     &kLensStandalone, "lens-homepage-url", "https://lens.google.com/"};
+
+constexpr base::FeatureParam<std::string> kHomepageURLForRegionSearch{
+    &kLensRegionSearch, "region-search-lens-homepage-url",
+    "https://lens.google.com/"};
 
 bool GetEnableUKMLoggingForRegionSearch() {
   return kEnableUKMLoggingForRegionSearch.Get();
@@ -69,13 +79,12 @@ int GetMaxPixelsForImageSearch() {
   return kMaxPixelsForImageSearch.Get();
 }
 
-std::string GetHomepageURLForLens() {
-  return kHomepageURLForLens.Get();
+std::string GetHomepageURLForImageSearch() {
+  return kHomepageURLForImageSearch.Get();
 }
 
-bool IsLensSidePanelEnabled() {
-  return base::FeatureList::IsEnabled(kLensStandalone) &&
-         kEnableSidePanelForLens.Get();
+std::string GetHomepageURLForRegionSearch() {
+  return kHomepageURLForRegionSearch.Get();
 }
 
 }  // namespace features

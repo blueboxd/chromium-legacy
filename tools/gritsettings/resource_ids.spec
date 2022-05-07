@@ -188,6 +188,10 @@
     "META": {"sizes": {"includes": [40]}},
     "includes": [1620],
   },
+  "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/identity_internals/resources.grd": {
+    "META": {"sizes": {"includes": [10]}},
+    "includes": [1621],
+  },
   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/image_editor/resources.grd": {
     "META": {"sizes": {"includes": [20]}},
     "includes": [1625],
@@ -583,7 +587,7 @@
     "includes": [3330],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/personalization_app/resources/ash_personalization_app_resources.grd": {
-    "META": {"sizes": {"includes": [120],}},
+    "META": {"sizes": {"includes": [200],}},
     "includes": [3340],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/demo_mode_app_ui/ash_demo_mode_app_resources.grd": {
@@ -774,16 +778,9 @@
 
   # START "everything else" section.
   # Everything but chrome/, chromeos/, components/, content/, and ios/
-  "android_webview/ui/aw_resources.grd": {
+  "ash/app_list/resources/app_list_resources.grd": {
     # Big alignment at start of section.
     "META": {"join": 2, "align": 100},
-    "includes": [3900],
-  },
-  "android_webview/ui/aw_strings.grd": {
-    "messages": [3920],
-  },
-
-  "ash/app_list/resources/app_list_resources.grd": {
     "structures": [3940],
   },
   "ash/ash_strings.grd": {

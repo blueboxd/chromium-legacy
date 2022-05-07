@@ -357,6 +357,11 @@ extern const char kNTPViewHierarchyRepairDescription[];
 extern const char kOmniboxUIMaxAutocompleteMatchesName[];
 extern const char kOmniboxUIMaxAutocompleteMatchesDescription[];
 
+// Title and description for the flag to change the max number of ZPS
+// matches in the omnibox popup.
+extern const char kOmniboxMaxZPSMatchesName[];
+extern const char kOmniboxMaxZPSMatchesDescription[];
+
 // Title and description for the flag to enable Omnibox On Device Head
 // suggestions (incognito).
 extern const char kOmniboxOnDeviceHeadSuggestionsIncognitoName[];
@@ -531,6 +536,11 @@ extern const char kUIViewWindowObservingDescription[];
 extern const char kUpdateHistoryEntryPointsInIncognitoName[];
 extern const char kUpdateHistoryEntryPointsInIncognitoDescription[];
 
+// Title and description for the flag to enable UpgradeCenter refactored
+// code.
+extern const char kUpgradeCenterRefactorName[];
+extern const char kUpgradeCenterRefactorDescription[];
+
 // Title and description for the flag to enable using Lens to search for an
 // image from the long press context menu.
 extern const char kUseLensToSearchForImageName[];
@@ -539,8 +549,8 @@ extern const char kUseLensToSearchForImageDescription[];
 // Title and description for the flag to enable using the
 // loadSimulatedRequest:responseHTMLString: API for displaying error pages in
 // CRWWKNavigationHandler.
-extern const char kUseLoadSimulatedRequestForErrorPageNavigationName[];
-extern const char kUseLoadSimulatedRequestForErrorPageNavigationDescription[];
+extern const char kUseLoadSimulatedRequestForOfflinePageName[];
+extern const char kUseLoadSimulatedRequestForOfflinePageDescription[];
 
 // Title and description for the flag to enable the replacement of some images
 // by SFSymbols.

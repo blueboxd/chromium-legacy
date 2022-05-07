@@ -219,25 +219,6 @@ void WebAppInstallManager::InstallWebAppFromInfo(
   tasks_.insert(std::move(task));
 }
 
-void WebAppInstallManager::InstallWebAppWithParams(
-    content::WebContents* web_contents,
-    const WebAppInstallParams& install_params,
-    webapps::WebappInstallSource install_surface,
-    OnceInstallCallback callback) {
-  if (!started_)
-    return;
-
-  auto task = std::make_unique<WebAppInstallTask>(profile_, finalizer_,
-                                                  data_retriever_factory_.Run(),
-                                                  registrar_, install_surface);
-  task->InstallWebAppWithParams(
-      web_contents, install_params,
-      base::BindOnce(&WebAppInstallManager::OnInstallTaskCompleted,
-                     GetWeakPtr(), task.get(), std::move(callback)));
-
-  tasks_.insert(std::move(task));
-}
-
 base::WeakPtr<WebAppInstallManager> WebAppInstallManager::GetWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
@@ -351,13 +332,13 @@ void WebAppInstallManager::InstallWebAppsAfterSync(
   }
 }
 
-void WebAppInstallManager::UninstallWithoutRegistryUpdateFromSync(
+void WebAppInstallManager::UninstallFromSync(
     const std::vector<AppId>& web_apps,
     RepeatingUninstallCallback callback) {
   if (!started_)
     return;
 
-  finalizer_->UninstallWithoutRegistryUpdateFromSync(
+  finalizer_->UninstallFromSync(
       std::move(web_apps),
       base::BindRepeating(
           [](RepeatingUninstallCallback callback, const web_app::AppId& app_id,
@@ -477,6 +458,13 @@ void WebAppInstallManager::TakeTaskErrorLog(WebAppInstallTask* task) {
     if (!task_error_dict.DictEmpty())
       LogErrorObject(std::move(task_error_dict));
   }
+}
+
+void WebAppInstallManager::TakeCommandErrorLog(
+    base::PassKey<WebAppCommandManager>,
+    base::Value log) {
+  if (error_log_)
+    LogErrorObject(std::move(log));
 }
 
 void WebAppInstallManager::DeleteTask(WebAppInstallTask* task) {

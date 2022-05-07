@@ -37,6 +37,7 @@
 #include "chrome/browser/ui/global_error/global_error_service_factory.h"
 #include "chrome/browser/ui/intent_picker_tab_helper.h"
 #include "chrome/browser/ui/layout_constants.h"
+#include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/chrome_labs_prefs.h"
 #include "chrome/browser/ui/ui_features.h"
@@ -57,6 +58,7 @@
 #include "chrome/browser/ui/views/page_action/page_action_icon_container.h"
 #include "chrome/browser/ui/views/page_action/page_action_icon_controller.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_toolbar_icon_view.h"
+#include "chrome/browser/ui/views/side_search/side_search_browser_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/toolbar/app_menu.h"
 #include "chrome/browser/ui/views/toolbar/back_forward_button.h"
@@ -116,7 +118,6 @@
 #endif
 
 #if !BUILDFLAG(IS_CHROMEOS_ASH)
-#include "chrome/browser/signin/signin_global_error_factory.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bubble_sign_in_delegate.h"
 #include "chrome/browser/ui/dialogs/outdated_upgrade_bubble.h"
 #endif
@@ -128,11 +129,6 @@
 #if defined(USE_AURA)
 #include "ui/aura/window_occlusion_tracker.h"
 #endif
-
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
-#include "chrome/browser/ui/side_search/side_search_utils.h"
-#include "chrome/browser/ui/views/side_search/side_search_browser_controller.h"
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 using base::UserMetricsAction;
 using content::WebContents;
@@ -312,7 +308,6 @@ void ToolbarView::Init() {
   reload_ = AddChildView(std::move(reload));
   home_ = AddChildView(std::move(home));
 
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
   // The side search button (if enabled) should sit between the location bar and
   // the other navigation buttons.
   if (browser_view_->side_search_controller() &&
@@ -320,7 +315,6 @@ void ToolbarView::Init() {
     left_side_panel_button_ = AddChildView(
         browser_view_->side_search_controller()->CreateToolbarButton());
   }
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
   location_bar_ = AddChildView(std::move(location_bar));
 
@@ -387,12 +381,9 @@ void ToolbarView::Init() {
   LoadImages();
 
   // Start global error services now so we set the icon on the menu correctly.
-#if !BUILDFLAG(IS_CHROMEOS_ASH)
-  SigninGlobalErrorFactory::GetForProfile(browser_->profile());
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
   RecoveryInstallGlobalErrorFactory::GetForProfile(browser_->profile());
-#endif
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#endif  // BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
 
   // Set the button icon based on the system state. Do this after
   // |app_menu_button_| has been added as a bubble may be shown that needs

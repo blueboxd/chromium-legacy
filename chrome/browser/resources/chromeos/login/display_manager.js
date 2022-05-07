@@ -11,11 +11,9 @@
 // #import {loadTimeData} from './i18n_setup.js';
 // #import {OobeTypes} from './components/oobe_types.m.js';
 
-
-// #import {RESET_AVAILABLE_SCREEN_GROUP, SCREEN_APP_LAUNCH_SPLASH, SCREEN_GAIA_SIGNIN, DISPLAY_TYPE, ACCELERATOR_CANCEL, ACCELERATOR_VERSION, ACCELERATOR_RESET, SCREEN_OOBE_RESET, SCREEN_DEVICE_DISABLED, USER_ACTION_ROLLBACK_TOGGLED, OOBE_UI_STATE, SCREEN_WELCOME } from './components/display_manager_types.m.js';
+ // #import {DISPLAY_TYPE, ACCELERATOR_CANCEL, SCREEN_DEVICE_DISABLED, OOBE_UI_STATE, SCREEN_WELCOME } from './components/display_manager_types.m.js';
 // #import {MultiTapDetector} from './multi_tap_detector.m.js';
 // #import {keyboard} from './keyboard_utils.m.js'
-// #import {DisplayManagerScreenAttributes} from './components/display_manager_types.m.js'
 
 cr.define('cr.ui.login', function() {
   /**
@@ -80,22 +78,10 @@ cr.define('cr.ui.login', function() {
       this.screens_ = [];
 
       /**
-       * Attributes of the registered screens.
-       * @type {Array<DisplayManagerScreenAttributes>}
-       */
-      this.screensAttributes_ = [];
-
-      /**
        * Current OOBE step, index in the screens array.
        * @type {number}
        */
       this.currentStep_ = 0;
-
-      /**
-       * Whether version label can be toggled by ACCELERATOR_VERSION.
-       * @type {boolean}
-       */
-      this.allowToggleVersion_ = false;
 
       /**
        * Whether keyboard navigation flow is enforced.
@@ -232,13 +218,10 @@ cr.define('cr.ui.login', function() {
     }
 
     /**
-     * Shows/hides version labels.
-     * @param {boolean} show Whether labels should be visible by default. If
-     *     false, visibility can be toggled by ACCELERATOR_VERSION.
+     * Toggles system info visibility.
      */
-    showVersion(show) {
-      $('version-labels').hidden = !show;
-      this.allowToggleVersion_ = !show;
+    toggleSystemInfo() {
+      $('version-labels').hidden = !$('version-labels').hidden;
     }
 
     /**
@@ -262,22 +245,9 @@ cr.define('cr.ui.login', function() {
         return;
       }
       const currentStepId = this.screens_[this.currentStep_];
-      const attributes = this.screensAttributes_[this.currentStep_] || {};
       if (name == ACCELERATOR_CANCEL) {
         if (this.currentScreen && this.currentScreen.cancel) {
           this.currentScreen.cancel();
-        }
-      } else if (name == ACCELERATOR_VERSION) {
-        if (this.allowToggleVersion_) {
-          $('version-labels').hidden = !$('version-labels').hidden;
-        }
-      } else if (name == ACCELERATOR_RESET) {
-        if (currentStepId == SCREEN_OOBE_RESET) {
-          $('reset').userActed(USER_ACTION_ROLLBACK_TOGGLED);
-        } else if (
-            attributes.resetAllowed ||
-            RESET_AVAILABLE_SCREEN_GROUP.indexOf(currentStepId) != -1) {
-          chrome.send('toggleResetScreen');
         }
       }
     }
@@ -387,18 +357,6 @@ cr.define('cr.ui.login', function() {
         return;
       }
 
-      // Prevent initial GAIA signin load from interrupting the kiosk splash
-      // screen.
-      // TODO: remove this special case when a better fix is found for the race
-      // condition. This if statement was introduced to fix http://b/113786350.
-      if (this.currentScreen.id == SCREEN_APP_LAUNCH_SPLASH &&
-          screen.id == SCREEN_GAIA_SIGNIN) {
-        console.info(
-            this.currentScreen.id +
-            ' screen showing. Ignoring switch to Gaia screen.');
-        return;
-      }
-
       const screenId = screen.id;
 
       const data = screen.data;
@@ -425,9 +383,8 @@ cr.define('cr.ui.login', function() {
     /**
      * Register an oobe screen.
      * @param {Element} el Decorated screen element.
-     * @param {DisplayManagerScreenAttributes} attributes
      */
-    registerScreen(el, attributes) {
+    registerScreen(el) {
       const screenId = el.id;
       assert(screenId);
       assert(!this.screens_.includes(screenId), 'Duplicate screen ID.');
@@ -436,7 +393,6 @@ cr.define('cr.ui.login', function() {
           'Can not register Device disabled screen as the first');
 
       this.screens_.push(screenId);
-      this.screensAttributes_.push(attributes);
 
       if (el.updateOobeConfiguration && this.oobe_configuration_) {
         el.updateOobeConfiguration(this.oobe_configuration_);

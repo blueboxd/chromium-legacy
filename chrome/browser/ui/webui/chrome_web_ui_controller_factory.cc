@@ -234,6 +234,7 @@
 #include "chrome/browser/ash/web_applications/help_app/help_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/media_app/chrome_media_app_ui_delegate.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_ambient_provider_impl.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_keyboard_backlight_provider_impl.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_theme_provider_impl.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_user_provider_impl.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_wallpaper_provider_impl.h"
@@ -291,8 +292,6 @@
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH) && !defined(OFFICIAL_BUILD)
-#include "ash/webui/demo_mode_app_ui/demo_mode_app_ui.h"
-#include "ash/webui/demo_mode_app_ui/url_constants.h"
 #include "chrome/browser/ui/webui/chromeos/emulator/device_emulator_ui.h"
 #endif
 
@@ -669,6 +668,10 @@ WebUIController* NewWebUI<ash::personalization_app::PersonalizationAppUI>(
     const GURL& url) {
   auto ambient_provider = std::make_unique<
       ash::personalization_app::PersonalizationAppAmbientProviderImpl>(web_ui);
+  auto keyboard_backlight_provider =
+      std::make_unique<ash::personalization_app::
+                           PersonalizationAppKeyboardBacklightProviderImpl>(
+          web_ui);
   auto theme_provider = std::make_unique<
       ash::personalization_app::PersonalizationAppThemeProviderImpl>(web_ui);
   auto user_provider = std::make_unique<
@@ -677,7 +680,8 @@ WebUIController* NewWebUI<ash::personalization_app::PersonalizationAppUI>(
       ash::personalization_app::PersonalizationAppWallpaperProviderImpl>(
       web_ui);
   return new ash::personalization_app::PersonalizationAppUI(
-      web_ui, std::move(ambient_provider), std::move(theme_provider),
+      web_ui, std::move(ambient_provider),
+      std::move(keyboard_backlight_provider), std::move(theme_provider),
       std::move(user_provider), std::move(wallpaper_provider));
 }
 
@@ -1006,7 +1010,8 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
     return &NewWebUI<ash::printing::printing_manager::PrintManagementUI>;
   if (url.host_piece() == ash::kChromeUIScanningAppHost)
     return &NewWebUI<ash::ScanningUI>;
-  if (ash::features::IsShimlessRMAFlowEnabled() &&
+  if ((ash::shimless_rma::HasLaunchRmaSwitchAndIsAllowed() ||
+       ash::features::IsShimlessRMAStandaloneAppEnabled()) &&
       url.host_piece() == ash::kChromeUIShimlessRMAHost) {
     return &NewWebUI<ash::ShimlessRMADialogUI>;
   }
@@ -1109,11 +1114,6 @@ WebUIFactoryFunction GetWebUIFactoryFunction(WebUI* web_ui,
       return &NewWebUI<DeviceEmulatorUI>;
   }
 #endif  // !defined(USE_REAL_DBUS_CLIENTS)
-  if (url.host_piece() == ash::kChromeUIDemoModeAppHost) {
-    if (ash::features::IsDemoModeSWAEnabled()) {
-      return &NewWebUI<ash::DemoModeAppUI>;
-    }
-  }
 #endif  // !defined(OFFICIAL_BUILD)
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 #if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)

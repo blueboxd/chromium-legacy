@@ -92,7 +92,6 @@ A questo account potrebbero essere applicate le autorizzazioni già concesse a s
 <translation id="3286538390144397061">Riavvia adesso</translation>
 <translation id="328888136576916638">Mancano le chiavi dell'API di Google. Alcune funzionalità di Chromium verranno disattivate.</translation>
 <translation id="3296368748942286671">Continua a eseguire applicazioni in background dopo la chiusura di Chromium</translation>
-<translation id="3349211344363550267">Chromium ti consiglia di non scaricare o aprire questo file</translation>
 <translation id="3350761136195634146">Esiste già un profilo Chromium con questo account</translation>
 <translation id="3387527074123400161">Chromium OS</translation>
 <translation id="3406848076815591792">Vuoi passare a un profilo Chromium esistente?</translation>
@@ -176,6 +175,7 @@ A questo account potrebbero essere applicate le autorizzazioni già concesse a s
 <translation id="5398878173008909840">È disponibile una nuova versione di Chromium.</translation>
 <translation id="5427571867875391349">Imposta Chromium come browser predefinito</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium beta</translation>
+<translation id="5473971139929175403">Chromium potrebbe non funzionare correttamente perché non è più supportato su questa distribuzione Linux</translation>
 <translation id="5480860683791598150">Chromium deve poter accedere alla tua posizione per condividerla con questo sito</translation>
 <translation id="5487574057737591516">Per tutelare la tua privacy, eliminiamo automaticamente i tuoi interessi risalenti a più di 4 settimane prima della data corrente. Mentre continui a navigare, un interesse potrebbe essere nuovamente visualizzato nell'elenco. Se Chromium ha fatto la scelta sbagliata o se non vuoi ricevere determinati annunci, puoi rimuovere un interesse.</translation>
 <translation id="549669000822060376">Attendi mentre Chromium installa gli aggiornamenti di sistema più recenti.</translation>

@@ -194,9 +194,7 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
 
   ready() {
     super.ready();
-    this.initializeLoginScreen('OAuthEnrollmentScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('OAuthEnrollmentScreen');
 
     // Establish an initial messaging between content script and
     // host script so that content script can message back.
@@ -579,6 +577,19 @@ class EnterpriseEnrollmentElement extends EnterpriseEnrollmentElementBase {
       return 'oauthEnrollScreenTitle';
     }
     return 'oauthEnrollKioskEnrollmentWorkingTitle';
+  }
+
+  /**
+   * Returns icon for enrollment steps.
+   * @param {*} licenseType
+   * @returns {string}
+   * @private
+   */
+  getIcon_(licenseType) {
+    if (licenseType == OobeTypes.LicenseType.ENTERPRISE) {
+      return 'oobe-32:enterprise';
+    }
+    return 'oobe-32:kiosk';
   }
 
   /**

@@ -38,7 +38,6 @@
 <translation id="1219674500290482172">Интернэтэд холбогдох боломжгүй байна.</translation>
 <translation id="122699739164161391">Бүх табыг хаах</translation>
 <translation id="1229222343402087523">Chrome-с ${searchPhrase}-г хайх</translation>
-<translation id="1231733316453485619">Синк асаах уу?</translation>
 <translation id="1242044645101871359">Дахин нэвтэрнэ үү</translation>
 <translation id="1254117744268754948">Хавтсыг сонгох</translation>
 <translation id="1265739287306757398">Заавар харах</translation>
@@ -451,6 +450,7 @@
 <translation id="4840495572919996524">Таны хавчуурга, түүх, нууц үг болон бусад зүйлийг таны Google Бүртгэлд цаашид синк хийхгүй.</translation>
 <translation id="4844899002472726590">Таны сонирхдог сэдвийг харах болон засах</translation>
 <translation id="4854345657858711387">Нууц код тохируулах</translation>
+<translation id="4858786880085262208">Боломжтой үед HTTPS руу сайжруулна уу. Аюулгүй сайтууд аюултай контент оруулж магадгүй.</translation>
 <translation id="4860895144060829044">Дуудлага</translation>
 <translation id="4872323082491632254">Нууц үгнүүдийг шалгах</translation>
 <translation id="4881695831933465202">Нээх</translation>
@@ -800,6 +800,7 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="7781069478569868053">Цонх нээх хуудас</translation>
 <translation id="7781829728241885113">Өчигдөр</translation>
 <translation id="778855399387580014">Хайлтыг Chrome-н шинэ табад эхлүүлнэ үү.</translation>
+<translation id="7790892308048519147">Аюулгүй холболт ашиглахаар оролдоно уу</translation>
 <translation id="7791543448312431591">Нэмэх</translation>
 <translation id="7807060072011926525">Google-с олгосон</translation>
 <translation id="7839985698273989086">Офлайн хуудас</translation>
@@ -971,5 +972,4 @@ Handoff-ыг Тохиргооны ерөнхий хэсэгт идэвхижүү
 <translation id="988141524645182168">Бусад төхөөрөмжүүд</translation>
 <translation id="989988560359834682">Хаягийг засварлах</translation>
 <translation id="994757059139821576">Нийтлэлийн зөвлөмж</translation>
-<translation id="997742718232442409">Энэ вебсайт календарийн файл татахаар оролдож байна.</translation>
 </translationbundle>

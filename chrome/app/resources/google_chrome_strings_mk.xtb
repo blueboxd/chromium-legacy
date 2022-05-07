@@ -15,7 +15,6 @@
 <translation id="1154147086299354128">&amp;Отвори во Chrome</translation>
 <translation id="1178374936842835197">Ако некоја поставка не се прикажува на страницава, погледнете во <ph name="LINK_BEGIN" />
         поставките за ChromeOS Flex<ph name="LINK_END" /></translation>
-<translation id="1182414570724401860">Chrome препорачува да не ја преземате или отворате датотекава</translation>
 <translation id="1278833599417554002">Рестартирајте за да се ажурира &amp;Chrome</translation>
 <translation id="1302523850133262269">Почекајте додека Chrome ги инсталира последните системски ажурирања.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> бара да ги прочитате и да ги прифатите следните „Услови за користење“ пред да го користите уредов. Овие услови не ги прошируваат, менуваат или ограничуваат „Условите на Google ChromeOS Flex“.</translation>
@@ -292,6 +291,7 @@ Google Chrome не може да ги обнови вашите поставки
 Дозволите што веќе сте им ги дале на веб-сајтовите и апликациите можеби ќе важат за оваа сметка. Можете да управувате со сметките на Google во <ph name="SETTINGS_LINK_BEGIN" />Поставки<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Бевте најавени на Chrome како <ph name="USER_EMAIL_ADDRESS" />. Користете ја истата сметка за повторно да се најавите.</translation>
 <translation id="7410958280246779049">Chrome ја блокираше датотекава бидејќи е опасна</translation>
+<translation id="7426611252293106642">Google Chrome може да не работи правилно затоа што веќе не е поддржан на овој систем на Linux</translation>
 <translation id="7481213027396403996">Добијте ја најсилната безбедност на Chrome</translation>
 <translation id="7486227612705979895">Chrome ќе пристапува до Drive за да дава предлози во лентата за адреси</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>

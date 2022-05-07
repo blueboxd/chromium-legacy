@@ -5947,6 +5947,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableGoogleAssistantDspDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::assistant::features::kEnableDspHotword)},
 
+    {"deprecate-assistant-stylus-features",
+     flag_descriptions::kDeprecateAssistantStylusFeaturesName,
+     flag_descriptions::kDeprecateAssistantStylusFeaturesDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kDeprecateAssistantStylusFeatures)},
+
     {"disable-quick-answers-v2-translation",
      flag_descriptions::kDisableQuickAnswersV2TranslationName,
      flag_descriptions::kDisableQuickAnswersV2TranslationDescription, kOsCrOS,
@@ -6510,6 +6515,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kLocationBarModelOptimizationsName,
      flag_descriptions::kLocationBarModelOptimizationsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kLocationBarModelOptimizations)},
+
+    {"enable-iph", flag_descriptions::kEnableIphName,
+     flag_descriptions::kEnableIphDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(feature_engagement::kEnableIPH)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -6891,16 +6900,14 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kCopyLinkToText)},
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-    {"shared-highlighting-v2", flag_descriptions::kSharedHighlightingV2Name,
-     flag_descriptions::kSharedHighlightingV2Description, kOsAll,
-     FEATURE_VALUE_TYPE(shared_highlighting::kSharedHighlightingV2)},
     {"shared-highlighting-amp", flag_descriptions::kSharedHighlightingAmpName,
      flag_descriptions::kSharedHighlightingAmpDescription, kOsAll,
      FEATURE_VALUE_TYPE(shared_highlighting::kSharedHighlightingAmp)},
     {"shared-highlighting-refined-blocklist",
      flag_descriptions::kSharedHighlightingRefinedBlocklistName,
      flag_descriptions::kSharedHighlightingRefinedBlocklistDescription, kOsAll,
-     FEATURE_VALUE_TYPE(share::kSharedHighlightingRefinedBlocklist)},
+     FEATURE_VALUE_TYPE(
+         shared_highlighting::kSharedHighlightingRefinedBlocklist)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"shimless-rma-flow", flag_descriptions::kShimlessRMAFlowName,
@@ -8027,7 +8034,7 @@ const FeatureEntry kFeatureEntries[] = {
          chrome::android::kTrustedWebActivityNotificationPermissionDelegation)},
 #endif  // BUILDFLAG(IS_ANDROID)
 
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
+#if defined(TOOKIT_VIEWS)
     {"side-search", flag_descriptions::kSideSearchName,
      flag_descriptions::kSideSearchDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSideSearch)},
@@ -8035,7 +8042,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"side-search-dse-support", flag_descriptions::kSideSearchDSESupportName,
      flag_descriptions::kSideSearchDSESupportDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSideSearchDSESupport)},
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
+#endif  // defined(TOOKIT_VIEWS)
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
     {"enable-component-updater-test-request",

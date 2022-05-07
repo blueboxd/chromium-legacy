@@ -84,6 +84,7 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
+#import "ios/chrome/browser/ui/upgrade/utils/features.h"
 #include "ios/chrome/browser/ui/util/features.h"
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -167,6 +168,22 @@ const FeatureEntry::FeatureVariation
          std::size(kOmniboxUIMaxAutocompleteMatches10), nullptr},
         {"12 matches", kOmniboxUIMaxAutocompleteMatches12,
          std::size(kOmniboxUIMaxAutocompleteMatches12), nullptr}};
+
+const FeatureEntry::FeatureParam kOmniboxMaxZPSMatches6[] = {
+    {OmniboxFieldTrial::kMaxZeroSuggestMatchesParam, "6"}};
+const FeatureEntry::FeatureParam kOmniboxMaxZPSMatches15[] = {
+    {OmniboxFieldTrial::kMaxZeroSuggestMatchesParam, "15"}};
+const FeatureEntry::FeatureParam kOmniboxMaxZPSMatches20[] = {
+    {OmniboxFieldTrial::kMaxZeroSuggestMatchesParam, "20"}};
+
+const FeatureEntry::FeatureVariation kOmniboxMaxZPSMatchesVariations[] = {
+    {"6 matches", kOmniboxMaxZPSMatches6, std::size(kOmniboxMaxZPSMatches6),
+     nullptr},
+    {"15 matches", kOmniboxMaxZPSMatches15, std::size(kOmniboxMaxZPSMatches15),
+     nullptr},
+    {"20 matches", kOmniboxMaxZPSMatches20, std::size(kOmniboxMaxZPSMatches20),
+     nullptr},
+};
 
 const FeatureEntry::FeatureParam
     kAutofillUseMobileLabelDisambiguationShowAll[] = {
@@ -310,28 +327,6 @@ const FeatureEntry::FeatureVariation kFREDefaultPromoTestingVariations[] = {
      std::size(kFREDefaultPromoTestingShortDelay), nullptr},
 };
 
-const FeatureEntry::FeatureVariation kEnableFREUIModuleIOSVariations[] = {
-    {"TOP | OLD",
-     (FeatureEntry::FeatureParam[]){
-         {kFREUIIdentitySwitcherPositionParam, "top"},
-         {kFREUIStringsSetParam, "old"}},
-     2, nullptr},
-    {"BOTTOM | OLD",
-     (FeatureEntry::FeatureParam[]){
-         {kFREUIIdentitySwitcherPositionParam, "bottom"},
-         {kFREUIStringsSetParam, "old"}},
-     2, nullptr},
-    {"TOP | NEW",
-     (FeatureEntry::FeatureParam[]){
-         {kFREUIIdentitySwitcherPositionParam, "top"},
-         {kFREUIStringsSetParam, "new"}},
-     2, nullptr},
-    {"BOTTOM | NEW",
-     (FeatureEntry::FeatureParam[]){
-         {kFREUIIdentitySwitcherPositionParam, "bottom"},
-         {kFREUIStringsSetParam, "new"}},
-     2, nullptr}};
-
 const FeatureEntry::FeatureParam kNewMICEFREWithUMADialog[] = {
     {kNewMobileIdentityConsistencyFREParam,
      kNewMobileIdentityConsistencyFREParamUMADialog}};
@@ -454,6 +449,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
          omnibox::kUIExperimentMaxAutocompleteMatches,
          kOmniboxUIMaxAutocompleteMatchesVariations,
          "OmniboxUIMaxAutocompleteVariations")},
+    {"omnibox-max-zps-matches", flag_descriptions::kOmniboxMaxZPSMatchesName,
+     flag_descriptions::kOmniboxMaxZPSMatchesDescription, flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(omnibox::kMaxZeroSuggestMatches,
+                                    kOmniboxMaxZPSMatchesVariations,
+                                    "OmniboxMaxZPSVariations")},
     {"omnibox-local-history-zero-suggest",
      flag_descriptions::kOmniboxLocalHistoryZeroSuggestName,
      flag_descriptions::kOmniboxLocalHistoryZeroSuggestDescription,
@@ -509,9 +509,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"enable-fre-ui-module-ios-with-options",
      flag_descriptions::kEnableFREUIModuleIOSName,
      flag_descriptions::kEnableFREUIModuleIOSDescription, flags_ui::kOsIos,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableFREUIModuleIOS,
-                                    kEnableFREUIModuleIOSVariations,
-                                    "EnableFREUIModuleIOS")},
+     FEATURE_VALUE_TYPE(kEnableFREUIModuleIOS)},
     {"new-mobile-identity-consistency-fre",
      flag_descriptions::kNewMobileIdentityConsistencyFREName,
      flag_descriptions::kNewMobileIdentityConsistencyFREDescription,
@@ -676,12 +674,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kUseLensToSearchForImageDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUseLensToSearchForImage)},
     {"use-load-simulated-request-for-error-page-navigation",
-     flag_descriptions::kUseLoadSimulatedRequestForErrorPageNavigationName,
-     flag_descriptions::
-         kUseLoadSimulatedRequestForErrorPageNavigationDescription,
+     flag_descriptions::kUseLoadSimulatedRequestForOfflinePageName,
+     flag_descriptions::kUseLoadSimulatedRequestForOfflinePageDescription,
      flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(
-         web::features::kUseLoadSimulatedRequestForErrorPageNavigation)},
+     FEATURE_VALUE_TYPE(web::features::kUseLoadSimulatedRequestForOfflinePage)},
     {"enable-discover-feed-static-resource-serving",
      flag_descriptions::kEnableDiscoverFeedStaticResourceServingName,
      flag_descriptions::kEnableDiscoverFeedStaticResourceServingDescription,
@@ -902,6 +898,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kSmartSortingNewOverflowMenuName,
      flag_descriptions::kSmartSortingNewOverflowMenuDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kSmartSortingNewOverflowMenu)},
+    {"upgrade-center-refactor", flag_descriptions::kUpgradeCenterRefactorName,
+     flag_descriptions::kUpgradeCenterRefactorDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kUpgradeCenterRefactor)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {
@@ -1058,6 +1057,21 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
                                    policy::key::kEnableExperimentalPolicies)];
   }
 
+  NSString* metrics_reporting_key = @"MetricsReportingEnabled";
+  switch ([defaults integerForKey:metrics_reporting_key]) {
+    case 1:
+      // Metrics reporting forced.
+      [testing_policies setValue:@(YES) forKey:metrics_reporting_key];
+      break;
+    case 2:
+      // Metrics reporting disabled.
+      [testing_policies setValue:@(NO) forKey:metrics_reporting_key];
+      break;
+    default:
+      // Metrics reporting not managed.
+      break;
+  }
+
   // Warning: Add new flags to TestingPoliciesHash() below.
 
   return testing_policies;
@@ -1068,12 +1082,12 @@ NSMutableDictionary* CreateExperimentalTestingPolicies() {
 NSString* TestingPoliciesHash() {
   NSUserDefaults* defaults = [NSUserDefaults standardUserDefaults];
   return [NSString
-      stringWithFormat:@"%d|%d|%d|%d|%@|%d|%d|%d|%d|%d|%d|%d",
+      stringWithFormat:@"%d|%d|%d|%d|%@|%d|%d|%d|%d|%d|%d|%d|%d|%@|%d",
                        [defaults boolForKey:@"DisallowChromeDataInBackups"],
                        [defaults boolForKey:@"EnableSyncDisabledPolicy"],
                        [defaults boolForKey:@"EnableSamplePolicies"],
-                       (int)[defaults
-                           integerForKey:@"IncognitoModeAvailability"],
+                       static_cast<int>([defaults
+                           integerForKey:@"IncognitoModeAvailability"]),
                        [defaults stringForKey:@"RestrictAccountsToPatterns"],
                        [defaults boolForKey:@"SyncTypesListBookmarks"],
                        [defaults boolForKey:@"SyncTypesListReadingList"],
@@ -1081,7 +1095,12 @@ NSString* TestingPoliciesHash() {
                        [defaults boolForKey:@"SyncTypesListPasswords"],
                        [defaults boolForKey:@"SyncTypesListAutofill"],
                        [defaults boolForKey:@"SyncTypesListTypedUrls"],
-                       [defaults boolForKey:@"SyncTypesListTabs"]];
+                       [defaults boolForKey:@"SyncTypesListTabs"],
+                       static_cast<int>(
+                           [defaults integerForKey:@"BrowserSignin"]),
+                       [defaults stringForKey:@"NTPLocation"],
+                       static_cast<int>([defaults
+                           integerForKey:@"MetricsReportingEnabled"])];
 }
 }  // namespace
 

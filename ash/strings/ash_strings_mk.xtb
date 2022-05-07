@@ -4,8 +4,6 @@
 <translation id="1012876632442809908">USB-Ц уред (предна порта)</translation>
 <translation id="1013598600051641573"><ph name="DISPLAY_NAME" /> се промени на <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Кликнете „Потврди“ за да ги задржите промените. Претходната поставка ќе се врати за <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">Уредот со Bluetooth „<ph name="DEVICE_NAME" />“ бара дозвола за спарување. Внесете го овој PIN-код на тој уред: <ph name="PINCODE" /></translation>
-<translation id="1014111206066007277">Алатки за снимка на екран</translation>
-<translation id="1024261588257374085">Избрана е делумна слика од екранот</translation>
 <translation id="1024364763893396229">Зачувајте: <ph name="NAME" /></translation>
 <translation id="1032891413405719768">Батеријата на пенкалото е слаба</translation>
 <translation id="1036073649888683237">За да управувате со известувањата, одете во „Поставки“</translation>
@@ -85,7 +83,6 @@
 <translation id="1346748346194534595">Надесно</translation>
 <translation id="1351937230027495976">Собери го менито</translation>
 <translation id="1364382257761975320">За да го отклучите вашиот Chromebook, користете го отпечатокот</translation>
-<translation id="1364618750746929654">Не може да се добие транскрипција</translation>
 <translation id="1372545819342940910">Зачувај ја работната површина за подоцна</translation>
 <translation id="1383597849754832576">Не може да се преземат датотеките за говор. Обидете се повторно подоцна.</translation>
 <translation id="1383876407941801731">Барај</translation>
@@ -333,7 +330,6 @@
 <translation id="3009178788565917040">Излез</translation>
 <translation id="3009958530611748826">Изберете папка за зачувување</translation>
 <translation id="301282384882049174">Споделено од вашиот администратор</translation>
-<translation id="3017687597151988916">Областа за избор е прозорец</translation>
 <translation id="3033545621352269033">Вклучено</translation>
 <translation id="3033912566804961911">Комбинирајте со <ph name="DESK_NAME" /></translation>
 <translation id="3036649622769666520">Отвори датотеки</translation>
@@ -460,7 +456,6 @@
 <translation id="3702846122927433391">Население во Нигерија</translation>
 <translation id="3705722231355495246">–</translation>
 <translation id="3708186454126126312">Претходно поврзани</translation>
-<translation id="3712317119236351467">Не може да се зачува снимката</translation>
 <translation id="371370241367527062">Преден микрофон</translation>
 <translation id="3713734891607377840">Отвори кога ќе заврши преземањето</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> и уште <ph name="UNAVAILABLE_APPS_COUNT" /> не се на уредов.</translation>
@@ -1054,7 +1049,6 @@
 <translation id="746232733191930409">Режим на снимање на екранот</translation>
 <translation id="7466449121337984263">Допрете го сензорот</translation>
 <translation id="7477793887173910789">Контролирајте ја музиката, видеата и др.</translation>
-<translation id="7483025031359818980">Областа за избор е цел екран</translation>
 <translation id="7497767806359279797">Изберете јазик и тастатура</translation>
 <translation id="7508690557411636492">Отворено во изминатиот месец</translation>
 <translation id="7509246181739783082">Потврдете го вашиот идентитет</translation>

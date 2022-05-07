@@ -411,7 +411,7 @@
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/display/display.h"
+#include "ui/display/util/display_util.h"
 #if BUILDFLAG(DFMIFY_DEV_UI)
 #include "chrome/browser/dev_ui/android/dev_ui_loader_throttle.h"
 #endif  // BUILDFLAG(DFMIFY_DEV_UI)
@@ -491,6 +491,8 @@
 #endif
 
 #if defined(TOOLKIT_VIEWS)
+#include "chrome/browser/ui/side_search/side_search_side_contents_helper.h"
+#include "chrome/browser/ui/side_search/side_search_utils.h"
 #include "chrome/browser/ui/views/chrome_browser_main_extra_parts_views.h"
 #endif
 
@@ -618,11 +620,6 @@
 #if BUILDFLAG(USE_MINIKIN_HYPHENATION) && !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/component_updater/hyphenation_component_installer.h"
 #endif
-
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
-#include "chrome/browser/ui/side_search/side_search_side_contents_helper.h"
-#include "chrome/browser/ui/side_search/side_search_utils.h"
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 // This should be after all other #includes.
 #if defined(_WINDOWS_)  // Detect whether windows.h was included.
@@ -2059,8 +2056,7 @@ ChromeContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
 // Sign-in process isolation is not needed on Android, see
 // https://crbug.com/739418.
 #if !BUILDFLAG(IS_ANDROID)
-  isolated_origin_list.push_back(
-      url::Origin::Create(GaiaUrls::GetInstance()->gaia_url()));
+  isolated_origin_list.push_back(GaiaUrls::GetInstance()->gaia_origin());
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -4419,6 +4415,14 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
           handle),
       &throttles);
 
+#if defined(TOOLKIT_VIEWS)
+  if (profile && IsSideSearchEnabled(profile)) {
+    MaybeAddThrottle(
+        SideSearchSideContentsHelper::MaybeCreateThrottleFor(handle),
+        &throttles);
+  }
+#endif
+
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
   MaybeAddThrottle(
       offline_pages::OfflinePageNavigationThrottle::MaybeCreateThrottleFor(
@@ -4433,14 +4437,6 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
             profile->GetPrefs()),
         &throttles);
   }
-
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
-  if (profile && IsSideSearchEnabled(profile)) {
-    MaybeAddThrottle(
-        SideSearchSideContentsHelper::MaybeCreateThrottleFor(handle),
-        &throttles);
-  }
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
   return throttles;
 }
@@ -5944,8 +5940,8 @@ ChromeContentBrowserClient::GetWideColorGamutHeuristic() {
     return WideColorGamutHeuristic::kUseDisplay;
   }
 
-  if (display::Display::HasForceDisplayColorProfile() &&
-      display::Display::GetForcedDisplayColorProfile() ==
+  if (display::HasForceDisplayColorProfile() &&
+      display::GetForcedDisplayColorProfile() ==
           gfx::ColorSpace::CreateDisplayP3D65()) {
     return WideColorGamutHeuristic::kUseDisplay;
   }

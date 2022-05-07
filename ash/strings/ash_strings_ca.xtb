@@ -4,8 +4,6 @@
 <translation id="1012876632442809908">Dispositiu USB-C (port frontal)</translation>
 <translation id="1013598600051641573">La resolució de la pantalla <ph name="DISPLAY_NAME" /> ha canviat a <ph name="RESOLUTION" /> (<ph name="REFRESH_RATE" /> Hz). Fes clic a Confirma per conservar els canvis. La configuració anterior es restaurarà d'aquí a <ph name="TIMEOUT_SECONDS" />.</translation>
 <translation id="1013923882670373915">El dispositiu Bluetooth "<ph name="DEVICE_NAME" />" sol·licita permís per emparellar-se. Introduïu aquest codi PIN al dispositiu: <ph name="PINCODE" />.</translation>
-<translation id="1014111206066007277">Eines de captura de pantalla de vídeo</translation>
-<translation id="1024261588257374085">S'ha seleccionat la captura de pantalla parcial</translation>
 <translation id="1024364763893396229">Desa el dispositiu <ph name="NAME" /></translation>
 <translation id="1032891413405719768">El llapis òptic té poca bateria</translation>
 <translation id="1036073649888683237">Per gestionar les notificacions, ves a Configuració</translation>
@@ -85,7 +83,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="1346748346194534595">Dreta</translation>
 <translation id="1351937230027495976">Replega el menú</translation>
 <translation id="1364382257761975320">Per desbloquejar el Chromebook, utilitza l'empremta digital</translation>
-<translation id="1364618750746929654">No es pot generar la transcripció</translation>
 <translation id="1372545819342940910">Desa l'escriptori per a més tard</translation>
 <translation id="1383597849754832576">No es poden baixar fitxers de veu. Torna-ho a provar més tard.</translation>
 <translation id="1383876407941801731">Cerca</translation>
@@ -333,7 +330,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3009178788565917040">Sortida</translation>
 <translation id="3009958530611748826">Selecciona en quina carpeta vols que es desi</translation>
 <translation id="301282384882049174">Compartida per l'administrador</translation>
-<translation id="3017687597151988916">S'ha establert la finestra com a àrea de selecció</translation>
 <translation id="3033545621352269033">Activada</translation>
 <translation id="3033912566804961911">Combina amb l'escriptori <ph name="DESK_NAME" /></translation>
 <translation id="3036649622769666520">Obre fitxers</translation>
@@ -460,7 +456,6 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3702846122927433391">Quants habitants té Nigèria?</translation>
 <translation id="3705722231355495246">-</translation>
 <translation id="3708186454126126312">Connectats anteriorment</translation>
-<translation id="3712317119236351467">No es pot desar la gravació</translation>
 <translation id="371370241367527062">Micròfon frontal</translation>
 <translation id="3713734891607377840">Obre'l en acabar</translation>
 <translation id="3726171378575546917"><ph name="UNAVAILABLE_APPS_ONE" />, <ph name="UNAVAILABLE_APPS_TWO" /> i <ph name="UNAVAILABLE_APPS_COUNT" /> aplicacions més no estan disponibles en aquest dispositiu.</translation>
@@ -496,7 +491,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="3922427723338465344">{0,plural, =1{Canvia el dispositiu a la versió anterior en el termini d’1 minut}other{Canvia el dispositiu a la versió anterior en el termini de # minuts}}</translation>
 <translation id="3923494859158167397">No hi ha cap xarxa mòbil configurada</translation>
 <translation id="3932043219784172185">No hi ha cap dispositiu connectat</translation>
-<translation id="3934456833412894880">La càrrega adaptativa està activada. La bateria es mantindrà al 80% per allargar-ne la durada i poder carregar-la completament quan ho necessitis.</translation>
+<translation id="3934456833412894880">La funció Càrrega intel·ligent està activada. La bateria es mantindrà al 80% per allargar-ne la durada i poder carregar-la completament quan ho necessitis.</translation>
 <translation id="3943857333388298514">Enganxa</translation>
 <translation id="394485226368336402">Configuració d'àudio</translation>
 <translation id="3945319193631853098">Toca per completar la configuració</translation>
@@ -854,6 +849,7 @@ A continuació t'indico algunes coses que pots provar per començar.</translatio
 <translation id="6166852626429024716">Cerca al dispositiu, en aplicacions, a la configuració i al web...</translation>
 <translation id="6179832488876878285">Pots fixar els teus fitxers importants aquí. Obre l'aplicació Fitxers per començar.</translation>
 <translation id="619279033188484792">Consulta les notificacions, els fitxers multimèdia i les fotos recents del telèfon al teu <ph name="DEVICE_TYPE" /></translation>
+<translation id="619335566042889110">Carrega completament ara</translation>
 <translation id="6220928844947387476">Ara pots gravar-te a tu i gravar la teva pantalla alhora</translation>
 <translation id="622484624075952240">Avall</translation>
 <translation id="6231419273573514727">És possible que el rendiment dels perifèrics sigui limitat</translation>
@@ -1052,7 +1048,6 @@ Instal·lació nova</translation>
 <translation id="746232733191930409">Mode de gravació de pantalla</translation>
 <translation id="7466449121337984263">Toca el sensor</translation>
 <translation id="7477793887173910789">Controla la música, els vídeos i molt més</translation>
-<translation id="7483025031359818980">S'ha establert la pantalla completa com a àrea de selecció</translation>
 <translation id="7497767806359279797">Tria l'idioma i el teclat</translation>
 <translation id="7508690557411636492">Obert durant el darrer mes</translation>
 <translation id="7509246181739783082">Verifica la teva identitat</translation>
@@ -1189,6 +1184,7 @@ Instal·lació nova</translation>
 <translation id="826107067893790409">Prem Retorn per desbloquejar-lo per a <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="8261506727792406068">Suprimeix</translation>
 <translation id="8270450402312105425">{0,plural, =1{Canvia el dispositiu a la versió anterior en el termini d’una hora}other{Canvia el dispositiu a la versió anterior en el termini de # hores}}</translation>
+<translation id="8271580342040932214">La bateria està temporalment al 80% mentre el dispositiu està connectat per allargar la durada de la bateria. Es carregarà completament a les <ph name="FULLY_CHARGE_TIME" />.</translation>
 <translation id="8284362522226889623">Fes lliscar quatre dits cap a l'esquerra per canviar a l'escriptori anterior</translation>
 <translation id="828708037801473432">Desactivada</translation>
 <translation id="8297006494302853456">Feble</translation>
@@ -1272,6 +1268,7 @@ Instal·lació nova</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
 <translation id="881757059229893486">Configuració dels mètodes d'introducció de text</translation>
 <translation id="8818320199597151042">S'està suprimint el perfil. Espera uns minuts.</translation>
+<translation id="8819728065740986820">La càrrega intel·ligent està activada</translation>
 <translation id="8825863694328519386">Llisca des de l'esquerra per tornar enrere</translation>
 <translation id="8834539327799336565">Connectats actualment</translation>
 <translation id="8841375032071747811">Botó Enrere</translation>
@@ -1318,6 +1315,7 @@ Instal·lació nova</translation>
 <translation id="9080132581049224423">Llisca cap amunt per anar a la pàgina d'inici</translation>
 <translation id="9080206825613744995">S'està fent servir el micròfon.</translation>
 <translation id="9084606467167974638">Commuta la posició del menú</translation>
+<translation id="9085962983642906571">La bateria es manté al 80% mentre el dispositiu està connectat per allargar la durada de la bateria.</translation>
 <translation id="9089416786594320554">Mètodes d'entrada</translation>
 <translation id="9091626656156419976">S'ha suprimit la pantalla <ph name="DISPLAY_NAME" /></translation>
 <translation id="9098969848082897657">Silencia el telèfon</translation>

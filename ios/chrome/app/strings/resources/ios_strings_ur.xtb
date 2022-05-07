@@ -38,7 +38,6 @@
 <translation id="1219674500290482172">انٹرنیٹ سے منسلک ہونے سے قاصر ہے۔</translation>
 <translation id="122699739164161391">سبھی ٹیبز بند کریں</translation>
 <translation id="1229222343402087523">‏Chrome میں {searchPhrase}$ تلاش کریں</translation>
-<translation id="1231733316453485619">مطابقت پذیری آن کریں؟</translation>
 <translation id="1242044645101871359">دوبارہ سائن ان کریں</translation>
 <translation id="1254117744268754948">فولڈر کا انتخاب کریں</translation>
 <translation id="1265739287306757398">طریقہ جانیں</translation>
@@ -227,6 +226,7 @@
 <translation id="2898963176829412617">نیا فولڈر…</translation>
 <translation id="2916171785467530738">‏تلاشوں اور URLs کی خودکار تکمیل کریں</translation>
 <translation id="291754862089661335">‏QR کوڈ کو اس فریم میں رکھیں</translation>
+<translation id="2920866371965792875">اس سائٹ سے اپ ڈیٹس دیکھنے کے لیے، یہاں اس کی پیروی کریں۔</translation>
 <translation id="2921219216347069551">صفحہ کا اشتراک نہیں کر سکتے ہیں</translation>
 <translation id="2923448633003185837">پیسٹ کریں اور جائیں</translation>
 <translation id="292639812446257861">بغیر پڑھے ہوئے کے بطور نشان زد کریں</translation>
@@ -971,5 +971,4 @@ Handoff ترتیبات کے عام سیکشن میں بھی فعال ہونی ض
 <translation id="988141524645182168">دیگر آلات</translation>
 <translation id="989988560359834682">پتہ میں ترمیم کریں</translation>
 <translation id="994757059139821576">مضمون کی تجاویز</translation>
-<translation id="997742718232442409">یہ ویب سائٹ کیلنڈر فائل کو ڈاؤن لوڈ کرنے کی کوشش کر رہی ہے۔</translation>
 </translationbundle>

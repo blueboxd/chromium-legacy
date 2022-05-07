@@ -113,9 +113,6 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // DesktopWindowTreeHost's transparency.
   void UpdateWindowTransparency();
 
-  // Returns true if the desktop window was created in headless mode.
-  bool IsHeadlessMode() const { return headless_mode_; }
-
  protected:
   // internal::NativeWidgetPrivate:
   void InitNativeWidget(Widget::InitParams params) override;
@@ -176,9 +173,7 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   bool IsMaximized() const override;
   bool IsMinimized() const override;
   void Restore() override;
-  void SetFullscreen(bool fullscreen,
-                     const base::TimeDelta& delay,
-                     int64_t target_display_id) override;
+  void SetFullscreen(bool fullscreen, int64_t target_display_id) override;
   bool IsFullscreen() const override;
   void SetCanAppearInExistingFullscreenSpaces(
       bool can_appear_in_existing_fullscreen_spaces) override;

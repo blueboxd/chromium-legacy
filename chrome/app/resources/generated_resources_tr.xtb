@@ -131,6 +131,7 @@
 <translation id="1124772482545689468">Kullanıcı</translation>
 <translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> şeklinde görünür (Yerel)</translation>
 <translation id="1126809382673880764">Sizi tehlikeli web siteleri, indirmeler ve uzantılara karşı korumaz. Gmail ve Arama gibi diğer Google hizmetlerinde, mümkün olduğunda Güvenli Tarama korumasından yararlanmaya devam edersiniz.</translation>
+<translation id="1128090040635299943">Linux şu anda yapılandırılıyor. Yapılandırma işlemi birkaç dakika sürecek.</translation>
 <translation id="1128591060186966949">Arama motorunu düzenleyin</translation>
 <translation id="1129420403709586868">Telefonunuzdaki fotoğrafları ve medya içeriklerini görün</translation>
 <translation id="1129850422003387628">Uygulamaları yönet</translation>
@@ -284,7 +285,7 @@
 <translation id="1272508081857842302"><ph name="BEGIN_LINK" />Desteklenen bağlantıların<ph name="END_LINK" /> açılması</translation>
 <translation id="1272978324304772054">Bu kullanıcı hesabı, cihazın kaydedildiği alan adına ait değil. Farklı bir alan adına kaydolmak istiyorsanız, öncelikle cihaz kurtarma işlemini tamamlamanız gerekir.</translation>
 <translation id="1274997165432133392">Çerezler ve diğer site verileri</translation>
-<translation id="1275718070701477396">Seçili</translation>
+<translation id="1275718070701477396">Seçildi</translation>
 <translation id="1276994519141842946"><ph name="APP_NAME" /> kaldırılamadı</translation>
 <translation id="1277020343994096713">Şu anki PIN kodunuzdan farklı yeni bir PIN oluşturun</translation>
 <translation id="1278859221870828664">Google Play uygulama ve hizmetlerini inceleyin</translation>
@@ -332,6 +333,7 @@
 <translation id="1327794256477341646">Konumunuza erişilmesini gerektiren özellikler çalışmaz</translation>
 <translation id="1329191040029425999">Lütfen cihazınızın güncel olduğundan emin olup tekrar deneyin</translation>
 <translation id="1330145147221172764">Ekran klavyesini etkinleştir</translation>
+<translation id="1331625853030156663"><ph name="APP_NAME" /> uygulamasını açmak için "Uykudan uyanırken kilit ekranını göster"i etkinleştirin</translation>
 <translation id="1331977651797684645">Bu kişi bendim.</translation>
 <translation id="1333489022424033687">Diğer sitelerin cihazınızda depoladığı veriler temizlenmeden, bazı <ph name="ORIGIN" /> özellikleri düzgün bir şekilde çalışmayabilir</translation>
 <translation id="1333965224356556482">Sitelerin konumumu görmesine izin verme</translation>
@@ -3328,6 +3330,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="420283545744377356">Ekran koruyucuyu kapat</translation>
 <translation id="4203065553461038553">Dosyanın adı veya konumu çok uzun</translation>
 <translation id="4204851595694839599">Oyun deneyiminiz nasıldı?</translation>
+<translation id="4205157409548006256">Linux yapılandırılırken bir hata oluştu.</translation>
 <translation id="4206144641569145248">Uzaylı</translation>
 <translation id="4206323443866416204">Geri Bildirim Raporu</translation>
 <translation id="4207522141889799150"><ph name="SITE" /> için site izinlerini düzenle</translation>
@@ -4073,7 +4076,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="4953808748584563296">Varsayılan turuncu avatar</translation>
 <translation id="4955710816792587366">PIN'inizi seçin</translation>
 <translation id="4959262764292427323">Şifreler Google Hesabınıza kaydedildiğinden bunları herhangi bir cihazda kullanabilirsiniz</translation>
-<translation id="496027654926814138"><ph name="FILE_NAME" />, saldırganların kişisel bilgilerinizi çalmasına olanak sağlayabilir.</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
 <translation id="4961318399572185831">Ekranı yayınla</translation>
 <translation id="4961361269522589229">yemek tarifi fikirleri</translation>
@@ -5793,6 +5795,7 @@ Güvenliği ihlal edilmiş # şifreniz daha var. Google Şifre Yöneticisi bu ş
 <translation id="6686665106869989887">Sekme sağa taşındı</translation>
 <translation id="6686817083349815241">Şifrenizi kaydedin</translation>
 <translation id="6687079240787935001">Gizle: <ph name="MODULE_TITLE" /></translation>
+<translation id="6688391094668641513"><ph name="ORIGIN" /> sitesini okuyup değiştirmek istiyor:</translation>
 <translation id="6689714331348768690"><ph name="SUPERVISED_USER_NAME" /> kullanıcısının bilgisayara gelmesini isteyin. Çocuğunuz, ses modelini oluşturmak için bu ekrandaki birkaç ifadeyi okuyacaktır.
     <ph name="BR" />
     <ph name="SUPERVISED_USER_NAME" />, okuma konusunda yardıma ihtiyaç duyuyorsa ifadeleri siz okuduktan sonra çocuğunuza tekrar ettirin. Asistan'ın, sizin sesiniz yerine çocuğunuzun sesini öğrenmesi için mikrofondan uzakta fısıldayarak konuşun.</translation>
@@ -5897,7 +5900,6 @@ Güvenliği ihlal edilmiş # şifreniz daha var. Google Şifre Yöneticisi bu ş
 <translation id="6798578729981748444">İçe aktarma işlemini tamamlamak için tüm Firefox pencerelerini kapatın.</translation>
 <translation id="6798780071646309401">caps lock açık</translation>
 <translation id="6798954102094737107">Eklenti: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6800746963123086495">Bu dosya, saldırganların kişisel bilgilerinizi çalmasına neden olabilir</translation>
 <translation id="6801129617625983991">Genel ayarlar</translation>
 <translation id="6801435275744557998">Dokunmatik ekranı ayarla</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
@@ -6305,6 +6307,7 @@ Güvenliği ihlal edilmiş # şifreniz daha var. Google Şifre Yöneticisi bu ş
 <translation id="720715819012336933">{NUM_PAGES,plural, =1{Sayfadan çık}other{Sayfalardan çık}}</translation>
 <translation id="7207457272187520234">Kullanım ve teşhis verilerini gönder. Bu cihaz şu anda teşhis, cihaz ve uygulama kullanımı verilerini otomatik olarak Google'a gönderiyor. Bu veriler, sistem ve uygulama kararlılığı ile diğer özellikleri iyileştirmeye yardımcı olur. Bazı birleştirilmiş veriler, Google uygulamalarına ve iş ortaklarına da (ör. Android geliştiricileri) yardımcı olur. Bu ayar, cihazın sahibi tarafından zorunlu kılınmıştır. Ek Web ve Uygulama Etkinliği açıksa bu veriler Google Hesabınıza kaydedilebilir.</translation>
 <translation id="7207631048330366454">Uygulamalarda ara</translation>
+<translation id="720808544705441386">Uygulama açılamıyor</translation>
 <translation id="7210499381659830293">Uzantı yazıcılar</translation>
 <translation id="7211783048245131419">Henüz atanmış anahtar yok</translation>
 <translation id="7212097698621322584">Değiştirmek için geçerli PIN'inizi girin. PIN'inizi bilmiyorsanız güvenlik anahtarınızı sıfırlayarak yeni bir PIN oluşturmanız gerekir.</translation>
@@ -6368,7 +6371,6 @@ Güvenliği ihlal edilmiş # şifreniz daha var. Google Şifre Yöneticisi bu ş
 <translation id="7269736181983384521">Yakındakilerle Paylaş veri kullanımı</translation>
 <translation id="7272674038937250585">Açıklama sağlanmadı</translation>
 <translation id="7273110280511444812">son eklendiği tarih: <ph name="DATE" /></translation>
-<translation id="7273970016743909808">Cihazın yalnızca kiosk veya tabela modunda çalışmasına izin veren Kiosk ve Tabela Güncellemesi'ni kullanacaksınız. Kullanıcıların cihazda oturum açmasını istiyorsanız lütfen geri dönüp Chrome Enterprise Yükseltme kullanarak kaydolun.</translation>
 <translation id="727441411541283857">%<ph name="PERCENTAGE" /> - Tamamen dolmasına <ph name="TIME" /> kaldı</translation>
 <translation id="727952162645687754">İndirme hatası</translation>
 <translation id="7280041992884344566">Chrome zararlı yazılımları ararken bir hata oluştu</translation>
@@ -6771,7 +6773,6 @@ Güvenliği ihlal edilmiş # şifreniz daha var. Google Şifre Yöneticisi bu ş
 <translation id="7670434942695515800">En iyi performans için en son sürüme geçin. Yeni sürüme geçme işleminin tamamlanamaması ihtimaline karşı dosyalarınızı yedeklemeniz önerilir. Linux, yeni sürüme geçme işlemi başladıktan sonra kapanır. Devam etmeden önce açık dosyaları kaydedin. <ph name="LINK_START" />Daha fazla bilgi<ph name="LINK_END" /></translation>
 <translation id="7671130400130574146">Sistemin başlık çubuğunu ve kenarlıklarını kullan</translation>
 <translation id="767127784612208024">Sıfırlamayı onaylamak için dokunun</translation>
-<translation id="767147716926917172">Teşhis ve kullanım verilerini Google'a otomatik olarak gönderir</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, <ph name="PAGE_TITLE" /> sayfasında.</translation>
 <translation id="7674416868315480713">Linux'ta yönlendirilen tüm bağlantı noktalarını devre dışı bırak</translation>
 <translation id="7674537509496907005"><ph name="APP_COUNT" /> uygulama</translation>
@@ -7461,6 +7462,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8324784016256120271">Siteler, örneğin reklamları kişiselleştirmek amacıyla farklı sitelerde tarama etkinliğinizi görmek için çerez kullanabilir</translation>
 <translation id="8325413836429495820">Panonuzu görmesine izin verilmeyen siteler</translation>
 <translation id="8326478304147373412">PKCS #7, sertifika zinciri</translation>
+<translation id="8327386430364625757">Matematiksel yazı tipi</translation>
 <translation id="8327676037044516220">İzinler ve içerik ayarları</translation>
 <translation id="8330617762701840933">Alternatif tarayıcıya yönlendiren web sitelerinin listesi.</translation>
 <translation id="8330689128072902965">Yakındaki kişiler sizinle içerik paylaşabilir. Değiştirmek için tıklayın.</translation>

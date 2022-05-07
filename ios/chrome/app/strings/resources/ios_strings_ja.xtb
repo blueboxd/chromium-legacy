@@ -38,12 +38,11 @@
 <translation id="1219674500290482172">インターネットに接続できません。</translation>
 <translation id="122699739164161391">すべてのタブを閉じる</translation>
 <translation id="1229222343402087523">Chrome で ${searchPhrase} を検索</translation>
-<translation id="1231733316453485619">同期を有効にしますか？</translation>
 <translation id="1242044645101871359">もう一度ログインしてください</translation>
 <translation id="1254117744268754948">フォルダの選択</translation>
 <translation id="1265739287306757398">詳細</translation>
 <translation id="1272079795634619415">中止</translation>
-<translation id="1275718070701477396">選択されています</translation>
+<translation id="1275718070701477396">選択中</translation>
 <translation id="1281818060020671000">データの管理</translation>
 <translation id="1283524564873030414">過去 24 時間</translation>
 <translation id="1285320974508926690">このサイトは翻訳しない</translation>
@@ -227,6 +226,7 @@
 <translation id="2898963176829412617">新しいフォルダ...</translation>
 <translation id="2916171785467530738">検索語句や URL をオートコンプリートする</translation>
 <translation id="291754862089661335">QR コードまたはバーコードをこの枠に合わせてください</translation>
+<translation id="2920866371965792875">こちらでフォローすると、このサイトの更新情報を確認できます。</translation>
 <translation id="2921219216347069551">ページを共有できない</translation>
 <translation id="2923448633003185837">貼り付けて移動</translation>
 <translation id="292639812446257861">未読にする</translation>
@@ -971,5 +971,4 @@
 <translation id="988141524645182168">他のデバイス</translation>
 <translation id="989988560359834682">住所の編集</translation>
 <translation id="994757059139821576">記事の候補表示</translation>
-<translation id="997742718232442409">このウェブサイトはカレンダー ファイルをダウンロードしようとしています。</translation>
 </translationbundle>

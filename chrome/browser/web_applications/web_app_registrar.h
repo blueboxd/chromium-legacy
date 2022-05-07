@@ -65,7 +65,7 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // TODO(https://crbug.com/1182363): should be removed when id is introduced to
   // manifest.
   const WebApp* GetAppByStartUrl(const GURL& start_url) const;
-  std::vector<AppId> GetAppsFromSyncAndPendingInstallation();
+  std::vector<AppId> GetAppsFromSyncAndPendingInstallation() const;
 
   void Start();
   void Shutdown();
@@ -90,6 +90,11 @@ class WebAppRegistrar : public ProfileManagerObserver {
   // like shortcuts. |IsLocallyInstalled| apps is a subset of |IsInstalled|
   // apps. On Chrome OS all apps are always locally installed.
   bool IsLocallyInstalled(const AppId& app_id) const;
+
+  // Returns true if the app was actively installed, meaning the app has
+  // involved some form of user or administrator action to either install it or
+  // configure it to behave like an app.
+  bool IsActivelyInstalled(const AppId& app_id) const;
 
   // Returns the permissions policy declared as declared in the manifest for
   // the app with |app_id|. This permissions policy is not yet parsed by the

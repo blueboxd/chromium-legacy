@@ -53,9 +53,6 @@ const base::Feature kDisableNonHTMLScreenshotOnIOS15{
 const base::Feature kIOSSharedHighlightingColorChange{
     "IOSSharedHighlightingColorChange", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kCreatePendingItemForPostFormSubmission{
-    "CreatePendingItemForPostFormSubmission", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kEnableNewDownloadAPI{"EnableNewDownloadAPI",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -71,7 +68,7 @@ const base::Feature kMediaPermissionsControl{"MediaPermissionsControl",
 extern const base::Feature kEnableFullscreenAPI{
     "EnableFullscreenAPI", base::FEATURE_DISABLED_BY_DEFAULT};
 
-extern const base::Feature kUseLoadSimulatedRequestForErrorPageNavigation{
+extern const base::Feature kUseLoadSimulatedRequestForOfflinePage{
     "UseLoadSimulatedRequestForErrorPageNavigation",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -102,8 +99,7 @@ bool IsMediaPermissionsControlEnabled() {
 
 bool IsLoadSimulatedRequestAPIEnabled() {
   if (@available(iOS 15, *)) {
-    return base::FeatureList::IsEnabled(
-        kUseLoadSimulatedRequestForErrorPageNavigation);
+    return base::FeatureList::IsEnabled(kUseLoadSimulatedRequestForOfflinePage);
   }
   return false;
 }

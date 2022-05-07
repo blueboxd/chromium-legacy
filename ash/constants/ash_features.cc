@@ -285,6 +285,11 @@ const base::Feature kCellularUseAttachApn{"CellularUseAttachApn",
 const base::Feature kCellularUseSecondEuicc{"CellularUseSecondEuicc",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+// If enabled, Multiple scraped passwords should be checked against password in
+// cryptohome.
+const base::Feature kCheckPasswordsAgainstCryptohomeHelper{
+    "CheckPasswordsAgainstCryptohomeHelper", base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Enables pasting a few recently copied items in a menu when pressing search +
 // v.
 const base::Feature kClipboardHistory{"ClipboardHistory",
@@ -406,6 +411,12 @@ const base::Feature kCryptohomeRecoveryFlow{"CryptohomeRecoveryFlow",
 
 const base::Feature kDemoModeSWA{"DemoModeSWA",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables or disables Assistant stylus features, including the
+// Assistant option in the stylus palette tool and the Assistant screen
+// selection flow triggered by the stylus long press action.
+const base::Feature kDeprecateAssistantStylusFeatures{
+    "DeprecateAssistantStylusFeatures", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Sync for desk templates on ChromeOS.
 const base::Feature kDeskTemplateSync{"DeskTemplateSync",
@@ -825,7 +836,7 @@ const base::Feature kHoldingSpaceInProgressDownloadsNotificationSuppression{
 
 // Controls whether the snooping protection prototype is enabled.
 const base::Feature kSnoopingProtection{"SnoopingProtection",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enable or disable a new header bar for the ChromeOS virtual keyboard.
 const base::Feature kVirtualKeyboardNewHeader{
@@ -856,6 +867,12 @@ const base::Feature kImeStylusHandwriting{"StylusHandwriting",
 // and toggling whether a window is assigned to all desks.
 const base::Feature kImprovedDesksKeyboardShortcuts{
     "ImprovedDesksKeyboardShortcuts", base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Controls whether to show new improved UI for cryptohome errors that happened
+// during login. UI contains links to help center and might provide actions
+// that can be taken to resolve the problem.
+const base::Feature kImprovedLoginErrorHandling{
+    "ImprovedLoginErrorHandling", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables Instant Tethering on ChromeOS.
 const base::Feature kInstantTethering{"InstantTethering",
@@ -1176,7 +1193,7 @@ const base::Feature kProjectorShowShortPseudoTranscript(
     base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the quick dim prototype is enabled.
-const base::Feature kQuickDim{"QuickDim", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kQuickDim{"QuickDim", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables the Quick Settings Network revamp, which updates Network
 // Quick Settings UI and related infrastructure. See https://crbug.com/1169479.
@@ -1271,7 +1288,7 @@ const base::Feature kShelfParty{"ShelfParty",
 
 // Enables or disables the new shimless rma flow.
 const base::Feature kShimlessRMAFlow{"ShimlessRMAFlow",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables or disables launching Shimless RMA as a standalone app.
 const base::Feature kShimlessRMAEnableStandalone{
@@ -1363,7 +1380,7 @@ const base::Feature kTerminalDev{"TerminalDev",
 
 // Enables SSH tabs in the Terminal System App.
 const base::Feature kTerminalSSH{"TerminalSSH",
-                                 base::FEATURE_DISABLED_BY_DEFAULT};
+                                 base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables tmux integration in the Terminal System App.
 const base::Feature kTerminalTmuxIntegration{"TerminalTmuxIntegration",
@@ -1619,6 +1636,10 @@ bool IsCaptureModeSelfieCameraEnabled() {
   return base::FeatureList::IsEnabled(kCaptureModeSelfieCamera);
 }
 
+bool IsCheckPasswordsAgainstCryptohomeHelperEnabled() {
+  return base::FeatureList::IsEnabled(kCheckPasswordsAgainstCryptohomeHelper);
+}
+
 bool IsClipboardHistoryContextMenuNudgeEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryContextMenuNudge);
 }
@@ -1655,6 +1676,10 @@ bool IsDarkLightModeEnabled() {
 
 bool IsDemoModeSWAEnabled() {
   return base::FeatureList::IsEnabled(kDemoModeSWA);
+}
+
+bool IsDeprecateAssistantStylusFeaturesEnabled() {
+  return base::FeatureList::IsEnabled(kDeprecateAssistantStylusFeatures);
 }
 
 bool IsDeskTemplateSyncEnabled() {
@@ -2122,6 +2147,11 @@ bool IsShelfLauncherNudgeEnabled() {
 
 bool IsShimlessRMAFlowEnabled() {
   return base::FeatureList::IsEnabled(kShimlessRMAFlow);
+}
+
+bool IsShimlessRMAStandaloneAppEnabled() {
+  return base::FeatureList::IsEnabled(kShimlessRMAEnableStandalone) &&
+         IsShimlessRMAFlowEnabled();
 }
 
 bool IsSimLockPolicyEnabled() {

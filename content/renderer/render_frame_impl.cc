@@ -2302,9 +2302,7 @@ void RenderFrameImpl::SnapshotAndDistillAXTree(
     SnapshotAndDistillAXTreeCallback callback) {
   if (!ax_tree_distiller_)
     ax_tree_distiller_ = std::make_unique<AXTreeDistiller>(this);
-  ax_tree_distiller_->Distill();
-  std::move(callback).Run(*ax_tree_distiller_->GetSnapshot(),
-                          *ax_tree_distiller_->GetContentNodeIDs());
+  ax_tree_distiller_->Distill(std::move(callback));
 }
 
 void RenderFrameImpl::GetSerializedHtmlWithLocalLinks(
@@ -4043,8 +4041,9 @@ void RenderFrameImpl::DidFinishLoad() {
   TRACE_EVENT1("navigation,benchmark,rail", "RenderFrameImpl::didFinishLoad",
                "id", routing_id_);
   if (!frame_->Parent()) {
-    TRACE_EVENT_INSTANT0("WebCore,benchmark,rail", "LoadFinished",
-                         TRACE_EVENT_SCOPE_PROCESS);
+    TRACE_EVENT_INSTANT1("WebCore,benchmark,rail", "LoadFinished",
+                         TRACE_EVENT_SCOPE_PROCESS, "isOutermostMainFrame",
+                         frame_->IsOutermostMainFrame());
   }
 
   for (auto& observer : observers_)

@@ -14,7 +14,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="1152920704813762236">Chrome OS</translation>
 <translation id="1154147086299354128">&amp;Otvoriť v Chrome</translation>
 <translation id="1178374936842835197">Ak nie je určité nastavenie zobrazené na tejto stránke, skontrolujte <ph name="LINK_BEGIN" />nastavenia systému Chrome OS Flex<ph name="LINK_END" /></translation>
-<translation id="1182414570724401860">Chrome odporúča, aby ste tento súbor nesťahovali ani neotvárali</translation>
 <translation id="1278833599417554002">Znova spustiť a aktualizovať Chrome</translation>
 <translation id="1302523850133262269">Počkajte, kým Chrome nainštaluje najnovšie aktualizácie systému.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> vyžaduje, aby ste si pred používaním tohto zariadenia prečítali nasledujúce zmluvné podmienky a vyjadrili s nimi súhlas. Tieto zmluvné podmienky nerozširujú, neupravujú ani neobmedzujú zmluvné podmienky systému Google Chrome OS Flex.</translation>
@@ -288,6 +287,7 @@ Povolenia, ktoré ste už udelili webom a aplikáciám, sa môžu vzťahovať n
 Povolenia, ktoré ste už udelili webom a aplikáciám, sa môžu vzťahovať na tento účet. Účty Google môžete spravovať v <ph name="SETTINGS_LINK_BEGIN" />Nastaveniach<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Do prehliadača Chrome ste boli prihlásený/-á ako <ph name="USER_EMAIL_ADDRESS" />. Ak sa chcete prihlásiť znova, použite rovnaký účet.</translation>
 <translation id="7410958280246779049">Chrome zablokoval tento súbor, pretože je nebezpečný</translation>
+<translation id="7426611252293106642">Google Chrome nemusí fungovať správne, pretože v tejto verzii systému Linux už nie je podporovaný</translation>
 <translation id="7481213027396403996">Získajte najsilnejšie zabezpečenie Chromu</translation>
 <translation id="7486227612705979895">Chrome bude mať prístup na váš Disk, aby mohol v paneli s adresou zobrazovať návrhy</translation>
 <translation id="7535429826459677826">Google Chrome verzie pre vývojárov</translation>

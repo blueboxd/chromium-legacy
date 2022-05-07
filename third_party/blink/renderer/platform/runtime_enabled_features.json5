@@ -527,21 +527,8 @@
       status: "experimental",
     },
     {
-      // Support the 'only' keyword for the color-scheme property.
-      name: "CSSColorSchemeOnly",
-      origin_trial_feature_name: "AutoDarkMode",
-      status: "stable",
-    },
-    {
       name: "CSSColorTypedOM",
       status:  "experimental",
-    },
-    {
-      // Stop propagation from BODY to HTML and viewport if HTML or BODY
-      // elements have any containment applied.
-      // https://drafts.csswg.org/css-contain-2/#contain-property
-      name: "CSSContainedBodyPropagation",
-      status: "stable",
     },
     {
       // https://drafts.csswg.org/css-contain-3/#container-queries
@@ -782,12 +769,6 @@
     {
       name: "CSSSystemColorComputeToSelf",
       status: "experimental",
-    },
-    {
-      // Support for ::target-text pseudo element as specified in
-      // https://drafts.csswg.org/css-pseudo/#selectordef-target-text
-      name: "CSSTargetTextPseudoElement",
-      status: "stable",
     },
     // Support for CSS Toggles, https://tabatkins.github.io/css-toggle/
     {
@@ -1152,7 +1133,6 @@
       name: "FontSynthesis",
       status: "stable",
     },
-    // For simulating Android's overlay fullscreen video in web tests on Linux.
     {
       name: "ForcedColors",
       status: "stable",
@@ -1167,6 +1147,8 @@
       name:"ForceEagerMeasureMemory",
     },
     {
+      // For simulating Android's overlay fullscreen video in web tests on
+      // Linux.
       name: "ForceOverlayFullscreenVideo",
     },
     {

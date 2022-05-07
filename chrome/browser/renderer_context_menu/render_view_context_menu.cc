@@ -1051,10 +1051,13 @@ void RenderViewContextMenu::InitMenu() {
     AppendCurrentExtensionItems();
   }
 
-  // Accessibility label items are appended to all menus when a screen reader
-  // is enabled. It can be difficult to open a specific context menu with a
-  // screen reader, so this is a UX approved solution.
-  bool added_accessibility_labels_items = AppendAccessibilityLabelsItems();
+  // Accessibility label items are appended to all menus (with the exception of
+  // within the dev tools) when a screen reader is enabled. It can be difficult
+  // to open a specific context menu with a screen reader, so this is a UX
+  // approved solution.
+  bool added_accessibility_labels_items = false;
+  if (!IsDevToolsURL(params_.page_url))
+    added_accessibility_labels_items = AppendAccessibilityLabelsItems();
 
   if (content_type_->SupportsGroup(
           ContextMenuContentType::ITEM_GROUP_DEVELOPER)) {
@@ -1710,7 +1713,7 @@ void RenderViewContextMenu::AppendPageItems() {
 
   // Send-Tab-To-Self (user's other devices), page level.
   if (GetBrowser() &&
-      send_tab_to_self::ShouldOfferFeature(embedder_web_contents_)) {
+      send_tab_to_self::ShouldDisplayEntryPoint(embedder_web_contents_)) {
     AppendSendTabToSelfItem(/*add_separator=*/!has_sharing_menu_items);
     has_sharing_menu_items = true;
   }

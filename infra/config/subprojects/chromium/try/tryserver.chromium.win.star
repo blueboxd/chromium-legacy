@@ -35,6 +35,9 @@ try_.builder(
 
 try_.builder(
     name = "win-asan",
+    mirrors = [
+        "ci/win-asan",
+    ],
     goma_jobs = goma.jobs.J150,
     execution_timeout = 5 * time.hour,
 )
@@ -108,6 +111,9 @@ try_.builder(
 
 try_.builder(
     name = "win_x64_archive",
+    mirrors = [
+        "ci/win-archive-rel",
+    ],
 )
 
 try_.builder(
@@ -187,6 +193,12 @@ try_.builder(
             ".+/[+]/sandbox/policy/win/.+",
         ],
     ),
+)
+
+try_.builder(
+    name = "win-fieldtrial-fyi-rel",
+    os = os.WINDOWS_DEFAULT,
+    mirrors = ["ci/win-fieldtrial-rel"],
 )
 
 try_.gpu.optional_tests_builder(

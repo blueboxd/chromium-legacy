@@ -15,7 +15,6 @@
 <translation id="1154147086299354128">&amp;Отвори у Chrome-у</translation>
 <translation id="1178374936842835197">Ако се подешавање не приказује на овој страници, погледајте у <ph name="LINK_BEGIN" />
         Chrome OS Flex подешавањима<ph name="LINK_END" /></translation>
-<translation id="1182414570724401860">Chrome препоручује да не преузимате нити отварате овај фајл</translation>
 <translation id="1278833599417554002">Поново покрени да би се &amp;Chrome ажурирао</translation>
 <translation id="1302523850133262269">Сачекајте да Chrome инсталира најновија ажурирања система.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> захтева да прочитате и прихватите следеће Услове коришћења услуге пре коришћења овог уређаја. Ови услови не проширују, мењају нити ограничавају Услове за Google Chrome OS Flex.</translation>
@@ -292,6 +291,7 @@ Google Chrome не може да врати подешавања.</translation>
 Дозволе које сте већ дали веб-сајтовима и апликацијама могу да важе за овај налог. Google налозима можете да управљате у <ph name="SETTINGS_LINK_BEGIN" />Подешавањима<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Били сте пријављени у Chrome као <ph name="USER_EMAIL_ADDRESS" />. Користите исти налог да бисте се поново пријавили.</translation>
 <translation id="7410958280246779049">Chrome је блокирао овај фајл јер је опасан</translation>
+<translation id="7426611252293106642">Google Chrome можда неће исправно радити зато што више није подржан на овој верзији Linux-а</translation>
 <translation id="7481213027396403996">Набавите најјачу Chrome заштиту</translation>
 <translation id="7486227612705979895">Chrome ће приступати Диску да би приказивао предлоге на траци за адресу</translation>
 <translation id="7535429826459677826">Програмерска верзија Google Chrome-а</translation>

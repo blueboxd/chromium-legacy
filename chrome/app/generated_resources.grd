@@ -1893,10 +1893,6 @@ are declared in tools/grit/grit_rule.gni.
           Extensions, apps, and themes can harm your computer. Are you sure you want to continue?
         </message>
       </if>
-      <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD_ACCOUNT_COMPROMISE"
-        desc="Message shown to the user to validate the download when the download content is deteremined to be associated with account compromise by safebrowsing.">
-        <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> could let attackers steal your personal information.
-      </message>
       <message name="IDS_PROMPT_UNCOMMON_DOWNLOAD_CONTENT"
          desc="Message shown to the user to validate the download when the download content is classified as uncommon by safebrowsing.">
         <ph name="FILE_NAME">$1<ex>bla.exe</ex></ph> is not commonly downloaded and may be dangerous.
@@ -2046,10 +2042,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_KEEP_UNCOMMON_DOWNLOAD_TITLE"
                desc="Title for the confirmation dialog asking whether the user really meant to keep an uncommon download">
         Keep file?
-      </message>
-      <message name="IDS_CONFIRM_DANGEROUS_DOWNLOAD_ACCOUNT_COMPROMISE_TITLE"
-        desc="Title for the confirmation dialog asking whether the user really meant to keep an uncommon download">
-        This file is dangerous
       </message>
       <message name="IDS_PROMPT_CONFIRM_KEEP_DANGEROUS_DOWNLOAD"
                desc="Prompt text for the confirmation dialog asking whether the user really meant to keep a dangerous download">
@@ -2672,10 +2664,6 @@ are declared in tools/grit/grit_rule.gni.
       <message name="IDS_DOWNLOAD_BUBBLE_WARNING_SUBPAGE_SUMMARY_INSECURE"
                desc="Subpage summary text for a download item when the download is insecure.">
         This file may have been read or edited because this site isn't using a secure connection
-      </message>
-      <message name="IDS_DOWNLOAD_BUBBLE_WARNING_SUBPAGE_ACCOUNT_COMPROMISE"
-               desc="Subpage summary text for a download item when the download might cause compromise.">
-        This file may let attackers steal your personal information
       </message>
       <message name="IDS_DOWNLOAD_BUBBLE_STATUS_DANGEROUS"
                desc="Dangerous warning for the user.">
@@ -8235,40 +8223,6 @@ Check your passwords anytime in  <ph name="GOOGLE_PASSWORD_MANAGER">$1<ex>Google
         </if>
       </if>
 
-      <!-- Side Search -->
-      <if expr="enable_side_search">
-        <message name="IDS_ACCNAME_SIDE_SEARCH_TOOL" desc="The accessible name for the side search tool.">
-          Side Search
-        </message>
-        <message name="IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED" desc="The accessible name for the side search toolbar button when the button is active and the side panel is open.">
-          Close search in side panel. Search is open in the side panel.
-        </message>
-        <message name="IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED" desc="The accessible name for the side search toolbar button when the button is not active and the side panel is not open.">
-          Open search in side panel. Search is not open in the side panel.
-        </message>
-        <message name="IDS_ACCNAME_SIDE_SEARCH_CLOSE_BUTTON" desc="The accessible name for the side search header close button.">
-          Close search in side panel
-        </message>
-        <message name="IDS_ACCNAME_SIDE_SEARCH_FEEDBACK_BUTTON" desc="The accessible name for the side search header feedback button.">
-          Submit Feedback
-        </message>
-        <message name="IDS_SIDE_SEARCH_PROMO" desc="Promo UI shown next to the side search button to encourage its use.">
-          See more search results in side panel
-        </message>
-        <message name="IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED" desc="The tooltip for the side search toolbar button when the button is active and the side panel is open.">
-          Close search in side panel
-        </message>
-        <message name="IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED" desc="The tooltip for the side search toolbar button when the button is not active and the side panel is not open.">
-          Open search in side panel
-        </message>
-        <message name="IDS_TOOLTIP_SIDE_SEARCH_CLOSE_BUTTON" desc="The tooltip for the side search header close button.">
-          Close search in side panel
-        </message>
-        <message name="IDS_TOOLTIP_SIDE_SEARCH_FEEDBACK_BUTTON" desc="The tooltip for the side search header feedback button.">
-          Submit Feedback
-        </message>
-      </if>
-
       <!-- Tab Search -->
       <message name="IDS_TAB_SEARCH_PROMO" desc="Promo UI shown next to the tab search button to encourage it's use.">
         To search your tabs, click here
@@ -9991,39 +9945,6 @@ Please help our engineers fix this problem. Tell us what happened right before y
         </message>
         <message name="IDS_SYNC_RECOVERABILITY_DEGRADED_FOR_PASSWORDS_ERROR_BUBBLE_VIEW_MESSAGE" desc="Message in the sync error notification when the user needs to reauth to add recovery options, affecting passwords only.">
           To make sure you can always access your saved passwords, verify it's you
-        </message>
-      </if>
-
-      <if expr="not use_titlecase">
-        <message name="IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when sync is not available for their domain.">
-          OK...
-        </message>
-        <if expr="chromeos_ash">
-          <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view/notification when the user needs to sign out and sign in again to ChromeOS.">
-            Sign out then sign in again...
-          </message>
-          <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to sign out and sign in again to ChromeOS.">
-            Sign out then sign in again...
-          </message>
-        </if>
-        <if expr="not chromeos_ash">
-          <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to sign in again.">
-            Sign in again...
-          </message>
-          <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to sign in again.">
-              Sign in again...
-          </message>
-        </if>
-      </if>
-      <if expr="use_titlecase">
-        <message name="IDS_SYNC_UNAVAILABLE_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when sync is not available for their domain.">
-          OK...
-        </message>
-        <message name="IDS_SYNC_SIGN_IN_ERROR_BUBBLE_VIEW_ACCEPT" desc="The accept button in the sync error bubble view when the user needs to sign in again.">
-          Sign in Again...
-        </message>
-        <message name="IDS_SYNC_SIGN_IN_ERROR_WRENCH_MENU_ITEM" desc="The sync error wrench menu item when the user needs to sign in again.">
-          Sign in Again...
         </message>
       </if>
 
@@ -11946,6 +11867,9 @@ Please help our engineers fix this problem. Tell us what happened right before y
       <message name="IDS_UTILITY_PROCESS_QUARANTINE_SERVICE_NAME" desc="The name of the utility process used to handle file quarantine.">
         Quarantine Service
     </message>
+      <message name="IDS_UTILITY_PROCESS_SYSTEM_SIGNALS_NAME" desc="The name of the utility process used to collect system signals. Only spawned on Windows.">
+        System Signals Utilities
+      </message>
     </if>
 
     <!-- Framebust / Blocked Redirection intervention message -->
@@ -12472,6 +12396,38 @@ Please help our engineers fix this problem. Tell us what happened right before y
       </message>
       <message name="IDS_WEBAUTHN_MANAGE_DEVICES" desc="The text of a button that appear at the bottom of a dialog that lists options for signing into a website. If that list contains phones then a button with this label appears to let the user manage their list of phones/tablets. Clicking it opens a settings page that lists the known phones and lets the user delete or rename them.">
          Manage devices
+      </message>
+
+      <!-- Side Search -->
+      <message name="IDS_ACCNAME_SIDE_SEARCH_TOOL" desc="The accessible name for the side search tool.">
+        Side Search
+      </message>
+      <message name="IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED" desc="The accessible name for the side search toolbar button when the button is active and the side panel is open.">
+        Close search in side panel. Search is open in the side panel.
+      </message>
+      <message name="IDS_ACCNAME_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED" desc="The accessible name for the side search toolbar button when the button is not active and the side panel is not open.">
+        Open search in side panel. Search is not open in the side panel.
+      </message>
+      <message name="IDS_ACCNAME_SIDE_SEARCH_CLOSE_BUTTON" desc="The accessible name for the side search header close button.">
+        Close search in side panel
+      </message>
+      <message name="IDS_ACCNAME_SIDE_SEARCH_FEEDBACK_BUTTON" desc="The accessible name for the side search header feedback button.">
+        Submit Feedback
+      </message>
+      <message name="IDS_SIDE_SEARCH_PROMO" desc="Promo UI shown next to the side search button to encourage its use.">
+        See more search results in side panel
+      </message>
+      <message name="IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_ACTIVATED" desc="The tooltip for the side search toolbar button when the button is active and the side panel is open.">
+        Close search in side panel
+      </message>
+      <message name="IDS_TOOLTIP_SIDE_SEARCH_TOOLBAR_BUTTON_NOT_ACTIVATED" desc="The tooltip for the side search toolbar button when the button is not active and the side panel is not open.">
+        Open search in side panel
+      </message>
+      <message name="IDS_TOOLTIP_SIDE_SEARCH_CLOSE_BUTTON" desc="The tooltip for the side search header close button.">
+        Close search in side panel
+      </message>
+      <message name="IDS_TOOLTIP_SIDE_SEARCH_FEEDBACK_BUTTON" desc="The tooltip for the side search header feedback button.">
+        Submit Feedback
       </message>
    </if>
 

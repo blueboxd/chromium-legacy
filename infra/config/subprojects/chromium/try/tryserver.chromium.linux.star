@@ -268,6 +268,9 @@ try_.builder(
 
 try_.builder(
     name = "linux-gcc-rel",
+    mirrors = [
+        "ci/linux-gcc-rel",
+    ],
     goma_backend = None,
 )
 
@@ -420,6 +423,9 @@ try_.builder(
 
 try_.builder(
     name = "linux_chromium_archive_rel_ng",
+    mirrors = [
+        "ci/linux-archive-rel",
+    ],
 )
 
 try_.orchestrator_builder(
@@ -474,6 +480,13 @@ try_.builder(
 
 try_.builder(
     name = "linux_chromium_clobber_rel_ng",
+    mirrors = [
+        "ci/linux-archive-rel",
+    ],
+    try_settings = builder_config.try_settings(
+        include_all_triggered_testers = True,
+        is_compile_only = True,
+    ),
 )
 
 try_.builder(
@@ -604,9 +617,7 @@ try_.builder(
     # This builder produces the clang binaries used on all builders. Since it
     # uses the system's sysroot when compiling, the builder needs to run on the
     # OS version that's the oldest used on any bot.
-    # TODO(crbug.com/1199405): Move this to bionic once _all_ builders have
-    # migrated.
-    os = os.LINUX_TRUSTY,
+    os = os.LINUX_BIONIC,
     notifies = ["chrome-rust-toolchain"],
 )
 

@@ -887,8 +887,10 @@ void DesktopNativeWidgetAura::Show(ui::WindowShowState show_state,
                                    const gfx::Rect& restore_bounds) {
   if (!content_window_)
     return;
-
-  desktop_window_tree_host_->Show(show_state, restore_bounds);
+  // Avoid changing desktop window visibility state when browser is running in
+  // headless mode, see https://crbug.com/1237546.
+  if (!headless_mode_)
+    desktop_window_tree_host_->Show(show_state, restore_bounds);
 }
 
 void DesktopNativeWidgetAura::Hide() {
@@ -983,7 +985,6 @@ void DesktopNativeWidgetAura::Restore() {
 }
 
 void DesktopNativeWidgetAura::SetFullscreen(bool fullscreen,
-                                            const base::TimeDelta& delay,
                                             int64_t target_display_id) {
   // The `target_display_id` argument is unsupported in Aura.
   DCHECK_EQ(target_display_id, display::kInvalidDisplayId);

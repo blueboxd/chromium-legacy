@@ -590,13 +590,6 @@ const base::Feature kNetworkServiceInProcess {
 #endif
 };
 
-// If enabled the io thread in the network service runs at display priority. If
-// not enabled, the io thread in the network services runs at the default
-// priority.
-const base::Feature kNetworkServiceUsesDisplayThreadPriority{
-    "NetworkServiceUsesDisplayThreadPriority",
-    base::FEATURE_DISABLED_BY_DEFAULT};
-
 const base::Feature kNeverSlowMode{"NeverSlowMode",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -1168,10 +1161,6 @@ const base::Feature kBackgroundMediaRendererHasModerateBinding{
 // threads on.
 const base::Feature kBigLittleScheduling{"BigLittleScheduling",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
-
-// Tick fling animation independent from the browser compositor.
-const base::Feature kIndependentFlingAnimation{
-    "IndependentFlingAnimation", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows the use of an experimental feature to drop any AccessibilityEvents
 // that are not relevant to currently enabled accessibility services.

@@ -13,7 +13,6 @@
 <translation id="1154147086299354128">&amp;Открыть в Chrome</translation>
 <translation id="1178374936842835197">Если нужного параметра нет на этой странице, откройте <ph name="LINK_BEGIN" />
         настройки Chrome OS Flex<ph name="LINK_END" />.</translation>
-<translation id="1182414570724401860">Браузер Chrome не рекомендует скачивать и открывать этот файл.</translation>
 <translation id="1278833599417554002">Перезапустить для обновления &amp;Chrome</translation>
 <translation id="1302523850133262269">Подождите, пока Chrome устанавливает последние обновления системы</translation>
 <translation id="1335640173511558774">Согласно действующим правилам (источник правил: <ph name="MANAGER" />) до начала работы с устройством необходимо ознакомиться с приведенными ниже Условиями использования и принять их. Они не дополняют, не заменяют и не ограничивают Условия использования Google Chrome OS Flex.</translation>
@@ -283,6 +282,7 @@
 Разрешения, предоставленные сайтам и приложениям, могут применяться к этому аккаунту. Для управления аккаунтами Google перейдите в <ph name="SETTINGS_LINK_BEGIN" />настройки<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Ранее вы входили в Chrome как <ph name="USER_EMAIL_ADDRESS" />. Войдите снова, используя тот же аккаунт.</translation>
 <translation id="7410958280246779049">Chrome заблокировал этот файл как опасный.</translation>
+<translation id="7426611252293106642">В работе Google Chrome могут возникать сбои, поскольку браузер больше не поддерживает этот дистрибутив Linux.</translation>
 <translation id="7481213027396403996">Обеспечьте максимальную защиту в Chrome</translation>
 <translation id="7486227612705979895">Chrome получит доступ к Google Диску, чтобы вы могли просматривать рекомендации в адресной строке</translation>
 <translation id="7535429826459677826">Google Chrome для разработчиков</translation>

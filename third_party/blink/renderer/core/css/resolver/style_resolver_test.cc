@@ -545,8 +545,6 @@ TEST_F(StyleResolverTest, NoFetchForAtPage) {
 }
 
 TEST_F(StyleResolverTest, NoFetchForHighlightPseudoElements) {
-  ScopedCSSTargetTextPseudoElementForTest scoped_feature(true);
-
   GetDocument().body()->setInnerHTML(R"HTML(
     <style>
       body::target-text, body::selection {
@@ -1627,7 +1625,6 @@ TEST_F(StyleResolverTest, CascadeLayersAndPageRules) {
 }
 
 TEST_F(StyleResolverTest, BodyPropagationLayoutImageContain) {
-  ScopedCSSContainedBodyPropagationForTest enable_scope(true);
   GetDocument().documentElement()->setAttribute(
       html_names::kStyleAttr,
       "contain:size; display:inline-table; content:url(img);");

@@ -16,7 +16,7 @@ Refer to README.md for content description and update process.
  <item id="android_device_manager_socket" added_in_milestone="65" content_hash_code="00623801" os_list="linux,windows,chromeos" file_path="chrome/browser/devtools/device/android_device_manager.cc" />
  <item id="android_web_socket" added_in_milestone="65" content_hash_code="00bbd661" os_list="linux,windows,chromeos" file_path="chrome/browser/devtools/device/android_web_socket.cc" />
  <item id="auction_downloader" added_in_milestone="92" content_hash_code="0713f212" os_list="linux,windows,chromeos,android" file_path="content/services/auction_worklet/auction_downloader.cc" />
- <item id="auction_report_sender" added_in_milestone="92" content_hash_code="03b7acb6" os_list="linux,windows,chromeos,android" file_path="content/browser/interest_group/ad_auction_service_impl.cc" />
+ <item id="auction_report_sender" added_in_milestone="92" content_hash_code="029b766e" os_list="linux,windows,chromeos,android" file_path="content/browser/interest_group/interest_group_manager_impl.cc" />
  <item id="autofill_image_fetcher_card_art_image" added_in_milestone="93" content_hash_code="0177b54c" os_list="linux,windows,chromeos,android" file_path="components/autofill/core/browser/ui/autofill_image_fetcher.cc" />
  <item id="autofill_query" added_in_milestone="62" content_hash_code="00ed7a4b" os_list="linux,windows,chromeos,android" file_path="components/autofill/core/browser/autofill_download_manager.cc" />
  <item id="autofill_upload" added_in_milestone="62" content_hash_code="0698270b" os_list="linux,windows,chromeos,android" file_path="components/autofill/core/browser/autofill_download_manager.cc" />
@@ -338,7 +338,6 @@ Refer to README.md for content description and update process.
  <item id="minidump_uploader_android" added_in_milestone="98" content_hash_code="0327544e" os_list="android" file_path="components/minidump_uploader/android/java/src/org/chromium/components/minidump_uploader/util/HttpURLConnectionFactoryImpl.java" />
  <item id="chrome_variations_android" added_in_milestone="98" content_hash_code="04eeb61f" os_list="android" file_path="components/variations/android/java/src/org/chromium/components/variations/firstrun/VariationsSeedFetcher.java" />
  <item id="fwupd_firmware_update" added_in_milestone="99" content_hash_code="0002c968" os_list="chromeos" file_path="ash/components/fwupd/firmware_update_manager.cc" />
- <item id="wallpaper_google_photos_count" added_in_milestone="99" content_hash_code="02006a23" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
  <item id="wallpaper_backdrop_collection_names" added_in_milestone="99" content_hash_code="06379fce" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
  <item id="wallpaper_backdrop_images_info" added_in_milestone="99" content_hash_code="0010428c" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
  <item id="wallpaper_backdrop_surprise_me_image" added_in_milestone="99" content_hash_code="0383b9db" os_list="chromeos" file_path="chrome/browser/ash/wallpaper_handlers/wallpaper_handlers.cc" />
@@ -374,5 +373,5 @@ Refer to README.md for content description and update process.
  <item id="device_activity_client_check_in" added_in_milestone="102" content_hash_code="0548d084" os_list="chromeos" file_path="ash/components/device_activity/device_activity_client.cc" />
  <item id="device_activity_client_check_membership" added_in_milestone="102" content_hash_code="02827a9f" os_list="chromeos" file_path="ash/components/device_activity/device_activity_client.cc" />
  <item id="interest_group_well_known_fetcher" added_in_milestone="103" content_hash_code="01ea06eb" os_list="linux,windows,android,chromeos" file_path="content/browser/interest_group/interest_group_permissions_checker.cc" />
- <item id="speculation_rules_prefetch" added_in_milestone="103" content_hash_code="015fd398" os_list="linux,windows,android" file_path="content/browser/speculation_rules/prefetch/prefetch_service.cc" />
+ <item id="speculation_rules_prefetch" added_in_milestone="103" content_hash_code="015fd398" os_list="linux,windows,android,chromeos" file_path="content/browser/speculation_rules/prefetch/prefetch_service.cc" />
 </annotations>

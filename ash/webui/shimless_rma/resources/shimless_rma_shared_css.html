@@ -3,9 +3,7 @@
     :host {
       --cr-dialog-width: 320px;
       --cr-dialog-button-container-padding-horizontal: 24px;
-      --footer-height: 80px;
-      --header-height: 80px;
-      --page-left-margin: 40px;
+      --content-container-padding: 40px;
       --radio-button-top-padding: 20px;
       --title-bottom-margin: 16px;
     }
@@ -60,6 +58,7 @@
       font-weight: var(--shimless-medium-font-weight);
       line-height: var(--shimless-title-line-height);
       margin-bottom: var(--title-bottom-margin);
+      margin-top: 0;
     }
 
     .instructions {
@@ -177,15 +176,8 @@
     }
 
     .scroll-container {
-      height: 100%;
+      height: var(--content-container-height);
       overflow: auto;
-    }
-
-    [slot=optional-icon] {
-      height: 32px;
-      margin-bottom: 40px;
-      margin-top: 40px;
-      width: 32px;
     }
 
     [slot=right-pane] {

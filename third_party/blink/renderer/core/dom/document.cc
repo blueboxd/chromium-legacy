@@ -44,6 +44,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/notreached.h"
 #include "base/time/time.h"
+#include "cc/animation/animation_timeline.h"
 #include "cc/input/overscroll_behavior.h"
 #include "cc/input/scroll_snap_data.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -2592,14 +2593,12 @@ void Document::LayoutUpdated() {
   Markers().InvalidateRectsForAllTextMatchMarkers();
 }
 
-void Document::AttachCompositorTimeline(
-    CompositorAnimationTimeline* timeline) const {
+void Document::AttachCompositorTimeline(cc::AnimationTimeline* timeline) const {
   if (!Platform::Current()->IsThreadedAnimationEnabled() ||
       !GetSettings()->GetAcceleratedCompositingEnabled())
     return;
 
-  if (timeline->GetAnimationTimeline()->IsScrollTimeline() &&
-      timeline->GetAnimationTimeline()->animation_host())
+  if (timeline->IsScrollTimeline() && timeline->animation_host())
     return;
 
   GetPage()->GetChromeClient().AttachCompositorAnimationTimeline(timeline,
@@ -2776,7 +2775,8 @@ void Document::Initialize() {
 
 void Document::Shutdown() {
   TRACE_EVENT0("blink", "Document::shutdown");
-  CHECK(!GetFrame() || GetFrame()->Tree().ChildCount() == 0);
+  CHECK((!GetFrame() || GetFrame()->Tree().ChildCount() == 0) &&
+        ConnectedSubframeCount() == 0);
   if (!IsActive())
     return;
 
@@ -3476,11 +3476,9 @@ Element* Document::ViewportDefiningElement() const {
   const ComputedStyle* body_style = body_element->GetComputedStyle();
   if (!body_style || body_style->IsEnsuredInDisplayNone())
     return root_element;
-  if (RuntimeEnabledFeatures::CSSContainedBodyPropagationEnabled()) {
-    if (root_style->ShouldApplyAnyContainment(*root_element) ||
-        body_style->ShouldApplyAnyContainment(*body_element)) {
-      return root_element;
-    }
+  if (root_style->ShouldApplyAnyContainment(*root_element) ||
+      body_style->ShouldApplyAnyContainment(*body_element)) {
+    return root_element;
   }
   return body_element;
 }

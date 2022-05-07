@@ -395,8 +395,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   Section* section_this_cycle = section_list.AddSection(
       "Transient Counters (this cycle)", /*is_sensitive=*/false);
-  Stat<int>* hierarchy_conflicts =
-      section_this_cycle->AddIntStat("Hierarchy Conflicts");
   Stat<int>* server_conflicts =
       section_this_cycle->AddIntStat("Server Conflicts");
   Stat<int>* committed_items =
@@ -409,7 +407,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       section_that_cycle->AddIntStat("Updates Downloaded");
   Stat<int>* committed_count =
       section_that_cycle->AddIntStat("Committed Count");
-  Stat<int>* entries = section_that_cycle->AddIntStat("Entries");
 
   // Populate all the fields we declared above.
   client_version->Set(GetVersionString(channel));
@@ -558,7 +555,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
 
   // Transient Counters (this cycle).
   if (is_status_valid) {
-    hierarchy_conflicts->Set(full_status.hierarchy_conflicts);
     server_conflicts->Set(full_status.server_conflicts);
     committed_items->Set(full_status.committed_count);
   }
@@ -568,7 +564,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     updates_downloaded->Set(
         snapshot.model_neutral_state().num_updates_downloaded_total);
     committed_count->Set(snapshot.model_neutral_state().num_successful_commits);
-    entries->Set(static_cast<int>(snapshot.num_entries()));
   }
 
   // This list of sections belongs in the 'details' field of the returned

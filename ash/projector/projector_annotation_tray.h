@@ -43,6 +43,7 @@ class ProjectorAnnotationTray : public TrayBackgroundView {
   void OnThemeChanged() override;
 
   void HideAnnotationTray();
+  void OnCanvasInitializationFailed();
 
  private:
   void ToggleAnnotator();
@@ -61,6 +62,8 @@ class ProjectorAnnotationTray : public TrayBackgroundView {
 
   // Resets the tray to its default state.
   void ResetTray();
+
+  std::u16string GetTooltip();
 
   // Image view of the tray icon.
   views::ImageView* const image_view_;

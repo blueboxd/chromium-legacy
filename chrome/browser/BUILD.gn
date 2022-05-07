@@ -2124,7 +2124,6 @@ static_library("browser") {
     "//components/history/core/common",
     "//components/history/metrics",
     "//components/history_clusters/core",
-    "//components/history_clusters/core:history_clusters_buildflags",
     "//components/history_clusters/history_clusters_internals/webui",
     "//components/infobars/content",
     "//components/infobars/core",
@@ -2426,6 +2425,7 @@ static_library("browser") {
     "//ui/base/ime",
     "//ui/color",
     "//ui/compositor",
+    "//ui/display/util:util",
     "//ui/events:events_base",
     "//ui/events/devices",
     "//ui/gfx",
@@ -2564,6 +2564,7 @@ static_library("browser") {
       "//components/services/screen_ai",
       "//components/services/screen_ai/public/cpp:screen_ai_service_router_factory",
       "//components/services/screen_ai/public/cpp:utilities",
+      "//components/services/screen_ai/public/mojom",
     ]
   }
 
@@ -3257,8 +3258,6 @@ static_library("browser") {
       "password_manager/android/password_manager_launcher_android.cc",
       "password_manager/android/password_manager_launcher_android.h",
       "password_manager/android/password_scripts_fetcher_android.cc",
-      "password_manager/android/password_settings_updater_service_factory.cc",
-      "password_manager/android/password_settings_updater_service_factory.h",
       "password_manager/android/password_store_bridge.cc",
       "password_manager/android/password_store_bridge.h",
       "password_manager/android/password_ui_view_android.cc",
@@ -3269,6 +3268,8 @@ static_library("browser") {
       "password_manager/android/save_update_password_message_delegate.h",
       "password_manager/android/update_password_infobar_delegate_android.cc",
       "password_manager/android/update_password_infobar_delegate_android.h",
+      "password_manager/password_manager_settings_service_factory.cc",
+      "password_manager/password_manager_settings_service_factory.h",
       "payments/android/service_worker_payment_app_bridge.cc",
       "permissions/grouped_permission_infobar_delegate_android.cc",
       "permissions/grouped_permission_infobar_delegate_android.h",
@@ -3665,6 +3666,9 @@ static_library("browser") {
       "apps/intent_helper/intent_picker_internal.h",
       "apps/intent_helper/page_transition_util.cc",
       "apps/intent_helper/page_transition_util.h",
+      "autofill_assistant/password_change/apc_client.h",
+      "autofill_assistant/password_change/apc_client_impl.cc",
+      "autofill_assistant/password_change/apc_client_impl.h",
       "background/background_contents.cc",
       "background/background_contents.h",
       "background/background_contents_service_observer.h",
@@ -4579,12 +4583,6 @@ static_library("browser") {
         "//extensions/common:mojom",
       ]
     }
-    if (enable_side_search) {
-      sources += [
-        "page_load_metrics/observers/side_search_page_load_metrics_observer.cc",
-        "page_load_metrics/observers/side_search_page_load_metrics_observer.h",
-      ]
-    }
 
     # On Windows, the hashes are embedded in //chrome:chrome_initial rather
     # than here in :chrome_dll.
@@ -5051,6 +5049,8 @@ static_library("browser") {
       "//chromeos/dbus",
       "//chromeos/dbus/image_loader",
       "//chromeos/dbus/session_manager",
+      "//chromeos/dbus/tpm_manager",
+      "//chromeos/dbus/tpm_manager:tpm_manager_proto",
       "//chromeos/dbus/update_engine",
       "//chromeos/login/login_state",
       "//chromeos/memory",
@@ -5134,6 +5134,13 @@ static_library("browser") {
         "apps/app_service/app_service_proxy_desktop.h",
       ]
     }
+  }
+
+  if (toolkit_views) {
+    sources += [
+      "page_load_metrics/observers/side_search_page_load_metrics_observer.cc",
+      "page_load_metrics/observers/side_search_page_load_metrics_observer.h",
+    ]
   }
 
   if (is_chromeos) {
@@ -5260,6 +5267,8 @@ static_library("browser") {
       "lacros/account_manager/profile_account_manager_factory.h",
       "lacros/account_manager/signin_helper_lacros.cc",
       "lacros/account_manager/signin_helper_lacros.h",
+      "lacros/app_mode/chrome_kiosk_launch_controller_lacros.cc",
+      "lacros/app_mode/chrome_kiosk_launch_controller_lacros.h",
       "lacros/app_mode/kiosk_session_service_lacros.cc",
       "lacros/app_mode/kiosk_session_service_lacros.h",
       "lacros/arc/arc_icon_cache.cc",
@@ -5667,6 +5676,7 @@ static_library("browser") {
       "//ui/base:fullscreen_win",
       "//ui/color:accent_color_observer",
       "//ui/color:color_switches",
+      "//ui/display/util:util",
     ]
     allow_circular_includes_from +=
         [ "//chrome/browser/safe_browsing/chrome_cleaner" ]
@@ -6249,10 +6259,6 @@ static_library("browser") {
       "profiles/profile_statistics_factory.h",
       "signin/force_signin_verifier.cc",
       "signin/force_signin_verifier.h",
-      "signin/signin_global_error.cc",
-      "signin/signin_global_error.h",
-      "signin/signin_global_error_factory.cc",
-      "signin/signin_global_error_factory.h",
       "signin/signin_manager.cc",
       "signin/signin_manager.h",
       "signin/signin_manager_factory.cc",

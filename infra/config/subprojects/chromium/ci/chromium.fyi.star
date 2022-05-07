@@ -364,6 +364,9 @@ ci.builder(
         category = "default",
     ),
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -483,6 +486,9 @@ ci.builder(
         category = "linux",
     ),
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.thin_tester(
@@ -499,6 +505,9 @@ ci.builder(
         category = "linux",
     ),
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.thin_tester(
@@ -839,32 +848,6 @@ ci.builder(
 # End - Reclient migration, phase 2, block 1 shadow builders
 
 ci.builder(
-    name = "Win ASan Release (reclient shadow)",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "win asan",
-        short_name = "rel",
-    ),
-    os = os.WINDOWS_DEFAULT,
-    goma_backend = None,
-    reclient_jobs = 80,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
-    name = "Win ASan Release Media (reclient shadow)",
-    builderless = True,
-    console_view_entry = consoles.console_view_entry(
-        category = "win asan",
-        short_name = "med",
-    ),
-    os = os.WINDOWS_DEFAULT,
-    goma_backend = None,
-    reclient_jobs = 80,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.builder(
     name = "Win x64 Builder (reclient)",
     builderless = True,
     console_view_entry = consoles.console_view_entry(
@@ -1177,6 +1160,9 @@ fyi_coverage_builder(
     os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
     use_clang_coverage = True,
     coverage_test_types = ["overall", "unit"],
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 fyi_coverage_builder(
@@ -1512,6 +1498,31 @@ ci.builder(
     os = os.WINDOWS_DEFAULT,
     goma_backend = None,
     reclient_jobs = 150,
+    reclient_instance = rbe_instance.DEFAULT,
+)
+
+ci.builder(
+    name = "win-fieldtrial-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.WIN,
+        ),
+        build_gs_bucket = "chromium-fyi-archive",
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "win",
+    ),
+    os = os.WINDOWS_DEFAULT,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
 )
 

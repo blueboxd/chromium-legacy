@@ -1158,6 +1158,11 @@
     "expiry_milestone": 105
   },
   {
+    "name": "deprecate-assistant-stylus-features",
+    "owners": [ "croissant-eng", "angelaxiao" ],
+    "expiry_milestone": 110
+  },
+  {
     "name": "deprecate-low-usage-codecs",
     "owners": [ "dalecurtis", "sweyn" ],
     "expiry_milestone": 92
@@ -1944,7 +1949,7 @@
   {
     "name": "enable-desktop-pwas-window-controls-overlay",
     "owners": [ "ambake@microsoft.com", "desktop-pwas-team@google.com" ],
-    "expiry_milestone": 102
+    "expiry_milestone": 106
   },
   {
     "name": "enable-device-trust-connector",
@@ -2100,8 +2105,8 @@
   },
   {
     "name": "enable-fre-ui-module-ios-with-options",
-    "owners": [ "gambard", "veronguyen", "vincb" ],
-    "expiry_milestone": 102
+    "owners": [ "gambard", "veronguyen", "vincb", "ginnyhuang" ],
+    "expiry_milestone": 104
   },
   {
     "name": "enable-fullscreen-api",
@@ -2250,6 +2255,11 @@
   {
     "name": "enable-instant-start",
     "owners": [ "hanxi", "wychen" ],
+    "expiry_milestone": 115
+  },
+  {
+    "name": "enable-iph",
+    "owners": [ "peilinwang@google.com" ],
     "expiry_milestone": 115
   },
   {
@@ -4443,6 +4453,11 @@
     "expiry_milestone": 110
   },
   {
+    "name": "omnibox-max-zps-matches",
+    "owners": [ "stkhapugin", "christianxu", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone" : 113
+  },
+  {
     "name": "omnibox-most-visited-tiles",
     "owners": [ "fgorski", "ender", "stkhapugin", "chrome-omnibox-team@google.com"],
     "expiry_milestone": 110
@@ -5860,6 +5875,12 @@
     "expiry_milestone": -1
   },
   {
+    "name": "upgrade-center-refactor",
+    "owners": [ "pakzhygitov", "bling-flags@google.com" ],
+    // This is a temp flag and should be removed within this milestone.
+    "expiry_milestone": 104
+  },
+  {
     "name": "usb-notification-controller",
     "owners": [ "jthies", "bleung" ],
     "expiry_milestone": 105
@@ -5985,17 +6006,17 @@
   {
     "name": "username-first-flow",
     "owners": [ "kazinova@google.com", "kolos" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 105
   },
   {
     "name": "username-first-flow-fallback-crowdsourcing",
     "owners": [ "kazinova@google.com", "kolos" ],
-    "expiry_milestone": 104
+    "expiry_milestone": 105
   },
   {
     "name": "username-first-flow-filling",
     "owners": [ "kazinova@google.com", "kolos" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 105
   },
   {
     "name": "uxstudy1",

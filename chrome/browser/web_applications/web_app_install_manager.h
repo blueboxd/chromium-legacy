@@ -15,6 +15,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/types/pass_key.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/os_integration/os_integration_manager.h"
 #include "chrome/browser/web_applications/web_app_id.h"
@@ -36,27 +37,16 @@ enum class InstallResultCode;
 
 namespace web_app {
 
-class WebAppInstallFinalizer;
-class OsIntegrationManager;
+class WebAppCommandManager;
 class WebAppDataRetriever;
+class WebAppInstallFinalizer;
 class WebAppInstallTask;
 class WebAppRegistrar;
+class OsIntegrationManager;
 
 // TODO(loyso): Unify the API and merge similar InstallWebAppZZZZ functions.
 class WebAppInstallManager final : public SyncInstallDelegate {
  public:
-  // The different UI flows that exist for creating a web app.
-  enum class WebAppInstallFlow {
-    // TODO(crbug.com/1216457): This should be removed by adding all known flows
-    // to this enum.
-    kUnknown,
-    // The 'Create Shortcut' flow for adding the current page as a shortcut app.
-    kCreateShortcut,
-    // The 'Install Site' flow for installing the current site with an app
-    // experience determined by the site.
-    kInstallSite,
-  };
-
   explicit WebAppInstallManager(Profile* profile);
   WebAppInstallManager(const WebAppInstallManager&) = delete;
   WebAppInstallManager& operator=(const WebAppInstallManager&) = delete;
@@ -88,13 +78,6 @@ class WebAppInstallManager final : public SyncInstallDelegate {
   void InstallSubApp(const AppId& parent_app_id,
                      const GURL& install_url,
                      OnceInstallCallback callback);
-
-  // Starts a background web app installation process for a given
-  // |web_contents|.
-  void InstallWebAppWithParams(content::WebContents* web_contents,
-                               const WebAppInstallParams& install_params,
-                               webapps::WebappInstallSource install_surface,
-                               OnceInstallCallback callback);
 
   // Starts a web app installation process using prefilled
   // |install_info| which holds all the data needed for installation.
@@ -134,9 +117,8 @@ class WebAppInstallManager final : public SyncInstallDelegate {
   // For the new USS-based system only. SyncInstallDelegate:
   void InstallWebAppsAfterSync(std::vector<WebApp*> web_apps,
                                RepeatingInstallCallback callback) override;
-  void UninstallWithoutRegistryUpdateFromSync(
-      const std::vector<AppId>& web_apps,
-      RepeatingUninstallCallback callback) override;
+  void UninstallFromSync(const std::vector<AppId>& web_apps,
+                         RepeatingUninstallCallback callback) override;
   void RetryIncompleteUninstalls(
       const std::vector<AppId>& apps_to_uninstall) override;
 
@@ -164,6 +146,11 @@ class WebAppInstallManager final : public SyncInstallDelegate {
   void SetUrlLoaderForTesting(std::unique_ptr<WebAppUrlLoader> url_loader);
   bool has_web_contents_for_testing() const { return web_contents_ != nullptr; }
   std::set<AppId> GetEnqueuedInstallAppIdsForTesting();
+
+  // TODO(crbug.com/1322974): migrate loggign to WebAppCommandManager after all
+  // tasks are migrated to the command system.
+  void TakeCommandErrorLog(base::PassKey<WebAppCommandManager>,
+                           base::Value log);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(WebAppInstallManagerTest,

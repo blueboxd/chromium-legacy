@@ -24,16 +24,17 @@
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/desks_test_util.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
-#include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
-#include "ash/wm/desks/templates/desks_templates_grid_view.h"
-#include "ash/wm/desks/templates/desks_templates_icon_container.h"
-#include "ash/wm/desks/templates/desks_templates_icon_view.h"
 #include "ash/wm/desks/templates/desks_templates_metrics_util.h"
 #include "ash/wm/desks/templates/desks_templates_presenter.h"
 #include "ash/wm/desks/templates/desks_templates_test_util.h"
 #include "ash/wm/desks/templates/save_desk_template_button.h"
 #include "ash/wm/desks/templates/save_desk_template_button_container.h"
+#include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
+#include "ash/wm/desks/templates/saved_desk_grid_view.h"
+#include "ash/wm/desks/templates/saved_desk_icon_container.h"
+#include "ash/wm/desks/templates/saved_desk_icon_view.h"
 #include "ash/wm/desks/templates/saved_desk_item_view.h"
+#include "ash/wm/desks/templates/saved_desk_library_view.h"
 #include "ash/wm/desks/templates/saved_desk_name_view.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/mru_window_tracker.h"
@@ -63,6 +64,7 @@
 #include "components/app_restore/full_restore_utils.h"
 #include "components/app_restore/window_info.h"
 #include "components/app_restore/window_properties.h"
+#include "components/desks_storage/core/desk_template_util.h"
 #include "components/prefs/pref_service.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -132,6 +134,12 @@ class DesksTemplatesTest : public OverviewTestBase {
     int32_t activation_index_counter = 0;
     for (size_t i = 0; i < num_windows.size(); ++i) {
       const std::string app_id = base::NumberToString(i);
+
+      // We need to add each `app_id` to app registry cache since our desk
+      // template serialization requires an updated app cache to get the app
+      // info.
+      desks_storage::desk_template_util::AddAppIdToAppRegistryCache(
+          account_id_, cache_.get(), app_id.c_str());
 
       for (int32_t window_id = 0; window_id < num_windows[i]; ++window_id) {
         restore_data->AddAppLaunchInfo(
@@ -251,47 +259,57 @@ class DesksTemplatesTest : public OverviewTestBase {
   void DeleteTemplate(const base::GUID uuid,
                       const size_t expected_current_item_count,
                       bool expect_template_exists = true) {
-    auto& grid_list = GetOverviewGridList();
-    views::Widget* grid_widget = grid_list[0]->desks_templates_grid_widget();
-    ASSERT_TRUE(grid_widget);
-    DesksTemplatesGridView* templates_grid_view =
-        static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
-    ASSERT_TRUE(templates_grid_view);
+    const auto& grid_list = GetOverviewGridList();
+    auto* saved_desk_library_view = grid_list[0]->GetSavedDeskLibraryView();
+    ASSERT_TRUE(saved_desk_library_view);
 
-    std::vector<SavedDeskItemView*> grid_items =
-        templates_grid_view->grid_items();
+    size_t total_item_count = 0;
+
+    SavedDeskGridView* grid_view = nullptr;
+    SavedDeskItemView* item_view = nullptr;
+    for (auto* grid : saved_desk_library_view->grid_views()) {
+      for (auto* item : grid->grid_items()) {
+        if (SavedDeskItemViewTestApi(item).uuid() == uuid) {
+          grid_view = grid;
+          item_view = item;
+        }
+      }
+      total_item_count += grid->grid_items().size();
+    }
 
     // Check the current grid item count.
-    ASSERT_EQ(expected_current_item_count, grid_items.size());
-
-    auto iter =
-        std::find_if(grid_items.cbegin(), grid_items.cend(),
-                     [&](const SavedDeskItemView* v) {
-                       return SavedDeskItemViewTestApi(v).uuid() == uuid;
-                     });
+    ASSERT_EQ(expected_current_item_count, total_item_count);
 
     if (!expect_template_exists) {
-      ASSERT_EQ(grid_items.end(), iter);
+      ASSERT_EQ(item_view, nullptr);
       return;
     }
 
-    ASSERT_NE(grid_items.end(), iter);
+    ASSERT_TRUE(item_view);
+    ASSERT_TRUE(grid_view);
 
-    ClickOnView(SavedDeskItemViewTestApi(*iter).delete_button());
+    ClickOnView(SavedDeskItemViewTestApi(item_view).delete_button());
 
     // Clicking on the delete button should bring up the delete dialog.
     ASSERT_TRUE(Shell::IsSystemModalWindowOpen());
 
     // Click the delete button on the delete dialog. Show delete dialog and
     // select accept.
-    auto* dialog_controller = DesksTemplatesDialogController::Get();
+    auto* dialog_controller = SavedDeskDialogController::Get();
     auto* dialog_delegate = dialog_controller->dialog_widget()
                                 ->widget_delegate()
                                 ->AsDialogDelegate();
     dialog_delegate->AcceptDialog();
     WaitForDesksTemplatesUI();
-    DesksTemplatesGridViewTestApi(templates_grid_view)
-        .WaitForItemMoveAnimationDone();
+    SavedDeskGridViewTestApi(grid_view).WaitForItemMoveAnimationDone();
+    SavedDeskLibraryViewTestApi(saved_desk_library_view).WaitForAnimationDone();
+  }
+
+  void WaitForLibraryUI() {
+    SavedDeskLibraryView* library_view =
+        GetOverviewGridList().front().get()->GetSavedDeskLibraryView();
+    DCHECK(library_view);
+    SavedDeskLibraryViewTestApi(library_view).WaitForAnimationDone();
   }
 
   // Open overview mode if we're not in overview mode yet, and then show the
@@ -304,6 +322,7 @@ class DesksTemplatesTest : public OverviewTestBase {
 
     ShowDesksTemplatesGrids();
     WaitForDesksTemplatesUI();
+    WaitForLibraryUI();
   }
 
   void ClickOnView(const views::View* view) {
@@ -347,6 +366,7 @@ class DesksTemplatesTest : public OverviewTestBase {
         GetOverviewGridForRoot(root)->IsSaveDeskAsTemplateButtonVisible());
     ClickOnView(save_template_button);
     WaitForDesksTemplatesUI();
+    WaitForLibraryUI();
     // Clicking the save template button selects the newly created template's
     // name field. We can press enter or escape or click to select out of it.
     SendKey(ui::VKEY_RETURN);
@@ -722,7 +742,7 @@ TEST_F(DesksTemplatesTest, DialogSystemModal) {
   ASSERT_TRUE(GetOverviewSession());
 
   // Show one of the dialogs. Activating the dialog keeps us in overview mode.
-  auto* dialog_controller = DesksTemplatesDialogController::Get();
+  auto* dialog_controller = SavedDeskDialogController::Get();
   dialog_controller->ShowReplaceDialog(Shell::GetPrimaryRootWindow(), u"Bento",
                                        base::DoNothing(), base::DoNothing());
   EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
@@ -766,22 +786,17 @@ TEST_F(DesksTemplatesTest, DesksTemplatesGridItems) {
 
   // Check that the grid is populated with the correct number of items, as
   // well as with the correct name and timestamp.
-  for (auto& overview_grid : GetOverviewGridList()) {
-    views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
-    ASSERT_TRUE(grid_widget);
-    const DesksTemplatesGridView* templates_grid_view =
-        static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
-    ASSERT_TRUE(templates_grid_view);
+  for (const auto& overview_grid : GetOverviewGridList()) {
     std::vector<SavedDeskItemView*> grid_items =
-        templates_grid_view->grid_items();
+        GetItemViewsFromDeskLibrary(overview_grid.get());
 
     ASSERT_EQ(2ul, grid_items.size());
 
     // The grid item order is currently not guaranteed, so need to
     // verify that each template exists by looking them up by their
     // UUID.
-    auto verify_template_grid_item = [grid_items](const base::GUID& uuid,
-                                                  const std::string& name) {
+    auto verify_template_grid_item = [&grid_items](const base::GUID& uuid,
+                                                   const std::string& name) {
       auto iter =
           std::find_if(grid_items.cbegin(), grid_items.cend(),
                        [uuid](const SavedDeskItemView* v) {
@@ -901,6 +916,8 @@ TEST_F(DesksTemplatesTest, SaveDeskButtonContainerAligned) {
 // Tests that the save desk as template button and save for later button are
 // enabled and disabled as expected based on the number of templates.
 TEST_F(DesksTemplatesTest, SaveDeskButtonsEnabledDisabled) {
+  desks_storage::LocalDeskDataManager::
+      SetExcludeSaveAndRecallDeskInMaxEntryCountForTesting(true);
   // Create an app window which should be supported.
   auto no_app_id_window = CreateAppWindow();
   auto* delegate = Shell::Get()->desks_templates_delegate();
@@ -1098,11 +1115,11 @@ TEST_F(DesksTemplatesTest, IconsOrder) {
   // Get the icon views.
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
-  const std::vector<DesksTemplatesIconView*>& icon_views =
+  const std::vector<SavedDeskIconView*>& icon_views =
       SavedDeskItemViewTestApi(item_view).GetIconViews();
 
   // The items previews should be ordered by activation index. Exclude the
-  // final DesksTemplatesIconView since it will be the overflow counter.
+  // final SavedDeskIconView since it will be the overflow counter.
   EXPECT_EQ(5u, icon_views.size());
   for (size_t i = 0; i < icon_views.size() - 2; ++i) {
     int current_id;
@@ -1161,7 +1178,7 @@ TEST_F(DesksTemplatesTest, NumIconsForBrowser) {
   // There is also the overflow icon, which is created but hidden.
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
-  const std::vector<DesksTemplatesIconView*>& icon_views =
+  const std::vector<SavedDeskIconView*>& icon_views =
       SavedDeskItemViewTestApi(item_view).GetIconViews();
   EXPECT_EQ(5u, icon_views.size());
 }
@@ -1213,7 +1230,7 @@ TEST_F(DesksTemplatesTest, IconsOrderWithInactiveTabs) {
   // Get the icon views.
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
-  const std::vector<DesksTemplatesIconView*>& icon_views =
+  const std::vector<SavedDeskIconView*>& icon_views =
       SavedDeskItemViewTestApi(item_view).GetIconViews();
 
   // Check the icon views. The first two items should be the active tabs,
@@ -1259,7 +1276,7 @@ TEST_F(DesksTemplatesTest, IdenticalURL) {
   // Get the icon views.
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
-  const std::vector<DesksTemplatesIconView*>& icon_views =
+  const std::vector<SavedDeskIconView*>& icon_views =
       SavedDeskItemViewTestApi(item_view).GetIconViews();
 
   // There should be one icon view for both the urls, and another icon view for
@@ -1276,13 +1293,13 @@ TEST_F(DesksTemplatesTest, IdenticalURL) {
 }
 
 // Tests that the overflow count view is visible, in bounds, displays the right
-// count when there is more than `DesksTemplatesIconContainer::kMaxIcons` icons.
+// count when there is more than `SavedDeskIconContainer::kMaxIcons` icons.
 TEST_F(DesksTemplatesTest, OverflowIconView) {
   // Create a `DeskTemplate` using which has 1 app more than the max and each
   // app has 1 window.
   const int kNumOverflowApps = 1;
   std::vector<int> window_info(
-      kNumOverflowApps + DesksTemplatesIconContainer::kMaxIcons, 1);
+      kNumOverflowApps + SavedDeskIconContainer::kMaxIcons, 1);
   AddEntry(base::GUID::GenerateRandomV4(), "template_1", base::Time::Now(),
            DeskTemplateSource::kUser, DeskTemplateType::kTemplate,
            CreateRestoreData(window_info));
@@ -1292,17 +1309,17 @@ TEST_F(DesksTemplatesTest, OverflowIconView) {
   // Get the icon views.
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
-  const std::vector<DesksTemplatesIconView*>& icon_views =
+  const std::vector<SavedDeskIconView*>& icon_views =
       SavedDeskItemViewTestApi(item_view).GetIconViews();
 
   // There should only be the max number of icons plus the overflow icon.
-  EXPECT_EQ(DesksTemplatesIconContainer::kMaxIcons + 1,
+  EXPECT_EQ(SavedDeskIconContainer::kMaxIcons + 1,
             static_cast<int>(icon_views.size()));
 
   // The overflow counter should have no identifier and its count should be
   // non-zero. It should also be visible and within the bounds of the host
   // SavedDeskItemView.
-  DesksTemplatesIconViewTestApi overflow_icon_view{icon_views.back()};
+  SavedDeskIconViewTestApi overflow_icon_view{icon_views.back()};
   EXPECT_FALSE(overflow_icon_view.icon_view());
   EXPECT_TRUE(overflow_icon_view.count_label());
   EXPECT_EQ(u"+1", overflow_icon_view.count_label()->GetText());
@@ -1312,17 +1329,17 @@ TEST_F(DesksTemplatesTest, OverflowIconView) {
 }
 
 // Tests that when there isn't enough space to display
-// `DesksTemplatesIconContainer::kMaxIcons` icons and the overflow
+// `SavedDeskIconContainer::kMaxIcons` icons and the overflow
 // icon view, the overflow icon view is visible and its count incremented by the
 // number of icons that had to be hidden.
 TEST_F(DesksTemplatesTest, OverflowIconViewIncrementsForHiddenIcons) {
   // Create a `DeskTemplate` using which has 3 apps more than
-  // `DesksTemplatesIconContainer::kMaxIcons` and each app has 2 windows.
+  // `SavedDeskIconContainer::kMaxIcons` and each app has 2 windows.
   // With each app having 2 windows, only 2 app icon views and the overflow view
   // will be able to fit in the container, the rest will overflow.
   const int kNumOverflowApps = 3;
   std::vector<int> window_info(
-      kNumOverflowApps + DesksTemplatesIconContainer::kMaxIcons, 2);
+      kNumOverflowApps + SavedDeskIconContainer::kMaxIcons, 2);
   AddEntry(base::GUID::GenerateRandomV4(), "template_1", base::Time::Now(),
            DeskTemplateSource::kUser, DeskTemplateType::kTemplate,
            CreateRestoreData(window_info));
@@ -1332,13 +1349,13 @@ TEST_F(DesksTemplatesTest, OverflowIconViewIncrementsForHiddenIcons) {
   // Get the icon views.
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
-  const std::vector<DesksTemplatesIconView*>& icon_views =
+  const std::vector<SavedDeskIconView*>& icon_views =
       SavedDeskItemViewTestApi(item_view).GetIconViews();
 
-  // Even though there are more than `DesksTemplatesIconContainer::kMaxIcons`,
-  // there should still be `DesksTemplatesIconContainer::kMaxIcons`+ 1
-  // DesksTemplatesIconView's created.
-  EXPECT_EQ(icon_views.size(), DesksTemplatesIconContainer::kMaxIcons + 1u);
+  // Even though there are more than `SavedDeskIconContainer::kMaxIcons`,
+  // there should still be `SavedDeskIconContainer::kMaxIcons`+ 1
+  // SavedDeskIconView's created.
+  EXPECT_EQ(icon_views.size(), SavedDeskIconContainer::kMaxIcons + 1u);
 
   // Count the number of hidden icon views and also check that there's a
   // contiguous block of visible icon views, followed by a contiguous block of
@@ -1365,7 +1382,7 @@ TEST_F(DesksTemplatesTest, OverflowIconViewIncrementsForHiddenIcons) {
   // non-zero, accounting for the number of windows that are not represented by
   // app icons. It should also be visible and within the bounds of the host
   // SavedDeskItemView.
-  DesksTemplatesIconViewTestApi overflow_icon_view{icon_views.back()};
+  SavedDeskIconViewTestApi overflow_icon_view{icon_views.back()};
   EXPECT_FALSE(overflow_icon_view.icon_view());
   EXPECT_TRUE(overflow_icon_view.count_label());
 
@@ -1401,7 +1418,7 @@ TEST_F(DesksTemplatesTest, IconViewMultipleWindows) {
   // Get the icon views.
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
-  const std::vector<DesksTemplatesIconView*>& icon_views =
+  const std::vector<SavedDeskIconView*>& icon_views =
       SavedDeskItemViewTestApi(item_view).GetIconViews();
 
   // There should be 1 * 2 icon views for the 2 apps with 1 window, 2 * 2 icon
@@ -1409,26 +1426,26 @@ TEST_F(DesksTemplatesTest, IconViewMultipleWindows) {
   EXPECT_EQ(5u, icon_views.size());
 
   // Verify each of the apps' count labels are correct.
-  DesksTemplatesIconViewTestApi icon_view_1(icon_views[0]);
+  SavedDeskIconViewTestApi icon_view_1(icon_views[0]);
   EXPECT_TRUE(icon_view_1.icon_view());
   EXPECT_FALSE(icon_view_1.count_label());
 
-  DesksTemplatesIconViewTestApi icon_view_2(icon_views[1]);
+  SavedDeskIconViewTestApi icon_view_2(icon_views[1]);
   EXPECT_TRUE(icon_view_2.icon_view());
   EXPECT_FALSE(icon_view_2.count_label());
 
-  DesksTemplatesIconViewTestApi icon_view_3(icon_views[2]);
+  SavedDeskIconViewTestApi icon_view_3(icon_views[2]);
   EXPECT_TRUE(icon_view_3.icon_view());
   EXPECT_TRUE(icon_view_3.count_label());
   EXPECT_EQ(u"+1", icon_view_3.count_label()->GetText());
 
-  DesksTemplatesIconViewTestApi icon_view_4(icon_views[3]);
+  SavedDeskIconViewTestApi icon_view_4(icon_views[3]);
   EXPECT_TRUE(icon_view_4.icon_view());
   EXPECT_TRUE(icon_view_4.count_label());
   EXPECT_EQ(u"+1", icon_view_4.count_label()->GetText());
 
   // The overflow counter should display the number of excess windows.
-  DesksTemplatesIconViewTestApi overflow_icon_view{icon_views.back()};
+  SavedDeskIconViewTestApi overflow_icon_view{icon_views.back()};
   EXPECT_FALSE(overflow_icon_view.icon_view());
   EXPECT_TRUE(overflow_icon_view.count_label());
   EXPECT_EQ(u"+5", overflow_icon_view.count_label()->GetText());
@@ -1448,7 +1465,7 @@ TEST_F(DesksTemplatesTest, IconViewMoreThan99Windows) {
   // Get the icon views.
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
-  const std::vector<DesksTemplatesIconView*>& icon_views =
+  const std::vector<SavedDeskIconView*>& icon_views =
       SavedDeskItemViewTestApi(item_view).GetIconViews();
 
   // There should only be 1 icon view for the app and 1 icon view for the
@@ -1456,7 +1473,7 @@ TEST_F(DesksTemplatesTest, IconViewMoreThan99Windows) {
   EXPECT_EQ(2u, icon_views.size());
 
   // The app's icon view should have a "+99" label.
-  DesksTemplatesIconViewTestApi icon_view(icon_views[0]);
+  SavedDeskIconViewTestApi icon_view(icon_views[0]);
   EXPECT_TRUE(icon_view.icon_view());
   EXPECT_TRUE(icon_view.count_label());
   EXPECT_EQ(u"+99", icon_view.count_label()->GetText());
@@ -1465,12 +1482,12 @@ TEST_F(DesksTemplatesTest, IconViewMoreThan99Windows) {
   EXPECT_FALSE(icon_views.back()->GetVisible());
 }
 
-// Tests that when there are less than `DesksTemplatesIconContainer::kMaxIcons`
+// Tests that when there are less than `SavedDeskIconContainer::kMaxIcons`
 // the overflow icon is not visible.
 TEST_F(DesksTemplatesTest, OverflowIconViewHiddenOnNoOverflow) {
   // Create a `DeskTemplate` using which has
-  // `DesksTemplatesIconContainer::kMaxIcons` apps and each app has 1 window.
-  std::vector<int> window_info(DesksTemplatesIconContainer::kMaxIcons, 1);
+  // `SavedDeskIconContainer::kMaxIcons` apps and each app has 1 window.
+  std::vector<int> window_info(SavedDeskIconContainer::kMaxIcons, 1);
   AddEntry(base::GUID::GenerateRandomV4(), "template_1", base::Time::Now(),
            DeskTemplateSource::kUser, DeskTemplateType::kTemplate,
            CreateRestoreData(window_info));
@@ -1480,7 +1497,7 @@ TEST_F(DesksTemplatesTest, OverflowIconViewHiddenOnNoOverflow) {
   // Get the icon views.
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
-  const std::vector<DesksTemplatesIconView*>& icon_views =
+  const std::vector<SavedDeskIconView*>& icon_views =
       SavedDeskItemViewTestApi(item_view).GetIconViews();
 
   // All the icon views should be visible and the overflow icon view should be
@@ -1511,14 +1528,14 @@ TEST_F(DesksTemplatesTest, OverflowUnavailableLessThan5Icons) {
   // Get the icon views.
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
-  const std::vector<DesksTemplatesIconView*>& icon_views =
+  const std::vector<SavedDeskIconView*>& icon_views =
       SavedDeskItemViewTestApi(item_view).GetIconViews();
 
   // The 2 available app icons should be visible, and the overflow icon should
   // contain the hidden (0) + unavailable (2) app counts.
   EXPECT_EQ(3u, icon_views.size());
 
-  DesksTemplatesIconViewTestApi overflow_icon_view{icon_views.back()};
+  SavedDeskIconViewTestApi overflow_icon_view{icon_views.back()};
   EXPECT_FALSE(overflow_icon_view.icon_view());
   EXPECT_TRUE(overflow_icon_view.count_label());
   EXPECT_EQ(u"+2", overflow_icon_view.count_label()->GetText());
@@ -1545,14 +1562,14 @@ TEST_F(DesksTemplatesTest, OverflowUnavailableMoreThan5Icons) {
   // Get the icon views.
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
-  const std::vector<DesksTemplatesIconView*>& icon_views =
+  const std::vector<SavedDeskIconView*>& icon_views =
       SavedDeskItemViewTestApi(item_view).GetIconViews();
 
   // The 4 available app icons should be visible, and the overflow icon should
   // contain the hidden (2) + unavailable (2) app counts.
   EXPECT_EQ(5u, icon_views.size());
 
-  DesksTemplatesIconViewTestApi overflow_icon_view{icon_views.back()};
+  SavedDeskIconViewTestApi overflow_icon_view{icon_views.back()};
   EXPECT_FALSE(overflow_icon_view.icon_view());
   EXPECT_TRUE(overflow_icon_view.count_label());
   EXPECT_EQ(u"+4", overflow_icon_view.count_label()->GetText());
@@ -1578,14 +1595,14 @@ TEST_F(DesksTemplatesTest, OverflowUnavailableAllUnavailableIcons) {
   // Get the icon views.
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/0);
-  const std::vector<DesksTemplatesIconView*>& icon_views =
+  const std::vector<SavedDeskIconView*>& icon_views =
       SavedDeskItemViewTestApi(item_view).GetIconViews();
 
   // The only added icon view is the overflow icon, and it should have a "10"
   // label without the plus sign.
   EXPECT_EQ(1u, icon_views.size());
 
-  DesksTemplatesIconViewTestApi overflow_icon_view{icon_views.back()};
+  SavedDeskIconViewTestApi overflow_icon_view{icon_views.back()};
   EXPECT_FALSE(overflow_icon_view.icon_view());
   EXPECT_TRUE(overflow_icon_view.count_label());
   EXPECT_EQ(u"10", overflow_icon_view.count_label()->GetText());
@@ -1667,7 +1684,7 @@ TEST_F(DesksTemplatesTest, ShowingTemplatesGridToTabletMode) {
   aura::Window* root_window = Shell::GetPrimaryRootWindow();
   ASSERT_TRUE(GetOverviewSession()
                   ->GetGridWithRootWindow(root_window)
-                  ->desks_templates_grid_widget()
+                  ->saved_desk_library_widget()
                   ->IsVisible());
 
   // Tests that the templates button is in expanded state when the grid is
@@ -1685,7 +1702,7 @@ TEST_F(DesksTemplatesTest, ShowingTemplatesGridToTabletMode) {
   ASSERT_TRUE(GetOverviewSession());
   EXPECT_FALSE(GetOverviewSession()
                    ->GetGridWithRootWindow(root_window)
-                   ->desks_templates_grid_widget()
+                   ->saved_desk_library_widget()
                    ->IsVisible());
 
   // Tests that the templates button is also hidden in tablet mode. Regression
@@ -1816,7 +1833,7 @@ TEST_F(DesksTemplatesTest, DesksBarReturnsToZeroState) {
   DeleteTemplate(uuid, /*expected_current_item_count=*/1);
   EXPECT_FALSE(GetOverviewSession()
                    ->GetGridWithRootWindow(root_window)
-                   ->desks_templates_grid_widget()
+                   ->saved_desk_library_widget()
                    ->IsVisible());
 
   // Test that we are now in zero state.
@@ -1849,7 +1866,7 @@ TEST_F(DesksTemplatesTest, UnsupportedAppsDialog) {
 
   // Decline the dialog. We should stay in overview and no template should have
   // been saved.
-  auto* dialog_controller = DesksTemplatesDialogController::Get();
+  auto* dialog_controller = SavedDeskDialogController::Get();
   dialog_controller->dialog_widget()
       ->widget_delegate()
       ->AsDialogDelegate()
@@ -1865,14 +1882,14 @@ TEST_F(DesksTemplatesTest, UnsupportedAppsDialog) {
 
   // Accept the dialog. The template should have been saved and the templates
   // grid should now be shown.
-  dialog_controller = DesksTemplatesDialogController::Get();
+  dialog_controller = SavedDeskDialogController::Get();
   dialog_controller->dialog_widget()
       ->widget_delegate()
       ->AsDialogDelegate()
       ->AcceptDialog();
   WaitForDesksTemplatesUI();
   EXPECT_TRUE(GetOverviewSession());
-  EXPECT_TRUE(GetOverviewGridList()[0]->desks_templates_grid_widget());
+  EXPECT_TRUE(GetOverviewGridList()[0]->saved_desk_library_widget());
 
   ASSERT_EQ(1ul, GetAllEntries().size());
 }
@@ -2071,24 +2088,22 @@ TEST_F(DesksTemplatesTest, HideAndShowTemplatesGridWithoutLeavingOverview) {
   OpenOverviewAndSaveTemplate(Shell::Get()->GetPrimaryRootWindow());
   ASSERT_EQ(1ul, GetAllEntries().size());
 
-  OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
-  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
-  const auto* templates_grid_view =
-      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
+  SavedDeskLibraryView* library_view =
+      GetOverviewGridList().front()->GetSavedDeskLibraryView();
+  ASSERT_TRUE(library_view);
 
-  // The grid has one template item and one feedback button.
-  ASSERT_EQ(2ul, templates_grid_view->children().size());
+  // The library has two grids and one feedback button.
+  ASSERT_EQ(3ul, library_view->children().size());
 
   // Click on the grid item to launch the template.
   ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
   WaitForDesksTemplatesUI();
   EXPECT_TRUE(InOverviewSession());
 
-  // Go back to the templates grid and verify a new feedback button wasn't
-  // created. There should still be only one template item and one feedback
-  // button.
+  // Go back to the library view and verify a new feedback button wasn't
+  // created. There should still be two grids and one feedback button.
   ShowDesksTemplatesGrids();
-  ASSERT_EQ(2ul, templates_grid_view->children().size());
+  ASSERT_EQ(3ul, library_view->children().size());
 }
 
 // Tests that if we open the desks templates grid a second time during an
@@ -2113,18 +2128,15 @@ TEST_F(DesksTemplatesTest, TemplatesAreVisibleAfterSecondSave) {
   OpenOverviewAndSaveTemplate(Shell::Get()->GetPrimaryRootWindow());
 
   OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
-  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
-  ASSERT_TRUE(grid_widget);
-  const DesksTemplatesGridView* templates_grid_view =
-      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
-  ASSERT_TRUE(templates_grid_view);
+  SavedDeskLibraryView* library_view = overview_grid->GetSavedDeskLibraryView();
+  ASSERT_TRUE(library_view);
 
-  std::vector<SavedDeskItemView*> grid_items =
-      templates_grid_view->grid_items();
+  const std::vector<SavedDeskItemView*> grid_items =
+      GetItemViewsFromDeskLibrary(library_view);
   ASSERT_EQ(1ul, grid_items.size());
 
   // Tests that bounds of the views are not empty.
-  EXPECT_FALSE(templates_grid_view->bounds().IsEmpty());
+  EXPECT_FALSE(library_view->bounds().IsEmpty());
   EXPECT_FALSE(grid_items[0]->bounds().IsEmpty());
 }
 
@@ -2146,14 +2158,8 @@ TEST_F(DesksTemplatesTest, ShowTemplatesInAlphabeticalOrder) {
   OpenOverviewAndShowTemplatesGrid();
 
   OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
-  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
-  ASSERT_TRUE(grid_widget);
-  const DesksTemplatesGridView* templates_grid_view =
-      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
-  ASSERT_TRUE(templates_grid_view);
-
   const std::vector<SavedDeskItemView*> grid_items =
-      templates_grid_view->grid_items();
+      GetItemViewsFromDeskLibrary(overview_grid);
   ASSERT_EQ(5ul, grid_items.size());
 
   // Tests that templates are sorted in alphabetical order.
@@ -2555,13 +2561,13 @@ TEST_F(DesksTemplatesTest, AccessibilityFocusAnnotatorInViewingTemplate) {
   views::Widget* desk_widget =
       const_cast<views::Widget*>(overview_grid->desks_widget());
   DCHECK(desk_widget);
-  views::Widget* template_widget = overview_grid->desks_templates_grid_widget();
-  DCHECK(template_widget);
+  views::Widget* library_widget = overview_grid->saved_desk_library_widget();
+  DCHECK(library_widget);
 
-  // Order should be [focus_widget, template_widget, desk_widget].
-  CheckA11yOverrides("focus", focus_widget, desk_widget, template_widget);
-  CheckA11yOverrides("template", template_widget, focus_widget, desk_widget);
-  CheckA11yOverrides("desk", desk_widget, template_widget, focus_widget);
+  // Order should be [focus_widget, library_widget, desk_widget].
+  CheckA11yOverrides("focus", focus_widget, desk_widget, library_widget);
+  CheckA11yOverrides("template", library_widget, focus_widget, desk_widget);
+  CheckA11yOverrides("desk", desk_widget, library_widget, focus_widget);
 }
 
 // Tests that accessibility overrides are set as expected after entering
@@ -2580,13 +2586,13 @@ TEST_F(DesksTemplatesTest, AccessibilityFocusAnnotatorWhenNoWindowOpen) {
   views::Widget* desk_widget =
       const_cast<views::Widget*>(overview_grid->desks_widget());
   DCHECK(desk_widget);
-  views::Widget* template_widget = overview_grid->desks_templates_grid_widget();
-  DCHECK(template_widget);
+  views::Widget* library_widget = overview_grid->saved_desk_library_widget();
+  DCHECK(library_widget);
 
   // Order should be [focus_widget, template_widget, desk_widget].
-  CheckA11yOverrides("focus", focus_widget, desk_widget, template_widget);
-  CheckA11yOverrides("template", template_widget, focus_widget, desk_widget);
-  CheckA11yOverrides("desk", desk_widget, template_widget, focus_widget);
+  CheckA11yOverrides("focus", focus_widget, desk_widget, library_widget);
+  CheckA11yOverrides("template", library_widget, focus_widget, desk_widget);
+  CheckA11yOverrides("desk", desk_widget, library_widget, focus_widget);
 }
 
 // Tests that the children of the overview grid matches the order they are
@@ -2606,14 +2612,15 @@ TEST_F(DesksTemplatesTest, AccessibilityGridItemTraversalOrder) {
   OpenOverviewAndShowTemplatesGrid();
 
   OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
-  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
-  const auto* templates_grid_view =
-      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
+  SavedDeskLibraryView* library_view = overview_grid->GetSavedDeskLibraryView();
+  ASSERT_FALSE(library_view->grid_views().empty());
+
+  SavedDeskGridView* grid_view = library_view->grid_views().front();
+  ASSERT_TRUE(grid_view);
 
   // The grid items are sorted and displayed alphabetically.
-  std::vector<SavedDeskItemView*> grid_items =
-      templates_grid_view->grid_items();
-  views::View::Views grid_child_views = templates_grid_view->children();
+  std::vector<SavedDeskItemView*> grid_items = grid_view->grid_items();
+  views::View::Views grid_child_views = grid_view->children();
 
   // Verifies the order of the children matches what is displayed in the grid.
   for (size_t i = 0; i < grid_items.size(); i++)
@@ -2637,12 +2644,8 @@ TEST_F(DesksTemplatesTest, LayoutItemsInLandscape) {
   OpenOverviewAndShowTemplatesGrid();
 
   OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
-  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
-  const auto* templates_grid_view =
-      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
-
   const std::vector<SavedDeskItemView*> grid_items =
-      templates_grid_view->grid_items();
+      GetItemViewsFromDeskLibrary(overview_grid);
   ASSERT_EQ(4ul, grid_items.size());
 
   // We expect the first three items to be laid out in one row.
@@ -2669,12 +2672,8 @@ TEST_F(DesksTemplatesTest, LayoutItemsInPortrait) {
   OpenOverviewAndShowTemplatesGrid();
 
   OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
-  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
-  const auto* templates_grid_view =
-      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
-
   const std::vector<SavedDeskItemView*> grid_items =
-      templates_grid_view->grid_items();
+      GetItemViewsFromDeskLibrary(overview_grid);
   ASSERT_EQ(4ul, grid_items.size());
 
   // We expect the first two items to be laid out in one row.
@@ -2691,26 +2690,25 @@ TEST_F(DesksTemplatesTest, ItemsDoNotOverlapShelf) {
   UpdateDisplay("1000x600");
 
   // Create 6 entries to max out the grid.
-  for (const std::string& name : {"A", "B", "C", "D", "E", "F"})
+  for (const std::string& name : {"A", "B", "C", "D", "E", "F"}) {
     AddEntry(base::GUID::GenerateRandomV4(), name, base::Time::Now(),
              DeskTemplateType::kTemplate);
+  }
 
   OpenOverviewAndShowTemplatesGrid();
 
-  OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
-  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
-  const auto* templates_grid_view =
-      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
+  SavedDeskLibraryView* library_view =
+      GetOverviewGridList().front()->GetSavedDeskLibraryView();
 
-  // The grid has six items and one feedback button.
-  views::View::Views grid_views = templates_grid_view->children();
-  ASSERT_EQ(7ul, grid_views.size());
+  // The library has two grids and one feedback button.
+  views::View::Views library_child_views = library_view->children();
+  ASSERT_EQ(3ul, library_child_views.size());
 
   const gfx::Rect shelf_bounds =
       GetPrimaryShelf()->shelf_widget()->GetWindowBoundsInScreen();
 
   // Test that none of the grid items overlap with the shelf.
-  for (views::View* view : grid_views)
+  for (views::View* view : library_child_views)
     EXPECT_FALSE(view->GetBoundsInScreen().Intersects(shelf_bounds));
 }
 
@@ -2992,7 +2990,7 @@ TEST_F(DesksTemplatesTest, ReplaceTemplateMetric) {
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/1);
   // Show replace dialogs.
-  auto* dialog_controller = DesksTemplatesDialogController::Get();
+  auto* dialog_controller = SavedDeskDialogController::Get();
   auto callback = base::BindLambdaForTesting(
       [&]() { item_view->ReplaceTemplate(uuid_1.AsLowercaseString()); });
 
@@ -3124,10 +3122,10 @@ TEST_F(DesksTemplatesTest, WindowOpacityResetAfterLeavingOverview) {
   ClickOnView(GetItemViewFromTemplatesGrid(/*grid_item_index=*/0));
   WaitForDesksTemplatesUI();
 
-  views::Widget* desks_templates_grid_widget =
-      GetOverviewGridList()[0]->desks_templates_grid_widget();
-  desks_templates_grid_widget->GetLayer()->GetAnimator()->StopAnimating();
-  ASSERT_FALSE(desks_templates_grid_widget->IsVisible());
+  views::Widget* library_widget =
+      GetOverviewGridList()[0]->saved_desk_library_widget();
+  library_widget->GetLayer()->GetAnimator()->StopAnimating();
+  ASSERT_FALSE(library_widget->IsVisible());
   ASSERT_EQ(3u, desks_controller->desks().size());
 
   // Tests that after exiting overview, the windows have their opacities
@@ -3225,11 +3223,7 @@ TEST_F(DesksTemplatesTest, TimeStrFormat) {
 
   // Tests that each template comes with an expected time string format.
   std::vector<SavedDeskItemView*> grid_items =
-      static_cast<DesksTemplatesGridView*>(GetOverviewGridList()
-                                               .front()
-                                               ->desks_templates_grid_widget()
-                                               ->GetContentsView())
-          ->grid_items();
+      GetItemViewsFromDeskLibrary(GetOverviewGridList().front().get());
   for (size_t i = 0; i < 3; i++) {
     auto iter =
         std::find_if(grid_items.cbegin(), grid_items.cend(),
@@ -3282,15 +3276,8 @@ TEST_F(DesksTemplatesTest, CapTemplateItemsShown) {
   OpenOverviewAndShowTemplatesGrid();
 
   // Check to make sure we are only showing up to the maximum number of items.
-  OverviewGrid* overview_grid = GetOverviewGridList()[0].get();
-  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
-  ASSERT_TRUE(grid_widget);
-  const DesksTemplatesGridView* templates_grid_view =
-      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
-  ASSERT_TRUE(templates_grid_view);
-
   const std::vector<SavedDeskItemView*> grid_items =
-      templates_grid_view->grid_items();
+      GetItemViewsFromDeskLibrary(GetOverviewGridList().front().get());
   EXPECT_EQ(kMaxTemplateCount, grid_items.size());
 }
 
@@ -3318,10 +3305,7 @@ TEST_F(DesksTemplatesTest, ClickOrTapToExitGridView) {
     // The name view should release focus after getting a mouse click outside
     // the grid item.
     std::vector<SavedDeskItemView*> grid_items =
-        static_cast<DesksTemplatesGridView*>(GetOverviewGridList()[0]
-                                                 ->desks_templates_grid_widget()
-                                                 ->GetContentsView())
-            ->grid_items();
+        GetItemViewsFromDeskLibrary(GetOverviewGridList().front().get());
     auto* event_generator = GetEventGenerator();
     event_generator->MoveMouseTo(grid_items[0]->GetBoundsInScreen().origin() -
                                  gfx::Vector2d(20, 20));
@@ -3348,10 +3332,7 @@ TEST_F(DesksTemplatesTest, ClickOrTapToExitGridView) {
     // The name view should release focus after getting a gesture tap outside
     // the grid item.
     std::vector<SavedDeskItemView*> grid_items =
-        static_cast<DesksTemplatesGridView*>(GetOverviewGridList()[0]
-                                                 ->desks_templates_grid_widget()
-                                                 ->GetContentsView())
-            ->grid_items();
+        GetItemViewsFromDeskLibrary(GetOverviewGridList().front().get());
     event_generator->GestureTapAt(
         {grid_items[0]->GetBoundsInScreen().x() - 20,
          grid_items[0]->GetBoundsInScreen().y() - 20});
@@ -3372,7 +3353,7 @@ TEST_F(DesksTemplatesTest, RightClickOnWallpaperStaysInOverview) {
 
   OpenOverviewAndShowTemplatesGrid();
 
-  // Find a point that doesn't touch the item view, but is still in the grid
+  // Find a point that doesn't touch the item view, but is still in the library
   // widget's window bounds. Right clicking this point should not close
   // overview, as it should open the wallpaper context menu.
   SavedDeskItemView* item_view =
@@ -3380,10 +3361,10 @@ TEST_F(DesksTemplatesTest, RightClickOnWallpaperStaysInOverview) {
   DCHECK(item_view);
   gfx::Rect item_view_expanded_bounds = item_view->GetBoundsInScreen();
   item_view_expanded_bounds.Outset(40);
-  const gfx::Rect grid_widget_bounds = GetOverviewGridList()[0]
-                                           ->desks_templates_grid_widget()
-                                           ->GetWindowBoundsInScreen();
-  ASSERT_TRUE(grid_widget_bounds.Contains(item_view_expanded_bounds));
+  const gfx::Rect library_widget_bounds = GetOverviewGridList()[0]
+                                              ->saved_desk_library_widget()
+                                              ->GetWindowBoundsInScreen();
+  ASSERT_TRUE(library_widget_bounds.Contains(item_view_expanded_bounds));
 
   auto* event_generator = GetEventGenerator();
   event_generator->MoveMouseTo(item_view_expanded_bounds.bottom_right());
@@ -3492,7 +3473,7 @@ TEST_F(DesksTemplatesTest, NoDuplicateDisplayedName) {
   SavedDeskItemView* second_item = GetItemViewFromTemplatesGrid(1);
   auto new_desk_template = second_item->desk_template()->Clone();
   new_desk_template->set_template_name(u"Desk 2");
-  DeskTemplate* new_desk_template_ptr = new_desk_template.get();
+  const base::GUID uuid = new_desk_template->uuid();
 
   base::RunLoop loop;
   desk_model()->AddOrUpdateEntry(
@@ -3505,12 +3486,24 @@ TEST_F(DesksTemplatesTest, NoDuplicateDisplayedName) {
           }));
   loop.Run();
 
-  // `LocalDeskStorage` does not support `EntriesAddedOrUpdatedRemotely`, so
-  // manually call it to simluate what the real model would do.
-  DesksTemplatesPresenter::Get()->EntriesAddedOrUpdatedRemotely(
-      {new_desk_template_ptr});
-  ASSERT_EQ(u"Desk 2", second_item->name_view()->GetText());
-  ASSERT_EQ(u"Desk 2", second_item->desk_template()->template_name());
+  base::RunLoop loop1;
+  desk_model()->GetEntryByUUID(
+      uuid.AsLowercaseString(),
+      base::BindLambdaForTesting(
+          [&](desks_storage::DeskModel::GetEntryByUuidStatus status,
+              std::unique_ptr<ash::DeskTemplate> entry) {
+            EXPECT_EQ(desks_storage::DeskModel::GetEntryByUuidStatus::kOk,
+                      status);
+            // `LocalDeskStorage` does not support
+            // `EntriesAddedOrUpdatedRemotely`, so
+            // manually call it to simluate what the real model would do.
+            DesksTemplatesPresenter::Get()->EntriesAddedOrUpdatedRemotely(
+                {entry.get()});
+            ASSERT_EQ(u"Desk 2", second_item->name_view()->GetText());
+            ASSERT_EQ(u"Desk 2", second_item->desk_template()->template_name());
+            loop1.Quit();
+          }));
+  loop1.Run();
 
   // Save template 2 under new name and confirm, this will trigger replace
   // dialog.
@@ -3520,8 +3513,8 @@ TEST_F(DesksTemplatesTest, NoDuplicateDisplayedName) {
                                        "TemplateDialogForTesting");
   // Normally we would want to clear focus by simulating a user action (enter or
   // click outside) but that doesn't work after already clear focus once before.
-  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
-  grid_widget->GetFocusManager()->ClearFocus();
+  views::Widget* library_widget = overview_grid->saved_desk_library_widget();
+  library_widget->GetFocusManager()->ClearFocus();
   views::Widget* dialog_widget = waiter.WaitIfNeededAndGet();
 
   // Cancel on replace dialog will revert view name to template name.

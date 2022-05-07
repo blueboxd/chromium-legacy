@@ -30,7 +30,7 @@
 #include "ash/wm/desks/desks_animations.h"
 #include "ash/wm/desks/desks_restore_util.h"
 #include "ash/wm/desks/desks_util.h"
-#include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
+#include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -351,6 +351,21 @@ DesksController* DesksController::Get() {
 std::u16string DesksController::GetDeskDefaultName(size_t desk_index) {
   DCHECK_LT(desk_index, desks_util::kMaxNumberOfDesks);
   return l10n_util::GetStringUTF16(kDeskDefaultNameIds[desk_index]);
+}
+
+const std::u16string& DesksController::GetCombineDesksTargetName(
+    const Desk* desk) const {
+  if (desk == active_desk_ && desks_.size() > 1) {
+    Desk* target = GetPreviousDesk();
+
+    if (!target)
+      target = GetNextDesk();
+
+    DCHECK(target);
+    return target->name();
+  }
+
+  return active_desk_->name();
 }
 
 const Desk* DesksController::GetTargetActiveDesk() const {

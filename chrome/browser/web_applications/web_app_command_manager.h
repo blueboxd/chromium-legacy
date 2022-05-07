@@ -11,8 +11,10 @@
 
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequence_checker.h"
+#include "base/types/pass_key.h"
 #include "base/values.h"
 #include "chrome/browser/web_applications/commands/web_app_command.h"
 #include "chrome/browser/web_applications/web_app_constants.h"
@@ -21,26 +23,34 @@
 #include "components/services/storage/indexed_db/locks/leveled_lock_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+class Profile;
+
+namespace content {
+class WebContents;
+}
+
 namespace web_app {
 
-// The command manager is used to enqueue commands or callbacks to write & read
-// from the WebAppProvider system.
-// Commands are queued based on a `WebAppCommandQueueId`, and each queue is
-// independent. To use, simply call `EnqueueCommand` to enqueue the given
-// command or a CallbackCommand with given callback on it's respective queue.
-// The queue of a command is determined by `WebAppCommand::queue_id()`.
+class WebAppInstallManager;
+
+// The command manager is used to schedule commands or callbacks to write & read
+// from the WebAppProvider system. To use, simply call `ScheduleCommand` to
+// schedule the given command or a CallbackCommand with given callback.
 //
-// Commands will be executed (`Start()` will be called) in-order, and the next
-// command will not execute until `SignalCompletionAndSelfDestruct()` was called
-// by the last command.
+// Commands will be executed (`Start()` will be called) in-order based on
+// command's `WebAppCommandLock`, the `WebAppCommandLock` specifies which apps
+// or particular entities it wants to lock on. The next command will not execute
+// until `SignalCompletionAndSelfDestruct()` was called by the last command.
 class WebAppCommandManager {
  public:
-  WebAppCommandManager();
-  virtual ~WebAppCommandManager();
+  using PassKey = base::PassKey<WebAppCommandManager>;
+
+  explicit WebAppCommandManager(Profile* profile);
+  ~WebAppCommandManager();
 
   // Enqueues the given command in the queue corresponding to the command's
   // `queue_id()`. `Start()` will always be called asynchronously.
-  void EnqueueCommand(std::unique_ptr<WebAppCommand> command);
+  void ScheduleCommand(std::unique_ptr<WebAppCommand> command);
 
   // Called on system shutdown. This call is also forwarded to any commands that
   // have been `Start()`ed.
@@ -55,6 +65,16 @@ class WebAppCommandManager {
   // running and queued commands.
   base::Value ToDebugValue();
 
+  void SetSubsystems(WebAppInstallManager* install_manager);
+  void LogToInstallManager(base::Value);
+
+  // Returns whether an installation is already scheduled with the same web
+  // contents.
+  bool IsInstallingForWebContents(
+      const content::WebContents* web_contents) const;
+
+  std::size_t GetCommandCountForTesting() { return commands_.size(); }
+
  protected:
   friend class WebAppCommand;
 
@@ -68,6 +88,8 @@ class WebAppCommandManager {
   void OnLockAcquired(WebAppCommand::Id command_id);
   void StartCommand(WebAppCommand* command);
 
+  content::WebContents* EnsureWebContentsCreated();
+
   struct CommandState {
     explicit CommandState(std::unique_ptr<WebAppCommand> command);
     ~CommandState();
@@ -80,11 +102,16 @@ class WebAppCommandManager {
 
   std::map<WebAppCommand::Id, CommandState> commands_{};
 
+  Profile* profile_;
+  std::unique_ptr<content::WebContents> shared_web_contents_;
+
   bool is_in_shutdown_ = false;
   std::deque<base::Value> command_debug_log_;
 
   content::DisjointRangeLockManager lock_manager_{
       static_cast<int>(WebAppCommandLock::LockLevel::kMaxValue) + 1};
+
+  raw_ptr<WebAppInstallManager> install_manager_;
 
   base::WeakPtrFactory<WebAppCommandManager> weak_ptr_factory_{this};
 };

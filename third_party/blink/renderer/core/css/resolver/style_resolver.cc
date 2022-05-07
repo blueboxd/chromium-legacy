@@ -1112,7 +1112,7 @@ bool CanApplyInlineStyleIncrementally(Element* element,
   // style onto the base as opposed to the computed style itself,
   // and we don't support that. It should be rare to animate elements
   // _both_ with animations and mutating inline style anyway.
-  if (GetElementAnimations(state)) {
+  if (GetElementAnimations(state) || element->GetComputedStyle()->BaseData()) {
     return false;
   }
 
@@ -1392,6 +1392,10 @@ void StyleResolver::ApplyBaseStyle(
 
     DCHECK_EQ(g_null_atom, ComputeBaseComputedStyleDiff(incremental_style.get(),
                                                         *state.Style()));
+    // The incremental style must not contain BaseData, otherwise we'd risk
+    // creating an infinite chain of BaseData/ComputedStyle in
+    // ApplyAnimatedStyle.
+    DCHECK(!incremental_style->BaseData());
 #endif
     return;
   }
@@ -2185,8 +2189,6 @@ bool StyleResolver::ShouldStopBodyPropagation(const Element& body_or_html) {
                                          ? WebFeature::kHTMLRootContained
                                          : WebFeature::kHTMLBodyContained);
   }
-  if (!RuntimeEnabledFeatures::CSSContainedBodyPropagationEnabled())
-    return false;
   DCHECK_EQ(contained,
             layout_object->StyleRef().ShouldApplyAnyContainment(body_or_html))
       << "Applied containment must give the same result from LayoutObject and "
@@ -2346,7 +2348,7 @@ void StyleResolver::PropagateStyleToViewport() {
       if (overflow_anchor == EOverflowAnchor::kVisible)
         overflow_anchor = EOverflowAnchor::kAuto;
 
-      if (GetDocument().IsInMainFrame()) {
+      if (GetDocument().IsInOutermostMainFrame()) {
         using OverscrollBehaviorType = cc::OverscrollBehavior::Type;
         GetDocument().GetPage()->GetChromeClient().SetOverscrollBehavior(
             *GetDocument().GetFrame(),

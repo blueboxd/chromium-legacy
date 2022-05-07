@@ -246,6 +246,7 @@
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/browser/hid/hid_policy_allowed_devices.h"
 #include "chrome/browser/intranet_redirect_detector.h"
+#include "chrome/browser/media/router/discovery/access_code/access_code_cast_feature.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
 #include "chrome/browser/metrics/tab_stats/tab_stats_tracker.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_prefs.h"
@@ -375,6 +376,7 @@
 #include "chrome/browser/ash/system/automatic_reboot_manager.h"
 #include "chrome/browser/ash/system/input_device_settings.h"
 #include "chrome/browser/ash/web_applications/help_app/help_app_notification_controller.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_prefs.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login/prefs.h"
 #include "chrome/browser/device_identity/chromeos/device_oauth2_token_store_chromeos.h"
 #include "chrome/browser/extensions/extension_assets_manager_chromeos.h"
@@ -459,16 +461,13 @@
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/ui/browser_view_prefs.h"
+#include "chrome/browser/ui/side_search/side_search_prefs.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SESSION_SERVICE)
 #include "chrome/browser/sessions/session_data_service.h"
 #include "chrome/browser/sessions/session_service_log.h"
 #endif
-
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
-#include "chrome/browser/ui/side_search/side_search_prefs.h"
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 namespace {
 
@@ -774,6 +773,12 @@ const char kTimeOnOobe[] = "settings.time_on_oobe";
 const char kOptimizationGuideRemoteFetchingEnabled[] =
     "optimization_guide.remote_fetching_enabled";
 
+#if !BUILDFLAG(IS_ANDROID)
+// Deprecated 05/2022.
+const char kAccessCodeCastDiscoveredNetworks[] =
+    "media_router.access_code_cast.discovered_networks";
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 // Register local state used only for migration (clearing or moving to a new
 // key).
 void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry) {
@@ -1018,6 +1023,10 @@ void RegisterProfilePrefsForMigration(
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
   registry->RegisterBooleanPref(kOptimizationGuideRemoteFetchingEnabled, true);
+
+#if !BUILDFLAG(IS_ANDROID)
+  registry->RegisterDictionaryPref(kAccessCodeCastDiscoveredNetworks);
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 }  // namespace
@@ -1489,6 +1498,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   chromeos::NetworkMetadataStore::RegisterPrefs(registry);
   ash::ReleaseNotesStorage::RegisterProfilePrefs(registry);
   ash::HelpAppNotificationController::RegisterProfilePrefs(registry);
+  ash::personalization_app::prefs::RegisterProfilePrefs(registry);
   ash::quick_unlock::FingerprintStorage::RegisterProfilePrefs(registry);
   ash::quick_unlock::PinStoragePrefs::RegisterProfilePrefs(registry);
   ash::Preferences::RegisterProfilePrefs(registry);
@@ -1561,12 +1571,9 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
 
 #if defined(TOOLKIT_VIEWS)
   accessibility_prefs::RegisterInvertBubbleUserPrefs(registry);
+  side_search_prefs::RegisterProfilePrefs(registry);
   RegisterBrowserViewProfilePrefs(registry);
 #endif
-
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
-  side_search_prefs::RegisterProfilePrefs(registry);
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 #if !BUILDFLAG(IS_ANDROID)
   registry->RegisterBooleanPref(
@@ -1981,6 +1988,11 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
 
   // Added 04/2022
   profile_prefs->ClearPref(kOptimizationGuideRemoteFetchingEnabled);
+
+#if !BUILDFLAG(IS_ANDROID)
+  // Added 05/2022
+  profile_prefs->ClearPref(kAccessCodeCastDiscoveredNetworks);
+#endif  // !BUILDFLAG(IS_ANDROID)
 
   // Please don't delete the following line. It is used by PRESUBMIT.py.
   // END_MIGRATE_OBSOLETE_PROFILE_PREFS

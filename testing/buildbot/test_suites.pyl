@@ -1812,11 +1812,7 @@
       'google_apis_unittests': {},
       'gpu_unittests': {},
       'gwp_asan_unittests': {},
-      'headless_browsertests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.headless_browsertests.filter',
-        ],
-      },
+      'headless_browsertests': {},
       'ipc_tests': {},
       'latency_unittests': {},
       'media_unittests': {},
@@ -1849,11 +1845,7 @@
       'skia_unittests': {},
       'snapshot_unittests': {},
       'sql_unittests': {},
-      'storage_unittests': {
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.storage_unittests.filter',
-        ],
-      },
+      'storage_unittests': {},
       'ui_base_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.ui_base_unittests.filter',
@@ -1882,6 +1874,7 @@
     },
 
     'fuchsia_experimental_gtests': {
+      'blink_fuzzer_unittests': {},
       'browser_tests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.browser_tests.filter',
@@ -4078,6 +4071,18 @@
       },
     },
 
+    'lacros_variations_tast_tests': {
+      'lacros_variations_tast_tests': {
+        'swarming': {
+          'idempotent': False,  # https://crbug.com/923426#c27
+        },
+        'resultdb': {
+          'enable': True,
+        },
+        'experiment_percentage': 100,
+      },
+    },
+
     'layout_ng_gtests': {
       'webkit_unit_tests_ng': {
         'args': [
@@ -4131,7 +4136,7 @@
         ],
         # TODO(crbug.com/1195974): Decides whether we want to run this on CQ.
         # This target is heavy, which currently takes ~1 hour to run.
-        'experiment_percentage': 10,
+        'ci_only': True,
         'test': 'browser_tests',
         'swarming': {
           'shards': 4,
@@ -6224,15 +6229,6 @@
       'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests',
     ],
 
-    'gpu_angle_win7_nvidia_gtests': [
-      'gpu_angle_end2end_gtests',
-      'gpu_angle_unit_gtests',
-      'gpu_angle_white_box_gtests',
-      'gpu_angle_deqp_egl_d3d11_gtests',
-      'gpu_angle_deqp_gles2_d3d11_gtests',
-      'gpu_angle_deqp_gles3_d3d11_gtests',
-    ],
-
     'gpu_angle_win_intel_gtests': [
       'gpu_angle_deqp_gles2_d3d11_gtests',
       'gpu_angle_end2end_gtests',
@@ -6597,34 +6593,6 @@
       'gpu_webgl2_conformance_validating_telemetry_tests',
     ],
 
-    'gpu_fyi_win7_amd_gtests': [
-      'gpu_angle_unit_gtests',
-      'gpu_common_gtests_passthrough',
-      'gpu_desktop_specific_gtests',
-      'gpu_fyi_and_optional_non_linux_gtests',
-      'gpu_fyi_and_optional_win_specific_gtests',
-      'gpu_gles2_conform_gtests',
-    ],
-
-    'gpu_fyi_win7_gtests': [
-      'gpu_angle_unit_gtests',
-      'gpu_common_gtests_passthrough',
-      'gpu_desktop_specific_gtests',
-      'gpu_fyi_and_optional_non_linux_gtests',
-      'gpu_fyi_and_optional_win_specific_gtests',
-      'gpu_gles2_conform_gtests',
-    ],
-
-    'gpu_fyi_win7_nvidia_amd_release_telemetry_tests': [
-      'gpu_common_and_optional_telemetry_tests',
-      'gpu_passthrough_telemetry_tests',
-      'gpu_webcodecs_telemetry_test',
-      'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
-    ],
-
     'gpu_fyi_win_amd_release_telemetry_tests': [
       'gpu_common_and_optional_telemetry_tests',
       'gpu_mediapipe_passthrough_telemetry_tests',
@@ -6769,11 +6737,6 @@
       'gpu_validating_telemetry_tests',
       'gpu_webgl2_conformance_telemetry_tests',
       'gpu_webgl_conformance_telemetry_tests',
-    ],
-
-    'gpu_win_angle_amd_telemetry_tests': [
-      'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
     ],
 
     'gpu_win_gtests': [
@@ -7446,19 +7409,24 @@
       },
     },
 
-    'lacros_all_tast_tests_eve': {
-      'lacros_all_tast_tests': {
-        'variants': [
-          'LACROS_EVE',
-        ]
-      },
-    },
-
     'lacros_amd64_generic_rel_skylab_fyi': {
       'lacros_skylab_poc': {
         'variants': [
           'CROS_OCTOPUS_FULL',
           'CROS_EVE_FULL',
+        ]
+      },
+    },
+
+    'lacros_device_or_vm_tast_tests': {
+      'lacros_all_tast_tests': {
+        'variants': [
+          'LACROS_EVE',
+        ]
+      },
+      'lacros_variations_tast_tests': {
+        'variants': [
+          'LACROS_AMD64_GENERIC',
         ]
       },
     },
@@ -7505,12 +7473,8 @@
         'variants': [
           'CROS_HANA_RELEASE_LKGM',
           'CROS_HANA_RELEASE_DEV',
-          'CROS_HANA_RELEASE_BETA',
-          'CROS_HANA_RELEASE_STABLE',
           'CROS_JACUZZI_RELEASE_LKGM',
           'CROS_JACUZZI_RELEASE_DEV',
-          'CROS_JACUZZI_RELEASE_BETA',
-          'CROS_JACUZZI_RELEASE_STABLE',
         ]
       },
     },
@@ -7533,12 +7497,8 @@
         'variants': [
           'CROS_ATLAS_RELEASE_LKGM',
           'CROS_ATLAS_RELEASE_DEV',
-          'CROS_ATLAS_RELEASE_BETA',
-          'CROS_ATLAS_RELEASE_STABLE',
           'CROS_EVE_RELEASE_LKGM',
           'CROS_EVE_RELEASE_DEV',
-          'CROS_EVE_RELEASE_BETA',
-          'CROS_EVE_RELEASE_STABLE',
         ]
       },
     },
@@ -7639,6 +7599,95 @@
       'test_buildbucket_api_gpu_use_cases': {
         'variants': [
           'LINUX_NVIDIA_GTX_1660_STABLE',
+        ],
+      },
+    },
+
+    'mac_optional_gpu_tests_rel_gpu_telemetry_tests': {
+      'gpu_common_and_optional_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+      'gpu_mediapipe_passthrough_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+      'gpu_mediapipe_validating_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+      'gpu_passthrough_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+      'gpu_webcodecs_telemetry_test': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl2_conformance_gl_passthrough_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl2_conformance_validating_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_metal_passthrough_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+      'gpu_webgl_conformance_swangle_passthrough_representative_telemetry_tests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+        ],
+      },
+    },
+
+    'mac_optional_gpu_tests_rel_gtests': {
+      'gpu_fyi_and_optional_non_linux_gtests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+      'gpu_fyi_mac_specific_gtests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
+        ],
+      },
+      'gpu_gles2_conform_gtests': {
+        'variants': [
+          'MAC_MINI_INTEL_GPU_STABLE',
+          'MAC_RETINA_AMD_GPU_STABLE',
+          'MAC_RETINA_NVIDIA_GPU_STABLE',
         ],
       },
     },

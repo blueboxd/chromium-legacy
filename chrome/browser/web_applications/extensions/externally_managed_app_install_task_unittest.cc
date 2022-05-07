@@ -62,7 +62,7 @@ namespace {
 
 // Returns a factory that will return |data_retriever| the first time it gets
 // called. It will DCHECK if called more than once.
-WebAppInstallManager::DataRetrieverFactory GetFactoryForRetriever(
+ExternallyManagedAppInstallTask::DataRetrieverFactory GetFactoryForRetriever(
     std::unique_ptr<WebAppDataRetriever> data_retriever) {
   // Ideally we would return this lambda directly but passing a mutable lambda
   // to BindLambdaForTesting results in a OnceCallback which cannot be used as
@@ -181,9 +181,8 @@ class TestExternallyManagedAppInstallFinalizer : public WebAppInstallFinalizer {
             }));
   }
 
-  void UninstallWithoutRegistryUpdateFromSync(
-      const std::vector<AppId>& web_apps,
-      RepeatingUninstallCallback callback) override {
+  void UninstallFromSync(const std::vector<AppId>& web_apps,
+                         RepeatingUninstallCallback callback) override {
     NOTREACHED();
   }
 
@@ -320,7 +319,7 @@ class ExternallyManagedAppInstallTaskTest
     auto ui_manager = std::make_unique<FakeWebAppUiManager>();
     ui_manager_ = ui_manager.get();
 
-    auto command_manager = std::make_unique<WebAppCommandManager>();
+    auto command_manager = std::make_unique<WebAppCommandManager>(profile());
 
     auto sync_bridge = std::make_unique<WebAppSyncBridge>(registrar.get());
     sync_bridge->SetSubsystems(&provider->GetDatabaseFactory(),
@@ -362,18 +361,18 @@ class ExternallyManagedAppInstallTaskTest
   }
 
   std::unique_ptr<ExternallyManagedAppInstallTask>
-  GetInstallationTaskWithTestMocks(ExternalInstallOptions options) {
+  GetInstallationTaskWithTestMocks(ExternalInstallOptions options,
+                                   bool mock_empty_web_app_info = false) {
     auto data_retriever = std::make_unique<FakeDataRetriever>();
     data_retriever_ = data_retriever.get();
 
-    install_manager_->SetDataRetrieverFactoryForTesting(
-        GetFactoryForRetriever(std::move(data_retriever)));
     auto manifest = blink::mojom::Manifest::New();
     manifest->start_url = options.install_url;
     manifest->name = u"Manifest Name";
 
-    data_retriever_->SetRendererWebAppInstallInfo(
-        std::make_unique<WebAppInstallInfo>());
+    if (!mock_empty_web_app_info)
+      data_retriever_->SetRendererWebAppInstallInfo(
+          std::make_unique<WebAppInstallInfo>());
 
     data_retriever_->SetManifest(std::move(manifest),
                                  /*is_installable=*/true);
@@ -386,6 +385,8 @@ class ExternallyManagedAppInstallTaskTest
     auto task = std::make_unique<ExternallyManagedAppInstallTask>(
         profile(), url_loader_.get(), registrar_, ui_manager_,
         install_finalizer_, install_manager_, std::move(options));
+    task->SetDataRetrieverFactoryForTesting(
+        GetFactoryForRetriever(std::move(data_retriever)));
     return task;
   }
 
@@ -454,8 +455,8 @@ TEST_F(ExternallyManagedAppInstallTaskTest, InstallFails) {
   const GURL kWebAppUrl("https://foo.example");
   auto task = GetInstallationTaskWithTestMocks(
       {kWebAppUrl, web_app::UserDisplayMode::kStandalone,
-       ExternalInstallSource::kInternalDefault});
-  data_retriever()->SetRendererWebAppInstallInfo(nullptr);
+       ExternalInstallSource::kInternalDefault},
+      /*mock_empty_web_app_info=*/true);
   url_loader().SetPrepareForLoadResultLoaded();
   url_loader().SetNextLoadUrlResult(kWebAppUrl,
                                     WebAppUrlLoader::Result::kUrlLoaded);

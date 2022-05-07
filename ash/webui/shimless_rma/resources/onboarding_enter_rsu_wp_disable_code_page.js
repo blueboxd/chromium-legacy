@@ -197,6 +197,7 @@ export class OnboardingEnterRsuWpDisableCodePage extends
     // Set to false whenever the user changes the code to remove the red invalid
     // warning.
     this.rsuCodeInvalid_ = false;
+    this.rsuCode_ = this.rsuCode_.toUpperCase();
   }
 
   /**
@@ -263,6 +264,15 @@ export class OnboardingEnterRsuWpDisableCodePage extends
     if (this.errorCode === RmadErrorCode.kWriteProtectDisableRsuCodeInvalid) {
       this.rsuCodeInvalid_ = true;
     }
+  }
+
+  /**
+   * @return {string}
+   * @protected
+   */
+  getRsuCodeLabelText_() {
+    return this.rsuCodeInvalid_ ? this.i18n('rsuCodeErrorLabelText') :
+                                  this.i18n('rsuCodeLabelText');
   }
 }
 

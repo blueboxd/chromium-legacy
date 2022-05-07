@@ -39,9 +39,9 @@
 #include "components/services/storage/indexed_db/scopes/leveldb_scopes_factory.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_factory.h"
+#include "components/services/storage/privileged/mojom/indexed_db_control.mojom.h"
 #include "components/services/storage/public/cpp/filesystem/filesystem_proxy.h"
 #include "components/services/storage/public/mojom/blob_storage_context.mojom.h"
-#include "components/services/storage/public/mojom/indexed_db_control.mojom.h"
 #include "content/browser/indexed_db/indexed_db_bucket_state.h"
 #include "content/browser/indexed_db/indexed_db_bucket_state_handle.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
@@ -437,7 +437,7 @@ void IndexedDBFactoryImpl::HandleBackingStoreCorruption(
   // of a backing store which this function will be deleting.
   storage::BucketLocator saved_bucket_locator(bucket_locator);
   DCHECK(context_);
-  base::FilePath path_base = context_->data_path();
+  base::FilePath path_base = context_->GetDataPath(saved_bucket_locator);
 
   // The message may contain the database path, which may be considered
   // sensitive data, and those strings are passed to the extension, so strip it.

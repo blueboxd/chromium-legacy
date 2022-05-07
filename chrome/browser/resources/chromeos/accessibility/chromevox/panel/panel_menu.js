@@ -5,7 +5,6 @@
 /**
  * @fileoverview A drop-down menu in the ChromeVox panel.
  */
-import {PanelNodeMenuBackground} from '/chromevox/background/panel/panel_node_menu_background.js';
 import {PanelMenuItem} from '/chromevox/panel/panel_menu_item.js';
 
 export class PanelMenu {
@@ -311,26 +310,6 @@ export class PanelMenu {
 
 
 export class PanelNodeMenu extends PanelMenu {
-  /**
-   * @param {string} menuMsg The msg id of the menu.
-   * @param {chrome.automation.AutomationNode} node ChromeVox's current
-   *     position.
-   * @param {AutomationPredicate.Unary} pred Filter to use on the document.
-   * @param {boolean} async If true, populates the menu asynchronously by
-   *     posting a task after searching each chunk of nodes.
-   */
-  constructor(menuMsg, node, pred, async) {
-    super(menuMsg);
-    // These callbacks are temporary as we transition to using message passing
-    // to communicate across renderer boundaries.
-    const addItem = () => this.addMenuItem.apply(this, arguments);
-    const setActiveIndex = () => this.activeIndex_ = this.items_.length - 1;
-    /** @private {!PanelNodeMenuBackground} */
-    this.background_ =
-        new PanelNodeMenuBackground(node, pred, async, addItem, setActiveIndex);
-    this.background_.populate();
-  }
-
   /** @override */
   activate(activateFirstItem) {
     super.activate(false);
@@ -339,6 +318,14 @@ export class PanelNodeMenu extends PanelMenu {
       // |findMoreNodes|. We want to start the menu there.
       const index = this.activeIndex_ === -1 ? 0 : this.activeIndex_;
       this.activateItem(index);
+    }
+  }
+
+  /** @param {!PanelNodeMenuItemData} data */
+  addItemFromData(data) {
+    this.addMenuItem(data.title, '', '', '', data.callback);
+    if (data.isActive) {
+      this.activeIndex_ = this.items_.length - 1;
     }
   }
 }

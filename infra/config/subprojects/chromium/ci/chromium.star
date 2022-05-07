@@ -40,6 +40,28 @@ consoles.console_view(
 
 ci.builder(
     name = "android-archive-dbg",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_platform = builder_config.target_platform.ANDROID,
+            target_arch = builder_config.target_arch.ARM,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder",
+        ),
+    ),
     # Bump to 32 if needed.
     console_view_entry = consoles.console_view_entry(
         category = "android",
@@ -56,6 +78,28 @@ ci.builder(
 
 ci.builder(
     name = "android-archive-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_platform = builder_config.target_platform.ANDROID,
+            target_arch = builder_config.target_arch.ARM,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder",
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "android",
         short_name = "rel",
@@ -171,6 +215,23 @@ ci.builder(
 
 ci.builder(
     name = "linux-archive-dbg",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "linux",
         short_name = "dbg",
@@ -186,6 +247,23 @@ ci.builder(
 
 ci.builder(
     name = "linux-archive-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "linux",
         short_name = "rel",
@@ -440,6 +518,20 @@ ci.builder(
 
 ci.builder(
     name = "win-archive-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "clobber",
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "win|rel",
         short_name = "64",

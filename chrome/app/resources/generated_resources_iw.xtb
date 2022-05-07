@@ -1970,6 +1970,7 @@
 <translation id="2832124733806557606">לילד או לילדה שלך יש אפשרות להשתמש בקוד אימות כדי להיכנס למכשיר הזה או לבטל את הנעילה שלו.</translation>
 <translation id="2835177225987815960">הגדרת הסריקה הנוכחית שלך תאופס, לרבות העדפות למהירות הסריקה האוטומטית ומתגים שהוקצו.</translation>
 <translation id="2835547721736623118">שירות של זיהוי דיבור</translation>
+<translation id="2836232638504556905">כדי להמשיך, הפרטים הבאים ישותפו על ידי <ph name="IDENTITY_PROVIDER_ETLD_PLUS_ONE" /> עם האתר הזה: השם, האימייל, הכתובת ותמונת הפרופיל שלך. <ph name="BEGIN_LINK" />כאן מפורטת מדיניות הפרטיות<ph name="END_LINK" /> של האתר הזה.</translation>
 <translation id="2836269494620652131">קריסה</translation>
 <translation id="2836635946302913370">הכניסה עם שם משתמש זה הושבתה על ידי מנהל המערכת.</translation>
 <translation id="283669119850230892">כדי להשתמש ב-<ph name="NETWORK_ID" /> של הרשת, יש להשלים קודם את ההתחברות לאינטרנט, למטה.</translation>
@@ -2251,6 +2252,7 @@
 <translation id="3105796011181310544">‏להחזיר אל Google?</translation>
 <translation id="310671807099593501">‏האתר משתמש ב-Bluetooth</translation>
 <translation id="3108931485517391283">לא ניתן לקבל את הקובץ</translation>
+<translation id="3109206895301430738">קבוצות כרטיסיות שמורות</translation>
 <translation id="3109724472072898302">מכווץ</translation>
 <translation id="311214366526552035">להוריד בכל זאת</translation>
 <translation id="3112292765614504292">גודל האפליקציה: <ph name="APP_SIZE" /></translation>
@@ -4095,7 +4097,6 @@
 <translation id="4953808748584563296">דמות ברירת מחדל כתומה</translation>
 <translation id="4955710816792587366">בחירת קוד</translation>
 <translation id="4959262764292427323">‏סיסמאות נשמרות בחשבון Google כדי לאפשר לך להשתמש בהן בכל המכשירים</translation>
-<translation id="496027654926814138">הקובץ <ph name="FILE_NAME" /> עלול לאפשר לתוקפים לגנוב את המידע האישי שלך.</translation>
 <translation id="4960294539892203357"><ph name="WINDOW_TITLE" /> - <ph name="PROFILE_NAME" /></translation>
 <translation id="4961318399572185831">העברת מסך</translation>
 <translation id="4961361269522589229">מתכונים</translation>
@@ -5643,6 +5644,7 @@
 <translation id="6520876759015997832">‏תוצאת חיפוש <ph name="LIST_POSITION" /> מתוך <ph name="LIST_SIZE" />:‏ <ph name="SEARCH_RESULT_TEXT" />. כדי לעבור לקטע הזה, יש להקיש על Enter.</translation>
 <translation id="6521214596282732365">לרוב, אתרים משתמשים בגופנים שלך, כך שניתן ליצור תוכן באיכות גבוהה באמצעות כלי עיצוב וגרפיקה שזמינים אונליין</translation>
 <translation id="6523303810310758032">כשמוחקים את היסטוריית הגלישה, במלואה או של אתר מסוים, נמחקים גם הפרטים המשויכים אליה. כדאי לעיין ב<ph name="BEGIN_LINK" />היסטוריית הגלישה<ph name="END_LINK" /></translation>
+<translation id="6523574494641144162">‏למנהל הסיסמאות של Google לא הייתה אפשרות לשמור את הסיסמאות האלה בחשבון Google שלך. אפשר לשמור אותן במכשיר הזה.</translation>
 <translation id="6524735478670290456">איך אנחנו משתמשים בנתונים האלה:</translation>
 <translation id="652492607360843641">התחברת אל רשת <ph name="NETWORK_TYPE" />.</translation>
 <translation id="6527303717912515753">שיתוף</translation>
@@ -5922,7 +5924,6 @@
 <translation id="6798578729981748444">‏סגירת כל החלונות של Firefox תשלים את פעולת הייבוא.</translation>
 <translation id="6798780071646309401">‏caps lock מופעל</translation>
 <translation id="6798954102094737107">פלאגין: <ph name="PLUGIN_NAME" /></translation>
-<translation id="6800746963123086495">הקובץ הזה עלול לאפשר לתוקפים לגנוב את המידע האישי שלך</translation>
 <translation id="6801129617625983991">הגדרות כלליות</translation>
 <translation id="6801435275744557998">כיול מסך המגע</translation>
 <translation id="6802031077390104172"><ph name="USAGE" /> (<ph name="OID" />)</translation>
@@ -5952,6 +5953,7 @@
 <translation id="6818198425579322765">שפת הדף שיש לתרגם</translation>
 <translation id="6818547713623251698">הצגת התמונות, המדיה, ההתראות והאפליקציות שבטלפון</translation>
 <translation id="6818802132960437751">הגנה מובנית מפני וירוסים</translation>
+<translation id="6818920801736417483">לשמור את הסיסמאות?</translation>
 <translation id="6823174134746916417">שימוש בנגיעה קלה בלוח המגע</translation>
 <translation id="6824564591481349393">העתקת כתובת &amp;אימייל</translation>
 <translation id="6824584962142919697">&amp;בדיקת רכיבים</translation>
@@ -6393,7 +6395,6 @@
 <translation id="7269736181983384521">שימוש בחבילת הגלישה לשיתוף בקרבת מקום</translation>
 <translation id="7272674038937250585">לא סופק תיאור</translation>
 <translation id="7273110280511444812">בוצע חיבור לאחרונה ב-<ph name="DATE" /></translation>
-<translation id="7273970016743909808">‏השימוש בשדרוג של הקיוסק והשילוט מאפשר למכשיר לפעול רק במצב קיוסק או שילוט. אם רוצים לאפשר למשתמשים להיכנס לחשבון במכשיר, צריך לחזור אחורה ולבצע רישום באמצעות שדרוג ל-Chrome Enterprise.</translation>
 <translation id="727441411541283857"><ph name="PERCENTAGE" />% - ‏<ph name="TIME" /> עד טעינה מלאה</translation>
 <translation id="727952162645687754">שגיאה בהורדה</translation>
 <translation id="7280041992884344566">‏אירעה שגיאה בזמן ש-Chrome חיפש תוכנות מזיקות</translation>
@@ -6796,7 +6797,6 @@
 <translation id="7670434942695515800">‏לקבלת הביצועים המיטביים כדאי לשדרג לגרסה האחרונה. מומלץ לגבות את הקבצים למקרה שלא תהיה אפשרות להשלים את השדרוג. אחרי שהשדרוג יתחיל, יתבצע כיבוי של Linux. חשוב לשמור את הקבצים הפתוחים לפני שממשיכים. <ph name="LINK_START" />למידע נוסף<ph name="LINK_END" /></translation>
 <translation id="7671130400130574146">שימוש בגבולות ובשורת הכותרת של המערכת</translation>
 <translation id="767127784612208024">נגיעה לצורך אישור האתחול</translation>
-<translation id="767147716926917172">‏שליחה אוטומטית של נתוני אבחון ושימוש אל Google</translation>
 <translation id="7672520070349703697"><ph name="HUNG_IFRAME_URL" />, ב-<ph name="PAGE_TITLE" />.</translation>
 <translation id="7674416868315480713">‏השבתה של כל היציאות שמוגדרת לגביהן העברה ב-Linux</translation>
 <translation id="7674537509496907005"><ph name="APP_COUNT" /> אפליקציות</translation>

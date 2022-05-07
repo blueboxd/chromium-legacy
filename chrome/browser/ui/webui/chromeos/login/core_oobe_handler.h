@@ -11,7 +11,6 @@
 
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/callback.h"
-#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/ash/login/help_app_launcher.h"
 #include "chrome/browser/ash/login/oobe_configuration.h"
@@ -39,6 +38,7 @@ class CoreOobeView {
   virtual void ReloadContent(base::Value::Dict dictionary) = 0;
   virtual void FocusReturned(bool reverse) = 0;
   virtual void UpdateClientAreaSize(const gfx::Size& size) = 0;
+  virtual void ToggleSystemInfo() = 0;
 };
 
 // The core handler for Javascript messages related to the "oobe" view.
@@ -50,7 +50,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
                         public OobeConfiguration::Observer,
                         public ChromeKeyboardControllerClient::Observer {
  public:
-  CoreOobeHandler();
+  explicit CoreOobeHandler(const std::string& display_type);
 
   CoreOobeHandler(const CoreOobeHandler&) = delete;
   CoreOobeHandler& operator=(const CoreOobeHandler&) = delete;
@@ -60,7 +60,6 @@ class CoreOobeHandler : public BaseWebUIHandler,
   // BaseScreenHandler implementation:
   void DeclareLocalizedValues(
       ::login::LocalizedValuesBuilder* builder) override;
-  void InitializeDeprecated() override;
 
   // BaseScreenHandler implementation:
   void GetAdditionalParameters(base::Value::Dict* dict) override;
@@ -96,6 +95,7 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void FocusReturned(bool reverse) override;
   // Updates client area size based on the primary screen size.
   void UpdateClientAreaSize(const gfx::Size& size) override;
+  void ToggleSystemInfo() override;
 
   // ash::TabletModeObserver:
   void OnTabletModeStarted() override;
@@ -113,38 +113,23 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void HandleUpdateCurrentScreen(const std::string& screen);
   void HandleSkipToLoginForTesting();
   void HandleLaunchHelpApp(int help_topic_id);
-  void HandleToggleResetScreen();
   // Handles demo mode setup for tests. Accepts 'online' and 'offline' as
   // `demo_config`.
   void HandleStartDemoModeSetupForTesting(const std::string& demo_config);
   void HandleUpdateOobeUIState(int state);
 
-  // Shows the reset screen if `is_reset_allowed` and updates the
-  // tpm_firmware_update in settings.
-  void HandleToggleResetScreenCallback(
-      bool is_reset_allowed,
-      absl::optional<tpm_firmware_update::Mode> tpm_firmware_update_mode);
-
   // When keyboard_utils.js arrow key down event is reached, raise it
   // to tab/shift-tab event.
   void HandleRaiseTabKeyEvent(bool reverse);
 
-  // Calls javascript to sync OOBE UI visibility with show_oobe_ui_.
-  void UpdateOobeUIVisibility();
-
   // Updates label with specified id with specified text.
   void UpdateLabel(const std::string& id, const std::string& text);
-
-  // True if we should show OOBE instead of login.
-  bool show_oobe_ui_ = false;
 
   // Updates when version info is changed.
   VersionInfoUpdater version_info_updater_{this};
 
   // Help application used for help dialogs.
   scoped_refptr<HelpAppLauncher> help_app_;
-
-  base::WeakPtrFactory<CoreOobeHandler> weak_ptr_factory_{this};
 };
 
 }  // namespace chromeos

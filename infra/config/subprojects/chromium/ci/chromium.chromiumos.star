@@ -554,6 +554,9 @@ ci.builder(
             ],
         },
     },
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.builder(
@@ -666,6 +669,24 @@ ci.thin_tester(
 ci.builder(
     name = "linux-lacros-dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "chromeos",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_arch = builder_config.target_arch.INTEL,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-chromiumos-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "debug",
         short_name = "lcr",
@@ -673,6 +694,9 @@ ci.builder(
     cq_mirrors_console_view = "mirrors",
     main_console_view = "main",
     os = os.LINUX_BIONIC_REMOVE,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 # For Chromebox for meetings(CfM)

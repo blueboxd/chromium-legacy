@@ -915,7 +915,7 @@ export class FileManager extends EventTarget {
    * @return {!Promise<void>}
    */
   async initializeUI(dialogDom) {
-    console.warn('Files app starting up');
+    console.warn(`Files app starting up: ${this.dialogType}`);
     this.dialogDom_ = dialogDom;
     this.document_ = this.dialogDom_.ownerDocument;
 
@@ -1267,8 +1267,9 @@ export class FileManager extends EventTarget {
 
     // Create search controller.
     this.searchController_ = new SearchController(
-        this.ui_.searchBox, assert(this.ui_.locationLine), this.directoryModel_,
-        this.volumeManager_, assert(this.taskController_), assert(this.ui_));
+        this.ui_.searchBox, assert(this.ui_.breadcrumbController),
+        this.directoryModel_, this.volumeManager_, assert(this.taskController_),
+        assert(this.ui_));
 
     // Create directory tree naming controller.
     this.directoryTreeNamingController_ = new DirectoryTreeNamingController(

@@ -127,7 +127,6 @@ void NavigationManagerImpl::OnNavigationItemCommitted() {
       FinalizeSessionRestore();
     }
   }
-  committed_after_restore_ = true;
 }
 
 void NavigationManagerImpl::OnNavigationStarted(const GURL& url) {
@@ -250,8 +249,6 @@ void NavigationManagerImpl::AddPendingItem(
       current_item_url == net::GURLWithNSURL(proxy.URL);
 
   bool is_form_post =
-      base::FeatureList::IsEnabled(
-          web::features::kCreatePendingItemForPostFormSubmission) &&
       is_post_navigation &&
       (navigation_type & ui::PageTransition::PAGE_TRANSITION_FORM_SUBMIT);
   if (proxy.backForwardList.currentItem && isCurrentURLSameAsPending &&
@@ -268,13 +265,10 @@ void NavigationManagerImpl::AddPendingItem(
       current_item = pending_item_.get();
       SetNavigationItemInWKItem(current_wk_item, std::move(pending_item_));
     }
-    if (base::FeatureList::IsEnabled(
-            web::features::kCreatePendingItemForPostFormSubmission)) {
-      // Updating the transition type of the item is needed, for example when
-      // doing a FormSubmit with a GET method on the same URL. See
-      // crbug.com/1211879.
-      current_item->SetTransitionType(transition);
-    }
+    // Updating the transition type of the item is needed, for example when
+    // doing a FormSubmit with a GET method on the same URL. See
+    // crbug.com/1211879.
+    current_item->SetTransitionType(transition);
 
     pending_item_.reset();
   }
@@ -936,16 +930,11 @@ void NavigationManagerImpl::Restore(
   DCHECK_EQ(0, GetItemCount());
   DCHECK_EQ(-1, pending_item_index_);
   last_committed_item_index_ = -1;
-  committed_after_restore_ = false;
   UnsafeRestore(last_committed_item_index, std::move(items));
 }
 
 bool NavigationManagerImpl::IsRestoreSessionInProgress() const {
   return is_restore_session_in_progress_;
-}
-
-bool NavigationManagerImpl::IsCommittedAfterRestore() const {
-  return committed_after_restore_;
 }
 
 void NavigationManagerImpl::AddRestoreCompletionCallback(

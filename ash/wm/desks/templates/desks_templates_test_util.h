@@ -8,9 +8,9 @@
 #include <vector>
 
 #include "ash/public/cpp/desk_template.h"
-#include "ash/wm/desks/templates/desks_templates_grid_view.h"
-#include "ash/wm/desks/templates/desks_templates_icon_container.h"
-#include "ash/wm/desks/templates/desks_templates_icon_view.h"
+#include "ash/wm/desks/templates/saved_desk_grid_view.h"
+#include "ash/wm/desks/templates/saved_desk_icon_container.h"
+#include "ash/wm/desks/templates/saved_desk_icon_view.h"
 #include "ash/wm/desks/templates/saved_desk_item_view.h"
 #include "ash/wm/desks/templates/saved_desk_name_view.h"
 #include "base/callback_helpers.h"
@@ -23,10 +23,12 @@ class Label;
 
 namespace ash {
 
-class DesksTemplatesPresenter;
-class RoundedImageView;
-class PillButton;
 class CloseButton;
+class DesksTemplatesPresenter;
+class OverviewGrid;
+class PillButton;
+class RoundedImageView;
+class SavedDeskLibraryView;
 
 // Wrapper for `DesksTemplatesPresenter` that exposes internal state to test
 // functions.
@@ -45,20 +47,34 @@ class DesksTemplatesPresenterTestApi {
   DesksTemplatesPresenter* const presenter_;
 };
 
-// Wrapper for `DesksTemplatesGridView` that exposes internal state to test
+// Wrapper for `SavedDeskLibraryView` that exposes internal state to test
 // functions.
-class DesksTemplatesGridViewTestApi {
+class SavedDeskLibraryViewTestApi {
  public:
-  explicit DesksTemplatesGridViewTestApi(DesksTemplatesGridView* grid_view);
-  DesksTemplatesGridViewTestApi(DesksTemplatesGridViewTestApi&) = delete;
-  DesksTemplatesGridViewTestApi& operator=(DesksTemplatesGridViewTestApi&) =
-      delete;
-  ~DesksTemplatesGridViewTestApi();
+  explicit SavedDeskLibraryViewTestApi(SavedDeskLibraryView* library_view);
+  SavedDeskLibraryViewTestApi(SavedDeskLibraryViewTestApi&) = delete;
+  SavedDeskLibraryViewTestApi& operator=(SavedDeskLibraryViewTestApi&) = delete;
+  ~SavedDeskLibraryViewTestApi() = default;
+
+  void WaitForAnimationDone();
+
+ private:
+  SavedDeskLibraryView* library_view_;
+};
+
+// Wrapper for `SavedDeskGridView` that exposes internal state to test
+// functions.
+class SavedDeskGridViewTestApi {
+ public:
+  explicit SavedDeskGridViewTestApi(SavedDeskGridView* grid_view);
+  SavedDeskGridViewTestApi(SavedDeskGridViewTestApi&) = delete;
+  SavedDeskGridViewTestApi& operator=(SavedDeskGridViewTestApi&) = delete;
+  ~SavedDeskGridViewTestApi();
 
   void WaitForItemMoveAnimationDone();
 
  private:
-  DesksTemplatesGridView* grid_view_;
+  SavedDeskGridView* grid_view_;
 };
 
 // Wrapper for `SavedDeskItemView` that exposes internal state to test
@@ -85,23 +101,22 @@ class SavedDeskItemViewTestApi {
   }
 
   // Icons views are stored in the view hierarchy so this convenience function
-  // returns them as a vector of DesksTemplatesIconView*.
-  std::vector<DesksTemplatesIconView*> GetIconViews() const;
+  // returns them as a vector of SavedDeskIconView*.
+  std::vector<SavedDeskIconView*> GetIconViews() const;
 
  private:
   const SavedDeskItemView* item_view_;
 };
 
-// Wrapper for `DesksTemplatesIconView` that exposes internal state to test
+// Wrapper for `SavedDeskIconView` that exposes internal state to test
 // functions.
-class DesksTemplatesIconViewTestApi {
+class SavedDeskIconViewTestApi {
  public:
-  explicit DesksTemplatesIconViewTestApi(
-      const DesksTemplatesIconView* desks_templates_icon_view);
-  DesksTemplatesIconViewTestApi(const DesksTemplatesIconViewTestApi&) = delete;
-  DesksTemplatesIconViewTestApi& operator=(
-      const DesksTemplatesIconViewTestApi&) = delete;
-  ~DesksTemplatesIconViewTestApi();
+  explicit SavedDeskIconViewTestApi(
+      const SavedDeskIconView* desks_templates_icon_view);
+  SavedDeskIconViewTestApi(const SavedDeskIconViewTestApi&) = delete;
+  SavedDeskIconViewTestApi& operator=(const SavedDeskIconViewTestApi&) = delete;
+  ~SavedDeskIconViewTestApi();
 
   const views::Label* count_label() const {
     return desks_templates_icon_view_->count_label_;
@@ -111,16 +126,25 @@ class DesksTemplatesIconViewTestApi {
     return desks_templates_icon_view_->icon_view_;
   }
 
-  const DesksTemplatesIconView* desks_templates_icon_view() const {
+  const SavedDeskIconView* desks_templates_icon_view() const {
     return desks_templates_icon_view_;
   }
 
  private:
-  const DesksTemplatesIconView* desks_templates_icon_view_;
+  const SavedDeskIconView* desks_templates_icon_view_;
 };
 
+// Returns all saved desk item views from the desk library on the given
+// `overview_grid`.
+std::vector<SavedDeskItemView*> GetItemViewsFromDeskLibrary(
+    const OverviewGrid* overview_grid);
+
+// Returns all saved desk item views from the given `saved_desk_library_view`.
+std::vector<SavedDeskItemView*> GetItemViewsFromDeskLibrary(
+    SavedDeskLibraryView* saved_desk_library_view);
+
 // Return the `grid_item_index`th `SavedDeskItemView` from the first
-// `OverviewGrid`'s `DesksTemplatesGridView` in `GetOverviewGridList()`.
+// `OverviewGrid`'s `SavedDeskGridView` in `GetOverviewGridList()`.
 SavedDeskItemView* GetItemViewFromTemplatesGrid(int grid_item_index);
 
 // These buttons are the ones on the primary root window.
@@ -129,7 +153,7 @@ views::Button* GetExpandedStateDesksTemplatesButton();
 views::Button* GetSaveDeskAsTemplateButton();
 views::Button* GetTemplateItemButton(int index);
 views::Button* GetTemplateItemDeleteButton(int index);
-views::Button* GetDesksTemplatesDialogAcceptButton();
+views::Button* GetSavedDeskDialogAcceptButton();
 
 // A lot of the UI relies on calling into the local desk data manager to
 // update, which sends callbacks via posting tasks. Call

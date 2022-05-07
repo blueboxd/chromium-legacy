@@ -114,7 +114,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &features::kNetworkServiceInProcess,
     &features::kPredictivePrefetchingAllowedOnAllConnectionTypes,
     &shared_highlighting::kPreemptiveLinkToTextGeneration,
-    &shared_highlighting::kSharedHighlightingV2,
     &shared_highlighting::kSharedHighlightingAmp,
     &features::kElasticOverscroll,
     &features::kElidePrioritizationOfPreNativeBootstrapTasks,
@@ -576,7 +575,7 @@ const base::Feature kContextualSearchMlTapSuppression{
     "ContextualSearchMlTapSuppression", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature KContextualSearchNewSettings{
-    "ContextualSearchNewSettings", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ContextualSearchNewSettings", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchTapDisableOverride{
     "ContextualSearchTapDisableOverride", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -586,7 +585,7 @@ const base::Feature kContextualSearchThinWebViewImplementation{
     base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kContextualSearchTranslations{
-    "ContextualSearchTranslations", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ContextualSearchTranslations", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kContextualTriggersSelectionHandles{
     "ContextualTriggersSelectionHandles", base::FEATURE_DISABLED_BY_DEFAULT};

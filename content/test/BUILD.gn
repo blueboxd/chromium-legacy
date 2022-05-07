@@ -249,6 +249,8 @@ static_library("test_support") {
     "../public/test/test_browser_context.h",
     "../public/test/test_content_client_initializer.cc",
     "../public/test/test_content_client_initializer.h",
+    "../public/test/test_devtools_protocol_client.cc",
+    "../public/test/test_devtools_protocol_client.h",
     "../public/test/test_download_http_response.cc",
     "../public/test/test_download_http_response.h",
     "../public/test/test_file_error_injector.cc",
@@ -1978,6 +1980,7 @@ test("content_unittests") {
     "../browser/aggregation_service/aggregation_service_storage_sql_unittest.cc",
     "../browser/aggregation_service/public_key_parsing_utils_unittest.cc",
     "../browser/attribution_reporting/aggregatable_attribution_utils_unittest.cc",
+    "../browser/attribution_reporting/attribution_aggregatable_report_golden_unittest.cc",
     "../browser/attribution_reporting/attribution_cookie_checker_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_data_host_manager_impl_unittest.cc",
     "../browser/attribution_reporting/attribution_filter_data_unittest.cc",
@@ -2452,14 +2455,17 @@ test("content_unittests") {
       "../browser/accessibility/browser_accessibility_fuchsia_unittest.cc",
       "../browser/accessibility/browser_accessibility_manager_fuchsia_unittest.cc",
     ]
-    use_cfv2 = false
+
+    use_cfv1 = false
+
+    # TODO(https://crbug.com/1185811): Investigate removing the requirement for
+    # job_policy_ambient_mark_vmo_exec for the sake of V8's allocator in tests.
+    test_runner_shard = "//build/config/fuchsia/test/elf_test_ambient_exec_runner.shard.test-cml"
+
     additional_manifest_fragments = [
-      "//build/config/fuchsia/test/font_capabilities.test-cmx",
-
-      # TODO(crbug.com/1185811): Figure out why jit_capabilities is needed.
-      "//build/config/fuchsia/test/jit_capabilities.test-cmx",
-
-      "//build/config/fuchsia/test/network_capabilities.test-cmx",
+      "//build/config/fuchsia/test/fonts.shard.test-cml",
+      "//build/config/fuchsia/test/network.shard.test-cml",
+      "//third_party/fuchsia-sdk/sdk/pkg/vulkan/client.shard.cml",
     ]
   }
 

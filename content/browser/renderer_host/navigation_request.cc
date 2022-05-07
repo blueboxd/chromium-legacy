@@ -72,6 +72,7 @@
 #include "content/browser/scoped_active_url.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_main_resource_handle.h"
+#include "content/browser/shared_storage/shared_storage_originated_document_data.h"
 #include "content/browser/site_info.h"
 #include "content/browser/site_instance_impl.h"
 #include "content/browser/storage_partition_impl.h"
@@ -1971,6 +1972,10 @@ void NavigationRequest::OnFencedFrameURLMappingComplete(
   is_deferred_on_fenced_frame_url_mapping_ = false;
 
   if (mapped_url) {
+    shared_storage_budget_metadata_ =
+        GetFencedFrameURLMap().GetSharedStorageBudgetMetadata(
+            common_params_->url);
+
     common_params_->url = mapped_url.value();
     commit_params_->original_url = mapped_url.value();
     ad_auction_data_ = std::move(ad_auction_data);
@@ -3164,6 +3169,15 @@ UrlInfo NavigationRequest::GetUrlInfo() {
       .WithWebExposedIsolationInfo(web_exposed_isolation_info)
       .WithIsPdf(is_pdf_)
       .WithSandbox(is_origin_restricted_sandbox);
+
+  // Navigations within guests should always stay in the guest's
+  // StoragePartition.
+  SiteInstanceImpl* current_instance =
+      frame_tree_node_->current_frame_host()->GetSiteInstance();
+  if (current_instance->IsGuest()) {
+    url_info_init.WithStoragePartitionConfig(
+        current_instance->GetStoragePartitionConfig());
+  }
 
   if (GetWebBundleURL().is_valid()) {
     // Web Bundle navigations should use the origin of the bundle rather than
@@ -5862,6 +5876,11 @@ void NavigationRequest::DidCommitNavigation(
   }
   previous_main_frame_url_ = previous_main_frame_url;
   navigation_type_ = navigation_type;
+
+  if (shared_storage_budget_metadata_ && !DidEncounterError()) {
+    SharedStorageOriginatedDocumentData::CreateForCurrentDocument(
+        render_frame_host_, shared_storage_budget_metadata_);
+  }
 
   // It should be kept in sync with the check in
   // RenderFrameHostImpl::TakeNewDocumentPropertiesFromNavigation.

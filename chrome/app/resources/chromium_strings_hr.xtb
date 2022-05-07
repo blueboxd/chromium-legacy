@@ -92,7 +92,6 @@ Dopuštenja koja ste već dali web-lokacijama i aplikacijama mogu se primijeniti
 <translation id="3286538390144397061">Ponovo pokreni sad</translation>
 <translation id="328888136576916638">Nedostaju ključevi Google API-ja. Neke funkcije Chromiuma bit će onemogućene.</translation>
 <translation id="3296368748942286671">Nastavi izvršavati ​​pozadinske aplikacije po zatvaranju preglednika Chromium</translation>
-<translation id="3349211344363550267">Chromium preporučuje da ne preuzimate i ne otvarate tu datoteku</translation>
 <translation id="3350761136195634146">Već postoji profil u Chromiumu s tim računom</translation>
 <translation id="3387527074123400161">Chromium OS</translation>
 <translation id="3406848076815591792">Želite li prijeći na postojeći profil u Chromiumu?</translation>
@@ -176,6 +175,7 @@ Dopuštenja koja ste već dali web-lokacijama i aplikacijama mogu se primijeniti
 <translation id="5398878173008909840">Dostupna je nova verzija preglednika Chromium.</translation>
 <translation id="5427571867875391349">Postavite Chrome kao zadani preglednik</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
+<translation id="5473971139929175403">Chromium možda neće ispravno raditi jer više nije podržan na toj distribuciji Linuxa</translation>
 <translation id="5480860683791598150">Chromium treba dopuštenje za pristup vašoj lokaciji da bi je podijelio s ovom web-lokacijom</translation>
 <translation id="5487574057737591516">Da bismo zaštitili vašu privatnost, automatski brišemo vaše interese starije od četiri tjedna. Tijekom vašeg daljnjeg pregledavanja neki se interes može ponovo pojaviti na popisu. A ako Chromium pogriješi ili ne želite vidjeti određene oglase, možete ukloniti interes.</translation>
 <translation id="549669000822060376">Pričekajte da Chromium instalira najnovija ažuriranja sustava.</translation>

@@ -56,10 +56,6 @@ try_.orchestrator_builder(
     ),
 )
 
-try_.builder(
-    name = "android-12-x64-fyi-rel",
-)
-
 try_.compilator_builder(
     name = "android-12-x64-rel-compilator",
     # TODO(crbug.com/1225851): Enable it on branch after running on CQ
@@ -346,19 +342,11 @@ try_.builder(
 )
 
 try_.builder(
-    name = "android-10-x86-fyi-rel-tests",
-)
-
-try_.builder(
     name = "android-webview-10-x86-rel-tests",
     mirrors = [
         "ci/android-x86-rel",
         "ci/android-webview-10-x86-rel-tests",
     ],
-)
-
-try_.builder(
-    name = "android-11-x86-fyi-rel",
 )
 
 try_.builder(
@@ -379,6 +367,10 @@ try_.builder(
 
 try_.builder(
     name = "android-weblayer-pie-x86-rel-tests",
+    mirrors = [
+        "ci/android-weblayer-x86-rel",
+        "ci/android-weblayer-pie-x86-rel-tests",
+    ],
 )
 
 try_.builder(
@@ -439,6 +431,9 @@ try_.builder(
 
 try_.builder(
     name = "android_archive_rel_ng",
+    mirrors = [
+        "ci/android-archive-rel",
+    ],
 )
 
 try_.builder(
@@ -451,6 +446,14 @@ try_.builder(
         include_all_triggered_testers = True,
         is_compile_only = True,
     ),
+)
+
+try_.builder(
+    name = "android-arm64-all-targets-dbg",
+    goma_jobs = goma.jobs.J300,
+    mirrors = [
+        "ci/Android arm64 Builder All Targets (dbg)",
+    ],
 )
 
 try_.builder(

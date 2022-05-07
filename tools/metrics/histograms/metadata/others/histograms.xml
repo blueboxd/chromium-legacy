@@ -893,16 +893,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Aura.WebContentsWindowUnOccludedTime" units="ms"
-    expires_after="2021-11-14">
-  <owner>alemate@chromium.org</owner>
-  <owner>oshima@chromium.org</owner>
-  <summary>
-    The amount of time spent painting a WebContents frame when a window switches
-    from occluded to visible state.
-  </summary>
-</histogram>
-
 <histogram name="Autocomplete.Cleanup" units="entries" expires_after="M85">
   <owner>seblalancette@chromium.org</owner>
   <summary>
@@ -2677,8 +2667,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="ClientHints.FetchLatency" units="ms"
     expires_after="2022-10-16">
-  <owner>abeyad@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
+  <owner>potassium-katabolism@google.com</owner>
   <summary>
     The latency (in milliseconds) to fetch the client hints for a given origin
     from the Accept-CH cache.
@@ -2703,8 +2693,8 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="ClientHints.StoreLatency" units="ms"
     expires_after="2022-10-16">
-  <owner>abeyad@chromium.org</owner>
   <owner>miketaylr@chromium.org</owner>
+  <owner>potassium-katabolism@google.com</owner>
   <summary>
     The latency (in milliseconds) to store the client hints for a given origin
     in the Accept-CH cache.
@@ -2754,8 +2744,9 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ComponentUpdater.Calls" enum="ComponentUpdaterCalls"
-    expires_after="2020-12-20">
+    expires_after="2022-12-20">
   <owner>sorin@chromium.org</owner>
+  <owner>src/components/component_updater/OWNERS</owner>
   <summary>
     The number of times the component updater called UpdateClient::Install or
     UpdateClient::Update. These correspond to the number of manual component
@@ -2779,20 +2770,23 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="ComponentUpdater.UpdateCompleteError"
-    enum="UpdateClientErrors" expires_after="2020-07-26">
+    enum="UpdateClientErrors" expires_after="2022-12-20">
   <owner>sorin@chromium.org</owner>
+  <owner>src/components/component_updater/OWNERS</owner>
   <summary>The result of an install or an update check.</summary>
 </histogram>
 
 <histogram name="ComponentUpdater.UpdateCompleteResult" enum="BooleanError"
-    expires_after="2020-07-26">
+    expires_after="2022-12-20">
   <owner>sorin@chromium.org</owner>
+  <owner>src/components/component_updater/OWNERS</owner>
   <summary>The result of an install or an update check.</summary>
 </histogram>
 
 <histogram name="ComponentUpdater.UpdateCompleteTime" units="ms"
-    expires_after="2020-02-16">
+    expires_after="2022-12-20">
   <owner>sorin@chromium.org</owner>
+  <owner>src/components/component_updater/OWNERS</owner>
   <summary>
     Time to complete an Install or an Update component update call.
   </summary>
@@ -3179,6 +3173,19 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Conversions.AggregatableKeysPerSource" units="keys"
+    expires_after="2022-10-12">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Measures the number of keys provided in the
+    Attribution-Reporting-Register-Aggregatable-Source header when present.
+    Recorded once for each aggregatable source when parsed from the
+    attributionsrc response.
+  </summary>
+</histogram>
+
 <histogram name="Conversions.AggregatableReport.AssembleReportStatus"
     enum="ConversionAssembleAggregatableReportStatus"
     expires_after="2022-09-08">
@@ -3244,6 +3251,19 @@ chromium-metrics-reviews@google.com.
     Records the time between a trigger and its assembly. This is emitted
     whenever an aggregatable report is to be assembled by the aggregation
     service.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.AggregatableTriggerDataLength"
+    units="trigger_data" expires_after="2022-10-12">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Measures the length of the list contained in the
+    Attribution-Reporting-Register-Aggregatable-Trigger-Data header when
+    present. Recorded once for each aggregatable trigger when parsed from the
+    attributionsrc response.
   </summary>
 </histogram>
 
@@ -6773,8 +6793,62 @@ chromium-metrics-reviews@google.com.
   <owner>pbond@chromium.org</owner>
   <owner>chromeos-kiosk-eng@chromium.org</owner>
   <summary>
-    Chrome OS only. Count of Kiosk sessions in the last 24h. Logged each time a
+    ChromeOS only. Count of Kiosk sessions in the last 24h. Logged each time a
     kiosk session is started.
+  </summary>
+</histogram>
+
+<histogram name="Kiosk.SessionDuration.Crashed" units="ms"
+    expires_after="2023-04-20">
+  <owner>pbond@chromium.org</owner>
+  <owner>chromeos-kiosk-eng@chromium.org</owner>
+  <summary>
+    ChromeOS only. Duration of a kiosk session that ended with a crash. Metrics
+    in this histogram are capped to 1 day (24 hours) to measure the number of
+    long sessions compared to short ones. See also
+    Kiosk.SessionDurationInDays.Crashed.
+
+    Note: Duration may be longer than actual session duration, because some
+    crashes can be detected only on the next session start up. In those cases a
+    duration effectively is a time between crashed session start and the
+    following kiosk session start.
+  </summary>
+</histogram>
+
+<histogram name="Kiosk.SessionDuration.Normal" units="ms"
+    expires_after="2023-04-20">
+  <owner>pbond@chromium.org</owner>
+  <owner>chromeos-kiosk-eng@chromium.org</owner>
+  <summary>
+    ChromeOS only. Duration of a kiosk session that ended successfully. Metrics
+    in this histogram are capped to 1 day (24 hours) to measure the number of
+    long sessions compared to short ones. See also
+    Kiosk.SessionDurationInDays.Normal.
+  </summary>
+</histogram>
+
+<histogram name="Kiosk.SessionDurationInDays.Crashed" units="days"
+    expires_after="2023-04-20">
+  <owner>pbond@chromium.org</owner>
+  <owner>chromeos-kiosk-eng@chromium.org</owner>
+  <summary>
+    ChromeOS only. Duration in days of a kiosk session that ended with a crash.
+    This metric only tracks kiosk sessions that last longer than 1 day.
+
+    Note: Duration may be longer than actual session duration, because some
+    crashes can be detected only on the next session start up. In those cases a
+    duration effectively is a time between crashed session start and the
+    following kiosk session start.
+  </summary>
+</histogram>
+
+<histogram name="Kiosk.SessionDurationInDays.Normal" units="days"
+    expires_after="2023-04-20">
+  <owner>pbond@chromium.org</owner>
+  <owner>chromeos-kiosk-eng@chromium.org</owner>
+  <summary>
+    ChromeOS only. Duration in days of a kiosk session that ended successfully.
+    This metric only tracks kiosk sessions that last longer than 1 day.
   </summary>
 </histogram>
 
@@ -6783,8 +6857,9 @@ chromium-metrics-reviews@google.com.
   <owner>pbond@chromium.org</owner>
   <owner>chromeos-kiosk-eng@chromium.org</owner>
   <summary>
-    Chrome OS only. Records kiosk session states, whether it is started, closed,
-    crashed, etc. Emitted when the kiosk session state changes.
+    ChromeOS only. Records kiosk session states, whether it is started, closed,
+    crashed, etc. Emitted when the kiosk session state changes. Crashed kiosk
+    sessions can be detected on the following kiosk start.
   </summary>
 </histogram>
 
@@ -12336,7 +12411,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.AppWindowDrag.CountOfPerUserSession" units="times"
-    expires_after="2022-05-01">
+    expires_after="2023-05-01">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -12347,7 +12422,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.AppWindowDrag.InSplitView.CountOfPerUserSession"
-    units="times" expires_after="2022-05-01">
+    units="times" expires_after="2023-05-01">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -12368,7 +12443,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.TabDrag.CountOfPerUserSession" units="times"
-    expires_after="2022-04-24">
+    expires_after="2023-05-01">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>
@@ -12389,7 +12464,7 @@ should be kept until we remove incident reporting. -->
 </histogram>
 
 <histogram name="Tablet.TabDrag.InSplitView.CountOfPerUserSession"
-    units="times" expires_after="2022-05-01">
+    units="times" expires_after="2023-05-01">
   <owner>minch@chromium.org</owner>
   <owner>omrilio@chromium.org</owner>
   <summary>

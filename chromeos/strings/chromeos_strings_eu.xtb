@@ -141,6 +141,7 @@
 <translation id="2320295602967756579">Gaitu gai iluna</translation>
 <translation id="2323506179655536734">SALTATUTA</translation>
 <translation id="2326139988748364651"><ph name="RESOLUTION_VALUE" /> dpi</translation>
+<translation id="2336381494582898602">Berrezarri fabrikako ezarpenak Powerwash bidez</translation>
 <translation id="2338501278241028356">Inguruko gailuak ikusteko, aktibatu Bluetooth-a</translation>
 <translation id="2346474577291266260">Bikaina (<ph name="SIGNAL_STRENGTH" />)</translation>
 <translation id="2360257214555822463"><ph name="LINK_BEGIN" />Osagai ez-bateragarriak<ph name="LINK_END" /> hauteman dira. Instalatuta daudela berretsiko baduzu, berrets ezazu orain bertan.</translation>
@@ -233,6 +234,7 @@
 <translation id="3484914941826596830">Firmwarea eguneratu bitartean, ez deskonektatu kanpoko gailua edo ez itzali ordenagailua. Leihoa minimiza dezakezu. Agian minutu batzuk beharko dira eguneratzea instalatzeko, eta baliteke kanpoko gailuak denbora tarte horretan ez funtzionatzea.</translation>
 <translation id="3486220673238053218">definizioa</translation>
 <translation id="3488065109653206955">Partzialki aktibatuta</translation>
+<translation id="3517001332549868749">Chrome OS-ren eguneratzea</translation>
 <translation id="3527036260304016759">Hutsegitea - Errore ezezaguna</translation>
 <translation id="3532980081107202182"><ph name="MIN_REMAINING" /> minutu inguru geratzen dira</translation>
 <translation id="3557205324756024651">Tokiko identitatea (aukerakoa)</translation>
@@ -558,6 +560,7 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="6692996468359469499">Lortu hautatutakoari buruzko informazioa</translation>
 <translation id="6704062477274546131">DNS bidezko ebazpena</translation>
 <translation id="6723839937902243910">Bateria</translation>
+<translation id="6723847290197874913">Teklatuaren atzeko argiztapena</translation>
 <translation id="672609503628871915">Ikusi azken berrikuntzak</translation>
 <translation id="6747215703636344499">Geldituta: irteera-erretilua beteta dago</translation>
 <translation id="6749473226660745022">Argazkiak</translation>
@@ -720,7 +723,6 @@ Sakatu mikrofonoa zerbait galdetu nahi badidazu.</translation>
 <translation id="8498220429738806196">Trafiko-kontagailuak</translation>
 <translation id="8503813439785031346">Erabiltzaile-izena</translation>
 <translation id="8503836310948963452">Minutu gutxi batzuk baino ez…</translation>
-<translation id="8521021929829989041">Erabili gailu pertsonal gisa</translation>
 <translation id="8528615187455571738">Crosvm</translation>
 <translation id="8575298406870537639">Baliteke zure operadoreak aukera hau eskatzea haren sarera konektatzeko. Horri buruzko xehetasunak lortzeko, jarri operadorearekin harremanetan.</translation>
 <translation id="8576249514688522074">Hasieratu gabe</translation>

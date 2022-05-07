@@ -213,6 +213,10 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/accelerators/accelerator.h"
 
+// Enable VLOG level 1.
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
+
 namespace ash {
 namespace {
 
@@ -615,7 +619,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnRecommendAppsScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<AppDownloadingScreen>(
-      oobe_ui->GetView<AppDownloadingScreenHandler>(),
+      oobe_ui->GetView<AppDownloadingScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnAppDownloadingScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<WrongHWIDScreen>(
@@ -823,10 +827,6 @@ void WizardController::OnSignInFatalErrorScreenExit() {
 }
 
 void WizardController::ShowLoginScreen() {
-  // This may be triggered by multiply asynchronous events from the JS side.
-  if (login_screen_started_)
-    return;
-
   if (!time_eula_accepted_.is_null()) {
     base::TimeDelta delta = base::TimeTicks::Now() - time_eula_accepted_;
     base::UmaHistogramMediumTimes("OOBE.EULAToSignInTime", delta);
@@ -834,7 +834,6 @@ void WizardController::ShowLoginScreen() {
   VLOG(1) << "Showing login screen.";
   UpdateStatusAreaVisibilityForScreen(GaiaView::kScreenId);
   GetLoginDisplayHost()->StartSignInScreen();
-  login_screen_started_ = true;
 }
 
 void WizardController::ShowGaiaPasswordChangedScreen(
@@ -1274,7 +1273,6 @@ void WizardController::SkipToLoginForTesting() {
   if (current_screen_ && current_screen_->screen_id() == GaiaView::kScreenId)
     return;
   wizard_context_->skip_to_login_for_tests = true;
-  login_screen_started_ = false;
 
   if (!chromeos::features::IsOobeConsolidatedConsentEnabled())
     StartupUtils::MarkEulaAccepted();
@@ -1998,7 +1996,16 @@ void WizardController::SetCurrentScreen(BaseScreen* new_current) {
     current_screen_->Hide();
   }
 
-  previous_screen_ = current_screen_;
+  // If the last screen user have visited before reaching SignInFatalError
+  // screen was SamlConfirmPassword screen. Then 'previous_screen_' shouldn't be
+  // saved to send the user back to the Login Screen not to SamlConfirmPassword
+  // screen.
+  if (current_screen_ &&
+      current_screen_->screen_id() != SamlConfirmPasswordView::kScreenId) {
+    previous_screen_ = current_screen_;
+  } else {
+    previous_screen_ = nullptr;
+  }
   current_screen_ = new_current;
 
   if (!current_screen_) {
@@ -2109,7 +2116,6 @@ void WizardController::AdvanceToScreen(OobeScreenId screen_id) {
                  << current_screen_->screen_id();
     return;
   }
-  login_screen_started_ = false;
 
   if (screen_id == WelcomeView::kScreenId) {
     ShowWelcomeScreen();

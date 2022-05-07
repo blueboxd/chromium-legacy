@@ -2399,6 +2399,46 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
                    .is_sandboxed());
 }
 
+// A test to verify that an iframe that is sandboxed using the 'csp' attribute
+// instead of the 'sandbox' attribute gets process isolation when the
+// kIsolatedSandboxedIframes flag is enabled.
+IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
+                       CspIsolatedSandbox) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  // The child needs to have the same origin as the parent.
+  GURL child_url(main_url);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Create csp-sandboxed child frame, same-origin.
+  {
+    std::string js_str = base::StringPrintf(
+        "var frame = document.createElement('iframe'); "
+        "frame.csp = 'sandbox'; "
+        "frame.src = '%s'; "
+        "document.body.appendChild(frame);",
+        child_url.spec().c_str());
+    EXPECT_TRUE(ExecJs(shell(), js_str));
+    ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+  }
+
+  // Check frame-tree.
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
+            child->current_frame_host()->active_sandbox_flags());
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(child->current_frame_host()
+                  ->GetSiteInstance()
+                  ->GetSiteInfo()
+                  .is_sandboxed());
+  EXPECT_FALSE(root->current_frame_host()
+                   ->GetSiteInstance()
+                   ->GetSiteInfo()
+                   .is_sandboxed());
+}
+
 // A test to verify that an iframe with a fully-restrictive sandbox is rendered
 // in a separate process from its parent frame even if they have the same
 // origin.
@@ -2437,6 +2477,69 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
                    ->GetSiteInstance()
                    ->GetSiteInfo()
                    .is_sandboxed());
+}
+
+// Check that two same-site sandboxed iframes in unrelated windows share the
+// same process due to subframe process reuse.
+IN_PROC_BROWSER_TEST_P(SitePerProcessIsolatedSandboxedIframeTest,
+                       SandboxProcessReuse) {
+  GURL main_url(embedded_test_server()->GetURL("a.com", "/title1.html"));
+  // The child needs to have the same origin as the parent.
+  GURL child_url(main_url);
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+
+  // Create sandboxed child frame, same-origin.
+  std::string js_str = base::StringPrintf(
+      "var frame = document.createElement('iframe'); "
+      "frame.sandbox = ''; "
+      "frame.src = '%s'; "
+      "document.body.appendChild(frame);",
+      child_url.spec().c_str());
+  EXPECT_TRUE(ExecJs(shell(), js_str));
+  ASSERT_TRUE(WaitForLoadStop(shell()->web_contents()));
+
+  FrameTreeNode* root = web_contents()->GetPrimaryFrameTree().root();
+  ASSERT_EQ(1U, root->child_count());
+  FrameTreeNode* child = root->child_at(0);
+  EXPECT_EQ(network::mojom::WebSandboxFlags::kAll,
+            child->effective_frame_policy().sandbox_flags);
+  EXPECT_NE(root->current_frame_host()->GetSiteInstance(),
+            child->current_frame_host()->GetSiteInstance());
+  EXPECT_TRUE(child->current_frame_host()
+                  ->GetSiteInstance()
+                  ->GetSiteInfo()
+                  .is_sandboxed());
+  EXPECT_FALSE(root->current_frame_host()
+                   ->GetSiteInstance()
+                   ->GetSiteInfo()
+                   .is_sandboxed());
+
+  // Set up an unrelated window with the same frame hierarchy.
+  Shell* new_shell = CreateBrowser();
+  EXPECT_TRUE(NavigateToURL(new_shell, main_url));
+  FrameTreeNode* new_root =
+      static_cast<WebContentsImpl*>(new_shell->web_contents())
+          ->GetPrimaryFrameTree()
+          .root();
+  EXPECT_TRUE(ExecJs(new_shell, js_str));
+  ASSERT_TRUE(WaitForLoadStop(new_shell->web_contents()));
+  FrameTreeNode* new_child = new_root->child_at(0);
+  EXPECT_TRUE(new_child->current_frame_host()
+                  ->GetSiteInstance()
+                  ->GetSiteInfo()
+                  .is_sandboxed());
+  EXPECT_FALSE(new_root->current_frame_host()
+                   ->GetSiteInstance()
+                   ->GetSiteInfo()
+                   .is_sandboxed());
+
+  // Check that the two sandboxed subframes end up in separate
+  // BrowsingInstances but in the same process.
+  EXPECT_FALSE(
+      new_child->current_frame_host()->GetSiteInstance()->IsRelatedSiteInstance(
+          child->current_frame_host()->GetSiteInstance()));
+  EXPECT_EQ(new_child->current_frame_host()->GetProcess(),
+            child->current_frame_host()->GetProcess());
 }
 
 // A test to verify that when an iframe has two sibling subframes, each with a

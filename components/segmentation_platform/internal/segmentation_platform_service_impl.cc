@@ -27,6 +27,7 @@
 #include "components/segmentation_platform/internal/selection/segmentation_result_prefs.h"
 #include "components/segmentation_platform/internal/stats.h"
 #include "components/segmentation_platform/public/config.h"
+#include "components/segmentation_platform/public/field_trial_register.h"
 #include "components/segmentation_platform/public/model_provider.h"
 
 using optimization_guide::proto::OptimizationTarget;
@@ -58,7 +59,8 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
       platform_options_(PlatformOptions::CreateDefault()),
       configs_(std::move(init_params->configs)),
       all_segment_ids_(GetAllSegmentIds(configs_)),
-      local_state_(init_params->local_state),
+      field_trial_register_(std::move(init_params->field_trial_register)),
+      profile_prefs_(init_params->profile_prefs),
       creation_time_(clock_->Now()) {
   base::UmaHistogramMediumTimes(
       "SegmentationPlatform.Init.ProcessCreationToServiceCreationLatency",
@@ -96,8 +98,9 @@ SegmentationPlatformServiceImpl::SegmentationPlatformServiceImpl(
         std::make_unique<SegmentSelectorImpl>(
             storage_service_->segment_info_database(),
             storage_service_->signal_storage_config(),
-            init_params->profile_prefs, config.get(), init_params->clock,
-            platform_options_, storage_service_->default_model_manager());
+            init_params->profile_prefs, config.get(),
+            field_trial_register_.get(), init_params->clock, platform_options_,
+            storage_service_->default_model_manager());
   }
 
   proxy_ = std::make_unique<ServiceProxyImpl>(
@@ -172,7 +175,7 @@ void SegmentationPlatformServiceImpl::OnDatabaseInitialized(bool success) {
           &SegmentationPlatformServiceImpl::OnSegmentationModelUpdated,
           weak_ptr_factory_.GetWeakPtr()),
       task_runner_, all_segment_ids_, model_provider_factory_.get(),
-      std::move(observers), platform_options_, local_state_);
+      std::move(observers), platform_options_, &configs_, profile_prefs_);
 
   proxy_->SetExecutionService(&execution_service_);
 
@@ -214,7 +217,7 @@ void SegmentationPlatformServiceImpl::OnServiceStatusChanged() {
 }
 
 void SegmentationPlatformServiceImpl::RunDailyTasks(bool is_startup) {
-  execution_service_.RefreshModelResults();
+  execution_service_.RunDailyTasks(is_startup);
   storage_service_->ExecuteDatabaseMaintenanceTasks(is_startup);
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(

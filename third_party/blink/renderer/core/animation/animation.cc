@@ -34,6 +34,7 @@
 #include <memory>
 
 #include "base/metrics/histogram_macros.h"
+#include "cc/animation/animation_timeline.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_union_cssnumericvalue_double.h"
@@ -67,7 +68,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
-#include "third_party/blink/renderer/platform/animation/compositor_animation_timeline.h"
 #include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/heap/garbage_collected.h"
@@ -2213,6 +2213,10 @@ void Animation::SetCompositorPending(bool effect_changed) {
       !compositor_state_->start_time || !start_time_) {
     compositor_pending_ = true;
     document_->GetPendingAnimations().Add(this);
+    // Determine if we need to reset the cached state of a background color
+    // animation to force Paint to re-evaluate whether the background should be
+    // painted via a paint worklet.
+    UpdateCompositedPaintStatus();
   }
 }
 
@@ -2463,27 +2467,32 @@ void Animation::AttachCompositorTimeline() {
 
   // Register ourselves on the compositor timeline. This will cause our cc-side
   // animation animation to be registered.
-  CompositorAnimationTimeline* compositor_timeline =
+  cc::AnimationTimeline* compositor_timeline =
       timeline_ ? timeline_->EnsureCompositorTimeline() : nullptr;
   if (!compositor_timeline)
     return;
 
-  compositor_timeline->AnimationAttached(*this);
+  if (CompositorAnimation* compositor_animation = GetCompositorAnimation()) {
+    compositor_timeline->AttachAnimation(compositor_animation->CcAnimation());
+  }
+
   // Note that while we attach here but we don't detach because the
   // |compositor_timeline| is detached in its destructor.
-  if (compositor_timeline->GetAnimationTimeline()->IsScrollTimeline())
+  if (compositor_timeline->IsScrollTimeline())
     document_->AttachCompositorTimeline(compositor_timeline);
 }
 
 void Animation::DetachCompositorTimeline() {
   DCHECK(compositor_animation_);
 
-  CompositorAnimationTimeline* compositor_timeline =
+  cc::AnimationTimeline* compositor_timeline =
       timeline_ ? timeline_->CompositorTimeline() : nullptr;
   if (!compositor_timeline)
     return;
 
-  compositor_timeline->AnimationDestroyed(*this);
+  if (CompositorAnimation* compositor_animation = GetCompositorAnimation()) {
+    compositor_timeline->DetachAnimation(compositor_animation->CcAnimation());
+  }
 }
 
 void Animation::AttachCompositedLayers() {
@@ -2541,6 +2550,7 @@ void Animation::PauseForTesting(AnimationTimeDelta pause_time) {
   pending_play_ = false;
   SetHoldTimeAndPhase(pause_time, TimelinePhase::kActive);
   start_time_ = absl::nullopt;
+  UpdateCompositedPaintStatus();
 }
 
 void Animation::SetEffectSuppressed(bool suppressed) {
@@ -2844,6 +2854,30 @@ bool Animation::IsInDisplayLockedSubtree() {
   }
 
   return is_in_display_locked_subtree_;
+}
+
+void Animation::UpdateCompositedPaintStatus() {
+  if (!RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled())
+    return;
+
+  KeyframeEffect* keyframe_effect = DynamicTo<KeyframeEffect>(content_.Get());
+  if (!keyframe_effect)
+    return;
+
+  if (!keyframe_effect->Affects(
+          PropertyHandle(GetCSSPropertyBackgroundColor()))) {
+    return;
+  }
+
+  Element* target = keyframe_effect->EffectTarget();
+  if (!target)
+    return;
+
+  ElementAnimations* element_animations = target->GetElementAnimations();
+  DCHECK(element_animations);
+
+  element_animations->SetCompositedBackgroundColorStatus(
+      ElementAnimations::CompositedPaintStatus::kNeedsRepaintOrNoAnimation);
 }
 
 void Animation::Trace(Visitor* visitor) const {

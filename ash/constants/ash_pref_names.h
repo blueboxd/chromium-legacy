@@ -438,7 +438,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kProjectorViewerOnboardingShowCount[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
-extern const char kProjectorSkipTranscriptDialogShown[];
+extern const char kProjectorExcludeTranscriptDialogShown[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const char kProjectorAllowByPolicy[];
@@ -459,6 +459,9 @@ extern const char kLoginScreenWebUILazyLoading[];
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kFloatingWorkspaceEnabled[];
 
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const char kShowPostRebootNotification[];
+
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const char kPersonalizationKeyboardBacklightColor[];
 }  // namespace prefs
 }  // namespace ash
 

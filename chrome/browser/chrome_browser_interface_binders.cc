@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/buildflags.h"
 #include "chrome/browser/dom_distiller/dom_distiller_service_factory.h"
+#include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/media/history/media_history_store.mojom.h"
 #include "chrome/browser/media/media_engagement_score_details.mojom.h"
 #include "chrome/browser/navigation_predictor/anchor_element_preloader.h"
@@ -35,6 +36,7 @@
 #include "chrome/browser/ui/webui/browsing_topics/browsing_topics_internals_ui.h"
 #include "chrome/browser/ui/webui/engagement/site_engagement_ui.h"
 #include "chrome/browser/ui/webui/history/history_ui.h"
+#include "chrome/browser/ui/webui/history_clusters/history_clusters.mojom.h"
 #include "chrome/browser/ui/webui/internals/internals_ui.h"
 #include "chrome/browser/ui/webui/media/media_engagement_ui.h"
 #include "chrome/browser/ui/webui/media/media_history_ui.h"
@@ -55,7 +57,8 @@
 #include "components/dom_distiller/content/common/mojom/distiller_javascript_service.mojom.h"
 #include "components/dom_distiller/core/dom_distiller_service.h"
 #include "components/feed/buildflags.h"
-#include "components/history_clusters/core/history_clusters_buildflags.h"
+#include "components/history_clusters/core/history_clusters_service.h"
+#include "components/history_clusters/history_clusters_internals/webui/history_clusters_internals_ui.h"
 #include "components/live_caption/caption_util.h"
 #include "components/live_caption/pref_names.h"
 #include "components/no_state_prefetch/browser/no_state_prefetch_contents.h"
@@ -156,10 +159,8 @@
 #if !defined(OFFICIAL_BUILD)
 #include "chrome/browser/ui/webui/new_tab_page/foo/foo.mojom.h"  // nogncheck crbug.com/1125897
 #endif
-#include "chrome/browser/history_clusters/history_clusters_service_factory.h"
 #include "chrome/browser/ui/webui/download_shelf/download_shelf.mojom.h"
 #include "chrome/browser/ui/webui/download_shelf/download_shelf_ui.h"
-#include "chrome/browser/ui/webui/history_clusters/history_clusters.mojom.h"
 #include "chrome/browser/ui/webui/internals/user_education/user_education_internals.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page.mojom.h"
 #include "chrome/browser/ui/webui/new_tab_page/new_tab_page_ui.h"
@@ -173,7 +174,6 @@
 #include "chrome/browser/ui/webui/tab_search/tab_search_ui.h"
 #include "chrome/browser/ui/webui/whats_new/whats_new_ui.h"
 #include "chrome/common/webui_url_constants.h"
-#include "components/history_clusters/core/history_clusters_service.h"
 #include "components/search/ntp_features.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "ui/webui/resources/cr_components/customize_themes/customize_themes.mojom.h"
@@ -224,6 +224,7 @@
 #include "ash/webui/os_feedback_ui/os_feedback_ui.h"
 #include "ash/webui/personalization_app/mojom/personalization_app.mojom.h"
 #include "ash/webui/personalization_app/personalization_app_ui.h"
+#include "ash/webui/personalization_app/search/search.mojom.h"
 #include "ash/webui/print_management/mojom/printing_manager.mojom.h"
 #include "ash/webui/print_management/print_management_ui.h"
 #include "ash/webui/scanning/mojom/scanning.mojom.h"
@@ -322,10 +323,6 @@
 
 #if BUILDFLAG(PLATFORM_CFM)
 #include "chrome/browser/ui/webui/chromeos/chromebox_for_meetings/network_settings_dialog.h"
-#endif
-
-#if BUILDFLAG(BUILD_WITH_ON_DEVICE_CLUSTERING_BACKEND)
-#include "components/history_clusters/history_clusters_internals/webui/history_clusters_internals_ui.h"
 #endif
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -804,11 +801,9 @@ void PopulateChromeWebUIFrameBinders(
   RegisterWebUIControllerInterfaceBinder<::mojom::UsbInternalsPageHandler,
                                          UsbInternalsUI>(map);
 
-#if BUILDFLAG(BUILD_WITH_ON_DEVICE_CLUSTERING_BACKEND)
   RegisterWebUIControllerInterfaceBinder<
       history_clusters_internals::mojom::PageHandlerFactory,
       HistoryClustersInternalsUI>(map);
-#endif
 
   RegisterWebUIControllerInterfaceBinder<
       optimization_guide_internals::mojom::PageHandlerFactory,
@@ -966,6 +961,12 @@ void PopulateChromeWebUIFrameBinders(
       chromeos::settings::mojom::SearchHandler,
       chromeos::settings::OSSettingsUI>(map);
 
+  if (ash::features::IsPersonalizationHubEnabled()) {
+    RegisterWebUIControllerInterfaceBinder<
+        ash::personalization_app::mojom::SearchHandler,
+        chromeos::settings::OSSettingsUI>(map);
+  }
+
   RegisterWebUIControllerInterfaceBinder<
       chromeos::settings::app_notification::mojom::AppNotificationsHandler,
       chromeos::settings::OSSettingsUI>(map);
@@ -1120,6 +1121,10 @@ void PopulateChromeWebUIFrameBinders(
 
     RegisterWebUIControllerInterfaceBinder<
         ash::personalization_app::mojom::UserProvider,
+        ash::personalization_app::PersonalizationAppUI>(map);
+
+    RegisterWebUIControllerInterfaceBinder<
+        ash::personalization_app::mojom::KeyboardBacklightProvider,
         ash::personalization_app::PersonalizationAppUI>(map);
   }
 

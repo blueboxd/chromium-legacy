@@ -12,8 +12,7 @@ import("//chrome/android/chrome_common_shared_library.gni")
 import("//chrome/android/chrome_java_resources.gni")
 import("//chrome/android/chrome_public_apk_tmpl.gni")
 import("//chrome/android/features/dev_ui/dev_ui_module.gni")
-import(
-    "//chrome/android/features/start_surface/public/start_surface_public_java_sources.gni")
+import("//chrome/android/features/start_surface/start_surface_java_sources.gni")
 import("//chrome/android/features/tab_ui/buildflags.gni")
 import("//chrome/android/features/tab_ui/tab_management_java_sources.gni")
 import("//chrome/android/features/vr/public_vr_java_sources.gni")
@@ -340,8 +339,8 @@ android_library("chrome_java") {
     "$google_play_services_package:google_play_services_vision_java",
     "//cc:cc_java",
     "//chrome/android/features/keyboard_accessory:public_java",
+    "//chrome/android/features/start_surface:java_resources",
     "//chrome/android/features/start_surface:public_java",
-    "//chrome/android/features/start_surface/internal:java_resources",
     "//chrome/android/modules/cablev2_authenticator/public:java",
     "//chrome/android/modules/image_editor/provider:java",
     "//chrome/android/modules/stack_unwinder/provider:java",
@@ -357,6 +356,7 @@ android_library("chrome_java") {
     "//chrome/browser/android/lifecycle:java",
     "//chrome/browser/android/messages:java",
     "//chrome/browser/android/webapps/launchpad:java",
+    "//chrome/browser/back_press/android:java",
     "//chrome/browser/banners/android:java",
     "//chrome/browser/bluetooth/android:java",
     "//chrome/browser/browser_controls/android:java",
@@ -689,7 +689,7 @@ android_library("chrome_java") {
 
   # Include sources from public_tab_management_java_sources.gni.
   sources += public_tab_management_java_sources
-  sources += start_surface_public_java_sources
+  sources += start_surface_java_sources
 
   if (enable_arcore) {
     deps += [
@@ -722,7 +722,7 @@ android_library("chrome_java") {
     }
     proguard_enabled = true
     proguard_configs +=
-        [ "//chrome/android/features/start_surface/internal/proguard.flags" ]
+        [ "//chrome/android/features/start_surface/proguard.flags" ]
   }
 
   resources_package = "org.chromium.chrome"
@@ -971,6 +971,8 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/android/browserservices/verification:junit_test_support",
     "//chrome/browser/android/lifecycle:java",
     "//chrome/browser/android/webapps/launchpad:junit_tests",
+    "//chrome/browser/back_press/android:java",
+    "//chrome/browser/back_press/android:junit",
     "//chrome/browser/banners/android:java",
     "//chrome/browser/bluetooth/android:junit",
     "//chrome/browser/browser_controls/android:java",
@@ -1362,8 +1364,8 @@ android_library("chrome_test_java") {
     "//build/config/android/test/resource_overlay:javatests",
     "//cc:cc_java",
     "//chrome/android:chrome_java",
+    "//chrome/android/features/start_surface:java_resources",
     "//chrome/android/features/start_surface:public_java",
-    "//chrome/android/features/start_surface/internal:java_resources",
     "//chrome/android/features/tab_ui:java",
     "//chrome/android/features/tab_ui:java_resources",
     "//chrome/android/webapk/libs/client:client_java",
@@ -2214,10 +2216,6 @@ if (current_toolchain == default_toolchain) {
 
       additional_extra_paks = []
       if (_is_monochrome) {
-        additional_extra_paks +=
-            [ "$root_gen_dir/android_webview/aw_resources.pak" ]
-        deps += [ "//android_webview:generate_aw_resources" ]
-
         if (webview_includes_weblayer) {
           additional_extra_paks +=
               [ "$root_gen_dir/weblayer/weblayer_resources.pak" ]
@@ -3848,6 +3846,8 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/autofill/PhoneNumberUtil.java",
     "java/src/org/chromium/chrome/browser/autofill/SaveUpdateAddressProfilePrompt.java",
     "java/src/org/chromium/chrome/browser/autofill/SaveUpdateAddressProfilePromptController.java",
+    "java/src/org/chromium/chrome/browser/autofill/VirtualCardEnrollmentDelegate.java",
+    "java/src/org/chromium/chrome/browser/autofill/VirtualCardEnrollmentDialogViewBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/settings/AutofillPaymentMethodsDelegate.java",
     "java/src/org/chromium/chrome/browser/autofill/settings/AutofillProfileBridge.java",
     "java/src/org/chromium/chrome/browser/autofill/settings/VirtualCardEnrollmentFields.java",

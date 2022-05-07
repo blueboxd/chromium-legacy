@@ -39,6 +39,7 @@
 #include "base/timer/lap_timer.h"
 #include "base/trace_event/typed_macros.h"
 #include "cc/animation/animation_host.h"
+#include "cc/animation/animation_timeline.h"
 #include "cc/document_transition/document_transition_request.h"
 #include "cc/input/main_thread_scrolling_reason.h"
 #include "cc/layers/picture_layer.h"
@@ -603,8 +604,7 @@ cc::AnimationHost* LocalFrameView::GetCompositorAnimationHost() const {
   return c ? c->GetCompositorAnimationHost() : nullptr;
 }
 
-CompositorAnimationTimeline* LocalFrameView::GetCompositorAnimationTimeline()
-    const {
+cc::AnimationTimeline* LocalFrameView::GetCompositorAnimationTimeline() const {
   if (GetScrollingContext()->GetCompositorAnimationTimeline())
     return GetScrollingContext()->GetCompositorAnimationTimeline();
 
@@ -2811,6 +2811,9 @@ bool LocalFrameView::RunAccessibilityLifecyclePhase(
     DocumentLifecycle::LifecycleState target_state) {
   TRACE_EVENT0("blink,benchmark",
                "LocalFrameView::RunAccessibilityLifecyclePhase");
+
+  SCOPED_UMA_AND_UKM_TIMER(EnsureUkmAggregator(),
+                           LocalFrameUkmAggregator::kAccessibility);
 
   // Reduce redundant ancestor chain walking for display lock computations.
   auto display_lock_memoization_scope =

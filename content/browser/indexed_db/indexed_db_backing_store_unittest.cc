@@ -35,8 +35,8 @@
 #include "components/services/storage/indexed_db/scopes/varint_coding.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/leveldb_write_batch.h"
 #include "components/services/storage/indexed_db/transactional_leveldb/transactional_leveldb_database.h"
+#include "components/services/storage/privileged/mojom/indexed_db_control.mojom-test-utils.h"
 #include "components/services/storage/public/cpp/buckets/bucket_locator.h"
-#include "components/services/storage/public/mojom/indexed_db_control.mojom-test-utils.h"
 #include "content/browser/indexed_db/indexed_db_bucket_state.h"
 #include "content/browser/indexed_db/indexed_db_class_factory.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
@@ -346,9 +346,9 @@ class IndexedDBBackingStoreTest : public testing::Test {
     leveldb::Status s;
     std::tie(bucket_state_handle_, s, std::ignore, data_loss_info_,
              std::ignore) =
-        idb_factory_->GetOrOpenBucketFactory(bucket_locator,
-                                             idb_context_->data_path(),
-                                             /*create_if_missing=*/true);
+        idb_factory_->GetOrOpenBucketFactory(
+            bucket_locator, idb_context_->GetDataPath(bucket_locator),
+            /*create_if_missing=*/true);
     if (!bucket_state_handle_.IsHeld()) {
       backing_store_ = nullptr;
       return;

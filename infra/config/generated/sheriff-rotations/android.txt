@@ -5,6 +5,7 @@ ci/Android WebView O (dbg)
 ci/Android WebView P (dbg)
 ci/Android arm Builder (dbg)
 ci/Android arm64 Builder (dbg)
+ci/Android arm64 Builder All Targets (dbg)
 ci/Android x64 Builder (dbg)
 ci/Android x86 Builder (dbg)
 ci/Cast Android (dbg)
@@ -32,3 +33,5 @@ ci/android-weblayer-oreo-x86-rel-tests
 ci/android-weblayer-pie-x86-rel-tests
 ci/android-weblayer-with-aosp-webview-x86-rel
 ci/android-weblayer-x86-rel
+ci/android-webview-10-x86-rel-tests
+ci/android-x86-rel

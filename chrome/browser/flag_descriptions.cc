@@ -994,6 +994,10 @@ const char kEnableGpuServiceLoggingName[] = "Enable gpu service logging";
 const char kEnableGpuServiceLoggingDescription[] =
     "Enable printing the actual GL driver calls.";
 
+const char kEnableIphName[] = "Enable IPH";
+const char kEnableIphDescription[] =
+    "Enables the ability to show IPH. When disabled, IPHs are disabled system wide.";
+
 const char kEnableRgbKeyboardName[] = "Enable RGB Keyboard Support";
 const char kEnableRgbKeyboardDescription[] =
     "Enable RGB Keyboard support on supported devices.";
@@ -2862,11 +2866,6 @@ const char kZeroCopyDescription[] =
 const char kEnableVulkanName[] = "Vulkan";
 const char kEnableVulkanDescription[] = "Use vulkan as the graphics backend.";
 
-const char kSharedHighlightingV2Name[] = "Shared Highlighting 2.0";
-const char kSharedHighlightingV2Description[] =
-    "Improvements to Shared Highlighting. Including ability to reshare or "
-    "remove a highlight.";
-
 const char kSharedHighlightingAmpName[] = "Shared Highlighting for AMP Viewers";
 const char kSharedHighlightingAmpDescription[] =
     "Enables Shared Highlighting for AMP Viwers.";
@@ -4687,6 +4686,12 @@ const char kEnableVariableRefreshRateDescription[] =
     "Enable the variable refresh rate (Adaptive Sync) setting for capable "
     "displays.";
 
+const char kDeprecateAssistantStylusFeaturesName[] =
+    "Deprecate Assistant Stylus Features";
+const char kDeprecateAssistantStylusFeaturesDescription[] =
+    "Deprecates the stylus features associated with the Assistant \"what's on "
+    "my screen\" feature which is already deprecated.";
+
 const char kDisableQuickAnswersV2TranslationName[] =
     "Disable Quick Answers Translation";
 const char kDisableQuickAnswersV2TranslationDescription[] =
@@ -5662,6 +5667,15 @@ const char kDownloadShelfWebUI[] = "Download Shelf WebUI";
 const char kDownloadShelfWebUIDescription[] =
     "Replaces the Views download shelf with a WebUI download shelf.";
 
+const char kSideSearchName[] = "Side search";
+const char kSideSearchDescription[] =
+    "Enables an easily accessible way to access your most recent Google search "
+    "results page embedded in a browser side panel";
+
+const char kSideSearchDSESupportName[] = "Side search DSE support";
+const char kSideSearchDSESupportDescription[] =
+    "Side search with support for participating chrome search engines.";
+
 #endif  // defined(TOOLKIT_VIEWS)
 
 // Random platform combinations -----------------------------------------------
@@ -5787,17 +5801,6 @@ const char kPaintPreviewStartupDescription[] =
     "the tab to be restored on startup, the paint preview will be shown "
     "instead.";
 #endif  // ENABLE_PAINT_PREVIEW && BUILDFLAG(IS_ANDROID)
-
-#if BUILDFLAG(ENABLE_SIDE_SEARCH)
-const char kSideSearchName[] = "Side search";
-const char kSideSearchDescription[] =
-    "Enables an easily accessible way to access your most recent Google search "
-    "results page embedded in a browser side panel";
-
-const char kSideSearchDSESupportName[] = "Side search DSE support";
-const char kSideSearchDSESupportDescription[] =
-    "Side search with support for participating chrome search engines.";
-#endif  // BUILDFLAG(ENABLE_SIDE_SEARCH)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
 const char kWebUITabStripFlagId[] = "webui-tab-strip";

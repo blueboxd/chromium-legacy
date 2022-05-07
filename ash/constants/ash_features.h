@@ -120,6 +120,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCellularUseAttachApn;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCellularUseSecondEuicc;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kCheckPasswordsAgainstCryptohomeHelper;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kClipboardHistory;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kClipboardHistoryContextMenuNudge;
@@ -163,6 +165,8 @@ extern const base::Feature kCryptAuthV2Enrollment;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kCryptohomeRecoveryFlow;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDemoModeSWA;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kDeprecateAssistantStylusFeatures;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDeskTemplateSync;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kDeviceActiveClient;
 COMPONENT_EXPORT(ASH_CONSTANTS)
@@ -342,6 +346,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kImeStylusHandwriting;
 COMPONENT_EXPORT(ASH_CONSTANTS)
 extern const base::Feature kImprovedDesksKeyboardShortcuts;
+COMPONENT_EXPORT(ASH_CONSTANTS)
+extern const base::Feature kImprovedLoginErrorHandling;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kInstantTethering;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosOnly;
 COMPONENT_EXPORT(ASH_CONSTANTS) extern const base::Feature kLacrosPrimary;
@@ -603,6 +609,7 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBentoBarEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsBluetoothRevampEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCalendarViewEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCaptureModeSelfieCameraEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCheckPasswordsAgainstCryptohomeHelperEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsLauncherItemColorSyncEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS)
 bool IsClipboardHistoryContextMenuNudgeEnabled();
@@ -615,6 +622,8 @@ COMPONENT_EXPORT(ASH_CONSTANTS) bool IsCryptohomeRecoveryFlowEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDarkLightModeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDeepLinkingEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDemoModeSWAEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS)
+bool IsDeprecateAssistantStylusFeaturesEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDeskTemplateSyncEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDisplayAlignmentAssistanceEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsDragUnpinnedAppToPinEnabled();
@@ -743,6 +752,7 @@ bool IsSettingsAppThemeChangeAnimationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShelfLauncherNudgeEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSimLockPolicyEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAFlowEnabled();
+COMPONENT_EXPORT(ASH_CONSTANTS) bool IsShimlessRMAStandaloneAppEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSnoopingProtectionEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsSyncSettingsCategorizationEnabled();
 COMPONENT_EXPORT(ASH_CONSTANTS) bool IsStylusBatteryStatusEnabled();

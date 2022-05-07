@@ -412,7 +412,8 @@ const WebApp* WebAppRegistrar::GetAppByStartUrl(const GURL& start_url) const {
   return nullptr;
 }
 
-std::vector<AppId> WebAppRegistrar::GetAppsFromSyncAndPendingInstallation() {
+std::vector<AppId> WebAppRegistrar::GetAppsFromSyncAndPendingInstallation()
+    const {
   AppSet apps_in_sync_install = AppSet(
       this,
       [](const WebApp& web_app) {
@@ -461,6 +462,16 @@ bool WebAppRegistrar::IsLocallyInstalled(const AppId& app_id) const {
   return web_app
              ? !web_app->is_uninstalling() && web_app->is_locally_installed()
              : false;
+}
+
+bool WebAppRegistrar::IsActivelyInstalled(const AppId& app_id) const {
+  if (!IsInstalled(app_id) || !IsLocallyInstalled(app_id))
+    return false;
+
+  auto* web_app = GetAppById(app_id);
+  DCHECK(web_app);
+  return !web_app->HasOnlySource(web_app::WebAppManagement::kDefault) ||
+         GetAppEffectiveDisplayMode(app_id) != web_app::DisplayMode::kBrowser;
 }
 
 bool WebAppRegistrar::IsIsolated(const AppId& app_id) const {
@@ -951,14 +962,20 @@ WebAppRegistrar::AppSet WebAppRegistrarMutable::GetAppsMutable() {
 }
 
 bool IsRegistryEqual(const Registry& registry, const Registry& registry2) {
-  if (registry.size() != registry2.size())
+  if (registry.size() != registry2.size()) {
+    LOG(ERROR) << registry.size() << " != " << registry2.size();
     return false;
+  }
 
   for (auto& kv : registry) {
     const WebApp* web_app = kv.second.get();
     const WebApp* web_app2 = registry2.at(web_app->app_id()).get();
-    if (*web_app != *web_app2)
+    if (*web_app != *web_app2) {
+      LOG(ERROR) << "Web apps are not equal:\n"
+                 << *web_app << "\n"
+                 << *web_app2;
       return false;
+    }
   }
 
   return true;

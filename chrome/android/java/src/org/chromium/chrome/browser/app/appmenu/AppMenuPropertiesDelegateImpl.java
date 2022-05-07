@@ -320,6 +320,7 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
             PropertyModel propertyModel = AppMenuUtil.menuItemToPropertyModel(item);
             propertyModel.set(AppMenuItemProperties.ICON_COLOR_RES, getMenuItemIconColorRes(item));
             propertyModel.set(AppMenuItemProperties.SUPPORT_ENTER_ANIMATION, true);
+            propertyModel.set(AppMenuItemProperties.MENU_ICON_AT_START, isMenuIconAtStart());
             if (item.hasSubMenu()) {
                 // Only support top level menu items have SUBMENU, and a SUBMENU item cannot have a
                 // SUBMENU.
@@ -980,6 +981,11 @@ public class AppMenuPropertiesDelegateImpl implements AppMenuPropertiesDelegate 
     public void recordHighlightedMenuItemClicked(@Nullable @IdRes Integer menuItemId) {
         RecordHistogram.recordEnumeratedHistogram("Mobile.AppMenu.HighlightMenuItem.Clicked",
                 getUmaEnumForMenuItem(menuItemId), AppMenuHighlightItem.NUM_ENTRIES);
+    }
+
+    @Override
+    public boolean isMenuIconAtStart() {
+        return false;
     }
 
     private int getUmaEnumForMenuItem(@Nullable @IdRes Integer menuItemId) {

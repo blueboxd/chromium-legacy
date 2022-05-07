@@ -19,11 +19,12 @@
 #include "ash/style/system_shadow.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_textfield.h"
-#include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
-#include "ash/wm/desks/templates/desks_templates_grid_view.h"
-#include "ash/wm/desks/templates/desks_templates_icon_container.h"
 #include "ash/wm/desks/templates/desks_templates_metrics_util.h"
 #include "ash/wm/desks/templates/desks_templates_presenter.h"
+#include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
+#include "ash/wm/desks/templates/saved_desk_grid_view.h"
+#include "ash/wm/desks/templates/saved_desk_icon_container.h"
+#include "ash/wm/desks/templates/saved_desk_library_view.h"
 #include "ash/wm/desks/templates/saved_desk_name_view.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
@@ -59,9 +60,6 @@ namespace {
 constexpr int kHorizontalPaddingDp = 24;
 constexpr int kVerticalPaddingDp = 16;
 
-// The preferred size of the whole SavedDeskItemView.
-constexpr gfx::Size kPreferredSize(220, 120);
-
 // The corner radius for the SavedDeskItemView.
 constexpr int kCornerRadius = 16;
 
@@ -74,7 +72,7 @@ constexpr int kLaunchButtonDistanceFromBottomDp = 14;
 // The preferred width of the container that houses the template name textfield
 // and managed status indicator and the time label.
 constexpr int kTemplateNameAndTimePreferredWidth =
-    kPreferredSize.width() - kHorizontalPaddingDp * 2;
+    SavedDeskItemView::kPreferredSize.width() - kHorizontalPaddingDp * 2;
 
 // The height of the view which contains the time of the template.
 constexpr int kTimeViewHeight = 24;
@@ -191,7 +189,7 @@ SavedDeskItemView::SavedDeskItemView(const DeskTemplate* desk_template)
                       views::FlexSpecification(
                           views::MinimumFlexSizeRule::kScaleToZero,
                           views::MaximumFlexSizeRule::kUnbounded)),
-                  views::Builder<DesksTemplatesIconContainer>()
+                  views::Builder<SavedDeskIconContainer>()
                       .CopyAddressTo(&icon_container_view_)
                       .PopulateIconContainerFromTemplate(desk_template_.get())
                       .SetVisible(true)),
@@ -447,12 +445,12 @@ void SavedDeskItemView::OnViewBlurred(views::View* observed_view) {
     // templates grid. This may mean that the grid is no longer sorted
     // alphabetically by template name. Ensure that the grid is sorted.
     for (auto& overview_grid : overview_session->grid_list()) {
-      if (views::Widget* grid_widget =
-              overview_grid->desks_templates_grid_widget()) {
-        auto* grid_view = static_cast<DesksTemplatesGridView*>(
-            grid_widget->GetContentsView());
-        grid_view->SortTemplateGridItems(
-            /*last_saved_template_uuid=*/base::GUID());
+      if (SavedDeskLibraryView* library_view =
+              overview_grid->GetSavedDeskLibraryView()) {
+        for (auto* grid_view : library_view->grid_views()) {
+          grid_view->SortTemplateGridItems(
+              /*last_saved_template_uuid=*/base::GUID());
+        }
       }
     }
     return;
@@ -480,7 +478,7 @@ void SavedDeskItemView::MaybeShowReplaceDialog(
   // Show replace template dialog. If accepted, replace old template and commit
   // name change.
   aura::Window* root_window = GetWidget()->GetNativeWindow()->GetRootWindow();
-  DesksTemplatesDialogController::Get()->ShowReplaceDialog(
+  SavedDeskDialogController::Get()->ShowReplaceDialog(
       root_window, name_view_->GetText(),
       base::BindOnce(
           &SavedDeskItemView::ReplaceTemplate, weak_ptr_factory_.GetWeakPtr(),
@@ -615,7 +613,7 @@ views::View* SavedDeskItemView::TargetForRect(views::View* root,
 SavedDeskItemView* SavedDeskItemView::FindOtherTemplateWithName(
     const std::u16string& name) const {
   const auto templates_grid_view_items =
-      static_cast<const DesksTemplatesGridView*>(parent())->grid_items();
+      static_cast<const SavedDeskGridView*>(parent())->grid_items();
 
   auto iter = std::find_if(
       templates_grid_view_items.begin(), templates_grid_view_items.end(),
@@ -635,7 +633,7 @@ void SavedDeskItemView::OnDeleteTemplate() {
 
 void SavedDeskItemView::OnDeleteButtonPressed() {
   // Show the dialog to confirm the deletion.
-  auto* dialog_controller = DesksTemplatesDialogController::Get();
+  auto* dialog_controller = SavedDeskDialogController::Get();
   dialog_controller->ShowDeleteDialog(
       GetWidget()->GetNativeWindow()->GetRootWindow(),
       name_view_->GetAccessibleName(),
@@ -690,8 +688,9 @@ void SavedDeskItemView::MaybeActivateHighlightedView() {
   MaybeLaunchTemplate(/*should_delay=*/false);
 }
 
-void SavedDeskItemView::MaybeCloseHighlightedView() {
-  OnDeleteButtonPressed();
+void SavedDeskItemView::MaybeCloseHighlightedView(bool primary_action) {
+  if (primary_action)
+    OnDeleteButtonPressed();
 }
 
 void SavedDeskItemView::MaybeSwapHighlightedView(bool right) {}

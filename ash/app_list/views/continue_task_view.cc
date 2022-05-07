@@ -143,7 +143,7 @@ ContinueTaskView::ContinueTaskView(
       std::make_unique<views::Label>(std::u16string()));
   title_->SetAccessibleName(std::u16string());
   title_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-  title_->SetElideBehavior(gfx::ElideBehavior::ELIDE_MIDDLE);
+  title_->SetElideBehavior(gfx::ElideBehavior::ELIDE_TAIL);
   subtitle_ = label_container->AddChildView(
       std::make_unique<views::Label>(std::u16string()));
   subtitle_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
@@ -312,11 +312,10 @@ ui::SimpleMenuModel* ContinueTaskView::BuildMenuModel() {
                                      ui::kColorAshSystemUIMenuIcon));
   if (features::IsLauncherHideContinueSectionEnabled()) {
     context_menu_model_->AddSeparator(ui::NORMAL_SEPARATOR);
-    // TODO(crbug.com/1317428): Custom icon.
     context_menu_model_->AddItemWithIcon(
         ContinueTaskCommandId::kHideContinueSection,
         l10n_util::GetStringUTF16(IDS_ASH_LAUNCHER_HIDE_CONTINUE_SECTION),
-        ui::ImageModel::FromVectorIcon(kLockScreenPasswordInvisibleIcon,
+        ui::ImageModel::FromVectorIcon(kLauncherHideContinueSectionIcon,
                                        ui::kColorAshSystemUIMenuIcon));
   }
   return context_menu_model_.get();

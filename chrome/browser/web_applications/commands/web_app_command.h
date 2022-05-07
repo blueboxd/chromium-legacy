@@ -14,6 +14,10 @@
 #include "components/services/storage/indexed_db/locks/disjoint_range_lock_manager.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
+namespace content {
+class WebContents;
+}
+
 namespace web_app {
 
 class WebAppCommandManager;
@@ -45,6 +49,11 @@ class WebAppCommandLock {
   // on any of the `app_ids`.
   static WebAppCommandLock CreateForAppLock(base::flat_set<AppId> app_ids);
 
+  // Creates a lock that guarantees isolation against all commands that has lock
+  // on any of the `app_ids` and also grants access to the shared web contents.
+  static WebAppCommandLock CreateForAppAndWebContentsLock(
+      base::flat_set<AppId> app_ids);
+
   // Creates a no-op lock that doesn't lock on anything. This is useful to
   // create commands that doesn't need isolation protection but would like to be
   // managed by WebAppCommandManager for consistent lifecycle management.
@@ -54,12 +63,15 @@ class WebAppCommandLock {
 
   bool IsAppLocked(const AppId& app_id) const;
 
+  bool IncludesSharedWebContents() const;
+
   friend class WebAppCommandManager;
 
  private:
   enum class LockType {
     kFullSystem,
     kApp,
+    kAppAndWebContents,
     kBackgroundWebContents,
     kNoOp,
   };
@@ -120,6 +132,11 @@ class WebAppCommand {
   // Returns if the command has been started yet.
   bool IsStarted() const { return command_manager_ != nullptr; }
 
+  // Returns the pre-existing web contents the installation was
+  // initiated with. Only implements this when the command is used for
+  // installation and uses a pre-existing web contents.
+  virtual content::WebContents* GetInstallingWebContents();
+
   // Returns a debug value to log the state of the command. Used in
   // chrome://web-app-internals.
   virtual base::Value ToDebugValue() const = 0;
@@ -158,7 +175,14 @@ class WebAppCommand {
       CommandResult result,
       base::OnceClosure call_after_destruction);
 
-  WebAppCommandManager* command_manager() { return command_manager_; }
+  WebAppCommandManager* command_manager() const { return command_manager_; }
+
+  // If the `lock()` includes the lock for the kBackgroundWebContents, then this
+  // will be populated when `Start()` is called.
+  // Commands can assume that this WebContents will outlive them.
+  content::WebContents* shared_web_contents() const {
+    return shared_web_contents_;
+  }
 
   SEQUENCE_CHECKER(command_sequence_checker_);
 
@@ -173,6 +197,9 @@ class WebAppCommand {
   Id id_;
   WebAppCommandLock command_lock_;
   WebAppCommandManager* command_manager_ = nullptr;
+  // Because this is owned by the command manager, it will always outlive this
+  // object. Thus a raw pointer is save.
+  raw_ptr<content::WebContents> shared_web_contents_;
 
   base::WeakPtrFactory<WebAppCommand> weak_factory_{this};
 };

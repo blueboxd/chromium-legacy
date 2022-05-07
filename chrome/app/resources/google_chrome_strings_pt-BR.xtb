@@ -13,7 +13,6 @@
 <translation id="1154147086299354128">&amp;Abrir no Chrome</translation>
 <translation id="1178374936842835197">Se uma configuração não aparecer nesta página, confira as <ph name="LINK_BEGIN" />
         configurações do ChromeOS Flex<ph name="LINK_END" /></translation>
-<translation id="1182414570724401860">O Chrome recomenda que você não faça o download desse arquivo e não o abra</translation>
 <translation id="1278833599417554002">Reinicializar para atualizar o &amp;Chrome</translation>
 <translation id="1302523850133262269">Aguarde enquanto o Chrome instala as últimas atualizações do sistema.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> requer que você leia e aceite os Termos de Serviço a seguir antes de usar o dispositivo. Esses termos não ampliam, modificam nem limitam os Termos do Google ChromeOS Flex.</translation>
@@ -284,6 +283,7 @@ As permissões que você já concedeu a sites e apps podem ser aplicadas a essa 
 As permissões que você já concedeu a sites e apps podem ser aplicadas a essa conta. É possível gerenciar suas Contas do Google nas <ph name="SETTINGS_LINK_BEGIN" />Configurações<ph name="SETTINGS_LINK_END" />.</translation>
 <translation id="7398801000654795464">Você estava conectado ao Google Chrome como <ph name="USER_EMAIL_ADDRESS" />. Use a mesma conta para fazer login novamente.</translation>
 <translation id="7410958280246779049">O Chrome bloqueou esse arquivo por ser perigoso</translation>
+<translation id="7426611252293106642">É possível que o Google Chrome não funcione corretamente, porque esta distribuição do Linux não tem mais suporte a ele</translation>
 <translation id="7481213027396403996">Use o nível mais alto de segurança do Chrome</translation>
 <translation id="7486227612705979895">O Chrome acessará seu Drive para fazer sugestões na barra de endereço</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>

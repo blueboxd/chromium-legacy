@@ -1486,23 +1486,6 @@ DrawResult LayerTreeHostImpl::CalculateRenderPasses(FrameData* frame) {
         num_missing_tiles, total_visible_area);
   }
 
-  if (active_tree_->has_ever_been_drawn()) {
-    UMA_HISTOGRAM_COUNTS_100(
-        "Compositing.RenderPass.AppendQuadData.NumMissingTiles",
-        num_missing_tiles);
-    UMA_HISTOGRAM_COUNTS_100(
-        "Compositing.RenderPass.AppendQuadData.NumIncompleteTiles",
-        num_incomplete_tiles);
-    UMA_HISTOGRAM_COUNTS_1M(
-        "Compositing.RenderPass.AppendQuadData."
-        "CheckerboardedNoRecordingContentArea",
-        checkerboarded_no_recording_content_area);
-    UMA_HISTOGRAM_COUNTS_1M(
-        "Compositing.RenderPass.AppendQuadData."
-        "CheckerboardedNeedRasterContentArea",
-        checkerboarded_needs_raster_content_area);
-  }
-
   TRACE_EVENT_END2("cc,benchmark", "LayerTreeHostImpl::CalculateRenderPasses",
                    "draw_result", draw_result, "missing tiles",
                    num_missing_tiles);
@@ -1909,11 +1892,19 @@ TargetColorParams LayerTreeHostImpl::GetTargetColorParams(
   if (!hdr_color_space.IsValid())
     return params;
 
-  // It's expensive to rasterize in HDR, so we only want to do so when we know
-  // we have HDR content to rasterize.
-  if (hdr_color_space.IsHDR() &&
-      content_color_usage != gfx::ContentColorUsage::kHDR) {
-    params.color_space = gfx::ColorSpace::CreateDisplayP3D65();
+  if (hdr_color_space.IsHDR()) {
+    if (content_color_usage == gfx::ContentColorUsage::kHDR) {
+      // Rasterization of HDR content is always done in extended-sRGB space.
+      params.color_space = gfx::ColorSpace::CreateExtendedSRGB();
+
+      // Only report the HDR capabilities if they are requested.
+      params.hdr_max_luminance_relative =
+          display_cs.GetHDRMaxLuminanceRelative();
+    } else {
+      // If the content is not HDR, then use Display P3 as the rasterization
+      // color space.
+      params.color_space = gfx::ColorSpace::CreateDisplayP3D65();
+    }
     return params;
   }
 
@@ -1922,10 +1913,6 @@ TargetColorParams LayerTreeHostImpl::GetTargetColorParams(
   if (CheckColorSpaceContainsSrgb(hdr_color_space)) {
     params.color_space = hdr_color_space;
   }
-
-  // Only report the HDR capabilities if they are requested.
-  if (content_color_usage == gfx::ContentColorUsage::kHDR)
-    params.hdr_max_luminance_relative = display_cs.GetHDRMaxLuminanceRelative();
 
   return params;
 }
@@ -2561,7 +2548,6 @@ absl::optional<LayerTreeHostImpl::SubmitInfo> LayerTreeHostImpl::DrawLayers(
   }
   active_tree_->ResetAllChangeTracking();
 
-  active_tree_->set_has_ever_been_drawn(true);
   devtools_instrumentation::DidDrawFrame(
       id_, frame->begin_frame_ack.frame_id.sequence_number);
   benchmark_instrumentation::IssueImplThreadRenderingStatsEvent(

@@ -113,11 +113,13 @@ void GbmSurfacelessWayland::SolidColorBufferHolder::EraseBuffers(
 GbmSurfacelessWayland::GbmSurfacelessWayland(
     WaylandBufferManagerGpu* buffer_manager,
     gfx::AcceleratedWidget widget)
-    : SurfacelessEGL(gfx::Size()),
+    : SurfacelessEGL(gl::GLSurfaceEGL::GetGLDisplayEGL(), gfx::Size()),
       buffer_manager_(buffer_manager),
       widget_(widget),
       has_implicit_external_sync_(
           GetGLDisplayEGL()->HasEGLExtension("EGL_ARM_implicit_external_sync")),
+      has_image_flush_external_(
+          GetGLDisplayEGL()->HasEGLExtension("EGL_EXT_image_flush_external")),
       solid_color_buffers_holder_(std::make_unique<SolidColorBufferHolder>()),
       weak_factory_(this) {
   buffer_manager_->RegisterSurface(widget_, this);
@@ -187,10 +189,13 @@ void GbmSurfacelessWayland::SwapBuffersAsync(
     return;
   }
 
-  // TODO(fangzhoug): remove glFlush since eglImageFlushExternalEXT called on
-  // the image should be enough (https://crbug.com/720045).
-  if (!no_gl_flush_for_tests_)
+  if (!no_gl_flush_for_tests_ &&
+      ((!has_image_flush_external_ &&
+        !buffer_manager_->supports_acquire_fence()) ||
+       requires_gl_flush_on_swap_buffers_)) {
     glFlush();
+  }
+
   unsubmitted_frames_.back()->Flush();
 
   PendingFrame* frame = unsubmitted_frames_.back().get();
@@ -396,6 +401,10 @@ void GbmSurfacelessWayland::SetNoGLFlushForTests() {
   no_gl_flush_for_tests_ = true;
 }
 
+void GbmSurfacelessWayland::SetForceGlFlushOnSwapBuffers() {
+  requires_gl_flush_on_swap_buffers_ = true;
+}
+
 void GbmSurfacelessWayland::OnSubmission(uint32_t frame_id,
                                          const gfx::SwapResult& swap_result,
                                          gfx::GpuFenceHandle release_fence) {
@@ -414,6 +423,15 @@ void GbmSurfacelessWayland::OnSubmission(uint32_t frame_id,
   }
   submitted_frame->planes.clear();
   submitted_frame->overlays.clear();
+
+  // Check if the fence has retired.
+  if (!release_fence.is_null()) {
+    base::TimeTicks ticks;
+    auto status = gfx::GpuFence::GetStatusChangeTime(
+        release_fence.owned_fd.get(), &ticks);
+    if (status == gfx::GpuFence::kSignaled)
+      release_fence = {};
+  }
 
   std::move(submitted_frame->completion_callback)
       .Run(gfx::SwapCompletionResult(swap_result, std::move(release_fence)));

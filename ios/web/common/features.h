@@ -59,11 +59,6 @@ extern const base::Feature kDisableNonHTMLScreenshotOnIOS15;
 // Feature flag that enable Shared Highlighting color change in iOS.
 extern const base::Feature kIOSSharedHighlightingColorChange;
 
-// Feature flag that enables creating pending item on POST form submission.
-// Also, for GET form submissions with same page navigation, retains the
-// transition type of new navigation item.
-extern const base::Feature kCreatePendingItemForPostFormSubmission;
-
 // Enable the new download API if available.
 extern const base::Feature kEnableNewDownloadAPI;
 
@@ -89,7 +84,7 @@ extern const base::Feature kEnableFullscreenAPI;
 // loadSimulatedRequest:responseHTMLString: API to display error pages in
 // CRWWKNavigationHandler. The helper method IsLoadSimulatedRequestAPIEnabled()
 // should be used instead of directly checking this feature.
-extern const base::Feature kUseLoadSimulatedRequestForErrorPageNavigation;
+extern const base::Feature kUseLoadSimulatedRequestForOfflinePage;
 
 // When true, the native context menu for the web content are used.
 bool UseWebViewNativeContextMenuWeb();

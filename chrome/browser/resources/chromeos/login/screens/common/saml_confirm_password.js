@@ -62,11 +62,11 @@ class SamlConfirmPassword extends SamlConfirmPasswordBase {
   }
 
   get EXTERNAL_API() {
-    return ['retry'];
+    return ['showPasswordStep'];
   }
 
   defaultUIStep() {
-    return SamlConfirmPasswordState.PASSWORD;
+    return SamlConfirmPasswordState.PROGRESS;
   }
 
   get UI_STEPS() {
@@ -75,9 +75,7 @@ class SamlConfirmPassword extends SamlConfirmPasswordBase {
 
   ready() {
     super.ready();
-    this.initializeLoginScreen('ConfirmSamlPasswordScreen', {
-      resetAllowed: true,
-    });
+    this.initializeLoginScreen('ConfirmSamlPasswordScreen');
 
     cr.ui.LoginUITools.addSubmitListener(
         this.$.passwordInput, this.submit_.bind(this));
@@ -100,9 +98,12 @@ class SamlConfirmPassword extends SamlConfirmPasswordBase {
     this.isManualInput = data['manualPasswordInput'];
   }
 
-  retry() {
-    this.reset_();
-    this.$.passwordInput.invalid = true;
+  showPasswordStep(retry) {
+    if (retry) {
+      this.reset_();
+      this.$.passwordInput.invalid = true;
+    }
+    this.setUIStep(SamlConfirmPasswordState.PASSWORD);
   }
 
   resetFields_() {
@@ -118,7 +119,6 @@ class SamlConfirmPassword extends SamlConfirmPasswordBase {
     if (this.$.cancelConfirmDlg.open) {
       this.$.cancelConfirmDlg.hideDialog();
     }
-    this.setUIStep(SamlConfirmPasswordState.PASSWORD);
     this.resetFields_();
   }
 

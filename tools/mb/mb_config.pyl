@@ -25,7 +25,7 @@
       'chromeos-kevin-chrome': 'chromeos_kevin_include_unwind_tables_official_dchecks',
       'chromeos-octopus-chrome': 'chromeos_octopus_include_unwind_tables_official_dchecks',
       'chromeos-reven-chrome': 'chromeos_reven_include_unwind_tables_official_dchecks',
-      'lacros-amd64-generic-chrome': 'chromeos_amd64-generic_lacros_official',
+      'lacros-amd64-generic-chrome': 'chromeos_amd64-generic_lacros_official_no_symbols',
       'lacros-amd64-generic-chrome-skylab': 'chromeos_amd64-generic_lacros_official_skylab',
       'lacros-arm-generic-chrome': 'chromeos_arm-generic_lacros_official',
       'lacros-arm-generic-chrome-skylab': 'chromeos_arm-generic_lacros_official_skylab',
@@ -81,6 +81,7 @@
       'Android ASAN (dbg)': 'android_clang_asan_debug_bot_reclient',
       'Android arm Builder (dbg)': 'android_webview_google_debug_static_bot_reclient',
       'Android arm64 Builder (dbg)': 'android_webview_google_debug_static_bot_arm64_reclient',
+      'Android arm64 Builder All Targets (dbg)': 'android_webview_google_debug_static_bot_arm64_reclient',
       # Trigger testers on Android Q+
       'Android x64 Builder (dbg)': 'android_debug_static_bot_x64_reclient_webview_trichrome_webview_shell',
       'Android x86 Builder (dbg)': 'android_debug_static_bot_x86_reclient',
@@ -123,8 +124,6 @@
     'chromium.android.fyi': {
       'Android ASAN (dbg) (reclient)': 'android_clang_asan_debug_bot_reclient',
       'Android arm64 Builder (dbg) (reclient)': 'android_webview_google_debug_static_bot_arm64_reclient',
-      'android-11-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_webview_shell_reclient',
-      'android-12-x64-fyi-rel': 'android_release_bot_minimal_symbols_x64_fastbuild_webview_trichrome_reclient',
       'android-annotator-rel': 'android_release_bot_minimal_symbols_arm64_webview_google_reclient',
       'android-chrome-pie-x86-wpt-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
       'android-cronet-asan-x86-rel': 'android_cronet_release_bot_minimal_symbols_x86_clang_asan_reclient',
@@ -135,8 +134,6 @@
       'android-weblayer-pie-x86-wpt-smoketest': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_reclient',
       'android-weblayer-with-aosp-webview-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_resource_allowlisting_disable_proguard_chrome_google_reclient',
       'android-webview-pie-x86-wpt-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_monochrome_webview_shell_reclient',
-      # Use webview_trichrome as this builder triggers tests on Android 10
-      'android-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_fastbuild_webview_trichrome_webview_shell_reclient',
     },
 
     'chromium.angle': {
@@ -170,7 +167,7 @@
       'chromeos-arm64-generic-rel': 'chromeos_arm64-generic_dchecks',
       'chromeos-kevin-rel': 'chromeos_kevin_dchecks_reclient',
       'chromeos-kevin-rel (reclient shadow)': 'chromeos_kevin_dchecks_reclient',
-      'lacros-amd64-generic-binary-size-rel': 'chromeos_amd64-generic_lacros_rel',
+      'lacros-amd64-generic-binary-size-rel': 'chromeos_amd64-generic_lacros_rel_reclient',
       'lacros-amd64-generic-rel': 'chromeos_amd64-generic_lacros_rel_reclient',
       'lacros-arm-generic-rel': 'chromeos_arm-generic_lacros_rel_reclient',
       'linux-ash-chromium-generator-rel': 'chromeos_with_codecs_release_bot',
@@ -179,7 +176,7 @@
       'linux-chromeos-rel': 'chromeos_with_codecs_with_lacros_release_bot',
       'linux-chromeos-rel': 'chromeos_with_codecs_with_lacros_release_bot_reclient',
       'linux-lacros-builder-rel': 'lacros_on_linux_release_bot_reclient',
-      'linux-lacros-dbg': 'lacros_on_linux_debug_bot',
+      'linux-lacros-dbg': 'lacros_on_linux_debug_bot_reclient',
       'linux-lacros-tester-rel': 'lacros_on_linux_release_bot',
     },
 
@@ -355,8 +352,6 @@
       'Site Isolation Android': 'android_release_bot_minimal_symbols_arm64_reclient',
       'VR Linux': 'vr_release_bot_reclient',
       'Win 10 Fast Ring': 'release_trybot_minimal_symbols_reclient',
-      'Win ASan Release (reclient shadow)': 'asan_fuzzer_v8_heap_release_bot_reclient',
-      'Win ASan Release Media (reclient shadow)': 'asan_fuzzer_v8_heap_chrome_with_codecs_release_bot_reclient',
       'Win x64 Builder (reclient compare)': 'gpu_tests_release_bot_minimal_symbols_reclient',
       'Win x64 Builder (reclient)': 'gpu_tests_release_bot_minimal_symbols_reclient',
       'Win x64 Builder (reclient)(cross)': 'gpu_tests_release_bot_minimal_symbols_reclient_win_cross',
@@ -407,14 +402,14 @@
       'linux-example-builder': 'release_bot_reclient',
       'linux-fieldtrial-rel': 'release_bot_minimal_symbols',
       'linux-headless-shell-rel': 'headless_shell_release_bot_reclient',
-      'linux-lacros-builder-fyi-rel': 'lacros_on_linux_release_bot',
+      'linux-lacros-builder-fyi-rel': 'lacros_on_linux_release_bot_reclient',
       'linux-lacros-builder-rel (goma cache silo)': 'lacros_on_linux_release_bot',
       'linux-lacros-builder-rel (reclient)': 'lacros_on_linux_release_bot_reclient',
-      'linux-lacros-code-coverage': 'lacros_on_linux_clang_code_coverage',
-      'linux-lacros-dbg-fyi': 'lacros_on_linux_debug_bot',
+      'linux-lacros-code-coverage': 'lacros_on_linux_clang_code_coverage_reclient',
+      'linux-lacros-dbg-fyi': 'lacros_on_linux_debug_bot_reclient',
       'linux-lacros-dbg-tests-fyi': 'lacros_on_linux_debug_bot',
       'linux-lacros-tester-fyi-rel': 'lacros_on_linux_release_bot',
-      'linux-lacros-version-skew-fyi': 'lacros_on_linux_release_not_build_ash_bot',
+      'linux-lacros-version-skew-fyi': 'lacros_on_linux_release_not_build_ash_bot_reclient',
       'linux-perfetto-rel': 'perfetto_release_bot_reclient',
       'linux-upload-perfetto': 'release_bot_perfetto_zlib_reclient',
       'linux-wpt-fyi-rel': 'release_trybot_minimal_symbols_reclient',
@@ -432,6 +427,7 @@
       'win-backuprefptr-x64-fyi-rel': 'release_trybot_backuprefptr_x64_reclient',
       'win-backuprefptr-x86-fyi-rel': 'release_trybot_backuprefptr_x86_reclient',
       'win-celab-builder-rel': 'release_bot_minimal_symbols_reclient',
+      'win-fieldtrial-rel': 'gpu_tests_release_bot_minimal_symbols_reclient',
       'win-pixel-builder-rel': 'release_bot_reclient',
       'win-upload-perfetto': 'release_bot_perfetto_zlib_reclient',
       'win10-code-coverage': 'clang_code_coverage',
@@ -530,7 +526,7 @@
       'ChromeOS FYI Release (kevin)': 'gpu_tests_chromeos_kevin_release_trybot_dcheck_off_no_symbols_reclient',
       'GPU FYI Android arm Builder': 'gpu_tests_android_release_trybot_reclient',
       'GPU FYI Android arm64 Builder': 'gpu_tests_android_release_trybot_arm64_reclient',
-      'GPU FYI Lacros x64 Builder': 'gpu_tests_ozone_linux_non_x11_release_trybot',
+      'GPU FYI Lacros x64 Builder': 'gpu_tests_ozone_linux_non_x11_release_trybot_reclient',
       'GPU FYI Linux Builder': 'gpu_fyi_tests_release_trybot_reclient',
       'GPU FYI Linux Builder (dbg)': 'gpu_fyi_tests_debug_trybot_reclient',
       'GPU FYI Mac Builder': 'gpu_fyi_tests_release_trybot',
@@ -680,7 +676,7 @@
       'win-swangle-tot-swiftshader-x64': 'angle_deqp_release_trybot_reclient',
       'win-swangle-tot-swiftshader-x86': 'angle_deqp_release_bot_dcheck_always_on_x86',
       'win-swangle-x64': 'angle_deqp_release_trybot_reclient',
-      'win-swangle-x86': 'angle_deqp_release_bot_dcheck_always_on_x86',
+      'win-swangle-x86': 'angle_deqp_release_bot_dcheck_always_on_x86_reclient',
     },
 
     'chromium.updater': {
@@ -844,7 +840,7 @@
       'chromeos-octopus-chrome': 'chromeos_octopus_include_unwind_tables_official_dchecks',
       'chromeos-octopus-compile-chrome': 'chromeos_octopus_include_unwind_tables_official_dchecks',
       'chromeos-reven-chrome': 'chromeos_reven_include_unwind_tables_official_dchecks',
-      'lacros-amd64-generic-chrome': 'chromeos_amd64-generic_lacros_official',
+      'lacros-amd64-generic-chrome': 'chromeos_amd64-generic_lacros_official_no_symbols',
       'lacros-amd64-generic-chrome-skylab': 'chromeos_amd64-generic_lacros_official_skylab',
       'lacros-arm-generic-chrome': 'chromeos_arm-generic_lacros_official',
       'lacros-arm-generic-chrome-skylab': 'chromeos_arm-generic_lacros_official_skylab',
@@ -885,12 +881,10 @@
 
     'tryserver.chromium.android': {
       'android-10-arm64-rel': 'android_release_trybot_arm64_fastbuild_webview_trichrome',
-      'android-10-x86-fyi-rel-tests': 'android_release_trybot_x86_fastbuild_webview_trichrome',
-      'android-11-x86-fyi-rel': 'android_release_trybot_x86_fastbuild_webview_trichrome',
       'android-11-x86-rel': 'android_release_trybot_x86_fastbuild_webview_trichrome',
       'android-12-x64-dbg': 'android_debug_trybot_x64_webview_trichrome_webview_shell',
-      'android-12-x64-fyi-rel': 'android_release_bot_minimal_symbols_x64_fastbuild_webview_trichrome_reclient',
       'android-12-x64-rel': 'android_release_trybot_x64_fastbuild_webview_trichrome',
+      'android-arm64-all-targets-dbg': 'android_debug_trybot_compile_only_arm64_fastbuild',
       'android-asan': 'android_clang_asan_release_trybot',
       'android-bfcache-rel': 'android_release_trybot',
       'android-binary-size': 'android_binary_size',
@@ -1258,12 +1252,10 @@
       'gpu-fyi-try-win10-nvidia-exp-64': 'gpu_fyi_tests_release_trybot',
       'gpu-fyi-try-win10-nvidia-rel-32': 'gpu_fyi_tests_release_trybot_x86',
       'gpu-fyi-try-win10-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
-      'gpu-fyi-try-win7-amd-rel-32': 'gpu_fyi_tests_release_trybot_x86',
-      'gpu-fyi-try-win7-nvidia-rel-32': 'gpu_fyi_tests_release_trybot_x86',
-      'gpu-fyi-try-win7-nvidia-rel-64': 'gpu_fyi_tests_release_trybot',
       'win-annotator-rel': 'release_trybot',
       'win-asan': 'asan_clang_fuzzer_static_v8_heap_minimal_symbols_release',
       'win-celab-try-rel': 'release_bot_minimal_symbols',
+      'win-fieldtrial-fyi-rel': 'gpu_tests_release_bot_minimal_symbols_reclient',
       'win-libfuzzer-asan-rel': 'libfuzzer_windows_asan_release_trybot',
       'win10-clang-tidy-rel': 'release_trybot',
       'win10_chromium_inverse_fieldtrials_x64_fyi_rel_ng': 'gpu_tests_release_trybot_resource_allowlisting_invert_fieldtrials',
@@ -1971,6 +1963,15 @@
       'chromeos_amd64-generic-crostoolchain', 'lacros', 'official', 'minimal_symbols', 'cfi', 'thin_lto',
     ],
 
+    # This is the same as chromeos_amd64-generic_lacros_official except
+    # the symbol_level. Please keep them in sync.
+    # TODO(https://crbug.com/1316467): once lacros_variations_tast_tests
+    # is migrated to run in skylab, remove this use
+    # chromeos_amd64-generic_lacros_official instead.
+    'chromeos_amd64-generic_lacros_official_no_symbols': [
+      'chromeos_amd64-generic-crostoolchain', 'lacros', 'official', 'no_symbols', 'cfi', 'thin_lto',
+    ],
+
     # This is the same as 'chromeos_amd64-generic_lacros_official', except for
     # the 'is_skylab' arg. Please keep them in sync.
     'chromeos_amd64-generic_lacros_official_skylab': [
@@ -2151,7 +2152,7 @@
 
     # Keep in sync with chromeos_with_codecs_release_trybot.
     'chromeos_with_codecs_release_trybot_code_coverage': [
-      'chromeos_with_codecs', 'release_trybot', 'no_symbols', 'also_build_lacros_chrome',
+      'chromeos_with_codecs', 'release_trybot', 'no_symbols',
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
@@ -2601,6 +2602,10 @@
       'gpu_tests', 'ozone_linux', 'ozone_linux_non_x11', 'release_trybot_minimal_symbols',
     ],
 
+    'gpu_tests_ozone_linux_non_x11_release_trybot_reclient': [
+      'gpu_tests', 'ozone_linux', 'ozone_linux_non_x11', 'release_trybot_minimal_symbols_reclient',
+    ],
+
     'gpu_tests_release_bot': [
       'gpu_tests', 'release_bot',
     ],
@@ -2809,12 +2814,16 @@
         'ios', 'ios_simulator', 'ios_cpu_x64', 'release_bot', 'asan', 'xctest', 'ios_disable_xcode_project_generation',
     ],
 
-    'lacros_on_linux_clang_code_coverage': [
-      'lacros_on_linux', 'release_bot', 'also_build_ash_chrome', 'clang', 'use_clang_coverage', 'no_symbols',
+    'lacros_on_linux_clang_code_coverage_reclient': [
+      'lacros_on_linux', 'release_bot_reclient', 'also_build_ash_chrome', 'clang', 'use_clang_coverage', 'no_symbols',
     ],
 
     'lacros_on_linux_debug_bot': [
       'lacros_on_linux', 'debug_bot', 'also_build_ash_chrome',
+    ],
+
+    'lacros_on_linux_debug_bot_reclient': [
+      'lacros_on_linux', 'debug_bot_reclient', 'also_build_ash_chrome',
     ],
 
     'lacros_on_linux_release_bot': [
@@ -2827,6 +2836,10 @@
 
     'lacros_on_linux_release_not_build_ash_bot': [
       'lacros_on_linux', 'release_bot',
+    ],
+
+    'lacros_on_linux_release_not_build_ash_bot_reclient': [
+      'lacros_on_linux', 'release_bot_reclient',
     ],
 
     'lacros_on_linux_release_trybot': [

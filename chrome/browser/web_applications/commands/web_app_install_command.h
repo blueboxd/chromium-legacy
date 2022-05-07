@@ -30,23 +30,28 @@ class WebAppRegistrar;
 // Install the web app after the manifest is retrieved and validated.
 class WebAppInstallCommand : public WebAppCommand {
  public:
-  WebAppInstallCommand(const AppId& app_id,
-                       Profile* profile,
-                       WebAppInstallFinalizer* install_finalizer,
-                       std::unique_ptr<WebAppDataRetriever> data_retriever,
-                       WebAppRegistrar* registrar,
-                       webapps::WebappInstallSource install_surface,
-                       base::WeakPtr<content::WebContents> contents,
-                       WebAppInstallDialogCallback dialog_callback,
-                       OnceInstallCallback callback,
-                       std::unique_ptr<WebAppInstallInfo> web_app_info,
-                       blink::mojom::ManifestPtr opt_manifest,
-                       const GURL& manifest_url);
+  WebAppInstallCommand(
+      const AppId& app_id,
+      Profile* profile,
+      WebAppInstallFinalizer* install_finalizer,
+      std::unique_ptr<WebAppDataRetriever> data_retriever,
+      WebAppRegistrar* registrar,
+      webapps::WebappInstallSource install_surface,
+      base::WeakPtr<content::WebContents> contents,
+      WebAppInstallDialogCallback dialog_callback,
+      OnceInstallCallback callback,
+      std::unique_ptr<WebAppInstallInfo> web_app_info,
+      blink::mojom::ManifestPtr opt_manifest,
+      const GURL& manifest_url,
+      WebAppInstallFlow flow,
+      absl::optional<WebAppInstallParams> install_params = absl::nullopt);
   ~WebAppInstallCommand() override;
 
   void Start() override;
   void OnBeforeForcedUninstallFromSync() override;
   void OnShutdown() override;
+
+  content::WebContents* GetInstallingWebContents() override;
 
   base::Value ToDebugValue() const override;
 
@@ -64,8 +69,10 @@ class WebAppInstallCommand : public WebAppCommand {
   std::unique_ptr<WebAppInstallInfo> web_app_info_;
   blink::mojom::ManifestPtr opt_manifest_;
   GURL manifest_url_;
+  WebAppInstallFlow flow_;
 
   AppId app_id_;
+  absl::optional<WebAppInstallParams> install_params_;
 
   base::WeakPtrFactory<WebAppInstallCommand> weak_factory_{this};
 };

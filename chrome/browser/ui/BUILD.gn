@@ -747,6 +747,10 @@ static_library("ui") {
       "android/autofill/save_update_address_profile_prompt_view_android.h",
       "android/autofill/snackbar/autofill_snackbar_view_android.cc",
       "android/autofill/snackbar/autofill_snackbar_view_android.h",
+      "android/autofill/virtual_card_enrollment_view_android.cc",
+      "android/autofill/virtual_card_enrollment_view_android.h",
+      "android/autofill/virtual_card_utils.cc",
+      "android/autofill/virtual_card_utils.h",
       "android/chrome_http_auth_handler.cc",
       "android/chrome_http_auth_handler.h",
       "android/chrome_javascript_app_modal_dialog_android.cc",
@@ -1757,6 +1761,7 @@ static_library("ui") {
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
       "//chrome/browser/resource_coordinator:tab_metrics_event_proto",
       "//chrome/browser/resource_coordinator/tab_ranker",
+      "//chrome/browser/resources/identity_internals:resources",
       "//chrome/browser/resources/support_tool:resources",
       "//chrome/browser/safe_browsing",
       "//chrome/browser/safe_browsing:advanced_protection",
@@ -2630,6 +2635,8 @@ static_library("ui") {
       "webui/chromeos/login/base_screen_handler.h",
       "webui/chromeos/login/base_webui_handler.cc",
       "webui/chromeos/login/base_webui_handler.h",
+      "webui/chromeos/login/check_passwords_against_cryptohome_helper.cc",
+      "webui/chromeos/login/check_passwords_against_cryptohome_helper.h",
       "webui/chromeos/login/consolidated_consent_screen_handler.cc",
       "webui/chromeos/login/consolidated_consent_screen_handler.h",
       "webui/chromeos/login/cookie_waiter.cc",
@@ -3473,6 +3480,8 @@ static_library("ui") {
       "webui/signin/turn_sync_on_helper.h",
       "webui/signin/turn_sync_on_helper_delegate_impl.cc",
       "webui/signin/turn_sync_on_helper_delegate_impl.h",
+      "webui/signin/turn_sync_on_helper_policy_fetch_tracker.cc",
+      "webui/signin/turn_sync_on_helper_policy_fetch_tracker.h",
     ]
 
     deps += [
@@ -4037,6 +4046,18 @@ static_library("ui") {
 
       # This test header is included because it contains forward declarations
       # needed for "friend" statements for use in tests.
+      "side_search/side_search_config.cc",
+      "side_search/side_search_config.h",
+      "side_search/side_search_metrics.cc",
+      "side_search/side_search_metrics.h",
+      "side_search/side_search_prefs.cc",
+      "side_search/side_search_prefs.h",
+      "side_search/side_search_side_contents_helper.cc",
+      "side_search/side_search_side_contents_helper.h",
+      "side_search/side_search_tab_contents_helper.cc",
+      "side_search/side_search_tab_contents_helper.h",
+      "side_search/side_search_utils.cc",
+      "side_search/side_search_utils.h",
       "translate/translate_bubble_test_utils.h",
       "views/accessibility/caption_bubble_context_views.cc",
       "views/accessibility/caption_bubble_context_views.h",
@@ -4755,6 +4776,12 @@ static_library("ui") {
       "views/side_panel/user_note/user_note_ui_coordinator.h",
       "views/side_panel/user_note/user_note_view.cc",
       "views/side_panel/user_note/user_note_view.h",
+      "views/side_search/default_search_icon_source.cc",
+      "views/side_search/default_search_icon_source.h",
+      "views/side_search/side_search_browser_controller.cc",
+      "views/side_search/side_search_browser_controller.h",
+      "views/side_search/side_search_icon_view.cc",
+      "views/side_search/side_search_icon_view.h",
       "views/ssl_client_certificate_selector.cc",
       "views/ssl_client_certificate_selector.h",
       "views/status_bubble_views.cc",
@@ -4991,6 +5018,8 @@ static_library("ui") {
     ]
 
     deps += [
+      "side_search:side_search_tab_data_proto",
+      "side_search:side_search_window_data_proto",
       "//base",
       "//chrome/browser/ui/views",
       "//components/commerce/core:public",
@@ -5537,34 +5566,6 @@ static_library("ui") {
       "webui/tab_strip/tab_strip_ui_util.h",
       "webui/tab_strip/thumbnail_tracker.cc",
       "webui/tab_strip/thumbnail_tracker.h",
-    ]
-  }
-
-  if (enable_side_search) {
-    sources += [
-      "side_search/side_search_config.cc",
-      "side_search/side_search_config.h",
-      "side_search/side_search_metrics.cc",
-      "side_search/side_search_metrics.h",
-      "side_search/side_search_prefs.cc",
-      "side_search/side_search_prefs.h",
-      "side_search/side_search_side_contents_helper.cc",
-      "side_search/side_search_side_contents_helper.h",
-      "side_search/side_search_tab_contents_helper.cc",
-      "side_search/side_search_tab_contents_helper.h",
-      "side_search/side_search_utils.cc",
-      "side_search/side_search_utils.h",
-      "views/side_search/default_search_icon_source.cc",
-      "views/side_search/default_search_icon_source.h",
-      "views/side_search/side_search_browser_controller.cc",
-      "views/side_search/side_search_browser_controller.h",
-      "views/side_search/side_search_icon_view.cc",
-      "views/side_search/side_search_icon_view.h",
-    ]
-
-    deps += [
-      "side_search:side_search_tab_data_proto",
-      "side_search:side_search_window_data_proto",
     ]
   }
 }

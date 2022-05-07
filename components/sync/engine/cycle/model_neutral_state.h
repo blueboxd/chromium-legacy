@@ -33,9 +33,7 @@ struct ModelNeutralState {
   int num_tombstone_updates_downloaded_total;
 
   // Update application and conflicts.
-  int num_encryption_conflicts;
   int num_server_conflicts;
-  int num_hierarchy_conflicts;
 
   // Records the most recent results of GetKey, PostCommit and GetUpdates
   // commands.

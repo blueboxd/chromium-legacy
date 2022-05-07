@@ -262,6 +262,50 @@ ci.builder(
     tree_closing = True,
 )
 
+# We want to confirm that we can compile everything.
+# Android however has some non standard buildchains
+# which cause gn analyze to not filter out our compile targets
+# when running a try bot.
+# This means that our trybots would result in compile times of
+# 5+ hours. So instead we have this bot which will compile all on CI.
+# It should match "Android arm64 Builder (dbg)"
+# History: crbug.com/1246468
+ci.builder(
+    name = "Android arm64 Builder All Targets (dbg)",
+    branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "download_vr_test_apks",
+            ],
+            build_config = builder_config.build_config.DEBUG,
+            target_bits = 64,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder_mb",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
+    console_view_entry = consoles.console_view_entry(
+        category = "builder|arm",
+        short_name = "64",
+    ),
+    cq_mirrors_console_view = "mirrors",
+    execution_timeout = 7 * time.hour,
+    # We will make this tree closing once we have confirmed that this builder works correctly
+    # crbug.com/1246468
+    tree_closing = False,
+)
+
 ci.builder(
     name = "Android x64 Builder (dbg)",
     branch_selector = branches.STANDARD_MILESTONE,
@@ -330,12 +374,7 @@ ci.builder(
     ),
     cq_mirrors_console_view = "mirrors",
     reclient_jobs = rbe_jobs.DEFAULT,
-    # tree_closing will be set to true and sherrif_rotations
-    # will be enabled once we have confirmed that these tests
-    # are passing successfully
-    # crbug.com/1250464
-    tree_closing = False,
-    sheriff_rotations = args.ignore_default(None),
+    tree_closing = True,
 )
 
 ci.thin_tester(
@@ -364,9 +403,6 @@ ci.thin_tester(
         build_gs_bucket = "chromium-android-archive",
     ),
     triggered_by = ["ci/android-x86-rel"],
-    # To remove once we've confirmed this works correctly
-    # crbug.com/1250464
-    sheriff_rotations = args.ignore_default(None),
 )
 
 ci.builder(
@@ -906,6 +942,28 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "android-weblayer-oreo-x86-rel-tests",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 32,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x86_builder",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "tester|weblayer",
         short_name = "O",
@@ -916,6 +974,28 @@ ci.thin_tester(
 
 ci.thin_tester(
     name = "android-weblayer-pie-x86-rel-tests",
+    builder_spec = builder_config.builder_spec(
+        execution_mode = builder_config.execution_mode.TEST,
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 32,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x86_builder",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "tester|weblayer",
         short_name = "P",
@@ -937,6 +1017,28 @@ ci.builder(
 
 ci.builder(
     name = "android-weblayer-x86-rel",
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+                "enable_reclient",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 32,
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "x86_builder",
+        ),
+        build_gs_bucket = "chromium-android-archive",
+    ),
     console_view_entry = consoles.console_view_entry(
         category = "builder|weblayer",
         short_name = "x86",

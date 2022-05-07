@@ -19,11 +19,16 @@ PRESUBMIT_VERSION = '2.0.0'
 USE_PYTHON3 = True
 
 _EXCLUDED_PATHS = (
+    # Generated file
+    (r"chrome[\\/]android[\\/]webapk[\\/]shell_apk[\\/]src[\\/]org[\\/]chromium"
+     r"[\\/]webapk[\\/]lib[\\/]runtime_library[\\/]IWebApkApi.java"),
     # File needs to write to stdout to emulate a tool it's replacing.
     r"chrome[\\/]updater[\\/]mac[\\/]keystone[\\/]ksadmin.mm",
     # Generated file.
     (r"^components[\\/]variations[\\/]proto[\\/]devtools[\\/]"
      r"client_variations.js"),
+    # These are video files, not typescript.
+    r"^media[\\/]test[\\/]data[\\/].*.ts",
     r"^native_client_sdksrc[\\/]build_tools[\\/]make_rules.py",
     r"^native_client_sdk[\\/]src[\\/]build_tools[\\/]make_simple.py",
     r"^native_client_sdk[\\/]src[\\/]tools[\\/].*.mk",
@@ -1045,9 +1050,11 @@ _KNOWN_TEST_DATA_AND_INVALID_JSON_FILE_PATTERNS = [
     r'testing[\\/]buildbot[\\/]',
     r'^components[\\/]policy[\\/]resources[\\/]policy_templates\.json$',
     r'^third_party[\\/]protobuf[\\/]',
+    r'^third_party[\\/]blink[\\/]perf_tests[\\/]speedometer[\\/]resources[\\/]todomvc[\\/]learn.json',
     r'^third_party[\\/]blink[\\/]renderer[\\/]devtools[\\/]protocol\.json$',
     r'^third_party[\\/]blink[\\/]web_tests[\\/]external[\\/]wpt[\\/]',
     r'^tools[\\/]perf[\\/]',
+    r'^tools[\\/]traceline[\\/]svgui[\\/]startup-release.json',
 ]
 
 # These are not checked on the public chromium-presubmit trybot.

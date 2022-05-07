@@ -37,6 +37,7 @@
 #include "components/payments/core/payment_prefs.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/browser/url_blocklist_manager.h"
+#import "components/policy/core/common/policy_pref_names.h"
 #include "components/policy/core/common/policy_statistics_collector.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -144,6 +145,9 @@ const char kPrefReadingListMessagesNeverShow[] =
 const char kFRETrialGroupPrefName[] = "fre_refactoring.trial_group";
 const char kOptimizationGuideRemoteFetchingEnabled[] =
     "optimization_guide.fetching_enabled";
+
+// Deprecated 05/2022.
+const char kTrialGroupV3PrefName[] = "fre_refactoringV3.trial_group";
 }  // namespace
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
@@ -214,6 +218,8 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(kSigninBottomSheetShownCount, 0);
 
   registry->RegisterIntegerPref(kFRETrialGroupPrefName, 0);
+
+  registry->RegisterIntegerPref(kTrialGroupV3PrefName, 0);
 }
 
 void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
@@ -331,6 +337,11 @@ void RegisterBrowserStatePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterBooleanPref(kOptimizationGuideRemoteFetchingEnabled, true);
 
   registry->RegisterBooleanPref(prefs::kHttpsOnlyModeEnabled, false);
+
+  // Register pref used to determine whether the User Policy notification was
+  // already shown.
+  registry->RegisterBooleanPref(
+      policy::policy_prefs::kUserPolicyNotificationWasShown, false);
 }
 
 // This method should be periodically pruned of year+ old migrations.
@@ -363,6 +374,9 @@ void MigrateObsoleteLocalStatePrefs(PrefService* prefs) {
 
   // Added 04/2022
   prefs->ClearPref(kFRETrialGroupPrefName);
+
+  // Added 05/2022
+  prefs->ClearPref(kTrialGroupV3PrefName);
 }
 
 // This method should be periodically pruned of year+ old migrations.

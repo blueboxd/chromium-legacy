@@ -433,34 +433,6 @@
       "use_remoteexec": true
     }
   },
-  "Win ASan Release (reclient shadow)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "enable_ipc_fuzzer": true,
-      "is_asan": true,
-      "is_clang": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "use_rbe": true,
-      "use_remoteexec": true,
-      "v8_enable_verify_heap": true
-    }
-  },
-  "Win ASan Release Media (reclient shadow)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "enable_ipc_fuzzer": true,
-      "ffmpeg_branding": "Chrome",
-      "is_asan": true,
-      "is_clang": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "proprietary_codecs": true,
-      "use_rbe": true,
-      "use_remoteexec": true,
-      "v8_enable_verify_heap": true
-    }
-  },
   "Win x64 Builder (reclient compare)": {
     "gn_args": {
       "dcheck_always_on": false,
@@ -1114,7 +1086,8 @@
       "is_component_build": false,
       "is_debug": false,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-lacros-builder-rel (goma cache silo)": {
@@ -1151,7 +1124,8 @@
       "symbol_level": 0,
       "target_os": "chromeos",
       "use_clang_coverage": true,
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-lacros-dbg-fyi": {
@@ -1162,7 +1136,8 @@
       "is_debug": true,
       "symbol_level": 1,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-lacros-dbg-tests-fyi": {
@@ -1194,7 +1169,8 @@
       "is_component_build": false,
       "is_debug": false,
       "target_os": "chromeos",
-      "use_goma": true
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "linux-perfetto-rel": {
@@ -1361,6 +1337,18 @@
       "dcheck_always_on": false,
       "is_component_build": false,
       "is_debug": false,
+      "symbol_level": 1,
+      "use_rbe": true,
+      "use_remoteexec": true
+    }
+  },
+  "win-fieldtrial-rel": {
+    "gn_args": {
+      "dcheck_always_on": false,
+      "ffmpeg_branding": "Chrome",
+      "is_component_build": false,
+      "is_debug": false,
+      "proprietary_codecs": true,
       "symbol_level": 1,
       "use_rbe": true,
       "use_remoteexec": true

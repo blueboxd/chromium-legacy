@@ -2287,7 +2287,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "fuchsia_mojo_unittests",
-        "test_id_prefix": "ninja://fuchsia/mojom:fuchsia_mojo_unittests/"
+        "test_id_prefix": "ninja://mojo/public/cpp/base/fuchsia:fuchsia_mojo_unittests/"
       },
       {
         "merge": {
@@ -2385,9 +2385,6 @@
         "test_id_prefix": "ninja://components/gwp_asan:gwp_asan_unittests/"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.headless_browsertests.filter"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -2740,9 +2737,6 @@
         "test_id_prefix": "ninja://sql:sql_unittests/"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.storage_unittests.filter"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3502,7 +3496,7 @@
           "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
         },
         "test": "fuchsia_mojo_unittests",
-        "test_id_prefix": "ninja://fuchsia/mojom:fuchsia_mojo_unittests/"
+        "test_id_prefix": "ninja://mojo/public/cpp/base/fuchsia:fuchsia_mojo_unittests/"
       },
       {
         "merge": {
@@ -3613,9 +3607,6 @@
         "test_id_prefix": "ninja://components/gwp_asan:gwp_asan_unittests/"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.headless_browsertests.filter"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
@@ -3986,9 +3977,6 @@
         "test_id_prefix": "ninja://sql:sql_unittests/"
       },
       {
-        "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.storage_unittests.filter"
-        ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"

@@ -13,7 +13,6 @@
 <translation id="1154147086299354128">ಮತ್ತು Chrome ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="1178374936842835197">ಈ ಪುಟದಲ್ಲಿ ಸೆಟ್ಟಿಂಗ್ ಒಂದು ಕಾಣಿಸದಿದ್ದರೆ, ನಿಮ್ಮ <ph name="LINK_BEGIN" />
         ChromeOS Flex ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="LINK_END" /> ನೋಡಿರಿ</translation>
-<translation id="1182414570724401860">ಈ ಫೈಲ್ ಅನ್ನು ಡೌನ್‌ಲೋಡ್ ಮಾಡಬೇಡಿ ಅಥವಾ ತೆರೆಯಬೇಡಿ ಎಂದು Chrome ನಿಮಗೆ ಶಿಫಾರಸು ಮಾಡುತ್ತದೆ</translation>
 <translation id="1278833599417554002">&amp;Chrome ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="1302523850133262269">ಇತ್ತೀಚಿನ ಸಿಸ್ಟಂ ನವೀಕರಣಗಳನ್ನು Chrome ಸ್ಥಾಪಿಸುವಾಗ ದಯವಿಟ್ಟು ಕಾಯಿರಿ.</translation>
 <translation id="1335640173511558774"><ph name="MANAGER" /> ನ ನೀತಿಯ ಪ್ರಕಾರ ಈ ಸಾಧನವನ್ನು ಬಳಸುವ ಮೊದಲು ನೀವು ಈ ಕೆಳಗಿನ ಸೇವಾ ನಿಯಮಗಳನ್ನು ಓದಿ, ಅವುಗಳಿಗೆ ಸಮ್ಮತಿಸಬೇಕಾಗುತ್ತದೆ. ಈ ನಿಯಮಗಳು Google ChromeOS Flex ನಿಯಮಗಳನ್ನು ವಿಸ್ತರಿಸುವುದಿಲ್ಲ, ಮಾರ್ಪಡಿಸುವುದಿಲ್ಲ, ಅಥವಾ ಸೀಮಿತಗೊಳಿಸುವುದಿಲ್ಲ.</translation>
@@ -285,6 +284,7 @@
 ವೆಬ್‌ಸೈಟ್‌ಗಳು ಮತ್ತು ಆ್ಯಪ್‌ಗಳಿಗೆ ನೀವು ಈಗಾಗಲೇ ನೀಡಿರುವ ಅನುಮತಿಗಳು ಈ ಖಾತೆಗೆ ಅನ್ವಯಿಸಬಹುದು. ನೀವು <ph name="SETTINGS_LINK_BEGIN" />ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="SETTINGS_LINK_END" /> ನಿಮ್ಮ Google ಖಾತೆಗಳನ್ನು ನಿರ್ವಹಿಸಬಹುದು.</translation>
 <translation id="7398801000654795464"><ph name="USER_EMAIL_ADDRESS" /> ನಂತೆ Chrome ಅನ್ನು ನೀವು ಸೈನ್ ಇನ್ ಮಾಡಿರುವಿರಿ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಸೈನ್ ಇನ್ ಮಾಡಲು ಅದೇ ಖಾತೆಯನ್ನು ಬಳಸಿ.</translation>
 <translation id="7410958280246779049">Chrome ಈ ಫೈಲ್ ಅನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ ಏಕೆಂದರೆ ಇದು ಅಪಾಯಕಾರಿಯಾಗಿದೆ</translation>
+<translation id="7426611252293106642">ಈ Linux ವಿತರಣೆಯಲ್ಲಿ ಇನ್ನು ಮುಂದೆ Google Chrome ಬೆಂಬಲಿಸದಿರುವ ಕಾರಣ, ಅದು ಸರಿಯಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸದೇ ಇರಬಹುದು</translation>
 <translation id="7481213027396403996">Chrome ನ ಪ್ರಬಲ ಭದ್ರತೆಯನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="7486227612705979895">ವಿಳಾಸಪಟ್ಟಿಯಲ್ಲಿ ಸಲಹೆ ನೀಡಲು, Chrome ನಿಮ್ಮ ಡ್ರೈವ್‌ಗೆ ಪ್ರವೇಶಿಸುತ್ತದೆ.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>

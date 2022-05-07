@@ -8,9 +8,10 @@
 #include "ash/style/close_button.h"
 #include "ash/wm/desks/desks_bar_view.h"
 #include "ash/wm/desks/expanded_desks_bar_button.h"
-#include "ash/wm/desks/templates/desks_templates_dialog_controller.h"
 #include "ash/wm/desks/templates/desks_templates_presenter.h"
+#include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
 #include "ash/wm/desks/templates/saved_desk_item_view.h"
+#include "ash/wm/desks/templates/saved_desk_library_view.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_test_util.h"
@@ -82,15 +83,24 @@ void DesksTemplatesPresenterTestApi::SetOnUpdateUiClosure(
   presenter_->on_update_ui_closure_for_testing_ = std::move(closure);
 }
 
-DesksTemplatesGridViewTestApi::DesksTemplatesGridViewTestApi(
-    DesksTemplatesGridView* grid_view)
+SavedDeskLibraryViewTestApi::SavedDeskLibraryViewTestApi(
+    SavedDeskLibraryView* library_view)
+    : library_view_(library_view) {}
+
+void SavedDeskLibraryViewTestApi::WaitForAnimationDone() {
+  BoundsAnimatorWaiter(library_view_->bounds_animator_).Wait();
+  for (auto* grid_view : library_view_->grid_views())
+    SavedDeskGridViewTestApi(grid_view).WaitForItemMoveAnimationDone();
+}
+
+SavedDeskGridViewTestApi::SavedDeskGridViewTestApi(SavedDeskGridView* grid_view)
     : grid_view_(grid_view) {
   DCHECK(grid_view_);
 }
 
-DesksTemplatesGridViewTestApi::~DesksTemplatesGridViewTestApi() = default;
+SavedDeskGridViewTestApi::~SavedDeskGridViewTestApi() = default;
 
-void DesksTemplatesGridViewTestApi::WaitForItemMoveAnimationDone() {
+void SavedDeskGridViewTestApi::WaitForItemMoveAnimationDone() {
   BoundsAnimatorWaiter(grid_view_->bounds_animator_).Wait();
 }
 
@@ -102,39 +112,48 @@ SavedDeskItemViewTestApi::SavedDeskItemViewTestApi(
 
 SavedDeskItemViewTestApi::~SavedDeskItemViewTestApi() = default;
 
-std::vector<DesksTemplatesIconView*> SavedDeskItemViewTestApi::GetIconViews()
-    const {
-  std::vector<DesksTemplatesIconView*> casted_icon_views;
+std::vector<SavedDeskIconView*> SavedDeskItemViewTestApi::GetIconViews() const {
+  std::vector<SavedDeskIconView*> casted_icon_views;
   for (auto* icon_view : item_view_->icon_container_view_->children()) {
-    casted_icon_views.push_back(
-        static_cast<DesksTemplatesIconView*>(icon_view));
+    casted_icon_views.push_back(static_cast<SavedDeskIconView*>(icon_view));
   }
   return casted_icon_views;
 }
 
-DesksTemplatesIconViewTestApi::DesksTemplatesIconViewTestApi(
-    const DesksTemplatesIconView* desks_templates_icon_view)
+SavedDeskIconViewTestApi::SavedDeskIconViewTestApi(
+    const SavedDeskIconView* desks_templates_icon_view)
     : desks_templates_icon_view_(desks_templates_icon_view) {
   DCHECK(desks_templates_icon_view_);
 }
 
-DesksTemplatesIconViewTestApi::~DesksTemplatesIconViewTestApi() = default;
+SavedDeskIconViewTestApi::~SavedDeskIconViewTestApi() = default;
+
+std::vector<SavedDeskItemView*> GetItemViewsFromDeskLibrary(
+    const OverviewGrid* overview_grid) {
+  SavedDeskLibraryView* saved_desk_library_view =
+      overview_grid->GetSavedDeskLibraryView();
+  return GetItemViewsFromDeskLibrary(saved_desk_library_view);
+}
+
+std::vector<SavedDeskItemView*> GetItemViewsFromDeskLibrary(
+    SavedDeskLibraryView* saved_desk_library_view) {
+  DCHECK(saved_desk_library_view);
+  std::vector<SavedDeskItemView*> grid_items;
+  for (auto* grid_view : saved_desk_library_view->grid_views()) {
+    auto& items = grid_view->grid_items();
+    grid_items.insert(grid_items.end(), items.begin(), items.end());
+  }
+  return grid_items;
+}
 
 SavedDeskItemView* GetItemViewFromTemplatesGrid(int grid_item_index) {
   const auto* overview_grid = GetPrimaryOverviewGrid();
   if (!overview_grid)
     return nullptr;
 
-  views::Widget* grid_widget = overview_grid->desks_templates_grid_widget();
-  DCHECK(grid_widget);
-
-  const DesksTemplatesGridView* templates_grid_view =
-      static_cast<DesksTemplatesGridView*>(grid_widget->GetContentsView());
-  DCHECK(templates_grid_view);
-
-  std::vector<SavedDeskItemView*> grid_items =
-      templates_grid_view->grid_items();
+  auto grid_items = GetItemViewsFromDeskLibrary(overview_grid);
   SavedDeskItemView* item_view = grid_items.at(grid_item_index);
+
   DCHECK(item_view);
   return item_view;
 }
@@ -182,9 +201,9 @@ views::Button* GetTemplateItemDeleteButton(int index) {
               : nullptr;
 }
 
-views::Button* GetDesksTemplatesDialogAcceptButton() {
+views::Button* GetSavedDeskDialogAcceptButton() {
   const views::Widget* dialog_widget =
-      DesksTemplatesDialogController::Get()->dialog_widget();
+      SavedDeskDialogController::Get()->dialog_widget();
   if (!dialog_widget)
     return nullptr;
   return dialog_widget->widget_delegate()->AsDialogDelegate()->GetOkButton();

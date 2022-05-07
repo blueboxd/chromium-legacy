@@ -94,7 +94,6 @@
 <translation id="3286538390144397061">Рестартуј одмах</translation>
 <translation id="328888136576916638">Недостају шифре за Google API. Неке функције Chromium-а ће бити онемогућене.</translation>
 <translation id="3296368748942286671">Настави са покретањем апликација у позадини када се Chromium затвори</translation>
-<translation id="3349211344363550267">Chromium препоручује да не преузимате нити отварате овај фајл</translation>
 <translation id="3350761136195634146">Chromium профил са овим налогом већ постоји</translation>
 <translation id="3387527074123400161">Chromium ОС</translation>
 <translation id="3406848076815591792">Желите да пређете на постојећи Chromium профил?</translation>
@@ -178,6 +177,7 @@
 <translation id="5398878173008909840">Доступна је нова верзија Chromium-а.</translation>
 <translation id="5427571867875391349">Подеси Chromium као подразумевани прегледач</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium бета</translation>
+<translation id="5473971139929175403">Chromium можда неће исправно радити зато што више није подржан на овој верзији Linux-а</translation>
 <translation id="5480860683791598150">Chromium тражи приступ вашој локацији да бисте је делили са овим сајтом</translation>
 <translation id="5487574057737591516">Ради заштите приватности аутоматски бришемо интересовања старија од 4 недеље. Када наставите да прегледате, интересовање ће се можда поново појавити на листи. Ако Chromium погреши или не желите да вам се приказују одређени огласи, можете да уклоните интересовање.</translation>
 <translation id="549669000822060376">Сачекајте да Chromium инсталира најновија ажурирања система.</translation>

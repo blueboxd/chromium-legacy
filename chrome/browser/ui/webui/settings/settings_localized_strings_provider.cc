@@ -1031,6 +1031,10 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"editPasswordUsernameLabel", IDS_SETTINGS_PASSWORDS_USERNAME},
       {"editPasswordPasswordLabel", IDS_SETTINGS_PASSWORDS_PASSWORD},
       {"passwordNoteLabel", IDS_SETTINGS_PASSWORDS_NOTE},
+      {"passwordNoteCharacterCount",
+       IDS_SETTINGS_PASSWORDS_NOTE_CHARACTER_COUNT},
+      {"passwordNoteCharacterCountWarning",
+       IDS_SETTINGS_PASSWORDS_NOTE_CHARACTER_COUNT_WARNING},
       {"noAddressesFound", IDS_SETTINGS_ADDRESS_NONE},
       {"noPasswordsFound", IDS_SETTINGS_PASSWORDS_NONE},
       {"noExceptionsFound", IDS_SETTINGS_PASSWORDS_EXCEPTIONS_NONE},
@@ -1540,7 +1544,14 @@ void AddPrivacyStrings(content::WebUIDataSource* html_source,
       base::FeatureList::IsEnabled(omnibox::kDocumentProvider));
   html_source->AddBoolean(
       "consolidatedSiteStorageControlsEnabled",
-      base::FeatureList::IsEnabled(features::kConsolidatedSiteStorageControls));
+      base::FeatureList::IsEnabled(
+          features::kConsolidatedSiteStorageControls) ||
+          // The third release of Privacy Sandbox settings depends on the
+          // simplified control structure. Ideally simplified controls will
+          // launch to 100% in advance of the Privacy Sandbox, but the Sandbox
+          // cannot launch without this simplification enabled.
+          base::FeatureList::IsEnabled(
+              privacy_sandbox::kPrivacySandboxSettings3));
 
   bool show_secure_dns = IsSecureDnsAvailable();
   bool link_secure_dns = ShouldLinkSecureDnsOsSettings();
@@ -1680,8 +1691,6 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
        IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TOPICS_LEARN_MORE_2},
       {"privacySandboxAdPersonalizationDialogTopicsLearnMore3",
        IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TOPICS_LEARN_MORE_3},
-      {"privacySandboxAdPersonalizationDialogTopicsLearnMore4",
-       IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_TOPICS_LEARN_MORE_4},
       {"privacySandboxAdPersonalizationDialogFledgeTitle",
        IDS_SETTINGS_PRIVACY_SANDBOX_AD_PERSONALIZATION_DIALOG_FLEDGE_TITLE},
       {"privacySandboxAdPersonalizationDialogFledgeEmpty",
@@ -1705,13 +1714,13 @@ void AddPrivacySandboxStrings(content::WebUIDataSource* html_source,
       {"privacySandboxSpamAndFraudDialogTitle",
        IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_TITLE},
       {"privacySandboxSpamAndFraudDialogDescription1",
-       IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION1},
+       IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION_1},
       {"privacySandboxSpamAndFraudDialogDescription1TrialsOff",
-       IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION1_TRIALS_OFF},
+       IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION_1_TRIALS_OFF},
       {"privacySandboxSpamAndFraudDialogDescription2",
-       IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION2},
+       IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION_2},
       {"privacySandboxSpamAndFraudDialogDescription3",
-       IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION3},
+       IDS_SETTINGS_PRIVACY_SANDBOX_SPAM_AND_FRAUD_DIALOG_DESCRIPTION_3},
 
   };
   html_source->AddLocalizedStrings(kLocalizedStrings);

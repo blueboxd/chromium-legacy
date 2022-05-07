@@ -152,6 +152,15 @@ export class PrivacySandboxAppElement extends PrivacySandboxAppElementBase {
 
     HatsBrowserProxyImpl.getInstance().trustSafetyInteractionOccurred(
         TrustSafetyInteraction.OPENED_PRIVACY_SANDBOX);
+
+    const view = new URLSearchParams(window.location.search).get('view');
+    if (Object.values(PrivacySandboxSettingsView)
+            .includes(view as PrivacySandboxSettingsView)) {
+      this.privacySandboxSettingsView_ = view as PrivacySandboxSettingsView;
+    } else {
+      // If no view has been specified, then navigate to main page.
+      this.privacySandboxSettingsView_ = PrivacySandboxSettingsView.MAIN;
+    }
   }
 
   private onFlocChanged_() {
@@ -169,6 +178,13 @@ export class PrivacySandboxAppElement extends PrivacySandboxAppElementBase {
         privacySandboxApisEnabled ? 'Settings.PrivacySandbox.ApisEnabled' :
                                     'Settings.PrivacySandbox.ApisDisabled');
     this.setPrefValue('privacy_sandbox.manually_controlled', true);
+
+    // As the backend will have cleared any data when the API is disabled, clear
+    // the associated model entries.
+    if (!privacySandboxApisEnabled) {
+      this.topTopics_ = [];
+      this.joiningSites_ = [];
+    }
   }
 
   private onFlocToggleButtonChange_(event: Event) {

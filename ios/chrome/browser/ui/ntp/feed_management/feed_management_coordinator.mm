@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/ntp/feed_management/feed_management_view_controller.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/follow_management_mediator.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/follow_management_view_controller.h"
+#include "ios/chrome/browser/ui/ntp/feed_metrics_recorder.h"
 #import "ios/chrome/browser/ui/table_view/table_view_navigation_controller.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -64,6 +65,8 @@
     return;
   }
 
+  [self.feedMetricsRecorder recordHeaderMenuManageFollowingTapped];
+
   FollowManagementViewController* followManagementViewController =
       [[FollowManagementViewController alloc]
           initWithStyle:UITableViewStyleInsetGrouped];
@@ -72,6 +75,8 @@
   followManagementViewController.followedWebChannelsDataSource = mediator;
   followManagementViewController.faviconDataSource = mediator;
   self.followManagementMediator = mediator;
+  followManagementViewController.feedMetricsRecorder = self.feedMetricsRecorder;
+
   [self.navigationController pushViewController:followManagementViewController
                                        animated:YES];
 }

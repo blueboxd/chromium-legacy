@@ -1912,9 +1912,9 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
   if (deferred_to_be_locked_.size() > 0) {
     DCHECK(RuntimeEnabledFeatures::DeferredShapingEnabled());
     for (auto& element : deferred_to_be_locked_) {
+      DCHECK(element->GetLayoutObject()->IsShapingDeferred());
       auto& context = element->EnsureDisplayLockContext();
       context.SetRequestedState(EContentVisibility::kAuto);
-      context.NotifyChildLayoutWasBlocked();
     }
     deferred_to_be_locked_.resize(0);
   }
@@ -4661,7 +4661,7 @@ bool LocalFrameView::MapToVisualRectInRemoteRootFrame(
     bool apply_overflow_clip) {
   DCHECK(frame_->IsLocalRoot());
   // This is the top-level frame, so no mapping necessary.
-  if (frame_->IsMainFrame())
+  if (frame_->IsOutermostMainFrame())
     return true;
   bool result = rect.InclusiveIntersect(PhysicalRect(
       apply_overflow_clip ? frame_->RemoteViewportIntersection()
@@ -4680,7 +4680,7 @@ void LocalFrameView::MapLocalToRemoteMainFrame(
     TransformState& transform_state) {
   DCHECK(frame_->IsLocalRoot());
   // This is the top-level frame, so no mapping necessary.
-  if (frame_->IsMainFrame())
+  if (frame_->IsOutermostMainFrame())
     return;
   transform_state.ApplyTransform(
       TransformationMatrix(GetFrame().RemoteMainFrameTransform()),

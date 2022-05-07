@@ -8,6 +8,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/notreached.h"
+#include "base/observer_list.h"
 #include "base/strings/string_util.h"
 #include "components/link_header_util/link_header_util.h"
 #include "content/browser/loader/cross_origin_read_blocking_checker.h"
@@ -75,9 +76,7 @@ bool IsValidRequestInitiator(const network::ResourceRequest& request,
                                           request.request_initiator);
   switch (initiator_lock_compatibility) {
     case network::InitiatorLockCompatibility::kBrowserProcess:
-    case network::InitiatorLockCompatibility::kAllowedRequestInitiatorForPlugin:
-      // kBrowserProcess and kAllowedRequestInitiatorForPlugin cannot happen
-      // outside of NetworkService.
+      // kBrowserProcess cannot happen outside of NetworkService.
       NOTREACHED();
       return false;
 

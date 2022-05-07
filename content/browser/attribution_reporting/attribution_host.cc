@@ -11,6 +11,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "content/browser/attribution_reporting/attribution_aggregatable_trigger.h"
 #include "content/browser/attribution_reporting/attribution_data_host_manager.h"
 #include "content/browser/attribution_reporting/attribution_host_utils.h"
 #include "content/browser/attribution_reporting/attribution_manager.h"
@@ -147,6 +148,7 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   // be the result of a bad renderer.
   if (!navigation_handle->IsInPrimaryMainFrame() ||
       navigation_handle->IsSameDocument()) {
+    MaybeNotifyFailedSourceNavigation(navigation_handle);
     return;
   }
 
@@ -169,12 +171,15 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   pending_attribution_ = absl::nullopt;
 
   // Separate from above because we need to clear the navigation related state
-  if (!navigation_handle->HasCommitted())
+  if (!navigation_handle->HasCommitted()) {
+    MaybeNotifyFailedSourceNavigation(navigation_handle);
     return;
+  }
 
   // Don't observe error page navs, and don't let impressions be registered for
   // error pages.
   if (navigation_handle->IsErrorPage()) {
+    MaybeNotifyFailedSourceNavigation(navigation_handle);
     last_navigation_allows_attribution_ = false;
     return;
   }
@@ -192,6 +197,7 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   // navigation.
   if (!navigation_impression_origin_it && !pending_attribution &&
       !is_android_app_origin) {
+    MaybeNotifyFailedSourceNavigation(navigation_handle);
     return;
   }
   const url::Origin& impression_origin =
@@ -206,6 +212,20 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
       pending_attribution ? pending_attribution->impression
                           : *(navigation_handle->GetImpression());
 
+  if (impression.attribution_src_token) {
+    auto* data_host_manager = attribution_manager->GetDataHostManager();
+    if (!data_host_manager)
+      return;
+
+    const url::Origin& destination_origin =
+        navigation_handle->GetRenderFrameHost()->GetLastCommittedOrigin();
+
+    data_host_manager->NotifyNavigationForDataHost(
+        *impression.attribution_src_token, impression_origin,
+        destination_origin);
+    return;
+  }
+
   // If the impression's conversion destination does not match the final top
   // frame origin of this new navigation ignore it.
   if (net::SchemefulSite(impression.conversion_destination) !=
@@ -217,6 +237,27 @@ void AttributionHost::DidFinishNavigation(NavigationHandle* navigation_handle) {
   attribution_host_utils::VerifyAndStoreImpression(
       AttributionSourceType::kNavigation, impression_origin, impression,
       *attribution_manager, base::Time::Now());
+}
+
+void AttributionHost::MaybeNotifyFailedSourceNavigation(
+    NavigationHandle* navigation_handle) {
+  auto* attribution_manager =
+      attribution_manager_provider_->GetManager(web_contents());
+  if (!attribution_manager)
+    return;
+
+  auto* data_host_manager = attribution_manager->GetDataHostManager();
+  if (!data_host_manager)
+    return;
+
+  absl::optional<blink::Impression> impression =
+      navigation_handle->GetImpression();
+  if (!impression || !impression->attribution_src_token) {
+    return;
+  }
+
+  data_host_manager->NotifyNavigationFailure(
+      *impression->attribution_src_token);
 }
 
 void AttributionHost::RegisterConversion(
@@ -268,7 +309,7 @@ void AttributionHost::RegisterConversion(
       conversion->dedup_key.is_null()
           ? absl::nullopt
           : absl::make_optional(conversion->dedup_key->value),
-      /*debug_key=*/absl::nullopt);
+      /*debug_key=*/absl::nullopt, AttributionAggregatableTrigger());
 
   if (conversion_page_metrics_)
     conversion_page_metrics_->OnConversion(conversion->reporting_origin);
@@ -322,6 +363,43 @@ void AttributionHost::RegisterDataHost(
 
   attribution_manager->GetDataHostManager()->RegisterDataHost(
       std::move(data_host), top_frame_origin);
+}
+
+void AttributionHost::RegisterNavigationDataHost(
+    mojo::PendingReceiver<blink::mojom::AttributionDataHost> data_host,
+    const blink::AttributionSrcToken& attribution_src_token) {
+  // If there is no attribution manager available, ignore any registrations.
+  AttributionManager* attribution_manager =
+      attribution_manager_provider_->GetManager(web_contents());
+  if (!attribution_manager)
+    return;
+
+  content::RenderFrameHost* render_frame_host =
+      receivers_.GetCurrentTargetFrame();
+
+  const url::Origin& frame_origin = render_frame_host->GetLastCommittedOrigin();
+  const url::Origin& top_frame_origin =
+      render_frame_host->GetOutermostMainFrame()->GetLastCommittedOrigin();
+
+  if (!network::IsOriginPotentiallyTrustworthy(top_frame_origin)) {
+    mojo::ReportBadMessage(
+        "blink.mojom.ConversionHost can only be used with a secure top-level "
+        "frame.");
+    return;
+  }
+
+  if (render_frame_host != render_frame_host->GetOutermostMainFrame() &&
+      !network::IsOriginPotentiallyTrustworthy(frame_origin)) {
+    mojo::ReportBadMessage(
+        "blink.mojom.ConversionHost can only be used in secure contexts.");
+    return;
+  }
+
+  if (!attribution_manager->GetDataHostManager())
+    return;
+
+  attribution_manager->GetDataHostManager()->RegisterNavigationDataHost(
+      std::move(data_host), attribution_src_token);
 }
 
 void AttributionHost::ReportAttributionForCurrentNavigation(
@@ -383,7 +461,8 @@ blink::mojom::ImpressionPtr AttributionHost::MojoImpressionFromImpression(
     const blink::Impression& impression) {
   return blink::mojom::Impression::New(
       impression.conversion_destination, impression.reporting_origin,
-      impression.impression_data, impression.expiry, impression.priority);
+      impression.impression_data, impression.expiry, impression.priority,
+      impression.attribution_src_token);
 }
 
 // static

@@ -1072,6 +1072,7 @@
       name: "FedCm",
       origin_trial_feature_name: "FedCM",
       origin_trial_allows_third_party: true,
+      origin_trial_os: ["android"],
       status: "test",
     },
     {
@@ -2111,6 +2112,10 @@
       status: "test",
     },
     {
+      name: "SecurePaymentConfirmationAPIV3",
+      status: "test",
+    },
+    {
       name: "SecurePaymentConfirmationDebug",
     },
     {
@@ -2289,6 +2294,9 @@
     {
       name: "TimeZoneChangeEvent",
       status: "experimental",
+    },
+    {
+      name: "TopicsAPI",
     },
     // This feature allows touch dragging and a context menu to occur
     // simultaneously, with the assumption that the menu is non-modal.  Without

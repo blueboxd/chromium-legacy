@@ -110,8 +110,11 @@ PrivacySandboxDialogView::PrivacySandboxDialogView(
       base::BindOnce(&PrivacySandboxDialogView::Close, base::Unretained(this)),
       base::BindOnce(&PrivacySandboxDialogView::ResizeNativeView,
                      base::Unretained(this)),
-      base::BindOnce(&PrivacySandboxDialogView::OpenPrivacySandboxSettings,
+      base::BindOnce(&PrivacySandboxDialogView::ShowNativeView,
                      base::Unretained(this)),
+      base::BindOnce(
+          &PrivacySandboxDialogView::OpenPrivacySandboxAdPersonalization,
+          base::Unretained(this)),
       dialog_type);
 
   SetUseDefaultFillLayout(true);
@@ -129,6 +132,9 @@ void PrivacySandboxDialogView::ResizeNativeView(int height) {
   web_view_->SetPreferredSize(gfx::Size(web_view_->GetPreferredSize().width(),
                                         std::min(height, max_height)));
   GetWidget()->SetSize(GetWidget()->non_client_view()->GetPreferredSize());
+}
+
+void PrivacySandboxDialogView::ShowNativeView() {
   GetWidget()->Show();
 
   DCHECK(!dialog_created_time_.is_null());
@@ -136,9 +142,9 @@ void PrivacySandboxDialogView::ResizeNativeView(int height) {
                           base::TimeTicks::Now() - dialog_created_time_);
 }
 
-void PrivacySandboxDialogView::OpenPrivacySandboxSettings() {
+void PrivacySandboxDialogView::OpenPrivacySandboxAdPersonalization() {
   DCHECK(browser_);
-  chrome::ShowPrivacySandboxSettings(browser_);
+  chrome::ShowPrivacySandboxAdPersonalization(browser_);
 }
 
 BEGIN_METADATA(PrivacySandboxDialogView, views::View)

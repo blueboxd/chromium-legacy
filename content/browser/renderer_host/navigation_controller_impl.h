@@ -32,7 +32,7 @@
 #include "services/network/public/mojom/source_location.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/tokens/tokens.h"
-#include "third_party/blink/public/mojom/navigation/app_history_entry_arrays.mojom-forward.h"
+#include "third_party/blink/public/mojom/navigation/navigation_api_history_entry_arrays.mojom-forward.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom-forward.h"
 
 namespace blink {
@@ -220,14 +220,14 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
       const absl::optional<blink::Impression>& impression,
       base::TimeTicks navigation_start_time);
 
-  // Navigates to the history entry associated with the given app history |key|.
-  // Searches |entries_| for a FrameNavigationEntry associated with |node|
-  // that has |key| as its app history key. Searches back from the current
-  // index, then forward, so if there are multiple entries with the same key,
-  // the nearest to current should be selected. Stops searching in the current
-  // direction if it finds a NavigationEntry without a FrameNavigationEntry for
-  // |node|, or if the FrameNavigationEntry doesn't match origin or site
-  // instance.
+  // Navigates to the history entry associated with the given navigation API
+  // |key|. Searches |entries_| for a FrameNavigationEntry associated with
+  // |node| that has |key| as its navigation API key. Searches back from the
+  // current index, then forward, so if there are multiple entries with the same
+  // key, the nearest to current should be selected. Stops searching in the
+  // current direction if it finds a NavigationEntry without a
+  // FrameNavigationEntry for |node|, or if the FrameNavigationEntry doesn't
+  // match origin or site instance.
   //
   // If no matching entry is found, the navigation is dropped. The renderer
   // should only send the navigation to the browser if it believes the entry is
@@ -235,7 +235,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // |entries_|, or due to a race condition) or compromised.
   // If a matching entry is found, navigate to that entry and proceed like any
   // other history navigation.
-  void NavigateToAppHistoryKey(FrameTreeNode* node, const std::string& key);
+  void NavigateToNavigationApiKey(FrameTreeNode* node, const std::string& key);
 
   // Whether this is the initial navigation in an unmodified new tab.  In this
   // case, we know there is no content displayed in the page.
@@ -398,16 +398,16 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // |request| may be nullptr when getting entries for an iframe that is being
   // restored for back/forward cache (in that case, the iframe itself is not
   // navigated, so there is no NavigationRequest).
-  blink::mojom::AppHistoryEntryArraysPtr GetAppHistoryEntryVectors(
-      FrameTreeNode* node,
-      NavigationRequest* request);
+  blink::mojom::NavigationApiHistoryEntryArraysPtr
+  GetNavigationApiHistoryEntryVectors(FrameTreeNode* node,
+                                      NavigationRequest* request);
 
-  // The appHistory API exposes the urls of some non-current same-origin
+  // The window.navigation API exposes the urls of some non-current same-origin
   // FrameNavigationEntries to the renderer. This helper checks whether the
   // given ReferrerPolicy makes an attempt to hide a page's URL (e.g., in
-  // referrer headers) and thus whether the URL should be hidden from appHistory
-  // entries as well.
-  static bool ShouldProtectUrlInAppHistory(
+  // referrer headers) and thus whether the URL should be hidden from navigation
+  // API history entries as well.
+  static bool ShouldProtectUrlInNavigationApi(
       network::mojom::ReferrerPolicy referrer_policy);
 
   // Returns whether the last NavigationEntry encountered a post-commit error.
@@ -729,23 +729,25 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   // GetLastCommittedEntryIndex() and length is GetEntryCount().
   void BroadcastHistoryOffsetAndLength();
 
-  // Used by PopulateAppHistoryEntryVectors to initialize a single vector.
+  // Used by PopulateNavigationApiHistoryEntryVectors to initialize a single
+  // vector.
   enum class Direction { kForward, kBack };
-  std::vector<blink::mojom::AppHistoryEntryPtr>
-  PopulateSingleAppHistoryEntryVector(Direction direction,
-                                      int entry_index,
-                                      const url::Origin& pending_origin,
-                                      FrameTreeNode* node,
-                                      SiteInstance* site_instance,
-                                      int64_t pending_item_sequence_number,
-                                      int64_t pending_document_sequence_number);
-  // Helper for NavigateToAppHistoryKey(). Ensures that we only navigate to
+  std::vector<blink::mojom::NavigationApiHistoryEntryPtr>
+  PopulateSingleNavigationApiHistoryEntryVector(
+      Direction direction,
+      int entry_index,
+      const url::Origin& pending_origin,
+      FrameTreeNode* node,
+      SiteInstance* site_instance,
+      int64_t pending_item_sequence_number,
+      int64_t pending_document_sequence_number);
+  // Helper for NavigateToNavigationApiKey(). Ensures that we only navigate to
   // |target_entry| if it matches |current_entry|'s origin and site instance, as
-  // well as having |app_history_key| as its key.
-  HistoryNavigationAction ShouldNavigateToEntryForAppHistoryKey(
+  // well as having |navigation_api_key| as its key.
+  HistoryNavigationAction ShouldNavigateToEntryForNavigationApiKey(
       FrameNavigationEntry* current_entry,
       FrameNavigationEntry* target_entry,
-      const std::string& app_history_key);
+      const std::string& navigation_api_key);
 
   // Whether to maintain a session history with just one entry.
   //

@@ -540,6 +540,23 @@ void Navigator::DidNavigate(
         base::TimeTicks::Now() - start);
   }
 
+  // Update the RenderFrameHost's last committed FrameNavigationEntry, to have a
+  // record of it in rare cases where the last committed NavigationEntry may not
+  // agree. Always update this even if the FrameNavigationEntry is null after
+  // RendererDidNavigate, to ensure that a stale copy is not kept around.
+  // TODO(https://crbug.com/608402): Eliminate cases where the
+  // FrameNavigationEntry can be null after RendererDidNavigate.
+  // TODO(https://crbug.com/1304466): Merge this with
+  // RenderFrameHostImpl::DidNavigate if that can be moved after
+  // RendererDidNavigate, allowing us to avoid duplicating the URL and origin in
+  // RenderFrameHost.
+  FrameNavigationEntry* frame_entry = nullptr;
+  if (controller_.GetLastCommittedEntry()) {
+    frame_entry =
+        controller_.GetLastCommittedEntry()->GetFrameEntry(frame_tree_node);
+  }
+  render_frame_host->set_last_committed_frame_entry(frame_entry);
+
   // If the history length and/or offset changed, update other renderers in the
   // FrameTree.
   if (old_entry_count != controller_.GetEntryCount() ||
@@ -734,7 +751,7 @@ void Navigator::RequestOpenURL(
   // subframe in the current tab.  We'll assume it's for the main frame
   // (possibly of a new or different WebContents) otherwise.
   if (disposition == WindowOpenDisposition::CURRENT_TAB &&
-      render_frame_host->GetParent()) {
+      render_frame_host->GetParentOrOuterDocument()) {
     frame_tree_node_id =
         render_frame_host->frame_tree_node()->frame_tree_node_id();
   }

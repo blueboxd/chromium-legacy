@@ -582,7 +582,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidObserveInputDelay(base::TimeDelta input_delay) override;
   void DidObserveUserInteraction(
       base::TimeDelta max_event_duration,
-      base::TimeDelta total_event_durtaion,
       blink::UserInteractionType interaction_type) override;
   void DidChangeCpuTiming(base::TimeDelta time) override;
   void DidObserveLoadingBehavior(blink::LoadingBehaviorFlag behavior) override;
@@ -637,7 +636,7 @@ class CONTENT_EXPORT RenderFrameImpl
       uint32_t shared_memory_count,
       blink::CrossVariantMojoReceiver<
           media::mojom::AudioProcessorControlsInterfaceBase> controls_receiver,
-      const media::AudioProcessingSettings& settings) override;
+      const media::AudioProcessingSettings* settings) override;
   void AssociateInputAndOutputForAec(
       const base::UnguessableToken& input_stream_id,
       const std::string& output_device_id) override;

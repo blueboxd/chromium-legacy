@@ -151,6 +151,10 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   // the IO thread.
   mojom::EventRouter* GetEventRouterOnIO();
 
+  // Mojo interface implementation, called from the main thread.
+  void DispatchEvent(mojom::DispatchEventParamsPtr params,
+                     base::Value event_args) override;
+
  private:
   static bool HandlesMessageOnWorkerThread(const IPC::Message& message);
   static void ForwardIPC(int worker_thread_id, const IPC::Message& message);
@@ -193,12 +197,6 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   base::Lock task_runner_map_lock_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
   mojo::AssociatedRemote<mojom::EventRouter> event_router_remote_;
-
-  // Mojo interface implementation, called from the main thread.
-  void DispatchEvent(mojom::DispatchEventParamsPtr params,
-                     base::Value event_args) override;
-
-  friend class Dispatcher;
 };
 
 }  // namespace extensions

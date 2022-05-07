@@ -1332,6 +1332,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionContentSettingJSTest, NoBeep) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionContentSettingJSTest, BeepThenNoBeep) {
+  content::RenderProcessHost::SetMaxRendererProcessCount(1);
+
   RunTestsInJsModule("beep_test.js", "test-beep.pdf");
   SetPdfJavaScript(/*enabled=*/false);
   RunTestsInJsModuleNewTab("nobeep_test.js", "test-beep.pdf");
@@ -1343,6 +1345,8 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionContentSettingJSTest, BeepThenNoBeep) {
 }
 
 IN_PROC_BROWSER_TEST_F(PDFExtensionContentSettingJSTest, NoBeepThenBeep) {
+  content::RenderProcessHost::SetMaxRendererProcessCount(1);
+
   SetPdfJavaScript(/*enabled=*/false);
   RunTestsInJsModule("nobeep_test.js", "test-beep.pdf");
   SetPdfJavaScript(/*enabled=*/true);
@@ -2068,7 +2072,7 @@ class PDFExtensionRegionSearchTest : public PDFExtensionTest {
  protected:
   std::vector<base::Feature> GetEnabledFeatures() const override {
     auto enabled = PDFExtensionTest::GetEnabledFeatures();
-    enabled.push_back(lens::features::kLensRegionSearch);
+    enabled.push_back(lens::features::kLensStandalone);
     return enabled;
   }
 };

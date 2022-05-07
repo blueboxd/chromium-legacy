@@ -10,6 +10,7 @@
 #include "base/strings/string_piece.h"
 #include "content/browser/attribution_reporting/attribution_manager_impl.h"
 #include "content/browser/attribution_reporting/attribution_test_utils.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -24,6 +25,7 @@
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/navigation/impression.h"
 #include "third_party/blink/public/mojom/conversions/attribution_data_host.mojom.h"
 #include "url/gurl.h"
 
@@ -151,13 +153,62 @@ IN_PROC_BROWSER_TEST_P(AttributionSrcBasicSourceRegisteredBrowserTest,
 }
 
 // Ensure that basic source registration works with both the img attributionsrc
-// attribute and the registerAttributionSource JS call.
+// attribute and the registerSource JS call.
 INSTANTIATE_TEST_SUITE_P(
     AttributionSrcSourceRegistrations,
     AttributionSrcBasicSourceRegisteredBrowserTest,
-    ::testing::Values(
-        "createAttributionSrcImg($1);",
-        "window.attributionReporting.registerAttributionSource($1);"));
+    ::testing::Values("createAttributionSrcImg($1);",
+                      "window.attributionReporting.registerSource($1);"));
+
+// TODO(crbug.com/1307363): Consistently failing on Linux MSAN and Linux
+//                          ChromiumOS MSAN.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_AttributionSrcAnchor_SourceRegistered \
+  DISABLED_AttributionSrcAnchor_SourceRegistered
+#else
+#define MAYBE_AttributionSrcAnchor_SourceRegistered \
+  AttributionSrcAnchor_SourceRegistered
+#endif
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       MAYBE_AttributionSrcAnchor_SourceRegistered) {
+  SourceObserver source_observer(web_contents());
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  std::unique_ptr<MockDataHost> data_host;
+  blink::AttributionSrcToken expected_token;
+  MockAttributionHost host(web_contents());
+  EXPECT_CALL(host, RegisterNavigationDataHost)
+      .WillOnce(
+          [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host,
+              const blink::AttributionSrcToken& attribution_src_token) {
+            data_host = GetRegisteredDataHost(std::move(host));
+            expected_token = attribution_src_token;
+          });
+
+  GURL register_url =
+      https_server()->GetURL("c.test", "/register_source_headers.html");
+  EXPECT_TRUE(ExecJs(web_contents(), JsReplace(R"(
+  createAndClickAttributionSrcAnchor({url: 'page_with_conversion_redirect.html',
+                                      attributionsrc: $1});)",
+                                               register_url)));
+
+  // Wait for the impression to be seen by the observer.
+  blink::Impression last_impression = source_observer.Wait();
+
+  // Verify we received the correct token for this source.
+  EXPECT_TRUE(last_impression.attribution_src_token);
+  EXPECT_EQ(*last_impression.attribution_src_token, expected_token);
+
+  // Verify the attributionsrc data was registered with the browser process.
+  EXPECT_TRUE(data_host);
+
+  // TODO(johnidel): Verify that the data host receives the correct callback.
+  // Direct use of MockDataHost flakes rarely. See
+  // AttributionSrcNavigationSourceAndTrigger_ReportSent in
+  // AttributionsBrowserTest.
+}
 
 IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
                        AttributionSrcImg_SourceRegisteredWithOptionalParams) {
@@ -737,6 +788,43 @@ IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
   EXPECT_EQ(source_data.back()->destination,
             url::Origin::Create(GURL("https://d.test")));
   EXPECT_THAT(source_data.back()->aggregatable_source->keys, SizeIs(2));
+}
+
+IN_PROC_BROWSER_TEST_F(AttributionSrcBrowserTest,
+                       AttributionSrcRegisterSourceJS_TriggerIgnored) {
+  GURL page_url =
+      https_server()->GetURL("b.test", "/page_with_impression_creator.html");
+  EXPECT_TRUE(NavigateToURL(web_contents(), page_url));
+
+  MockAttributionHost host(web_contents());
+  std::unique_ptr<MockDataHost> data_host;
+  base::RunLoop loop;
+  EXPECT_CALL(host, RegisterDataHost)
+      .WillOnce(
+          [&](mojo::PendingReceiver<blink::mojom::AttributionDataHost> host) {
+            data_host = GetRegisteredDataHost(std::move(host));
+            loop.Quit();
+          });
+
+  GURL register_url =
+      https_server()->GetURL("c.test", "/register_trigger_source_trigger.html");
+
+  EXPECT_TRUE(
+      ExecJs(web_contents(),
+             JsReplace("window.attributionReporting.registerSource($1);",
+                       register_url)));
+  if (!data_host)
+    loop.Run();
+  data_host->WaitForSourceData(/*num_source_data=*/1);
+  const auto& source_data = data_host->source_data();
+
+  EXPECT_EQ(source_data.size(), 1u);
+
+  // Only the source should be processed.
+  EXPECT_EQ(source_data.front()->source_event_id, 5u);
+
+  // The triggers should be ignored.
+  EXPECT_EQ(data_host->trigger_data().size(), 0u);
 }
 
 class AttributionSrcPrerenderBrowserTest : public AttributionSrcBrowserTest {

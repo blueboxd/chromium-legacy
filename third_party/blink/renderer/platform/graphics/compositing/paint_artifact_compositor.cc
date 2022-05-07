@@ -611,7 +611,7 @@ static void UpdateCompositorViewportProperties(
   }
 
   if (RuntimeEnabledFeatures::FixedElementsDontOverscrollEnabled()) {
-    property_tree_manager.SetOverscrollNodeId(
+    property_tree_manager.SetOverscrollTransformNodeId(
         ids.overscroll_elasticity_transform);
     property_tree_manager.SetFixedElementsDontOverscroll(true);
   }
@@ -690,6 +690,10 @@ void PaintArtifactCompositor::Update(
     int effect_id = property_tree_manager.SwitchToEffectNodeWithSynthesizedClip(
         effect, clip, layer.draws_content());
 
+    if (RuntimeEnabledFeatures::FixedElementsDontOverscrollEnabled() &&
+        transform.RequiresCompositingForFixedPosition())
+      property_tree_manager.SetOverscrollClipNodeId(clip_id);
+
     // We need additional bookkeeping for backdrop-filter mask.
     if (effect.RequiresCompositingForBackdropFilterMask() &&
         effect.CcNodeId(g_s_property_tree_sequence_number) == effect_id) {
@@ -753,9 +757,6 @@ void PaintArtifactCompositor::Update(
   auto layers = layer_list_builder.Finalize();
   property_tree_manager.UpdateConditionalRenderSurfaceReasons(layers);
   root_layer_->SetChildLayerList(std::move(layers));
-
-  // Update the host's active registered elements from the new property tree.
-  host->UpdateActiveElements();
 
   // Mark the property trees as having been rebuilt.
   host->property_trees()->set_needs_rebuild(false);

@@ -192,7 +192,6 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kCCTResizableForFirstParties,
     &kCCTResizableForThirdParties,
     &kCCTResourcePrefetch,
-    &kQuickActionSearchWidgetAndroidDinoVariant,
     &kDontAutoHideBrowserControls,
     &kChromeNewDownloadTab,
     &kChromeShareLongScreenshot,
@@ -245,6 +244,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &kInstantStart,
     &kKitKatSupported,
     &kLensCameraAssistedSearch,
+    &kLocationBarModelOptimizations,
     &kNewWindowAppMenu,
     &kNotificationPermissionVariant,
     &kOfflineIndicatorV2,
@@ -372,7 +372,7 @@ const base::Feature* const kFeaturesExposedToJava[] = {
     &switches::kForceStartupSigninPromo,
     &switches::kForceDisableExtendedSyncPromos,
     &syncer::kSyncTrustedVaultPassphraseRecovery,
-    &syncer::kSyncAndroidPromosRevamp,
+    &syncer::kSyncAndroidPromosWithSingleButton,
     &switches::kSyncUseSessionsUnregisterDelay,
     &subresource_filter::kSafeBrowsingSubresourceFilter,
     &video_tutorials::features::kVideoTutorials,
@@ -597,10 +597,6 @@ const base::Feature kContextualTriggersSelectionMenu{
 const base::Feature kContextualTriggersSelectionSize{
     "ContextualTriggersSelectionSize", base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kQuickActionSearchWidgetAndroidDinoVariant{
-    "QuickActionSearchWidgetAndroidDinoVariant",
-    base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kDirectActions{"DirectActions",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -672,6 +668,9 @@ const base::Feature kInstantStart{"InstantStart",
 
 const base::Feature kKitKatSupported{"KitKatSupported",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kLocationBarModelOptimizations{
+    "LocationBarModelOptimizations", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kSearchEnginePromoExistingDevice{
     "SearchEnginePromo.ExistingDevice", base::FEATURE_ENABLED_BY_DEFAULT};

@@ -16,7 +16,8 @@
 #include "base/values.h"
 #include "chrome/common/chrome_isolated_world_ids.h"
 #include "chrome/grit/renderer_resources.h"
-#include "chrome/renderer/cart/commerce_renderer_feature_list.h"
+#include "components/commerce/core/commerce_feature_list.h"
+#include "components/commerce/core/commerce_heuristics_data.h"
 #include "components/search/ntp_features.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -174,8 +175,7 @@ constexpr base::FeatureParam<std::string> kProductIdPatternMapping{
     ""};
 
 constexpr base::FeatureParam<std::string> kCouponProductIdPatternMapping{
-    &commerce_renderer_feature::kRetailCoupons,
-    "coupon-product-id-pattern-mapping",
+    &commerce::kRetailCoupons, "coupon-product-id-pattern-mapping",
     // Empty JSON string.
     ""};
 
@@ -372,6 +372,14 @@ const re2::RE2& GetVisitCheckoutPattern() {
 }
 
 const re2::RE2& GetSkipPattern() {
+  auto* pattern_from_component =
+      commerce_heuristics::CommerceHeuristicsData::GetInstance()
+          .GetProductSkipPattern();
+  if (pattern_from_component &&
+      kSkipPattern.Get() == kSkipPattern.default_value) {
+    DVLOG(1) << "SkipPattern = " << pattern_from_component->pattern();
+    return *pattern_from_component;
+  }
   static base::NoDestructor<re2::RE2> instance([] {
     const std::string& pattern = kSkipPattern.Get();
     DVLOG(1) << "SkipPattern = " << pattern;
@@ -508,7 +516,7 @@ bool DetectAddToCart(content::RenderFrame* render_frame,
   }
   if (is_add_to_cart) {
     std::string url_product_id;
-    if (commerce_renderer_feature::IsPartnerMerchant(navigation_url)) {
+    if (commerce::IsPartnerMerchant(navigation_url)) {
       GetProductIdFromRequest(url.spec().substr(0, kLengthLimit),
                               &url_product_id);
     }
@@ -568,7 +576,7 @@ bool DetectAddToCart(content::RenderFrame* render_frame,
 
     if (CommerceHintAgent::IsAddToCart(str, skip_length_limit)) {
       std::string product_id;
-      if (commerce_renderer_feature::IsPartnerMerchant(url)) {
+      if (commerce::IsPartnerMerchant(url)) {
         GetProductIdFromRequest(str.substr(0, kLengthLimit), &product_id);
       }
       RecordCommerceEvent(CommerceEvent::kAddToCartByForm);
@@ -853,7 +861,7 @@ void CommerceHintAgent::OnProductsExtracted(
   // that the cart is not loaded.
   if (!extracted_products->is_list())
     return;
-  bool is_partner = commerce_renderer_feature::IsPartnerMerchant(
+  bool is_partner = commerce::IsPartnerMerchant(
       GURL(render_frame()->GetWebFrame()->GetDocument().Url()));
   std::vector<mojom::ProductPtr> products;
   for (const auto& product : extracted_products->GetListDeprecated()) {
@@ -930,7 +938,7 @@ void CommerceHintAgent::WillSendRequest(const blink::WebURLRequest& request) {
 
 void CommerceHintAgent::OnNavigation(const GURL& url,
                                      OnNavigationCallback callback) {
-  if (!commerce_renderer_feature::kOptimizeRendererSignal.Get()) {
+  if (!commerce::kOptimizeRendererSignal.Get()) {
     std::move(callback).Run(false);
     return;
   }

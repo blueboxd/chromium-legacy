@@ -443,9 +443,9 @@ void ShowWebStore(Browser* browser) {
       browser, extension_urls::GetWebstoreLaunchURL());
 }
 
-void ShowPrivacySandboxSettings(Browser* browser) {
+void ShowPrivacySandboxAdPersonalization(Browser* browser) {
   base::RecordAction(UserMetricsAction("Options_ShowPrivacySandbox"));
-  ShowSettingsSubPage(browser, kPrivacySandboxSubPage);
+  ShowSettingsSubPage(browser, kPrivacySandboxAdPersonalizationSubPage);
 }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
@@ -485,8 +485,6 @@ void ShowScanningApp(Profile* profile) {
 }
 
 void ShowDiagnosticsApp(Profile* profile) {
-  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kDiagnosticsApp));
-
   LaunchSystemWebAppAsync(profile, web_app::SystemAppType::DIAGNOSTICS);
 }
 

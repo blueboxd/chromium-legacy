@@ -31,6 +31,7 @@
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/list_model/list_model.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #import "ios/web/public/permissions/permissions.h"
@@ -92,8 +93,8 @@ const char kInfobarOverflowBadgeShownUserAction[] =
     DCHECK(browser);
     // Create the incognito badge if |browser| is off-the-record.
     if (browser->GetBrowserState()->IsOffTheRecord()) {
-      _offTheRecordBadge = [[BadgeStaticItem alloc]
-          initWithBadgeType:BadgeType::kBadgeTypeIncognito];
+      _offTheRecordBadge =
+          [[BadgeStaticItem alloc] initWithBadgeType:kBadgeTypeIncognito];
     }
     // Set up the OverlayPresenterObserver for the infobar banner presentation.
     _overlayPresenterObserver =
@@ -214,8 +215,8 @@ const char kInfobarOverflowBadgeShownUserAction[] =
       self.webState->GetStatesForAllPermissions();
   return permissionStates[@(web::PermissionMicrophone)].unsignedIntValue >
                  permissionStates[@(web::PermissionCamera)].unsignedIntValue
-             ? BadgeType::kBadgeTypePermissionsMicrophone
-             : BadgeType::kBadgeTypePermissionsCamera;
+             ? kBadgeTypePermissionsMicrophone
+             : kBadgeTypePermissionsCamera;
 }
 
 #pragma mark - Accessor helpers
@@ -229,8 +230,8 @@ const char kInfobarOverflowBadgeShownUserAction[] =
   BOOL shouldDisplayOverflowBadge = badges.count > 1;
   id<BadgeItem> displayedBadge = nil;
   if (shouldDisplayOverflowBadge) {
-    displayedBadge = [[BadgeTappableItem alloc]
-        initWithBadgeType:BadgeType::kBadgeTypeOverflow];
+    displayedBadge =
+        [[BadgeTappableItem alloc] initWithBadgeType:kBadgeTypeOverflow];
   } else {
     displayedBadge = [badges firstObject];
   }
@@ -241,38 +242,46 @@ const char kInfobarOverflowBadgeShownUserAction[] =
 
 #pragma mark - BadgeDelegate
 
+- (NSArray<NSNumber*>*)badgeTypesForOverflowMenu {
+  NSMutableArray<NSNumber*>* badgeTypes = [NSMutableArray array];
+  for (id<BadgeItem> badgeItem in self.badges) {
+    [badgeTypes addObject:@(badgeItem.badgeType)];
+  }
+  return badgeTypes;
+}
+
 - (void)addToReadingListBadgeButtonTapped:(id)sender {
   BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
-  DCHECK_EQ(badgeButton.badgeType, BadgeType::kBadgeTypeAddToReadingList);
+  DCHECK_EQ(badgeButton.badgeType, kBadgeTypeAddToReadingList);
 
   [self handleTappedBadgeButton:badgeButton];
 }
 
 - (void)passwordsBadgeButtonTapped:(id)sender {
   BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
-  DCHECK(badgeButton.badgeType == BadgeType::kBadgeTypePasswordSave ||
-         badgeButton.badgeType == BadgeType::kBadgeTypePasswordUpdate);
+  DCHECK(badgeButton.badgeType == kBadgeTypePasswordSave ||
+         badgeButton.badgeType == kBadgeTypePasswordUpdate);
 
   [self handleTappedBadgeButton:badgeButton];
 }
 
 - (void)saveAddressProfileBadgeButtonTapped:(id)sender {
   BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
-  DCHECK_EQ(badgeButton.badgeType, BadgeType::kBadgeTypeSaveAddressProfile);
+  DCHECK_EQ(badgeButton.badgeType, kBadgeTypeSaveAddressProfile);
 
   [self handleTappedBadgeButton:badgeButton];
 }
 
 - (void)saveCardBadgeButtonTapped:(id)sender {
   BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
-  DCHECK_EQ(badgeButton.badgeType, BadgeType::kBadgeTypeSaveCard);
+  DCHECK_EQ(badgeButton.badgeType, kBadgeTypeSaveCard);
 
   [self handleTappedBadgeButton:badgeButton];
 }
 
 - (void)translateBadgeButtonTapped:(id)sender {
   BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
-  DCHECK_EQ(badgeButton.badgeType, BadgeType::kBadgeTypeTranslate);
+  DCHECK_EQ(badgeButton.badgeType, kBadgeTypeTranslate);
 
   [self handleTappedBadgeButton:badgeButton];
 }
@@ -286,29 +295,34 @@ const char kInfobarOverflowBadgeShownUserAction[] =
 }
 
 - (void)overflowBadgeButtonTapped:(id)sender {
-  NSMutableArray<id<BadgeItem>>* popupMenuBadges =
-      [[NSMutableArray alloc] init];
-  // Get all non-fullscreen badges.
-  for (id<BadgeItem> item in self.badges) {
-    if (!item.fullScreen) {
-      // Mark each badge as read since the overflow menu is about to be
-      // displayed.
-      [self onBadgeItemRead:item];
-      [popupMenuBadges addObject:item];
-    }
-  }
   // Log overflow badge tap.
   base::RecordAction(
       base::UserMetricsAction(kInfobarOverflowBadgeTappedUserAction));
-  [self.dispatcher displayPopupMenuWithBadgeItems:popupMenuBadges];
+  if (!ShouldUseUIKitPopupMenu()) {
+    NSMutableArray<id<BadgeItem>>* popupMenuBadges =
+        [[NSMutableArray alloc] init];
+    // Get all non-fullscreen badges.
+    for (id<BadgeItem> item in self.badges) {
+      if (!item.fullScreen) {
+        // Mark each badge as read since the overflow menu is about to be
+        // displayed.
+        [self onBadgeItemRead:item];
+        [popupMenuBadges addObject:item];
+      }
+    }
+    [self.dispatcher displayPopupMenuWithBadgeItems:popupMenuBadges];
+  }
   [self updateConsumerReadStatus];
-  // TODO(crbug.com/976901): Add metric for this action.
+}
+
+- (void)showModalForBadgeType:(BadgeType)badgeType {
+  [self addModalRequestForInfobarType:InfobarTypeForBadgeType(badgeType)];
 }
 
 #pragma mark - InfobarBadgeTabHelperDelegate
 
 - (BOOL)badgeSupportedForInfobarType:(InfobarType)infobarType {
-  return BadgeTypeForInfobarType(infobarType) != BadgeType::kBadgeTypeNone;
+  return BadgeTypeForInfobarType(infobarType) != kBadgeTypeNone;
 }
 
 - (void)updateBadgesShownForWebState:(web::WebState*)webState {
@@ -342,10 +356,10 @@ const char kInfobarOverflowBadgeShownUserAction[] =
   if (count > 1) {
     // If a badge's banner is being presented, then show that badge as the
     // displayed badge. Otherwise, show the overflow badge.
-    displayedBadge = presentingBadge
-                         ? presentingBadge
-                         : [[BadgeTappableItem alloc]
-                               initWithBadgeType:BadgeType::kBadgeTypeOverflow];
+    displayedBadge =
+        presentingBadge
+            ? presentingBadge
+            : [[BadgeTappableItem alloc] initWithBadgeType:kBadgeTypeOverflow];
   } else if (count == 1) {
     // Since there is only one non-fullscreen badge, it will be fixed as the
     // displayed badge, so mark it as read.
@@ -353,7 +367,7 @@ const char kInfobarOverflowBadgeShownUserAction[] =
     [self.dispatcher dismissBadgePopupMenu];
   }
 
-  if (displayedBadge.badgeType == BadgeType::kBadgeTypeOverflow) {
+  if (displayedBadge.badgeType == kBadgeTypeOverflow) {
     // Log that the overflow badge is being shown.
     base::RecordAction(
         base::UserMetricsAction(kInfobarOverflowBadgeShownUserAction));
@@ -450,21 +464,26 @@ const char kInfobarOverflowBadgeShownUserAction[] =
 // Shows the modal UI when |button| is tapped.
 - (void)handleTappedBadgeButton:(BadgeButton*)button {
   InfobarType infobarType = InfobarTypeForBadgeType(button.badgeType);
-    DCHECK(self.webState);
-    InfoBarIOS* infobar = [self infobarWithType:infobarType];
-    if (infobar) {
-      InfobarOverlayRequestInserter::CreateForWebState(self.webState);
-      InsertParams params(infobar);
-      params.overlay_type = InfobarOverlayType::kModal;
-      params.insertion_index =
-          OverlayRequestQueue::FromWebState(self.webState,
-                                            OverlayModality::kInfobarModal)
-              ->size();
-      params.source = InfobarOverlayInsertionSource::kBadge;
-      InfobarOverlayRequestInserter::FromWebState(self.webState)
-          ->InsertOverlayRequest(params);
-    }
+  [self addModalRequestForInfobarType:infobarType];
   [self recordMetricsForBadgeButton:button infobarType:infobarType];
+}
+
+// Adds a modal request for the Infobar of |infobarType|.
+- (void)addModalRequestForInfobarType:(InfobarType)infobarType {
+  DCHECK(self.webState);
+  InfoBarIOS* infobar = [self infobarWithType:infobarType];
+  DCHECK(infobar);
+  if (infobar) {
+    InfobarOverlayRequestInserter::CreateForWebState(self.webState);
+    InsertParams params(infobar);
+    params.overlay_type = InfobarOverlayType::kModal;
+    params.insertion_index = OverlayRequestQueue::FromWebState(
+                                 self.webState, OverlayModality::kInfobarModal)
+                                 ->size();
+    params.source = InfobarOverlayInsertionSource::kBadge;
+    InfobarOverlayRequestInserter::FromWebState(self.webState)
+        ->InsertOverlayRequest(params);
+  }
 }
 
 // Returns the infobar in the active WebState's InfoBarManager with |type|.

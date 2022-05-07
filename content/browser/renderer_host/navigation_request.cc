@@ -961,7 +961,9 @@ void RemoveOriginTrialHintsFromAcceptCH(
     PersistAcceptCH(url::Origin::Create(url), delegate, client_hints);
   }
 
-  if (base::FeatureList::IsEnabled(net::features::kPartitionedCookies)) {
+  if (base::FeatureList::IsEnabled(net::features::kPartitionedCookies) &&
+      !base::FeatureList::IsEnabled(
+          net::features::kPartitionedCookiesBypassOriginTrial)) {
     if (auto* cookie_manager = frame_tree_node->current_frame_host()
                                    ->GetStoragePartition()
                                    ->GetCookieManagerForBrowserProcess()) {
@@ -1166,7 +1168,7 @@ std::unique_ptr<NavigationRequest> NavigationRequest::CreateRendererInitiated(
           std::vector<network::mojom::WebClientHintsType>(),
           /*is_cross_browsing_instance=*/false,
           /*old_page_info=*/nullptr, /*http_response_code=*/-1,
-          blink::mojom::AppHistoryEntryArrays::New(),
+          blink::mojom::NavigationApiHistoryEntryArrays::New(),
           /*early_hints_preloaded_resources=*/
           std::vector<GURL>(), absl::nullopt /* ad_auction_components */,
           // This timestamp will be populated when the commit IPC is sent.
@@ -1289,7 +1291,8 @@ NavigationRequest::CreateForSynchronousRendererCommit(
           std::vector<
               network::mojom::WebClientHintsType>() /* enabled_client_hints */,
           false /* is_cross_browsing_instance */, nullptr /* old_page_info */,
-          http_response_code, blink::mojom::AppHistoryEntryArrays::New(),
+          http_response_code,
+          blink::mojom::NavigationApiHistoryEntryArrays::New(),
           std::vector<GURL>() /* early_hints_preloaded_resources */,
           absl::nullopt /* ad_auction_components */,
           // This timestamp will be populated when the commit IPC is sent.
@@ -3505,7 +3508,7 @@ void NavigationRequest::OnResponseStarted(
           frame_tree_node_, NavigationEntryImpl::UpdatePolicy::kReplace,
           frame_entry->item_sequence_number(),
           frame_entry->document_sequence_number(),
-          frame_entry->app_history_key(), new_site_instance.get(),
+          frame_entry->navigation_api_key(), new_site_instance.get(),
           frame_entry->source_site_instance(), frame_entry->url(),
           frame_entry->committed_origin(), frame_entry->referrer(),
           frame_entry->initiator_origin(), frame_entry->redirect_chain(),
@@ -4194,7 +4197,7 @@ void NavigationRequest::OnFailureChecksComplete(
     return;
 
   // The OnRequestFailedInternal() did not commit the error page as it
-  // defered to WillFailRequest(), which has called through to here, and
+  // deferred to WillFailRequest(), which has called through to here, and
   // now we are finally ready to commit the error page. This will be committed
   // to the RenderFrameHost previously chosen in OnRequestFailedInternal().
   CommitErrorPage(result.error_page_content());
@@ -4601,9 +4604,9 @@ void NavigationRequest::CommitNavigation() {
   }
 
   if (!IsSameDocument()) {
-    commit_params_->app_history_entry_arrays =
-        GetNavigationController()->GetAppHistoryEntryVectors(frame_tree_node_,
-                                                             this);
+    commit_params_->navigation_api_history_entry_arrays =
+        GetNavigationController()->GetNavigationApiHistoryEntryVectors(
+            frame_tree_node_, this);
   }
 
   if (early_hints_manager_) {
@@ -4672,10 +4675,10 @@ void NavigationRequest::CommitPageActivation() {
     if (!activated_entry)
       return;
 
-    // Restore appHistory entries, since they will probably have changed since
-    // the page entered bfcache. We must update all frames, not just the top
-    // frame, because it is possible (though unlikely) that an iframe's entries
-    // have changed, too.
+    // Restore navigation API entries, since they will probably have changed
+    // since the page entered bfcache. We must update all frames, not just the
+    // top frame, because it is possible (though unlikely) that an iframe's
+    // entries have changed, too.
     activated_entry->render_frame_host()->ForEachRenderFrameHost(
         base::BindRepeating(
             [](content::RenderFrameHost* navigating_rfh,
@@ -4683,14 +4686,17 @@ void NavigationRequest::CommitPageActivation() {
               RenderFrameHostImpl* rfhi =
                   static_cast<RenderFrameHostImpl*>(rfh);
               // |request| is given as a parameter to
-              // GetAppHistoryEntryVectors() only for the frame being committed
-              // (i.e., the top frame).
+              // GetNavigationApiHistoryEntryVectors() only for the frame being
+              // committed (i.e., the top frame).
               auto entry_arrays =
-                  rfhi->frame_tree()->controller().GetAppHistoryEntryVectors(
-                      rfhi->frame_tree_node(),
-                      navigating_rfh == rfh ? request : nullptr);
-              rfhi->GetAssociatedLocalFrame()->SetAppHistoryEntriesForRestore(
-                  std::move(entry_arrays));
+                  rfhi->frame_tree()
+                      ->controller()
+                      .GetNavigationApiHistoryEntryVectors(
+                          rfhi->frame_tree_node(),
+                          navigating_rfh == rfh ? request : nullptr);
+              rfhi->GetAssociatedLocalFrame()
+                  ->SetNavigationApiHistoryEntriesForRestore(
+                      std::move(entry_arrays));
               return content::RenderFrameHost::FrameIterationAction::kContinue;
             },
             activated_entry->render_frame_host(), this));
@@ -6436,9 +6442,9 @@ ukm::SourceId NavigationRequest::GetNextPageUkmSourceId() {
   if (rfh_restored_from_back_forward_cache_)
     return rfh_restored_from_back_forward_cache_->GetPageUkmSourceId();
 
-  // If this is the same document or a child frame navigation the UKM id will
-  // not change from it.
-  if (IsSameDocument() || !IsInMainFrame())
+  // If this is the same document or a subframe navigation (i.e. iframe or
+  // fenced frame), the UKM id will not change from it.
+  if (IsSameDocument() || !IsInMainFrame() || IsInFencedFrameTree())
     return previous_page_ukm_source_id_;
 
   return ukm::ConvertToSourceId(navigation_id_,

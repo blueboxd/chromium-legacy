@@ -148,6 +148,10 @@ const char kMuteCompromisedPasswordsName[] =
 const char kMuteCompromisedPasswordsDescription[] =
     "Enables muting/unmuting compromised passwords in bulk leak check.";
 
+const char kPasswordNotesName[] = "Password notes in settings";
+const char kPasswordNotesDescription[] =
+    "Enables a note section for each password in the settings page.";
+
 const char kEnableBluetoothSerialPortProfileInSerialApiName[] =
     "Enable Bluetooth Serial Port Profile in Serial API";
 const char kEnableBluetoothSerialPortProfileInSerialApiDescription[] =
@@ -1116,12 +1120,6 @@ const char kDeprecateAltBasedSixPackDescription[] =
     "Show deprecation notifications and disable functionality for Alt based "
     "six pack deprecations. The Search based versions continue to work.";
 
-const char kDiagnosticsAppName[] = "Diagnostics app";
-const char kDiagnosticsAppDescription[] =
-    "Enables the Diagnostics app that allows Chrome OS users to be able to "
-    "view their system telemetric information and run diagnostic tests for "
-    "their device.";
-
 const char kDiagnosticsAppNavigationName[] = "Diagnostics app navigation";
 const char kDiagnosticsAppNavigationDescription[] =
     "Enables the navigation panel in the Diagnostics app.";
@@ -1202,13 +1200,11 @@ const char kEnableAutomaticSnoozeName[] = "Enable Automatic Snooze";
 const char kEnableAutomaticSnoozeDescription[] =
     "Enables automatic snoozing on In-Product Help with no snooze button.";
 
-const char kEnableLensRegionSearchFlagId[] = "enable-lens-region-search";
-const char kEnableLensRegionSearchName[] =
-    "Search your screen with Google Lens";
-const char kEnableLensRegionSearchDescription[] =
-    "Right click and select \"Search images with Google Lens\" to "
-    "search any region of the site to learn more about the visual content you "
-    "see while you browse and shop on the web.";
+const char kEnableLensStandaloneFlagId[] = "enable-lens-standalone";
+const char kEnableLensStandaloneName[] = "Enable Lens features in Chrome.";
+const char kEnableLensStandaloneDescription[] =
+    "Enables Lens image and region search to learn about the visual content "
+    "you see while you browse and shop on the web.";
 
 const char kEnableLoginDetectionName[] = "Enable login detection";
 const char kEnableLoginDetectionDescription[] =
@@ -1441,6 +1437,19 @@ const char kCastStreamingVp9Description[] =
     "Enables the inclusion of VP9 codec video encoding in Cast mirroring "
     "session negotiations.";
 
+const char kCastUseBlocklistForRemotingQueryName[] =
+    "Use blocklist for controlling remoting capabilities queries";
+const char kCastUseBlocklistForRemotingQueryDescription[] =
+    "Enables the use of the hard-coded blocklist for controlling whether a "
+    "device should be queried for remoting capabilities when configuring a "
+    "mirroring session.";
+
+const char kCastForceEnableRemotingQueryName[] =
+    "Force enable remoting capabilities queries";
+const char kCastForceEnableRemotingQueryDescription[] =
+    "Enables querying for remoting capabilities for ALL devices, regardless of "
+    "the contents of the allowlist or blocklist.";
+
 const char kGoogleLensSdkIntentName[] =
     "Enable the use of the Lens SDK when starting intent into Lens.";
 const char kGoogleLensSdkIntentDescription[] =
@@ -1614,6 +1623,11 @@ const char kLensCameraAssistedSearchName[] =
 const char kLensCameraAssistedSearchDescription[] =
     "Enable an entry point to Google Lens to allow users to search what they "
     "see using their mobile camera.";
+
+const char kLocationBarModelOptimizationsName[] =
+    "LocationBarModel optimizations";
+const char kLocationBarModelOptimizationsDescription[] =
+    "Cache commonly used data in LocationBarModel to improve performance";
 
 const char kLogJsConsoleMessagesName[] =
     "Log JS console messages in system logs";
@@ -2190,16 +2204,6 @@ const char kPwaUpdateDialogForAppTitleDescription[] =
 const char kQuicName[] = "Experimental QUIC protocol";
 const char kQuicDescription[] = "Enable experimental QUIC protocol support.";
 
-const char kQuickActionSearchWidgetAndroidName[] = "Quick Action Search Widget";
-const char kQuickActionSearchWidgetAndroidDescription[] =
-    "When enabled, the quick action search widget will be available to add to "
-    "the homescreen.";
-
-const char kQuickActionSearchWidgetAndroidDinoVariantName[] =
-    "Quick Action Search Widget - Dino Variant";
-const char kQuickActionSearchWidgetAndroidDinoVariantDescription[] =
-    "When enabled, the Dino widget will be available to add to the homescreen";
-
 const char kQuickDimName[] = "Enable lock on leave";
 const char kQuickDimDescription[] =
     "Enables lock on leave feature to better dim or lock the device. Can be "
@@ -2256,6 +2260,12 @@ const char kSamePartyCookiesConsideredFirstPartyDescription[] =
 const char kPartitionedCookiesName[] = "Partitioned cookies";
 const char kPartitionedCookiesDescription[] =
     "Controls if the Partitioned cookie attribute is enabled.";
+const char kPartitionedCookiesBypassOriginTrialName[] =
+    "Partitioned cookies: bypass origin trial";
+const char kPartitionedCookiesBypassOriginTrialDescription[] =
+    "If this flag is enabled, Chrome will not require a site to opt into the "
+    "origin trial in order to send or receive cookies set with the Partitioned "
+    "attribute.";
 
 const char kScrollableTabStripFlagId[] = "scrollable-tabstrip";
 const char kScrollableTabStripName[] = "Tab Scrolling";
@@ -3597,10 +3607,10 @@ const char kStrictSiteIsolationDescription[] =
     "#site-isolation-trial-opt-out for how to disable site isolation for "
     "testing.";
 
-const char kSyncAndroidPromosRevampName[] =
-    "Enable the revamped sync promos on Android";
-const char kSyncAndroidPromosRevampDescription[] =
-    "Improves the visual design of sync promos.";
+const char kSyncAndroidPromosWithSingleButtonName[] =
+    "Enable the single button sync promos on Android";
+const char kSyncAndroidPromosWithSingleButtonDescription[] =
+    "Hides the \"Choose another account\" button on sync promos.";
 
 const char kTabGroupsForTabletsName[] = "Tab groups on tablets";
 const char kTabGroupsForTabletsDescription[] = "Enable tab groups on tablets.";
@@ -5591,6 +5601,20 @@ const char kVaapiAV1DecoderDescription[] =
 const char kEnableTtsLacrosSupportName[] = "Enable tts lacros support";
 const char kEnableTtsLacrosSupportDescription[] =
     "Enable or disable lacros support for text to speech.";
+
+const char kIntentChipSkipsPickerName[] =
+    "Link capturing intent chip skips the intent picker bubble";
+const char kIntentChipSkipsPickerDescription[] =
+    "When enabled, clicking the intent chip in the Omnibox will skip the "
+    "intent picker bubble and launch directly into the app. If multiple apps "
+    "are installed for a URL, the intent picker will still be shown for "
+    "disambigation.";
+
+const char kLinkCapturingInfoBarName[] = "Enable link capturing info bar";
+const char kLinkCapturingInfoBarDescription[] =
+    "Enables an info bar which appears when launching a web app through the "
+    "Omnibox intent chip, prompting to update the link capturing setting for "
+    "that app.";
 
 const char kLinkCapturingUiUpdateName[] = "Enable updated link capturing UI";
 const char kLinkCapturingUiUpdateDescription[] =

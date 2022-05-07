@@ -55,7 +55,7 @@ class DesktopSharingHubComponentInstallerPolicy
 };
 
 // Call once during startup to make the component update service aware of
-// the File Type Policies component.
+// the Desktop Sharing Hub component.
 void RegisterDesktopSharingHubComponent(ComponentUpdateService* cus);
 
 }  // namespace component_updater

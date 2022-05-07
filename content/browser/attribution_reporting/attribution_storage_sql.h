@@ -36,6 +36,7 @@ namespace content {
 
 class AggregatableHistogramContribution;
 class AttributionStorageDelegate;
+struct AttributionInfo;
 
 enum class RateLimitResult : int;
 
@@ -100,15 +101,15 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       int deactivated_source_return_limit = -1) override;
   CreateReportResult MaybeCreateAndStoreReport(
       const AttributionTrigger& trigger) override;
-  std::vector<AttributionReport> GetEventLevelReports(
-      base::Time max_report_time,
-      int limit = -1) override;
   std::vector<AttributionReport> GetAttributionReports(
       base::Time max_report_time,
-      int limit = -1) override;
+      int limit = -1,
+      AttributionReport::ReportTypes report_types = {
+          AttributionReport::ReportType::kEventLevel,
+          AttributionReport::ReportType::kAggregatableAttribution}) override;
   absl::optional<base::Time> GetNextReportTime(base::Time time) override;
   std::vector<AttributionReport> GetReports(
-      const std::vector<AttributionReport::EventLevelData::Id>& ids) override;
+      const std::vector<AttributionReport::Id>& ids) override;
   std::vector<StoredSource> GetActiveSources(int limit = -1) override;
   bool DeleteReport(AttributionReport::Id report_id) override;
   bool UpdateReportForSendFailure(AttributionReport::Id report_id,
@@ -248,7 +249,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   AttributionTrigger::EventLevelResult MaybeCreateEventLevelReport(
-      StoredSource source,
+      AttributionInfo attribution_info,
       const AttributionTrigger& trigger,
       bool top_level_filters_match,
       absl::optional<AttributionReport>& report,
@@ -283,8 +284,7 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
   // `filter`, between `delete_begin` and `delete_end` time. More specifically,
   // this:
   // 1. Deletes all sources within the time range. If any aggregatable
-  // attribution
-  //    is attributed to this source it is also deleted.
+  //    attribution is attributed to this source it is also deleted.
   // 2. Deletes all aggregatable attributions within the time range. All sources
   //    attributed to the aggregatable attribution are also deleted.
   //
@@ -342,6 +342,31 @@ class CONTENT_EXPORT AttributionStorageSql : public AttributionStorage {
       base::TimeDelta min_delay,
       base::TimeDelta max_delay,
       base::Time now) VALID_CONTEXT_REQUIRED(sequence_checker_);
+
+  AttributionTrigger::AggregatableResult
+  MaybeCreateAggregatableAttributionReport(
+      AttributionInfo attribution_info,
+      const AttributionTrigger& trigger,
+      bool top_level_filters_match,
+      absl::optional<AttributionReport>& report)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
+
+  AttributionTrigger::AggregatableResult
+  MaybeStoreAggregatableAttributionReport(const AttributionReport& report,
+                                          int64_t aggregatable_budget_consumed)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
+
+  [[nodiscard]] bool StoreAggregatableAttributionReport(
+      const AttributionReport& report)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
+
+  absl::optional<AttributionReport>
+  ReadAggregatableAttributionReportFromStatement(sql::Statement&)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
+
+  absl::optional<AttributionReport> GetReport(
+      AttributionReport::AggregatableAttributionData::Id report_id)
+      VALID_CONTEXT_REQUIRED(sequence_checker_);
 
   static bool g_run_in_memory_;
 

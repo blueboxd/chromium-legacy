@@ -18,6 +18,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/commerce/core/commerce_feature_list.h"
+#include "components/commerce/core/commerce_heuristics_data.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 #include "components/search/ntp_features.h"
@@ -89,6 +90,17 @@ const char kMockMerchantURLB[] = "https://www.bar.com";
 const char kMockMerchantC[] = "baz.com";
 const char kMockMerchantURLC[] = "https://www.baz.com";
 const char kProductURL[] = "https://www.product.com";
+const char kCommerceHintHeuristicsJSONData[] = R"###(
+      {
+          "foo.com": {
+              "merchant_name": "Foo",
+              "cart_url": "https://foo.com/cart"
+          },
+          "bar.com": {
+              "merchant_name": "Bar"
+          }
+      }
+  )###";
 const cart_db::ChromeCartContentProto kMockProtoA =
     BuildProto(kMockMerchantA, kMockMerchantURLA);
 const cart_db::ChromeCartContentProto kMockProtoB =
@@ -173,6 +185,7 @@ class CartServiceTest : public testing::Test {
     EXPECT_EQ(found.size(), expected.size());
     for (size_t i = 0; i < expected.size(); i++) {
       EXPECT_EQ(found[i].first, expected[i].first);
+      EXPECT_EQ(found[i].second.merchant(), expected[i].second.merchant());
       EXPECT_EQ(found[i].second.merchant_cart_url(),
                 expected[i].second.merchant_cart_url());
       for (int j = 0; j < expected[i].second.product_image_urls().size(); j++) {
@@ -934,8 +947,8 @@ TEST_F(CartServiceTest, TestDomainToCartURLMapping) {
   EXPECT_EQ("", getDomainCartURL("example.com"));
 }
 
-// Tests looking up cart URL and merchant name when adding cart.
-TEST_F(CartServiceTest, TestLookupCartInfo) {
+// Tests looking up cart URL and merchant name from resources when adding cart.
+TEST_F(CartServiceTest, TestLookupCartInfo_FromResource) {
   CartDB* cart_db_ = service_->GetDB();
   const char* amazon_domain = "amazon.com";
   base::RunLoop run_loop[3];
@@ -968,6 +981,27 @@ TEST_F(CartServiceTest, TestLookupCartInfo) {
       base::BindOnce(&CartServiceTest::GetEvaluationURL, base::Unretained(this),
                      run_loop[2].QuitClosure(), result2));
   run_loop[2].Run();
+}
+
+// Tests looking up merchant name from component when adding cart.
+TEST_F(CartServiceTest, TestLookupCartInfo_FromComponent) {
+  ASSERT_TRUE(commerce_heuristics::CommerceHeuristicsData::GetInstance()
+                  .PopulateDataFromComponent(kCommerceHintHeuristicsJSONData,
+                                             "{}", "", ""));
+  CartDB* cart_db_ = service_->GetDB();
+  base::RunLoop run_loop;
+  cart_db::ChromeCartContentProto merchant_proto =
+      BuildProto(kMockMerchantA, "https://foo.com/cart");
+  service_->AddCart(kMockMerchantA, absl::nullopt, merchant_proto);
+  task_environment_.RunUntilIdle();
+
+  merchant_proto.set_merchant("Foo");
+  const ShoppingCarts result = {{kMockMerchantA, merchant_proto}};
+  cart_db_->LoadCart(
+      kMockMerchantA,
+      base::BindOnce(&CartServiceTest::GetEvaluationURL, base::Unretained(this),
+                     run_loop.QuitClosure(), result));
+  run_loop.Run();
 }
 
 // Tests the priority of cart URL sources.
@@ -2248,23 +2282,23 @@ TEST_F(CartServiceDiscountConsentV2Test,
 
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.AcceptedIn",
-      ntp_features::DiscountConsentNtpVariation::kDefault, 0);
+      commerce::DiscountConsentNtpVariation::kDefault, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.AcceptedIn",
-      ntp_features::DiscountConsentNtpVariation::kDefault, 1);
+      commerce::DiscountConsentNtpVariation::kDefault, 1);
 
   // Simulate consent has been accepted in the Inline variation.
   profile_->GetPrefs()->SetInteger(prefs::kDiscountConsentDecisionMadeIn, 2);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.AcceptedIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 0);
+      commerce::DiscountConsentNtpVariation::kInline, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.AcceptedIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 1);
+      commerce::DiscountConsentNtpVariation::kInline, 1);
 }
 
 TEST_F(CartServiceDiscountConsentV2Test,
@@ -2277,23 +2311,23 @@ TEST_F(CartServiceDiscountConsentV2Test,
 
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.RejectedIn",
-      ntp_features::DiscountConsentNtpVariation::kDefault, 0);
+      commerce::DiscountConsentNtpVariation::kDefault, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.RejectedIn",
-      ntp_features::DiscountConsentNtpVariation::kDefault, 1);
+      commerce::DiscountConsentNtpVariation::kDefault, 1);
 
   // Simulate consent has been rejected in the Inline variation.
   profile_->GetPrefs()->SetInteger(prefs::kDiscountConsentDecisionMadeIn, 2);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.RejectedIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 0);
+      commerce::DiscountConsentNtpVariation::kInline, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.RejectedIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 1);
+      commerce::DiscountConsentNtpVariation::kInline, 1);
 }
 
 TEST_F(CartServiceDiscountConsentV2Test,
@@ -2306,12 +2340,12 @@ TEST_F(CartServiceDiscountConsentV2Test,
 
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.NoShowHasFinalized",
-      ntp_features::DiscountConsentNtpVariation::kDefault, 0);
+      commerce::DiscountConsentNtpVariation::kDefault, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.NoShowHasFinalized",
-      ntp_features::DiscountConsentNtpVariation::kDefault, 1);
+      commerce::DiscountConsentNtpVariation::kDefault, 1);
 
   // Simulate consent has been accepted in the Default variation.
   profile_->GetPrefs()->SetBoolean(prefs::kCartDiscountEnabled, true);
@@ -2319,7 +2353,7 @@ TEST_F(CartServiceDiscountConsentV2Test,
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.NoShowHasFinalized",
-      ntp_features::DiscountConsentNtpVariation::kDefault, 2);
+      commerce::DiscountConsentNtpVariation::kDefault, 2);
 
   // Simulate consent has been accepted in the Inline variation.
   profile_->GetPrefs()->SetBoolean(prefs::kCartDiscountEnabled, true);
@@ -2327,12 +2361,12 @@ TEST_F(CartServiceDiscountConsentV2Test,
 
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.NoShowHasFinalized",
-      ntp_features::DiscountConsentNtpVariation::kInline, 0);
+      commerce::DiscountConsentNtpVariation::kInline, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.NoShowHasFinalized",
-      ntp_features::DiscountConsentNtpVariation::kInline, 1);
+      commerce::DiscountConsentNtpVariation::kInline, 1);
 }
 
 TEST_F(CartServiceDiscountConsentV2Test,
@@ -2346,24 +2380,24 @@ TEST_F(CartServiceDiscountConsentV2Test,
 
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.DismissedIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 0);
+      commerce::DiscountConsentNtpVariation::kInline, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.DismissedIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 1);
+      commerce::DiscountConsentNtpVariation::kInline, 1);
 
   // Simulate consent has been dismissed in the Dialog variation.
   profile_->GetPrefs()->SetInteger(prefs::kDiscountConsentDismissedIn, 3);
 
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.DismissedIn",
-      ntp_features::DiscountConsentNtpVariation::kDialog, 0);
+      commerce::DiscountConsentNtpVariation::kDialog, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.DismissedIn",
-      ntp_features::DiscountConsentNtpVariation::kDialog, 1);
+      commerce::DiscountConsentNtpVariation::kDialog, 1);
 }
 
 TEST_F(CartServiceDiscountConsentV2Test,
@@ -2376,23 +2410,23 @@ TEST_F(CartServiceDiscountConsentV2Test,
 
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.InterestedButNoActionIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 0);
+      commerce::DiscountConsentNtpVariation::kInline, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.InterestedButNoActionIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 1);
+      commerce::DiscountConsentNtpVariation::kInline, 1);
 
   // Simulate 'continue' button is clicked in the Dialog variation.
   profile_->GetPrefs()->SetInteger(prefs::kDiscountConsentShowInterestIn, 3);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.InterestedButNoActionIn",
-      ntp_features::DiscountConsentNtpVariation::kDialog, 0);
+      commerce::DiscountConsentNtpVariation::kDialog, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.InterestedButNoActionIn",
-      ntp_features::DiscountConsentNtpVariation::kDialog, 1);
+      commerce::DiscountConsentNtpVariation::kDialog, 1);
 }
 
 TEST_F(CartServiceDiscountConsentV2Test,
@@ -2406,12 +2440,12 @@ TEST_F(CartServiceDiscountConsentV2Test,
 
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.NeverShownIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 0);
+      commerce::DiscountConsentNtpVariation::kInline, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.NeverShownIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 1);
+      commerce::DiscountConsentNtpVariation::kInline, 1);
 
   // Simulate consent is shown in the Inline variation before.
   profile_->GetPrefs()->SetInteger(prefs::kDiscountConsentLastShownInVariation,
@@ -2420,7 +2454,7 @@ TEST_F(CartServiceDiscountConsentV2Test,
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.NeverShownIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 1);
+      commerce::DiscountConsentNtpVariation::kInline, 1);
 }
 
 TEST_F(CartServiceDiscountConsentV2Test,
@@ -2435,17 +2469,17 @@ TEST_F(CartServiceDiscountConsentV2Test,
 
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.NoShowIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 0);
+      commerce::DiscountConsentNtpVariation::kInline, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.NoShowIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 1);
+      commerce::DiscountConsentNtpVariation::kInline, 1);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.NoShowIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 2);
+      commerce::DiscountConsentNtpVariation::kInline, 2);
 }
 
 TEST_F(CartServiceDiscountConsentV2Test,
@@ -2459,17 +2493,17 @@ TEST_F(CartServiceDiscountConsentV2Test,
 
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.IgnoredIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 0);
+      commerce::DiscountConsentNtpVariation::kInline, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.IgnoredIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 1);
+      commerce::DiscountConsentNtpVariation::kInline, 1);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.IgnoredIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 2);
+      commerce::DiscountConsentNtpVariation::kInline, 2);
 }
 
 TEST_F(CartServiceDiscountConsentV2Test,
@@ -2480,17 +2514,17 @@ TEST_F(CartServiceDiscountConsentV2Test,
 
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.ShownIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 0);
+      commerce::DiscountConsentNtpVariation::kInline, 0);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.ShownIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 1);
+      commerce::DiscountConsentNtpVariation::kInline, 1);
 
   RecordDiscountConsentStatusAtLoad(should_show);
   histogram_tester_.ExpectBucketCount(
       "NewTabPage.Carts.DiscountConsentStatusAtLoad.ShownIn",
-      ntp_features::DiscountConsentNtpVariation::kInline, 2);
+      commerce::DiscountConsentNtpVariation::kInline, 2);
 }
 
 TEST_F(CartServiceDiscountConsentV2Test, TestLastShownInVariationUpdated) {

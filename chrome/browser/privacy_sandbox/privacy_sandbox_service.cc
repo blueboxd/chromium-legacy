@@ -25,6 +25,8 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_user_settings.h"
+#include "content/public/browser/browsing_data_filter_builder.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/interest_group_manager.h"
 #include "content/public/common/content_features.h"
 #include "google_apis/gaia/google_service_auth_error.h"
@@ -121,7 +123,8 @@ PrivacySandboxService::PrivacySandboxService(
     syncer::SyncService* sync_service,
     signin::IdentityManager* identity_manager,
     content::InterestGroupManager* interest_group_manager,
-    profile_metrics::BrowserProfileType profile_type)
+    profile_metrics::BrowserProfileType profile_type,
+    content::BrowsingDataRemover* browsing_data_remover)
     : privacy_sandbox_settings_(privacy_sandbox_settings),
       cookie_settings_(cookie_settings),
       pref_service_(pref_service),
@@ -129,7 +132,8 @@ PrivacySandboxService::PrivacySandboxService(
       sync_service_(sync_service),
       identity_manager_(identity_manager),
       interest_group_manager_(interest_group_manager),
-      profile_type_(profile_type) {
+      profile_type_(profile_type),
+      browsing_data_remover_(browsing_data_remover) {
   DCHECK(privacy_sandbox_settings_);
   DCHECK(pref_service_);
   DCHECK(cookie_settings_);
@@ -139,15 +143,15 @@ PrivacySandboxService::PrivacySandboxService(
   user_prefs_registrar_.Init(pref_service_);
   user_prefs_registrar_.Add(
       prefs::kPrivacySandboxApisEnabled,
-      base::BindRepeating(&PrivacySandboxService::OnPrivacySandboxPrefChanged,
+      base::BindRepeating(&PrivacySandboxService::OnPrivacySandboxV1PrefChanged,
                           base::Unretained(this)));
   user_prefs_registrar_.Add(
       prefs::kPrivacySandboxApisEnabledV2,
-      base::BindRepeating(&PrivacySandboxService::OnPrivacySandboxPrefChanged,
+      base::BindRepeating(&PrivacySandboxService::OnPrivacySandboxV2PrefChanged,
                           base::Unretained(this)));
   user_prefs_registrar_.Add(
       prefs::kPrivacySandboxFlocEnabled,
-      base::BindRepeating(&PrivacySandboxService::OnPrivacySandboxPrefChanged,
+      base::BindRepeating(&PrivacySandboxService::OnPrivacySandboxV1PrefChanged,
                           base::Unretained(this)));
 
   // On first entering the privacy sandbox experiment, users may have the
@@ -373,13 +377,31 @@ void PrivacySandboxService::SetPrivacySandboxEnabled(bool enabled) {
   privacy_sandbox_settings_->SetPrivacySandboxEnabled(enabled);
 }
 
-void PrivacySandboxService::OnPrivacySandboxPrefChanged() {
+void PrivacySandboxService::OnPrivacySandboxV1PrefChanged() {
   // Any change of the two observed prefs should be accompanied by a
   // reset of the FLoC cohort. Technically this only needs to occur on the
   // transition from FLoC being effectively disabled to effectively enabled,
   // but performing it on every pref change achieves the same user visible
   // behavior, and is much simpler.
   ResetFlocId(/*user_initiated=*/false);
+}
+
+void PrivacySandboxService::OnPrivacySandboxV2PrefChanged() {
+  // If the user has disabled the Privacy Sanbdbox, any data stored should be
+  // cleared.
+  if (!browsing_data_remover_)
+    return;
+
+  if (pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabledV2))
+    return;
+
+  browsing_data_remover_->Remove(
+      base::Time::Min(), base::Time::Max(),
+      content::BrowsingDataRemover::DATA_TYPE_INTEREST_GROUPS |
+          content::BrowsingDataRemover::DATA_TYPE_AGGREGATION_SERVICE |
+          content::BrowsingDataRemover::DATA_TYPE_CONVERSIONS |
+          content::BrowsingDataRemover::DATA_TYPE_TRUST_TOKENS,
+      content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
 }
 
 void PrivacySandboxService::GetFledgeJoiningEtldPlusOneForDisplay(
@@ -416,6 +438,18 @@ void PrivacySandboxService::SetFledgeJoiningAllowed(
     bool allowed) const {
   privacy_sandbox_settings_->SetFledgeJoiningAllowed(top_frame_etld_plus1,
                                                      allowed);
+
+  if (!allowed && browsing_data_remover_) {
+    std::unique_ptr<content::BrowsingDataFilterBuilder> filter =
+        content::BrowsingDataFilterBuilder::Create(
+            content::BrowsingDataFilterBuilder::Mode::kDelete);
+    filter->AddRegisterableDomain(top_frame_etld_plus1);
+    browsing_data_remover_->RemoveWithFilter(
+        base::Time::Min(), base::Time::Max(),
+        content::BrowsingDataRemover::DATA_TYPE_INTEREST_GROUPS,
+        content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB,
+        std::move(filter));
+  }
 }
 
 void PrivacySandboxService::Shutdown() {

@@ -72,7 +72,7 @@ ProfilePickerDiceSignInProvider::~ProfilePickerDiceSignInProvider() {
     }
 
     ProfileMetrics::LogProfileAddSignInFlowOutcome(
-        ProfileMetrics::ProfileAddSignInFlowOutcome::kAbortedBeforeSignIn);
+        ProfileMetrics::ProfileSignedInFlowOutcome::kAbortedBeforeSignIn);
   }
 }
 
@@ -128,7 +128,7 @@ void ProfilePickerDiceSignInProvider::NavigateBack() {
   toolbar_->SetVisible(false);
 }
 
-ui::ColorProviderManager::InitializerSupplier*
+ui::ColorProviderManager::ThemeInitializerSupplier*
 ProfilePickerDiceSignInProvider::GetCustomTheme() const {
   if (!IsInitialized())
     return nullptr;

@@ -1204,11 +1204,6 @@
     "expiry_milestone": 100
   },
   {
-    "name": "diagnostics-app",
-    "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
-    "expiry_milestone": 92
-  },
-  {
     "name": "diagnostics-app-navigation",
     "owners": [ "//ash/webui/diagnostics_ui/OWNERS" ],
     "expiry_milestone": 99
@@ -1626,6 +1621,11 @@
     "name": "enable-cascade-layers",
     "owners": [ "xiaochengh" ],
     "expiry_milestone": 99
+  },
+  {
+    "name": "enable-cast-remoting-query-blocklist",
+    "owners": [ "rwkeane@google.com", "openscreen-eng@google.com" ],
+    "expiry_milestone": 115
   },
   {
     "name": "enable-cast-streaming-av1",
@@ -2349,7 +2349,7 @@
     "expiry_milestone": 90
   },
   {
-    "name": "enable-lens-region-search",
+    "name": "enable-lens-standalone",
     "owners": [ "stanfield@google.com", "benwgold@google.com", "juanmojica@google.com" ],
     "expiry_milestone": 103
   },
@@ -2668,16 +2668,6 @@
     // This flag is used by network administrators to debug
     // network issues related to QUIC. It must not be removed.
     "expiry_milestone": -1
-  },
-  {
-    "name": "enable-quick-action-search-widget-android",
-    "owners": [ "maxtauro@google.com", "ender@google.com" ],
-    "expiry_milestone": 105
-  },
-  {
-    "name": "enable-quick-action-search-widget-android-dino-variant",
-    "owners": [ "maxtauro@google.com", "ender@google.com" ],
-    "expiry_milestone": 105
   },
   {
     "name": "enable-raw-draw",
@@ -3443,6 +3433,11 @@
     "expiry_milestone": -1
   },
   {
+    "name": "force-enable-cast-remoting-query",
+    "owners": [ "rwkeane@google.com", "openscreen-eng@google.com" ],
+    "expiry_milestone": 115
+  },
+  {
     "name": "force-major-version-to-minor",
     "owners": [ "brgoldstein", "potassium-katabolism@google.com" ],
     "expiry_milestone": 110
@@ -3774,6 +3769,11 @@
     "expiry_milestone": 95
   },
   {
+    "name": "intent-chip-skips-intent-picker",
+    "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
+    "expiry_milestone": 105
+  },
+  {
     "name": "interest-feed-notice-card-auto-dismiss",
     "owners": [ "//chrome/android/feed/OWNERS", "feed@chromium.org", "edchin@chromium.org" ],
     "expiry_milestone": 95
@@ -3986,12 +3986,17 @@
   {
     "name": "lens-camera-assisted-search",
     "owners": [ "yusuyoutube@google.com", "benwgold@google.com", "fgorski", "wylieb", "lens-chrome@google.com" ],
-    "expiry_milestone": 96
+    "expiry_milestone": 104
   },
   {
     "name": "lightweight-reactions-android",
     "owners": [ "gujen", "sophey" ],
     "expiry_milestone": 104
+  },
+  {
+    "name": "link-capturing-infobar",
+    "owners": ["tsergeant", "chromeos-apps-foundation-team@google.com"],
+    "expiry_milestone": 105
   },
   {
     "name": "link-capturing-ui-update",
@@ -4016,6 +4021,11 @@
     // This flag is used for debugging and development purposes, allowing users
     // and developers to test LiteVideos reliably on any origin.'
     "expiry_milestone": -1
+  },
+  {
+    "name": "location-bar-model-optimizations",
+    "owners": [ "pnoland@google.com"],
+    "expiry_milestone": 105
   },
   {
     "name": "mac-syscall-sandbox",
@@ -4795,7 +4805,12 @@
   {
     "name": "partitioned-cookies",
     "owners": [ "dylancutler" ],
-    "expiry_milestone": 100
+    "expiry_milestone": 110
+  },
+  {
+    "name": "partitioned-cookies-bypass-origin-trial",
+    "owners": [ "dylancutler" ],
+    "expiry_milestone": 110
   },
   {
     "name": "password-change-in-settings",
@@ -4818,6 +4833,11 @@
     // The feature is already extensively used externally.
     // However, it's not polished enough yet to launch.
     "expiry_milestone": -1
+  },
+  {
+    "name": "password-notes",
+    "owners": ["mamir", "derinel@google.com"],
+    "expiry_milestone": 105
   },
   {
     "name": "password-scripts-fetching",
@@ -4950,7 +4970,7 @@
       "andzaytsev",
       "msramek",
       "chrome-friendly-settings@google.com"],
-    "expiry_milestone": 100
+    "expiry_milestone": 104
   },
   {
     "name": "privacy-sandbox-v3-android",
@@ -5575,7 +5595,7 @@
   {
     "name": "smart-lock-ui-revamp",
     "owners": [ "cclem", "better-together-dev@google.com" ],
-    "expiry_milestone": 101
+    "expiry_milestone": 103
   },
   {
     "name": "smart-suggestion-for-large-downloads",
@@ -5640,7 +5660,7 @@
     "expiry_milestone": 104
   },
   {
-    "name": "sync-android-promos-revamp",
+    "name": "sync-android-promos-with-single-button",
     "owners": ["mmrashad@google.com", "chrome-sync-dev@google.com"],
     "expiry_milestone": 103
   },

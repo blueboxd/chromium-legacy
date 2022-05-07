@@ -557,7 +557,8 @@
   },
   {
     "prefix": "dark-color-scheme",
-    "bases": ["external/wpt/css/css-color-adjust/rendering/dark-color-scheme",
+    "bases": ["external/wpt/css/css-color/system-color-consistency.html",
+              "external/wpt/css/css-color-adjust/rendering/dark-color-scheme",
               "fast/forms/color-scheme",
               "fast/forms/validation-bubble-appearance-edge.html",
               "fast/forms/validation-bubble-appearance-wrap.html",
@@ -785,7 +786,7 @@
               "fast/forms/fieldset/overflow-scroll-interaction.html",
               "fast/scroll-behavior/middleclick-autoscroll-nested-elements.html",
               "fast/scroll-behavior/middleclick-autoscroll-use-count.html",
-              "http/tests/credentialmanager/credentialscontainer-create-with-virtual-authenticator.html",
+              "http/tests/credentialmanagement/credentialscontainer-create-with-virtual-authenticator.html",
               "ietestcenter/css3/bordersbackgrounds/background-attachment-local-scrolling.htm"],
     "args": ["--enable-features=ScrollUnification,SharedArrayBuffer",
              "--enable-threaded-compositing"]
@@ -857,12 +858,12 @@
               "external/wpt/html/cross-origin-embedder-policy/anonymous-iframe/",
               "http/tests/cookies/partitioned-cookies",
               "http/tests/inspector-protocol/network/"],
-    "args": ["--enable-features=PartitionedCookies"]
+    "args": ["--enable-features=PartitionedCookies,PartitionedCookiesBypassOriginTrial"]
   },
   {
     "prefix": "partitioned-cookies-first-party-sets",
     "bases": ["http/tests/inspector-protocol/network/"],
-    "args": ["--enable-features=PartitionedCookies",
+    "args": ["--enable-features=PartitionedCookies,PartitionedCookiesBypassOriginTrial",
              "--use-first-party-set=https://devtools.test,https://example.test"]
   },
   {
@@ -1011,7 +1012,7 @@
       "http/tests/inspector-protocol/fenced-frame",
       "external/wpt/html/cross-origin-embedder-policy/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/mparch,Prerender2,PartitionedCookies"]
+    "args": ["--enable-features=FencedFrames:implementation_type/mparch,Prerender2,PartitionedCookies,PartitionedCookiesBypassOriginTrial"]
   },
   {
     "prefix": "fenced-frame-shadow-dom",
@@ -1020,7 +1021,7 @@
       "wpt_internal/fenced_frame",
       "external/wpt/html/cross-origin-embedder-policy/anonymous-iframe"
     ],
-    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,Prerender2,PartitionedCookies"]
+    "args": ["--enable-features=FencedFrames:implementation_type/shadow_dom,Prerender2,PartitionedCookies,PartitionedCookiesBypassOriginTrial"]
   },
   {
     "prefix": "disable-custom-element-default-style",
@@ -1036,11 +1037,6 @@
     "prefix": "enable-experimental-async-stack-tagging-api",
     "bases": ["inspector-protocol/runtime"],
     "args": ["--js-flags=--experimental-async-stack-tagging-api"]
-  },
-  {
-    "prefix": "change-service-worker-priority-when-client-foreground-state-change",
-    "bases": ["external/wpt/service-workers"],
-    "args": ["--enable-features=ChangeServiceWorkerPriorityForClientForegroundStateChange"]
   },
   {
     "prefix": "system-color-picker-appearance",

@@ -224,6 +224,8 @@ class AttributionEventHandler : public AttributionObserver {
     base::Value input_value = std::move(input_values_.front());
     input_values_.pop_front();
 
+    // TODO(linnan): Support aggregatable reports in the simulator.
+
     std::stringstream reason;
     switch (result.event_level_status()) {
       case AttributionTrigger::EventLevelResult::kSuccess:
@@ -326,6 +328,7 @@ base::Value RunAttributionSimulation(
 
   base::RunLoop loop;
   manager->GetPendingReportsForInternalUse(
+      AttributionReport::ReportType::kEventLevel,
       base::BindLambdaForTesting([&](std::vector<AttributionReport> reports) {
         if (!reports.empty()) {
           last_report_time = base::ranges::max(reports, /*comp=*/{},

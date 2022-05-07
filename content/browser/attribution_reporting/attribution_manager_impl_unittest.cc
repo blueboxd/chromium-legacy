@@ -82,11 +82,33 @@ constexpr AttributionStorageDelegate::OfflineReportDelayConfig
         .max = base::Minutes(1),
     };
 
+AggregatableReport CreateExampleAggregatableReport() {
+  std::vector<AggregatableReport::AggregationServicePayload> payloads;
+  payloads.emplace_back(/*payload=*/kABCD1234AsBytes,
+                        /*key_id=*/"key_1",
+                        /*debug_cleartext_payload=*/absl::nullopt);
+  payloads.emplace_back(/*payload=*/kEFGH5678AsBytes,
+                        /*key_id=*/"key_2",
+                        /*debug_cleartext_payload=*/absl::nullopt);
+
+  AggregatableReportSharedInfo shared_info(
+      base::Time::FromJavaTime(1234567890123),
+      /*privacy_budget_key=*/"example_pbk", DefaultExternalReportID(),
+      /*reporting_origin=*/
+      url::Origin::Create(GURL("https://example.reporting")),
+      AggregatableReportSharedInfo::DebugMode::kDisabled);
+
+  return AggregatableReport(std::move(payloads), shared_info.SerializeAsJson());
+}
+
 class MockAttributionObserver : public AttributionObserver {
  public:
   MOCK_METHOD(void, OnSourcesChanged, (), (override));
 
-  MOCK_METHOD(void, OnReportsChanged, (), (override));
+  MOCK_METHOD(void,
+              OnReportsChanged,
+              (AttributionReport::ReportType report_type),
+              (override));
 
   MOCK_METHOD(void,
               OnSourceHandled,
@@ -324,15 +346,8 @@ class AttributionManagerImplTest : public testing::Test {
   }
 
   std::vector<AttributionReport> StoredReports() {
-    std::vector<AttributionReport> result;
-    base::RunLoop loop;
-    attribution_manager_->GetPendingReportsForInternalUse(
-        base::BindLambdaForTesting([&](std::vector<AttributionReport> reports) {
-          result = std::move(reports);
-          loop.Quit();
-        }));
-    loop.Run();
-    return result;
+    return GetAttributionReportsForTesting(
+        attribution_manager_.get(), /*max_report_time=*/base::Time::Max());
   }
 
   void ForceGetReportsToSend() { attribution_manager_->GetReportsToSend(); }
@@ -874,10 +889,8 @@ TEST_F(AttributionManagerImplTest, ConversionsSentFromUI_ReportedImmediately) {
   EXPECT_THAT(reports, SizeIs(1));
   EXPECT_THAT(report_sender_->calls(), IsEmpty());
 
-  attribution_manager_->SendReportsForWebUI(
-      {*(absl::get<AttributionReport::EventLevelData>(reports.front().data())
-             .id)},
-      base::DoNothing());
+  attribution_manager_->SendReportsForWebUI({*reports.front().ReportId()},
+                                            base::DoNothing());
   task_environment_.FastForwardBy(base::TimeDelta());
   EXPECT_THAT(report_sender_->calls(), SizeIs(1));
 }
@@ -895,10 +908,7 @@ TEST_F(AttributionManagerImplTest,
   EXPECT_THAT(report_sender_->calls(), IsEmpty());
 
   attribution_manager_->SendReportsForWebUI(
-      {*(absl::get<AttributionReport::EventLevelData>(reports.front().data())
-             .id),
-       *(absl::get<AttributionReport::EventLevelData>(reports.back().data())
-             .id)},
+      {*reports.front().ReportId(), *reports.back().ReportId()},
       base::BindLambdaForTesting([&]() { callback_calls++; }));
   task_environment_.FastForwardBy(base::TimeDelta());
   EXPECT_THAT(report_sender_->calls(), SizeIs(2));
@@ -1192,7 +1202,7 @@ TEST_F(AttributionManagerImplTest, ClearData_NotifiesObservers) {
   observation.Observe(attribution_manager_.get());
 
   EXPECT_CALL(observer, OnSourcesChanged);
-  EXPECT_CALL(observer, OnReportsChanged);
+  EXPECT_CALL(observer, OnReportsChanged).Times(2);
 
   base::RunLoop run_loop;
   attribution_manager_->ClearData(
@@ -1656,10 +1666,11 @@ TEST_F(AttributionManagerImplTest, DebugReport_SentImmediately) {
         observation(&observer);
     observation.Observe(attribution_manager_.get());
     EXPECT_CALL(observer, OnReportSent(_, /*is_debug_report=*/true, _))
-        .Times(test_case.send_expected);
+        .Times(test_case.send_expected * 2);
 
     attribution_manager_->HandleSource(
-        SourceBuilder()
+        TestAggregatableSourceProvider()
+            .GetBuilder()
             .SetReportingOrigin(reporting_origin)
             .SetExpiry(kImpressionExpiry)
             .SetDebugKey(test_case.source_debug_key)
@@ -1668,24 +1679,33 @@ TEST_F(AttributionManagerImplTest, DebugReport_SentImmediately) {
     EXPECT_THAT(StoredSources(), SizeIs(1)) << test_case.name;
 
     attribution_manager_->HandleTrigger(
-        TriggerBuilder()
+        DefaultAggregatableTriggerBuilder()
             .SetReportingOrigin(reporting_origin)
             .SetDebugKey(test_case.trigger_debug_key)
             .Build());
-    EXPECT_THAT(StoredReports(), SizeIs(1)) << test_case.name;
+    // one event-level-report, one aggregatable report.
+    EXPECT_THAT(StoredReports(), SizeIs(2)) << test_case.name;
 
     EXPECT_THAT(report_sender_->calls(), IsEmpty()) << test_case.name;
 
     if (test_case.send_expected) {
+      aggregation_service_->RunCallback(
+          0, CreateExampleAggregatableReport(),
+          AggregationService::AssemblyStatus::kOk);
+
       EXPECT_THAT(
           report_sender_->debug_calls(),
-          ElementsAre(AllOf(
-              ReportSourceIs(SourceDebugKeyIs(test_case.source_debug_key)),
-              TriggerDebugKeyIs(test_case.trigger_debug_key))))
+          ElementsAre(AllOf(ReportSourceIs(
+                                SourceDebugKeyIs(test_case.source_debug_key)),
+                            TriggerDebugKeyIs(test_case.trigger_debug_key)),
+                      AllOf(ReportSourceIs(
+                                SourceDebugKeyIs(test_case.source_debug_key)),
+                            TriggerDebugKeyIs(test_case.trigger_debug_key))))
           << test_case.name;
 
       report_sender_->RunCallbacksAndReset(
-          {SendResult::Status::kTransientFailure});
+          {SendResult::Status::kTransientFailure,
+           SendResult::Status::kTransientFailure});
     } else {
       EXPECT_THAT(report_sender_->debug_calls(), IsEmpty());
     }
@@ -1720,17 +1740,26 @@ TEST_F(AttributionManagerImplTest,
   attribution_manager_->HandleSource(SourceBuilder().Build());
 
   const auto aggregatable_attribution =
-      ReportBuilder(
-          AttributionInfoBuilder(
-              SourceBuilder().SetSourceId(StoredSource::Id(1)).BuildStored())
-              .SetTime(base::Time::Now())
-              .Build())
+      ReportBuilder(AttributionInfoBuilder(SourceBuilder()
+                                               .SetSourceId(StoredSource::Id(1))
+                                               .SetDefaultFilterData()
+                                               .BuildStored())
+                        .SetTime(base::Time::Now())
+                        .Build())
           .SetReportTime(base::Time::Now() + base::Hours(1))
           .SetAggregatableHistogramContributions(
               {AggregatableHistogramContribution(/*key=*/1, /*value=*/2)})
           .BuildAggregatableAttribution();
   attribution_manager_->AddAggregatableAttributionForTesting(
       aggregatable_attribution);
+
+  MockAttributionObserver observer;
+  base::ScopedObservation<AttributionManager, AttributionObserver> observation(
+      &observer);
+  observation.Observe(attribution_manager_.get());
+
+  EXPECT_CALL(observer, OnReportSent(aggregatable_attribution,
+                                     /*is_debug_report=*/false, _));
 
   // Make sure the report is not sent earlier than its report time.
   task_environment_.FastForwardBy(base::Hours(1) - base::Microseconds(1));
@@ -1739,24 +1768,7 @@ TEST_F(AttributionManagerImplTest,
   task_environment_.FastForwardBy(base::Microseconds(1));
   EXPECT_THAT(aggregation_service_->calls(), SizeIs(1));
 
-  std::vector<AggregatableReport::AggregationServicePayload> payloads;
-  payloads.emplace_back(/*payload=*/kABCD1234AsBytes,
-                        /*key_id=*/"key_1",
-                        /*debug_cleartext_payload=*/absl::nullopt);
-  payloads.emplace_back(/*payload=*/kEFGH5678AsBytes,
-                        /*key_id=*/"key_2",
-                        /*debug_cleartext_payload=*/absl::nullopt);
-
-  AggregatableReportSharedInfo shared_info(
-      base::Time::FromJavaTime(1234567890123),
-      /*privacy_budget_key=*/"example_pbk",
-      aggregatable_attribution.external_report_id(),
-      /*reporting_origin=*/
-      url::Origin::Create(GURL("https://example.reporting")),
-      AggregatableReportSharedInfo::DebugMode::kDisabled);
-
-  AggregatableReport report(std::move(payloads), shared_info.SerializeAsJson());
-  aggregation_service_->RunCallback(0, std::move(report),
+  aggregation_service_->RunCallback(0, CreateExampleAggregatableReport(),
                                     AggregationService::AssemblyStatus::kOk);
   EXPECT_THAT(report_sender_->calls(), SizeIs(1));
   report_sender_->RunCallbacksAndReset({SendResult::Status::kSent});
@@ -1797,7 +1809,7 @@ TEST_F(AttributionManagerImplTest,
 
   aggregation_service_->RunCallback(
       0, absl::nullopt, AggregationService::AssemblyStatus::kAssemblyFailed);
-  EXPECT_THAT(report_sender_->calls(), SizeIs(0));
+  EXPECT_THAT(report_sender_->calls(), IsEmpty());
 
   // kAssembleReportFailed = 3.
   histograms.ExpectUniqueSample(
@@ -1869,24 +1881,7 @@ TEST_F(AttributionManagerImplTest, EventAndAggregateReportsStored_BothSent) {
 
   EXPECT_THAT(aggregation_service_->calls(), SizeIs(1));
 
-  std::vector<AggregatableReport::AggregationServicePayload> payloads;
-  payloads.emplace_back(/*payload=*/kABCD1234AsBytes,
-                        /*key_id=*/"key_1",
-                        /*debug_cleartext_payload=*/absl::nullopt);
-  payloads.emplace_back(/*payload=*/kEFGH5678AsBytes,
-                        /*key_id=*/"key_2",
-                        /*debug_cleartext_payload=*/absl::nullopt);
-
-  AggregatableReportSharedInfo shared_info(
-      base::Time::FromJavaTime(1234567890123),
-      /*privacy_budget_key=*/"example_pbk",
-      aggregatable_attribution.external_report_id(),
-      /*reporting_origin=*/
-      url::Origin::Create(GURL("https://example.reporting")),
-      AggregatableReportSharedInfo::DebugMode::kDisabled);
-
-  AggregatableReport report(std::move(payloads), shared_info.SerializeAsJson());
-  aggregation_service_->RunCallback(0, std::move(report),
+  aggregation_service_->RunCallback(0, CreateExampleAggregatableReport(),
                                     AggregationService::AssemblyStatus::kOk);
 
   // Aggregatable report was sent.

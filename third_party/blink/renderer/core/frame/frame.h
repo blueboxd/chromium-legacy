@@ -138,6 +138,13 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
   // reach out to site-isolation-dev@chromium.org.
   bool IsMainFrame() const;
 
+  // Returns true if this frame is the top-level main frame (associated with
+  // the root Document in a WebContents). See content::Page for detailed
+  // documentation.
+  // This is false for main frames created for fenced-frames.
+  // TODO(khushalsagar) : Should also be the case for portals.
+  bool IsOutermostMainFrame() const;
+
   // Returns true if and only if:
   // - this frame is a subframe
   // - it is cross-origin to the main frame
@@ -508,6 +515,13 @@ class CORE_EXPORT Frame : public GarbageCollected<Frame> {
 
   // The user activation state of the current frame.  See |UserActivationState|
   // for details on how this state is maintained.
+  //
+  // TODO(https://crbug.com/1087963): Ideally this should be a state of
+  // |LocalDOMWindow| because user activation state never outlives JS Window
+  // object.  See related discussion on browser-side states in
+  // https://crbug.com/905448.  However, a legacy code relying on the user
+  // activation state of a |RemoteFrame| prevents us from moving this state to
+  // |LocalDOMWindow|.
   UserActivationState user_activation_state_;
 
   // The sticky user activation state of the current frame before eTLD+1

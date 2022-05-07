@@ -168,6 +168,7 @@
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/device_identity/device_oauth2_token_service_factory.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/metrics/structured/chrome_structured_metrics_recorder.h"
@@ -1228,13 +1229,12 @@ void ChromeBrowserMainPartsAsh::PostBrowserStart() {
   // Branded builds are packaged with valid google chrome api keys.
   if (base::FeatureList::IsEnabled(features::kDeviceActiveClient)) {
     device_activity_controller_ =
-        std::make_unique<device_activity::DeviceActivityController>();
-
-    device_activity_controller_->Start(
-        device_activity::Trigger::kNetwork, chrome::GetChannel(),
-        g_browser_process->local_state(),
-        g_browser_process->system_network_context_manager()
-            ->GetSharedURLLoaderFactory());
+        std::make_unique<device_activity::DeviceActivityController>(
+            chrome::GetChannel(), g_browser_process->local_state(),
+            g_browser_process->system_network_context_manager()
+                ->GetSharedURLLoaderFactory(),
+            DeviceActivityController::DetermineStartUpDelay(
+                first_run::GetFirstRunSentinelCreationTime()));
   }
 #endif
 

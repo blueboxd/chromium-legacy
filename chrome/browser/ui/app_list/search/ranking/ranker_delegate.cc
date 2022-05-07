@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/app_list/search/ranking/continue_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/filtering_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/ftrl_ranker.h"
+#include "chrome/browser/ui/app_list/search/ranking/mrfu_ranker.h"
 #include "chrome/browser/ui/app_list/search/ranking/query_highlighter.h"
 #include "chrome/browser/ui/app_list/search/ranking/removed_results.pb.h"
 #include "chrome/browser/ui/app_list/search/ranking/removed_results_ranker.h"
@@ -49,8 +50,8 @@ RankerDelegate::RankerDelegate(Profile* profile, SearchController* controller) {
   ftrl_result_params.num_experts = 2u;
 
   MrfuCache::Params mrfu_result_params;
-  mrfu_result_params.half_life = 10.0f;
-  mrfu_result_params.boost_factor = 5.0f;
+  mrfu_result_params.half_life = 20.0f;
+  mrfu_result_params.boost_factor = 2.9f;
   mrfu_result_params.max_items = 200u;
 
   // Category ranking parameters.
@@ -83,16 +84,23 @@ RankerDelegate::RankerDelegate(Profile* profile, SearchController* controller) {
           state_dir.AppendASCII("score_norm.pb"), kStandardWriteDelay)));
 
   // 3. Ranking for results.
-  auto result_ranker = std::make_unique<FtrlRanker>(
+  // 3a. Most-frequently-recently-used (MRFU) ranking.
+  auto mrfu_ranker = std::make_unique<MrfuResultRanker>(
+      mrfu_result_params,
+      PersistentProto<MrfuCacheProto>(state_dir.AppendASCII("mrfu_results.pb"),
+                                      kStandardWriteDelay));
+  AddRanker(std::move(mrfu_ranker));
+
+  // 3b. Ensembling between MRFU and normalized score ranking.
+  auto ftrl_ranker = std::make_unique<FtrlRanker>(
       FtrlRanker::RankingKind::kResults, ftrl_result_params,
       PersistentProto<FtrlOptimizerProto>(
           state_dir.AppendASCII("ftrl_results.pb"), kStandardWriteDelay));
-  result_ranker->AddExpert(std::make_unique<MrfuResultRanker>(
-      mrfu_result_params,
-      PersistentProto<MrfuCacheProto>(state_dir.AppendASCII("mrfu_results.pb"),
-                                      kStandardWriteDelay)));
-  result_ranker->AddExpert(std::make_unique<NormalizedScoreResultRanker>());
-  AddRanker(std::move(result_ranker));
+  ftrl_ranker->AddExpert(std::make_unique<ResultScoringShim>(
+      ResultScoringShim::ScoringMember::kNormalizedRelevance));
+  ftrl_ranker->AddExpert(std::make_unique<ResultScoringShim>(
+      ResultScoringShim::ScoringMember::kMrfuResultScore));
+  AddRanker(std::move(ftrl_ranker));
 
   // 4. Ranking for categories.
   std::string category_ranking = base::GetFieldTrialParamValueByFeature(

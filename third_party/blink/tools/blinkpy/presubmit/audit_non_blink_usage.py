@@ -48,7 +48,6 @@ _CONFIG = [
             'base::AutoReset',
             'base::Contains',
             'base::CpuReductionExperimentFilter',
-            'base::CreateSequencedTaskRunner',
             'base::ValuesEquivalent',
             'base::Days',
             'base::DefaultTickClock',
@@ -560,6 +559,9 @@ _CONFIG = [
             # Assume that identifiers where the first qualifier is internal are
             # nested in the blink namespace.
             'internal::.+',
+
+            # TODO(crbug.com/1296161): Remove this when the CHIPS OT ends.
+            "net::features::kPartitionedCookiesBypassOriginTrial",
 
             # HTTP structured headers
             'net::structured_headers::.+',

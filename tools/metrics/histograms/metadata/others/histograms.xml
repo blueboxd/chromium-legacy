@@ -3111,6 +3111,17 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Conversions.AttributionSrcRequestStatus"
+    enum="ConversionAttributionSrcRequestStatus" expires_after="2022-09-12">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Records the status of the attributionsrc requests. Recorded when the request
+    started and finished.
+  </summary>
+</histogram>
+
 <histogram name="Conversions.ClearDataTime" units="ms" expires_after="M105">
   <owner>johnidel@chromium.org</owner>
   <owner>csharrison@chromium.org</owner>
@@ -3268,6 +3279,28 @@ chromium-metrics-reviews@google.com.
     Records the number of impressions attempted on a given top level page load.
     Recorded when the page navigates away or is otherwise closed. Only recorded
     for non-off-the-record profiles (OTR profiles have the feature disabled).
+  </summary>
+</histogram>
+
+<histogram name="Conversions.RegisteredSourcesPerDataHost" units="sources"
+    expires_after="2022-09-12">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Measures the number of sources registered per data host. Recorded when the
+    data host is disconnected or when the data host manager is destroyed.
+  </summary>
+</histogram>
+
+<histogram name="Conversions.RegisteredTriggersPerDataHost" units="triggers"
+    expires_after="2022-09-12">
+  <owner>linnan@chromium.org</owner>
+  <owner>johnidel@chromium.org</owner>
+  <owner>measurement-api-dev+metrics@google.com</owner>
+  <summary>
+    Measures the number of triggers registered per data host. Recorded when the
+    data host is disconnected or when the data host manager is destroyed.
   </summary>
 </histogram>
 
@@ -9472,6 +9505,30 @@ chromium-metrics-reviews@google.com.
     Whether third-party cookies are blocked in incognito mode or completely.
     Recorded at the Profile startup. In case that &quot;Block all cookies&quot;
     is selected in settings, this metric records BlockThirdParty.
+  </summary>
+</histogram>
+
+<histogram name="Privacy.DIPS.TimeFromInteractionToStorage" units="ms"
+    expires_after="2022-07-01">
+  <owner>bcl@chromium.org</owner>
+  <owner>jdh@chromium.org</owner>
+  <owner>rtarpine@chromium.org</owner>
+  <summary>
+    The amount of time after a user interacts with a site until the site
+    persists state (e.g. cookies) (where site = eTLD+1). Not recorded if state
+    is written before interaction takes place (see analogous histogram below).
+  </summary>
+</histogram>
+
+<histogram name="Privacy.DIPS.TimeFromStorageToInteraction" units="ms"
+    expires_after="2022-07-01">
+  <owner>bcl@chromium.org</owner>
+  <owner>jdh@chromium.org</owner>
+  <owner>rtarpine@chromium.org</owner>
+  <summary>
+    The amount of time after a site persists state (e.g. cookies) until the user
+    interacts with the site (where site = eTLD+1). Not recorded if interaction
+    takes place before state is written (see analogous histogram above).
   </summary>
 </histogram>
 

@@ -16,8 +16,8 @@
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/renderer/cart/commerce_renderer_feature_list.h"
 #include "chrome/test/base/chrome_test_utils.h"
+#include "components/commerce/core/commerce_feature_list.h"
 #include "components/metrics/content/subprocess_metrics_provider.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "components/optimization_guide/core/optimization_guide_features.h"
@@ -593,7 +593,13 @@ IN_PROC_BROWSER_TEST_F(CommerceHintAgentTest, NonSignInUser) {
 }
 
 // TODO(crbug/1258803): Skip work on non-eligible profiles.
-IN_PROC_BROWSER_TEST_F(CommerceHintAgentTest, MultipleProfiles) {
+// Flaky on Linux Asan and Mac: https://crbug.com/1306908.
+#if (BUILDFLAG(IS_LINUX) && defined(ADDRESS_SANITIZER)) || BUILDFLAG(IS_MAC)
+#define MAYBE_MultipleProfiles DISABLED_MultipleProfiles
+#else
+#define MAYBE_MultipleProfiles MultipleProfiles
+#endif
+IN_PROC_BROWSER_TEST_F(CommerceHintAgentTest, MAYBE_MultipleProfiles) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   auto* identity_manager = IdentityManagerFactory::GetForProfile(profile);
@@ -692,7 +698,7 @@ class CommerceHintProductInfoTest : public CommerceHintAgentTest {
             )###"},
            // Extend timeout to avoid flakiness.
            {"cart-extraction-timeout", "1m"}}},
-         {commerce_renderer_feature::kRetailCoupons,
+         {commerce::kRetailCoupons,
           {{"coupon-partner-merchant-pattern", "(eee.com)"},
            {"coupon-product-id-pattern-mapping",
             R"###(

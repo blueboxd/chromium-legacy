@@ -96,8 +96,9 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
     // Restarts the URL loader using |additional_load_flags|.
     //
     // Restarting is only valid while executing within
-    // BeforeWillProcessResponse(), or during its deferred handling (before
-    // having called Resume()).
+    // BeforeWillRedirectRequest(), BeforeWillProcessResponse(), or during
+    // deferred handling of BeforeWillProcessResponse() (before having called
+    // Resume()).
     //
     // When a URL loader is restarted, throttles will NOT have their
     // WillStartRequest() method called again - that is only called for the
@@ -115,8 +116,9 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
     // RestartWithFlags().
     //
     // Restarting is only valid while executing within
-    // BeforeWillProcessResponse(), or during its deferred handling (before
-    // having called Resume()).
+    // BeforeWillRedirectRequest(), BeforeWillProcessResponse(), or during
+    // deferred handling of BeforeWillProcessResponse() (before having called
+    // Resume()).
     //
     // When a URL loader is restarted, throttles will NOT have their
     // WillStartRequest() method called again - that is only called for the
@@ -126,12 +128,6 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
     // RestartWithURLResetAndFlags() then the URL loader will be restarted
     // using a combined value of all of the |additional_load_flags|.
     virtual void RestartWithURLResetAndFlags(int additional_load_flags);
-
-    // Restarts the URL loader immediately using |additional_load_flags| and the
-    // unmodified URL if it was changed in WillStartRequest().
-    //
-    // Restarting is only valid before BeforeWillProcessResponse() is called.
-    virtual void RestartWithURLResetAndFlagsNow(int additional_load_flags);
 
    protected:
     virtual ~Delegate();
@@ -208,6 +204,23 @@ class BLINK_COMMON_EXPORT URLLoaderThrottle {
       const GURL& response_url,
       const network::mojom::URLResponseHead& response_head,
       bool* defer);
+
+  // Called prior WillRedirectRequest() to allow throttles to restart the URL
+  // load by calling delegate_->RestartWithFlags().
+  //
+  // Having this method separate from WillProcessResponse() ensures that
+  // WillProcessResponse() is called at most once per redirect even in the
+  // presence of restarts.
+  //
+  // Note: restarting with the url reset triggers an internal redirect, which
+  // will cause this to be run again. Ensure that this doesn't cause loops.
+  virtual void BeforeWillRedirectRequest(
+      net::RedirectInfo* redirect_info,
+      const network::mojom::URLResponseHead& response_head,
+      bool* defer,
+      std::vector<std::string>* to_be_removed_request_headers,
+      net::HttpRequestHeaders* modified_request_headers,
+      net::HttpRequestHeaders* modified_cors_exempt_request_headers);
 
   // Called if there is a non-OK net::Error in the completion status.
   virtual void WillOnCompleteWithError(

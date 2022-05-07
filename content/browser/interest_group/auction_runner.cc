@@ -12,6 +12,7 @@
 
 #include "base/callback.h"
 #include "base/callback_forward.h"
+#include "base/containers/cxx20_erase_vector.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -29,12 +30,14 @@
 #include "content/services/auction_worklet/public/mojom/bidder_worklet.mojom.h"
 #include "content/services/auction_worklet/public/mojom/seller_worklet.mojom.h"
 #include "net/base/escape.h"
+#include "services/network/public/mojom/client_security_state.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom-forward.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/public/common/interest_group/ad_auction_constants.h"
 #include "third_party/blink/public/common/interest_group/interest_group.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -68,6 +71,11 @@ const blink::InterestGroup::Ad* FindMatchingAd(
   return nullptr;
 }
 
+// Checks that `bid` is a valid bid value for an auction.
+bool IsValidBid(double bid) {
+  return !std::isnan(bid) && std::isfinite(bid) && bid > 0;
+}
+
 }  // namespace
 
 AuctionRunner::BidState::BidState() = default;
@@ -93,7 +101,7 @@ AuctionRunner::Bid::Bid(std::string ad_metadata,
       bid_ad(bid_ad),
       bid_state(bid_state),
       auction(auction) {
-  DCHECK_GT(bid, 0);
+  DCHECK(IsValidBid(bid));
 }
 
 AuctionRunner::Bid::Bid(Bid&) = default;
@@ -103,10 +111,14 @@ AuctionRunner::Bid::~Bid() = default;
 AuctionRunner::ScoredBid::ScoredBid(
     double score,
     absl::optional<uint32_t> scoring_signals_data_version,
-    std::unique_ptr<Bid> bid)
+    std::unique_ptr<Bid> bid,
+    auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr
+        component_auction_modified_bid_params)
     : score(score),
       scoring_signals_data_version(scoring_signals_data_version),
-      bid(std::move(bid)) {
+      bid(std::move(bid)),
+      component_auction_modified_bid_params(
+          std::move(component_auction_modified_bid_params)) {
   DCHECK_GT(score, 0);
 }
 
@@ -271,6 +283,7 @@ void AuctionRunner::Auction::StartBiddingAndScoringPhase(
 }
 
 void AuctionRunner::Auction::StartReportingPhase(
+    absl::optional<std::string> top_seller_signals,
     AuctionPhaseCompletionCallback reporting_phase_callback) {
   DCHECK(reporting_phase_callback);
   DCHECK(!load_interest_groups_phase_callback_);
@@ -285,18 +298,21 @@ void AuctionRunner::Auction::StartReportingPhase(
   // reload the seller worklet in the case of a component auction.
   if (!seller_worklet_handle_) {
     DCHECK(parent_);
+    DCHECK(top_seller_signals);
     if (!auction_worklet_manager_->RequestSellerWorklet(
             config_->decision_logic_url, config_->trusted_scoring_signals_url,
-            base::BindOnce(&Auction::ReportSellerResult,
-                           base::Unretained(this)),
+            base::BindOnce(&Auction::ReportSellerResult, base::Unretained(this),
+                           top_seller_signals),
             base::BindOnce(&Auction::OnWinningComponentSellerWorkletFatalError,
                            base::Unretained(this)),
             seller_worklet_handle_)) {
       return;
     }
+  } else {
+    DCHECK(!parent_);
+    DCHECK(!top_seller_signals);
   }
-
-  ReportSellerResult();
+  ReportSellerResult(std::move(top_seller_signals));
 }
 
 void AuctionRunner::Auction::ClosePipes() {
@@ -415,6 +431,17 @@ std::vector<std::string> AuctionRunner::Auction::TakeErrors() {
   return std::move(errors_);
 }
 
+void AuctionRunner::Auction::TakePostAuctionUpdateOwners(
+    std::vector<url::Origin>& owners) {
+  for (const url::Origin& owner : post_auction_update_owners_) {
+    owners.emplace_back(std::move(owner));
+  }
+
+  for (auto& component_auction : component_auctions_) {
+    component_auction->TakePostAuctionUpdateOwners(owners);
+  }
+}
+
 AuctionRunner::ScoredBid* AuctionRunner::Auction::top_bid() {
   DCHECK(all_bids_scored_);
   DCHECK(top_bid_);
@@ -435,6 +462,8 @@ void AuctionRunner::Auction::OnInterestGroupRead(
       bid_states_.emplace_back(BidState());
       bid_states_.back().bidder = std::move(*bidder);
     }
+    post_auction_update_owners_.push_back(
+        interest_groups[0].interest_group.owner);
     ++num_owners_with_interest_groups_;
   }
   OnOneLoadCompleted();
@@ -701,11 +730,18 @@ void AuctionRunner::Auction::OnComponentAuctionComplete(
     return;
   }
 
-  // Clone the bid of the component auction.
-  //
-  // TODO(mmenke): When the component auction can make its own bid, need a way
-  // to track both the original bid price and the modified one.
-  ScoreBidIfReady(std::make_unique<Bid>(*component_auction->top_bid()->bid));
+  // Create a copy of component Auction's bid, replacing values as necessary.
+  const Bid* component_bid = component_auction->top_bid()->bid.get();
+  const auto* modified_bid_params =
+      component_auction->top_bid()->component_auction_modified_bid_params.get();
+  DCHECK(modified_bid_params);
+  ScoreBidIfReady(std::make_unique<Bid>(
+      modified_bid_params->ad,
+      modified_bid_params->has_bid ? modified_bid_params->bid
+                                   : component_bid->bid,
+      component_bid->render_url, component_bid->ad_components,
+      component_bid->bid_duration, component_bid->bidding_signals_data_version,
+      component_bid->bid_ad, component_bid->bid_state, component_bid->auction));
 }
 
 void AuctionRunner::Auction::OnNoBid() {
@@ -755,6 +791,8 @@ void AuctionRunner::Auction::ScoreBidIfReady(std::unique_ptr<Bid> bid) {
 void AuctionRunner::Auction::OnBidScored(
     std::unique_ptr<Bid> bid,
     double score,
+    auction_worklet::mojom::ComponentAuctionModifiedBidParamsPtr
+        component_auction_modified_bid_params,
     uint32_t data_version,
     bool has_data_version,
     const absl::optional<GURL>& debug_loss_report_url,
@@ -773,6 +811,21 @@ void AuctionRunner::Auction::OnBidScored(
   if (debug_win_report_url.has_value() &&
       !IsUrlValid(debug_win_report_url.value())) {
     mojo::ReportBadMessage("Invalid seller debugging win report URL");
+    OnBiddingAndScoringComplete(AuctionResult::kBadMojoMessage);
+    return;
+  }
+  // Component Auctions must receive a `component_auction_modified_bid_params`,
+  // and top-level Auctions must not.
+  if (component_auction_modified_bid_params.is_null() != (parent_ == nullptr)) {
+    mojo::ReportBadMessage("Invalid component_auction_modified_bid_params");
+    OnBiddingAndScoringComplete(AuctionResult::kBadMojoMessage);
+    return;
+  }
+  // If a component seller modified, the new bid must also be valid.
+  if (component_auction_modified_bid_params &&
+      component_auction_modified_bid_params->has_bid &&
+      !IsValidBid(component_auction_modified_bid_params->bid)) {
+    mojo::ReportBadMessage("Invalid component_auction_modified_bid_params bid");
     OnBiddingAndScoringComplete(AuctionResult::kBadMojoMessage);
     return;
   }
@@ -814,7 +867,7 @@ void AuctionRunner::Auction::OnBidScored(
   if (is_top_bid) {
     top_bid_ = std::make_unique<ScoredBid>(
         score, has_data_version ? data_version : absl::optional<uint32_t>(),
-        std::move(bid));
+        std::move(bid), std::move(component_auction_modified_bid_params));
   }
 
   MaybeCompleteBiddingAndScoringPhase();
@@ -935,14 +988,30 @@ void AuctionRunner::Auction::OnBiddingAndScoringComplete(
   std::move(bidding_and_scoring_phase_callback_).Run(success);
 }
 
-void AuctionRunner::Auction::ReportSellerResult() {
+void AuctionRunner::Auction::ReportSellerResult(
+    absl::optional<std::string> top_seller_signals) {
   DCHECK(seller_worklet_handle_);
   DCHECK(reporting_phase_callback_);
+
+  auction_worklet::mojom::ComponentAuctionReportResultParamsPtr
+      browser_signals_component_auction_report_result_params;
+  if (parent_) {
+    DCHECK(top_seller_signals);
+    DCHECK(top_bid_->component_auction_modified_bid_params);
+    browser_signals_component_auction_report_result_params =
+        auction_worklet::mojom::ComponentAuctionReportResultParams::New(
+            /*top_level_seller_signals=*/std::move(top_seller_signals).value(),
+            /*modified_bid=*/
+            top_bid_->component_auction_modified_bid_params->bid,
+            /*has_modified_bid=*/
+            top_bid_->component_auction_modified_bid_params->has_bid);
+  }
 
   seller_worklet_handle_->GetSellerWorklet()->ReportResult(
       config_->auction_ad_config_non_shared_params.Clone(),
       GetOtherSellerParam(*top_bid_->bid), top_bid_->bid->interest_group->owner,
       top_bid_->bid->render_url, top_bid_->bid->bid, top_bid_->score,
+      std::move(browser_signals_component_auction_report_result_params),
       top_bid_->scoring_signals_data_version.value_or(0),
       top_bid_->scoring_signals_data_version.has_value(),
       base::BindOnce(&Auction::OnReportSellerResultComplete,
@@ -974,21 +1043,28 @@ void AuctionRunner::Auction::OnReportSellerResultComplete(
 
   errors_.insert(errors_.end(), errors.begin(), errors.end());
 
+  // Treat a null `signals_for_winner` value as a null JS response.
+  //
+  // TODO(mmenke): Consider making `signals_for_winner` itself non-optional, and
+  // clean this up.
+  std::string fixed_up_signals_for_winner = signals_for_winner.value_or("null");
+
   // If a the winning bid is from a nested component auction, need to call into
   // that Auction's report logic (which will invoke both that seller's
   // ReportResult() method, and the bidder's ReportWin()).
   if (top_bid_->bid->auction != this) {
     top_bid_->bid->auction->StartReportingPhase(
+        std::move(fixed_up_signals_for_winner),
         base::BindOnce(&Auction::OnComponentAuctionReportingPhaseComplete,
                        base::Unretained(this)));
     return;
   }
 
-  LoadBidderWorkletToReportBidWin(signals_for_winner);
+  LoadBidderWorkletToReportBidWin(std::move(fixed_up_signals_for_winner));
 }
 
 void AuctionRunner::Auction::LoadBidderWorkletToReportBidWin(
-    const absl::optional<std::string>& signals_for_winner) {
+    const std::string& signals_for_winner) {
   // Worklet handle should have been destroyed once the bid was generated.
   DCHECK(!top_bid_->bid->bid_state->worklet_handle);
 
@@ -1003,25 +1079,13 @@ void AuctionRunner::Auction::LoadBidderWorkletToReportBidWin(
 }
 
 void AuctionRunner::Auction::ReportBidWin(
-    const absl::optional<std::string>& signals_for_winner) {
+    const std::string& signals_for_winner) {
   DCHECK(top_bid_);
-
-  std::string signals_for_winner_arg;
-  if (signals_for_winner) {
-    signals_for_winner_arg = *signals_for_winner;
-  } else {
-    // `signals_for_winner_arg` is passed as JSON, so need to pass "null" when
-    // it's not provided. Pass in "null" instead of making the API take an
-    // optional to limit the information provided to the untrusted BidderWorklet
-    // process that's not part of the FLEDGE API. Unlikely to matter, but best
-    // to be safe.
-    signals_for_winner_arg = "null";
-  }
 
   top_bid_->bid->bid_state->worklet_handle->GetBidderWorklet()->ReportWin(
       top_bid_->bid->interest_group->name,
       config_->auction_ad_config_non_shared_params->auction_signals,
-      PerBuyerSignals(top_bid_->bid->bid_state), signals_for_winner_arg,
+      PerBuyerSignals(top_bid_->bid->bid_state), signals_for_winner,
       top_bid_->bid->render_url, top_bid_->bid->bid, config_->seller,
       parent_ ? parent_->config_->seller : absl::optional<url::Origin>(),
       top_bid_->bid->bidding_signals_data_version.value_or(0),
@@ -1156,12 +1220,14 @@ std::unique_ptr<AuctionRunner> AuctionRunner::CreateAndStart(
     AuctionWorkletManager* auction_worklet_manager,
     InterestGroupManagerImpl* interest_group_manager,
     blink::mojom::AuctionAdConfigPtr auction_config,
+    network::mojom::ClientSecurityStatePtr client_security_state,
     IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
     RunAuctionCallback callback) {
-  std::unique_ptr<AuctionRunner> instance(
-      new AuctionRunner(auction_worklet_manager, interest_group_manager,
-                        std::move(auction_config), std::move(callback)));
-  instance->StartAuction(is_interest_group_api_allowed_callback);
+  std::unique_ptr<AuctionRunner> instance(new AuctionRunner(
+      auction_worklet_manager, interest_group_manager,
+      std::move(auction_config), std::move(client_security_state),
+      std::move(is_interest_group_api_allowed_callback), std::move(callback)));
+  instance->StartAuction();
   return instance;
 }
 
@@ -1178,6 +1244,8 @@ void AuctionRunner::FailAuction() {
   // Shouldn't have any win report URLs if nothing won the auction.
   DCHECK(debug_win_report_urls.empty());
 
+  UpdateInterestGroupsPostAuction();
+
   std::move(callback_).Run(
       this, /*render_url=*/absl::nullopt,
       /*winning_group_key=*/absl::nullopt,
@@ -1186,11 +1254,17 @@ void AuctionRunner::FailAuction() {
       std::move(debug_win_report_urls), auction_.TakeErrors());
 }
 
-AuctionRunner::AuctionRunner(AuctionWorkletManager* auction_worklet_manager,
-                             InterestGroupManagerImpl* interest_group_manager,
-                             blink::mojom::AuctionAdConfigPtr auction_config,
-                             RunAuctionCallback callback)
+AuctionRunner::AuctionRunner(
+    AuctionWorkletManager* auction_worklet_manager,
+    InterestGroupManagerImpl* interest_group_manager,
+    blink::mojom::AuctionAdConfigPtr auction_config,
+    network::mojom::ClientSecurityStatePtr client_security_state,
+    IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback,
+    RunAuctionCallback callback)
     : interest_group_manager_(interest_group_manager),
+      client_security_state_(std::move(client_security_state)),
+      is_interest_group_api_allowed_callback_(
+          is_interest_group_api_allowed_callback),
       owned_auction_config_(std::move(auction_config)),
       callback_(std::move(callback)),
       auction_(owned_auction_config_.get(),
@@ -1205,8 +1279,7 @@ std::unique_ptr<AuctionRunner::Bid> AuctionRunner::Auction::TryToCreateBid(
     const absl::optional<uint32_t>& bidding_signals_data_version,
     const absl::optional<GURL>& debug_loss_report_url,
     const absl::optional<GURL>& debug_win_report_url) {
-  if (mojo_bid->bid <= 0 || std::isnan(mojo_bid->bid) ||
-      !std::isfinite(mojo_bid->bid)) {
+  if (!IsValidBid(mojo_bid->bid)) {
     mojo::ReportBadMessage("Invalid bid value");
     return nullptr;
   }
@@ -1269,10 +1342,9 @@ std::unique_ptr<AuctionRunner::Bid> AuctionRunner::Auction::TryToCreateBid(
       bidding_signals_data_version, matching_ad, &bid_state, this);
 }
 
-void AuctionRunner::StartAuction(
-    IsInterestGroupApiAllowedCallback is_interest_group_api_allowed_callback) {
+void AuctionRunner::StartAuction() {
   auction_.StartLoadInterestGroupsPhase(
-      is_interest_group_api_allowed_callback,
+      is_interest_group_api_allowed_callback_,
       base::BindOnce(&AuctionRunner::OnLoadInterestGroupsComplete,
                      base::Unretained(this)));
 }
@@ -1301,8 +1373,10 @@ void AuctionRunner::OnBidsGeneratedAndScored(bool success) {
     return;
   }
 
-  auction_.StartReportingPhase(base::BindOnce(
-      &AuctionRunner::OnReportingPhaseComplete, base::Unretained(this)));
+  auction_.StartReportingPhase(
+      /*top_seller_signals=*/absl::nullopt,
+      base::BindOnce(&AuctionRunner::OnReportingPhaseComplete,
+                     base::Unretained(this)));
 }
 
 void AuctionRunner::OnReportingPhaseComplete(bool success) {
@@ -1338,11 +1412,33 @@ void AuctionRunner::OnReportingPhaseComplete(bool success) {
   const blink::InterestGroup& winning_group =
       *auction_.top_bid()->bid->interest_group;
   InterestGroupKey winning_group_key({winning_group.owner, winning_group.name});
+
+  UpdateInterestGroupsPostAuction();
+
   std::move(callback_).Run(
       this, std::move(winning_group_key), auction_.top_bid()->bid->render_url,
       auction_.top_bid()->bid->ad_components, auction_.TakeReportUrls(),
       std::move(debug_loss_report_urls), std::move(debug_win_report_urls),
       auction_.TakeErrors());
+}
+
+void AuctionRunner::UpdateInterestGroupsPostAuction() {
+  std::vector<url::Origin> update_owners;
+  auction_.TakePostAuctionUpdateOwners(update_owners);
+
+  // De-duplicate.
+  std::sort(update_owners.begin(), update_owners.end());
+  update_owners.erase(std::unique(update_owners.begin(), update_owners.end()),
+                      update_owners.end());
+
+  // Filter owners not allowed to update.
+  base::EraseIf(update_owners, [this](const url::Origin& owner) {
+    return !is_interest_group_api_allowed_callback_.Run(
+        ContentBrowserClient::InterestGroupApiOperation::kUpdate, owner);
+  });
+
+  interest_group_manager_->UpdateInterestGroupsOfOwners(
+      update_owners, client_security_state_.Clone());
 }
 
 }  // namespace content

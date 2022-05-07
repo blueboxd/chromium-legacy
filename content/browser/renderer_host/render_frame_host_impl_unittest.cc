@@ -510,7 +510,7 @@ TEST_F(RenderFrameHostImplTest, TransitionWhileShowLoadingUi) {
   ASSERT_FALSE(contents()->IsLoading());
   ASSERT_FALSE(contents()->ShouldShowLoadingUI());
 
-  // Emulate appHistory.transitionWhile().
+  // Emulate navigateEvent.transitionWhile().
   const GURL url2("http://foo#a");
   auto params = mojom::DidCommitProvisionalLoadParams::New();
   params->did_create_new_entry = false;
@@ -525,10 +525,10 @@ TEST_F(RenderFrameHostImplTest, TransitionWhileShowLoadingUi) {
   params->post_id = -1;
   main_test_rfh()->SendDidCommitSameDocumentNavigation(
       std::move(params),
-      blink::mojom::SameDocumentNavigationType::kAppHistoryTransitionWhile);
+      blink::mojom::SameDocumentNavigationType::kNavigationApiTransitionWhile);
 
-  // appHistory.transitionWhile() should leave WebContents in the loading state
-  // and showing loading UI, unlike other same-document navigations.
+  // navigateEvent.transitionWhile() should leave WebContents in the loading
+  // state and showing loading UI, unlike other same-document navigations.
   EXPECT_TRUE(delegate->should_show_loading_ui());
   EXPECT_TRUE(contents()->IsLoading());
   EXPECT_TRUE(contents()->ShouldShowLoadingUI());
@@ -702,6 +702,49 @@ TEST_F(RenderFrameHostImplTest, NoBeforeUnloadCheckForBrowserInitiated) {
   EXPECT_FALSE(
       contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
 }
+
+TEST_F(RenderFrameHostImplTest,
+       NoBeforeUnloadCheckForBrowserInitiatedSyncTakesPrecedence) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitWithFeatures(
+      {features::kAvoidUnnecessaryBeforeUnloadCheckSync,
+       features::kAvoidUnnecessaryBeforeUnloadCheckPostTask},
+      {});
+  contents()->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(
+          GURL("https://example.com/navigation.html")));
+  EXPECT_FALSE(
+      contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
+}
+
+// ContentBrowserClient::SupportsAvoidUnnecessaryBeforeUnloadCheckSync() is
+// android specific.
+#if BUILDFLAG(IS_ANDROID)
+class TestContentBrowserClientImpl : public ContentBrowserClient {
+  bool SupportsAvoidUnnecessaryBeforeUnloadCheckSync() override {
+    return false;
+  }
+};
+
+TEST_F(RenderFrameHostImplTest,
+       SupportsAvoidUnnecessaryBeforeUnloadCheckSyncReturnsFalse) {
+  TestContentBrowserClientImpl browser_client;
+  ContentBrowserClient* old_browser_client =
+      SetBrowserClientForTesting(&browser_client);
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAvoidUnnecessaryBeforeUnloadCheckSync);
+  contents()->GetController().LoadURLWithParams(
+      NavigationController::LoadURLParams(
+          GURL("https://example.com/navigation.html")));
+  // Should be waiting on beforeunload as
+  // SupportsAvoidUnnecessaryBeforeUnloadCheckSync() takes
+  // precedence.
+  EXPECT_TRUE(
+      contents()->GetMainFrame()->is_waiting_for_beforeunload_completion());
+  SetBrowserClientForTesting(old_browser_client);
+}
+#endif
 
 TEST_F(RenderFrameHostImplTest, BeforeUnloadCheckForBrowserInitiated) {
   base::test::ScopedFeatureList scoped_feature_list;

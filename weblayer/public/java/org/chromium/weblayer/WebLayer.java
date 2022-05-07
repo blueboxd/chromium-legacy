@@ -581,6 +581,22 @@ public class WebLayer {
     }
 
     /**
+     * Returns the value of X-Client-Data header.
+     * @since 101
+     */
+    public String getXClientDataHeader() {
+        ThreadCheck.ensureOnUiThread();
+        if (getSupportedMajorVersionInternal() < 101) {
+            throw new UnsupportedOperationException();
+        }
+        try {
+            return mImpl.getXClientDataHeader();
+        } catch (RemoteException e) {
+            throw new APICallException(e);
+        }
+    }
+
+    /**
      * Returns remote counterpart for the BrowserFragment: an {@link IBrowserFragment}.
      */
     /* package */ IBrowserFragment connectFragment(

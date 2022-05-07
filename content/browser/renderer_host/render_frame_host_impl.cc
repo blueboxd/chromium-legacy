@@ -1029,17 +1029,24 @@ GURL GetLastDocumentURL(
   return params.url;
 }
 
-bool IsAvoidUnnecessaryBeforeUnloadCheckPostTaskEnabled() {
-  return base::FeatureList::IsEnabled(
-      features::kAvoidUnnecessaryBeforeUnloadCheckPostTask);
+bool IsAvoidUnnecessaryBeforeUnloadCheckSyncEnabled() {
+  const bool is_feature_enabled = base::FeatureList::IsEnabled(
+      features::kAvoidUnnecessaryBeforeUnloadCheckSync);
+#if BUILDFLAG(IS_ANDROID)
+  return is_feature_enabled &&
+         GetContentClient()
+             ->browser()
+             ->SupportsAvoidUnnecessaryBeforeUnloadCheckSync();
+#else
+  return is_feature_enabled;
+#endif
 }
 
-bool IsAvoidUnnecessaryBeforeUnloadCheckSyncEnabled() {
-  // Only one of sync or posttask should be used. If both are set, use posttask
-  // as the sync variant is not safe for android webview.
+bool IsAvoidUnnecessaryBeforeUnloadCheckPostTaskEnabled() {
+  // Only one of sync or posttask should be used. If both are set, use sync.
   return base::FeatureList::IsEnabled(
-             features::kAvoidUnnecessaryBeforeUnloadCheckSync) &&
-         !IsAvoidUnnecessaryBeforeUnloadCheckPostTaskEnabled();
+             features::kAvoidUnnecessaryBeforeUnloadCheckPostTask) &&
+         !IsAvoidUnnecessaryBeforeUnloadCheckSyncEnabled();
 }
 
 }  // namespace
@@ -3346,12 +3353,12 @@ void RenderFrameHostImpl::DidChangeReferrerPolicy(
   if (!IsActive() || !frame_tree_->controller().GetLastCommittedEntry())
     return;
   // The FrameNavigationEntry may want to change whether to protect its url
-  // in the appHistory API when the referrer policy changes.
+  // in the navigation API when the referrer policy changes.
   if (FrameNavigationEntry* entry =
           frame_tree_->controller().GetLastCommittedEntry()->GetFrameEntry(
               frame_tree_node_)) {
-    entry->set_protect_url_in_app_history(
-        NavigationControllerImpl::ShouldProtectUrlInAppHistory(
+    entry->set_protect_url_in_navigation_api(
+        NavigationControllerImpl::ShouldProtectUrlInNavigationApi(
             referrer_policy));
   }
 }
@@ -5191,8 +5198,13 @@ void RenderFrameHostImpl::ReportNoBinderForInterface(const std::string& error) {
 }
 
 ukm::SourceId RenderFrameHostImpl::GetPageUkmSourceId() {
+  // This id for all subframes or fenced frames is the same as the id for the
+  // outermost main frame. For portals, this id for frames inside a portal is
+  // the same as the id for the main frame for the portal.
+  RenderFrameHostImpl* main_frame =
+      IsNestedWithinFencedFrame() ? GetOutermostMainFrame() : GetMainFrame();
   int64_t navigation_id =
-      GetMainFrame()->last_committed_cross_document_navigation_id_;
+      main_frame->last_committed_cross_document_navigation_id_;
   if (navigation_id == -1)
     return ukm::kInvalidSourceId;
   return ukm::ConvertToSourceId(navigation_id,
@@ -5890,8 +5902,8 @@ void RenderFrameHostImpl::GoToEntryAtOffset(int32_t offset,
   }
 }
 
-void RenderFrameHostImpl::NavigateToAppHistoryKey(const std::string& key,
-                                                  bool has_user_gesture) {
+void RenderFrameHostImpl::NavigateToNavigationApiKey(const std::string& key,
+                                                     bool has_user_gesture) {
   // Non-user initiated navigations coming from the renderer should be ignored
   // if there is an ongoing browser-initiated navigation.
   // See https://crbug.com/879965.
@@ -5902,7 +5914,7 @@ void RenderFrameHostImpl::NavigateToAppHistoryKey(const std::string& key,
           frame_tree_->root()->navigation_request(), has_user_gesture)) {
     return;
   }
-  frame_tree_->controller().NavigateToAppHistoryKey(frame_tree_node(), key);
+  frame_tree_->controller().NavigateToNavigationApiKey(frame_tree_node(), key);
 }
 
 void RenderFrameHostImpl::HandleAccessibilityFindInPageResult(
@@ -10855,13 +10867,14 @@ bool RenderFrameHostImpl::DidCommitNavigationInternal(
     // In general, loading ui is only shown for cross-document navigations,
     // because same-document navigations are already complete by the time the
     // renderer notifies the browser process of the navigation.
-    // AppHistory transitionWhile(), however, is an asynchronous same-document
-    // navigation, and should therefore show loading UI until load completion.
+    // The navigation API's transitionWhile(), however, is an asynchronous
+    // same-document navigation, and should therefore show loading UI until load
+    // completion.
     bool should_show_loading_ui =
         !is_same_document_navigation ||
         same_document_params->same_document_navigation_type ==
             blink::mojom::SameDocumentNavigationType::
-                kAppHistoryTransitionWhile;
+                kNavigationApiTransitionWhile;
 
     bool was_loading = frame_tree()->LoadingTree()->IsLoading();
     is_loading_ = true;

@@ -651,8 +651,17 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   EXPECT_FALSE(expected_report.HasRequest());
 }
 
-IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
-                       EventSourceImpressionWithDebugKeyConversion_ReportSent) {
+// TODO(crbug.com/1307082): Test is flaky on Mac.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_EventSourceImpressionWithDebugKeyConversion_ReportSent \
+  DISABLED_EventSourceImpressionWithDebugKeyConversion_ReportSent
+#else
+#define MAYBE_EventSourceImpressionWithDebugKeyConversion_ReportSent \
+  EventSourceImpressionWithDebugKeyConversion_ReportSent
+#endif
+IN_PROC_BROWSER_TEST_F(
+    AttributionsBrowserTest,
+    MAYBE_EventSourceImpressionWithDebugKeyConversion_ReportSent) {
   // Expected reports must be registered before the server starts.
   ExpectedReportWaiter expected_report(
       GURL("https://a.test/.well-known/attribution-reporting/"
@@ -748,10 +757,10 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
   GURL register_url = https_server()->GetURL(
       "a.test", "/attribution_reporting/register_source_headers.html");
 
-  EXPECT_TRUE(ExecJs(
-      web_contents(),
-      JsReplace("window.attributionReporting.registerAttributionSource($1);",
-                register_url)));
+  EXPECT_TRUE(
+      ExecJs(web_contents(),
+             JsReplace("window.attributionReporting.registerSource($1);",
+                       register_url)));
 
   GURL conversion_url = https_server()->GetURL(
       "d.test", "/attribution_reporting/page_with_conversion_redirect.html");
@@ -801,6 +810,59 @@ IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
       https_server()->GetURL(
           "d.test",
           "/attribution_reporting/page_with_impression_creator.html")));
+
+  EXPECT_TRUE(ExecJs(
+      web_contents(),
+      JsReplace(
+          "createAttributionSrcImg($1);",
+          https_server()->GetURL("a.test",
+                                 "/attribution_reporting/"
+                                 "register_trigger_headers_all_params.html"))));
+
+  expected_report.WaitForReport();
+}
+
+// TODO(crbug.com/1307363): Consistently failing on Linux MSAN and Linux
+//                          ChromiumOS MSAN.
+#if BUILDFLAG(IS_LINUX)
+#define MAYBE_AttributionSrcNavigationSourceAndTrigger_ReportSent \
+  DISABLED_AttributionSrcNavigationSourceAndTrigger_ReportSent
+#else
+#define MAYBE_AttributionSrcNavigationSourceAndTrigger_ReportSent \
+  AttributionSrcNavigationSourceAndTrigger_ReportSent
+#endif
+IN_PROC_BROWSER_TEST_F(AttributionsBrowserTest,
+                       MAYBE_AttributionSrcNavigationSourceAndTrigger_ReportSent) {
+  // Expected reports must be registered before the server starts.
+  ExpectedReportWaiter expected_report(
+      GURL("https://a.test/.well-known/attribution-reporting/"
+           "report-event-attribution"),
+      /*attribution_destination=*/"https://d.test",
+      /*source_event_id=*/"5", /*source_type=*/"navigation",
+      /*trigger_data=*/"1", https_server());
+  ASSERT_TRUE(https_server()->Start());
+
+  EXPECT_TRUE(NavigateToURL(
+      web_contents(),
+      https_server()->GetURL(
+          "b.test",
+          "/attribution_reporting/page_with_impression_creator.html")));
+
+  TestNavigationObserver observer(web_contents());
+
+  EXPECT_TRUE(ExecJs(
+      web_contents(),
+
+      JsReplace(R"(createAndClickAttributionSrcAnchor({url: $1,
+                                      attributionsrc: $2});)",
+                https_server()->GetURL(
+                    "d.test",
+                    "/attribution_reporting/page_with_impression_creator.html"),
+                https_server()->GetURL(
+                    "a.test",
+                    "/attribution_reporting/register_source_headers.html"))));
+
+  observer.Wait();
 
   EXPECT_TRUE(ExecJs(
       web_contents(),
@@ -956,10 +1018,10 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   GURL register_url = https_server()->GetURL(
       "a.test", "/attribution_reporting/register_source_headers.html");
 
-  EXPECT_TRUE(ExecJs(
-      web_contents(),
-      JsReplace("window.attributionReporting.registerAttributionSource($1);",
-                register_url)));
+  EXPECT_TRUE(
+      ExecJs(web_contents(),
+             JsReplace("window.attributionReporting.registerSource($1);",
+                       register_url)));
 
   // Navigate to a starting same origin page with the conversion url.
   const GURL kEmptyUrl = https_server()->GetURL("d.test", "/empty.html");
@@ -1017,10 +1079,10 @@ IN_PROC_BROWSER_TEST_F(AttributionsPrerenderBrowserTest,
   GURL register_url = https_server()->GetURL(
       "a.test", "/attribution_reporting/register_source_headers.html");
 
-  EXPECT_TRUE(ExecJs(
-      web_contents(),
-      JsReplace("window.attributionReporting.registerAttributionSource($1);",
-                register_url)));
+  EXPECT_TRUE(
+      ExecJs(web_contents(),
+             JsReplace("window.attributionReporting.registerSource($1);",
+                       register_url)));
 
   // Navigate to a starting same origin page with the conversion url.
   const GURL kEmptyUrl = https_server()->GetURL("d.test", "/empty.html");

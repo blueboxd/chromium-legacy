@@ -1377,6 +1377,8 @@ source_set("browser") {
     "prerender/prerender_metrics.h",
     "prerender/prerender_navigation_throttle.cc",
     "prerender/prerender_navigation_throttle.h",
+    "prerender/prerender_navigation_utils.cc",
+    "prerender/prerender_navigation_utils.h",
     "prerender/prerender_subframe_navigation_throttle.cc",
     "prerender/prerender_subframe_navigation_throttle.h",
     "presentation/presentation_service_impl.cc",
@@ -2465,10 +2467,6 @@ source_set("browser") {
     deps += [ "//content/browser/devtools:devtools_resources_extern" ]
   }
 
-  if (enable_basic_printing) {
-    deps += [ "//printing" ]
-  }
-
   if (is_mac) {
     frameworks += [ "AppKit.framework" ]
     sources += [
@@ -2681,6 +2679,9 @@ source_set("browser") {
       "//ppapi/proxy:ipc",
       "//ppapi/shared_impl",
     ]
+
+    assert(enable_basic_printing)
+    deps += [ "//printing" ]
 
     if (is_chromeos_ash) {
       sources += [

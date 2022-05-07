@@ -1542,6 +1542,8 @@ experimental domain CSS
     properties
       # Supports rule text.
       string text
+      # Whether the supports condition is satisfied.
+      boolean active
       # The associated rule header range in the enclosing stylesheet (if
       # available).
       optional SourceRange range
@@ -6938,6 +6940,7 @@ domain Page
       ambient-light-sensor
       attribution-reporting
       autoplay
+      browsing-topics
       camera
       ch-dpr
       ch-device-memory
@@ -6978,6 +6981,7 @@ domain Page
       gyroscope
       hid
       idle-detection
+      interest-cohort
       join-ad-interest-group
       keyboard-map
       magnetometer

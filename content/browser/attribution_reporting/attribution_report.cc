@@ -26,6 +26,16 @@
 
 namespace content {
 
+namespace {
+
+int64_t EncodeTimeRoundDownToWholeDayInSeconds(base::Time time) {
+  return (time - base::Time::UnixEpoch())
+      .FloorToMultiple(base::Days(1))
+      .InSeconds();
+}
+
+}  // namespace
+
 AttributionReport::EventLevelData::EventLevelData(
     uint64_t trigger_data,
     int64_t priority,
@@ -184,23 +194,29 @@ base::Value AttributionReport::ReportBody() const {
     }
 
     base::Value operator()(const AggregatableAttributionData& data) {
-      DCHECK(data.assembled_report.has_value());
+      base::Value::DictStorage dict;
+
+      if (data.assembled_report.has_value()) {
+        dict = data.assembled_report->GetAsJson();
+      } else {
+        // This generally should only be called when displaying the report for
+        // debugging/internals.
+        dict.emplace("shared_info", "not generated prior to send");
+        dict.emplace("aggregation_service_payloads",
+                     "not generated prior to send");
+      }
 
       const CommonSourceInfo& common_info =
           report->attribution_info().source.common_info();
 
-      base::Value::DictStorage dict = data.assembled_report->GetAsJson();
       dict.emplace("source_site", common_info.ImpressionSite().Serialize());
       dict.emplace("attribution_destination",
                    common_info.ConversionDestination().Serialize());
 
-      // source_registration_time is rounded to the nearest whole day and in
-      // seconds.
+      // source_registration_time is rounded down to whole day and in seconds.
       dict.emplace("source_registration_time",
-                   base::NumberToString(
-                       (common_info.impression_time() - base::Time::UnixEpoch())
-                           .RoundToMultiple(base::Days(1))
-                           .InSeconds()));
+                   base::NumberToString(EncodeTimeRoundDownToWholeDayInSeconds(
+                       common_info.impression_time())));
 
       if (absl::optional<uint64_t> debug_key = common_info.debug_key())
         dict.emplace("source_debug_key", base::NumberToString(*debug_key));
@@ -239,6 +255,10 @@ std::string AttributionReport::PrivacyBudgetKey() const {
   // TODO(linnan): Replace with a real version once a version string is decided.
   static constexpr char kVersion[] = "";
   value.emplace("version", kVersion);
+
+  value.emplace("source_registration_time",
+                EncodeTimeRoundDownToWholeDayInSeconds(
+                    common_source_info.impression_time()));
 
   absl::optional<std::vector<uint8_t>> bytes =
       cbor::Writer::Write(cbor::Value(std::move(value)));

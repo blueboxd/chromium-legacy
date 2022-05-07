@@ -361,8 +361,14 @@ void WorkerThreadDispatcher::DispatchEventHelper(
     mojom::DispatchEventParamsPtr params,
     base::Value event_args) {
   DCHECK_EQ(params->worker_thread_id, content::WorkerThread::GetCurrentId());
+
   ServiceWorkerData* data = g_data_tls.Pointer()->Get();
-  DCHECK(data);
+
+  // If the worker state was already destroyed via
+  // Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread, then
+  // drop this mojo event. See https://crbug.com/1008143 for details.
+  if (!data)
+    return;
 
   ScriptContext* script_context = data->context();
   // Note |scoped_extension_interaction| requires a HandleScope.
@@ -388,8 +394,6 @@ void WorkerThreadDispatcher::DispatchEvent(mojom::DispatchEventParamsPtr params,
                                            base::Value event_args) {
   DCHECK(!worker_thread_util::IsWorkerThread());
   const int worker_thread_id = params->worker_thread_id;
-  // base::Unretained() is safe because the worker thread dispatcher is a lazily
-  // constructed global singleton which is never destroyed.
   PostTaskToWorkerThread(
       worker_thread_id,
       base::BindOnce(&WorkerThreadDispatcher::DispatchEventOnWorkerThread,

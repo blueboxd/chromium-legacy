@@ -865,6 +865,37 @@ public class AutofillAssistantCollectUserDataUiTest {
 
     @Test
     @MediumTest
+    public void testDataOriginNotice() throws Exception {
+        AssistantCollectUserDataModel model = createCollectUserDataModel();
+        AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);
+        AutofillAssistantCollectUserDataTestHelper
+                .ViewHolder viewHolder = TestThreadUtils.runOnUiThreadBlocking(
+                () -> new AutofillAssistantCollectUserDataTestHelper.ViewHolder(coordinator));
+
+        TextView dataOriginLinkText =
+                viewHolder.mDataOriginNotice.findViewById(R.id.link_to_data_origin_dialog);
+
+        // Setting a text from "backend".
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            model.set(AssistantCollectUserDataModel.DATA_ORIGIN_LINK_TEXT, "About this data");
+            model.set(AssistantCollectUserDataModel.DATA_ORIGIN_DIALOG_TITLE,
+                    "About your personal information");
+            model.set(AssistantCollectUserDataModel.DATA_ORIGIN_DIALOG_TEXT,
+                    "This is some text describing the <link2>user's data</link2> info.");
+            model.set(AssistantCollectUserDataModel.DATA_ORIGIN_DIALOG_BUTTON_TEXT, "Got it");
+            model.set(AssistantCollectUserDataModel.VISIBLE, true);
+        });
+
+        onView(is(dataOriginLinkText))
+                .check(matches(allOf(withText("About this data"), isDisplayed())));
+
+        onView(withText("About this data")).perform(click());
+        onView(withText("This is some text describing the user's data info."))
+                .check(matches(isDisplayed()));
+    }
+
+    @Test
+    @MediumTest
     public void testAdditionalStaticSections() throws Exception {
         AssistantCollectUserDataModel model = createCollectUserDataModel();
         AssistantCollectUserDataCoordinator coordinator = createCollectUserDataCoordinator(model);

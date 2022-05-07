@@ -29,6 +29,7 @@ PrivacySandboxDialogUI::PrivacySandboxDialogUI(content::WebUI* web_ui)
       IDR_PRIVACY_SANDBOX_PRIVACY_SANDBOX_DIALOG_HTML);
 
   static constexpr webui::LocalizedString kStrings[] = {
+      {"privacySandboxTitle", IDS_SETTINGS_PRIVACY_SANDBOX_TITLE},
       {"consentTitle", IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_TITLE},
       {"consentSubtitle", IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_SUBTITLE},
       {"consentBodyHeader1", IDS_PRIVACY_SANDBOX_DIALOG_CONSENT_BODY_HEADER_1},
@@ -85,6 +86,7 @@ void PrivacySandboxDialogUI::Initialize(
     Profile* profile,
     base::OnceClosure close_callback,
     base::OnceCallback<void(int)> resize_callback,
+    base::OnceClosure show_dialog_callback,
     base::OnceClosure open_settings_callback,
     PrivacySandboxService::DialogType dialog_type) {
   std::unique_ptr<base::DictionaryValue> update =
@@ -96,7 +98,8 @@ void PrivacySandboxDialogUI::Initialize(
 
   auto handler = std::make_unique<PrivacySandboxDialogHandler>(
       std::move(close_callback), std::move(resize_callback),
-      std::move(open_settings_callback), dialog_type);
+      std::move(show_dialog_callback), std::move(open_settings_callback),
+      dialog_type);
   web_ui()->AddMessageHandler(std::move(handler));
 }
 

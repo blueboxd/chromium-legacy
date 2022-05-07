@@ -34,6 +34,7 @@ class SideSearchBrowserController
   enum SideSearchViewID {
     VIEW_ID_NONE = 0,
     VIEW_ID_SIDE_PANEL_CLOSE_BUTTON,
+    VIEW_ID_SIDE_PANEL_TITLE_LABEL,
   };
 
   SideSearchBrowserController(SidePanel* side_panel, BrowserView* browser_view);
@@ -51,6 +52,8 @@ class SideSearchBrowserController
       const content::OpenURLParams& params) override;
   void SidePanelAvailabilityChanged(bool should_close) override;
   void OpenSidePanel() override;
+  void CloseSidePanel(
+      absl::optional<SideSearchCloseActionType> action = absl::nullopt);
 
   // content::WebContentsObserver:
   void DidFinishNavigation(
@@ -79,9 +82,6 @@ class SideSearchBrowserController
 
   // Closes side panel on close button press.
   void SidePanelCloseButtonPressed();
-
-  void CloseSidePanel(
-      absl::optional<SideSearchCloseActionType> action = absl::nullopt);
 
   // Clears the side contents for the currently active tab in this browser
   // window.

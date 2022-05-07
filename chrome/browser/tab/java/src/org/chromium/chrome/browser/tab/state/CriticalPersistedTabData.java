@@ -16,7 +16,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.TraceEvent;
-import org.chromium.base.annotations.DoNotClassMerge;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.browser.tab.Tab;
@@ -38,11 +37,7 @@ import java.nio.ByteBuffer;
 
 /**
  * Data which is core to the app and must be retrieved as quickly as possible on startup.
- *
- * This class should not be merged because it is being used as a key in a Map
- * in PersistedTabDataConfiguration.java.
  */
-@DoNotClassMerge
 public class CriticalPersistedTabData extends PersistedTabData {
     private static final String TAG = "CriticalPTD";
     private static final Class<CriticalPersistedTabData> USER_DATA_KEY =
@@ -55,13 +50,29 @@ public class CriticalPersistedTabData extends PersistedTabData {
                 @Override
                 public SerializedCriticalPersistedTabData map(ByteBuffer byteBuffer) {
                     if (byteBuffer == null || byteBuffer.limit() == 0) {
-                        return new SerializedCriticalPersistedTabData(null);
+                        return null;
                     }
-                    CriticalPersistedTabDataFlatBuffer criticalPersistedTabDataFlatBuffer = null;
+                    SerializedCriticalPersistedTabData res = null;
                     try {
-                        criticalPersistedTabDataFlatBuffer =
+                        CriticalPersistedTabDataFlatBuffer flatBuffer =
                                 CriticalPersistedTabDataFlatBuffer
                                         .getRootAsCriticalPersistedTabDataFlatBuffer(byteBuffer);
+                        ByteBuffer webContentsStateByteBuffer =
+                                flatBuffer.webContentsStateBytesAsByteBuffer();
+                        WebContentsState webContentsState =
+                                new WebContentsState(webContentsStateByteBuffer == null
+                                                ? ByteBuffer.allocateDirect(0)
+                                                : webContentsStateByteBuffer.slice());
+                        webContentsState.setVersion(
+                                WebContentsState.CONTENTS_STATE_CURRENT_VERSION);
+                        res = new SerializedCriticalPersistedTabData(flatBuffer.parentId(),
+                                flatBuffer.rootId(), flatBuffer.timestampMillis(), webContentsState,
+                                NULL_OPENER_APP_ID.equals(flatBuffer.openerAppId())
+                                        ? null
+                                        : flatBuffer.openerAppId(),
+                                flatBuffer.contentStateVersion(), flatBuffer.themeColor(),
+                                getLaunchType(flatBuffer.launchTypeAtCreation()),
+                                getTabUserAgentType(flatBuffer.userAgent()));
                     } catch (Exception e) {
                         // TODO(crbug.com/1294613) Add in some metrics recording how often this
                         // happens.
@@ -70,10 +81,8 @@ public class CriticalPersistedTabData extends PersistedTabData {
                                         + "Details: " + e.getMessage());
                     }
                     RecordHistogram.recordBooleanHistogram(
-                            "Tabs.PersistedTabData.Critical.Map.Success",
-                            criticalPersistedTabDataFlatBuffer != null);
-                    return new SerializedCriticalPersistedTabData(
-                            criticalPersistedTabDataFlatBuffer);
+                            "Tabs.PersistedTabData.Critical.Map.Success", res != null);
+                    return res;
                 }
             };
     public static final long INVALID_TIMESTAMP = -1;
@@ -170,26 +179,11 @@ public class CriticalPersistedTabData extends PersistedTabData {
 
     @VisibleForTesting(otherwise = VisibleForTesting.PROTECTED)
     public CriticalPersistedTabData(Tab tab, SerializedCriticalPersistedTabData serialized) {
-        this(tab);
-        mParentId = serialized.getFlatBuffer().parentId();
-        mRootId = serialized.getFlatBuffer().rootId();
-        mTimestampMillis = serialized.getFlatBuffer().timestampMillis();
-        ByteBuffer webContentsState =
-                serialized.getFlatBuffer().webContentsStateBytesAsByteBuffer();
-        mWebContentsState = new WebContentsState(
-                webContentsState == null ? ByteBuffer.allocateDirect(0) : webContentsState.slice());
-        mWebContentsState.setVersion(WebContentsState.CONTENTS_STATE_CURRENT_VERSION);
-        mUrl = mWebContentsState.getVirtualUrlFromState() == null
-                ? GURL.emptyGURL()
-                : new GURL(mWebContentsState.getVirtualUrlFromState());
-        mTitle = mWebContentsState.getDisplayTitleFromState();
-        mContentStateVersion = serialized.getFlatBuffer().contentStateVersion();
-        mOpenerAppId = NULL_OPENER_APP_ID.equals(serialized.getFlatBuffer().openerAppId())
-                ? null
-                : serialized.getFlatBuffer().openerAppId();
-        mThemeColor = serialized.getFlatBuffer().themeColor();
-        mTabLaunchTypeAtCreation = getLaunchType(serialized.getFlatBuffer().launchTypeAtCreation());
-        mUserAgent = getTabUserAgentType(serialized.getFlatBuffer().userAgent());
+        this(tab, serialized.getUrl(), serialized.getTitle(), serialized.getParentId(),
+                serialized.getRootId(), serialized.getTimestampMillis(),
+                serialized.getWebContentsState(), serialized.getWebContentsStateVersion(),
+                serialized.getOpenerAppId(), serialized.getThemeColor(), serialized.getLaunchType(),
+                serialized.getUserAgent());
     }
 
     /**
@@ -778,8 +772,7 @@ public class CriticalPersistedTabData extends PersistedTabData {
      */
     public static boolean isEmptySerialization(
             SerializedCriticalPersistedTabData serializedCriticalPersistedTabData) {
-        return serializedCriticalPersistedTabData == null
-                || serializedCriticalPersistedTabData.isEmpty();
+        return serializedCriticalPersistedTabData == null;
     }
 
     @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)

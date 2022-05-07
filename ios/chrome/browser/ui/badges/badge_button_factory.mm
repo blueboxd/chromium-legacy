@@ -11,6 +11,8 @@
 #import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/browser/ui/badges/badge_delegate.h"
+#import "ios/chrome/browser/ui/badges/badge_overflow_menu_util.h"
+#import "ios/chrome/browser/ui/ui_feature_flags.h"
 #import "ios/chrome/common/ui/colors/semantic_color_names.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,6 +22,10 @@
 #endif
 
 namespace {
+// The identifier for the new popup menu action trigger.
+NSString* const kOverflowPopupMenuActionIdentifier =
+    @"kOverflowPopupMenuActionIdentifier";
+// The size of the symbol image in the badge button.
 const CGFloat kSymbolImagePointSize = 18;
 }  // namespace
 
@@ -67,7 +73,7 @@ const CGFloat kSymbolImagePointSize = 18;
 
 - (BadgeButton*)passwordsSaveBadgeButton {
   BadgeButton* button = [self
-      createButtonForType:BadgeType::kBadgeTypePasswordSave
+      createButtonForType:kBadgeTypePasswordSave
                     image:[[UIImage imageNamed:[self passwordKeyAssetName]]
                               imageWithRenderingMode:
                                   UIImageRenderingModeAlwaysTemplate]];
@@ -83,7 +89,7 @@ const CGFloat kSymbolImagePointSize = 18;
 
 - (BadgeButton*)passwordsUpdateBadgeButton {
   BadgeButton* button = [self
-      createButtonForType:BadgeType::kBadgeTypePasswordUpdate
+      createButtonForType:kBadgeTypePasswordUpdate
                     image:[[UIImage imageNamed:[self passwordKeyAssetName]]
                               imageWithRenderingMode:
                                   UIImageRenderingModeAlwaysTemplate]];
@@ -99,7 +105,7 @@ const CGFloat kSymbolImagePointSize = 18;
 
 - (BadgeButton*)saveCardBadgeButton {
   BadgeButton* button =
-      [self createButtonForType:BadgeType::kBadgeTypeSaveCard
+      [self createButtonForType:kBadgeTypeSaveCard
                           image:[[UIImage imageNamed:@"infobar_save_card_icon"]
                                     imageWithRenderingMode:
                                         UIImageRenderingModeAlwaysTemplate]];
@@ -114,7 +120,7 @@ const CGFloat kSymbolImagePointSize = 18;
 
 - (BadgeButton*)translateBadgeButton {
   BadgeButton* button =
-      [self createButtonForType:BadgeType::kBadgeTypeTranslate
+      [self createButtonForType:kBadgeTypeTranslate
                           image:[[UIImage imageNamed:@"infobar_translate_icon"]
                                     imageWithRenderingMode:
                                         UIImageRenderingModeAlwaysTemplate]];
@@ -129,7 +135,7 @@ const CGFloat kSymbolImagePointSize = 18;
 
 - (BadgeButton*)incognitoBadgeButton {
   BadgeButton* button =
-      [self createButtonForType:BadgeType::kBadgeTypeIncognito
+      [self createButtonForType:kBadgeTypeIncognito
                           image:[[UIImage imageNamed:@"incognito_badge"]
                                     imageWithRenderingMode:
                                         UIImageRenderingModeAlwaysOriginal]];
@@ -146,7 +152,7 @@ const CGFloat kSymbolImagePointSize = 18;
 
 - (BadgeButton*)overflowBadgeButton {
   BadgeButton* button =
-      [self createButtonForType:BadgeType::kBadgeTypeOverflow
+      [self createButtonForType:kBadgeTypeOverflow
                           image:[[UIImage imageNamed:@"wrench_badge"]
                                     imageWithRenderingMode:
                                         UIImageRenderingModeAlwaysTemplate]];
@@ -156,12 +162,43 @@ const CGFloat kSymbolImagePointSize = 18;
   button.accessibilityIdentifier = kBadgeButtonOverflowAccessibilityIdentifier;
   button.accessibilityLabel =
       l10n_util::GetNSString(IDS_IOS_OVERFLOW_BADGE_HINT);
+
+  // Configure new overflow popup menu if enabled.
+  if (ShouldUseUIKitPopupMenu()) {
+    button.showsMenuAsPrimaryAction = YES;
+
+    // Adds an empty menu so the event triggers the first time.
+    button.menu = [UIMenu menuWithChildren:@[]];
+    [button removeActionForIdentifier:kOverflowPopupMenuActionIdentifier
+                     forControlEvents:UIControlEventMenuActionTriggered];
+
+    // Configure actions that should be executed on each tap of the overflow
+    // badge button to make sure the right overflow menu items are showing up.
+    __weak UIButton* weakButton = button;
+    __weak BadgeButtonFactory* weakSelf = self;
+    void (^showModalFunction)(BadgeType) = ^(BadgeType badgeType) {
+      [weakSelf.delegate showModalForBadgeType:badgeType];
+    };
+    void (^buttonTapHandler)(UIAction*) = ^(UIAction* action) {
+      weakButton.menu = GetOverflowMenuFromBadgeTypes(
+          weakSelf.delegate.badgeTypesForOverflowMenu, showModalFunction);
+    };
+    UIAction* action =
+        [UIAction actionWithTitle:@""
+                            image:nil
+                       identifier:kOverflowPopupMenuActionIdentifier
+                          handler:buttonTapHandler];
+
+    // Attach the action to the button.
+    [button addAction:action
+        forControlEvents:UIControlEventMenuActionTriggered];
+  }
   return button;
 }
 
 - (BadgeButton*)saveAddressProfileBadgeButton {
   BadgeButton* button =
-      [self createButtonForType:BadgeType::kBadgeTypeSaveAddressProfile
+      [self createButtonForType:kBadgeTypeSaveAddressProfile
                           image:[[UIImage imageNamed:@"ic_place"]
                                     imageWithRenderingMode:
                                         UIImageRenderingModeAlwaysTemplate]];
@@ -176,7 +213,7 @@ const CGFloat kSymbolImagePointSize = 18;
 
 - (BadgeButton*)readingListBadgeButton {
   BadgeButton* button =
-      [self createButtonForType:BadgeType::kBadgeTypeAddToReadingList
+      [self createButtonForType:kBadgeTypeAddToReadingList
                           image:[[UIImage imageNamed:@"infobar_reading_list"]
                                     imageWithRenderingMode:
                                         UIImageRenderingModeAlwaysTemplate]];
@@ -191,7 +228,7 @@ const CGFloat kSymbolImagePointSize = 18;
 
 - (BadgeButton*)permissionsCameraBadgeButton {
   BadgeButton* button = [self
-      createButtonForType:BadgeType::kBadgeTypePermissionsCamera
+      createButtonForType:kBadgeTypePermissionsCamera
                     image:[[UIImage imageNamed:@"infobar_permissions_camera"]
                               imageWithRenderingMode:
                                   UIImageRenderingModeAlwaysTemplate]];
@@ -207,7 +244,7 @@ const CGFloat kSymbolImagePointSize = 18;
 
 - (BadgeButton*)permissionsMicrophoneBadgeButton {
   BadgeButton* button =
-      [self createButtonForType:BadgeType::kBadgeTypePermissionsMicrophone
+      [self createButtonForType:kBadgeTypePermissionsMicrophone
                           image:[[UIImage systemImageNamed:@"mic.fill"]
                                     imageWithRenderingMode:
                                         UIImageRenderingModeAlwaysTemplate]];

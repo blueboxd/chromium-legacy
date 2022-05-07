@@ -234,40 +234,46 @@ void ComputeLocationsFromColumns(
     const Vector<LayoutUnit>& column_sizes,
     LayoutUnit inline_border_spacing,
     bool shrink_collapsed,
-    NGTableTypes::ColumnLocations* column_locations,
+    Vector<NGTableColumnLocation>* column_locations,
     bool* has_collapsed_columns) {
   *has_collapsed_columns = false;
   column_locations->resize(column_constraints.data.size());
   if (column_locations->IsEmpty())
     return;
+  bool is_first_non_collpased_column = true;
   LayoutUnit column_offset = inline_border_spacing;
   for (wtf_size_t i = 0; i < column_constraints.data.size(); ++i) {
     auto& column_location = (*column_locations)[i];
     auto& column_constraint = column_constraints.data[i];
-    *has_collapsed_columns =
-        *has_collapsed_columns || column_constraint.is_collapsed;
-    column_location.offset = column_offset;
+    *has_collapsed_columns |= column_constraint.is_collapsed;
     if (column_constraints.data[i].is_mergeable &&
         (column_sizes[i] == kIndefiniteSize ||
          column_sizes[i] == LayoutUnit())) {
       // Empty mergeable columns are treated as collapsed.
+      column_location.offset = column_offset;
       column_location.size = LayoutUnit();
       column_location.is_collapsed = true;
     } else if (shrink_collapsed && column_constraint.is_collapsed) {
-      column_location.is_collapsed = true;
+      column_location.offset = column_offset;
       column_location.size = LayoutUnit();
+      column_location.is_collapsed = true;
     } else {
-      column_location.is_collapsed = false;
+      if (is_first_non_collpased_column)
+        is_first_non_collpased_column = false;
+      else
+        column_offset += inline_border_spacing;
+      column_location.offset = column_offset;
       column_location.size =
           column_sizes[i] != kIndefiniteSize ? column_sizes[i] : LayoutUnit();
-      column_offset += column_location.size + inline_border_spacing;
+      column_location.is_collapsed = false;
+      column_offset += column_location.size;
     }
   }
 }
 
 scoped_refptr<const NGTableConstraintSpaceData> CreateConstraintSpaceData(
     const ComputedStyle& style,
-    const NGTableTypes::ColumnLocations& column_locations,
+    const Vector<NGTableColumnLocation>& column_locations,
     const NGTableTypes::Sections& sections,
     const NGTableTypes::Rows& rows,
     const NGTableTypes::CellBlockConstraints& cell_block_constraints,
@@ -279,12 +285,8 @@ scoped_refptr<const NGTableConstraintSpaceData> CreateConstraintSpaceData(
   data->is_table_block_size_specified = !style.LogicalHeight().IsAuto();
   data->has_collapsed_borders =
       style.BorderCollapse() == EBorderCollapse::kCollapse;
+  data->column_locations = column_locations;
 
-  data->column_locations.ReserveCapacity(column_locations.size());
-  for (const auto& location : column_locations) {
-    data->column_locations.emplace_back(location.offset, location.size,
-                                        location.is_collapsed);
-  }
   data->sections.ReserveCapacity(sections.size());
   for (const auto& section : sections)
     data->sections.emplace_back(section.start_row, section.row_count);
@@ -411,20 +413,20 @@ class ColumnGeometriesBuilder {
               });
   }
 
-  ColumnGeometriesBuilder(const NGTableTypes::ColumnLocations& column_locations,
+  ColumnGeometriesBuilder(const Vector<NGTableColumnLocation>& column_locations,
                           LayoutUnit table_grid_block_size,
                           const LogicalSize& border_spacing)
       : column_locations(column_locations),
         table_grid_block_size(table_grid_block_size),
         border_spacing(border_spacing) {}
   NGTableFragmentData::ColumnGeometries column_geometries;
-  const NGTableTypes::ColumnLocations& column_locations;
+  const Vector<NGTableColumnLocation>& column_locations;
   const LayoutUnit table_grid_block_size;
   const LogicalSize& border_spacing;
 };
 
 LayoutUnit ComputeTableSizeFromColumns(
-    const NGTableTypes::ColumnLocations column_locations,
+    const Vector<NGTableColumnLocation>& column_locations,
     const NGBoxStrut& table_border_padding,
     const LogicalSize& border_spacing) {
   return column_locations.back().offset + column_locations.back().size +
@@ -475,7 +477,7 @@ LayoutUnit NGTableLayoutAlgorithm::ComputeTableInlineSize(
 
   // Final inline size must depend on column locations, because columns can be
   // hidden.
-  NGTableTypes::ColumnLocations column_locations;
+  Vector<NGTableColumnLocation> column_locations;
   bool has_collapsed_columns;
   ComputeLocationsFromColumns(
       *column_constraints, column_sizes, border_spacing.inline_size,
@@ -533,7 +535,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::Layout() {
       NGTableAlgorithmHelpers::SynchronizeAssignableTableInlineSizeAndColumns(
           assignable_table_inline_size, is_fixed_layout, *column_constraints);
 
-  NGTableTypes::ColumnLocations column_locations;
+  Vector<NGTableColumnLocation> column_locations;
   bool has_collapsed_columns;
   ComputeLocationsFromColumns(
       *column_constraints, column_sizes, border_spacing.inline_size,
@@ -654,7 +656,7 @@ MinMaxSizesResult NGTableLayoutAlgorithm::ComputeMinMaxSizes(
 void NGTableLayoutAlgorithm::ComputeRows(
     const LayoutUnit table_grid_inline_size,
     const NGTableGroupedChildren& grouped_children,
-    const NGTableTypes::ColumnLocations& column_locations,
+    const Vector<NGTableColumnLocation>& column_locations,
     const NGTableBorders& table_borders,
     const LogicalSize& border_spacing,
     const NGBoxStrut& table_border_padding,
@@ -732,7 +734,7 @@ void NGTableLayoutAlgorithm::ComputeRows(
 // Method also sets LogicalWidth/Height on columns.
 void NGTableLayoutAlgorithm::ComputeTableSpecificFragmentData(
     const NGTableGroupedChildren& grouped_children,
-    const NGTableTypes::ColumnLocations& column_locations,
+    const Vector<NGTableColumnLocation>& column_locations,
     const NGTableTypes::Rows& rows,
     const NGTableBorders& table_borders,
     const PhysicalRect& table_grid_rect,
@@ -797,7 +799,7 @@ const NGLayoutResult* NGTableLayoutAlgorithm::GenerateFragment(
     const LayoutUnit table_inline_size,
     const LayoutUnit minimal_table_grid_block_size,
     const NGTableGroupedChildren& grouped_children,
-    const NGTableTypes::ColumnLocations& column_locations,
+    const Vector<NGTableColumnLocation>& column_locations,
     const NGTableTypes::Rows& rows,
     const NGTableTypes::CellBlockConstraints& cell_block_constraints,
     const NGTableTypes::Sections& sections,

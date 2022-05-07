@@ -135,7 +135,7 @@ void PredictionBasedPermissionUiSelector::SelectUiToUse(
     if (ShouldPredictionTriggerQuietUi(
             likelihood_override_for_testing_.value())) {
       std::move(callback_).Run(
-          Decision(QuietUiReason::kPredictedVeryUnlikelyGrant,
+          Decision(QuietUiReason::kServicePredictedVeryUnlikelyGrant,
                    Decision::ShowNoWarning()));
     } else {
       std::move(callback_).Run(Decision::UseNormalUiAndShowNoWarning());
@@ -242,14 +242,13 @@ void PredictionBasedPermissionUiSelector::LookupResponseReceived(
     bool response_from_cache,
     const absl::optional<permissions::GeneratePredictionsResponse>& response) {
   request_.reset();
-  if (!lookup_succesful || !response || response->prediction_size() == 0) {
-    VLOG(1) << "[CPSS] Prediction service request failed";
-    std::move(callback_).Run(Decision::UseNormalUiAndShowNoWarning());
+  if (!callback_) {
+    VLOG(1) << "[CPSS] Prediction service response ignored as the request is "
+               "canceled";
     return;
   }
-
-  if (ShouldHoldBack(is_on_device, request_type)) {
-    VLOG(1) << "[CPSS] Prediction service response held back";
+  if (!lookup_succesful || !response || response->prediction_size() == 0) {
+    VLOG(1) << "[CPSS] Prediction service request failed";
     std::move(callback_).Run(Decision::UseNormalUiAndShowNoWarning());
     return;
   }
@@ -257,17 +256,27 @@ void PredictionBasedPermissionUiSelector::LookupResponseReceived(
   last_request_grant_likelihood_ =
       response->prediction(0).grant_likelihood().discretized_likelihood();
 
+  if (ShouldHoldBack(is_on_device, request_type)) {
+    VLOG(1) << "[CPSS] Prediction service decision held back";
+    std::move(callback_).Run(
+        Decision(Decision::UseNormalUi(), Decision::ShowNoWarning(), true));
+    return;
+  }
+
   VLOG(1)
       << "[CPSS] Prediction service request succeeded and received likelihood: "
       << last_request_grant_likelihood_.value();
 
   if (ShouldPredictionTriggerQuietUi(last_request_grant_likelihood_.value())) {
     std::move(callback_).Run(Decision(
-        QuietUiReason::kPredictedVeryUnlikelyGrant, Decision::ShowNoWarning()));
+        is_on_device ? QuietUiReason::kOnDevicePredictedVeryUnlikelyGrant
+                     : QuietUiReason::kServicePredictedVeryUnlikelyGrant,
+        Decision::ShowNoWarning(), false));
     return;
   }
 
-  std::move(callback_).Run(Decision::UseNormalUiAndShowNoWarning());
+  std::move(callback_).Run(
+      Decision(Decision::UseNormalUi(), Decision::ShowNoWarning(), false));
 }
 
 bool PredictionBasedPermissionUiSelector::ShouldHoldBack(

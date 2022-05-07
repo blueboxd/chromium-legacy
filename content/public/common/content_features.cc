@@ -74,9 +74,10 @@ const base::Feature kAudioServiceSandbox {
 //   report a beforeunload handler is present. A ramification of this is
 //   navigations that would normally check beforeunload handlers before
 //   continuing will not, and navigation will synchronously continue.
-// Only one should be used (if both are set, the first takes precedence). The
-// second is unsafe for Android webview, as the embedder may trigger
-// reentrancy which can not be changed.
+// Only one should be used (if both are set, the second takes precedence). The
+// second is unsafe for Android WebView (and thus entirely disabled via
+// ContentBrowserClient::SupportsAvoidUnnecessaryBeforeUnloadCheckSync()),
+// because the embedder may trigger reentrancy, which cannot be avoided.
 const base::Feature kAvoidUnnecessaryBeforeUnloadCheckPostTask{
     "AvoidUnnecessaryBeforeUnloadCheck", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAvoidUnnecessaryBeforeUnloadCheckSync{
@@ -771,6 +772,10 @@ const base::Feature kSecurePaymentConfirmation {
 #endif
 };
 
+// Enables API V3 changes in Secure Payment Confirmation.
+const base::Feature kSecurePaymentConfirmationAPIV3{
+    "SecurePaymentConfirmationAPIV3", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Used to control whether to remove the restriction that PaymentCredential in
 // WebAuthn and secure payment confirmation method in PaymentRequest API must
 // use a user verifying platform authenticator. When enabled, this allows using
@@ -1154,7 +1159,7 @@ const base::Feature kWebXrArModule{"WebXRARModule",
 // process fore/background state change.
 const base::Feature kChangeServiceWorkerPriorityForClientForegroundStateChange{
     "ChangeServiceWorkerPriorityForClientForegroundStateChange",
-    base::FEATURE_DISABLED_BY_DEFAULT};
+    base::FEATURE_ENABLED_BY_DEFAULT};
 
 #if BUILDFLAG(IS_ANDROID)
 // Allows the use of page zoom in place of accessibility text autosizing, and

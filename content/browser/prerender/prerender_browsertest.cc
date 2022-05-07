@@ -566,6 +566,83 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelledOn500Page) {
       PrerenderHost::FinalStatus::kNavigationBadHttpStatus);
 }
 
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelledOn204Page) {
+  base::HistogramTester histogram_tester;
+
+  // Navigate to an initial page.
+  const GURL kInitialUrl = GetUrl("/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start prerendering `kPrerenderingUrl` that returns 204 response code.
+  const GURL kPrerenderingUrl = GetUrl("/echo?status=204");
+  test::PrerenderHostObserver host_observer(*web_contents_impl(),
+                                            kPrerenderingUrl);
+  AddPrerenderAsync(kPrerenderingUrl);
+
+  // The prerender should be destroyed.
+  host_observer.WaitForDestroyed();
+  EXPECT_EQ(GetHostForUrl(kPrerenderingUrl),
+            RenderFrameHost::kNoFrameTreeNodeId);
+
+  // Cancellation must have occurred due to bad http status code.
+  ExpectFinalStatusForSpeculationRule(
+      PrerenderHost::FinalStatus::kNavigationBadHttpStatus);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelledOn205Page) {
+  base::HistogramTester histogram_tester;
+
+  // Navigate to an initial page.
+  const GURL kInitialUrl = GetUrl("/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start prerendering `kPrerenderingUrl` that returns 205 response code.
+  const GURL kPrerenderingUrl = GetUrl("/echo?status=205");
+  test::PrerenderHostObserver host_observer(*web_contents_impl(),
+                                            kPrerenderingUrl);
+  AddPrerenderAsync(kPrerenderingUrl);
+
+  // The prerender should be destroyed.
+  host_observer.WaitForDestroyed();
+  EXPECT_EQ(GetHostForUrl(kPrerenderingUrl),
+            RenderFrameHost::kNoFrameTreeNodeId);
+
+  // Cancellation must have occurred due to bad http status code.
+  ExpectFinalStatusForSpeculationRule(
+      PrerenderHost::FinalStatus::kNavigationBadHttpStatus);
+}
+
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderCancelledOn204Iframe) {
+  base::HistogramTester histogram_tester;
+
+  // Navigate to an initial page.
+  const GURL kInitialUrl = GetUrl("/title1.html");
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  // Start prerendering `kPrerenderingUrl`.
+  const GURL kPrerenderingUrl = GetUrl("/title1.html");
+  int host_id = AddPrerender(kPrerenderingUrl);
+  test::PrerenderHostObserver host_observer(*web_contents_impl(), host_id);
+  WaitForPrerenderLoadCompletion(kPrerenderingUrl);
+
+  // Fetch a subframe that responses 204 status code.
+  const GURL kIFrameUrl = GetUrl("/echo?status=204");
+  RenderFrameHost* prerender_rfh = GetPrerenderedMainFrameHost(host_id);
+  std::ignore =
+      ExecJs(prerender_rfh,
+             "const i = document.createElement('iframe'); i.src = '" +
+                 kIFrameUrl.spec() + "'; document.body.appendChild(i);");
+
+  // The prerender should be destroyed.
+  host_observer.WaitForDestroyed();
+  EXPECT_EQ(GetHostForUrl(kPrerenderingUrl),
+            RenderFrameHost::kNoFrameTreeNodeId);
+
+  // Cancellation must have occurred due to bad http status code.
+  ExpectFinalStatusForSpeculationRule(
+      PrerenderHost::FinalStatus::kNavigationBadHttpStatus);
+}
+
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CancelOnAuthRequested) {
   base::HistogramTester histogram_tester;
 
@@ -607,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, CancelOnAuthRequestedSubframe) {
   RenderFrameHost* prerender_rfh = GetPrerenderedMainFrameHost(host_id);
   std::ignore =
       ExecJs(prerender_rfh,
-             "var i = document.createElement('iframe'); i.src = '" +
+             "const i = document.createElement('iframe'); i.src = '" +
                  kAuthIFrameUrl.spec() + "'; document.body.appendChild(i);");
 
   // The prerender should be destroyed.
@@ -5473,6 +5550,25 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, VerifyPrerenderProcessVisibility) {
   EXPECT_TRUE(host_observer.was_activated());
   // Expect the change in the ChildProcessLauncherPriority to become visible.
   EXPECT_FALSE(prerender_process_host->IsProcessBackgrounded());
+}
+
+// Test that the prerendered page uses own UKM source id during navigation.
+IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, GetPageUkmSourceId) {
+  const GURL kInitialUrl = GetUrl("/empty.html");
+  const GURL kPrerenderingUrl = GetUrl("/empty.html?prerender");
+
+  // Navigate to an initial page.
+  ASSERT_TRUE(NavigateToURL(shell(), kInitialUrl));
+
+  NavigationHandleObserver handle_observer(web_contents(), kPrerenderingUrl);
+  int host_id = AddPrerender(kPrerenderingUrl);
+  RenderFrameHostImpl* prerender_rfh = GetPrerenderedMainFrameHost(host_id);
+
+  ukm::SourceId nav_request_id = handle_observer.next_page_ukm_source_id();
+  // Ensure that the prerendered page uses own UKM source id in navigation, not
+  // from the primary main frame.
+  EXPECT_NE(current_frame_host()->GetPageUkmSourceId(), nav_request_id);
+  EXPECT_EQ(prerender_rfh->GetPageUkmSourceId(), nav_request_id);
 }
 
 class PrerenderPurposePrefetchBrowserTest : public PrerenderBrowserTest {

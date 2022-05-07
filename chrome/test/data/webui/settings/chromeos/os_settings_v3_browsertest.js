@@ -7,13 +7,13 @@
 GEN_INCLUDE(['//chrome/test/data/webui/polymer_browser_test_base.js']);
 
 GEN('#include "ash/constants/ash_features.h"');
-GEN('#include "ash/constants/ash_features.h"');
-GEN('#include "components/app_restore/features.h"');
-GEN('#include "chrome/common/buildflags.h"');
 GEN('#include "build/branding_buildflags.h"');
-GEN('#include "content/public/test/browser_test.h"');
-GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "chrome/browser/ash/crostini/fake_crostini_features.h"');
 GEN('#include "chrome/browser/nearby_sharing/common/nearby_share_features.h"');
+GEN('#include "chrome/common/buildflags.h"');
+GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "components/app_restore/features.h"');
+GEN('#include "content/public/test/browser_test.h"');
 
 /* eslint-disable no-var */
 
@@ -29,7 +29,6 @@ var OSSettingsV3BrowserTest = class extends PolymerTest {
     return {
       enabled: [
         'chromeos::features::kEnableHostnameSetting',
-        'features::kCrostini',
       ],
     };
   }
@@ -301,6 +300,23 @@ TEST_F('OSSettingsAppManagementAppDetailsV3Test', 'AllJsTests', () => {
   mocha.run();
 });
 
+var OSSettingsCrostiniPageV3Test = class extends OSSettingsV3BrowserTest {
+  /** @override */
+  get browsePreload() {
+    return 'chrome://os-settings/test_loader.html?module=settings/chromeos/crostini_page_test.m.js';
+  }
+
+  /** @override */
+  testGenPreamble() {
+    GEN('crostini::FakeCrostiniFeatures fake_crostini_features;');
+    GEN('fake_crostini_features.SetAll(true);');
+  }
+};
+
+TEST_F('OSSettingsCrostiniPageV3Test', 'AllJsTests', () => {
+  mocha.run();
+});
+
 [['AccessibilityPage', 'os_a11y_page_tests.m.js'],
  ['AboutPage', 'os_about_page_tests.m.js'],
  ['AccountsPage', 'add_users_tests.m.js'],
@@ -318,7 +334,6 @@ TEST_F('OSSettingsAppManagementAppDetailsV3Test', 'AllJsTests', () => {
  ['AppManagementMainView', 'main_view_test.m.js'],
  ['AppManagementManagedApp', 'managed_apps_test.m.js'],
  ['AppManagementPage', 'app_management_page_tests.m.js'],
- ['AppManagementPermissionItem', 'permission_item_test.m.js'],
  ['AppManagementPinToShelfItem', 'pin_to_shelf_item_test.m.js'],
  ['AppManagementPluginVmDetailView', 'plugin_vm_detail_view_test.m.js'],
  ['AppManagementPwaDetailView', 'pwa_detail_view_test.m.js'],
@@ -335,7 +350,6 @@ TEST_F('OSSettingsAppManagementAppDetailsV3Test', 'AllJsTests', () => {
    'DictationChangeLanguageLocaleDialogTest',
    'change_dictation_locale_dialog_test.m.js'
  ],
- ['CrostiniPage', 'crostini_page_test.m.js'],
  ['CupsPrinterEntry', 'cups_printer_entry_tests.m.js'],
  ['CupsPrinterLandingPage', 'cups_printer_landing_page_tests.m.js'],
  // TODO(crbug/1240970): Re-enable once flakiness is fixed.

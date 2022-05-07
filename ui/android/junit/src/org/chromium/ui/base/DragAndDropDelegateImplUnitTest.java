@@ -9,11 +9,13 @@ import static org.mockito.Mockito.doReturn;
 import android.content.ClipData;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.drawable.VectorDrawable;
 import android.util.Pair;
 import android.view.DragEvent;
 import android.view.View;
 import android.view.View.DragShadowBuilder;
 import android.view.accessibility.AccessibilityManager;
+import android.widget.ImageView;
 
 import androidx.test.core.app.ApplicationProvider;
 
@@ -47,9 +49,12 @@ public class DragAndDropDelegateImplUnitTest {
     /** Helper shadow class to make sure #startDragAndDrop is accepted by Android. */
     @Implements(ApiHelperForN.class)
     static class ShadowApiHelperForN {
+        static DragShadowBuilder sLastDragShadowBuilder;
+
         @Implementation
         public static boolean startDragAndDrop(View view, ClipData data,
                 DragShadowBuilder shadowBuilder, Object myLocalState, int flags) {
+            sLastDragShadowBuilder = shadowBuilder;
             return true;
         }
     }
@@ -67,6 +72,7 @@ public class DragAndDropDelegateImplUnitTest {
     public void tearDown() {
         DropDataContentProvider.onDragEnd(false);
         ShadowRecordHistogram.reset();
+        ShadowApiHelperForN.sLastDragShadowBuilder = null;
     }
 
     @Test
@@ -120,24 +126,34 @@ public class DragAndDropDelegateImplUnitTest {
     }
 
     /**
-     * Link dragging is not supported yet, adding this test to make sure status are handled
-     * correctly.
-     * TODO(https://crbug.com/1289393): Handle link dragging.
+     * Image link dragging is not supported yet.
+     * TODO(https://crbug.com/1298308): Handle image link dragging.
      */
     @Test
-    public void testStartDragAndDrop_Link() {
+    public void testStartDragAndDrop_TextLink() {
         final View containerView = new View(mContext);
         final Bitmap shadowImage = Bitmap.createBitmap(100, 200, Bitmap.Config.ALPHA_8);
+        final DropDataAndroid dropData = DropDataAndroid.create(
+                "text", JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), null, null);
 
-        final DropDataAndroid linkDropData = DropDataAndroid.create(
-                "", JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), null, null);
-        mDragAndDropDelegateImpl.startDragAndDrop(containerView, shadowImage, linkDropData);
-        Assert.assertEquals(
-                "Drag link is not supported.", 0, mDragAndDropDelegateImpl.getDragShadowWidth());
-        Assert.assertEquals(
-                "Drag link is not supported.", 0, mDragAndDropDelegateImpl.getDragShadowHeight());
-        Assert.assertFalse("Drag Link is not supported.", mDragAndDropDelegateImpl.isDragStarted());
-        assertDragTypeNotRecorded("Drag didn't started.");
+        mDragAndDropDelegateImpl.startDragAndDrop(containerView, shadowImage, dropData);
+
+        Assert.assertTrue("Drag should start.", mDragAndDropDelegateImpl.isDragStarted());
+        Assert.assertEquals("Drag shadow width does not match. Should not resize for text link.",
+                100, mDragAndDropDelegateImpl.getDragShadowWidth());
+        Assert.assertEquals("Drag shadow height does not match. Should not resize for text link.",
+                200, mDragAndDropDelegateImpl.getDragShadowHeight());
+        assertDragTypeNotRecorded("Drag did not end.");
+
+        mDragAndDropDelegateImpl.onDrag(containerView, mockDragEvent(DragEvent.ACTION_DRAG_ENDED));
+
+        Assert.assertFalse("Drag should end.", mDragAndDropDelegateImpl.isDragStarted());
+        Assert.assertEquals("Drag shadow width should be reset.", 0,
+                mDragAndDropDelegateImpl.getDragShadowWidth());
+        Assert.assertEquals("Drag shadow height should be reset.", 0,
+                mDragAndDropDelegateImpl.getDragShadowHeight());
+        assertDragTypeRecorded(DragTargetType.LINK);
+        assertDragOutsideWebContentHistogramsRecorded(/*dropResult=*/false);
     }
 
     @Test
@@ -158,6 +174,25 @@ public class DragAndDropDelegateImplUnitTest {
 
         Assert.assertFalse("Drag and drop should not start when isTouchExplorationEnabled=true.",
                 mDragAndDropDelegateImpl.startDragAndDrop(containerView, shadowImage, dropData));
+    }
+
+    @Test
+    @Config(shadows = {ShadowApiHelperForN.class})
+    public void testDragImage_ShadowPlaceholder() {
+        final View containerView = new View(mContext);
+        final Bitmap shadowImage = Bitmap.createBitmap(1, 1, Bitmap.Config.ALPHA_8);
+        final DropDataAndroid imageDropData =
+                DropDataAndroid.create("", null, new byte[] {1, 2, 3, 4}, "png");
+        mDragAndDropDelegateImpl.startDragAndDrop(containerView, shadowImage, imageDropData);
+
+        Assert.assertNotNull(
+                "sLastDragShadowBuilder is null.", ShadowApiHelperForN.sLastDragShadowBuilder);
+        View shadowView = ShadowApiHelperForN.sLastDragShadowBuilder.getView();
+        Assert.assertTrue(
+                "DrawShadowBuilder should host an ImageView.", shadowView instanceof ImageView);
+        Assert.assertTrue(
+                "Drag shadow image should host a globe icon, which should be a vector drawable.",
+                ((ImageView) shadowView).getDrawable() instanceof VectorDrawable);
     }
 
     @Test
@@ -265,6 +300,26 @@ public class DragAndDropDelegateImplUnitTest {
         doTestResizeShadowImage("Scale 60%, adjust to min width, and adjust to max height",
                 /*width=*/15, /*height=*/1500,
                 /*expectedWidth=*/7, /*expectedHeight=*/700);
+    }
+
+    @Test
+    public void testTextForLinkData_UrlWithNoTitle() {
+        final DropDataAndroid dropData = DropDataAndroid.create(
+                "", JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), null, null);
+
+        String text = DragAndDropDelegateImpl.getTextForLinkData(dropData);
+        Assert.assertEquals("Text should match.", JUnitTestGURLs.EXAMPLE_URL, text);
+    }
+
+    @Test
+    public void testTextForLinkData_UrlWithTitle() {
+        String linkTitle = "Link text";
+        final DropDataAndroid dropData = DropDataAndroid.create(
+                linkTitle, JUnitTestGURLs.getGURL(JUnitTestGURLs.EXAMPLE_URL), null, null);
+
+        String text = DragAndDropDelegateImpl.getTextForLinkData(dropData);
+        Assert.assertEquals(
+                "Text should match.", linkTitle + "\n" + JUnitTestGURLs.EXAMPLE_URL, text);
     }
 
     private void doTestResizeShadowImage(

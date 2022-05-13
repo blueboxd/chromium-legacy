@@ -494,6 +494,10 @@ const base::Feature kDriveFsBidirectionalNativeMessaging{
 const base::Feature kDriveFsMirroring{"DriveFsMirroring",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables authenticating to Wi-Fi networks using EAP-GTC.
+const base::Feature kEapGtcWifiAuthentication{
+    "EapGtcWifiAuthentication", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables the Eche Phone Hub permission onboarding.
 const base::Feature kEchePhoneHubPermissionsOnboarding{
     "EchePhoneHubPermissionsOnboarding", base::FEATURE_DISABLED_BY_DEFAULT};
@@ -1364,7 +1368,7 @@ const base::Feature kStylusBatteryStatus{"StylusBatteryStatus",
 // Enables or disables using the system input engine for physical typing in
 // Chinese.
 const base::Feature kSystemChinesePhysicalTyping{
-    "SystemChinesePhysicalTyping", base::FEATURE_ENABLED_BY_DEFAULT};
+    "SystemChinesePhysicalTyping", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables the System Extensions platform.
 const base::Feature kSystemExtensions{"SystemExtensions",
@@ -1729,6 +1733,10 @@ bool IsDragWindowToNewDeskEnabled() {
 
 bool IsDriveFsMirroringEnabled() {
   return base::FeatureList::IsEnabled(kDriveFsMirroring);
+}
+
+bool IsEapGtcWifiAuthenticationEnabled() {
+  return base::FeatureList::IsEnabled(kEapGtcWifiAuthentication);
 }
 
 bool IsEchePhoneHubPermissionsOnboarding() {

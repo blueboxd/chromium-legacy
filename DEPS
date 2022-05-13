@@ -253,15 +253,15 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': 'e72c4af441c8c842236343f3c218bf4a349df9be',
+  'skia_revision': 'e3e2fcd24a848352ff4bd8df90891af8c9cdfd05',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '038025c396f285a96cee650993c800a5d0ea965f',
+  'v8_revision': 'e5f13e0cd10e245d822f856d17b347c77ccc7593',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling ANGLE
   # and whatever else without interference from each other.
-  'angle_revision': 'e37380e62a427cbb7172b6c17f8752ab96abf356',
+  'angle_revision': 'a4d0bfd89577761d09ccfef8826d0eb5e2455181',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -1291,7 +1291,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/hunspell_dictionaries.git' + '@' + '41cdffd71c9948f63c7ad36e1fb0ff519aa7a37e',
 
   'src/third_party/icu':
-    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'ea8c08d8783fceda86c19618694881149e23f305',
+    Var('chromium_git') + '/chromium/deps/icu.git' + '@' + 'aa9a86d51085d896313e026c18d7212b64378144',
 
   'src/third_party/icu4j': {
       'packages': [
@@ -1825,7 +1825,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@93fce5be71544c80936c7462a1c985e63ece64c3',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@b711186b107c22911d370d64326841fa73134cc0',
     'condition': 'checkout_src_internal',
   },
 

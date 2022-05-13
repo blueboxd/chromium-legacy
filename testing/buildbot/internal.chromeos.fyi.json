@@ -1125,34 +1125,14 @@
       {
         "args": [],
         "cros_board": "octopus",
-        "cros_img": "octopus-release/R101-14588.67.0",
-        "name": "lacros_fyi_tast_tests_OCTOPUS_RELEASE_BETA",
-        "swarming": {},
-        "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
-        "test": "lacros_fyi_tast_tests",
-        "test_id_prefix": "ninja://chromeos/lacros:lacros_fyi_tast_tests/",
-        "timeout_sec": 10800
-      },
-      {
-        "args": [],
-        "cros_board": "octopus",
         "cros_img": "octopus-release/R100-14526.89.0",
         "name": "lacros_fyi_tast_tests_OCTOPUS_RELEASE_STABLE",
         "swarming": {},
         "tast_expr": "(\"group:mainline\" && \"dep:lacros\" && !informational)",
         "test": "lacros_fyi_tast_tests",
         "test_id_prefix": "ninja://chromeos/lacros:lacros_fyi_tast_tests/",
-        "timeout_sec": 10800
-      },
-      {
-        "args": [],
-        "cros_board": "octopus",
-        "cros_img": "octopus-release/R101-14588.67.0",
-        "name": "ozone_unittests_OCTOPUS_RELEASE_BETA",
-        "swarming": {},
-        "test": "ozone_unittests",
-        "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
-        "timeout_sec": 3600
+        "timeout_sec": 10800,
+        "variant_id": "OCTOPUS_RELEASE_STABLE"
       },
       {
         "args": [],
@@ -1162,7 +1142,8 @@
         "swarming": {},
         "test": "ozone_unittests",
         "test_id_prefix": "ninja://ui/ozone:ozone_unittests/",
-        "timeout_sec": 3600
+        "timeout_sec": 3600,
+        "variant_id": "OCTOPUS_RELEASE_STABLE"
       }
     ]
   },

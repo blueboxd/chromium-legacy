@@ -303,9 +303,18 @@ webrtc::PeerConnectionInterface::RTCConfiguration ParseConfiguration(
       // if --enable-blink-features=RTCExtendDeadlineForPlanBRemoval was used.
       // Local files also get the extended deadline beecause "file://" URLs
       // cannot sign up for Origin Trials.
-      if (RuntimeEnabledFeatures::RTCExtendDeadlineForPlanBRemovalEnabled(
+      bool plan_b_allowed =
+          RuntimeEnabledFeatures::RTCExtendDeadlineForPlanBRemovalEnabled(
               context) ||
-          context->Url().IsLocalFile()) {
+          context->Url().IsLocalFile();
+#if BUILDFLAG(IS_CHROMEOS)
+      // Only on CrOS is Plan B always allowed, regardless of Deprecation Trial
+      // status.
+      // TODO(https://crbug.com/1323237): This is only temporary, remove Plan B
+      // on CrOS as well.
+      plan_b_allowed = true;
+#endif
+      if (plan_b_allowed) {
         // TODO(https://crbug.com/857004): In M97, when the Deprecation Trial
         // ends, remove this code path in favor of throwing the exception below.
         Deprecation::CountDeprecation(
@@ -2333,10 +2342,16 @@ ScriptPromise RTCPeerConnection::PromiseBasedGetStats(
     }
     auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
     ScriptPromise promise = resolver->Promise();
-    peer_handler_->GetStats(
-        WTF::Bind(WebRTCStatsReportCallbackResolver, WrapPersistent(resolver)),
-        GetExposedGroupIds(script_state));
-
+    if (peer_handler_unregistered_) {
+      LOG(ERROR) << "Internal error: context is destroyed";
+      // This is needed to have the resolver release its internal resources
+      // while leaving the associated promise pending as specified.
+      resolver->Detach();
+    } else {
+      peer_handler_->GetStats(WTF::Bind(WebRTCStatsReportCallbackResolver,
+                                        WrapPersistent(resolver)),
+                              GetExposedGroupIds(script_state));
+    }
     return promise;
   }
 

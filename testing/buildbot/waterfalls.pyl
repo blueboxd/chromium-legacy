@@ -6730,6 +6730,21 @@
           'isolated_scripts': 'chromium_webkit_isolated_scripts',
         },
       },
+      'linux_layout_tests_layout_ng_disabled': {
+        'mixins': [
+          'linux-bionic',
+        ],
+        'additional_compile_targets': [
+          'blink_tests',
+        ],
+        'swarming': {
+          'hard_timeout': 900,
+        },
+        'test_suites': {
+          'gtest_tests': 'layout_ng_gtests',
+          'isolated_scripts': 'chromium_webkit_isolated_scripts',
+        },
+      },
       'linux_optional_gpu_tests_rel': {
         'os_type': 'linux',
         'browser_config': 'release',
@@ -6737,6 +6752,20 @@
           'gtest_tests': 'linux_optional_gpu_tests_rel_gtests',
           'isolated_scripts': 'linux_optional_gpu_tests_rel_isolated_scripts',
           'gpu_telemetry_tests': 'linux_optional_gpu_tests_rel_gpu_telemetry_tests',
+        },
+      },
+    },
+  },
+  {
+    'name': 'tryserver.chromium.mac',
+    'mixins': ['chromium-tester-service-account'],
+    'machines': {
+      'mac_optional_gpu_tests_rel': {
+        'os_type': 'mac',
+        'browser_config': 'release',
+        'test_suites': {
+          'gtest_tests': 'mac_optional_gpu_tests_rel_gtests',
+          'gpu_telemetry_tests': 'mac_optional_gpu_tests_rel_gpu_telemetry_tests',
         },
       },
     },

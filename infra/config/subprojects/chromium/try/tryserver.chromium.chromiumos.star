@@ -137,10 +137,14 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-inverse-fieldtrials-fyi-rel",
+    mirrors = builder_config.copy_from("try/linux-chromeos-rel"),
 )
 
 try_.orchestrator_builder(
     name = "linux-chromeos-rel",
+    mirrors = [
+        "ci/linux-chromeos-rel",
+    ],
     compilator = "linux-chromeos-rel-compilator",
     branch_selector = branches.CROS_LTS_MILESTONE,
     main_list_view = "try",
@@ -164,6 +168,10 @@ try_.builder(
 
 try_.builder(
     name = "linux-lacros-dbg",
+    # TODO(crbug.com/1233247) Adds the CI tester when it's available.
+    mirrors = [
+        "ci/linux-lacros-dbg",
+    ],
 )
 
 try_.builder(
@@ -234,6 +242,14 @@ try_.builder(
 
 try_.builder(
     name = "linux-chromeos-rel-rts",
+    mirrors = [
+        "ci/linux-chromeos-rel",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.ALWAYS,
+        ),
+    ),
     builderless = False,
     use_clang_coverage = True,
     coverage_test_types = ["unit", "overall"],

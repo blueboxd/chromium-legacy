@@ -35,6 +35,18 @@ BackgroundBridge.BrailleBackground = {
   },
 };
 
+BackgroundBridge.BrailleCommandHandler = {
+  /**
+   * @param {boolean} enabled
+   * @return {!Promise}
+   */
+  async setEnabled(enabled) {
+    return BridgeHelper.sendMessage(
+        Bridgetarget.BRAILLE_COMMAND_HANDLER, BridgeAction.SET_ENABLED,
+        enabled);
+  },
+};
+
 BackgroundBridge.ChromeVoxBackground = {
   /**
    * Gets the voice currently used by ChromeVox when calling tts.
@@ -81,6 +93,12 @@ BackgroundBridge.ChromeVoxPrefs = {
 };
 
 BackgroundBridge.ChromeVoxState = {
+  /** @return {!Promise} */
+  async clearCurrentRange() {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.CHROMEVOX_STATE, BridgeAction.CLEAR_CURRENT_RANGE);
+  },
+
   /**
    * Method that updates the punctuation echo level, and also persists setting
    * to local storage.
@@ -115,7 +133,31 @@ BackgroundBridge.EventSourceState = {
   async get() {
     return BridgeHelper.sendMessage(
         BridgeTarget.EVENT_SOURCE_STATE, BridgeAction.GET);
-  }
+  },
+};
+
+BackgroundBridge.GestureCommandHandler = {
+  /**
+   * @param {boolean} enabled
+   * @return {!Promise}
+   */
+  async setEnabled(enabled) {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.GESTURE_COMMAND_HANDLER, BridgeAction.SET_ENABLED);
+  },
+};
+
+BackgroundBridge.EventStreamLogger = {
+  /**
+   * @param {chrome.automation.EventType} eventType
+   * @param {boolean} checked
+   * @return {!Promise}
+   */
+  async notifyEventStreamFilterChanged(name, enabled) {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.EVENT_STREAM_LOGGER,
+        BridgeAction.NOTIFY_EVENT_STREAM_FILTER_CHANGED, {name, enabled});
+  },
 };
 
 BackgroundBridge.LogStore = {
@@ -140,6 +182,13 @@ BackgroundBridge.LogStore = {
 };
 
 BackgroundBridge.PanelBackground = {
+  /** @param {string=} opt_activatedMenuTitle */
+  async createAllNodeMenuBackgrounds(opt_activatedMenuTitle) {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.PANEL_BACKGROUND,
+        BridgeAction.CREATE_ALL_NODE_MENU_BACKGROUNDS, opt_activatedMenuTitle);
+  },
+
   /**
    * Creates a new ISearch object, ready to search starting from the current
    * ChromeVox focus.
@@ -160,6 +209,17 @@ BackgroundBridge.PanelBackground = {
   },
 
   /**
+   * @param {number} windowId
+   * @param {number} tabId
+   * @return {!Promise}
+   */
+  async focusTab(windowId, tabId) {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.PANEL_BACKGROUND, BridgeAction.FOCUS_TAB,
+        {windowId, tabId});
+  },
+
+  /**
    * @return {!Promise<{
    *     standardActions: !Array<!chrome.automation.ActionType>,
    *     customActions: !Array<!chrome.automation.CustomAction>
@@ -169,6 +229,12 @@ BackgroundBridge.PanelBackground = {
     return BridgeHelper.sendMessage(
         BridgeTarget.PANEL_BACKGROUND,
         BridgeAction.GET_ACTIONS_FOR_CURRENT_NODE);
+  },
+
+  /** @return {!Promise<!Array<!PanelTabMenuItemData>>} */
+  async getTabMenuData() {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.PANEL_BACKGROUND, BridgeAction.GET_TAB_MENU_DATA);
   },
 
   /**
@@ -181,6 +247,16 @@ BackgroundBridge.PanelBackground = {
     return BridgeHelper.sendMessage(
         BridgeTarget.PANEL_BACKGROUND, BridgeAction.INCREMENTAL_SEARCH,
         {searchStr, dir, opt_nextObject});
+  },
+
+  /**
+   * @param {number} callbackNodeIndex
+   * @return {!Promise}
+   */
+  async nodeMenuCallback(callbackNodeIndex) {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.PANEL_BACKGROUND, BridgeAction.NODE_MENU_CALLBACK,
+        callbackNodeIndex);
   },
 
   /**
@@ -218,5 +294,31 @@ BackgroundBridge.PanelBackground = {
   async waitForPanelCollapse() {
     return BridgeHelper.sendMessage(
         BridgeTarget.PANEL_BACKGROUND, BridgeAction.WAIT_FOR_PANEL_COLLAPSE);
+  },
+};
+
+BackgroundBridge.UserActionMonitor = {
+  /**
+   * Creates a new user action monitor.
+   * Resolves after all actions in |actions| have been observed.
+   * @param {!Array<{
+   *     type: string,
+   *     value: (string|Object),
+   *     beforeActionMsg: (string|undefined),
+   *     afterActionMsg: (string|undefined)}>} actions
+   * @return {!Promise}
+   */
+  async create(actions) {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.USER_ACTION_MONITOR, BridgeAction.CREATE, actions);
+  },
+
+  /**
+   * Destroys the user action monitor.
+   * @return {!Promise}
+   */
+  async destroy() {
+    return BridgeHelper.sendMessage(
+        BridgeTarget.USER_ACTION_MONITOR, BridgeAction.DESTROY);
   },
 };

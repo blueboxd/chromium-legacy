@@ -5,36 +5,25 @@
 package org.chromium.chrome.browser.history_clusters;
 
 import android.view.View;
-import android.widget.TextView;
+import android.view.View.OnClickListener;
 
 import org.chromium.chrome.browser.history_clusters.HistoryClustersToolbarProperties.QueryState;
 import org.chromium.components.browser_ui.widget.selectable_list.SelectableListLayout;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.widget.ChromeImageButton;
 
 class HistoryClustersViewBinder {
     public static void bindVisitView(PropertyModel model, View view, PropertyKey key) {
         HistoryClustersItemView itemView = (HistoryClustersItemView) view;
-        if (key == HistoryClustersItemProperties.ICON_DRAWABLE) {
+        if (key == HistoryClustersItemProperties.CLICK_HANDLER) {
+            OnClickListener clickListener = model.get(HistoryClustersItemProperties.CLICK_HANDLER);
+            itemView.setOnClickListener(clickListener);
+        } else if (key == HistoryClustersItemProperties.ICON_DRAWABLE) {
             itemView.setIconDrawable(model.get(HistoryClustersItemProperties.ICON_DRAWABLE));
         } else if (key == HistoryClustersItemProperties.TITLE) {
             itemView.setTitleText(model.get(HistoryClustersItemProperties.TITLE));
         } else if (key == HistoryClustersItemProperties.URL) {
             itemView.setHostText(model.get(HistoryClustersItemProperties.URL));
-        }
-    }
-
-    public static void bindBottomSheetToolbar(PropertyModel model, View view, PropertyKey key) {
-        if (key
-                == HistoryClustersBottomSheetToolbarProperties
-                           .OPEN_ACTIVITY_BUTTON_CLICK_LISTENER) {
-            ChromeImageButton openButton = view.findViewById(R.id.open_history_activity);
-            openButton.setOnClickListener(model.get(HistoryClustersBottomSheetToolbarProperties
-                                                            .OPEN_ACTIVITY_BUTTON_CLICK_LISTENER));
-        } else if (key == HistoryClustersBottomSheetToolbarProperties.QUERY_TEXT) {
-            TextView textView = view.findViewById(R.id.query);
-            textView.setText(model.get(HistoryClustersBottomSheetToolbarProperties.QUERY_TEXT));
         }
     }
 

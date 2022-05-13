@@ -8,8 +8,8 @@ import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/js/cr.m.js';
 import 'chrome://resources/js/util.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import '../shared/animations_css.js';
-import '../shared/chooser_shared_css.js';
+import '../shared/animations.css.js';
+import '../shared/chooser_shared.css.js';
 import '../shared/step_indicator.js';
 import '../strings.m.js';
 
@@ -22,7 +22,7 @@ import {afterNextRender, PolymerElement} from 'chrome://resources/polymer/v3_0/p
 import {navigateToNextStep, NavigationMixin} from '../navigation_mixin.js';
 import {BookmarkBarManager, BookmarkProxy, BookmarkProxyImpl} from '../shared/bookmark_proxy.js';
 import {ModuleMetricsManager} from '../shared/module_metrics_proxy.js';
-import {stepIndicatorModel} from '../shared/nux_types.js';
+import {StepIndicatorModel} from '../shared/nux_types.js';
 
 import {GoogleAppProxy, GoogleAppProxyImpl} from './google_app_proxy.js';
 import {GoogleAppsMetricsProxyImpl} from './google_apps_metrics_proxy.js';
@@ -88,7 +88,7 @@ export class NuxGoogleAppsElement extends NuxGoogleAppsElementBase {
   private wasBookmarkBarShownOnInit_: boolean = false;
   private appList_: AppItem[]|null = null;
   private hasAppsSelected_: boolean = true;
-  indicatorModel?: stepIndicatorModel;
+  indicatorModel?: StepIndicatorModel;
 
   constructor() {
     super();

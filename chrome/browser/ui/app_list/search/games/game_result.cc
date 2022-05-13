@@ -14,9 +14,13 @@
 #include "ash/public/cpp/style/color_provider.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "base/bind.h"
+#include "base/containers/fixed_flat_set.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/apps/app_discovery_service/app_discovery_service.h"
 #include "chrome/browser/apps/app_discovery_service/game_extras.h"
+#include "chrome/browser/apps/app_service/app_service_proxy.h"
+#include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/app_list/search/common/search_result_util.h"
@@ -31,6 +35,9 @@ namespace app_list {
 namespace {
 
 constexpr char16_t kA11yDelimiter[] = u", ";
+
+constexpr auto kAllowedLaunchAppIds = base::MakeFixedFlatSet<base::StringPiece>(
+    {"egmafekfmcnknbdlbfbhafbllplmjlhn", "pnkcfpnngfokcnnijgkllghjlhkailce"});
 
 bool IsDarkModeEnabled() {
   // TODO(crbug.com/1258415): Simplify this logic once the productivity launcher
@@ -74,7 +81,9 @@ GameResult::GameResult(Profile* profile,
   DCHECK(game.GetSourceExtras());
   DCHECK(game.GetSourceExtras()->AsGameExtras());
 
-  launch_url_ = game.GetSourceExtras()->AsGameExtras()->GetDeeplinkUrl();
+  const auto* extras = game.GetSourceExtras()->AsGameExtras();
+  launch_url_ = extras->GetDeeplinkUrl();
+  is_icon_masking_allowed_ = extras->GetIsIconMaskingAllowed();
 
   set_id(launch_url_.spec());
   set_relevance(relevance);
@@ -93,6 +102,24 @@ GameResult::GameResult(Profile* profile,
 GameResult::~GameResult() = default;
 
 void GameResult::Open(int event_flags) {
+  // TODO(crbug.com/1305880): Add browser tests for the launch logic.
+
+  // Launch the app directly if possible.
+  auto* proxy = apps::AppServiceProxyFactory::GetForProfile(profile_);
+  if (proxy) {
+    std::vector<std::string> app_ids =
+        proxy->GetAppIdsForUrl(launch_url_, /*exclude_browsers=*/true,
+                               /*exclude_browser_tab_apps=*/true);
+    for (const auto& app_id : app_ids) {
+      if (kAllowedLaunchAppIds.contains(app_id)) {
+        proxy->LaunchAppWithUrl(app_id, event_flags, launch_url_,
+                                apps::mojom::LaunchSource::kFromAppListQuery);
+        return;
+      }
+    }
+  }
+
+  // If no suitable app was found, launch the URL in the browser.
   list_controller_->OpenURL(profile_, launch_url_, ui::PAGE_TRANSITION_TYPED,
                             ui::DispositionFromEventFlags(event_flags));
 }
@@ -119,8 +146,14 @@ void GameResult::OnIconLoaded(const gfx::ImageSkia& image,
     return;
   }
 
-  // TODO(crbug.com/1305880): This code resizes and sets the provided image into
-  // a white circle. This may change if more game sources are introduced.
+  if (is_icon_masking_allowed_) {
+    // TODO(crbug.com/1305880): Check that this is set in unit tests. This
+    // relies on the AppDiscoveryService.
+    SetIcon(IconInfo(image, GetAppIconDimension(), IconShape::kCircle));
+    return;
+  }
+
+  // Resize and set the provided image into a white circle.
   const int radius = dimension_ / 2;
   const int size = MaxSquareLengthForRadius(radius);
   const gfx::ImageSkia resized_image =

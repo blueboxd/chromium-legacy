@@ -202,8 +202,6 @@ public class ContextualSearchManager
     private boolean mShouldLoadDelayedSearch;
 
     private boolean mIsShowingPromo;
-    private boolean mIsMandatoryPromo;
-    private boolean mDidLogPromoOutcome;
 
     /**
      * Whether contextual search manager is currently promoting a tab. We should be ignoring hide
@@ -370,7 +368,6 @@ public class ContextualSearchManager
         mRedirectHandler = RedirectHandler.create();
 
         mIsShowingPromo = false;
-        mDidLogPromoOutcome = false;
         mDidStartLoadingResolvedSearchRequest = false;
         mWereSearchResultsSeen = false;
         mIsInitialized = true;
@@ -500,13 +497,8 @@ public class ContextualSearchManager
         mRelatedSearches = null;
         mIsRelatedSearchesSerp = false;
 
-        if (mIsShowingPromo && !mDidLogPromoOutcome && mSearchPanel.wasPromoInteractive()) {
-            ContextualSearchUma.logPromoOutcome(mWasActivatedByTap, mIsMandatoryPromo);
-            mDidLogPromoOutcome = true;
-        }
-
         mIsShowingPromo = false;
-        mSearchPanel.setIsPromoActive(false, false);
+        mSearchPanel.setIsPromoActive(false);
         mSearchPanel.clearRelatedSearches();
         notifyHideContextualSearch();
     }
@@ -580,9 +572,7 @@ public class ContextualSearchManager
         // Note: now that the contextual search has properly started, set the promo involvement.
         if (mPolicy.isPromoAvailable()) {
             mIsShowingPromo = true;
-            mIsMandatoryPromo = mPolicy.isMandatoryPromoAvailable();
-            mDidLogPromoOutcome = false;
-            mSearchPanel.setIsPromoActive(true, mIsMandatoryPromo);
+            mSearchPanel.setIsPromoActive(true);
             mSearchPanel.setDidSearchInvolvePromo();
         }
 
@@ -1569,8 +1559,8 @@ public class ContextualSearchManager
     }
 
     /** Shows the Unhandled Tap UI.  Called by {@link ContextualSearchTabHelper}. */
-    void onShowUnhandledTapUIIfNeeded(int x, int y, int fontSizeDips, int textRunLength) {
-        mSelectionController.handleShowUnhandledTapUIIfNeeded(x, y, fontSizeDips, textRunLength);
+    void onShowUnhandledTapUIIfNeeded(int x, int y) {
+        mSelectionController.handleShowUnhandledTapUIIfNeeded(x, y);
     }
 
     // ============================================================================================
@@ -1854,7 +1844,7 @@ public class ContextualSearchManager
             public void decideSuppression() {
                 mInternalStateController.notifyStartingWorkOn(InternalState.DECIDING_SUPPRESSION);
                 // TODO(donnd): Move handleShouldSuppressTap out of the Selection Controller.
-                mSelectionController.handleShouldSuppressTap(mContext, mInteractionRecorder);
+                mSelectionController.handleShouldSuppressTap(mInteractionRecorder);
             }
 
             /** Starts showing the Tap UI by selecting a word around the current caret. */

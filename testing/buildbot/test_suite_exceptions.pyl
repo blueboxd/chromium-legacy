@@ -511,6 +511,15 @@
           'hard_timeout': 1200,
         },
       },
+      'win11-blink-rel-dummy': {
+        'swarming': {
+          'hard_timeout': 1200,
+        },
+        'args': [
+          '--target',
+          'Release_x64',
+        ],
+      },
     },
   },
   'breakpad_unittests': {
@@ -1882,13 +1891,6 @@
           '--expected-device-id', '1050',
         ],
       },
-      'ChromeOS FYI Release (amd64-generic) (reclient shadow)': {
-        'args': [
-          # Swarming does not report a GPU since tests are run in a VM, but
-          # the VM does report that a GPU is present.
-          '--expected-device-id', '1050',
-        ],
-      },
       'fuchsia-fyi-x64-rel': {
         'args': [
           # Swarming does not report a GPU since tests are run in a VM, but
@@ -1906,16 +1908,6 @@
     },
     'replacements': {
       'ChromeOS FYI Release (amd64-generic)': {
-        'args': {
-          # Swarming does not report a GPU since tests are run in a VM, but
-          # the VM does report that a GPU is present.
-          '--expected-vendor-id': '1af4',
-          # Magic substitution happens after regular replacement, so remove it
-          # now since we are manually applying the expected device ID above.
-          '$$MAGIC_SUBSTITUTION_GPUExpectedDeviceId': None,
-        },
-      },
-      'ChromeOS FYI Release (amd64-generic) (reclient shadow)': {
         'args': {
           # Swarming does not report a GPU since tests are run in a VM, but
           # the VM does report that a GPU is present.
@@ -2118,6 +2110,12 @@
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
+      'android_optional_gpu_tests_rel': {
+        'args': [
+          # See above.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
     },
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
@@ -2157,6 +2155,12 @@
         ],
       },
       'Optional Android Release (Pixel 4)': {
+        'args': [
+          # See above.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
+      'android_optional_gpu_tests_rel': {
         'args': [
           # See above.
           '--extra-browser-args=--disable-wcg-for-test',
@@ -2619,6 +2623,12 @@
           'quickrun_shards': 2,
         },
       },
+      'android_optional_gpu_tests_rel': {
+        'args': [
+          # See above.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
     },
     'replacements': {
       # The V8 builders pass the V8 revision for ${got_revision}, so instead
@@ -2658,6 +2668,12 @@
         ],
       },
       'Optional Android Release (Pixel 4)': {
+        'args': [
+          # See above.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
+      'android_optional_gpu_tests_rel': {
         'args': [
           # See above.
           '--extra-browser-args=--disable-wcg-for-test',
@@ -2768,6 +2784,12 @@
           '--extra-browser-args=--disable-wcg-for-test',
         ],
       },
+      'android_optional_gpu_tests_rel': {
+        'args': [
+          # See above.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
     },
   },
   'screenshot_sync_validating_tests': {
@@ -2783,6 +2805,12 @@
         ],
       },
       'Optional Android Release (Pixel 4)': {
+        'args': [
+          # See above.
+          '--extra-browser-args=--disable-wcg-for-test',
+        ],
+      },
+      'android_optional_gpu_tests_rel': {
         'args': [
           # See above.
           '--extra-browser-args=--disable-wcg-for-test',
@@ -2912,6 +2940,11 @@
       'Mac ASan 64 Tests (1)': {
         'swarming': {
           'shards': 3,
+          },
+      },
+      'Mac11 Tests': {
+        'swarming': {
+          'shards': 4,
         },
       },
       'ToTLinuxTSan': {
@@ -3352,11 +3385,6 @@
           'shards': 30,
         },
       },
-      'ChromeOS FYI Release (amd64-generic) (reclient shadow)': {
-        'swarming': {
-          'shards': 30,
-        },
-      },
     },
   },
   'webgl2_conformance_metal_passthrough_tests': {
@@ -3415,15 +3443,6 @@
       # TODO(crbug.com/1223550): Remove this if the configuration can be sped
       # up.
       'ChromeOS FYI Release (amd64-generic)': {
-        'swarming': {
-          'shards': 30,
-        },
-        # This configuration is tested with the passthrough decoder as well,
-        # which will be shipped in the nearish future, so any failures that
-        # show up with the validating decoder are just an FYI.
-        'experiment_percentage': 100,
-      },
-      'ChromeOS FYI Release (amd64-generic) (reclient shadow)': {
         'swarming': {
           'shards': 30,
         },

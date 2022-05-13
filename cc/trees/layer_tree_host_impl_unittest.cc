@@ -277,6 +277,8 @@ class LayerTreeHostImplTest : public testing::Test,
   void NotifyPaintWorkletStateChange(
       Scheduler::PaintWorkletState state) override {}
   void NotifyThroughputTrackerResults(CustomTrackerResults results) override {}
+  void ReportEventLatency(
+      std::vector<EventLatencyTracker::LatencyData> latencies) override {}
 
   void DidObserveFirstScrollDelay(
       base::TimeDelta first_scroll_delay,
@@ -11647,108 +11649,6 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, CreateETC1UIResource) {
   EXPECT_NE(viz::kInvalidResourceId, id1);
 }
 
-class FrameSinkClient : public TestLayerTreeFrameSinkClient {
- public:
-  explicit FrameSinkClient(
-      scoped_refptr<viz::ContextProvider> display_context_provider)
-      : display_context_provider_(std::move(display_context_provider)) {}
-
-  std::unique_ptr<viz::DisplayCompositorMemoryAndTaskController>
-  CreateDisplayController() override {
-    // In this implementation, no output surface has a real gpu thread, and
-    // there is no overlay support.
-    return nullptr;
-  }
-  std::unique_ptr<viz::SkiaOutputSurface> CreateDisplaySkiaOutputSurface(
-      viz::DisplayCompositorMemoryAndTaskController*) override {
-    return viz::FakeSkiaOutputSurface::Create3d(
-        std::move(display_context_provider_));
-  }
-
-  std::unique_ptr<viz::OutputSurface> CreateDisplayOutputSurface(
-      scoped_refptr<viz::ContextProvider> compositor_context_provider)
-      override {
-    return viz::FakeOutputSurface::Create3d(
-        std::move(display_context_provider_));
-  }
-
-  void DisplayReceivedLocalSurfaceId(
-      const viz::LocalSurfaceId& local_surface_id) override {}
-  void DisplayReceivedCompositorFrame(
-      const viz::CompositorFrame& frame) override {}
-  void DisplayWillDrawAndSwap(
-      bool will_draw_and_swap,
-      viz::AggregatedRenderPassList* render_passes) override {}
-  void DisplayDidDrawAndSwap() override {}
-
- private:
-  scoped_refptr<viz::ContextProvider> display_context_provider_;
-};
-
-using LayerTreeHostImplTestWithRenderer = LayerTreeHostImplTest;
-
-TEST_F(LayerTreeHostImplTestWithRenderer, ShutdownReleasesContext) {
-  viz::DebugRendererSettings debug_settings;
-
-  scoped_refptr<viz::TestContextProvider> context_provider =
-      viz::TestContextProvider::Create();
-  FrameSinkClient test_client(context_provider);
-
-  constexpr bool synchronous_composite = true;
-  constexpr bool disable_display_vsync = false;
-  constexpr double refresh_rate = 60.0;
-  std::unique_ptr<TaskRunnerProvider> task_runner_provider =
-      TaskRunnerProvider::Create(base::ThreadTaskRunnerHandle::Get(), nullptr);
-  auto layer_tree_frame_sink = std::make_unique<TestLayerTreeFrameSink>(
-      context_provider, viz::TestContextProvider::CreateWorker(), nullptr,
-      viz::RendererSettings(), &debug_settings, task_runner_provider.get(),
-      synchronous_composite, disable_display_vsync, refresh_rate);
-  layer_tree_frame_sink->SetClient(&test_client);
-
-  CreateHostImpl(DefaultSettings(), std::move(layer_tree_frame_sink));
-
-  LayerImpl* root = SetupDefaultRootLayer(gfx::Size(10, 10));
-  struct Helper {
-    std::unique_ptr<viz::CopyOutputResult> unprocessed_result;
-    void OnResult(base::OnceClosure finished,
-                  std::unique_ptr<viz::CopyOutputResult> result) {
-      unprocessed_result = std::move(result);
-      std::move(finished).Run();
-    }
-  } helper;
-
-  GetEffectNode(root)->has_copy_request = true;
-  base::RunLoop copy_request_run_loop;
-  GetPropertyTrees(root)->effect_tree_mutable().AddCopyRequest(
-      root->effect_tree_index(),
-      std::make_unique<viz::CopyOutputRequest>(
-          viz::CopyOutputRequest::ResultFormat::RGBA,
-          viz::CopyOutputRequest::ResultDestination::kNativeTextures,
-          base::BindOnce(&Helper::OnResult, base::Unretained(&helper),
-                         copy_request_run_loop.QuitClosure())));
-  DrawFrame();
-
-  auto* sii = context_provider->SharedImageInterface();
-  // The CopyOutputResult has a ref on the viz::ContextProvider and a shared
-  // image allocated.
-  copy_request_run_loop.Run();
-  EXPECT_TRUE(helper.unprocessed_result);
-  EXPECT_FALSE(context_provider->HasOneRef());
-  EXPECT_EQ(1u, sii->shared_image_count());
-
-  host_impl_->ReleaseLayerTreeFrameSink();
-  host_impl_ = nullptr;
-
-  // The texture release callback that was given to the CopyOutputResult has
-  // been canceled, and the shared image deleted.
-  EXPECT_TRUE(context_provider->HasOneRef());
-  EXPECT_EQ(0u, sii->shared_image_count());
-
-  // When resetting the CopyOutputResult, it will run its texture release
-  // callback. This should not cause a crash, etc.
-  helper.unprocessed_result.reset();
-}
-
 // This tests the case where hit testing only on scrollable layers returns a
 // layer that's outside the scroll chain of the first hit test *any* layer. See
 // LayerTreeHostImpl::IsInitialScrollHitTestReliable for details.
@@ -14365,9 +14265,10 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ThumbDragAfterJumpClick) {
   scrollbar->SetBounds(scrollbar_size);
   host_impl_->set_force_smooth_wheel_scrolling_for_testing(true);
 
+  const int thumb_len = 50;
   // Set up the thumb dimensions.
   scrollbar->SetThumbThickness(15);
-  scrollbar->SetThumbLength(50);
+  scrollbar->SetThumbLength(thumb_len);
   scrollbar->SetTrackRect(gfx::Rect(0, 15, 15, 575));
 
   // Set up scrollbar arrows.
@@ -14400,11 +14301,17 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, ThumbDragAfterJumpClick) {
                     .scrollbar_controller_for_testing()
                     ->drag_state_.has_value());
 
-    // This verifies that the jump click delta was accounted for correctly.
+    // This verifies that the start/snap-back position is the scroll position
+    // before any jump-click
     EXPECT_FLOAT_EQ(GetInputHandler()
                         .scrollbar_controller_for_testing()
                         ->drag_state_->scroll_position_at_start_,
-                    243.80952f);
+                    0.0f);
+
+    EXPECT_FLOAT_EQ(GetInputHandler()
+                        .scrollbar_controller_for_testing()
+                        ->drag_state_->drag_origin.y(),
+                    15.0f + thumb_len / 2.0f);
   }
 
   // Tear down the LayerTreeHostImpl before the InputHandlerClient.
@@ -15832,7 +15739,7 @@ TEST_F(MsaaCompatibilityLayerTreeHostImplTest,
 }
 
 TEST_P(ScrollUnifiedLayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
-  // Check page scale factor update in property trees when an update is made
+  // Check page scale factor updates the property trees when an update is made
   // on the active tree.
   CreatePendingTree();
   host_impl_->pending_tree()->PushPageScaleFromMainThread(1, 1, 3);
@@ -15851,20 +15758,26 @@ TEST_P(ScrollUnifiedLayerTreeHostImplTest, UpdatePageScaleFactorOnActiveTree) {
   EXPECT_EQ(gfx::Vector2dF(2, 2), active_tree_node->local.To2dScale());
   EXPECT_EQ(gfx::Point3F(), active_tree_node->origin);
   EXPECT_EQ(2, host_impl_->active_tree()->current_page_scale_factor());
-
-  TransformNode* pending_tree_node =
-      host_impl_->pending_tree()->PageScaleTransformNode();
-  // Before pending tree updates draw properties, its properties are still
-  // based on 1.0 page scale, except for current_page_scale_factor() which is a
-  // shared data between the active and pending trees.
-  EXPECT_TRUE(pending_tree_node->local.IsIdentity());
-  EXPECT_EQ(gfx::Point3F(), pending_tree_node->origin);
-  EXPECT_EQ(2, host_impl_->pending_tree()->current_page_scale_factor());
-  EXPECT_EQ(1, host_impl_->pending_tree()
+  EXPECT_EQ(2, host_impl_->active_tree()
                    ->property_trees()
                    ->transform_tree()
                    .page_scale_factor());
 
+  TransformNode* pending_tree_node =
+      host_impl_->pending_tree()->PageScaleTransformNode();
+
+  // Since the pending tree shares the scale factor with the active tree, its
+  // value and property trees should also have been updated.
+  EXPECT_TRUE(pending_tree_node->local.IsScale2d());
+  EXPECT_EQ(gfx::Vector2dF(2, 2), pending_tree_node->local.To2dScale());
+  EXPECT_EQ(gfx::Point3F(), pending_tree_node->origin);
+  EXPECT_EQ(2, host_impl_->pending_tree()->current_page_scale_factor());
+  EXPECT_EQ(2, host_impl_->pending_tree()
+                   ->property_trees()
+                   ->transform_tree()
+                   .page_scale_factor());
+
+  // Update draw properties doesn't change the correct values
   host_impl_->pending_tree()->set_needs_update_draw_properties();
   UpdateDrawProperties(host_impl_->pending_tree());
   pending_tree_node = host_impl_->pending_tree()->PageScaleTransformNode();

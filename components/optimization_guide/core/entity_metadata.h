@@ -6,8 +6,10 @@
 #define COMPONENTS_OPTIMIZATION_GUIDE_CORE_ENTITY_METADATA_H_
 
 #include <string>
+#include <vector>
 
 #include "base/containers/flat_map.h"
+#include "base/values.h"
 
 namespace optimization_guide {
 
@@ -17,7 +19,8 @@ struct EntityMetadata {
   EntityMetadata(
       const std::string& entity_id,
       const std::string& human_readable_name,
-      const base::flat_map<std::string, float>& human_readable_categories);
+      const base::flat_map<std::string, float>& human_readable_categories,
+      const std::vector<std::string>& human_readable_aliases = {});
   EntityMetadata(const EntityMetadata&);
   ~EntityMetadata();
 
@@ -32,7 +35,12 @@ struct EntityMetadata {
   // contain the top 5 entries based on confidence score.
   base::flat_map<std::string, float> human_readable_categories;
 
+  // The ordered set of aliases for this entity in the user's locale.
+  std::vector<std::string> human_readable_aliases;
+
   std::string ToString() const;
+
+  base::Value AsValue() const;
 
   friend std::ostream& operator<<(std::ostream& out, const EntityMetadata& md);
   friend bool operator==(const EntityMetadata& lhs, const EntityMetadata& rhs);
@@ -52,6 +60,8 @@ struct ScoredEntityMetadata {
   float score;
 
   std::string ToString() const;
+
+  base::Value AsValue() const;
 
   friend std::ostream& operator<<(std::ostream& out,
                                   const ScoredEntityMetadata& md);

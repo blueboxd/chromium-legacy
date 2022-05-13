@@ -114,20 +114,6 @@
       "v8_enable_verify_heap": true
     }
   },
-  "ChromiumOS ASAN Release (reclient shadow)": {
-    "gn_args": {
-      "dcheck_always_on": false,
-      "enable_ipc_fuzzer": true,
-      "is_asan": true,
-      "is_component_build": false,
-      "is_debug": false,
-      "is_lsan": true,
-      "target_os": "chromeos",
-      "use_rbe": true,
-      "use_remoteexec": true,
-      "v8_enable_verify_heap": true
-    }
-  },
   "Libfuzzer Upload Chrome OS ASan": {
     "gn_args": {
       "archive_seed_corpus": false,
@@ -357,8 +343,9 @@
       "pdf_enable_xfa": true,
       "proprietary_codecs": true,
       "symbol_level": 1,
-      "use_goma": true,
-      "use_libfuzzer": true
+      "use_libfuzzer": true,
+      "use_rbe": true,
+      "use_remoteexec": true
     }
   },
   "Libfuzzer Upload iOS Catalyst Debug": {

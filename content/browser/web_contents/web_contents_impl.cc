@@ -365,40 +365,6 @@ bool AnyInnerWebContents(WebContents* web_contents, const Functor& f) {
   return std::any_of(inner_contents.begin(), inner_contents.end(), f);
 }
 
-std::vector<RenderFrameHost*> GetAllFramesImpl(FrameTree& frame_tree,
-                                               bool include_pending) {
-  std::vector<RenderFrameHost*> frame_hosts;
-  for (FrameTreeNode* node : frame_tree.Nodes()) {
-    frame_hosts.push_back(node->current_frame_host());
-    if (include_pending) {
-      RenderFrameHostImpl* pending_frame_host =
-          node->render_manager()->speculative_frame_host();
-      if (pending_frame_host)
-        frame_hosts.push_back(pending_frame_host);
-    }
-  }
-  return frame_hosts;
-}
-
-int SendToAllFramesImpl(FrameTree& frame_tree,
-                        bool include_pending,
-                        IPC::Message* message) {
-  int number_of_messages = 0;
-  std::vector<RenderFrameHost*> frame_hosts =
-      GetAllFramesImpl(frame_tree, include_pending);
-  for (RenderFrameHost* rfh : frame_hosts) {
-    if (!rfh->IsRenderFrameLive())
-      continue;
-
-    ++number_of_messages;
-    IPC::Message* message_copy = new IPC::Message(*message);
-    message_copy->set_routing_id(rfh->GetRoutingID());
-    rfh->Send(message_copy);
-  }
-  delete message;
-  return number_of_messages;
-}
-
 // Returns the set of all WebContentses that are reachable from |web_contents|
 // by applying some combination of
 // WebContents::GetFirstWebContentsInLiveOriginalOpenerChain() and
@@ -1391,13 +1357,6 @@ void WebContentsImpl::ForEachFrame(
   for (FrameTreeNode* node : primary_frame_tree_.Nodes()) {
     on_frame.Run(node->current_frame_host());
   }
-}
-
-int WebContentsImpl::SendToAllFramesIncludingPending(IPC::Message* message) {
-  OPTIONAL_TRACE_EVENT0("content",
-                        "WebContentsImpl::SentToAllFramesIncludingPending");
-  return SendToAllFramesImpl(primary_frame_tree_, /*include_pending=*/true,
-                             message);
 }
 
 void WebContentsImpl::ForEachRenderFrameHost(
@@ -4515,6 +4474,9 @@ void WebContentsImpl::SendActiveState(bool active) {
 }
 
 TextInputManager* WebContentsImpl::GetTextInputManager() {
+  if (suppress_ime_events_for_testing_)
+    return nullptr;
+
   if (GetOuterWebContents())
     return GetOuterWebContents()->GetTextInputManager();
 
@@ -5606,7 +5568,7 @@ void WebContentsImpl::ReadyToCommitNavigation(
         ->controller()
         .ssl_manager()
         ->DidStartResourceResponse(
-            navigation_handle->GetURL(),
+            url::SchemeHostPort(navigation_handle->GetURL()),
             navigation_handle->GetSSLInfo().has_value()
                 ? net::IsCertStatusError(
                       navigation_handle->GetSSLInfo()->cert_status)
@@ -9402,8 +9364,9 @@ std::unique_ptr<PrerenderHandle> WebContentsImpl::StartPrerendering(
       prerendering_url, trigger_type, embedder_histogram_suffix,
       content::Referrer(), /*initiator_origin=*/absl::nullopt, prerendering_url,
       content::ChildProcessHost::kInvalidUniqueID,
-      /*initiator_frame_token=*/absl::nullopt, ukm::kInvalidSourceId,
-      page_transition, url_match_predicate);
+      /*initiator_frame_token=*/absl::nullopt,
+      /*initiator_frame_tree_node_id=*/RenderFrameHost::kNoFrameTreeNodeId,
+      ukm::kInvalidSourceId, page_transition, url_match_predicate);
   int frame_tree_node_id =
       GetPrerenderHostRegistry()->CreateAndStartHost(attributes, *this);
 

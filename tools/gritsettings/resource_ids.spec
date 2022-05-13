@@ -472,7 +472,7 @@
     "META": {"sizes": {"includes": [100],}},
     "includes": [2910],
   },
-  "ash/resources/ash_resources.grd": {
+  "chromeos/ash/resources/ash_resources.grd": {
     "includes": [2915],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ash/webui/camera_app_ui/ash_camera_app_resources.grd": {
@@ -937,7 +937,7 @@
     "structures": [4880],
   },
   "<(SHARED_INTERMEDIATE_DIR)/ui/webui/resources/webui_generated_resources.grd": {
-    "META": {"sizes": {"includes": [800]}},
+    "META": {"sizes": {"includes": [900]}},
     "includes": [4900],
   },
   "weblayer/weblayer_resources.grd": {

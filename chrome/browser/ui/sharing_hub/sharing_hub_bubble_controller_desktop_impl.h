@@ -12,6 +12,7 @@
 #include "chrome/browser/ui/sharing_hub/sharing_hub_bubble_controller.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "third_party/blink/public/mojom/opengraph/metadata.mojom-forward.h"
 #include "ui/base/models/image_model.h"
 
 class Profile;
@@ -19,6 +20,11 @@ class Profile;
 namespace content {
 class WebContents;
 }  // namespace content
+
+namespace image_fetcher {
+class ImageFetcher;
+struct RequestMetadata;
+}  // namespace image_fetcher
 
 namespace sharing_hub {
 
@@ -88,6 +94,26 @@ class SharingHubBubbleControllerDesktopImpl
 
   SharingHubModel* GetSharingHubModel();
 
+  // This method asynchronously fetches the preview image from the page;
+  // depending on the UI variant this may be either the favicon or a
+  // high-quality preview image supplied by the page. Either way, the resulting
+  // image is passed down to the preview view.
+  void FetchImageForPreview();
+
+  // This method fetches the webcontents' favicon, if it has one, and updates
+  // the preview view to contain it.
+  void FetchFaviconForPreview();
+
+  // These three methods handle fetching and displaying high-quality preview
+  // images. The first starts the process of fetching the page's OpenGraph
+  // metadata. The second receives the resulting metadata and issues a request
+  // to fetch and decode the referenced image. The third takes the received HQ
+  // preview image and passes it to the preview view for display.
+  void FetchHQImageForPreview();
+  void OnGetOpenGraphMetadata(blink::mojom::OpenGraphMetadataPtr metadata);
+  void OnGetHQImage(const gfx::Image& image,
+                    const image_fetcher::RequestMetadata&);
+
   // Weak reference. Will be nullptr if no bubble is currently shown.
   raw_ptr<SharingHubBubbleView> sharing_hub_bubble_view_ = nullptr;
   // Cached reference to the model.
@@ -95,6 +121,8 @@ class SharingHubBubbleControllerDesktopImpl
 
   base::RepeatingCallbackList<void(ui::ImageModel)>
       preview_image_changed_callbacks_;
+
+  std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher_;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };

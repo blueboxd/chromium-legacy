@@ -241,6 +241,7 @@
 #include "third_party/blink/public/mojom/loader/resource_load_info.mojom.h"
 #include "third_party/blink/public/mojom/loader/transferrable_url_loader.mojom.h"
 #include "third_party/blink/public/mojom/navigation/navigation_params.mojom.h"
+#include "third_party/blink/public/mojom/opengraph/metadata.mojom.h"
 #include "third_party/blink/public/mojom/page/display_cutout.mojom.h"
 #include "third_party/blink/public/mojom/scroll/scroll_into_view_params.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
@@ -383,6 +384,14 @@ typedef std::unordered_map<GlobalRenderFrameHostId,
     RoutingIDFrameMap;
 base::LazyInstance<RoutingIDFrameMap>::DestructorAtExit g_routing_id_frame_map =
     LAZY_INSTANCE_INITIALIZER;
+
+// A global set of all sandboxed RenderFrameHosts that could be isolated from
+// the rest of their SiteInstance.
+typedef std::unordered_set<GlobalRenderFrameHostId,
+                           GlobalRenderFrameHostIdHasher>
+    RoutingIDIsolatableSandboxedIframesSet;
+base::LazyInstance<RoutingIDIsolatableSandboxedIframesSet>::DestructorAtExit
+    g_routing_id_isolatable_sandboxed_iframes_set = LAZY_INSTANCE_INITIALIZER;
 
 using TokenFrameMap = std::unordered_map<blink::LocalFrameToken,
                                          RenderFrameHostImpl*,
@@ -1072,6 +1081,19 @@ bool IsWindowPlacementGranted(RenderFrameHost* host) {
          blink::mojom::PermissionStatus::GRANTED;
 }
 
+bool IsOpenGraphMetadataValid(const blink::mojom::OpenGraphMetadata* metadata) {
+  return !metadata->image || metadata->image->SchemeIsHTTPOrHTTPS();
+}
+
+void ForwardOpenGraphMetadataIfValid(
+    base::OnceCallback<void(blink::mojom::OpenGraphMetadataPtr)> callback,
+    blink::mojom::OpenGraphMetadataPtr metadata) {
+  if (IsOpenGraphMetadataValid(metadata.get()))
+    std::move(callback).Run(std::move(metadata));
+  else
+    std::move(callback).Run({});
+}
+
 }  // namespace
 
 class RenderFrameHostImpl::SubresourceLoaderFactoriesConfig {
@@ -1475,19 +1497,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 
   InitializePolicyContainerHost(renderer_initiated_creation_of_main_frame);
 
-  if (policy_container_host_) {
-    // The initial empty documents sandbox flags is the union from:
-    // - The parent or opener document's sandbox flags inherited by policy
-    //   container.
-    // - The frame's sandbox flags, contained in browsing_context_state. This
-    //   are either:
-    //   1. For iframe: the parent + iframe.sandbox attribute.
-    //   2. For popups: the opener if "allow-popups-to-escape-sandbox" isn't
-    //   set.
-    policy_container_host_->set_sandbox_flags(
-        browsing_context_state_->effective_frame_policy().sandbox_flags);
-  }
-
   InitializePrivateNetworkRequestPolicy();
 
   unload_event_monitor_timeout_ =
@@ -1562,6 +1571,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   // return |this|.
   g_routing_id_frame_map.Get().erase(
       GlobalRenderFrameHostId(GetProcess()->GetID(), routing_id_));
+
+  // Remove this object from the isolatable sandboxed iframe set as well, if
+  // necessary.
+  g_routing_id_isolatable_sandboxed_iframes_set.Get().erase(GetGlobalId());
 
   // When a RenderFrameHostImpl is deleted, it may still contain children. This
   // can happen with the unload timer. It causes a RenderFrameHost to delete
@@ -2199,6 +2212,16 @@ void RenderFrameHostImpl::GetCanonicalUrl(
   }
 }
 
+void RenderFrameHostImpl::GetOpenGraphMetadata(
+    base::OnceCallback<void(blink::mojom::OpenGraphMetadataPtr)> callback) {
+  if (IsRenderFrameCreated()) {
+    GetAssociatedLocalFrame()->GetOpenGraphMetadata(
+        base::BindOnce(&ForwardOpenGraphMetadataIfValid, std::move(callback)));
+  } else {
+    std::move(callback).Run({});
+  }
+}
+
 bool RenderFrameHostImpl::IsErrorDocument() {
   // This shouldn't be called before committing the document as this value is
   // set during call to RenderFrameHostImpl::DidNavigate which happens after
@@ -2783,40 +2806,44 @@ void RenderFrameHostImpl::InitializePolicyContainerHost(
 
   if (parent_) {
     SetPolicyContainerHost(parent_->policy_container_host()->Clone());
-    return;
-  }
-
-  if (frame_tree_node_->opener()) {
+  } else if (frame_tree_node_->opener()) {
     SetPolicyContainerHost(frame_tree_node_->opener()
                                ->current_frame_host()
                                ->policy_container_host()
                                ->Clone());
-    return;
+  } else {
+    PolicyContainerPolicies policies;
+
+    // Main frames created by the browser are treated as belonging the `local`
+    // address space, so that they can make requests to any address space
+    // unimpeded. The only way to execute code in such a context is to inject it
+    // via DevTools, WebView APIs, or extensions; it is impossible to do so with
+    // Web Platform means only.
+    //
+    // See also https://crbug.com/1191161.
+    //
+    // We also exclude prerendering from this case manually, since prendering
+    // render frame hosts are unconditionally created with the
+    // `renderer_initiated_creation_of_main_frame` set to false, even though the
+    // frames arguably are renderer-created.
+    //
+    // TODO(https://crbug.com/1194421): Address the prerendering case.
+    if (is_main_frame() && !renderer_initiated_creation_of_main_frame &&
+        lifecycle_state_ != LifecycleStateImpl::kPrerendering) {
+      policies.ip_address_space = network::mojom::IPAddressSpace::kLocal;
+    }
+
+    SetPolicyContainerHost(
+        base::MakeRefCounted<PolicyContainerHost>(std::move(policies)));
   }
 
-  PolicyContainerPolicies policies;
-
-  // Main frames created by the browser are treated as belonging the `local`
-  // address space, so that they can make requests to any address space
-  // unimpeded. The only way to execute code in such a context is to inject it
-  // via DevTools, WebView APIs, or extensions; it is impossible to do so with
-  // Web Platform means only.
-  //
-  // See also https://crbug.com/1191161.
-  //
-  // We also exclude prerendering from this case manually, since prendering
-  // render frame hosts are unconditionally created with the
-  // `renderer_initiated_creation_of_main_frame` set to false, even though the
-  // frames arguably are renderer-created.
-  //
-  // TODO(https://crbug.com/1194421): Address the prerendering case.
-  if (is_main_frame() && !renderer_initiated_creation_of_main_frame &&
-      lifecycle_state_ != LifecycleStateImpl::kPrerendering) {
-    policies.ip_address_space = network::mojom::IPAddressSpace::kLocal;
-  }
-
-  SetPolicyContainerHost(
-      base::MakeRefCounted<PolicyContainerHost>(std::move(policies)));
+  // The initial empty documents sandbox flags is the frame's sandbox flags,
+  // contained in browsing_context_state. This are either:
+  //   1. For iframe: the parent + iframe.sandbox attribute.
+  //   2. For popups: the opener if "allow-popups-to-escape-sandbox" isn't
+  //   set.
+  policy_container_host_->set_sandbox_flags(
+      browsing_context_state_->effective_frame_policy().sandbox_flags);
 }
 
 void RenderFrameHostImpl::SetPolicyContainerHost(
@@ -7247,10 +7274,6 @@ void RenderFrameHostImpl::GetKeepAliveHandleFactory(
   if (GetProcess()->AreRefCountsDisabled())
     return;
 
-  if (base::FeatureList::IsEnabled(network::features::kDisableKeepaliveFetch)) {
-    return;
-  }
-
   keep_alive_handle_factory_.Bind(std::move(receiver));
 }
 
@@ -7394,12 +7417,13 @@ void RenderFrameHostImpl::BeginNavigation(
 }
 
 void RenderFrameHostImpl::SubresourceResponseStarted(
-    const GURL& url,
+    const url::SchemeHostPort& final_response_url,
     net::CertStatus cert_status) {
-  OPTIONAL_TRACE_EVENT1(
-      "content", "RenderFrameHostImpl::SubresourceResponseStarted", "url", url);
+  OPTIONAL_TRACE_EVENT1("content",
+                        "RenderFrameHostImpl::SubresourceResponseStarted",
+                        "url", final_response_url.GetURL());
   frame_tree_->controller().ssl_manager()->DidStartResourceResponse(
-      url, cert_status);
+      final_response_url, cert_status);
 }
 
 void RenderFrameHostImpl::ResourceLoadComplete(
@@ -9740,11 +9764,26 @@ void RenderFrameHostImpl::ResetPermissionsPolicy() {
         blink::PermissionsPolicy::CreateForFencedFrame(last_committed_origin_);
     return;
   }
+
   RenderFrameHostImpl* parent_frame_host = GetParent();
+  auto isolation_info = GetSiteInstance()->GetWebExposedIsolationInfo();
+
+  if (!parent_frame_host && isolation_info.is_isolated_application()) {
+    // In Isolated Apps, the top level frame should use the policy declared in
+    // the Web App Manifest.
+    blink::ParsedPermissionsPolicy manifest_policy =
+        GetContentClient()->browser()->GetPermissionsPolicyForIsolatedApp(
+            GetBrowserContext(), isolation_info.origin());
+    permissions_policy_ = blink::PermissionsPolicy::CreateFromParsedPolicy(
+        manifest_policy, last_committed_origin_);
+    return;
+  }
+
   const blink::PermissionsPolicy* parent_policy =
       parent_frame_host ? parent_frame_host->permissions_policy() : nullptr;
   blink::ParsedPermissionsPolicy container_policy =
       browsing_context_state_->effective_frame_policy().container_policy;
+
   permissions_policy_ = blink::PermissionsPolicy::CreateFromParentPolicy(
       parent_policy, container_policy, last_committed_origin_);
 }
@@ -10299,7 +10338,8 @@ void RenderFrameHostImpl::GetVirtualAuthenticatorManager(
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kEnableWebAuthDeprecatedMojoTestingApi)) {
     auto* environment_singleton = AuthenticatorEnvironmentImpl::GetInstance();
-    environment_singleton->EnableVirtualAuthenticatorFor(frame_tree_node_);
+    environment_singleton->EnableVirtualAuthenticatorFor(frame_tree_node_,
+                                                         /*enable_ui=*/false);
     environment_singleton->AddVirtualAuthenticatorReceiver(frame_tree_node_,
                                                            std::move(receiver));
   }
@@ -10815,6 +10855,112 @@ blink::mojom::ReferrerPtr GetReferrerForDidCommitParams(
   return request->GetReferrer().Clone();
 }
 
+// static
+// This function logs metrics about potentially isolatable sandboxed iframes
+// that are tracked through calls to UpdateIsolatableSandboxedIframeTracking().
+// In addition to reporting the number of potential OOPSIFs, it also reports the
+// number of unique origins encountered (to give insight into potential
+// behavior if a per-origin isolation model was implemented), and it counts the
+// actual number of RenderProcessHosts isolating OOPSIFs using the current
+// per-site isolation model.
+void RenderFrameHost::LogSandboxedIframesIsolationMetrics() {
+  RoutingIDIsolatableSandboxedIframesSet* oopsifs =
+      g_routing_id_isolatable_sandboxed_iframes_set.Pointer();
+
+  base::UmaHistogramCounts1000("SiteIsolation.IsolatableSandboxedIframes",
+                               oopsifs->size());
+
+  // Count the number of unique origins across all the isolatable sandboxed
+  // iframes. This will give us a sense of the potential process overhead if we
+  // chose a per-origin process model for isolating these frames instead of the
+  // per-site model we plan to use. We use the precursor SchemeHostPort rather
+  // than the url::Origin, which is always opaque in these cases.
+  {
+    std::set<SiteInfo> sandboxed_site_infos;
+    std::set<url::SchemeHostPort> sandboxed_origins;
+    for (auto rfh_global_id : *oopsifs) {
+      auto* rfhi = RenderFrameHostImpl::FromID(rfh_global_id);
+      DCHECK(rfhi->GetLastCommittedOrigin().opaque());
+      sandboxed_origins.insert(
+          rfhi->GetLastCommittedOrigin().GetTupleOrPrecursorTupleIfOpaque());
+      sandboxed_site_infos.insert(rfhi->GetSiteInstance()->GetSiteInfo());
+    }
+    base::UmaHistogramCounts1000(
+        "SiteIsolation.IsolatableSandboxedIframes.UniqueOrigins",
+        sandboxed_origins.size());
+    base::UmaHistogramCounts1000(
+        "SiteIsolation.IsolatableSandboxedIframes.UniqueSites",
+        sandboxed_site_infos.size());
+  }
+
+  // Walk the set and count the number of unique RenderProcessHosts. Using a set
+  // allows us to accurately measure process overhead, including cases where
+  // SiteInstances from multiple BrowsingInstances are coalesced into a single
+  // RenderProcess.
+  std::set<RenderProcessHost*> sandboxed_rphs;
+  for (auto rfh_global_id : *oopsifs) {
+    auto* rfhi = FromID(rfh_global_id);
+    DCHECK(rfhi);
+    auto* site_instance =
+        static_cast<SiteInstanceImpl*>(rfhi->GetSiteInstance());
+    DCHECK(site_instance->HasProcess());
+    if (site_instance->GetSiteInfo().is_sandboxed())
+      sandboxed_rphs.insert(site_instance->GetProcess());
+  }
+  // There should be no sandboxed RPHs if the feature isn't enabled.
+  DCHECK(SiteIsolationPolicy::AreIsolatedSandboxedIframesEnabled() ||
+         sandboxed_rphs.size() == 0);
+  base::UmaHistogramCounts1000(
+      "Memory.RenderProcessHost.Count.SandboxedIframeOverhead",
+      sandboxed_rphs.size());
+}
+
+void RenderFrameHostImpl::UpdateIsolatableSandboxedIframeTracking() {
+  RoutingIDIsolatableSandboxedIframesSet* oopsifs =
+      g_routing_id_isolatable_sandboxed_iframes_set.Pointer();
+  GlobalRenderFrameHostId global_id = GetGlobalId();
+
+  // Check if the flags are correct.
+  DCHECK(policy_container_host_);
+  bool frame_is_isolatable =
+      IsSandboxed(network::mojom::WebSandboxFlags::kOrigin);
+
+  if (frame_is_isolatable) {
+    // Limit the "isolatable" sandboxed frames to those that are either in the
+    // same SiteInstance as their parent/opener (and thus could be isolated), or
+    // that are already isolated due to sandbox flags.
+    GURL url = GetLastCommittedURL();
+    if (url.IsAboutBlank() || url.is_empty()) {
+      frame_is_isolatable = false;
+    } else {
+      // Since this frame could be a main frame, we need to consider the
+      // SiteInstance of either the parent or opener (if either exists) of this
+      // frame, to see if the url can be placed in an OOPSIF, i.e. it's not
+      // already isolated because of being cross-site.
+      RenderFrameHost* frame_owner = GetParent();
+      if (!frame_owner && frame_tree_node_->opener())
+        frame_owner = frame_tree_node_->opener()->current_frame_host();
+
+      if (!frame_owner) {
+        frame_is_isolatable = false;
+      } else if (GetSiteInstance()->GetSiteInfo().is_sandboxed()) {
+        DCHECK(frame_is_isolatable);
+      } else if (frame_owner->GetSiteInstance() != GetSiteInstance()) {
+        // If this host's SiteInstance isn't already marked as is_sandboxed
+        // (with a frame owner), and yet the SiteInstance doesn't match that of
+        // our parent/opener, then it is already isolated for some other reason
+        // (cross-site, origin-keyed, etc.).
+        frame_is_isolatable = false;
+      }
+    }
+  }
+
+  if (frame_is_isolatable)
+    oopsifs->insert(global_id);
+  else
+    oopsifs->erase(global_id);
+}
+
 bool RenderFrameHostImpl::DidCommitNavigationInternal(
     std::unique_ptr<NavigationRequest> navigation_request,
     mojom::DidCommitProvisionalLoadParamsPtr params,
@@ -11172,6 +11318,8 @@ void RenderFrameHostImpl::DidCommitNewDocument(
   media_device_id_salt_base_ = BrowserContext::CreateRandomMediaDeviceIDSalt();
 
   accessibility_fatal_error_count_ = 0;
+
+  UpdateIsolatableSandboxedIframeTracking();
 }
 
 // TODO(arthursonzogni): Below, many NavigationRequest's objects are passed from

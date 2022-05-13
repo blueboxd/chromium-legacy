@@ -540,6 +540,8 @@ void InstallableManager::RunCallback(
     has_maskable_splash_icon = (splash_icon->purpose == IconPurpose::MASKABLE);
   }
 
+  bool worker_check_passed = worker_->has_worker || !params.has_worker;
+
   InstallableData data = {
       std::move(errors),
       manifest_url(),
@@ -552,7 +554,7 @@ void InstallableManager::RunCallback(
       has_maskable_splash_icon,
       screenshots_,
       valid_manifest_->is_valid,
-      worker_->has_worker,
+      worker_check_passed,
   };
 
   std::move(task.callback).Run(data);
@@ -985,12 +987,8 @@ void InstallableManager::OnDestruct(content::ServiceWorkerContext* context) {
   service_worker_context_ = nullptr;
 }
 
-void InstallableManager::DidFinishNavigation(
-    content::NavigationHandle* handle) {
-  if (handle->IsInPrimaryMainFrame() && handle->HasCommitted() &&
-      !handle->IsSameDocument()) {
-    Reset(USER_NAVIGATED);
-  }
+void InstallableManager::PrimaryPageChanged(content::Page& page) {
+  Reset(USER_NAVIGATED);
 }
 
 void InstallableManager::DidUpdateWebManifestURL(content::RenderFrameHost* rfh,

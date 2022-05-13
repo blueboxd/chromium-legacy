@@ -22,6 +22,7 @@
 #include "components/site_engagement/content/site_engagement_service.h"
 #include "components/webapps/browser/banners/app_banner_metrics.h"
 #include "components/webapps/browser/banners/app_banner_settings_helper.h"
+#include "components/webapps/browser/features.h"
 #include "components/webapps/browser/installable/installable_data.h"
 #include "components/webapps/browser/installable/installable_manager.h"
 #include "components/webapps/browser/installable/installable_metrics.h"
@@ -364,8 +365,8 @@ InstallableParams AppBannerManager::ParamsToPerformInstallableWebAppCheck() {
   InstallableParams params;
   params.valid_primary_icon = true;
   params.valid_manifest = true;
-  params.has_worker = true;
-  params.wait_for_worker = true;
+  params.has_worker = !features::SkipBannerServiceWorkerCheck();
+  params.wait_for_worker = !features::SkipBannerServiceWorkerCheck();
 
   return params;
 }
@@ -392,10 +393,23 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     return;
 
   UpdateState(State::ACTIVE);
-  if (data.has_worker && data.valid_manifest)
+  if (data.worker_check_passed && data.valid_manifest)
     TrackDisplayEvent(DISPLAY_EVENT_WEB_APP_BANNER_REQUESTED);
 
   auto error = data.NoBlockingErrors() ? NO_ERROR_DETECTED : data.errors[0];
+
+  // When |features::SkipInstallServiceWorkerCheck| is true, a service worker is
+  // still required to display the banner prompt. This would mean that while a
+  // banner may not appear, the site is still consider installabled if it only
+  // failed service worker checks.
+  bool worker_errors_ignored_for_installs = false;
+  if (features::SkipInstallServiceWorkerCheck() &&
+      data.HasErrorOnlyServiceWorkerErrors()) {
+    DCHECK(error != NO_ERROR_DETECTED);
+    worker_errors_ignored_for_installs = true;
+    error = NO_ERROR_DETECTED;
+  }
+
   if (error != NO_ERROR_DETECTED) {
     if (error == NO_MATCHING_SERVICE_WORKER)
       TrackDisplayEvent(DISPLAY_EVENT_LACKS_SERVICE_WORKER);
@@ -420,10 +434,19 @@ void AppBannerManager::OnDidPerformInstallableWebAppCheck(
     return;
   }
 
+  if (worker_errors_ignored_for_installs) {
+    DCHECK(data.HasErrorOnlyServiceWorkerErrors());
+
+    SetInstallableWebAppCheckResult(
+        InstallableWebAppCheckResult::kYes_ByUserRequest);
+    Stop(SERVICE_WORKER_NOT_REQUIRED);
+    return;
+  }
+
   SetInstallableWebAppCheckResult(
       InstallableWebAppCheckResult::kYes_Promotable);
 
-  DCHECK(data.has_worker && data.valid_manifest);
+  DCHECK(data.worker_check_passed && data.valid_manifest);
   DCHECK(!data.primary_icon_url.is_empty());
   DCHECK(data.primary_icon);
 

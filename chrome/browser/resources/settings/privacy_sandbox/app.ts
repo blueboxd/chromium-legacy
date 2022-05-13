@@ -1,7 +1,7 @@
 // Copyright 2020 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-import 'chrome://resources/cr_elements/cr_page_host_style_css.js';
+import 'chrome://resources/cr_elements/cr_page_host_style.css.js';
 import 'chrome://resources/cr_elements/shared_style_css.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import './icons.js';
@@ -386,30 +386,6 @@ export class PrivacySandboxAppElement extends PrivacySandboxAppElementBase {
     const tooltip = this.shadowRoot!.querySelector<PaperTooltipElement>(
         target.id === 'topicsTooltipIcon' ? '#topicsTooltip' :
                                             '#fledgeTooltip')!;
-
-    // Directly inject the required style into the stylesheets of the paper
-    // tooltip element. This is a workaround for CSS mixin properties seemingly
-    // being removed in optimized WebUI builds, and the paper-tooltip not
-    // supporting other styling methods.
-    // TODO(crbug.com/1308262): Expose required style hooks on paper-tooltip
-    const sheet = new CSSStyleSheet();
-    sheet.replaceSync(`
-      #tooltip {
-            border-radius: 4px;
-            box-shadow: var(--cr-elevation-2);
-            font-family: Roboto, Arial, sans-serif;
-            font-size: inherit;
-            font-weight: 400;
-            line-height: 154%;  /* 20px. */
-            margin: 0 4px;
-      }`);
-    const elemStyleSheets = tooltip.shadowRoot!.adoptedStyleSheets;
-
-    if (elemStyleSheets.length === 0 ||
-        JSON.stringify(elemStyleSheets.slice(-1)[0]) !==
-            JSON.stringify(sheet)) {
-      tooltip.shadowRoot!.adoptedStyleSheets = [...elemStyleSheets, sheet];
-    }
 
     const hide = () => {
       tooltip.hide();

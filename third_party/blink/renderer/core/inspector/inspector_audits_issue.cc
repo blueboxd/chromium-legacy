@@ -143,21 +143,14 @@ BuildAttributionReportingIssueType(AttributionReportingIssueType type) {
     case AttributionReportingIssueType::kPermissionPolicyDisabled:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
           PermissionPolicyDisabled;
-    case AttributionReportingIssueType::kInvalidAttributionSourceEventId:
-      return protocol::Audits::AttributionReportingIssueTypeEnum::
-          InvalidAttributionSourceEventId;
     case AttributionReportingIssueType::kAttributionSourceUntrustworthyOrigin:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
           AttributionSourceUntrustworthyOrigin;
     case AttributionReportingIssueType::kAttributionUntrustworthyOrigin:
       return protocol::Audits::AttributionReportingIssueTypeEnum::
           AttributionUntrustworthyOrigin;
-    case AttributionReportingIssueType::kInvalidAttributionSourceExpiry:
-      return protocol::Audits::AttributionReportingIssueTypeEnum::
-          InvalidAttributionSourceExpiry;
-    case AttributionReportingIssueType::kInvalidAttributionSourcePriority:
-      return protocol::Audits::AttributionReportingIssueTypeEnum::
-          InvalidAttributionSourcePriority;
+    case AttributionReportingIssueType::kInvalidHeader:
+      return protocol::Audits::AttributionReportingIssueTypeEnum::InvalidHeader;
   }
 }
 
@@ -498,21 +491,9 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
       type = protocol::Audits::DeprecationIssueTypeEnum::
           InsecurePrivateNetworkSubresourceRequest;
       break;
-    case DeprecationIssueType::kLegacyConstraintGoogCpuOveruseDetection:
-      type = protocol::Audits::DeprecationIssueTypeEnum::
-          LegacyConstraintGoogCpuOveruseDetection;
-      break;
     case DeprecationIssueType::kLegacyConstraintGoogIPv6:
       type =
           protocol::Audits::DeprecationIssueTypeEnum::LegacyConstraintGoogIPv6;
-      break;
-    case DeprecationIssueType::kLegacyConstraintGoogScreencastMinBitrate:
-      type = protocol::Audits::DeprecationIssueTypeEnum::
-          LegacyConstraintGoogScreencastMinBitrate;
-      break;
-    case DeprecationIssueType::kLegacyConstraintGoogSuspendBelowMinBitrate:
-      type = protocol::Audits::DeprecationIssueTypeEnum::
-          LegacyConstraintGoogSuspendBelowMinBitrate;
       break;
     case DeprecationIssueType::kLocalCSSFileExtensionRejected:
       type = protocol::Audits::DeprecationIssueTypeEnum::
@@ -614,11 +595,6 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
       type = protocol::Audits::DeprecationIssueTypeEnum::
           RTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics;
       break;
-    case DeprecationIssueType::
-        kRTCPeerConnectionLegacyCreateWithMediaConstraints:
-      type = protocol::Audits::DeprecationIssueTypeEnum::
-          RTCPeerConnectionLegacyCreateWithMediaConstraints;
-      break;
     case DeprecationIssueType::kRTCPeerConnectionSdpSemanticsPlanB:
       type = protocol::Audits::DeprecationIssueTypeEnum::
           RTCPeerConnectionSdpSemanticsPlanB;
@@ -628,10 +604,6 @@ void AuditsIssue::ReportDeprecationIssue(ExecutionContext* execution_context,
       break;
     case DeprecationIssueType::kRTPDataChannel:
       type = protocol::Audits::DeprecationIssueTypeEnum::RTPDataChannel;
-      break;
-    case DeprecationIssueType::kSelectionAddRangeIntersect:
-      type = protocol::Audits::DeprecationIssueTypeEnum::
-          SelectionAddRangeIntersect;
       break;
     case DeprecationIssueType::kSharedArrayBufferConstructedWithoutIsolation:
       type = protocol::Audits::DeprecationIssueTypeEnum::

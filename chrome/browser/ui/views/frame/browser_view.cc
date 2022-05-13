@@ -82,7 +82,6 @@
 #include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/user_education/browser_feature_promo_snooze_service.h"
-#include "chrome/browser/ui/user_education/help_bubble_factory_registry.h"
 #include "chrome/browser/ui/user_education/reopen_tab_in_product_help.h"
 #include "chrome/browser/ui/user_education/reopen_tab_in_product_help_factory.h"
 #include "chrome/browser/ui/user_education/user_education_service.h"
@@ -130,8 +129,9 @@
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/profiles/profile_menu_view_base.h"
 #include "chrome/browser/ui/views/qrcode_generator/qrcode_generator_bubble.h"
-#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_bubble_view_impl.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_device_picker_bubble_view.h"
 #include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_icon_view.h"
+#include "chrome/browser/ui/views/send_tab_to_self/send_tab_to_self_promo_bubble_view.h"
 #include "chrome/browser/ui/views/sharing/sharing_dialog_view.h"
 #include "chrome/browser/ui/views/sharing_hub/screenshot/screenshot_captured_bubble.h"
 #include "chrome/browser/ui/views/sharing_hub/sharing_hub_bubble_view_impl.h"
@@ -156,7 +156,6 @@
 #include "chrome/browser/ui/views/update_recommended_message_box.h"
 #include "chrome/browser/ui/views/user_education/browser_feature_promo_controller.h"
 #include "chrome/browser/ui/views/user_education/browser_user_education_service.h"
-#include "chrome/browser/ui/views/user_education/help_bubble_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/window_sizer/window_sizer.h"
 #include "chrome/common/channel_info.h"
@@ -186,6 +185,8 @@
 #include "components/startup_metric_utils/browser/startup_metric_utils.h"
 #include "components/translate/core/browser/language_state.h"
 #include "components/translate/core/browser/translate_manager.h"
+#include "components/user_education/common/help_bubble_factory_registry.h"
+#include "components/user_education/views/help_bubble_view.h"
 #include "components/version_info/channel.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
 #include "components/webapps/browser/banners/app_banner_manager.h"
@@ -2138,17 +2139,17 @@ bool BrowserView::ActivateFirstInactiveBubbleForAccessibility() {
   if (toolbar_ && toolbar_->app_menu_button()) {
     views::DialogDelegate* bubble =
         toolbar_->app_menu_button()->GetProperty(views::kAnchoredDialogKey);
-    if ((!bubble || HelpBubbleView::IsHelpBubble(bubble)) &&
+    if ((!bubble || user_education::HelpBubbleView::IsHelpBubble(bubble)) &&
         GetLocationBarView())
       bubble = GetLocationBarView()->GetProperty(views::kAnchoredDialogKey);
-    if ((!bubble || HelpBubbleView::IsHelpBubble(bubble)) &&
+    if ((!bubble || user_education::HelpBubbleView::IsHelpBubble(bubble)) &&
         toolbar_button_provider_ &&
         toolbar_button_provider_->GetAvatarToolbarButton()) {
       bubble = toolbar_button_provider_->GetAvatarToolbarButton()->GetProperty(
           views::kAnchoredDialogKey);
     }
 
-    if (bubble && !HelpBubbleView::IsHelpBubble(bubble)) {
+    if (bubble && !user_education::HelpBubbleView::IsHelpBubble(bubble)) {
       View* focusable = bubble->GetInitiallyFocusedView();
 
       // A PermissionPromptBubbleView will explicitly return nullptr due to
@@ -2362,15 +2363,39 @@ SharingDialog* BrowserView::ShowSharingDialog(
   return dialog_view;
 }
 
-send_tab_to_self::SendTabToSelfBubbleView* BrowserView::ShowSendTabToSelfBubble(
+send_tab_to_self::SendTabToSelfBubbleView*
+BrowserView::ShowSendTabToSelfDevicePickerBubble(
     content::WebContents* web_contents) {
   PageActionIconType icon_type =
       sharing_hub::SharingHubOmniboxEnabled(browser_->profile())
           ? PageActionIconType::kSharingHub
           : PageActionIconType::kSendTabToSelf;
 
-  auto* bubble = new send_tab_to_self::SendTabToSelfBubbleViewImpl(
+  auto* bubble = new send_tab_to_self::SendTabToSelfDevicePickerBubbleView(
       toolbar_button_provider()->GetAnchorView(icon_type), web_contents);
+  PageActionIconView* icon_view =
+      toolbar_button_provider()->GetPageActionIconView(icon_type);
+  if (icon_view)
+    bubble->SetHighlightedButton(icon_view);
+
+  views::BubbleDialogDelegateView::CreateBubble(bubble);
+  // This is always triggered due to a user gesture, c.f. this method's
+  // documentation in the interface.
+  bubble->ShowForReason(LocationBarBubbleDelegateView::USER_GESTURE);
+  return bubble;
+}
+
+send_tab_to_self::SendTabToSelfBubbleView*
+BrowserView::ShowSendTabToSelfPromoBubble(content::WebContents* web_contents,
+                                          bool show_signin_button) {
+  PageActionIconType icon_type =
+      sharing_hub::SharingHubOmniboxEnabled(web_contents->GetBrowserContext())
+          ? PageActionIconType::kSharingHub
+          : PageActionIconType::kSendTabToSelf;
+
+  auto* bubble = new send_tab_to_self::SendTabToSelfPromoBubbleView(
+      toolbar_button_provider()->GetAnchorView(icon_type), web_contents,
+      show_signin_button);
   PageActionIconView* icon_view =
       toolbar_button_provider()->GetPageActionIconView(icon_type);
   if (icon_view)
@@ -4291,8 +4316,10 @@ bool BrowserView::IsFeaturePromoActive(const base::Feature& iph_feature,
 
 bool BrowserView::MaybeShowFeaturePromo(
     const base::Feature& iph_feature,
-    FeaturePromoSpecification::StringReplacements body_text_replacements,
-    FeaturePromoController::BubbleCloseCallback close_callback) {
+    user_education::FeaturePromoSpecification::StringReplacements
+        body_text_replacements,
+    user_education::FeaturePromoController::BubbleCloseCallback
+        close_callback) {
   if (!feature_promo_controller_)
     return false;
   return feature_promo_controller_->MaybeShowPromo(
@@ -4304,10 +4331,10 @@ bool BrowserView::CloseFeaturePromo(const base::Feature& iph_feature) {
          feature_promo_controller_->CloseBubble(iph_feature);
 }
 
-FeaturePromoController::PromoHandle BrowserView::CloseFeaturePromoAndContinue(
-    const base::Feature& iph_feature) {
+user_education::FeaturePromoController::PromoHandle
+BrowserView::CloseFeaturePromoAndContinue(const base::Feature& iph_feature) {
   if (!IsFeaturePromoActive(iph_feature))
-    return FeaturePromoController::PromoHandle();
+    return user_education::FeaturePromoController::PromoHandle();
   return feature_promo_controller_->CloseBubbleAndContinuePromo(iph_feature);
 }
 

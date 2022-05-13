@@ -30,6 +30,7 @@ namespace device_activity {
 // on chrome browser.
 struct COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) ChromeDeviceMetadataParameters {
   version_info::Channel chromeos_channel;
+  MarketSegment market_segment;
 };
 
 // Base class for device active use cases.
@@ -63,7 +64,11 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActiveUseCase {
   // timestamp from the local state pref.
   base::Time GetLastKnownPingTimestamp() const;
 
+  // Set the last known ping timestamp in local state pref.
   void SetLastKnownPingTimestamp(base::Time new_ts);
+
+  // Return true if the |use_case_pref_key_| is not Unix Epoch (default value).
+  bool IsLastKnownPingTimestampSet() const;
 
   // Retrieve the PSM use case.
   // The PSM dataset on the serverside is segmented by the PSM use case.
@@ -111,6 +116,9 @@ class COMPONENT_EXPORT(ASH_DEVICE_ACTIVITY) DeviceActiveUseCase {
 
   // Retrieve the ChromeOS release channel.
   Channel GetChromeOSChannel() const;
+
+  // Retrieve the ChromeOS device market segment.
+  MarketSegment GetMarketSegment() const;
 
  private:
   // Field is used to identify a fixed window of time for device active

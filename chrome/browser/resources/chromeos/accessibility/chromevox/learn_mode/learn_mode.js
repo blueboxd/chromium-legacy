@@ -35,10 +35,8 @@ export class LearnMode {
     chrome.accessibilityPrivate.onAccessibilityGesture.addListener(
         LearnMode.onAccessibilityGesture);
     chrome.accessibilityPrivate.setKeyboardListener(true, true);
-    chrome.runtime.sendMessage(
-        {target: 'BrailleCommandHandler', action: 'setEnabled', value: false});
-    chrome.runtime.sendMessage(
-        {target: 'GestureCommandHandler', action: 'setEnabled', value: false});
+    BackgroundBridge.BrailleCommandHandler.setEnabled(false);
+    BackgroundBridge.GestureCommandHandler.setEnabled(false);
 
     ChromeVoxKbHandler.handlerKeyMap = KeyMap.get();
 
@@ -282,10 +280,8 @@ export class LearnMode {
   }
 
   /** Clears ChromeVox range. */
-  static clearRange() {
-    chrome.extension
-        .getBackgroundPage()['ChromeVoxState']['instance']['setCurrentRange'](
-            null);
+  static async clearRange() {
+    await BackgroundBridge.ChromeVoxState.clearCurrentRange();
   }
 
   /** @private */
@@ -301,8 +297,7 @@ export class LearnMode {
     chrome.accessibilityPrivate.onAccessibilityGesture.removeListener(
         LearnMode.onAccessibilityGesture);
     chrome.accessibilityPrivate.setKeyboardListener(true, false);
-    chrome.runtime.sendMessage(
-        {target: 'BrailleCommandHandler', action: 'setEnabled', value: true});
+    BackgroundBridge.BrailleCommandHandler.setEnabled(true);
     chrome.runtime.sendMessage(
         {target: 'GestureCommandHandler', action: 'setEnabled', value: true});
   }

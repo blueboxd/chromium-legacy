@@ -13,6 +13,12 @@
 const base::Feature kNewOverflowMenu{"NewOverflowMenu",
                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kNewOverflowMenuCBDAction{
+    "NewOverflowMenuCBDAction", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNewOverflowMenuSettingsAction{
+    "NewOverflowMenuSettingsAction", base::FEATURE_DISABLED_BY_DEFAULT};
+
 const base::Feature kSmartSortingNewOverflowMenu{
     "kSmartSortingNewOverflowMenu", base::FEATURE_DISABLED_BY_DEFAULT};
 
@@ -23,6 +29,16 @@ bool IsNewOverflowMenuEnabled() {
   // The new overflow menu isn't available on iOS <= 14 because it relies on
   // |UISheetPresentationController|, which was introduced in iOS 15.
   return false;
+}
+
+bool IsNewOverflowMenuCBDActionEnabled() {
+  return IsNewOverflowMenuEnabled() &&
+         base::FeatureList::IsEnabled(kNewOverflowMenuCBDAction);
+}
+
+bool IsNewOverflowMenuSettingsActionEnabled() {
+  return IsNewOverflowMenuEnabled() &&
+         base::FeatureList::IsEnabled(kNewOverflowMenuSettingsAction);
 }
 
 bool IsPasswordManagerBrandingUpdateEnabled() {

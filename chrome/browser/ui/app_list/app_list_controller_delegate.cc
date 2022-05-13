@@ -11,11 +11,11 @@
 #include "build/build_config.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/apps/app_service/extension_apps_utils.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/install_tracker_factory.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/ash/tablet_mode_page_behavior.h"
 #include "chrome/browser/ui/chrome_pages.h"
 #include "chrome/browser/ui/webui/settings/ash/app_management/app_management_uma.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -68,7 +68,7 @@ void AppListControllerDelegate::DoShowAppInfoFlow(Profile* profile,
                                   ash::settings::AppManagementEntryPoint::
                                       kAppListContextMenuAppInfoWebApp);
   } else {
-    chrome::ShowAppManagementPage(profile, app_id,
+    chrome::ShowAppManagementPage(profile, GetEscapedAppId(app_id, app_type),
                                   ash::settings::AppManagementEntryPoint::
                                       kAppListContextMenuAppInfoChromeApp);
   }

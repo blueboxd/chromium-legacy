@@ -190,6 +190,7 @@
 <translation id="2690858294534178585">Камера выкарыстоўваецца</translation>
 <translation id="2691653761409724435">Недаступна ў пазасеткавым рэжыме</translation>
 <translation id="2695507686909505111">Старонка перакладзена</translation>
+<translation id="2697526135132990015">Выйсці з уліковага запісу і выдаліць даныя</translation>
 <translation id="2700241355396984822">Наладжванне дазволаў</translation>
 <translation id="2702801445560668637">Спіс чытання</translation>
 <translation id="2704491540504985681">Спампоўкі</translation>
@@ -222,10 +223,10 @@
 <translation id="2883151425485251736">Праглядайце і змяняйце схаваныя вамі тэмы</translation>
 <translation id="288655811176831528">Закрыць укладку</translation>
 <translation id="2890171748217283516">Сайты, на якія вы падпісаны, захоўваюцца ў вашым Уліковым запісе Google. Кіраваць імі можна ў наладах Рэкамендацый.</translation>
-<translation id="2893180576842394309">Google можа выкарыстоўваць вашу гісторыю, каб персаналізаваць пошук і іншыя сэрвісы Google</translation>
 <translation id="2898963176829412617">Новая папка…</translation>
 <translation id="2916171785467530738">Аўтазапаўненне ў полі пошуку і URL-адраса</translation>
 <translation id="291754862089661335">Змясціце QR-код або штрыхкод у гэтай рамцы</translation>
+<translation id="2920866371965792875">Каб бачыць навіны з гэтага сайта, падпішыцеся на яго тут.</translation>
 <translation id="2921219216347069551">Не ўдалося абагуліць</translation>
 <translation id="2923448633003185837">Уставіць і перайсці</translation>
 <translation id="292639812446257861">Пазначыць як непрачытаныя</translation>
@@ -364,6 +365,7 @@
 <translation id="4121993058175073134">Для экспарту даных па сетцы наладзьце электронную пошту праз праграму "Налады".</translation>
 <translation id="4124987746317609294">Прамежак часу</translation>
 <translation id="4133265950310064865">Палепшаная абарона</translation>
+<translation id="4148023517926189160">Гэты вэб-сайт хоча спампаваць файл і дадаць яго ў каляндар.</translation>
 <translation id="4152011295694446843">Вашы закладкі знаходзяцца тут</translation>
 <translation id="4172051516777682613">Заўсёды паказваць</translation>
 <translation id="418156467088430727">Паказаць пазасеткавую версію ў новай укладцы</translation>
@@ -450,6 +452,7 @@
 <translation id="4840495572919996524">Закладкі, гісторыя, паролі і іншае больш не будуць сінхранізавацца з Уліковым запісам Google.</translation>
 <translation id="4844899002472726590">Праглядайце і змяняйце цікавыя вам тэмы</translation>
 <translation id="4854345657858711387">Задайце пароль</translation>
+<translation id="4858786880085262208">Пераходзіць на HTTPS, калі гэта магчыма. Бяспечныя сайты могуць мець убудаванае змесціва, якое не з'яўляецца бяспечным.</translation>
 <translation id="4860895144060829044">Выклік</translation>
 <translation id="4872323082491632254">Праверка пароляў</translation>
 <translation id="4881695831933465202">Адкрыць</translation>
@@ -691,13 +694,13 @@
 <translation id="6760509555861141183">Вярнуцца да апошняй укладкі</translation>
 <translation id="6762812039470893796">Адмяніць выбар усіх</translation>
 <translation id="6780034285637185932">Паштовы індэкс</translation>
+<translation id="6781260999953472352">Уключыць сінхранізацыю?</translation>
 <translation id="6785453220513215166">Адпраўка справаздачы аб збоях...</translation>
 <translation id="6797885426782475225">Галасавы пошук</translation>
 <translation id="6801927553864092214">Для прагляду вэб-старонак у прыватным рэжыме адкрыйце ўкладку інкогніта</translation>
 <translation id="6807889908376551050">Паказаць усе...</translation>
 <translation id="681368974849482173">Элемент створаны</translation>
 <translation id="683022620450280906">Вы можаце выкарыстоўваць захаваныя паролі на любой прыладзе. Яны захоўваюцца ў Менеджары пароляў Google уліковага запісу <ph name="EMAIL" /></translation>
-<translation id="6830804042318138535">Чытаць далей</translation>
 <translation id="6831043979455480757">Перакласці</translation>
 <translation id="6842136130964845393">Каб не страціць доступ да сваіх захаваных пароляў, пацвердзіце сваю асобу</translation>
 <translation id="6851516051005285358">Запытаць версію для настольнага камп'ютара</translation>
@@ -799,10 +802,12 @@
 <translation id="7781069478569868053">Старонка новай укладкі</translation>
 <translation id="7781829728241885113">Учора</translation>
 <translation id="778855399387580014">Пачаць пошук у новай укладцы Chrome.</translation>
+<translation id="7790892308048519147">Намагацца карыстацца бяспечнымі тыпамі падключэння</translation>
 <translation id="7791543448312431591">Дадаць</translation>
 <translation id="7807060072011926525">Ад кампаніі Google</translation>
 <translation id="7839985698273989086">Пазасеткавая старонка</translation>
 <translation id="7840771868269352570">Выбраныя элементы будуць выдалены.</translation>
+<translation id="784551991304901159">Каб праглядаць змесціва, у меню выберыце пункт Turn On ("Уключыць")</translation>
 <translation id="7853202427316060426">Дзеянні</translation>
 <translation id="7856733331829174190">Не ўдалося спампаваць</translation>
 <translation id="7859704718976024901">Гісторыя прагляду сайтаў</translation>
@@ -901,7 +906,6 @@
 <translation id="8654802032646794042">Скасаваць</translation>
 <translation id="8668210798914567634">Гэта старонка была захавана ў спіс чытання.</translation>
 <translation id="8680787084697685621">Даныя ўліковага запісу для ўваходу састарэлі.</translation>
-<translation id="8691262314411702087">Выбраць, што сінхранізаваць</translation>
 <translation id="8693663554456874301">{count,plural, =1{Закрыць укладку}one{Закрыць укладкі}few{Закрыць укладкі}many{Закрыць укладкі}other{Закрыць укладкі}}</translation>
 <translation id="8706588385081740091">Паролі</translation>
 <translation id="8717864919010420084">Скапіраваць спасылку</translation>

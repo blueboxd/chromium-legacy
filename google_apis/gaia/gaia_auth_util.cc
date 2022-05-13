@@ -19,6 +19,8 @@
 #include "google_apis/gaia/gaia_urls.h"
 #include "google_apis/gaia/oauth2_mint_token_consent_result.pb.h"
 #include "url/gurl.h"
+#include "url/origin.h"
+#include "url/scheme_host_port.h"
 
 namespace gaia {
 
@@ -102,13 +104,18 @@ bool IsGoogleInternalAccountEmail(const std::string& email) {
   return ExtractDomainName(SanitizeEmail(email)) == kGoogleDomain;
 }
 
-bool IsGaiaSignonRealm(const GURL& url) {
+bool HasGaiaSchemeHostPort(const GURL& url) {
   if (!url.SchemeIsCryptographic())
     return false;
 
-  return url == GaiaUrls::GetInstance()->gaia_url();
-}
+  const url::Origin& gaia_origin = GaiaUrls::GetInstance()->gaia_origin();
+  CHECK(!gaia_origin.opaque());
 
+  const url::SchemeHostPort& gaia_scheme_host_port =
+      gaia_origin.GetTupleOrPrecursorTupleIfOpaque();
+
+  return url::SchemeHostPort(url) == gaia_scheme_host_port;
+}
 
 bool ParseListAccountsData(const std::string& data,
                            std::vector<ListedAccount>* accounts,

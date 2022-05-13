@@ -24,9 +24,11 @@ import org.chromium.base.MathUtils;
 import org.chromium.base.ObserverList;
 import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
 import org.chromium.chrome.browser.feed.FeedSwipeRefreshLayout;
@@ -47,6 +49,7 @@ import org.chromium.chrome.browser.tasks.ReturnToChromeUtil;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementDelegate.TabSwitcherType;
 import org.chromium.chrome.browser.tasks.tab_management.TabManagementModuleProvider;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCustomViewManager;
 import org.chromium.chrome.browser.toolbar.top.Toolbar;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.features.tasks.TasksSurface;
@@ -95,6 +98,9 @@ public class StartSurfaceCoordinator implements StartSurface {
     private final MenuOrKeyboardActionController mMenuOrKeyboardActionController;
     private final MultiWindowModeStateDispatcher mMultiWindowModeStateDispatcher;
     private final Supplier<Toolbar> mToolbarSupplier;
+    // TODO(crbug.com/1315676): Directly return the supplier from {@link TabSwitcherCoordinator}.
+    private final OneshotSupplierImpl<TabSwitcherCustomViewManager>
+            mTabSwitcherCustomViewManagerSupplier;
 
     @VisibleForTesting
     static final String START_SHOWN_AT_STARTUP_UMA = "Startup.Android.StartSurfaceShownAtStartup";
@@ -214,6 +220,7 @@ public class StartSurfaceCoordinator implements StartSurface {
      * @param multiWindowModeStateDispatcher Gives access to the multi window mode state.
      * @param jankTracker Measures jank while feed or tab switcher are visible.
      * @param toolbarSupplier Supplies the {@link Toolbar}.
+     * @param backPressManager {@link BackPressManager} to handle back press.
      */
     public StartSurfaceCoordinator(@NonNull Activity activity,
             @NonNull ScrimCoordinator scrimCoordinator,
@@ -234,7 +241,8 @@ public class StartSurfaceCoordinator implements StartSurface {
             @NonNull TabCreatorManager tabCreatorManager,
             @NonNull MenuOrKeyboardActionController menuOrKeyboardActionController,
             @NonNull MultiWindowModeStateDispatcher multiWindowModeStateDispatcher,
-            @NonNull JankTracker jankTracker, @NonNull Supplier<Toolbar> toolbarSupplier) {
+            @NonNull JankTracker jankTracker, @NonNull Supplier<Toolbar> toolbarSupplier,
+            BackPressManager backPressManager) {
         mConstructedTimeNs = SystemClock.elapsedRealtimeNanos();
         mActivity = activity;
         mScrimCoordinator = scrimCoordinator;
@@ -258,6 +266,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         mMultiWindowModeStateDispatcher = multiWindowModeStateDispatcher;
         mToolbarSupplier = toolbarSupplier;
 
+        mTabSwitcherCustomViewManagerSupplier = new OneshotSupplierImpl<>();
         boolean excludeMVTiles = StartSurfaceConfiguration.START_SURFACE_EXCLUDE_MV_TILES.getValue()
                 || !mIsStartSurfaceEnabled;
         boolean excludeQueryTiles =
@@ -270,6 +279,8 @@ public class StartSurfaceCoordinator implements StartSurface {
                     browserControlsManager, tabCreatorManager, menuOrKeyboardActionController,
                     containerView, shareDelegateSupplier, multiWindowModeStateDispatcher,
                     scrimCoordinator, /* rootView= */ containerView);
+            mTabSwitcherCustomViewManagerSupplier.set(
+                    mTabSwitcher.getTabSwitcherCustomViewManager());
         } else {
             // createSwipeRefreshLayout has to be called before creating any surface.
             createSwipeRefreshLayout();
@@ -284,7 +295,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 mIsStartSurfaceEnabled, mActivity, mBrowserControlsManager,
                 this::isActivityFinishingOrDestroyed, excludeMVTiles, excludeQueryTiles,
                 startSurfaceOneshotSupplier, hadWarmStart, jankTracker,
-                mTasksSurface != null ? mTasksSurface::initializeMVTiles : null);
+                mTasksSurface != null ? mTasksSurface::initializeMVTiles : null, backPressManager);
 
         // Show feed loading image.
         if (mStartSurfaceMediator.shouldShowFeedPlaceholder()) {
@@ -498,6 +509,11 @@ public class StartSurfaceCoordinator implements StartSurface {
         return mTasksSurface;
     }
 
+    @Override
+    public OneshotSupplier<TabSwitcherCustomViewManager> getTabSwitcherCustomViewManagerSupplier() {
+        return mTabSwitcherCustomViewManagerSupplier;
+    }
+
     /**
      * Create the {@link TasksSurface}
      * @param activity The {@link Activity} that creates this surface.
@@ -633,6 +649,11 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (mOnTabSelectingListener != null) {
             mSecondaryTasksSurface.setOnTabSelectingListener(mOnTabSelectingListener);
             mOnTabSelectingListener = null;
+        }
+
+        if (!mTabSwitcherCustomViewManagerSupplier.hasValue()) {
+            mTabSwitcherCustomViewManagerSupplier.set(
+                    mSecondaryTasksSurface.getTabSwitcherCustomViewManager());
         }
         return mSecondaryTasksSurface.getController();
     }

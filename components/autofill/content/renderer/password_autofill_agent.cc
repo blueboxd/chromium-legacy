@@ -590,11 +590,13 @@ class PasswordAutofillAgent::DeferringPasswordManagerDriver
     DeferMsg(&mojom::PasswordManagerDriver::ShowPasswordSuggestions,
              text_direction, typed_username, options, bounds);
   }
+#if BUILDFLAG(IS_ANDROID)
   void ShowTouchToFill(
       mojom::SubmissionReadinessState submission_readiness) override {
     DeferMsg(&mojom::PasswordManagerDriver::ShowTouchToFill,
              submission_readiness);
   }
+#endif
   void CheckSafeBrowsingReputation(const GURL& form_action,
                                    const GURL& frame_url) override {
     DeferMsg(&mojom::PasswordManagerDriver::CheckSafeBrowsingReputation,
@@ -1036,6 +1038,7 @@ bool PasswordAutofillAgent::ShouldSuppressKeyboard() {
   return touch_to_fill_state_ == TouchToFillState::kIsShowing;
 }
 
+#if BUILDFLAG(IS_ANDROID)
 bool PasswordAutofillAgent::TryToShowTouchToFill(
     const WebFormControlElement& control_element) {
   if (touch_to_fill_state_ != TouchToFillState::kShouldShow)
@@ -1071,9 +1074,6 @@ bool PasswordAutofillAgent::TryToShowTouchToFill(
 
   focused_input_element_ = input_element;
 
-// TODO(crbug.com/1299430): Consider to disable |TryToShowTouchToFill| and
-// |ShowTouchToFill| on Desktop.
-#if BUILDFLAG(IS_ANDROID)
   WebFormElement form = password_element.Form();
   std::unique_ptr<FormData> form_data =
       form.IsNull() ? GetFormDataFromUnownedInputElements()
@@ -1082,14 +1082,11 @@ bool PasswordAutofillAgent::TryToShowTouchToFill(
       form_data ? CalculateSubmissionReadiness(*form_data, username_element,
                                                password_element)
                 : mojom::SubmissionReadinessState::kNoInformation);
-#else
-  GetPasswordManagerDriver().ShowTouchToFill(
-      mojom::SubmissionReadinessState::kNoInformation);
-#endif
 
   touch_to_fill_state_ = TouchToFillState::kIsShowing;
   return true;
 }
+#endif
 
 bool PasswordAutofillAgent::ShowSuggestions(
     const WebInputElement& element,

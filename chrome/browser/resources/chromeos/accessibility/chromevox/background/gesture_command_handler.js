@@ -22,12 +22,6 @@ export const GestureCommandHandler = {};
 GestureCommandHandler.setEnabled = function(state) {
   GestureCommandHandler.enabled_ = state;
 };
-chrome.runtime.onMessage.addListener((message) => {
-  if (message.target === 'GestureCommandHandler' &&
-      message.action === 'setEnabled') {
-    GestureCommandHandler.setEnabled(message.value);
-  }
-});
 
 /**
  * Global setting for the enabled state of this handler.
@@ -50,8 +44,7 @@ GestureCommandHandler.onAccessibilityGesture_ = function(gesture, x, y) {
 
   EventSourceState.set(EventSourceType.TOUCH_GESTURE);
 
-  const chromeVoxState = ChromeVoxState.instance;
-  const monitor = chromeVoxState ? chromeVoxState.getUserActionMonitor() : null;
+  const monitor = UserActionMonitor.instance;
   if (gesture !== Gesture.SWIPE_LEFT2 && monitor &&
       !monitor.onGesture(gesture)) {
     // UserActionMonitor returns true if this gesture should propagate.
@@ -142,3 +135,7 @@ GestureCommandHandler.init_ = function() {
 GestureCommandHandler.granularity = GestureGranularity.LINE;
 
 GestureCommandHandler.init_();
+
+BridgeHelper.registerHandler(
+    BridgeTarget.GESTURE_COMMAND_HANDLER, BridgeAction.SET_ENABLED,
+    enabled => GestureCommandHandler.setEnabled(enabled));

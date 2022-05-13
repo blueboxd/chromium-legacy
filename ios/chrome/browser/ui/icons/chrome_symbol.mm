@@ -70,6 +70,11 @@ NSString* const kPlusSymbol = @"plus";
 NSString* const kSearchSymbol = @"magnifyingglass";
 NSString* const kCheckmarkSymbol = @"checkmark";
 NSString* const kArrowDownCircleFillSymbol = @"arrow.down.circle.fill";
+NSString* const kWarningFillSymbol = @"exclamationmark.triangle.fill";
+NSString* const kHelpFillSymbol = @"questionmark.circle";
+NSString* const kCheckMarkCircleFillSymbol = @"checkmark.circle.fill";
+NSString* const kFailMarkCircleFillSymbol = @"exclamationmark.circle.fill";
+NSString* const kTrashSymbol = @"trash";
 
 UIImage* DefaultSymbolWithConfiguration(NSString* symbolName,
                                         UIImageConfiguration* configuration) {

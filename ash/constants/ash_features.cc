@@ -39,6 +39,10 @@ const base::Feature kAdjustSplitViewForVK{"AdjustSplitViewForVK",
 const base::Feature kAllowAmbientEQ{"AllowAmbientEQ",
                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allows pairing to Bluetooth devices created by Poly. See b/228118615.
+const base::Feature kAllowPolyDevicePairing{"AllowPolyDevicePairing",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Controls whether devices are updated before reboot after the first update.
 const base::Feature kAllowRepeatedUpdates{"AllowRepeatedUpdates",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
@@ -252,6 +256,10 @@ const base::Feature kManagedTermsOfService{"ManagedTermsOfService",
 const base::Feature kCalendarView{"CalendarView",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enable or disable debug mode for CalendarModel.
+const base::Feature kCalendarModelDebugMode{"CalendarModelDebugMode",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether the camera privacy switch toasts and notification should be
 // displayed.
 const base::Feature kCameraPrivacySwitchNotifications{
@@ -259,7 +267,7 @@ const base::Feature kCameraPrivacySwitchNotifications{
 
 // Controls whether the selfie camera feature is enabled for Capture Mode.
 const base::Feature kCaptureModeSelfieCamera{"CaptureModeSelfieCamera",
-                                             base::FEATURE_DISABLED_BY_DEFAULT};
+                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, allow eSIM installation bypass the non-cellular internet
 // connectivity check.
@@ -288,7 +296,7 @@ const base::Feature kCellularUseSecondEuicc{"CellularUseSecondEuicc",
 // If enabled, Multiple scraped passwords should be checked against password in
 // cryptohome.
 const base::Feature kCheckPasswordsAgainstCryptohomeHelper{
-    "CheckPasswordsAgainstCryptohomeHelper", base::FEATURE_ENABLED_BY_DEFAULT};
+    "CheckPasswordsAgainstCryptohomeHelper", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables pasting a few recently copied items in a menu when pressing search +
 // v.
@@ -304,6 +312,12 @@ const base::Feature kClipboardHistoryContextMenuNudge{
 // each new user session.
 const base::Feature kClipboardHistoryNudgeSessionReset{
     "ClipboardHistoryNudgeSessionReset", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables cloud game features. A separate flag "LauncherGameSearch" controls
+// launcher-only cloud gaming features, since they can also be enabled on
+// non-cloud-gaming devices.
+const base::Feature kCloudGamingDevice{"CloudGamingDevice",
+                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
 // If enabled and account falls under the new deal, will be allowed to toggle
 // auto updates.
@@ -487,10 +501,6 @@ const base::Feature kEchePhoneHubPermissionsOnboarding{
 // Enables the System Web App (SWA) version of Eche.
 const base::Feature kEcheSWA{"EcheSWA", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Moves Eche into a custom widget.
-const base::Feature kEcheCustomWidget{"EcheCustomWidget",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Enables the Debug Mode of Eche.
 const base::Feature kEcheSWADebugMode{"EcheSWADebugMode",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
@@ -510,7 +520,7 @@ const base::Feature kEnableDesksTrackpadSwipeImprovements{
 // Enables the DNS proxy service providing support split and secure DNS
 // for ChromeOS.
 const base::Feature kEnableDnsProxy{"EnableDnsProxy",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables external keyboard testers in the diagnostics app.
 const base::Feature kEnableExternalKeyboardsInDiagnostics{
@@ -537,7 +547,7 @@ const base::Feature kEnableIdleInhibit{"EnableIdleInhibit",
 // This will only take effect when running a compatible kernel, see
 // crbug/1275421.
 const base::Feature kEnableIkev2Vpn{"EnableIkev2Vpn",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
+                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
 // If enabled, the input device cards will be shown in the diagnostics app.
 const base::Feature kEnableInputInDiagnosticsApp{
@@ -836,7 +846,7 @@ const base::Feature kHoldingSpaceInProgressDownloadsNotificationSuppression{
 
 // Controls whether the snooping protection prototype is enabled.
 const base::Feature kSnoopingProtection{"SnoopingProtection",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable or disable a new header bar for the ChromeOS virtual keyboard.
 const base::Feature kVirtualKeyboardNewHeader{
@@ -987,7 +997,7 @@ const base::Feature kManagedDeviceUIRedesign{"ManagedDeviceUIRedesign",
 
 // Whether PDF files are opened by default in the ChromeOS media app.
 const base::Feature kMediaAppHandlesPdf{"MediaAppHandlesPdf",
-                                        base::FEATURE_ENABLED_BY_DEFAULT};
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Feature to continuously log PSI memory pressure data to UMA.
 const base::Feature kMemoryPressureMetricsDetail{
@@ -1001,6 +1011,11 @@ const base::FeatureParam<int> kMemoryPressureMetricsDetailLogPeriod{
 // microphone is muted.
 const base::Feature kMicMuteNotifications{"MicMuteNotifications",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
+// Disables the deprecated Messages cross-device integration, to be used
+// along side the flag preinstall-by-default (kMessagesPreinstall).
+const base::Feature kDisableMessagesCrossDeviceIntegration{
+    "DisableMessagesCrossDeviceIntegration", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable the requirement of a minimum chrome version on the
 // device through the policy DeviceMinimumVersion. If the requirement is
@@ -1151,7 +1166,7 @@ const base::Feature kProductivityLauncher{"ProductivityLauncher",
                                           base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable Projector.
-const base::Feature kProjector{"Projector", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kProjector{"Projector", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls whether to enable Projector for managed users.
 const base::Feature kProjectorManagedUser{"ProjectorManagedUser",
@@ -1190,6 +1205,12 @@ const base::Feature kProjectorManagedUserIgnorePolicy(
 // threshold.
 const base::Feature kProjectorShowShortPseudoTranscript(
     "ProjectorShowShortPseudoTranscript",
+    base::FEATURE_ENABLED_BY_DEFAULT);
+
+// Controls whether to update the indexable text when metadata file gets
+// uploaded.
+const base::Feature kProjectorUpdateIndexableText(
+    "ProjectorUpdateIndexableText",
     base::FEATURE_ENABLED_BY_DEFAULT);
 
 // Controls whether the quick dim prototype is enabled.
@@ -1243,7 +1264,7 @@ const base::Feature kScalableStatusArea{"ScalableStatusArea",
 
 // Controls whether to enable kSecondaryGoogleAccountUsage policy.
 const base::Feature kSecondaryGoogleAccountUsage{
-    "SecondaryGoogleAccountUsage", base::FEATURE_DISABLED_BY_DEFAULT};
+    "SecondaryGoogleAccountUsage", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Overrides semantic colors in ChromeOS for easier debugging.
 const base::Feature kSemanticColorsDebugOverride{
@@ -1280,7 +1301,7 @@ const base::Feature kSettingsAppThemeChangeAnimation{
 // Enables launcher nudge that animates the home button to guide users to open
 // the launcher.
 const base::Feature kShelfLauncherNudge{"ShelfLauncherNudge",
-                                        base::FEATURE_DISABLED_BY_DEFAULT};
+                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the shelf party.
 const base::Feature kShelfParty{"ShelfParty",
@@ -1288,7 +1309,7 @@ const base::Feature kShelfParty{"ShelfParty",
 
 // Enables or disables the new shimless rma flow.
 const base::Feature kShimlessRMAFlow{"ShimlessRMAFlow",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enables or disables launching Shimless RMA as a standalone app.
 const base::Feature kShimlessRMAEnableStandalone{
@@ -1632,6 +1653,10 @@ bool IsCalendarViewEnabled() {
   return base::FeatureList::IsEnabled(kCalendarView);
 }
 
+bool IsCalendarModelDebugModeEnabled() {
+  return base::FeatureList::IsEnabled(kCalendarModelDebugMode);
+}
+
 bool IsCaptureModeSelfieCameraEnabled() {
   return base::FeatureList::IsEnabled(kCaptureModeSelfieCamera);
 }
@@ -1650,6 +1675,10 @@ bool IsClipboardHistoryEnabled() {
 
 bool IsClipboardHistoryNudgeSessionResetEnabled() {
   return base::FeatureList::IsEnabled(kClipboardHistoryNudgeSessionReset);
+}
+
+bool IsCloudGamingDevice() {
+  return base::FeatureList::IsEnabled(kCloudGamingDevice);
 }
 
 bool IsDesksCloseAllEnabled() {
@@ -1708,10 +1737,6 @@ bool IsEchePhoneHubPermissionsOnboarding() {
 
 bool IsEcheSWAEnabled() {
   return base::FeatureList::IsEnabled(kEcheSWA);
-}
-
-bool IsEcheCustomWidgetEnabled() {
-  return base::FeatureList::IsEnabled(kEcheCustomWidget);
 }
 
 bool IsEcheSWADebugModeEnabled() {
@@ -2046,6 +2071,10 @@ bool IsPipRoundedCornersEnabled() {
   return base::FeatureList::IsEnabled(kPipRoundedCorners);
 }
 
+bool IsPolyDevicePairingAllowed() {
+  return base::FeatureList::IsEnabled(kAllowPolyDevicePairing);
+}
+
 bool IsProductivityLauncherEnabled() {
   return base::FeatureList::IsEnabled(kProductivityLauncher);
 }
@@ -2089,6 +2118,10 @@ bool IsProjectorManagedUserIgnorePolicyEnabled() {
 
 bool IsProjectorShowShortPseudoTranscript() {
   return base::FeatureList::IsEnabled(kProjectorShowShortPseudoTranscript);
+}
+
+bool IsProjectorUpdateIndexableTextEnabled() {
+  return base::FeatureList::IsEnabled(kProjectorUpdateIndexableText);
 }
 
 bool IsQuickDimEnabled() {
@@ -2142,7 +2175,8 @@ bool IsSettingsAppThemeChangeAnimationEnabled() {
 }
 
 bool IsShelfLauncherNudgeEnabled() {
-  return base::FeatureList::IsEnabled(kShelfLauncherNudge);
+  return IsProductivityLauncherEnabled() &&
+         base::FeatureList::IsEnabled(kShelfLauncherNudge);
 }
 
 bool IsShimlessRMAFlowEnabled() {

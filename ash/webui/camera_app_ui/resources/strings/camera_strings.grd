@@ -351,6 +351,9 @@
       <message desc="Label for expert mode option: Multi-stream video recording." name="IDS_EXPERT_MULTISTREAM_RECORDING">
         Multistream video recording
       </message>
+      <message desc="Label for expert mode option: enable video FPS picker for builtin camera." name="IDS_EXPERT_ENABLE_FPS_PICKER_FOR_BUILTIN">
+        Enable video FPS picker
+      </message>
       <message desc="Label for expert mode option: enable expert mode." name="IDS_EXPERT_ENABLE_EXPERT_MODE">
         Enable expert mode
       </message>
@@ -684,10 +687,10 @@ If your feedback is about image or video quality, please attach a sample photo o
         Show all resolutions
       </message>
       <message desc="Label for spoken feedback to indicate that the mute button is now off." name="IDS_ARIA_MUTE_OFF">
-        Mute button off
+        Toggle microphone mute. Mute is off
       </message>
       <message desc="Label for spoken feedback to indicate that the mute button is now on." name="IDS_ARIA_MUTE_ON">
-        Mute button on
+        Toggle microphone mute. Mute is on
       </message>
     </messages>
   </release>

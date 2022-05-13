@@ -49,6 +49,7 @@ import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.chrome.test.batch.BlankCTATabInitialStateRule;
 import org.chromium.chrome.test.util.ChromeRenderTestRule;
 import org.chromium.chrome.test.util.browser.Features;
+import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.content_public.browser.test.NativeLibraryTestUtils;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -83,6 +84,8 @@ public final class PrivacySandboxDialogTest {
     @Rule
     public JniMocker mocker = new JniMocker();
 
+    private BottomSheetController mBottomSheetController;
+
     private FakePrivacySandboxBridge mFakePrivacySandboxBridge;
 
     @Mock
@@ -101,6 +104,9 @@ public final class PrivacySandboxDialogTest {
         MockitoAnnotations.initMocks(this);
         mFakePrivacySandboxBridge = new FakePrivacySandboxBridge();
         mocker.mock(PrivacySandboxBridgeJni.TEST_HOOKS, mFakePrivacySandboxBridge);
+        mBottomSheetController = sActivityTestRule.getActivity()
+                                         .getRootUiCoordinatorForTesting()
+                                         .getBottomSheetController();
     }
 
     @After
@@ -135,7 +141,8 @@ public final class PrivacySandboxDialogTest {
                 mDialog = null;
             }
             PrivacySandboxDialogController.maybeLaunchPrivacySandboxDialog(
-                    sActivityTestRule.getActivity(), mSettingsLauncher, /*isIncognito=*/false);
+                    sActivityTestRule.getActivity(), mSettingsLauncher, /*isIncognito=*/false,
+                    mBottomSheetController);
             mDialog = PrivacySandboxDialogController.getDialogForTesting();
         });
     }
@@ -184,7 +191,8 @@ public final class PrivacySandboxDialogTest {
     public void testControllerIncognito() throws IOException {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             PrivacySandboxDialogController.maybeLaunchPrivacySandboxDialog(
-                    sActivityTestRule.getActivity(), mSettingsLauncher, /*isIncognito=*/true);
+                    sActivityTestRule.getActivity(), mSettingsLauncher, /*isIncognito=*/true,
+                    mBottomSheetController);
         });
         // Verify that nothing is shown. Notice & Consent share a title.
         onView(withText(R.string.privacy_sandbox_consent_title)).check(doesNotExist());
@@ -193,7 +201,7 @@ public final class PrivacySandboxDialogTest {
     @Test
     @SmallTest
     public void testControllerShowsNothing() throws IOException {
-        mFakePrivacySandboxBridge.setRequiredDialogType(DialogType.NONE);
+        mFakePrivacySandboxBridge.setRequiredPromptType(PromptType.NONE);
         launchDialog();
         // Verify that nothing is shown. Notice & Consent share a title.
         onView(withText(R.string.privacy_sandbox_consent_title)).check(doesNotExist());
@@ -202,7 +210,7 @@ public final class PrivacySandboxDialogTest {
     @Test
     @SmallTest
     public void testControllerShowsConsent() throws IOException {
-        mFakePrivacySandboxBridge.setRequiredDialogType(DialogType.CONSENT);
+        mFakePrivacySandboxBridge.setRequiredPromptType(PromptType.CONSENT);
         launchDialog();
         // Verify that the consent is shown and the action is recorded.
         onViewWaiting(withId(R.id.privacy_sandbox_consent_title));
@@ -237,7 +245,7 @@ public final class PrivacySandboxDialogTest {
     @Test
     @SmallTest
     public void testControllerShowsNotice() throws IOException, InterruptedException {
-        mFakePrivacySandboxBridge.setRequiredDialogType(DialogType.NOTICE);
+        mFakePrivacySandboxBridge.setRequiredPromptType(PromptType.NOTICE);
         launchDialog();
         // Verify that the consent is shown and the action is recorded.
         onViewWaiting(withId(R.id.privacy_sandbox_notice_title));

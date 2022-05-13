@@ -190,6 +190,7 @@
 <translation id="2690858294534178585">Камера уже используется</translation>
 <translation id="2691653761409724435">Недоступно в офлайн-режиме</translation>
 <translation id="2695507686909505111">Страница переведена</translation>
+<translation id="2697526135132990015">Выйти и удалить данные</translation>
 <translation id="2700241355396984822">Параметры разрешений</translation>
 <translation id="2702801445560668637">Список для чтения</translation>
 <translation id="2704491540504985681">Скачанные файлы</translation>
@@ -222,7 +223,6 @@
 <translation id="2883151425485251736">Просмотр и изменение тем, которые вы скрыли</translation>
 <translation id="288655811176831528">Закрыть вкладку</translation>
 <translation id="2890171748217283516">Сайты, на которые вы подписаны, сохранены в аккаунте Google. Управлять ими можно в настройках рекомендаций.</translation>
-<translation id="2893180576842394309">Google может использовать вашу историю, чтобы персонализировать Поиск и другие сервисы.</translation>
 <translation id="2898963176829412617">Новая папка</translation>
 <translation id="2916171785467530738">Включить автозаполнение для поисковых запросов и URL</translation>
 <translation id="291754862089661335">Поместите QR-код или штрихкод в эту рамку</translation>
@@ -365,6 +365,7 @@
 <translation id="4121993058175073134">Чтобы отправлять очищенные данные для экспорта, задайте соответствующие параметры аккаунта электронной почты в приложении "Настройки".</translation>
 <translation id="4124987746317609294">Временной диапазон</translation>
 <translation id="4133265950310064865">Улучшенная защита</translation>
+<translation id="4148023517926189160">Сайт собирается скачать файл и добавить его в ваш календарь.</translation>
 <translation id="4152011295694446843">Здесь вы найдете свои закладки</translation>
 <translation id="4172051516777682613">Показывать всегда</translation>
 <translation id="418156467088430727">Открыть офлайн-версию в новой вкладке</translation>
@@ -451,6 +452,7 @@
 <translation id="4840495572919996524">Ваши закладки, пароли, история и другие данные больше не будут синхронизироваться с аккаунтом Google.</translation>
 <translation id="4844899002472726590">Просмотр и изменение тем, которые вас интересуют</translation>
 <translation id="4854345657858711387">Установите код доступа</translation>
+<translation id="4858786880085262208">По возможности использовать HTTPS. Безопасные сайты могут содержать небезопасный встроенный контент.</translation>
 <translation id="4860895144060829044">Позвонить</translation>
 <translation id="4872323082491632254">Проверка паролей</translation>
 <translation id="4881695831933465202">Открыть</translation>
@@ -692,13 +694,13 @@
 <translation id="6760509555861141183">Вернуться к последней использовавшейся вкладке</translation>
 <translation id="6762812039470893796">Отменить выбор</translation>
 <translation id="6780034285637185932">Почтовый индекс</translation>
+<translation id="6781260999953472352">Включить синхронизацию?</translation>
 <translation id="6785453220513215166">Отправка отчета об ошибке…</translation>
 <translation id="6797885426782475225">Голосовой поиск</translation>
 <translation id="6801927553864092214">Чтобы посмотреть сайт анонимно, откройте вкладку в режиме инкогнито.</translation>
 <translation id="6807889908376551050">Показать все…</translation>
 <translation id="681368974849482173">Сохранено</translation>
 <translation id="683022620450280906">Вы можете использовать сохраненные пароли на любых устройствах. Они сохраняются в Диспетчере паролей Google для аккаунта <ph name="EMAIL" />.</translation>
-<translation id="6830804042318138535">Узнать больше</translation>
 <translation id="6831043979455480757">Перевести</translation>
 <translation id="6842136130964845393">Чтобы всегда иметь доступ к сохраненным паролям, подтвердите свою личность.</translation>
 <translation id="6851516051005285358">Версия для ПК</translation>
@@ -800,10 +802,12 @@
 <translation id="7781069478569868053">Страница быстрого доступа</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="778855399387580014">Запускайте поиск в новой вкладке Chrome.</translation>
+<translation id="7790892308048519147">Использовать безопасное соединение</translation>
 <translation id="7791543448312431591">Добавить</translation>
 <translation id="7807060072011926525">Данные от Google</translation>
 <translation id="7839985698273989086">Офлайн-версия страницы</translation>
 <translation id="7840771868269352570">Выбранные элементы будут удалены</translation>
+<translation id="784551991304901159">Чтобы посмотреть контент, в меню выберите "Включить"</translation>
 <translation id="7853202427316060426">Действия</translation>
 <translation id="7856733331829174190">Не удалось скачать файл</translation>
 <translation id="7859704718976024901">История браузера</translation>
@@ -902,7 +906,6 @@
 <translation id="8654802032646794042">Отмена</translation>
 <translation id="8668210798914567634">Страница сохранена в список для чтения.</translation>
 <translation id="8680787084697685621">Данные для входа в аккаунт устарели.</translation>
-<translation id="8691262314411702087">Выбрать объекты для синхронизации</translation>
 <translation id="8693663554456874301">{count,plural, =1{Закрыть вкладку}one{Закрыть вкладки}few{Закрыть вкладки}many{Закрыть вкладки}other{Закрыть вкладки}}</translation>
 <translation id="8706588385081740091">Пароли</translation>
 <translation id="8717864919010420084">Копировать ссылку</translation>

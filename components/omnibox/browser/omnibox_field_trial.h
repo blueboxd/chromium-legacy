@@ -513,6 +513,12 @@ extern const base::FeatureParam<bool> kRichAutocompletionShowAdditionalText;
 extern const base::FeatureParam<bool> kRichAutocompletionSplitTitleCompletion;
 extern const base::FeatureParam<bool> kRichAutocompletionSplitUrlCompletion;
 extern const base::FeatureParam<int> kRichAutocompletionSplitCompletionMinChar;
+extern const base::FeatureParam<bool>
+    kRichAutocompletionAutocompleteShortcutText;
+extern const base::FeatureParam<bool>
+    kRichAutocompletionAutocompleteShortcutTextNoInputsWithSpaces;
+extern const base::FeatureParam<int>
+    kRichAutocompletionAutocompleteShortcutTextMinChar;
 extern const base::FeatureParam<bool> kRichAutocompletionCounterfactual;
 extern const base::FeatureParam<bool>
     kRichAutocompletionAutocompletePreferUrlsOverPrefixes;
@@ -540,7 +546,7 @@ extern const base::FeatureParam<bool>
 extern const base::FeatureParam<int>
     kShortBookmarkSuggestionsByTotalInputLengthThreshold;
 
-// Zero Suggest
+// Local history zero-prefix (aka zero-suggest) and prefix suggestions.
 // Indicates whether the user is in the counterfactual group in the experiment
 // for prefetching zero prefix suggestions on the NTP. Users in the
 // counterfactual group issue a follow-up non-cacheable request if the response
@@ -561,6 +567,14 @@ extern const base::FeatureParam<int> kZeroSuggestCacheDurationSec;
 // cache duration clock is reset and the subsequent non-prefetch zero suggest
 // requests, depending on the cache duration, are loaded from the HTTP cache.
 extern const base::FeatureParam<bool> kZeroSuggestPrefetchBypassCache;
+// Whether duplicative visits should be ignored for local history zero-suggest.
+// A duplicative visit is a visit to the same search term in an interval smaller
+// than kAutocompleteDuplicateVisitIntervalThreshold.
+extern const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits;
+// Whether duplicative visits should be ignored for local history
+// prefix-suggest. A duplicative visit is a visit to the same search term in an
+// interval smaller than kAutocompleteDuplicateVisitIntervalThreshold.
+extern const base::FeatureParam<bool> kPrefixSuggestIgnoreDuplicateVisits;
 
 // New params should be inserted above this comment and formatted as:
 // - Short comment categorizing the relevant features & params.

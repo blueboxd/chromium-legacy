@@ -18,6 +18,8 @@
 #include "base/memory/weak_ptr.h"
 #include "base/version.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
+#include "extensions/browser/updater/extension_downloader_task.h"
+#include "extensions/browser/updater/extension_downloader_types.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
 #include "extensions/browser/updater/request_queue.h"
 #include "extensions/browser/updater/safe_manifest_parser.h"
@@ -61,70 +63,6 @@ struct UpdateDetails {
 class ExtensionCache;
 class ExtensionDownloaderTestDelegate;
 class ExtensionUpdaterTest;
-
-// A structwhich wraps parameters for a single extension update request.
-struct ExtensionDownloaderTask {
-  ExtensionDownloaderTask(const ExtensionDownloaderTask&) = delete;
-  ExtensionDownloaderTask& operator=(const ExtensionDownloaderTask&) = delete;
-
-  ExtensionDownloaderTask(std::string id,
-                          GURL update_url,
-                          mojom::ManifestLocation install_location,
-                          bool is_corrupt_reinstall,
-                          int request_id,
-                          ManifestFetchData::FetchPriority fetch_priority,
-                          base::Version version,
-                          Manifest::Type type,
-                          std::string update_url_data);
-  ExtensionDownloaderTask(std::string id,
-                          GURL update_url,
-                          mojom::ManifestLocation install_location,
-                          bool is_corrupt_reinstall,
-                          int request_id,
-                          ManifestFetchData::FetchPriority fetch_priority);
-
-  ExtensionDownloaderTask(ExtensionDownloaderTask&&);
-  ExtensionDownloaderTask& operator=(ExtensionDownloaderTask&&);
-
-  ~ExtensionDownloaderTask();
-
-  std::string id;
-  GURL update_url;
-  mojom::ManifestLocation install_location;
-
-  // Indicates that we detected corruption in the local copy of the extension
-  // and we want to perform a reinstall of it.
-  bool is_corrupt_reinstall{false};
-
-  // Passed on as is to the various `delegate_` callbacks. This is used for
-  // example by clients (e.g. ExtensionUpdater) to keep track of when
-  // potentially concurrent update checks complete.
-  int request_id;
-
-  // Notifies the downloader the priority of this extension update (either
-  // foreground or background).
-  ManifestFetchData::FetchPriority fetch_priority{
-      ManifestFetchData::BACKGROUND};
-
-  // Specifies the version of the already downloaded crx file, equals
-  // to 0.0.0.0 if there is no crx file or for a pending extension so it will
-  // always be updated, and thus installed (assuming all extensions have
-  // non-zero versions).
-  base::Version version{"0.0.0.0"};
-
-  // Used for metrics only and can be TYPE_UNKNOWN if e.g. the extension is
-  // not yet installed.
-  Manifest::Type type{Manifest::TYPE_UNKNOWN};
-
-  // May be used to pass some additional data to the update server.
-  std::string update_url_data;
-
-  // Link to the delegate, set by ExtensionDownloader.
-  ExtensionDownloaderDelegate* delegate{nullptr};
-
-  // Notifies delegate about stage change.
-  void OnStageChanged(ExtensionDownloaderDelegate::Stage stage);
-};
 
 // A class that checks for updates of a given list of extensions, and downloads
 // the crx file when updates are found. It uses a |ExtensionDownloaderDelegate|
@@ -236,7 +174,7 @@ class ExtensionDownloader {
                    const std::string& package_hash,
                    const std::string& version,
                    const std::set<int>& request_ids,
-                   ManifestFetchData::FetchPriority fetch_priority);
+                   DownloadFetchPriority fetch_priority);
     ~ExtensionFetch();
 
     ExtensionId id;
@@ -244,7 +182,7 @@ class ExtensionDownloader {
     std::string package_hash;
     base::Version version;
     std::set<int> request_ids;
-    ManifestFetchData::FetchPriority fetch_priority;
+    DownloadFetchPriority fetch_priority;
 
     enum CredentialsMode {
       CREDENTIALS_NONE = 0,
@@ -443,7 +381,7 @@ class ExtensionDownloader {
   ManifestFetchData* CreateManifestFetchData(
       const GURL& update_url,
       int request_id,
-      ManifestFetchData::FetchPriority fetch_priority);
+      DownloadFetchPriority fetch_priority);
 
   // This function helps obtain an update (if any) from |possible_updates|.
   // |possible_indices| is an array of indices of |possible_updates| which

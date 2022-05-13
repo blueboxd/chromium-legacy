@@ -106,6 +106,7 @@ class ChromePasswordManagerClient
   bool IsSavingAndFillingEnabled(const GURL& url) const override;
   bool IsFillingEnabled(const GURL& url) const override;
   bool IsFillingFallbackEnabled(const GURL& url) const override;
+  bool IsAutoSignInEnabled() const override;
   bool PromptUserToSaveOrUpdatePassword(
       std::unique_ptr<password_manager::PasswordFormManagerForUI> form_to_save,
       bool is_update) override;
@@ -125,11 +126,11 @@ class ChromePasswordManagerClient
       std::vector<std::unique_ptr<password_manager::PasswordForm>> local_forms,
       const url::Origin& origin,
       CredentialsCallback callback) override;
+#if BUILDFLAG(IS_ANDROID)
   void ShowTouchToFill(
       password_manager::PasswordManagerDriver* driver,
       autofill::mojom::SubmissionReadinessState submission_readiness) override;
 
-#if BUILDFLAG(IS_ANDROID)
   // Notifies `PasswordReuseDetectionManager` about passwords selected from
   // AllPasswordsBottomSheet.
   void OnPasswordSelected(const std::u16string& text) override;
@@ -176,7 +177,7 @@ class ChromePasswordManagerClient
       const password_manager::PasswordFormManagerForUI* form_manager) override;
   void NotifyUserCredentialsWereLeaked(
       password_manager::CredentialLeakType leak_type,
-      const GURL& origin,
+      const GURL& url,
       const std::u16string& username) override;
   void TriggerReauthForPrimaryAccount(
       signin_metrics::ReauthAccessPoint access_point,
@@ -263,6 +264,7 @@ class ChromePasswordManagerClient
   password_manager::WebAuthnCredentialsDelegate*
   GetWebAuthnCredentialsDelegate() override;
   version_info::Channel GetChannel() const override;
+  void RefreshPasswordManagerSettingsIfNeeded() const override;
 
   // autofill::mojom::PasswordGenerationDriver overrides.
   void AutomaticGenerationAvailable(

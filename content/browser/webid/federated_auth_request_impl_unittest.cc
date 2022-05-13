@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/callback_forward.h"
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
@@ -155,6 +156,7 @@ struct MockConfiguration {
   FetchStatus accounts_response;
   AccountList accounts;
   FetchStatus token_response;
+  bool delay_token_response;
   RevokeResponse revoke_response;
   bool customized_dialog;
   bool wait_for_callback;
@@ -180,6 +182,7 @@ static const MockConfiguration kConfigurationValid{
     FetchStatus::kSuccess,
     kAccounts,
     FetchStatus::kSuccess,
+    false /* delay_token_response */,
     RevokeResponse::kSuccess,
     false /* customized_dialog */,
     true /* wait_for_callback */};
@@ -187,11 +190,6 @@ static const MockConfiguration kConfigurationValid{
 static const RequestExpectations kExpectationSuccess{
     RequestIdTokenStatus::kSuccess, FederatedAuthRequestResult::kSuccess,
     FETCH_ENDPOINT_ALL_REQUEST_ID_TOKEN};
-
-MockClientIdConfiguration BuildClientMetadataErrorResponse(
-    FetchStatus fetch_status) {
-  return {fetch_status, "", ""};
-}
 
 // Helper class for receiving the mojo method callback.
 class AuthRequestCallbackHelper {
@@ -227,6 +225,7 @@ class AuthRequestCallbackHelper {
  private:
   void ReceiverMethod(RequestIdTokenStatus status,
                       const absl::optional<std::string>& token) {
+    CHECK(!was_called_);
     status_ = status;
     token_ = token;
     was_called_ = true;
@@ -388,6 +387,13 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
     config_ = configuration;
   }
 
+  void RunDelayedCallbacks() {
+    for (base::OnceClosure& delayed_callback : delayed_callbacks_) {
+      std::move(delayed_callback).Run();
+    }
+    delayed_callbacks_.clear();
+  }
+
   void FetchManifestList(FetchManifestListCallback callback) override {
     fetched_endpoints_ |= FetchedEndpoint::MANIFEST_LIST;
     std::set<GURL> url_set(config_.manifest_list.provider_urls.begin(),
@@ -434,7 +440,12 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
     std::string delivered_token =
         config_.token_response == FetchStatus::kSuccess ? config_.token
                                                         : std::string();
-    std::move(callback).Run(config_.token_response, delivered_token);
+    base::OnceCallback bound_callback = base::BindOnce(
+        std::move(callback), config_.token_response, delivered_token);
+    if (config_.delay_token_response)
+      delayed_callbacks_.push_back(std::move(bound_callback));
+    else
+      std::move(bound_callback).Run();
   }
 
   void SendRevokeRequest(const GURL& revoke_url,
@@ -450,6 +461,7 @@ class TestIdpNetworkRequestManager : public MockIdpNetworkRequestManager {
  protected:
   MockConfiguration config_{kConfigurationValid};
   int fetched_endpoints_{0};
+  std::vector<base::OnceClosure> delayed_callbacks_;
 };
 
 class TestLogoutIdpNetworkRequestManager : public TestIdpNetworkRequestManager {
@@ -1028,25 +1040,14 @@ TEST_F(BasicFederatedAuthRequestImplTest, MissingAccountsEndpoint) {
   EXPECT_EQ("Provider's FedCM manifest configuration is invalid.", messages[1]);
 }
 
-// Test that request fails if manifest is missing client metadata endpoint.
+// Test that client metadata endpoint is not required in manifest.
 TEST_F(BasicFederatedAuthRequestImplTest, MissingClientMetadataEndpoint) {
   MockConfiguration configuration = kConfigurationValid;
   configuration.manifest.client_metadata_endpoint = "";
   RequestExpectations expectations = {
-      RequestIdTokenStatus::kError,
-      FederatedAuthRequestResult::kErrorFetchingManifestInvalidResponse,
-      FetchedEndpoint::MANIFEST | FetchedEndpoint::MANIFEST_LIST};
+      RequestIdTokenStatus::kSuccess, FederatedAuthRequestResult::kSuccess,
+      FETCH_ENDPOINT_ALL_REQUEST_ID_TOKEN & ~FetchedEndpoint::CLIENT_METADATA};
   RunAuthTest(kDefaultRequestParameters, expectations, configuration);
-
-  std::vector<std::string> messages =
-      RenderFrameHostTester::For(main_rfh())->GetConsoleMessages();
-  ASSERT_EQ(2U, messages.size());
-  EXPECT_EQ(
-      "Manifest is missing or has an invalid URL for the following "
-      "endpoints:\n"
-      "\"client_metadata_endpoint\"\n",
-      messages[0]);
-  EXPECT_EQ("Provider's FedCM manifest configuration is invalid.", messages[1]);
 }
 
 // Test that request fails if the accounts endpoint is in a different origin
@@ -1085,58 +1086,31 @@ TEST_F(BasicFederatedAuthRequestImplTest, AccountsCannotBeParsed) {
   RunAuthTest(kDefaultRequestParameters, expectations, configuration);
 }
 
-// Test that request fails if client metadata cannot be found.
-TEST_F(BasicFederatedAuthRequestImplTest, ClientMetadataNotFound) {
-  MockConfiguration configuration = kConfigurationValid;
-  configuration.client_metadata =
-      BuildClientMetadataErrorResponse(FetchStatus::kHttpNotFoundError);
-  RequestExpectations expectations = {
-      RequestIdTokenStatus::kError,
-      FederatedAuthRequestResult::kErrorFetchingClientMetadataHttpNotFound,
-      FetchedEndpoint::MANIFEST | FetchedEndpoint::CLIENT_METADATA |
-          FetchedEndpoint::MANIFEST_LIST};
-  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
-}
-
-// Test that request fails if client metadata endpoint returns empty response.
-TEST_F(BasicFederatedAuthRequestImplTest, ClientMetadataEmptyResponse) {
-  MockConfiguration configuration = kConfigurationValid;
-  configuration.client_metadata =
-      BuildClientMetadataErrorResponse(FetchStatus::kNoResponseError);
-  RequestExpectations expectations = {
-      RequestIdTokenStatus::kError,
-      FederatedAuthRequestResult::kErrorFetchingClientMetadataNoResponse,
-      FetchedEndpoint::MANIFEST | FetchedEndpoint::CLIENT_METADATA |
-          FetchedEndpoint::MANIFEST_LIST};
-  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
-}
-
-// Test that request fails if client metadata returns invalid response.
-TEST_F(BasicFederatedAuthRequestImplTest, ClientMetadataInvalidResponse) {
-  MockConfiguration configuration = kConfigurationValid;
-  configuration.client_metadata =
-      BuildClientMetadataErrorResponse(FetchStatus::kInvalidResponseError);
-  RequestExpectations expectations = {
-      RequestIdTokenStatus::kError,
-      FederatedAuthRequestResult::kErrorFetchingClientMetadataInvalidResponse,
-      FetchedEndpoint::MANIFEST | FetchedEndpoint::CLIENT_METADATA |
-          FetchedEndpoint::MANIFEST_LIST};
-  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
-}
-
-// Test that request fails if client metadata does not contain a privacy policy
-// URL.
-TEST_F(BasicFederatedAuthRequestImplTest, ClientMetadataNoPrivacyUrl) {
+// Test that privacy policy URL or terms of service is not required in client
+// metadata.
+TEST_F(BasicFederatedAuthRequestImplTest,
+       ClientMetadataNoPrivacyPolicyOrTermsOfServiceUrl) {
   MockConfiguration configuration = kConfigurationValid;
   configuration.client_metadata = kDefaultClientMetadata;
   configuration.client_metadata.privacy_policy_url = "";
   configuration.client_metadata.terms_of_service_url = "";
-  RequestExpectations expectations = {
-      RequestIdTokenStatus::kError,
-      FederatedAuthRequestResult::kErrorClientMetadataMissingPrivacyPolicyUrl,
-      FetchedEndpoint::MANIFEST | FetchedEndpoint::CLIENT_METADATA |
-          FetchedEndpoint::MANIFEST_LIST};
-  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess, configuration);
+}
+
+// Test that privacy policy URL is not required in client metadata.
+TEST_F(BasicFederatedAuthRequestImplTest, ClientMetadataNoPrivacyPolicyUrl) {
+  MockConfiguration configuration = kConfigurationValid;
+  configuration.client_metadata = kDefaultClientMetadata;
+  configuration.client_metadata.privacy_policy_url = "";
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess, configuration);
+}
+
+// Test that terms of service URL is not required in client metadata.
+TEST_F(BasicFederatedAuthRequestImplTest, ClientMetadataNoTermsOfServiceUrl) {
+  MockConfiguration configuration = kConfigurationValid;
+  configuration.client_metadata = kDefaultClientMetadata;
+  configuration.client_metadata.terms_of_service_url = "";
+  RunAuthTest(kDefaultRequestParameters, kExpectationSuccess, configuration);
 }
 
 // Test that request fails if all of the endpoints in the manifest are invalid.
@@ -1145,8 +1119,6 @@ TEST_F(BasicFederatedAuthRequestImplTest, AllInvalidEndpoints) {
   MockConfiguration configuration = kConfigurationValid;
   configuration.manifest.accounts_endpoint = "https://cross-origin-1.com";
   configuration.manifest.token_endpoint = "";
-  configuration.manifest.client_metadata_endpoint =
-      "https://cross-origin-2.com";
   RequestExpectations expectations = {
       RequestIdTokenStatus::kError,
       FederatedAuthRequestResult::kErrorFetchingManifestInvalidResponse,
@@ -1159,8 +1131,7 @@ TEST_F(BasicFederatedAuthRequestImplTest, AllInvalidEndpoints) {
       "Manifest is missing or has an invalid URL for the following "
       "endpoints:\n"
       "\"id_token_endpoint\"\n"
-      "\"accounts_endpoint\"\n"
-      "\"client_metadata_endpoint\"\n",
+      "\"accounts_endpoint\"\n",
       messages[0]);
   EXPECT_EQ("Provider's FedCM manifest configuration is invalid.", messages[1]);
 }
@@ -1726,6 +1697,24 @@ TEST_F(BasicFederatedAuthRequestImplTest, ApiBlockedForUnrelatedOrigin) {
   ASSERT_NE(main_test_rfh()->GetLastCommittedOrigin(), kUnrelatedOrigin);
   RunAuthTest(kDefaultRequestParameters, kExpectationSuccess,
               kConfigurationValid);
+}
+
+// Test that the request completes eventually in the case that the token request
+// times out.
+TEST_F(BasicFederatedAuthRequestImplTest, TokenRequestTimesOut) {
+  MockConfiguration configuration = kConfigurationValid;
+  configuration.delay_token_response = true;
+  RequestExpectations expectations = {RequestIdTokenStatus::kError,
+                                      FederatedAuthRequestResult::kError,
+                                      FETCH_ENDPOINT_ALL_REQUEST_ID_TOKEN};
+  // RunAuthTest() fast forwards time by a sufficient amount to cause the
+  // request to timeout. `MockConfiguration::delay_token_response` disables
+  // the auto-run logic for the token request response and enables emulating
+  // the server being very slow to return a token request response.
+  RunAuthTest(kDefaultRequestParameters, expectations, configuration);
+
+  // Resolve token request. The callback should not be called.
+  test_network_request_manager_->RunDelayedCallbacks();
 }
 
 class FederatedAuthRequestImplTestCancelConsistency

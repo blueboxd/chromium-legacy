@@ -30,9 +30,16 @@ class QueryClustersState::PostProcessor
 
   std::vector<history::Cluster> PostProcess(
       std::vector<history::Cluster> clusters) {
-    ApplySearchQuery(query_, &clusters);
-    CullNonProminentOrDuplicateClusters(query_, &clusters,
+    ApplySearchQuery(query_, clusters);
+    CullNonProminentOrDuplicateClusters(query_, clusters,
                                         &seen_single_visit_cluster_urls_);
+    // We have to do this AFTER applying the search query, because applying the
+    // search query re-scores matching visits to promote them above non-matching
+    // visits.
+    HideAndCullLowScoringVisits(clusters);
+    // Do this AFTER we cull the low scoring visits, so those visits don't get
+    // their related searches coalesced onto the cluster level.
+    CoalesceRelatedSearches(clusters);
     return clusters;
   }
 

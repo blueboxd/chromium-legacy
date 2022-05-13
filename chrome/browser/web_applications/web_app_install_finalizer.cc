@@ -12,6 +12,7 @@
 #include "base/callback.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
+#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/web_applications/os_integration/web_app_shortcuts_menu.h"
 #include "chrome/browser/web_applications/policy/web_app_policy_manager.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
+#include "chrome/browser/web_applications/user_uninstalled_preinstalled_web_app_prefs.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_icon_generator.h"
@@ -274,6 +276,12 @@ void WebAppInstallFinalizer::UninstallWebApp(
   if (app->IsPreinstalledApp()) {
     UpdateBoolWebAppPref(profile_->GetPrefs(), app_id,
                          kWasExternalAppUninstalledByUser, true);
+    // Update the default uninstalled web_app prefs if it is a preinstalled app
+    // but being removed by user.
+    UserUninstalledPreinstalledWebAppPrefs(profile_->GetPrefs())
+        .Add(app_id, app->management_to_external_config_map()
+                         .at(WebAppManagement::kDefault)
+                         .install_urls);
   }
 
   // UninstallWebApp can wipe out an app with multiple sources. This
@@ -311,16 +319,18 @@ void WebAppInstallFinalizer::UninstallFromSync(
 }
 
 void WebAppInstallFinalizer::RetryIncompleteUninstalls(
-    const std::vector<AppId>& apps_to_uninstall) {
+    const base::flat_set<AppId>& apps_to_uninstall) {
   for (const AppId& app_id : apps_to_uninstall) {
     if (base::Contains(pending_uninstalls_, app_id))
       continue;
     auto uninstall_task = std::make_unique<WebAppUninstallJob>(
         os_integration_manager_, sync_bridge_, icon_manager_, registrar_,
         install_manager_, this, translation_manager_, profile_->GetPrefs());
+    const WebApp* web_app = registrar_->GetAppById(app_id);
+    if (!web_app)
+      continue;
     uninstall_task->Start(
-        app_id,
-        url::Origin::Create(registrar_->GetAppById(app_id)->start_url()),
+        app_id, url::Origin::Create(web_app->start_url()),
         webapps::WebappUninstallSource::kStartupCleanup,
         base::BindOnce(&WebAppInstallFinalizer::OnUninstallComplete,
                        weak_ptr_factory_.GetWeakPtr(), app_id,

@@ -512,6 +512,7 @@ void BookmarkBarView::RemoveObserver(BookmarkBarViewObserver* observer) {
 
 void BookmarkBarView::SetPageNavigator(content::PageNavigator* navigator) {
   page_navigator_ = navigator;
+  saved_tab_group_bar_->SetPageNavigator(navigator);
 }
 
 void BookmarkBarView::SetInfoBarVisible(bool infobar_visible) {
@@ -1453,11 +1454,11 @@ void BookmarkBarView::Init() {
           &BookmarkBarView::OnAppsPageShortcutVisibilityPrefChanged,
           base::Unretained(this)));
 
-  if (base::FeatureList::IsEnabled(features::kTabGroupsSave) &&
-      browser_->profile()->IsRegularProfile()) {
-    tab_groups_separator_view_ =
-        AddChildView(std::make_unique<ButtonSeparatorView>());
-  }
+  tab_groups_separator_view_ =
+      AddChildView(std::make_unique<ButtonSeparatorView>());
+  tab_groups_separator_view_->SetVisible(
+      base::FeatureList::IsEnabled(features::kTabGroupsSave) &&
+      browser_->profile()->IsRegularProfile());
 
   profile_pref_registrar_.Add(
       bookmarks::prefs::kShowManagedBookmarksInBookmarkBar,

@@ -20,15 +20,20 @@ import java.lang.annotation.RetentionPolicy;
  */
 public interface BackPressHandler {
     // The smaller the value is, the higher the priority is.
-    @IntDef({Type.TEXT_BUBBLE, Type.AR_DELEGATE, Type.LAYOUT_MANAGER, Type.MANUAL_FILLING,
-            Type.TAB_MODAL_HANDLER})
+    @IntDef({Type.TEXT_BUBBLE, Type.VR_DELEGATE, Type.AR_DELEGATE, Type.LAYOUT_MANAGER,
+            Type.START_SURFACE_MEDIATOR, Type.SELECTION_POPUP, Type.MANUAL_FILLING,
+            Type.TAB_MODAL_HANDLER, Type.FULLSCREEN})
     @Retention(RetentionPolicy.SOURCE)
     @interface Type {
         int TEXT_BUBBLE = 0;
-        int AR_DELEGATE = 1;
-        int LAYOUT_MANAGER = 2;
-        int MANUAL_FILLING = 3;
-        int TAB_MODAL_HANDLER = 4;
+        int VR_DELEGATE = 1;
+        int AR_DELEGATE = 2;
+        int LAYOUT_MANAGER = 3;
+        int START_SURFACE_MEDIATOR = 4;
+        int SELECTION_POPUP = 5;
+        int MANUAL_FILLING = 6;
+        int FULLSCREEN = 7;
+        int TAB_MODAL_HANDLER = 8;
         int NUM_TYPES = TAB_MODAL_HANDLER + 1;
     }
 
@@ -37,7 +42,9 @@ public interface BackPressHandler {
     /**
      * A {@link ObservableSupplier<Boolean>} which notifies of whether the implementer wants to
      * intercept the back gesture.
-     * @return True if the implementer wants to intercept the back gesture.
+     * @return An {@link ObservableSupplier<Boolean>} which yields true if the implementer wants to
+     *         intercept the back gesture; otherwise, it should yield false to prevent {@link
+     *         #handleBackPress()} from being called.
      */
     default ObservableSupplier<Boolean> getHandleBackPressChangedSupplier() {
         return new ObservableSupplierImpl<>();

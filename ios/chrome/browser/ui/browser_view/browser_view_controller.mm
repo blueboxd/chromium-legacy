@@ -55,7 +55,6 @@
 #import "ios/chrome/browser/tabs/tab_title_util.h"
 #import "ios/chrome/browser/translate/chrome_ios_translate_client.h"
 #import "ios/chrome/browser/ui/authentication/re_signin_infobar_delegate.h"
-#import "ios/chrome/browser/ui/authentication/signin_presenter.h"
 #import "ios/chrome/browser/ui/bookmarks/bookmark_interaction_controller.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_view_controller.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller_dependency_factory.h"
@@ -104,6 +103,7 @@
 #import "ios/chrome/browser/ui/side_swipe/side_swipe_controller.h"
 #import "ios/chrome/browser/ui/side_swipe/swipe_view.h"
 #import "ios/chrome/browser/ui/start_surface/start_surface_features.h"
+#import "ios/chrome/browser/ui/sync/utils/features.h"
 #import "ios/chrome/browser/ui/tab_switcher/tab_strip/tab_strip_coordinator.h"
 #import "ios/chrome/browser/ui/tabs/background_tab_animation_view.h"
 #import "ios/chrome/browser/ui/tabs/foreground_tab_animation_view.h"
@@ -134,6 +134,7 @@
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller.h"
 #import "ios/chrome/browser/ui/voice/text_to_speech_playback_controller_factory.h"
 #include "ios/chrome/browser/upgrade/upgrade_center.h"
+#import "ios/chrome/browser/upgrade/utils/features.h"
 #import "ios/chrome/browser/url_loading/url_loading_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_notifier_browser_agent.h"
 #import "ios/chrome/browser/url_loading/url_loading_observer_bridge.h"
@@ -270,7 +271,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                                      OmniboxPopupPresenterDelegate,
                                      PreloadControllerDelegate,
                                      SideSwipeControllerDelegate,
-                                     SigninPresenter,
                                      TabStripPresentation,
                                      UIGestureRecognizerDelegate,
                                      URLLoadingObserver,
@@ -579,6 +579,14 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
 #pragma mark - Public Properties
 
+// TODO(crbug.com/1323764): This uses PopupMenuCommands via inclusion in
+// BrowserCommands. This is also not a public property. Instead of using
+// |self.dispatcher| internally, this should use the currect pattern for handler
+// injection into a view controller with a dedicated id<PopupMenuCommands>
+// public property set externally.
+// TODO(crbug.com/1323778): This uses SnackbarCommands via inclusion in
+// BrowserCommands. Instead a a dedicated id<SnackbarCommands> property should
+// be injected.
 - (id<ApplicationCommands,
       BrowserCommands,
       FindInPageCommands,
@@ -1060,6 +1068,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     [self.textZoomHandler closeTextZoom];
   }
 
+  // TODO(crbug.com/1323764): This will need to be called on the
+  // PopupMenuCommands handler.
   [self.dispatcher dismissPopupMenuAnimated:NO];
 
   if (self.presentedViewController) {
@@ -1249,6 +1259,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 #pragma mark - UIViewController
 
 - (void)viewDidLoad {
+  DCHECK(self.browser);
+
   CGRect initialViewsRect = self.view.bounds;
   UIViewAutoresizing initialViewAutoresizing =
       UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -1276,13 +1288,24 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 
   // Install fake status bar for iPad iOS7
   [self installFakeStatusBar];
+
+  // TODO(crbug.com/1272534): Move BubblePresenter to BrowserCoordinator.
+  self.bubblePresenter =
+      [[BubblePresenter alloc] initWithBrowserState:self.browserState
+                                           delegate:self
+                                 rootViewController:self];
+  self.bubblePresenter.toolbarHandler =
+      HandlerForProtocol(self.browser->GetCommandDispatcher(), ToolbarCommands);
+  [self.browser->GetCommandDispatcher()
+      startDispatchingToTarget:self.bubblePresenter
+                   forProtocol:@protocol(HelpCommands)];
+
   [self buildToolbarAndTabStrip];
   [self setUpViewLayout:YES];
   [self addConstraintsToToolbar];
 
-  // If the browser and browser state are valid, finish initialization.
-  if (self.browser && self.browserState)
-    [self addUIFunctionalityForBrowserAndBrowserState];
+  // Finish initialization.
+  [self addUIFunctionalityForBrowserAndBrowserState];
 
   // Add a tap gesture recognizer to save the last tap location for the source
   // location of the new tab animation.
@@ -1792,6 +1815,13 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       _locationBarModelDelegate.get(), kMaxURLDisplayChars);
   self.helper = [_dependencyFactory newBrowserViewControllerHelper];
 
+  self.popupMenuCoordinator =
+      [[PopupMenuCoordinator alloc] initWithBaseViewController:self
+                                                       browser:self.browser];
+  self.popupMenuCoordinator.bubblePresenter = self.bubblePresenter;
+  self.popupMenuCoordinator.UIUpdater = _toolbarCoordinatorAdaptor;
+  [self.popupMenuCoordinator start];
+
   PrimaryToolbarCoordinator* topToolbarCoordinator =
       [[PrimaryToolbarCoordinator alloc] initWithBrowser:self.browser];
   self.primaryToolbarCoordinator = topToolbarCoordinator;
@@ -2030,25 +2060,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
       [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.contentArea]
           .heightAnchor;
 
-  // TODO(crbug.com/1272534): Move BubblePresenter to BrowserCoordinator.
-  self.bubblePresenter =
-      [[BubblePresenter alloc] initWithBrowserState:self.browserState
-                                           delegate:self
-                                 rootViewController:self];
-  self.bubblePresenter.toolbarHandler =
-      HandlerForProtocol(self.browser->GetCommandDispatcher(), ToolbarCommands);
-  [self.browser->GetCommandDispatcher()
-      startDispatchingToTarget:self.bubblePresenter
-                   forProtocol:@protocol(HelpCommands)];
   self.helpHandler =
       HandlerForProtocol(self.browser->GetCommandDispatcher(), HelpCommands);
-
-  self.popupMenuCoordinator =
-      [[PopupMenuCoordinator alloc] initWithBaseViewController:self
-                                                       browser:self.browser];
-  self.popupMenuCoordinator.bubblePresenter = self.bubblePresenter;
-  self.popupMenuCoordinator.UIUpdater = _toolbarCoordinatorAdaptor;
-  [self.popupMenuCoordinator start];
 
   self.primaryToolbarCoordinator.longPressDelegate = self.popupMenuCoordinator;
   self.secondaryToolbarCoordinator.longPressDelegate =
@@ -2381,6 +2394,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   // be unrecognized.
   if (_isShutdown)
     return;
+
+  // TODO(crbug.com/1323764): This will need to be called on the
+  // PopupMenuCommands handler.
   [self.dispatcher dismissPopupMenuAnimated:NO];
   [self.helpHandler hideAllHelpBubbles];
 }
@@ -2612,6 +2628,9 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   message.accessibilityLabel = text;
   message.duration = 2.0;
   message.category = kBrowserViewControllerSnackbarCategory;
+
+  // TODO(crbug.com/1323778): This will need to be called on the
+  // SnackbarCommands handler.
   [self.dispatcher showSnackbarMessage:message];
 }
 
@@ -3997,8 +4016,11 @@ NSString* const kBrowserViewControllerSnackbarCategory =
     self.browserContainerViewController.contentView = nil;
   }
 
-  // TODO(crbug.com/1272546): Move UpgradeCenter updates into a browser agent.
-  [[UpgradeCenter sharedInstance] tabWillClose:webState->GetStableIdentifier()];
+  if (!IsUpgradeCenterRefactorEnabled()) {
+    // TODO(crbug.com/1272546): Move UpgradeCenter updates into a browser agent.
+    [[UpgradeCenter sharedInstance]
+        tabWillClose:webState->GetStableIdentifier()];
+  }
 }
 
 // Observer method, WebState replaced in |webStateList|.
@@ -4030,26 +4052,30 @@ NSString* const kBrowserViewControllerSnackbarCategory =
           ->IsRestoringSession()) {
     return;
   }
-  // When adding new tabs, check what kind of reminder infobar should
-  // be added to the new tab. Try to add only one of them.
-  // This check is done when a new tab is added either through the Tools Menu
-  // "New Tab", through a long press on the Tab Switcher button "New Tab", and
-  // through creating a New Tab from the Tab Switcher. This logic needs to
-  // happen after a new WebState has added and finished initial navigation. If
-  // this happens earlier, the initial navigation may end up clearing the
-  // infobar(s) that are just added.
-  // TODO(crbug.com/1272546): Move UpgradeCenter updates into a browser agent.
-  infobars::InfoBarManager* infoBarManager =
-      InfoBarManagerImpl::FromWebState(webState);
-  NSString* tabID = webState->GetStableIdentifier();
-  [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
-                                             forTabId:tabID];
 
-  // TODO(crbug.com/1272545): Factor this logic into a browser agent.
-  if (!ReSignInInfoBarDelegate::Create(self.browserState, webState,
-                                       self /* id<SigninPresenter> */)) {
-    DisplaySyncErrors(self.browserState, webState,
-                      self /* id<SyncPresenter> */);
+  if (!IsUpgradeCenterRefactorEnabled()) {
+    // When adding new tabs, check what kind of reminder infobar should
+    // be added to the new tab. Try to add only one of them.
+    // This check is done when a new tab is added either through the Tools Menu
+    // "New Tab", through a long press on the Tab Switcher button "New Tab", and
+    // through creating a New Tab from the Tab Switcher. This logic needs to
+    // happen after a new WebState has added and finished initial navigation. If
+    // this happens earlier, the initial navigation may end up clearing the
+    // infobar(s) that are just added.
+    // TODO(crbug.com/1272546): Move UpgradeCenter updates into a browser agent.
+    infobars::InfoBarManager* infoBarManager =
+        InfoBarManagerImpl::FromWebState(webState);
+    NSString* tabID = webState->GetStableIdentifier();
+    [[UpgradeCenter sharedInstance] addInfoBarToManager:infoBarManager
+                                               forTabId:tabID];
+  }
+
+  if (!IsDisplaySyncErrorsRefactorEnabled()) {
+    if (!ReSignInInfoBarDelegate::Create(self.browserState, webState,
+                                         self /* id<SigninPresenter> */)) {
+      DisplaySyncErrors(self.browserState, webState,
+                        self /* id<SyncPresenter> */);
+    }
   }
 
   BOOL inBackground = !activating;

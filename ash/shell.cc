@@ -118,6 +118,8 @@
 #include "ash/system/firmware_update/firmware_update_notification_controller.h"
 #include "ash/system/geolocation/geolocation_controller.h"
 #include "ash/system/human_presence/human_presence_orientation_controller.h"
+#include "ash/system/human_presence/snooping_protection_controller.h"
+#include "ash/system/keyboard_brightness/keyboard_backlight_color_controller.h"
 #include "ash/system/keyboard_brightness/keyboard_brightness_controller.h"
 #include "ash/system/keyboard_brightness_control_delegate.h"
 #include "ash/system/locale/locale_update_controller_impl.h"
@@ -146,7 +148,6 @@
 #include "ash/system/system_notification_controller.h"
 #include "ash/system/toast/toast_manager_impl.h"
 #include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/unified/snooping_protection_controller.h"
 #include "ash/system/usb_peripheral/usb_peripheral_notification_controller.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/touch/touch_devices_controller.h"
@@ -717,13 +718,13 @@ Shell::~Shell() {
   // before destroying |session_controller_|.
   accelerator_controller_->Shutdown();
 
-  // Must be destructed before hps_orientation_controller_.
+  // Must be destructed before human_presence_orientation_controller_.
   power_prefs_.reset();
 
   // Must be destructed before the tablet mode and message center controllers,
   // both of which these rely on.
-  hps_notify_controller_.reset();
-  hps_orientation_controller_.reset();
+  snooping_protection_controller_.reset();
+  human_presence_orientation_controller_.reset();
 
   // Shutdown tablet mode controller early on since it has some observers which
   // need to be removed. It will be destroyed later after all windows are closed
@@ -820,6 +821,7 @@ Shell::~Shell() {
   display_configuration_controller_.reset();
 
   // Needs to be destructed before `ime_controler_`.
+  keyboard_backlight_color_controller_.reset();
   rgb_keyboard_manager_.reset();
 
   // These members access Shell in their destructors.
@@ -1017,13 +1019,15 @@ void Shell::Init(
   // Observes the tablet mode controller if any hps feature is enabled.
   if (features::IsSnoopingProtectionEnabled() ||
       features::IsQuickDimEnabled()) {
-    hps_orientation_controller_ = std::make_unique<HpsOrientationController>();
+    human_presence_orientation_controller_ =
+        std::make_unique<HumanPresenceOrientationController>();
   }
 
-  // Construct HpsNotifyController, must be constructed after
-  // HpsOrientationController.
+  // Construct SnoopingProtectionController, must be constructed after
+  // HumanPresenceOrientationController.
   if (features::IsSnoopingProtectionEnabled()) {
-    hps_notify_controller_ = std::make_unique<HpsNotifyController>();
+    snooping_protection_controller_ =
+        std::make_unique<SnoopingProtectionController>();
   }
 
   // Manages lifetime of DiagnosticApp logs.
@@ -1068,6 +1072,13 @@ void Shell::Init(
   views::FocusManagerFactory::Install(new AshFocusManagerFactory);
 
   wallpaper_controller_ = WallpaperControllerImpl::Create(local_state_);
+
+  if (features::IsRgbKeyboardEnabled()) {
+    // Initialized after |wallpaper_controller_| because we will need to observe
+    // when the extracted wallpaper color changes.
+    keyboard_backlight_color_controller_ =
+        std::make_unique<KeyboardBacklightColorController>();
+  }
 
   window_positioner_ = std::make_unique<WindowPositioner>();
 

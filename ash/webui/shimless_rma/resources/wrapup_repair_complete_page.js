@@ -186,6 +186,9 @@ export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
   /** @protected */
   onPowerwashButtonClick_(e) {
     e.preventDefault();
+    const dialog = /** @type {!CrDialogElement} */ (
+      this.shadowRoot.querySelector('#powerwashDialog'));
+    dialog.close();
     this.shutDownOrReboot_();
   }
 
@@ -311,6 +314,16 @@ export class WrapupRepairCompletePage extends WrapupRepairCompletePageBase {
    */
   disableShutdownButtons_() {
     return this.shutdownButtonsDisabled_ || this.allButtonsDisabled;
+  }
+
+  /**
+   * @return {string}
+   * @protected
+   */
+  getRepairCompletedShutoffText_() {
+    return this.pluggedIn_ ?
+        this.i18n('repairCompletedShutoffInstructionsText') :
+        this.i18n('repairCompletedShutoffDescriptionText');
   }
 }
 

@@ -840,10 +840,11 @@ void PictureLayerImpl::UpdateCanUseLCDText(
       ComputeLCDTextDisallowedReason(raster_translation_aligns_pixels);
 }
 
-bool PictureLayerImpl::HasWillChangeTransformHint() const {
+bool PictureLayerImpl::AffectedByWillChangeTransformHint() const {
   TransformNode* transform_node =
       GetTransformTree().Node(transform_tree_index());
-  return transform_node && transform_node->will_change_transform;
+  return transform_node &&
+         transform_node->node_or_ancestors_will_change_transform;
 }
 
 LCDTextDisallowedReason PictureLayerImpl::ComputeLCDTextDisallowedReason(
@@ -1233,7 +1234,7 @@ bool PictureLayerImpl::CanRecreateHighResTilingForLCDTextAndRasterTransform(
   // Keep the non-ideal raster translation unchanged for transform animations
   // to avoid re-rasterization during animation.
   if (draw_properties().screen_space_transform_is_animating ||
-      HasWillChangeTransformHint())
+      AffectedByWillChangeTransformHint())
     return false;
   // Also avoid re-rasterization during pinch-zoom.
   if (layer_tree_impl()->PinchGestureActive())
@@ -1358,7 +1359,7 @@ bool PictureLayerImpl::ShouldAdjustRasterScale() const {
     // will-change: transform hint to preserve maximum resolution tiles
     // needed.
     if (draw_properties().screen_space_transform_is_animating ||
-        !HasWillChangeTransformHint())
+        !AffectedByWillChangeTransformHint())
       return true;
   }
 
@@ -1423,7 +1424,7 @@ bool PictureLayerImpl::ShouldAdjustRasterScale() const {
 
   // Don't update will-change: transform layers if the raster contents scale is
   // bigger than the minimum scale.
-  if (HasWillChangeTransformHint()) {
+  if (AffectedByWillChangeTransformHint()) {
     float min_raster_scale = MinimumRasterContentsScaleForWillChangeTransform();
     if (raster_contents_scale_.x() >= min_raster_scale &&
         raster_contents_scale_.y() >= min_raster_scale)
@@ -1530,7 +1531,7 @@ void PictureLayerImpl::RecalculateRasterScales() {
   if (draw_properties().screen_space_transform_is_animating)
     AdjustRasterScaleForTransformAnimation(preserved_raster_contents_scale);
 
-  if (HasWillChangeTransformHint()) {
+  if (AffectedByWillChangeTransformHint()) {
     float min_scale = MinimumRasterContentsScaleForWillChangeTransform();
     raster_contents_scale_.SetToMax(gfx::Vector2dF(min_scale, min_scale));
   }
@@ -1576,7 +1577,7 @@ void PictureLayerImpl::AdjustRasterScaleForTransformAnimation(
   raster_contents_scale_.SetToMax(
       gfx::Vector2dF(maximum_animation_scale, maximum_animation_scale));
 
-  if (HasWillChangeTransformHint()) {
+  if (AffectedByWillChangeTransformHint()) {
     // If we have a will-change: transform hint, do not shrink the content
     // raster scale, otherwise we will end up throwing away larger tiles we may
     // need again.
@@ -1642,7 +1643,7 @@ void PictureLayerImpl::CleanUpTilingsOnActiveLayer(
 
 float PictureLayerImpl::MinimumRasterContentsScaleForWillChangeTransform()
     const {
-  DCHECK(HasWillChangeTransformHint());
+  DCHECK(AffectedByWillChangeTransformHint());
   float native_scale = ideal_device_scale_ * ideal_page_scale_;
   float ideal_scale = ideal_contents_scale_key();
   // Clamp will-change: transform layers to be at least the native scale,
@@ -1815,7 +1816,7 @@ void PictureLayerImpl::UpdateIdealScales() {
   ideal_contents_scale_ = GetIdealContentsScale();
 
   if (layer_tree_impl()->PageScaleTransformNode()) {
-    DCHECK(!layer_tree_impl()->settings().is_layer_tree_for_subframe);
+    DCHECK(layer_tree_impl()->settings().is_for_scalable_page);
     ideal_page_scale_ = IsAffectedByPageScale()
                             ? layer_tree_impl()->current_page_scale_factor()
                             : 1.f;
@@ -1824,16 +1825,16 @@ void PictureLayerImpl::UpdateIdealScales() {
   // This layer may be in a layer tree embedded in a hierarchy that has its own
   // page scale factor. We represent that here as 'external_page_scale_factor',
   // a value that affects raster scale in the same way that page_scale_factor
-  // does, but doesn't affect any geometry calculations. In a normal main frame
-  // or OOPIF, only one of current or external page scale factor is ever used
-  // but not both. The only exception to this is a main frame in a portal. It
-  // may have a current_page_scale_factor (e.g. due to a viewport <meta> tag)
-  // as well as an external_page_scale_factor coming from the page scale of its
-  // embedder page.
+  // does, but doesn't affect any geometry calculations. In a normal main frame,
+  // fenced frame, or OOPIF, only one of current or external page scale factor
+  // is ever used but not both. The only exception to this is a main frame in a
+  // portal or a guest view. In these cases we may have a
+  // current_page_scale_factor (e.g. due to a viewport <meta> tag) as well as an
+  // external_page_scale_factor coming from the page scale of its embedder page.
   float external_page_scale_factor =
       layer_tree_impl() ? layer_tree_impl()->external_page_scale_factor() : 1.f;
   DCHECK(!layer_tree_impl() ||
-         !layer_tree_impl()->settings().is_layer_tree_for_subframe ||
+         layer_tree_impl()->settings().is_for_scalable_page ||
          external_page_scale_factor == 1.f ||
          layer_tree_impl()->current_page_scale_factor() == 1.f);
   ideal_page_scale_ *= external_page_scale_factor;

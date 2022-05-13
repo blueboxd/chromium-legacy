@@ -169,6 +169,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/resize_observer/resize_observation.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/core/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
@@ -1222,7 +1223,8 @@ void Element::ScrollIntoViewNoVisualUpdate(
   }
 
   PhysicalRect bounds = BoundingBoxForScrollIntoView();
-  GetLayoutObject()->ScrollRectToVisible(bounds, std::move(params));
+  scroll_into_view_util::ScrollRectToVisible(*GetLayoutObject(), bounds,
+                                             std::move(params));
 
   GetDocument().SetSequentialFocusNavigationStartingPoint(this);
 }
@@ -1236,15 +1238,17 @@ void Element::scrollIntoViewIfNeeded(bool center_if_needed) {
 
   PhysicalRect bounds = BoundingBoxForScrollIntoView();
   if (center_if_needed) {
-    GetLayoutObject()->ScrollRectToVisible(
-        bounds, ScrollAlignment::CreateScrollIntoViewParams(
-                    ScrollAlignment::CenterIfNeeded(),
-                    ScrollAlignment::CenterIfNeeded()));
+    scroll_into_view_util::ScrollRectToVisible(
+        *GetLayoutObject(), bounds,
+        ScrollAlignment::CreateScrollIntoViewParams(
+            ScrollAlignment::CenterIfNeeded(),
+            ScrollAlignment::CenterIfNeeded()));
   } else {
-    GetLayoutObject()->ScrollRectToVisible(
-        bounds, ScrollAlignment::CreateScrollIntoViewParams(
-                    ScrollAlignment::ToEdgeIfNeeded(),
-                    ScrollAlignment::ToEdgeIfNeeded()));
+    scroll_into_view_util::ScrollRectToVisible(
+        *GetLayoutObject(), bounds,
+        ScrollAlignment::CreateScrollIntoViewParams(
+            ScrollAlignment::ToEdgeIfNeeded(),
+            ScrollAlignment::ToEdgeIfNeeded()));
   }
 }
 
@@ -3176,12 +3180,23 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
 void Element::AttachLayoutTree(AttachContext& context) {
   DCHECK(GetDocument().InStyleRecalc());
 
+  StyleEngine& style_engine = GetDocument().GetStyleEngine();
+
   const ComputedStyle* style = GetComputedStyle();
   bool being_rendered =
       context.parent && style && !style->IsEnsuredInDisplayNone();
+
   if (!being_rendered && !ChildNeedsReattachLayoutTree()) {
-    Node::AttachLayoutTree(context);
-    return;
+    // We may have skipped recalc for this Element if it's a container query
+    // container. This recalc must be resumed now, since we're not going to
+    // create a LayoutObject for the Element after all.
+    style_engine.RecalcStyleForNonLayoutNGContainerDescendants(*this);
+    // The above recalc may have marked some descendant for reattach, which
+    // would set the child-needs flag.
+    if (!ChildNeedsReattachLayoutTree()) {
+      Node::AttachLayoutTree(context);
+      return;
+    }
   }
 
   AttachContext children_context(context);
@@ -3227,9 +3242,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
     // instance because the parent LayoutObject returns false for
     // IsChildAllowed, we need to complete the skipped style recalc for size
     // query containers as we would not have an NGBlockNode to resume from.
-    GetDocument()
-        .GetStyleEngine()
-        .RecalcStyleForNonLayoutNGContainerDescendants(*this);
+    style_engine.RecalcStyleForNonLayoutNGContainerDescendants(*this);
   }
 
   bool skip_container_descendants = SkippedContainerStyleRecalc();
@@ -3390,12 +3403,6 @@ scoped_refptr<ComputedStyle> Element::StyleForLayoutObject(
   if (!style) {
     DCHECK(IsPseudoElement());
     return nullptr;
-  }
-
-  if (ElementAnimations* element_animations = GetElementAnimations()) {
-    // See also PostStyleUpdateScope.
-    if (!RuntimeEnabledFeatures::CSSDelayedAnimationUpdatesEnabled())
-      element_animations->CssAnimations().MaybeApplyPendingUpdate(this);
   }
 
   style->UpdateIsStackingContextWithoutContainment(
@@ -3696,6 +3703,8 @@ static ContainerQueryEvaluator* ComputeContainerQueryEvaluator(
     const ComputedStyle* old_style,
     const ComputedStyle& new_style) {
   if (!new_style.IsContainerForSizeContainerQueries())
+    return nullptr;
+  if (new_style.InsideFragmentationContextWithNondeterministicEngine())
     return nullptr;
   // If we're switching to display:contents, any existing results cached on
   // ContainerQueryEvaluator are no longer valid, since any style recalc
@@ -5220,8 +5229,9 @@ void Element::UpdateSelectionOnFocus(
       params->align_x->rect_partial =
           mojom::blink::ScrollAlignment::Behavior::kNoScroll;
 
-      GetLayoutObject()->ScrollRectToVisible(BoundingBoxForScrollIntoView(),
-                                             std::move(params));
+      scroll_into_view_util::ScrollRectToVisible(*GetLayoutObject(),
+                                                 BoundingBoxForScrollIntoView(),
+                                                 std::move(params));
     }
   }
 }

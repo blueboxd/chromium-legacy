@@ -32,6 +32,7 @@
 <translation id="2134029355740465625">동영상 설정</translation>
 <translation id="2144806332417375165">맞춤 동영상 매개변수</translation>
 <translation id="2175927920773552910">QR 코드</translation>
+<translation id="2244252133441425811">동영상 FPS 선택 도구 사용</translation>
 <translation id="2271433936731426666">원본 크기 동영상 스냅샷 사용</translation>
 <translation id="229579744168541441">디스크로 내보내기</translation>
 <translation id="2320741269052147773">왼쪽으로 화면 이동</translation>
@@ -118,6 +119,7 @@
 이미지 또는 동영상 품질에 관한 의견인 경우 샘플 사진이나 동영상을 첨부하고 문제를 설명해 주세요. 예를 들면 사진이 너무 어둡다거나 대상에 초점이 맞지 않는다고 설명할 수 있습니다.</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" />메가픽셀</translation>
 <translation id="6527303717912515753">공유</translation>
+<translation id="6617916774429601017">모든 해상도 보기</translation>
 <translation id="6631515515009660915">미러링 꺼짐</translation>
 <translation id="6652737148136672975">화살표 키를 사용해 모서리 위치를 움직이세요.</translation>
 <translation id="667999046851023355">문서</translation>

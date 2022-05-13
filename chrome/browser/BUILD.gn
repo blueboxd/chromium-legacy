@@ -393,6 +393,8 @@ static_library("browser") {
     "dips/cookie_access_filter.cc",
     "dips/cookie_access_filter.h",
     "dips/cookie_access_type.h",
+    "dips/cookie_mode.cc",
+    "dips/cookie_mode.h",
     "dips/dips_bounce_detector.cc",
     "dips/dips_bounce_detector.h",
     "dips/dips_helper.cc",
@@ -1047,6 +1049,10 @@ static_library("browser") {
     "password_manager/credentials_cleaner_runner_factory.h",
     "password_manager/field_info_manager_factory.cc",
     "password_manager/field_info_manager_factory.h",
+    "password_manager/password_manager_settings_service_factory.cc",
+    "password_manager/password_manager_settings_service_factory.h",
+    "password_manager/password_manager_settings_service_impl.cc",
+    "password_manager/password_manager_settings_service_impl.h",
     "password_manager/password_reuse_manager_factory.cc",
     "password_manager/password_reuse_manager_factory.h",
     "password_manager/password_scripts_fetcher_factory.cc",
@@ -1170,8 +1176,6 @@ static_library("browser") {
     "policy/device_management_service_configuration.h",
     "policy/dm_token_utils.cc",
     "policy/dm_token_utils.h",
-    "policy/enrollment_status.cc",
-    "policy/enrollment_status.h",
     "policy/file_selection_dialogs_policy_handler.cc",
     "policy/file_selection_dialogs_policy_handler.h",
     "policy/homepage_location_policy_handler.cc",
@@ -1332,6 +1336,7 @@ static_library("browser") {
     "prefetch/search_prefetch/search_prefetch_service.h",
     "prefetch/search_prefetch/search_prefetch_service_factory.cc",
     "prefetch/search_prefetch/search_prefetch_service_factory.h",
+    "prefetch/search_prefetch/search_prefetch_url_loader.cc",
     "prefetch/search_prefetch/search_prefetch_url_loader.h",
     "prefetch/search_prefetch/search_prefetch_url_loader_interceptor.cc",
     "prefetch/search_prefetch/search_prefetch_url_loader_interceptor.h",
@@ -2009,7 +2014,6 @@ static_library("browser") {
     "//chrome/browser/ui/webui/download_shelf:mojo_bindings",
     "//chrome/browser/ui/webui/downloads:mojo_bindings",
     "//chrome/browser/ui/webui/feed:mojo_bindings",
-    "//chrome/browser/ui/webui/history_clusters:mojo_bindings",
     "//chrome/browser/ui/webui/internals/user_education:mojo_bindings",
     "//chrome/browser/ui/webui/omnibox:mojo_bindings",
     "//chrome/browser/ui/webui/realbox:mojo_bindings",
@@ -2531,6 +2535,7 @@ static_library("browser") {
       "//components/quirks",
       "//components/session_manager/core",
       "//device/vr/public/mojom:isolated_xr_service",
+      "//remoting/host/chromeos:features",
     ]
 
     allow_circular_includes_from += [
@@ -3268,8 +3273,6 @@ static_library("browser") {
       "password_manager/android/save_update_password_message_delegate.h",
       "password_manager/android/update_password_infobar_delegate_android.cc",
       "password_manager/android/update_password_infobar_delegate_android.h",
-      "password_manager/password_manager_settings_service_factory.cc",
-      "password_manager/password_manager_settings_service_factory.h",
       "payments/android/service_worker_payment_app_bridge.cc",
       "permissions/grouped_permission_infobar_delegate_android.cc",
       "permissions/grouped_permission_infobar_delegate_android.h",
@@ -3666,9 +3669,15 @@ static_library("browser") {
       "apps/intent_helper/intent_picker_internal.h",
       "apps/intent_helper/page_transition_util.cc",
       "apps/intent_helper/page_transition_util.h",
+      "autofill_assistant/password_change/apc_client.cc",
       "autofill_assistant/password_change/apc_client.h",
       "autofill_assistant/password_change/apc_client_impl.cc",
       "autofill_assistant/password_change/apc_client_impl.h",
+      "autofill_assistant/password_change/apc_external_action_delegate.cc",
+      "autofill_assistant/password_change/apc_external_action_delegate.h",
+      "autofill_assistant/password_change/apc_onboarding_coordinator.h",
+      "autofill_assistant/password_change/apc_onboarding_coordinator_impl.cc",
+      "autofill_assistant/password_change/apc_onboarding_coordinator_impl.h",
       "background/background_contents.cc",
       "background/background_contents.h",
       "background/background_contents_service_observer.h",
@@ -4552,6 +4561,7 @@ static_library("browser") {
       "//third_party/sqlite",
       "//third_party/zxcvbn-cpp",
       "//ui/webui/resources/cr_components/app_management:mojo_bindings",
+      "//ui/webui/resources/cr_components/history_clusters:mojo_bindings",
     ]
     public_deps += [
       "//chrome/common:buildflags",
@@ -4729,6 +4739,8 @@ static_library("browser") {
       "google/google_brand_code_map_chromeos.cc",
       "google/google_brand_code_map_chromeos.h",
       "icon_loader_chromeos.cc",
+      "lifetime/application_lifetime_chromeos.cc",
+      "lifetime/application_lifetime_chromeos.h",
       "media/chromeos_login_media_access_handler.cc",
       "media/chromeos_login_media_access_handler.h",
       "media/public_session_media_access_handler.cc",
@@ -5198,11 +5210,21 @@ static_library("browser") {
       "chrome_browser_main_parts_lacros.h",
       "chromeos/app_mode/app_session.cc",
       "chromeos/app_mode/app_session.h",
+      "chromeos/app_mode/chrome_kiosk_app_installer.cc",
+      "chromeos/app_mode/chrome_kiosk_app_installer.h",
+      "chromeos/app_mode/chrome_kiosk_app_launcher.cc",
+      "chromeos/app_mode/chrome_kiosk_app_launcher.h",
+      "chromeos/app_mode/chrome_kiosk_external_loader_broker.cc",
+      "chromeos/app_mode/chrome_kiosk_external_loader_broker.h",
+      "chromeos/app_mode/kiosk_app_external_loader.cc",
+      "chromeos/app_mode/kiosk_app_external_loader.h",
       "chromeos/app_mode/kiosk_session_plugin_handler.cc",
       "chromeos/app_mode/kiosk_session_plugin_handler.h",
       "chromeos/app_mode/kiosk_session_plugin_handler_delegate.h",
       "chromeos/app_mode/kiosk_settings_navigation_throttle.cc",
       "chromeos/app_mode/kiosk_settings_navigation_throttle.h",
+      "chromeos/app_mode/startup_app_launcher_update_checker.cc",
+      "chromeos/app_mode/startup_app_launcher_update_checker.h",
       "chromeos/extensions/echo_private/echo_private_api.cc",
       "chromeos/extensions/echo_private/echo_private_api.h",
       "chromeos/extensions/info_private_api.cc",
@@ -5397,6 +5419,7 @@ static_library("browser") {
       "//chromeos/lacros/dbus",
       "//chromeos/ui/frame",
       "//components/arc/common",
+      "//extensions/browser/updater",
       "//ui/chromeos/styles:cros_styles_views",
       "//ui/platform_window",
     ]
@@ -5978,6 +6001,7 @@ static_library("browser") {
       "//chrome/browser/enterprise/connectors/device_trust/attestation/common/proto:interface_proto",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/core",
       "//chrome/browser/enterprise/connectors/device_trust/key_management/core/persistence",
+      "//components/device_signals/core/common",
     ]
   }
 
@@ -7458,6 +7482,15 @@ static_library("browser") {
     ]
     deps += [ "//components/segmentation_platform/internal:optimization_guide_segmentation_handler" ]
   }
+
+  if (is_chromeos) {
+    sources += [
+      "chromeos/tablet_mode/chrome_content_browser_client_tablet_mode_part.cc",
+      "chromeos/tablet_mode/chrome_content_browser_client_tablet_mode_part.h",
+      "chromeos/tablet_mode/tablet_mode_page_behavior.cc",
+      "chromeos/tablet_mode/tablet_mode_page_behavior.h",
+    ]
+  }
 }
 
 if (is_android) {
@@ -7610,12 +7643,8 @@ grit("resources") {
 
   if (is_win || is_mac || is_linux || is_chromeos || is_fuchsia) {
     deps += [
-      "//chrome/browser/resources/discards:discards_resources_gen",
       "//chrome/browser/resources/gaia_auth_host:modulize",
       "//chrome/browser/resources/inline_login:components",
-      "//chrome/browser/resources/management:web_components",
-      "//chrome/browser/resources/signin:web_components",
-      "//chrome/browser/ui/webui/discards:mojo_bindings_js",
       "//services/resource_coordinator/public/mojom:mojom_js",
     ]
   }
@@ -7658,7 +7687,7 @@ grit("resources") {
   }
 
   if (safe_browsing_mode == 1) {
-    deps += [ "//chrome/browser/ui/webui/reset_password:mojo_bindings_js" ]
+    deps += [ "//chrome/browser/resources/reset_password:build_ts" ]
   }
 }
 

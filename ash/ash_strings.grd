@@ -259,6 +259,9 @@ This file contains the strings for ash.
       <message name="IDS_SHELF_PREVIOUS" desc="Tooltip for the shelf arrow button that scrolls the shelf backward">
         Previous
       </message>
+      <message name="IDS_SHELF_LAUNCHER_NUDGE_TEXT" desc="The text shown to users beside the home button that shows the launcher UI when the device is in clamshell mode. This nudge text guides them to click on the home button to see all the apps in the launcher UI.">
+        See all apps
+      </message>
 
       <!-- Status tray items -->
       <message name="IDS_ASH_STATUS_TRAY_ACCESSIBLE_DESCRIPTION" is_accessibility_with_no_ui="true" desc="The accessible description of the status tray and the information on it.">
@@ -472,6 +475,12 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_DARK_THEME_OFF_STATE_AUTO_SCHEDULED" desc="Button label for the Dark theme feature when auto scheduling is enabled." meaning="Dark mode is automatically scheduled to be off until sunset. [CHAR_LIMIT=16]">
         Off until sunset
+      </message>
+      <message name="IDS_ASH_DARK_LIGHT_MODE_EDUCATIONAL_NUDGE_IN_CLAMSHELL_MODE" desc="The label used for the dark light mode educational nudge in clamshell mode.">
+        Switch between dark and light theme. Right-click on the desktop and select Wallpaper &#0038; style.
+      </message>
+      <message name="IDS_ASH_DARK_LIGHT_MODE_EDUCATIONAL_NUDGE_IN_TABLET_MODE" desc="The label used for the dark light mode educational nudge in tablet mode.">
+        Switch between dark and light theme. Touch and hold on the desktop, then select Wallpaper &#0038; style.
       </message>
       <message name="IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP_ACCESSIBILITY_STOP" desc="Stop button accessibility label used in the tray popup to tell the user to stop a cast to the desktop.">
         Stop casting screen to <ph name="RECEIVER_NAME">$1<ex>Living Room</ex></ph>
@@ -1770,6 +1779,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_OVERVIEW_CLOSABLE_HIGHLIGHT_ITEM_A11Y_EXTRA_TIP" desc="The accessibility tooltip read by screen readers for a close-able overview item.">
         Press Ctrl + W to close.
       </message>
+      <message name="IDS_ASH_OVERVIEW_CLOSABLE_DESK_MINIVIEW_A11Y_EXTRA_TIP" desc="The accessibility text read by screen readers for a closeable desk mini view when the close all feature is enabled.">
+          Press Ctrl + W to combine with <ph name="DESK_NAME">$1<ex>Desk 1</ex></ph>. Press Ctrl + Shift + W to close desk and windows.
+      </message>
       <message name="IDS_ASH_OVERVIEW_WINDOW_CLOSING_A11Y_ALERT" desc="The accessibility alert read by screen readers to alert the user that a window in overview mode is closing.">
         Window <ph name="WINDOW_TITILE">$1<ex>1</ex></ph> closed.
       </message>
@@ -1829,6 +1841,9 @@ This file contains the strings for ash.
       <message name="IDS_ASH_DESKS_TEMPLATES_MAX_TEMPLATES_TOOLTIP" desc="The disabled Save Desk as Template button tooltip text when maximum number of templates has been reached.">
         Only 6 templates allowed. Remove a template to save a new one.
       </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_MAX_SAVED_DESKS_TOOLTIP" desc="The disabled Save Desk for later button tooltip text when maximum number of saved desks has been reached.">
+        Only 6 saved desks allowed. Remove a desk to save a new one.
+      </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON" desc="The text of the desks templates button in the overview desks bar.">
         Templates
       </message>
@@ -1840,6 +1855,9 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_USE_TEMPLATE_BUTTON" desc="The text of the button to launch the template.">
         Use template
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_OPEN_DESK_BUTTON" desc="The text of the button to launch the saved desk.">
+        Open desk
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_REACH_MAXIMUM_DESK_TOAST" desc="The text of the toast displayed when user tries to launch a template while maximum desk number is reached.">
         Only <ph name="MAX_DESK_LIMIT">$1<ex>8</ex></ph> desks allowed. Remove a desk to open a new one.
@@ -1858,6 +1876,12 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_DESKS_TEMPLATES_MANAGEMENT_STATUS_DESCRIPTION" desc="The text of the description under template item if the desks templates is shared by the administrator.">
         Shared by your administrator
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_LIBRARY_TEMPLATES_GRID_LABEL" desc="The label visible above template items in the saved desk library.">
+        Templates
+      </message>
+      <message name="IDS_ASH_DESKS_TEMPLATES_LIBRARY_SAVE_AND_RECALL_GRID_LABEL" desc="The label visible above the save and recall items in the saved desk library.">
+        Saved for later
       </message>
 
       <!-- Virtual Desks -->
@@ -2101,6 +2125,12 @@ This file contains the strings for ash.
       </message>
       <message name="IDS_ASH_NETWORK_CELLULAR_SETUP_NOTIFICATION_MESSAGE" desc="Message displayed in the system notification shown post-OOBE if a user has no activated mobile networks.">
         Tap to complete set up
+      </message>
+      <message name="IDS_ASH_NETWORK_MANAGED_SIM_LOCK_NOTIFICATION_TITLE" desc="Title used for the system notification shown when the active SIM is locked when it is enterprise policy restricted.">
+        Disable your SIM Lock setting
+      </message>
+      <message name="IDS_ASH_NETWORK_MANAGED_SIM_LOCK_NOTIFICATION_MESSAGE" desc="Message displayed in the system notification shown when the active SIM is locked when it is enterprise policy restricted.">
+        Your administrator is requesting that you turn off the Lock SIM setting
       </message>
       <message name="IDS_ASH_NETWORK_RESET_EUICC_NOTIFICATION_TITLE" desc="Title used for the system notification shown when the reset euicc operation is initiated.">
         eSIM connection unavailable
@@ -3446,8 +3476,16 @@ This file contains the strings for ash.
         Show previous month
       </message>
 
+      <message name="IDS_ASH_CALENDAR_UP_BUTTON_EVENT_LIST_ACCESSIBLE_DESCRIPTION" desc="The accessible/tooltip description of the calendar up button in the event list mode.">
+        Show previous week
+      </message>
+
       <message name="IDS_ASH_CALENDAR_DOWN_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible/tooltip description of the calendar down button.">
         Show next month
+      </message>
+
+      <message name="IDS_ASH_CALENDAR_DOWN_BUTTON_EVENT_LIST_ACCESSIBLE_DESCRIPTION" desc="The accessible/tooltip description of the calendar down button in the event list mode.">
+        Show next week
       </message>
 
       <message name="IDS_ASH_CALENDAR_INFO_BUTTON_ACCESSIBLE_DESCRIPTION" desc="The accessible description of the calendar today's button.">
@@ -3978,6 +4016,9 @@ Here are some things you can try to get started.
       <message name="IDS_ASH_SCREEN_CAPTURE_SHOW_CAMERA_USER_NUDGE" desc="The message shown in a toast widget to nudge the user and alert them to check out the new settings that allow them to show camera during video recording.">
         You can now record yourself and your screen at the same time
       </message>
+      <message name="IDS_ASH_SCREEN_CAPTURE_SURFACE_TOO_SMALL_USER_NUDGE" desc="The message shown in a toast widget to alert the user that the current capture surface is too small to show the camera preview.">
+        Region is too small to fit camera
+      </message>
       <message name="IDS_ASH_SCREEN_CAPTURE_TOOLTIP_COLLAPSE_SELFIE_CAMERA" desc="Tooltip of the collapse resize button for screen capture selfie camera.">
         Collapse camera
       </message>
@@ -4469,7 +4510,7 @@ Here are some things you can try to get started.
         Continue where you left off
       </message>
       <message name="IDS_ASH_LAUNCHER_HIDE_CONTINUE_SECTION" desc="Context menu label to hide the launcher continue section (which defaults to being shown).">
-        Hide continue suggestions
+        Hide all suggestions
       </message>
       <message name="IDS_ASH_LAUNCHER_CONTINUE_SECTION_PRIVACY_TEXT" desc="Text for the privacy notice of the continue section of the launcher in clamshell mode, which shows recent files and apps that the user can continue using.">
         You’ll see recommendations so you can continue where you left off. You can right-click to remove recommendations.
@@ -4740,11 +4781,11 @@ New install
       <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER" desc="Placeholder text for the search box shown in the app list UI.">
         Search your device, apps, settings, web...
       </message>
-      <message name="IDS_ASH_LAUNCHER_RECENT_APPS_A11Y_NAME" desc="Accessible name of the recent apps section in launcher UI. The recent apps section shows a list of recent apps that the user can continue using.">
-        Recent Apps, navigate with left arrow to access all recent apps
+      <message name="IDS_ASH_LAUNCHER_RECENT_APPS_A11Y_NAME" desc="Accessible name of the recent apps section in launcher UI which guides users to traverse the recent apps using arrow keys. The recent apps section shows a list of recent apps that the user can continue using.">
+        Recent Apps, navigate with left or right arrow keys to access all recent apps
       </message>
-      <message name="IDS_ASH_LAUNCHER_APPS_GRID_A11Y_NAME" desc="Accessible name of the apps grid that contains all apps in launcher UI.">
-        All Apps, navigate with left or down arrow to access all apps
+      <message name="IDS_ASH_LAUNCHER_APPS_GRID_A11Y_NAME" desc="Accessible name of the apps grid that contains all apps in launcher UI which guides users to traverse the apps in app list using arrow keys.">
+        All Apps, navigate with arrow keys to access all apps
       </message>
 
       <message name="IDS_APP_LIST_SEARCH_BOX_PLACEHOLDER_TEMPLATE" desc="The template for rotating placeholder text for the search box shown within the ChromeOS launcher. Placeholders always list files and apps provider as well as a rotating first item.">

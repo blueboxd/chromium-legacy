@@ -7,9 +7,9 @@
 #import "ios/chrome/browser/net/crurl.h"
 #import "ios/chrome/browser/ui/follow/first_follow_favicon_data_source.h"
 #import "ios/chrome/browser/ui/follow/first_follow_view_controller.h"
-#import "ios/chrome/browser/ui/follow/first_follow_view_delegate.h"
 #import "ios/chrome/browser/ui/follow/follow_block_types.h"
 #import "ios/chrome/browser/ui/follow/followed_web_channel.h"
+#import "ios/chrome/browser/ui/icons/chrome_symbol.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/feed_management_follow_delegate.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/feed_management_navigation_delegate.h"
 #import "ios/chrome/browser/ui/ntp/feed_management/feed_management_view_controller.h"
@@ -34,6 +34,13 @@ constexpr CGFloat kHalfSheetCornerRadius = 20;
 static NSString* const kExampleFaviconURL =
     @"https://www.google.com/s2/favicons?domain=the-sun.com&sz=48";
 
+// Specific symbols used to create favicons.
+NSString* kGlobeSymbol = @"globe";
+NSString* kGlobeAmericaSymbol = @"globe.americas.fill";
+
+// The size of favicon symbol images.
+NSInteger kFaviconSymbolPointSize = 17;
+
 }  // namespace
 
 @interface SCFollowViewController () <FirstFollowFaviconDataSource,
@@ -53,12 +60,10 @@ static NSString* const kExampleFaviconURL =
 
 - (void)viewDidLoad {
   [super viewDidLoad];
-  self.view.backgroundColor = UIColor.systemBackgroundColor;
 
   self.alerter = [[ProtocolAlerter alloc] initWithProtocols:@[
     @protocol(FeedManagementFollowDelegate),
-    @protocol(FeedManagementNavigationDelegate),
-    @protocol(FirstFollowViewDelegate)
+    @protocol(FeedManagementNavigationDelegate)
   ]];
 
   UIButton* button1 = [[UIButton alloc] init];
@@ -137,8 +142,6 @@ static NSString* const kExampleFaviconURL =
 
   firstFollowViewController.followedWebChannel = ch1;
   self.alerter.baseViewController = firstFollowViewController;
-  firstFollowViewController.delegate =
-      static_cast<id<FirstFollowViewDelegate>>(self.alerter);
   firstFollowViewController.faviconDataSource = self;
 
   if (@available(iOS 15, *)) {
@@ -208,8 +211,10 @@ static NSString* const kExampleFaviconURL =
            completion:(void (^)(FaviconAttributes*))completion {
   // This mimics the behavior of favicon loader by immediately returning a
   // default image, then fetching and returning another image.
-  UIImage* image1 = [UIImage systemImageNamed:@"globe"];
-  UIImage* image2 = [UIImage systemImageNamed:@"globe.americas.fill"];
+  UIImage* image1 =
+      DefaultSymbolTemplateWithPointSize(kGlobeSymbol, kFaviconSymbolPointSize);
+  UIImage* image2 = DefaultSymbolTemplateWithPointSize(kGlobeAmericaSymbol,
+                                                       kFaviconSymbolPointSize);
   completion([FaviconAttributes attributesWithImage:image1]);
   dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 3 * NSEC_PER_SEC),
                  dispatch_get_main_queue(), ^{

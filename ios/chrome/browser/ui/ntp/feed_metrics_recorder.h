@@ -9,6 +9,8 @@
 
 #include "ios/chrome/browser/discover_feed/feed_constants.h"
 
+@protocol FeedControlDelegate;
+
 // DO NOT CHANGE. Values are from enums.xml representing what could be broken in
 // the NTP view hierarchy. These values are persisted to logs. Entries should
 // not be renumbered and numeric values should never be reused.
@@ -24,6 +26,44 @@ enum class BrokenNTPHierarchyRelationship {
   // Change this to match max value.
   kMaxValue = 6,
 };
+
+// Enum class contains values indicating the type of follow request. Ex.
+// kFollowRequestFollow means the user has sent a request to follow a website.
+enum class FollowRequestType {
+  kFollowRequestFollow = 0,
+  kFollowRequestUnfollow = 1,
+
+  // Change this to match max value.
+  kMaxValue = kFollowRequestUnfollow,
+};
+
+// Enum class contains values indicating the type of follow confirmation type.
+// Ex. kFollowSucceedSnackbarShown means a confirmation is shown after the user
+// has successfully followed a website.
+enum class FollowConfirmationType {
+  kFollowSucceedSnackbarShown = 0,
+  kFollowErrorSnackbarShown = 1,
+  kUnfollowSucceedSnackbarShown = 2,
+  kUnfollowErrorSnackbarShown = 3,
+
+  // Change this to match max value.
+  kMaxValue = kUnfollowErrorSnackbarShown,
+};
+
+// Enum class contains values indicating the type of snackbar action button.
+enum class FollowSnackbarActionType {
+  kSnackbarActionGoToFeed = 0,
+  kSnackbarActionUndo = 1,
+  kSnackbarActionRetryFollow = 2,
+  kSnackbarActionRetryUnfollow = 3,
+
+  // Change this to match max value.
+  kMaxValue = kSnackbarActionRetryUnfollow,
+};
+
+namespace base {
+class Time;
+}
 
 // Records different metrics for the NTP feeds.
 @interface FeedMetricsRecorder : NSObject
@@ -61,18 +101,6 @@ enum class BrokenNTPHierarchyRelationship {
 // Record metrics for when the user selects the 'Following' item in the feed
 // management UI.
 - (void)recordHeaderMenuManageFollowingTapped;
-
-// Record metrics for when the user swipes or taps to unfollow a web channel in
-// the management UI.
-- (void)recordManagementTappedUnfollow;
-
-// Record metrics for when the user taps "UNDO" on the successful unfollow
-// confirmation snackbar in the management UI.
-- (void)recordManagementTappedRefollowAfterUnfollowOnSnackbar;
-
-// Record metrics for when the user taps "Try Again" on the unfollow error
-// confirmation snackbar in the management UI.
-- (void)recordManagementTappedUnfollowTryAgainOnSnackbar;
 
 // Record metrics for when the user toggles the feed visibility from the feed
 // header menu.
@@ -175,8 +203,49 @@ enum class BrokenNTPHierarchyRelationship {
 // Records that the feed is about to be refreshed.
 - (void)recordFeedWillRefresh;
 
-// The currently selected feed type in the NTP.
-@property(nonatomic, assign) FeedType selectedFeedType;
+// Records the state of the Feed setting based on the |enterprisePolicy| being
+// enabled, |feedVisible|, the user being |signedIn|, user having |waaEnabled|
+// and |spywEnabled|, and the |lastRefreshTime| for the Feed.
+- (void)recordFeedSettingsOnStartForEnterprisePolicy:(BOOL)enterprisePolicy
+                                         feedVisible:(BOOL)feedVisible
+                                            signedIn:(BOOL)signedIn
+                                          waaEnabled:(BOOL)waaEnabled
+                                         spywEnabled:(BOOL)spywEnabled
+                                     lastRefreshTime:
+                                         (base::Time)lastRefreshTime;
+
+#pragma mark - Follow
+
+// Record metrics for when the user request to follow/unfollow a website,
+// according to |followRequestedType|. Ex. The user selects the 'Follow' item in
+// the overflow menu.
+- (void)recordFollowRequestedWithType:(FollowRequestType)followRequestType;
+
+// Record metrics for when the follow confirmation snckbar is shown, according
+// to |followConfirmationType|.
+- (void)recordFollowConfirmationShownWithType:
+    (FollowConfirmationType)followConfirmationType;
+
+// Record metrics for when the follow confirmation snckbar action is tapped,
+// according to |followSnackbarActionType|.Ex. the user tapped "GO TO FEED"
+// button on the follow succeed snackbar.
+- (void)recordFollowSnackbarTappedWithAction:
+    (FollowSnackbarActionType)followSnackbarActionType;
+
+// Record metrics for when the user swipes or taps to unfollow a web channel in
+// the management UI.
+- (void)recordManagementTappedUnfollow;
+
+// Record metrics for when the user taps "UNDO" on the successful unfollow
+// confirmation snackbar in the management UI.
+- (void)recordManagementTappedRefollowAfterUnfollowOnSnackbar;
+
+// Record metrics for when the user taps "Try Again" on the unfollow error
+// confirmation snackbar in the management UI.
+- (void)recordManagementTappedUnfollowTryAgainOnSnackbar;
+
+// Delegate to get the currently selected feed.
+@property(nonatomic, weak) id<FeedControlDelegate> feedControlDelegate;
 
 // Whether or not the feed is currently being shown on the Start Surface.
 @property(nonatomic, assign) BOOL isShownOnStartSurface;

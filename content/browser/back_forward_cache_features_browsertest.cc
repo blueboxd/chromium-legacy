@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/threading/platform_thread.h"
+#include "base/time/time.h"
 #include "content/browser/back_forward_cache_browsertest.h"
 
 #include "build/build_config.h"
@@ -11,14 +13,12 @@
 #include "content/browser/renderer_host/back_forward_cache_disable.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/worker_host/dedicated_worker_hosts_for_document.h"
-#include "content/public/browser/idle_time_provider.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/test/back_forward_cache_util.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
-#include "content/public/test/idle_test_utils.h"
 #include "content/public/test/media_start_stop_observer.h"
 #include "content/public/test/web_transport_simple_test_server.h"
 #include "content/shell/browser/shell.h"
@@ -33,6 +33,8 @@
 #include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/app_banner/app_banner.mojom.h"
+#include "ui/base/idle/idle_time_provider.h"
+#include "ui/base/test/idle_test_utils.h"
 
 // This file contains back-/forward-cache tests for web-platform features and
 // APIs. It was forked from
@@ -1419,7 +1421,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, CacheWithWebFileSystem) {
 
 namespace {
 
-class FakeIdleTimeProvider : public IdleTimeProvider {
+class FakeIdleTimeProvider : public ui::IdleTimeProvider {
  public:
   FakeIdleTimeProvider() = default;
   ~FakeIdleTimeProvider() override = default;
@@ -1442,7 +1444,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, DoesNotCacheIdleManager) {
   RenderFrameHostImpl* rfh_a = current_frame_host();
   RenderFrameDeletedObserver deleted(rfh_a);
 
-  ScopedIdleProviderForTest scoped_idle_provider(
+  ui::test::ScopedIdleProviderForTest scoped_idle_provider(
       std::make_unique<FakeIdleTimeProvider>());
 
   EXPECT_TRUE(ExecJs(rfh_a, R"(
@@ -1898,7 +1900,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       GetTreeResult()->GetDocumentResult(),
       MatchesDocumentResult(
           NotRestoredReasons(NotRestoredReason::kBlocklistedFeatures,
-                           NotRestoredReason::kBrowsingInstanceNotSwapped),
+                             NotRestoredReason::kBrowsingInstanceNotSwapped),
           BlockListedFeatures(
               blink::scheduler::WebSchedulerTrackedFeature::kDummy)));
 }
@@ -2078,13 +2080,17 @@ class AppBannerBackForwardCacheBrowserTest
     : public BackForwardCacheBrowserTest,
       public ::testing::WithParamInterface<bool> {
  public:
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    if (GetParam()) {
-      EnableFeatureAndSetParams(blink::features::kBackForwardCacheAppBanner, "",
-                                "");
+  AppBannerBackForwardCacheBrowserTest() {
+    const base::Feature& feature = blink::features::kBackForwardCacheAppBanner;
+    if (ShouldEnabledAppBannerCaching()) {
+      EnableFeatureAndSetParams(feature, "", "");
+    } else {
+      DisableFeature(feature);
     }
-    BackForwardCacheBrowserTest::SetUpCommandLine(command_line);
   }
+
+ protected:
+  bool ShouldEnabledAppBannerCaching() { return GetParam(); }
 };
 
 // Disabled on Mac due to flakes; see https://crbug.com/1276864#c8.
@@ -2113,13 +2119,13 @@ IN_PROC_BROWSER_TEST_P(AppBannerBackForwardCacheBrowserTest,
   // 2) Navigate away. Page A requested a PWA app banner, and thus not cached.
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
-  if (!GetParam()) {
-    delete_observer_rfh.WaitUntilDeleted();
+  if (!ShouldEnabledAppBannerCaching()) {
+    ASSERT_TRUE(delete_observer_rfh.WaitUntilDeleted());
   }
 
   // 3) Go back to A.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
-  if (GetParam()) {
+  if (ShouldEnabledAppBannerCaching()) {
     ExpectRestored(FROM_HERE);
   } else {
     ExpectNotRestored(
@@ -3378,7 +3384,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VideoSuspendAndResume) {
   GURL url_a(embedded_test_server()->GetURL("a.com", "/title1.html"));
   GURL url_b(embedded_test_server()->GetURL("b.com", "/title1.html"));
 
-  // 1) Navigate to A.
+  // Navigate to A.
   EXPECT_TRUE(NavigateToURL(shell(), url_a));
   RenderFrameHostImpl* rfh_a = current_frame_host();
   EXPECT_TRUE(ExecJs(rfh_a, R"(
@@ -3405,9 +3411,18 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VideoSuspendAndResume) {
 
     video.src = 'media/bear.webm';
 
-    var timeOnFrozen = 0.0;
-    video.addEventListener('pause', () => {
-      timeOnFrozen = video.currentTime;
+    // Android bots can be very slow and the video is only 1s long.
+    // This gives the first part of the test time to run before reaching
+    // the end of the video.
+    video.playbackRate = 0.1;
+
+    var timeOnPagehide;
+    window.addEventListener('pagehide', () => {
+      timeOnPagehide = video.currentTime;
+    });
+    var timeOnPageshow;
+    window.addEventListener('pageshow', () => {
+      timeOnPageshow = video.currentTime;
     });
   )"));
 
@@ -3427,19 +3442,31 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, VideoSuspendAndResume) {
     });
   )"));
 
-  // 2) Navigate to B.
+  // Navigate to B.
   EXPECT_TRUE(NavigateToURL(shell(), url_b));
   EXPECT_TRUE(rfh_a->IsInBackForwardCache());
 
-  // 3) Navigate back to A.
+  // Sleep for 1s so that playing in BFCache can be detected.
+  base::PlatformThread::Sleep(base::Seconds(1));
+
+  // Navigate back to A.
   ASSERT_TRUE(HistoryGoBack(web_contents()));
   EXPECT_EQ(rfh_a, current_frame_host());
 
-  // Check that the media position is not changed when the page is in cache.
-  double duration1 = EvalJs(rfh_a, "timeOnFrozen;").ExtractDouble();
-  double duration2 = EvalJs(rfh_a, "video.currentTime;").ExtractDouble();
-  EXPECT_LE(0.0, duration2 - duration1);
-  EXPECT_GT(0.02, duration2 - duration1);
+  const double timeOnPagehide =
+      EvalJs(rfh_a, "timeOnPagehide;").ExtractDouble();
+  const double timeOnPageshow = EvalJs(rfh_a, "timeOnPageshow").ExtractDouble();
+
+  // Make sure the video did not reach the end. If it did, our test is not
+  // reliable.
+  ASSERT_GT(1.0, timeOnPageshow);
+
+  // Check that the duration of video played between pagehide and pageshow is
+  // small. We waited for 1s so if it didn't stop in BFCache, it should be much
+  // longer than this.
+  const double playedDuration = timeOnPageshow - timeOnPagehide;
+  EXPECT_LE(0.0, playedDuration);
+  EXPECT_GT(0.02, playedDuration);
 
   // Resume the media.
   EXPECT_TRUE(ExecJs(rfh_a, R"(

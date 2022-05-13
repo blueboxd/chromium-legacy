@@ -104,7 +104,7 @@ try_.orchestrator_builder(
     use_clang_coverage = True,
     tryjob = try_.job(),
     experiments = {
-        "remove_src_checkout_experiment": 10,
+        "remove_src_checkout_experiment": 100,
     },
 )
 
@@ -190,6 +190,9 @@ try_.builder(
 
 try_.builder(
     name = "mac_chromium_archive_rel_ng",
+    mirrors = [
+        "ci/mac-archive-rel",
+    ],
 )
 
 try_.builder(
@@ -309,6 +312,9 @@ ios_builder(
 ios_builder(
     name = "ios-simulator-cronet",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/ios-simulator-cronet",
+    ],
     check_for_flakiness = True,
     main_list_view = "try",
     tryjob = try_.job(
@@ -386,6 +392,23 @@ ios_builder(
 try_.gpu.optional_tests_builder(
     name = "mac_optional_gpu_tests_rel",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "angle_internal",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "chromium",
+            apply_configs = [
+                "mb",
+            ],
+            build_config = builder_config.build_config.RELEASE,
+            target_bits = 64,
+        ),
+        build_gs_bucket = "chromium-gpu-fyi-archive",
+    ),
     main_list_view = "try",
     ssd = None,
     tryjob = try_.job(

@@ -9,11 +9,13 @@
 import {ISearch} from '/chromevox/background/panel/i_search.js';
 import {ISearchHandler} from '/chromevox/background/panel/i_search_handler.js';
 import {PanelNodeMenuBackground} from '/chromevox/background/panel/panel_node_menu_background.js';
+import {PanelTabMenuBackground} from '/chromevox/background/panel/panel_tab_menu_background.js';
 
 const AutomationNode = chrome.automation.AutomationNode;
 
 /** @implements {ISearchHandler} */
 export class PanelBackground {
+  /** @private */
   constructor() {
     /** @private {ISearch} */
     this.iSearch_;
@@ -34,20 +36,37 @@ export class PanelBackground {
     PanelBackground.stateObserver_ = new PanelStateObserver();
 
     BridgeHelper.registerHandler(
+        BridgeTarget.PANEL_BACKGROUND,
+        BridgeAction.CREATE_ALL_NODE_MENU_BACKGROUNDS,
+        (opt_activateMenuTitle) =>
+            PanelBackground.instance.createAllNodeMenuBackgrounds_(
+                opt_activateMenuTitle));
+    BridgeHelper.registerHandler(
         BridgeTarget.PANEL_BACKGROUND, BridgeAction.CREATE_NEW_I_SEARCH,
         () => PanelBackground.instance.createNewISearch_());
     BridgeHelper.registerHandler(
         BridgeTarget.PANEL_BACKGROUND, BridgeAction.DESTROY_I_SEARCH,
         () => PanelBackground.instance.destroyISearch_());
     BridgeHelper.registerHandler(
+        BridgeTarget.PANEL_BACKGROUND, BridgeAction.FOCUS_TAB,
+        ({windowId, tabId}) =>
+            PanelTabMenuBackground.focusTab(windowId, tabId));
+    BridgeHelper.registerHandler(
         BridgeTarget.PANEL_BACKGROUND,
         BridgeAction.GET_ACTIONS_FOR_CURRENT_NODE,
         () => PanelBackground.instance.getActionsForCurrentNode_());
+    BridgeHelper.registerHandler(
+        BridgeTarget.PANEL_BACKGROUND, BridgeAction.GET_TAB_MENU_DATA,
+        () => PanelTabMenuBackground.getTabMenuData());
     BridgeHelper.registerHandler(
         BridgeTarget.PANEL_BACKGROUND, BridgeAction.INCREMENTAL_SEARCH,
         ({searchStr, dir, opt_nextObject}) =>
             PanelBackground.instance.incrementalSearch_(
                 searchStr, dir, opt_nextObject));
+    BridgeHelper.registerHandler(
+        BridgeTarget.PANEL_BACKGROUND, BridgeAction.NODE_MENU_CALLBACK,
+        (callbackNodeIndex) =>
+            PanelNodeMenuBackground.focusNodeCallback(callbackNodeIndex));
     BridgeHelper.registerHandler(
         BridgeTarget.PANEL_BACKGROUND,
         BridgeAction.PERFORM_CUSTOM_ACTION_ON_CURRENT_NODE,
@@ -69,17 +88,16 @@ export class PanelBackground {
   }
 
   /**
-   * @param {function(!PanelNodeMenuItemData)} addMenuItemFromData A callback
-   *     to add a menu item to the specified menu.
    * @param {string=} opt_activateMenuTitleId Optional string specifying the
    *     activated menu.
+   * @private
    */
-  createAllNodeMenuBackgrounds(addMenuItemFromData, opt_activateMenuTitleId) {
+  createAllNodeMenuBackgrounds_(opt_activateMenuTitleId) {
     const node = ChromeVoxState.instance.currentRange.start.node;
     for (const data of ALL_NODE_MENU_DATA) {
       const isActivatedMenu = opt_activateMenuTitleId === data.titleId;
-      const menuBackground = new PanelNodeMenuBackground(
-          data, node, isActivatedMenu, addMenuItemFromData);
+      const menuBackground =
+          new PanelNodeMenuBackground(data, node, isActivatedMenu);
       menuBackground.populate();
     }
   }

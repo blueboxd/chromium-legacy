@@ -7,9 +7,11 @@
 
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/ui/user_education/tutorial/tutorial_service.h"
 #include "chrome/browser/ui/webui/internals/user_education/user_education_internals.mojom.h"
+#include "components/user_education/common/tutorial_service.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace base {
 struct Feature;
@@ -19,14 +21,20 @@ namespace content {
 class WebUI;
 }  // namespace content
 
+namespace user_education {
 class FeaturePromoSpecification;
+}
 
 class UserEducationInternalsPageHandlerImpl
     : public mojom::user_education_internals::
           UserEducationInternalsPageHandler {
  public:
-  explicit UserEducationInternalsPageHandlerImpl(content::WebUI* web_ui,
-                                                 Profile* profile);
+  UserEducationInternalsPageHandlerImpl(
+      content::WebUI* web_ui,
+      Profile* profile,
+      mojo::PendingReceiver<
+          mojom::user_education_internals::UserEducationInternalsPageHandler>
+          receiver);
   ~UserEducationInternalsPageHandlerImpl() override;
 
   UserEducationInternalsPageHandlerImpl(
@@ -45,11 +53,15 @@ class UserEducationInternalsPageHandlerImpl
  private:
   const std::string GetTitleFromFeaturePromoData(
       const base::Feature* feature,
-      const FeaturePromoSpecification& spec);
+      const user_education::FeaturePromoSpecification& spec);
 
-  raw_ptr<TutorialService> tutorial_service_ = nullptr;
+  raw_ptr<user_education::TutorialService> tutorial_service_ = nullptr;
   raw_ptr<content::WebUI> web_ui_ = nullptr;
   raw_ptr<Profile> profile_ = nullptr;
+
+  mojo::Receiver<
+      mojom::user_education_internals::UserEducationInternalsPageHandler>
+      receiver_;
 };
 
 #endif  // CHROME_BROWSER_UI_WEBUI_INTERNALS_USER_EDUCATION_USER_EDUCATION_INTERNALS_PAGE_HANDLER_IMPL_H_

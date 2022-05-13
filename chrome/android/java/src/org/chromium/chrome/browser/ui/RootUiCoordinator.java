@@ -37,6 +37,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ChromeActionModeHandler;
 import org.chromium.chrome.browser.ChromePowerModeVoter;
+import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.app.omnibox.OmniboxPedalDelegateImpl;
 import org.chromium.chrome.browser.app.tab_activity_glue.TabReparentingController;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge;
@@ -65,6 +66,7 @@ import org.chromium.chrome.browser.image_descriptions.ImageDescriptionsControlle
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthController;
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthCoordinatorFactory;
 import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthManager;
+import org.chromium.chrome.browser.incognito.reauth.IncognitoReauthTabSwitcherDelegate;
 import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.layouts.LayoutType;
@@ -101,6 +103,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabCreatorManager;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tasks.tab_management.TabSwitcherCustomViewManager;
 import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarIntentMetadata;
@@ -193,6 +196,11 @@ public class RootUiCoordinator
      * available.
      */
     private @Nullable IncognitoReauthController mIncognitoReauthController;
+    /**
+     * A Callback controller that is fired when the {@link TabSwitcherCustomViewManager} is made
+     * available.
+     */
+    private @Nullable CallbackController mTabSwitcherCustomViewController;
 
     /** A means of providing the theme color to different features. */
     private TopUiThemeColorProvider mTopUiThemeColorProvider;
@@ -571,6 +579,10 @@ public class RootUiCoordinator
             mIncognitoReauthController.destroy();
         }
 
+        if (mTabSwitcherCustomViewController != null) {
+            mTabSwitcherCustomViewController.destroy();
+        }
+
         mActivity = null;
     }
 
@@ -704,9 +716,33 @@ public class RootUiCoordinator
 
         if (IncognitoReauthManager.isIncognitoReauthFeatureAvailable()) {
             TabModelSelector tabModelSelector = mTabModelSelectorSupplier.get();
+            // TODO(crbug.com/1324211, crbug.com/1227656) : Refactor below to remove
+            //  IncognitoReauthTabSwitcherDelegate altogether and directly pass
+            //  OneshotSupplierImpl<TabSwitcherCustomViewManager> instance.
+            OneshotSupplierImpl<IncognitoReauthTabSwitcherDelegate>
+                    incognitoReauthTabSwitcherSupplier = new OneshotSupplierImpl<>();
+            mTabSwitcherCustomViewController = new CallbackController();
+            mStartSurfaceSupplier.get().getTabSwitcherCustomViewManagerSupplier().onAvailable(
+                    mTabSwitcherCustomViewController.makeCancelable(tabSwitcherCustomViewManager
+                            -> incognitoReauthTabSwitcherSupplier.set(
+                                    new IncognitoReauthTabSwitcherDelegate() {
+                                        @Override
+                                        public boolean addReauthScreenInTabSwitcher(
+                                                @NonNull View customView) {
+                                            return tabSwitcherCustomViewManager.requestView(
+                                                    customView);
+                                        }
+
+                                        @Override
+                                        public boolean removeReauthScreenFromTabSwitcher() {
+                                            return tabSwitcherCustomViewManager.releaseView();
+                                        }
+                                    })));
+
             IncognitoReauthCoordinatorFactory incognitoReauthCoordinatorFactory =
                     new IncognitoReauthCoordinatorFactory(mActivity, tabModelSelector,
-                            mModalDialogManagerSupplier.get(), new SettingsLauncherImpl());
+                            mModalDialogManagerSupplier.get(), new SettingsLauncherImpl(),
+                            incognitoReauthTabSwitcherSupplier);
             mIncognitoReauthController = new IncognitoReauthController(tabModelSelector,
                     mActivityLifecycleDispatcher, mLayoutStateProviderOneShotSupplier,
                     mProfileSupplier, incognitoReauthCoordinatorFactory);
@@ -717,11 +753,13 @@ public class RootUiCoordinator
 
     private void initHistoryClustersCoordinator(Profile profile) {
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.HISTORY_JOURNEYS)) {
-            mHistoryClustersCoordinator =
-                    new HistoryClustersCoordinator(profile, mActivity, mBottomSheetController,
-                            ()
-                                    -> new Intent().setClass(mActivity, HistoryActivity.class),
-                            mActivityTabProvider);
+            mHistoryClustersCoordinator = new HistoryClustersCoordinator(profile, mActivity,
+                    ()
+                            -> new Intent()
+                                       .setClass(mActivity, HistoryActivity.class)
+                                       .putExtra(IntentHandler.EXTRA_PARENT_COMPONENT,
+                                               mActivity.getComponentName()),
+                    mActivityTabProvider, (url) -> new Intent());
             mHistoryClustersCoordinatorSupplier.set(mHistoryClustersCoordinator);
         }
     }

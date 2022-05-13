@@ -114,7 +114,7 @@ NSSavePanel* g_last_created_panel_for_testing = nil;
   // Refuse to accept users closing the dialog with a key repeat, since the key
   // may have been first pressed while the user was looking at insecure content.
   // See https://crbug.com/637098.
-  if ([[NSApp currentEvent] type] == NSKeyDown &&
+  if ([[NSApp currentEvent] type] == NSEventTypeKeyDown &&
       [[NSApp currentEvent] isARepeat]) {
     return NO;
   }
@@ -287,7 +287,7 @@ void SelectFileDialogBridge::Show(
                                       weak_factory_.GetWeakPtr());
   [dialog beginSheetModalForWindow:owning_window_
                  completionHandler:^(NSInteger result) {
-                   callback.Run(result != NSFileHandlingPanelOKButton);
+                   callback.Run(result != NSModalResponseOK);
                  }];
 }
 

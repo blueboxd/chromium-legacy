@@ -128,21 +128,9 @@ const DeprecationInfo GetDeprecationInfo(WebFeature feature) {
       return DeprecationInfo::WithTranslation(
           feature,
           DeprecationIssueType::kInsecurePrivateNetworkSubresourceRequest);
-    case WebFeature::kLegacyConstraintGoogCpuOveruseDetection:
-      return DeprecationInfo::WithTranslation(
-          feature,
-          DeprecationIssueType::kLegacyConstraintGoogCpuOveruseDetection);
     case WebFeature::kLegacyConstraintGoogIPv6:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kLegacyConstraintGoogIPv6);
-    case WebFeature::kLegacyConstraintGoogScreencastMinBitrate:
-      return DeprecationInfo::WithTranslation(
-          feature,
-          DeprecationIssueType::kLegacyConstraintGoogScreencastMinBitrate);
-    case WebFeature::kLegacyConstraintGoogSuspendBelowMinBitrate:
-      return DeprecationInfo::WithTranslation(
-          feature,
-          DeprecationIssueType::kLegacyConstraintGoogSuspendBelowMinBitrate);
     case WebFeature::kLocalCSSFileExtensionRejected:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kLocalCSSFileExtensionRejected);
@@ -227,10 +215,6 @@ const DeprecationInfo GetDeprecationInfo(WebFeature feature) {
           feature,
           DeprecationIssueType::
               kRTCPeerConnectionComplexPlanBSdpUsingDefaultSdpSemantics);
-    case WebFeature::kRTCPeerConnectionLegacyCreateWithMediaConstraints:
-      return DeprecationInfo::WithTranslation(
-          feature, DeprecationIssueType::
-                       kRTCPeerConnectionLegacyCreateWithMediaConstraints);
     case WebFeature::kRTCPeerConnectionSdpSemanticsPlanB:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kRTCPeerConnectionSdpSemanticsPlanB);
@@ -241,9 +225,6 @@ const DeprecationInfo GetDeprecationInfo(WebFeature feature) {
     case WebFeature::kRTCConstraintEnableRtpDataChannelsTrue:
       return DeprecationInfo::WithTranslation(
           feature, DeprecationIssueType::kRTPDataChannel);
-    case WebFeature::kSelectionAddRangeIntersect:
-      return DeprecationInfo::WithTranslation(
-          feature, DeprecationIssueType::kSelectionAddRangeIntersect);
     case WebFeature::kV8SharedArrayBufferConstructedWithoutIsolation:
       return DeprecationInfo::WithTranslation(
           feature,

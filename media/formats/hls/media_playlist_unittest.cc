@@ -133,6 +133,7 @@ TEST(HlsMediaPlaylistTest, Segments) {
   builder.ExpectSegment(HasDuration, 9.2);
   builder.ExpectSegment(HasUri, GURL("http://localhost/video.ts"));
   builder.ExpectSegment(IsGap, false);
+  builder.ExpectSegment(HasMediaSequenceNumber, 0);
 
   // Segments without #EXTINF tags are not allowed
   {
@@ -149,6 +150,7 @@ TEST(HlsMediaPlaylistTest, Segments) {
   builder.ExpectSegment(HasDuration, 9.3);
   builder.ExpectSegment(IsGap, false);
   builder.ExpectSegment(HasUri, GURL("http://localhost/foo.ts"));
+  builder.ExpectSegment(HasMediaSequenceNumber, 1);
 
   builder.AppendLine("#EXTINF:9.2,bar");
   builder.AppendLine("http://foo/bar.ts");
@@ -157,6 +159,7 @@ TEST(HlsMediaPlaylistTest, Segments) {
   builder.ExpectSegment(HasDuration, 9.2);
   builder.ExpectSegment(IsGap, false);
   builder.ExpectSegment(HasUri, GURL("http://foo/bar.ts"));
+  builder.ExpectSegment(HasMediaSequenceNumber, 2);
 
   // Segments must not exceed the playlist's target duration when rounded to the
   // nearest integer
@@ -445,6 +448,169 @@ TEST(HlsMediaPlaylistTest, XTargetDurationTag) {
     builder2.AppendLine("#EXT-X-TARGETDURATION:", x);
     builder2.ExpectError(ParseStatusCode::kMalformedTag);
   }
+}
+
+TEST(HlsMediaPlaylistTest, XEndListTag) {
+  MediaPlaylistTestBuilder builder;
+  builder.AppendLine("#EXTM3U");
+  builder.AppendLine("#EXT-X-TARGETDURATION:10");
+
+  // Without the 'EXT-X-ENDLIST' tag, the default value is false, regardless of
+  // the playlist type.
+  {
+    for (const base::StringPiece type : {"", "EVENT", "VOD"}) {
+      auto fork = builder;
+      if (!type.empty()) {
+        fork.AppendLine("#EXT-X-PLAYLIST-TYPE:", type);
+      }
+      fork.ExpectPlaylist(IsEndList, false);
+      fork.ExpectOk();
+    }
+  }
+
+  // The 'EXT-X-ENDLIST' tag may not have any content
+  {
+    for (const base::StringPiece x : {"", "FOO=BAR", "1"}) {
+      auto fork = builder;
+      fork.AppendLine("#EXT-X-ENDLIST:", x);
+      fork.ExpectError(ParseStatusCode::kMalformedTag);
+    }
+  }
+
+  // The EXT-X-ENDLIST tag can appear anywhere in the playlist
+  builder.AppendLine("#EXTINF:9.2,\t");
+  builder.AppendLine("segment0.ts");
+  builder.ExpectAdditionalSegment();
+
+  builder.AppendLine("#EXT-X-ENDLIST");
+  builder.ExpectPlaylist(IsEndList, true);
+
+  builder.AppendLine("#EXTINF:9.2,\n");
+  builder.AppendLine("segment1.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectOk();
+
+  // The EXT-X-ENDLIST tag may not appear twice
+  builder.AppendLine("#EXT-X-ENDLIST");
+  builder.ExpectError(ParseStatusCode::kPlaylistHasDuplicateTags);
+}
+
+TEST(HlsMediaPlaylistTest, XIFramesOnlyTag) {
+  MediaPlaylistTestBuilder builder;
+  builder.AppendLine("#EXTM3U");
+  builder.AppendLine("#EXT-X-TARGETDURATION:10");
+
+  // Without the 'EXT-X-I-FRAMES-ONLY' tag, the default value is false.
+  {
+    auto fork = builder;
+    fork.ExpectPlaylist(IsIFramesOnly, false);
+    fork.ExpectOk();
+  }
+
+  // The 'EXT-X-I-FRAMES-ONLY' tag may not have any content
+  {
+    for (const base::StringPiece x : {"", "FOO=BAR", "1"}) {
+      auto fork = builder;
+      fork.AppendLine("#EXT-X-I-FRAMES-ONLY:", x);
+      fork.ExpectError(ParseStatusCode::kMalformedTag);
+    }
+  }
+
+  builder.AppendLine("#EXT-X-I-FRAMES-ONLY");
+  builder.ExpectPlaylist(IsIFramesOnly, true);
+
+  // This should not affect the calculation of the playlist's duration
+  builder.AppendLine("#EXTINF:10,\t");
+  builder.AppendLine("segment0.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasDuration, 10);
+
+  builder.AppendLine("#EXTINF:10,\t");
+  builder.AppendLine("segment1.ts");
+  builder.ExpectAdditionalSegment();
+  builder.ExpectSegment(HasDuration, 10);
+
+  builder.ExpectPlaylist(HasComputedDuration, base::Seconds(20));
+  builder.ExpectOk();
+
+  // The 'EXT-X-I-FRAMES-ONLY' tag should not appear twice
+  builder.AppendLine("#EXT-X-I-FRAMES-ONLY");
+  builder.ExpectError(ParseStatusCode::kPlaylistHasDuplicateTags);
+}
+
+TEST(HlsMediaPlaylistTest, XMediaSequenceTag) {
+  MediaPlaylistTestBuilder builder;
+  builder.AppendLine("#EXTM3U");
+  builder.AppendLine("#EXT-X-TARGETDURATION:10");
+
+  // The EXT-X-MEDIA-SEQUENCE tag's content must be a valid DecimalInteger
+  {
+    for (const base::StringPiece x : {"", ":-1", ":{$foo}", ":1.5", ":one"}) {
+      auto fork = builder;
+      fork.AppendLine("#EXT-X-MEDIA-SEQUENCE", x);
+      fork.ExpectError(ParseStatusCode::kMalformedTag);
+    }
+  }
+  // The EXT-X-MEDIA-SEQUENCE tag may not appear twice
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
+    fork.AppendLine("#EXT-X-MEDIA-SEQUENCE:1");
+    fork.ExpectError(ParseStatusCode::kPlaylistHasDuplicateTags);
+  }
+  // The EXT-X-MEDIA-SEQUENCE tag must appear before any media segment
+  {
+    auto fork = builder;
+    fork.AppendLine("#EXTINF:9.8,\t");
+    fork.AppendLine("segment0.ts");
+    fork.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
+    fork.ExpectError(ParseStatusCode::kMediaSegmentBeforeMediaSequenceTag);
+  }
+
+  const auto fill_playlist = [](auto& builder, auto first_sequence_number) {
+    builder.AppendLine("#EXTINF:9.8,\t");
+    builder.AppendLine("segment0.ts");
+    builder.ExpectAdditionalSegment();
+    builder.ExpectSegment(HasUri, GURL("http://localhost/segment0.ts"));
+    builder.ExpectSegment(HasMediaSequenceNumber, first_sequence_number);
+
+    builder.AppendLine("#EXTINF:9.8,\t");
+    builder.AppendLine("segment1.ts");
+    builder.ExpectAdditionalSegment();
+    builder.ExpectSegment(HasMediaSequenceNumber, first_sequence_number + 1);
+
+    builder.AppendLine("#EXTINF:9.8,\t");
+    builder.AppendLine("segment2.ts");
+    builder.ExpectAdditionalSegment();
+    builder.ExpectSegment(HasMediaSequenceNumber, first_sequence_number + 2);
+  };
+
+  // If the playlist does not contain the EXT-X-MEDIA-SEQUENCE tag, the default
+  // starting segment number is 0.
+  auto fork = builder;
+  fill_playlist(fork, 0);
+  fork.ExpectPlaylist(HasMediaSequenceTag, false);
+  fork.ExpectOk();
+
+  // If the playlist has the EXT-X-MEDIA-SEQUENCE tag, it specifies the starting
+  // segment number.
+  fork = builder;
+  fork.AppendLine("#EXT-X-MEDIA-SEQUENCE:0");
+  fill_playlist(fork, 0);
+  fork.ExpectPlaylist(HasMediaSequenceTag, true);
+  fork.ExpectOk();
+
+  fork = builder;
+  fork.AppendLine("#EXT-X-MEDIA-SEQUENCE:15");
+  fill_playlist(fork, 15);
+  fork.ExpectPlaylist(HasMediaSequenceTag, true);
+  fork.ExpectOk();
+
+  fork = builder;
+  fork.AppendLine("#EXT-X-MEDIA-SEQUENCE:9999");
+  fill_playlist(fork, 9999);
+  fork.ExpectPlaylist(HasMediaSequenceTag, true);
+  fork.ExpectOk();
 }
 
 }  // namespace media::hls

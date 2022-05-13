@@ -88,6 +88,7 @@ chromium-metrics-reviews@google.com.
   <variant name=".MerchantTrust"/>
   <variant name=".NearOomReduction"/>
   <variant name=".NotificationBlocked"/>
+  <variant name=".OfferNotification"/>
   <variant name=".PermissionUpdate"/>
   <variant name=".PopupBlocked"/>
   <variant name=".ReaderMode"/>
@@ -104,13 +105,48 @@ chromium-metrics-reviews@google.com.
   <variant name=".VrServicesUpgrade"/>
 </variants>
 
+<variants name="TaskType">
+  <variant name="BackgroundSyncOneShot" summary="BackgroundSyncOneShot"/>
+  <variant name="ChromeMinidumpUploading" summary="ChromeMinidumpUploading"/>
+  <variant name="ComponentUpdate" summary="ComponentUpdate"/>
+  <variant name="DeprecatedDownloadResumption"
+      summary="DeprecatedDownloadResumption"/>
+  <variant name="DeprecatedExploreSitesRefresh"
+      summary="DeprecatedExploreSitesRefresh"/>
+  <variant name="DownloadAutoResumption" summary="DownloadAutoResumption"/>
+  <variant name="DownloadCleanup" summary="DownloadCleanup"/>
+  <variant name="DownloadLater" summary="DownloadLater"/>
+  <variant name="DownloadService" summary="DownloadService"/>
+  <variant name="ExploreSitesRefresh" summary="ExploreSitesRefresh"/>
+  <variant name="FeedRefresh" summary="FeedRefresh"/>
+  <variant name="FeedV2Refresh" summary="FeedV2Refresh"/>
+  <variant name="Gcm" summary="Gcm"/>
+  <variant name="NotificationScheduler" summary="NotificationScheduler"/>
+  <variant name="NotificationService" summary="NotificationService"/>
+  <variant name="NotificationTrigger" summary="NotificationTrigger"/>
+  <variant name="OfflinePages" summary="OfflinePages"/>
+  <variant name="OfflinePagesPrefetch" summary="OfflinePagesPrefetch"/>
+  <variant name="OfflinePagesPrefetchNotification"
+      summary="OfflinePagesPrefetchNotification"/>
+  <variant name="Omaha" summary="Omaha"/>
+  <variant name="PeriodicBackgroundSyncChromeWakeup"
+      summary="PeriodicBackgroundSyncChromeWakeup"/>
+  <variant name="QueryTile" summary="QueryTile"/>
+  <variant name="Test" summary="Test"/>
+  <variant name="WebApkUpdate" summary="WebApkUpdate"/>
+  <variant name="WebviewComponentUpdate" summary="WebviewComponentUpdate"/>
+  <variant name="WebviewMinidumpUploading" summary="WebviewMinidumpUploading"/>
+  <variant name="WebviewVariationsSeedFetch"
+      summary="WebviewVariationsSeedFetch"/>
+</variants>
+
 <variants name="ThumbnailProvider_ClientType">
   <variant name=".DownloadHome" summary="Download home"/>
   <variant name=".NTPSnippets" summary="NTP snippets"/>
 </variants>
 
 <histogram name="Android.ActivityStop.NumberOfTabsUsed" units="%"
-    expires_after="2022-07-31">
+    expires_after="2022-11-06">
   <owner>gauravjj@google.com</owner>
   <owner>skavuluru@google.com</owner>
   <owner>clank-large-form-factors@google.com</owner>
@@ -419,6 +455,33 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram
+    name="Android.AutofillAssistant.ServiceRequestSender.FailureRetryCount"
+    units="count" expires_after="2023-05-11">
+  <owner>sandromaggi@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <summary>
+    Reports the number of request retries until a final failure, leading to
+    aborting the retries - either by running out of allowed retry attempts or
+    meeting an error that's not retried. This is only recorded for requests that
+    attempt a retry. Requests are retried if they fail from a network change,
+    host name resolution error or 5xx. Errors like 4xx are not retried.
+  </summary>
+</histogram>
+
+<histogram
+    name="Android.AutofillAssistant.ServiceRequestSender.SuccessRetryCount"
+    units="count" expires_after="2023-05-11">
+  <owner>sandromaggi@google.com</owner>
+  <owner>autofill_assistant@google.com</owner>
+  <summary>
+    Reports the number of request retries until a final success. This is only
+    recorded for requests that attempt a retry. Requests are retried if they
+    fail from a network change, host name resolution error or 5xx. Errors like
+    4xx are not retried.
+  </summary>
+</histogram>
+
 <histogram name="Android.AutofillAssistant.TextToSpeech.ButtonAction"
     enum="AutofillAssistantTextToSpeechButtonAction" expires_after="2022-06-08">
   <owner>jainshashank@google.com</owner>
@@ -489,6 +552,17 @@ chromium-metrics-reviews@google.com.
     Records that a specific background task has expired. Recorded before the
     task is to be started.
   </summary>
+</histogram>
+
+<histogram name="Android.BackgroundTaskScheduler.TaskFinished.{TaskType}"
+    units="ms" expires_after="2022-11-01">
+  <owner>shaktisahu@chromium.org</owner>
+  <owner>nyquist@chromium.org</owner>
+  <summary>
+    Records the time (uptimeMillis) taken by a background task of type
+    {TaskType}. Recorded when the task finished callback is invoked.
+  </summary>
+  <token key="TaskType" variants="TaskType"/>
 </histogram>
 
 <histogram name="Android.BackgroundTaskScheduler.TaskLoadedNative"
@@ -792,7 +866,10 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.DeviceSize.LargestDisplaySize" units="dp"
-    expires_after="2022-10-16">
+    expires_after="2022-05-14">
+  <obsolete>
+    Removed May 2022.
+  </obsolete>
   <owner>twellington@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
@@ -803,8 +880,23 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Android.DeviceSize.SmallestDisplaySize" units="dp"
+<histogram name="Android.DeviceSize.LargestDisplaySize2" units="dp"
     expires_after="2022-10-16">
+  <owner>twellington@chromium.org</owner>
+  <owner>shuyng@google.com</owner>
+  <owner>clank-app-team@google.com</owner>
+  <summary>
+    Records the largest display dimension in dp during deferred startup. The
+    display size is not affected by Android N multi-window mode. Clamped at
+    200dp to 2000dp. 20dp granularity.
+  </summary>
+</histogram>
+
+<histogram name="Android.DeviceSize.SmallestDisplaySize" units="dp"
+    expires_after="2022-05-14">
+  <obsolete>
+    Removed May 2022.
+  </obsolete>
   <owner>twellington@chromium.org</owner>
   <owner>tedchoc@chromium.org</owner>
   <owner>clank-app-team@google.com</owner>
@@ -812,6 +904,18 @@ chromium-metrics-reviews@google.com.
     Records the smallest display dimension in dp during deferred startup. The
     display size is not affected by Android N multi-window mode. Clamped at 0 to
     1000dp.
+  </summary>
+</histogram>
+
+<histogram name="Android.DeviceSize.SmallestDisplaySize2" units="dp"
+    expires_after="2022-10-16">
+  <owner>twellington@chromium.org</owner>
+  <owner>shuyng@google.com</owner>
+  <owner>clank-app-team@google.com</owner>
+  <summary>
+    Records the smallest display dimension in dp during deferred startup. The
+    display size is not affected by Android N multi-window mode. Clamped at 100
+    to 1000dp. 10dp granularity.
   </summary>
 </histogram>
 
@@ -1239,7 +1343,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Android.FeatureModules.AvailabilityStatus"
-    enum="FeatureModuleAvailabilityStatus" expires_after="2022-10-16">
+    enum="FeatureModuleAvailabilityStatus" expires_after="2023-10-16">
 <!-- Name completed by histogram_suffixes
        name="AndroidFeatureModuleName" -->
 
@@ -1255,7 +1359,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Android.FeatureModules.CachedAwakeInstallDuration"
-    units="ms" expires_after="2022-06-13">
+    units="ms" expires_after="2023-06-13">
 <!-- Name completed by histogram_suffixes
        name="AndroidFeatureModuleName" -->
 
@@ -1272,7 +1376,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Android.FeatureModules.InstallingStatus"
-    enum="FeatureModuleInstallingStatus" expires_after="2022-10-16">
+    enum="FeatureModuleInstallingStatus" expires_after="2023-10-16">
 <!-- Name completed by histogram_suffixes
        name="AndroidFeatureModuleName" -->
 
@@ -1287,7 +1391,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram base="true" name="Android.FeatureModules.InstallStatus"
-    enum="FeatureModuleInstallStatus" expires_after="2022-06-13">
+    enum="FeatureModuleInstallStatus" expires_after="2023-06-13">
 <!-- Name completed by histogram_suffixes
        name="AndroidFeatureModuleName" -->
 
@@ -1302,7 +1406,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.FeatureModules.StartupTime" units="ms"
-    expires_after="2022-09-18">
+    expires_after="2023-09-18">
   <owner>agrieve@chromium.org</owner>
   <owner>fredmello@chromium.org</owner>
   <owner>tiborg@chromium.org</owner>
@@ -1315,7 +1419,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram base="true"
     name="Android.FeatureModules.UncachedAwakeInstallDuration" units="ms"
-    expires_after="2022-06-13">
+    expires_after="2023-06-13">
 <!-- Name completed by histogram_suffixes
        name="AndroidFeatureModuleName" -->
 
@@ -1474,7 +1578,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.HistoryPage.ClearBrowsingData.PerProfileType"
-    enum="BrowserProfileType" expires_after="2022-09-01">
+    enum="BrowserProfileType" expires_after="2022-11-06">
   <owner>sideyilmaz@chromium.org</owner>
   <owner>chrome-incognito@google.com</owner>
   <summary>
@@ -2223,6 +2327,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.Omnibox.SuggestionList.LayoutTime"
     units="microseconds" expires_after="2022-10-23">
+  <obsolete>
+    Retired with M103. Please refer to .CreateTime2
+  </obsolete>
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2248,8 +2355,38 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.Omnibox.SuggestionList.LayoutTime2"
+    units="microseconds" expires_after="2023-01-31">
+  <owner>ender@chromium.org</owner>
+  <owner>mpearson@chromium.org</owner>
+  <owner>jdonnelly@chromium.org</owner>
+  <summary>
+    Records time spent on positioning all suggestions on screen. This histogram
+    is recorded every time a new suggestion list is received.
+
+    Values recorded here should generally aim to be small, likely below 2ms
+    range. Higher values are an indicator of a performance problem.
+
+    Layout operation should take place just once when suggestion view is shown
+    for the first time.
+
+    This metric is reported for all users and uses 100microsecond granularity.
+
+    When comparing Durations measured here, also compare Total Counts for a
+    correct indication of how frequently views are laid out and how the overall
+    time spent performing layout operation changed.
+
+    This histogram is related to Android.Omnibox.SuggestionView.Reused,
+    Android.Omnibox.SuggestionList.MeasureTime2,
+    Android.Omnibox.SuggestionView.CreateTime2.
+  </summary>
+</histogram>
+
 <histogram name="Android.Omnibox.SuggestionList.MeasureTime"
     units="microseconds" expires_after="2022-06-19">
+  <obsolete>
+    Retired with M103. Please refer to .MeasureTime2
+  </obsolete>
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2276,6 +2413,34 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.Omnibox.SuggestionList.MeasureTime2"
+    units="microseconds" expires_after="2023-01-31">
+  <owner>ender@chromium.org</owner>
+  <owner>mpearson@chromium.org</owner>
+  <owner>jdonnelly@chromium.org</owner>
+  <summary>
+    Records time spent on measuring all suggestions ahead of positioning them on
+    screen. This histogram is recorded every time a new suggestion list is
+    received.
+
+    Values recorded here should generally aim to be small, likely below 2ms
+    range. Higher values are an indicator of a performance problem.
+
+    Measure operation should take place just once when suggestion view is shown
+    for the first time.
+
+    This metric is reported for all users and uses 100microsecond granularity.
+
+    When comparing Durations measured here, also compare Total Counts for a
+    correct indication of how frequently views are measured and how the overall
+    time spent measuring views changed.
+
+    This histogram is related to Android.Omnibox.SuggestionView.Reused,
+    Android.Omnibox.SuggestionList.LayoutTime2,
+    Android.Omnibox.SuggestionView.CreateTime2.
+  </summary>
+</histogram>
+
 <histogram name="Android.Omnibox.SuggestionsListScrolled.{PageClass}"
     enum="Boolean" expires_after="2023-01-31">
   <owner>ender@chromium.org</owner>
@@ -2298,6 +2463,9 @@ chromium-metrics-reviews@google.com.
 
 <histogram name="Android.Omnibox.SuggestionView.CreateTime"
     units="microseconds" expires_after="2022-06-19">
+  <obsolete>
+    Retired with M103. Please refer to .CreateTime2
+  </obsolete>
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2319,8 +2487,31 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Android.Omnibox.SuggestionView.CreateTime2"
+    units="microseconds" expires_after="2023-01-31">
+  <owner>ender@chromium.org</owner>
+  <owner>mpearson@chromium.org</owner>
+  <owner>jdonnelly@chromium.org</owner>
+  <summary>
+    Records time spent creating a single suggestion.
+
+    Values recorded here should generally aim to be small, below 1ms range.
+    Higher values may be an indicator of a performance problem.
+
+    This metric is reported for all users and uses 100microsecond granularity.
+
+    When comparing Durations measured here, also compare Total Counts for a
+    correct indication of how frequently views are created and how the overall
+    time spent creating views changed.
+
+    This histogram is related to Android.Omnibox.SuggestionList.LayoutTime2,
+    Android.Omnibox.SuggestionList.MeasureTime2,
+    Android.Omnibox.SuggestionView.Reused.
+  </summary>
+</histogram>
+
 <histogram name="Android.Omnibox.SuggestionView.Reused" enum="BooleanReused"
-    expires_after="2022-06-19">
+    expires_after="2023-01-31">
   <owner>ender@chromium.org</owner>
   <owner>mpearson@chromium.org</owner>
   <owner>jdonnelly@chromium.org</owner>
@@ -2344,9 +2535,9 @@ chromium-metrics-reviews@google.com.
     * If this metric decreased, while the Total Count increased, then the change
     has a negative effect (fewer reuses, more time spent creating views)
 
-    This histogram is related to Android.Omnibox.SuggestionList.LayoutTime,
-    Android.Omnibox.SuggestionList.MeasureTime,
-    Android.Omnibox.SuggestionView.CreateTime.
+    This histogram is related to Android.Omnibox.SuggestionList.LayoutTime2,
+    Android.Omnibox.SuggestionList.MeasureTime2,
+    Android.Omnibox.SuggestionView.CreateTime2.
   </summary>
 </histogram>
 
@@ -2856,7 +3047,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Android.StartupTabPreloader.ActivityStartToLoadDecision"
-    units="ms" expires_after="2022-09-01">
+    units="ms" expires_after="2022-11-06">
   <owner>blundell@chromium.org</owner>
   <owner>yfriedman@chromium.org</owner>
   <summary>
@@ -4248,7 +4439,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="Android.WebView.UniversalAccess.OriginUrlMismatchInHistoryUtil"
-    enum="BooleanAllowed" expires_after="2022-09-01">
+    enum="BooleanAllowed" expires_after="2022-11-06">
   <owner>torne@chromium.org</owner>
   <owner>src/android_webview/OWNERS</owner>
   <summary>

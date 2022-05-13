@@ -66,6 +66,7 @@
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/html/custom/element_internals.h"
 #include "third_party/blink/renderer/core/html/fenced_frame/html_fenced_frame_element.h"
+#include "third_party/blink/renderer/core/html/forms/html_button_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_field_set_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/html_label_element.h"
@@ -1835,6 +1836,18 @@ AccessibilityExpanded AXNodeObject::IsExpanded() const {
                : kExpandedCollapsed;
   }
 
+  // For buttons that contain the |togglepopup|, |showpopup|, or |hidepopup|
+  // popup triggering attributes, and the pointed-to element is a valid popup
+  // with type kPopup, then set aria-expanded=false when the popup is hidden,
+  // and aria-expanded=true when it is showing.
+  if (auto* button = DynamicTo<HTMLButtonElement>(element)) {
+    if (auto* popup = button->togglePopupElement()) {
+      if (popup->PopupType() == PopupValueType::kPopup) {
+        return popup->popupOpen() ? kExpandedExpanded : kExpandedCollapsed;
+      }
+    }
+  }
+
   if (IsA<HTMLSummaryElement>(*element)) {
     if (element->parentNode() &&
         IsA<HTMLDetailsElement>(element->parentNode())) {
@@ -3255,7 +3268,7 @@ String AXNodeObject::TextAlternative(
   // points to itself. The easiest way to check this is by testing whether this
   // node has already been visited.
   if (recursive && !visited.Contains(this)) {
-    String value_for_name = GetValueContributionToName();
+    String value_for_name = GetValueContributionToName(visited);
     if (!value_for_name.IsNull())
       return value_for_name;
   }
@@ -5730,7 +5743,7 @@ String AXNodeObject::PlaceholderFromNativeAttribute() const {
   return ToTextControl(node)->StrippedPlaceholder();
 }
 
-String AXNodeObject::GetValueContributionToName() const {
+String AXNodeObject::GetValueContributionToName(AXObjectSet& visited) const {
   if (IsTextField())
     return SlowGetValueForControlIncludingContentEditable();
 
@@ -5751,9 +5764,11 @@ String AXNodeObject::GetValueContributionToName() const {
     AXObjectVector selected_options;
     SelectedOptions(selected_options);
     for (const auto& child : selected_options) {
-      if (accumulated_text.length())
-        accumulated_text.Append(" ");
-      accumulated_text.Append(child->ComputedName());
+      if (visited.insert(child).is_new_entry) {
+        if (accumulated_text.length())
+          accumulated_text.Append(" ");
+        accumulated_text.Append(child->ComputedName());
+      }
     }
     return accumulated_text.ToString();
   }

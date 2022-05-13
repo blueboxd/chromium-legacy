@@ -39,6 +39,15 @@ class WebStateList;
 @property(nonatomic, assign) WebStateList* webStateList;
 
 // Dispatcher.
+// TODO(crbug.com/906662): This class uses BrowserCoordinatorCommands via their
+// includion in BrowserCommands. That dependency should be explicit, and instead
+// of a single parameter for all command protocols, separate handler properties
+// should be used for each necessary protocol (see ToolbarButtonActionsHandler
+// for an example of this).
+// TODO(crbug.com/1323758): This uses PageInfoCommands via inclusion in
+// BrowserCommands, and should instead use a dedicated handler.
+// TODO(crbug.com/1323764): This uses PopupMenuCommands via inclusion in
+// BrowserCommands, and should instead use a dedicated handler.
 @property(nonatomic, weak) id<ApplicationCommands,
                               BrowserCommands,
                               FindInPageCommands,
@@ -72,10 +81,6 @@ class WebStateList;
 
 // The current browser policy connector.
 @property(nonatomic, assign) BrowserPolicyConnectorIOS* browserPolicyConnector;
-
-// The follow action state. e.g. If the property value is FollowActionStateHide,
-// "Follow" action should be hidden in the overflow menu.
-@property(nonatomic, assign) FollowActionState followActionState;
 
 // Disconnect the mediator.
 - (void)disconnect;

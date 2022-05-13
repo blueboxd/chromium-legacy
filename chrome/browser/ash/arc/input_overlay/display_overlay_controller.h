@@ -23,6 +23,7 @@ class Widget;
 }  // namespace views
 
 namespace arc {
+class ArcInputOverlayManagerTest;
 namespace input_overlay {
 class TouchInjector;
 class InputMappingView;
@@ -30,13 +31,14 @@ class InputMenuView;
 class ActionEditMenu;
 class EditModeExitView;
 class ErrorView;
+class EducationalView;
 
 // DisplayOverlayController manages the input mapping view, view and edit mode,
 // menu, and educational dialog. It also handles the visibility of the
 // |ActionEditMenu| and |ErrorView| by listening to the |LocatedEvent|.
 class DisplayOverlayController : public ui::EventHandler {
  public:
-  explicit DisplayOverlayController(TouchInjector* touch_injector);
+  DisplayOverlayController(TouchInjector* touch_injector, bool first_launch);
   DisplayOverlayController(const DisplayOverlayController&) = delete;
   DisplayOverlayController& operator=(const DisplayOverlayController&) = delete;
   ~DisplayOverlayController() override;
@@ -63,32 +65,47 @@ class DisplayOverlayController : public ui::EventHandler {
   // button after editing.
   void OnCustomizeRestore();
   const std::string* GetPackageName() const;
+  // Once the menu state is loaded from protobuf data, it should be applied on
+  // the view. For example, |InputMappingView| may not be visible if it is
+  // hidden or input overlay is disabled.
+  void OnApplyMenuState();
 
   // ui::EventHandler:
   void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
 
  private:
+  friend class ::arc::ArcInputOverlayManagerTest;
   friend class DisplayOverlayControllerTest;
+  friend class EducationalView;
   friend class InputMenuView;
   friend class InputMappingView;
 
-  void AddOverlay();
+  // Display overlay is added for starting |display_mode|.
+  void AddOverlay(DisplayMode display_mode);
   void RemoveOverlayIfAny();
 
-  void AddInputMappingView(views::Widget* overlay_widget);
   void AddMenuEntryView(views::Widget* overlay_widget);
-  void AddEditModeExitView(views::Widget* overlay_widget);
-  void OnMenuEntryPressed();
-
-  void RemoveInputMenuView();
-  void RemoveInputMappingView();
   void RemoveMenuEntryView();
+  void OnMenuEntryPressed();
+  void RemoveInputMenuView();
+
+  void AddInputMappingView(views::Widget* overlay_widget);
+  void RemoveInputMappingView();
+
+  void AddEditModeExitView(views::Widget* overlay_widget);
   void RemoveEditModeExitView();
+
+  // Add |EducationalView|.
+  void AddEducationalView();
+  // Remove |EducationalView| and its references.
+  void RemoveEducationalView();
+  void OnEducationalViewDismissed();
 
   views::Widget* GetOverlayWidget();
   gfx::Point CalculateMenuEntryPosition();
   gfx::Point CalculateEditModeExitPosition();
+  views::View* GetParentView();
   bool HasMenuView() const;
   void SetInputMappingVisible(bool visible);
   bool GetInputMappingViewVisible() const;
@@ -102,6 +119,7 @@ class DisplayOverlayController : public ui::EventHandler {
 
   // For test:
   gfx::Rect GetInputMappingViewBoundsForTesting();
+  void DismissEducationalViewForTesting();
 
   TouchInjector* touch_injector() { return touch_injector_; }
 
@@ -114,6 +132,7 @@ class DisplayOverlayController : public ui::EventHandler {
   raw_ptr<ActionEditMenu> action_edit_menu_ = nullptr;
   raw_ptr<EditModeExitView> edit_mode_view_ = nullptr;
   raw_ptr<ErrorView> error_ = nullptr;
+  raw_ptr<EducationalView> educational_view_ = nullptr;
 
   DisplayMode display_mode_ = DisplayMode::kNone;
 };

@@ -44,14 +44,16 @@ PrefService* DeviceActiveUseCase::GetLocalState() const {
   return local_state_;
 }
 
-// Return the last known ping timestamp from local state pref.
 base::Time DeviceActiveUseCase::GetLastKnownPingTimestamp() const {
   return GetLocalState()->GetTime(use_case_pref_key_);
 }
 
-// Set the last known ping timestamp in local state pref.
 void DeviceActiveUseCase::SetLastKnownPingTimestamp(base::Time new_ts) {
   GetLocalState()->SetTime(use_case_pref_key_, new_ts);
+}
+
+bool DeviceActiveUseCase::IsLastKnownPingTimestampSet() const {
+  return GetLastKnownPingTimestamp() != base::Time::UnixEpoch();
 }
 
 psm_rlwe::RlweUseCase DeviceActiveUseCase::GetPsmUseCase() const {
@@ -153,6 +155,10 @@ Channel DeviceActiveUseCase::GetChromeOSChannel() const {
     default:
       return Channel::CHANNEL_UNKNOWN;
   }
+}
+
+MarketSegment DeviceActiveUseCase::GetMarketSegment() const {
+  return chrome_passed_device_params_.market_segment;
 }
 
 absl::optional<psm_rlwe::RlwePlaintextId>

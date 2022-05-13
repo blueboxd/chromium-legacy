@@ -89,9 +89,9 @@ chrome.fileManagerPrivate.MountCompletedStatus = {
   ERROR_UNKNOWN_FILESYSTEM: 'error_unknown_filesystem',
   ERROR_UNSUPPORTED_FILESYSTEM: 'error_unsupported_filesystem',
   ERROR_INVALID_ARCHIVE: 'error_invalid_archive',
-  ERROR_AUTHENTICATION: 'error_authentication',
-  ERROR_PATH_UNMOUNTED: 'error_path_unmounted',
   ERROR_NEED_PASSWORD: 'error_need_password',
+  ERROR_IN_PROGRESS: 'error_in_progress',
+  ERROR_CANCELLED: 'error_cancelled',
 };
 
 /** @enum {string} */
@@ -875,14 +875,21 @@ chrome.fileManagerPrivate.resolveIsolatedEntries = function(entries,
     callback) {};
 
 /**
- * Mounts a resource or a file.
- * @param {string} source Mount point source. For compressed files it is
- *     the relative file path within the external file system.
- * @param {string|undefined} password Optional password to decrypt the file.
+ * Mounts a resource or an archive.
+ * @param {string} fileUrl Mount point source.
+ * @param {string|undefined} password Optional password to decrypt the archive.
  * @param {function(string): void} callback callback Callback called with the
  *     source path of the mount.
  */
-chrome.fileManagerPrivate.addMount = function(source, password, callback) {};
+chrome.fileManagerPrivate.addMount = function(fileUrl, password, callback) {};
+
+/**
+ * Cancels an archive mounting operation.
+ * @param {string} fileUrl Mount point source. Should be same as the one passed
+ *     to addMount.
+ * @param {function()} callback
+ */
+chrome.fileManagerPrivate.cancelMounting = function(fileUrl, callback) {};
 
 /**
  * Unmounts a mounted resource. |volumeId| An ID of the volume.

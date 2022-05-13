@@ -70,33 +70,6 @@ base::FilePath::StringType GetLastExtension(
              : extension;
 }
 
-// Returns whether the specified extension receives special handling by the
-// Windows shell.
-bool IsShellIntegratedExtension(const base::FilePath::StringType& extension) {
-  // TODO(https://crbug.com/1154757): Figure out some way to unify this with
-  // net::IsSafePortablePathComponent, with the result probably ending up in
-  // base/i18n/file_util_icu.h.
-  base::FilePath::StringType extension_lower = base::ToLowerASCII(extension);
-
-  // .lnk files may be used to execute arbitrary code (see
-  // https://nvd.nist.gov/vuln/detail/CVE-2010-2568). .local files are used by
-  // Windows to determine which DLLs to load for an application.
-  if ((extension_lower == FILE_PATH_LITERAL("local")) ||
-      (extension_lower == FILE_PATH_LITERAL("lnk"))) {
-    return true;
-  }
-
-  // Setting a file's extension to a CLSID may conceal its actual file type on
-  // some Windows versions (see https://nvd.nist.gov/vuln/detail/CVE-2004-0420).
-  if (!extension_lower.empty() &&
-      (extension_lower.front() == FILE_PATH_LITERAL('{')) &&
-      (extension_lower.back() == FILE_PATH_LITERAL('}'))) {
-    return true;
-  }
-
-  return false;
-}
-
 // Extension validation primarily takes place in the renderer. This checks for a
 // subset of invalid extensions in the event the renderer is compromised.
 bool IsInvalidExtension(base::FilePath::StringType& extension) {
@@ -104,7 +77,7 @@ bool IsInvalidExtension(base::FilePath::StringType& extension) {
   auto extension16 = base::UTF8ToUTF16(component8);
 
   return !base::i18n::IsFilenameLegal(extension16) ||
-         IsShellIntegratedExtension(GetLastExtension(extension));
+         FileSystemChooser::IsShellIntegratedExtension(extension);
 }
 
 // Converts the accepted mime types and extensions from `option` into a list
@@ -289,6 +262,42 @@ void FileSystemChooser::CreateAndShow(
       /*params=*/nullptr);
 }
 
+// static
+bool FileSystemChooser::IsShellIntegratedExtension(
+    const base::FilePath::StringType& extension) {
+  // TODO(https://crbug.com/1154757): Figure out some way to unify this with
+  // net::IsSafePortablePathComponent, with the result probably ending up in
+  // base/i18n/file_util_icu.h.
+  // - For the sake of consistency across platforms, we sanitize '.lnk' and
+  //   '.local' files on all platforms (not just Windows)
+  // - There are some extensions (i.e. '.scf') we would like to sanitize which
+  //   `net::GenerateFileName()` does not
+  base::FilePath::StringType extension_lower =
+      base::ToLowerASCII(GetLastExtension(extension));
+
+  // '.lnk' and '.scf' files may be used to execute arbitrary code (see
+  // https://nvd.nist.gov/vuln/detail/CVE-2010-2568 and
+  // https://crbug.com/1227995, respectively). '.local' files are used by
+  // Windows to determine which DLLs to load for an application. '.url' files
+  // can be used to read arbirtary files (see https://crbug.com/1307930).
+  if ((extension_lower == FILE_PATH_LITERAL("lnk")) ||
+      (extension_lower == FILE_PATH_LITERAL("local")) ||
+      (extension_lower == FILE_PATH_LITERAL("scf")) ||
+      (extension_lower == FILE_PATH_LITERAL("url"))) {
+    return true;
+  }
+
+  // Setting a file's extension to a CLSID may conceal its actual file type on
+  // some Windows versions (see https://nvd.nist.gov/vuln/detail/CVE-2004-0420).
+  if (!extension_lower.empty() &&
+      (extension_lower.front() == FILE_PATH_LITERAL('{')) &&
+      (extension_lower.back() == FILE_PATH_LITERAL('}'))) {
+    return true;
+  }
+
+  return false;
+}
+
 FileSystemChooser::FileSystemChooser(ui::SelectFileDialog::Type type,
                                      ResultCallback callback,
                                      base::ScopedClosureRunner fullscreen_block)
@@ -297,6 +306,7 @@ FileSystemChooser::FileSystemChooser(ui::SelectFileDialog::Type type,
       fullscreen_block_(std::move(fullscreen_block)) {}
 
 FileSystemChooser::~FileSystemChooser() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (dialog_)
     dialog_->ListenerDestroyed();
 }
@@ -304,12 +314,14 @@ FileSystemChooser::~FileSystemChooser() {
 void FileSystemChooser::FileSelected(const base::FilePath& path,
                                      int index,
                                      void* params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   MultiFilesSelected({path}, params);
 }
 
 void FileSystemChooser::MultiFilesSelected(
     const std::vector<base::FilePath>& files,
     void* params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   MultiFilesSelectedWithExtraInfo(ui::FilePathListToSelectedFileInfoList(files),
                                   params);
 }
@@ -318,12 +330,14 @@ void FileSystemChooser::FileSelectedWithExtraInfo(
     const ui::SelectedFileInfo& file,
     int index,
     void* params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   MultiFilesSelectedWithExtraInfo({file}, params);
 }
 
 void FileSystemChooser::MultiFilesSelectedWithExtraInfo(
     const std::vector<ui::SelectedFileInfo>& files,
     void* params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   std::vector<ResultEntry> result;
 
   for (const ui::SelectedFileInfo& file : files) {
@@ -342,6 +356,7 @@ void FileSystemChooser::MultiFilesSelectedWithExtraInfo(
 }
 
 void FileSystemChooser::FileSelectionCanceled(void* params) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   RecordFileSelectionResult(type_, 0);
   std::move(callback_).Run(
       file_system_access_error::FromStatus(

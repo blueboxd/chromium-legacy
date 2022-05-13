@@ -269,7 +269,7 @@ bool MessageBoxView::AcceleratorPressed(const ui::Accelerator& accelerator) {
   ui::ScopedClipboardWriter scw(ui::ClipboardBuffer::kCopyPaste);
   scw.WriteText(std::accumulate(message_labels_.cbegin(),
                                 message_labels_.cend(), std::u16string(),
-                                [](std::u16string& left, Label* right) {
+                                [](const std::u16string& left, Label* right) {
                                   return left + right->GetText();
                                 }));
   return true;
@@ -288,8 +288,14 @@ void MessageBoxView::ResetLayoutManager() {
   if (prompt_field_->GetVisible())
     trailing_content_type = views::DialogContentType::kControl;
 
-  if (checkbox_->GetVisible())
+  bool checkbox_is_visible = checkbox_->GetVisible();
+  if (checkbox_is_visible)
     trailing_content_type = views::DialogContentType::kText;
+
+  // Ignored views are not in the accessibility tree, but their children
+  // still can be exposed. Leaf views have no accessible children.
+  checkbox_->GetViewAccessibility().OverrideIsIgnored(!checkbox_is_visible);
+  checkbox_->GetViewAccessibility().OverrideIsLeaf(!checkbox_is_visible);
 
   if (link_->GetVisible())
     trailing_content_type = views::DialogContentType::kText;

@@ -19,6 +19,8 @@
 #include "components/autofill/core/browser/autofill_form_test_utils.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/field_types.h"
+#include "components/autofill/core/browser/form_parsing/buildflags.h"
+#include "components/autofill/core/browser/form_structure_test_api.h"
 #include "components/autofill/core/browser/proto/api_v1.pb.h"
 #include "components/autofill/core/browser/randomized_encoder.h"
 #include "components/autofill/core/common/autofill_features.h"
@@ -35,18 +37,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-using base::ASCIIToUTF16;
+using ::base::ASCIIToUTF16;
+using ::testing::AllOf;
+using ::testing::Each;
 using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 using ::testing::Not;
+using ::testing::Pointee;
+using ::testing::ResultOf;
 using ::testing::Truly;
 using ::testing::UnorderedElementsAre;
-using version_info::GetProductNameAndVersionForUserAgent;
+using ::version_info::GetProductNameAndVersionForUserAgent;
 
 namespace autofill {
 
-using features::kAutofillLabelAffixRemoval;
-using mojom::SubmissionIndicatorEvent;
-using mojom::SubmissionSource;
+using autofill::features::kAutofillLabelAffixRemoval;
+using autofill::mojom::SubmissionIndicatorEvent;
+using autofill::mojom::SubmissionSource;
 
 namespace {
 
@@ -109,6 +116,19 @@ auto UnorderedElementsSerializeSameAs(Matchers... element_matchers) {
   return UnorderedElementsAre(SerializesSameAs(element_matchers)...);
 }
 
+FormStructureTestApi test_api(FormStructure* form_structure) {
+  return FormStructureTestApi(form_structure);
+}
+
+constexpr DenseSet<PatternSource> kAllPatternSources {
+#if !BUILDFLAG(USE_INTERNAL_AUTOFILL_HEADERS)
+  PatternSource::kLegacy
+#else
+  PatternSource::kLegacy, PatternSource::kDefault, PatternSource::kExperimental,
+      PatternSource::kNextGen
+#endif
+};
+
 }  // namespace
 
 class FormStructureTestImpl : public test::FormStructureTest {
@@ -152,6 +172,49 @@ class FormStructureTestImpl : public test::FormStructureTest {
 class ParameterizedFormStructureTest
     : public FormStructureTestImpl,
       public testing::WithParamInterface<bool> {};
+
+class FormStructureTest_ForPatternSource
+    : public FormStructureTestImpl,
+      public testing::WithParamInterface<PatternSource> {
+ public:
+  FormStructureTest_ForPatternSource() {
+    scoped_feature_list_.InitWithFeaturesAndParameters(
+        {base::test::ScopedFeatureList::FeatureAndParams(
+            features::kAutofillParsingPatternProvider,
+            {{"prediction_source", pattern_source_as_string()}})},
+        {});
+  }
+
+  PatternSource pattern_source() const { return GetParam(); }
+
+  std::string pattern_source_as_string() const {
+    switch (pattern_source()) {
+      case PatternSource::kLegacy:
+        return "legacy";
+#if BUILDFLAG(USE_INTERNAL_AUTOFILL_HEADERS)
+      case PatternSource::kDefault:
+        return "default";
+      case PatternSource::kExperimental:
+        return "experimental";
+      case PatternSource::kNextGen:
+        return "nextgen";
+#endif
+    }
+  }
+
+  DenseSet<PatternSource> other_pattern_sources() const {
+    DenseSet<PatternSource> patterns = kAllPatternSources;
+    patterns.erase(pattern_source());
+    return patterns;
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+INSTANTIATE_TEST_SUITE_P(FormStructureTest,
+                         FormStructureTest_ForPatternSource,
+                         ::testing::ValuesIn(kAllPatternSources));
 
 TEST_F(FormStructureTestImpl, FieldCount) {
   CheckFormStructureTestData({{{.description_for_logging = "FieldCount",
@@ -6187,9 +6250,11 @@ TEST_F(FormStructureTestImpl, RationalizePhoneNumber_RunsOncePerSection) {
                                        test::GetEncodedSignatures(forms),
                                        nullptr, nullptr);
 
-  EXPECT_FALSE(form_structure.phone_rationalized_["fullName_0_11-default"]);
+  EXPECT_FALSE(
+      test_api(&form_structure).phone_rationalized("fullName_0_11-default"));
   form_structure.RationalizePhoneNumbersInSection("fullName_0_11-default");
-  EXPECT_TRUE(form_structure.phone_rationalized_["fullName_0_11-default"]);
+  EXPECT_TRUE(
+      test_api(&form_structure).phone_rationalized("fullName_0_11-default"));
   ASSERT_EQ(1U, forms.size());
   ASSERT_EQ(4U, forms[0]->field_count());
   EXPECT_EQ(NAME_FULL, forms[0]->field(0)->server_type());
@@ -8539,6 +8604,32 @@ TEST_F(FormStructureTestImpl, FindFieldsEligibleForManualFilling) {
 
   EXPECT_EQ(expected_result,
             FormStructure::FindFieldsEligibleForManualFilling(forms));
+}
+
+// Tests that ParseFieldTypesWithPatterns() sets (only) the PatternSource.
+TEST_P(FormStructureTest_ForPatternSource, ParseFieldTypesWithPatterns) {
+  FormData form;
+  test::CreateTestAddressFormData(&form);
+  FormStructure form_structure(form);
+  test_api(&form_structure).ParseFieldTypesWithPatterns(pattern_source());
+  ASSERT_THAT(test_api(&form_structure).fields(), Not(IsEmpty()));
+
+  auto get_heuristic_type = [&](const AutofillField& field) {
+    return field.heuristic_type(pattern_source());
+  };
+  EXPECT_THAT(
+      test_api(&form_structure).fields(),
+      Each(Pointee(ResultOf(get_heuristic_type,
+                            AllOf(Not(NO_SERVER_DATA), Not(UNKNOWN_TYPE))))));
+
+  for (PatternSource other_pattern_source : other_pattern_sources()) {
+    auto get_heuristic_type = [&](const AutofillField& field) {
+      return field.heuristic_type(other_pattern_source);
+    };
+    EXPECT_THAT(test_api(&form_structure).fields(),
+                Each(Pointee(ResultOf(get_heuristic_type, NO_SERVER_DATA))))
+        << "PatternSource = " << static_cast<int>(other_pattern_source);
+  }
 }
 
 }  // namespace autofill

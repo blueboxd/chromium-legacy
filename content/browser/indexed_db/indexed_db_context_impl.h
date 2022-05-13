@@ -33,6 +33,7 @@
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
+#include "net/base/schemeful_site.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
 #include "third_party/blink/public/common/storage_key/storage_key.h"
 
@@ -57,9 +58,6 @@ class CONTENT_EXPORT IndexedDBContextImpl
       public storage::mojom::IndexedDBControl,
       public storage::mojom::IndexedDBControlTest {
  public:
-  // The indexed db directory.
-  static const base::FilePath::CharType kIndexedDBDirectory[];
-
   // Release `context` on the IDBTaskRunner.
   static void ReleaseOnIDBSequence(
       scoped_refptr<IndexedDBContextImpl>&& context);
@@ -249,13 +247,11 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void DownloadBucketDataImpl(
       DownloadBucketDataCallback callback,
       const absl::optional<storage::BucketLocator>& bucket_locator);
-  void ApplyPolicyUpdateImpl(
-      const storage::mojom::StoragePolicyUpdate& policy_update,
-      const absl::optional<storage::BucketLocator>& bucket_locator);
 
   void ShutdownOnIDBSequence();
 
   const base::FilePath GetFirstPartyDataPath() const;
+  const base::FilePath GetThirdPartyDataPath() const;
   base::FilePath GetBlobStorePath(
       const storage::BucketLocator& bucket_locator) const;
   base::FilePath GetLevelDBPath(
@@ -277,19 +273,29 @@ class CONTENT_EXPORT IndexedDBContextImpl
   void InitializeFromFilesIfNeeded(base::OnceClosure callback);
   bool did_initialize_from_files_{false};
 
-  using GetOrCreateDefaultBucketCallback = base::OnceCallback<void(
+  using DidGetBucketLocatorCallback = base::OnceCallback<void(
       const absl::optional<storage::BucketLocator>& bucket_locator)>;
+
   // This function provides an easy way to wrap the common operation: find
   // bucket in `storage_key_to_bucket_locator_` if it exists, otherwise look
   // it up in the `quota_manager_proxy_`, cache it, and then run the callback.
   void GetOrCreateDefaultBucket(const blink::StorageKey& storage_key,
-                                GetOrCreateDefaultBucketCallback callback);
+                                DidGetBucketLocatorCallback callback);
+
+  // This function provides an easy way to wrap the common operation: find
+  // bucket in `bucket_id_to_bucket_locator_` if it exists, otherwise look
+  // it up in the `quota_manager_proxy_`, cache it, and then run the callback.
+  void GetBucketById(const storage::BucketId& bucket_id,
+                     DidGetBucketLocatorCallback callback);
 
   // TODO(crbug.com/1315371): We need a way to map the StorageKey to a single
   // valid BucketLocator for legacy API purposes. This member should be removed
   // as it blocks the use of non-default named buckets.
   std::map<blink::StorageKey, storage::BucketLocator>
       storage_key_to_bucket_locator_;
+
+  std::map<storage::BucketId, storage::BucketLocator>
+      bucket_id_to_bucket_locator_;
 
   const scoped_refptr<base::SequencedTaskRunner> idb_task_runner_;
   IndexedDBDispatcherHost dispatcher_host_;
@@ -309,8 +315,9 @@ class CONTENT_EXPORT IndexedDBContextImpl
   const scoped_refptr<storage::QuotaManagerProxy> quota_manager_proxy_;
   std::set<storage::BucketLocator> bucket_set_;
   std::map<storage::BucketLocator, int64_t> bucket_size_map_;
-  // The set of buckets whose storage should be cleared on shutdown.
-  std::set<storage::BucketLocator> buckets_to_purge_on_shutdown_;
+  // The set of sites whose storage should be cleared on shutdown. These are
+  // matched against the origin and top level site in each bucket's StorageKey.
+  std::set<net::SchemefulSite> sites_to_purge_on_shutdown_;
   const raw_ptr<base::Clock> clock_;
 
   const std::unique_ptr<IndexedDBQuotaClient> quota_client_;

@@ -8,6 +8,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/send_tab_to_self/desktop_notification_handler.h"
+#include "chrome/browser/send_tab_to_self/send_tab_to_self_util.h"
 #include "chrome/browser/sharing_hub/sharing_hub_features.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
@@ -28,8 +29,6 @@
 #include "components/send_tab_to_self/target_device_info.h"
 #include "components/signin/public/base/consent_level.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
-#include "content/public/browser/navigation_controller.h"
-#include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/base/window_open_disposition.h"
@@ -64,8 +63,26 @@ void SendTabToSelfBubbleController::ShowBubble(bool show_back_button) {
   show_back_button_ = show_back_button;
   bubble_shown_ = true;
   Browser* browser = chrome::FindBrowserWithWebContents(&GetWebContents());
-  send_tab_to_self_bubble_view_ =
-      browser->window()->ShowSendTabToSelfBubble(&GetWebContents());
+  absl::optional<send_tab_to_self::EntryPointDisplayReason> reason =
+      send_tab_to_self::GetEntryPointDisplayReason(&GetWebContents());
+  DCHECK(reason);
+  switch (*reason) {
+    case send_tab_to_self::EntryPointDisplayReason::kOfferFeature:
+      send_tab_to_self_bubble_view_ =
+          browser->window()->ShowSendTabToSelfDevicePickerBubble(
+              &GetWebContents());
+      break;
+    case send_tab_to_self::EntryPointDisplayReason::kOfferSignIn:
+      send_tab_to_self_bubble_view_ =
+          browser->window()->ShowSendTabToSelfPromoBubble(
+              &GetWebContents(), /*show_signin_button=*/true);
+      break;
+    case send_tab_to_self::EntryPointDisplayReason::kInformNoTargetDevice:
+      send_tab_to_self_bubble_view_ =
+          browser->window()->ShowSendTabToSelfPromoBubble(
+              &GetWebContents(), /*show_signin_button=*/false);
+      break;
+  }
 
   if (sharing_hub::SharingHubOmniboxEnabled(
           GetWebContents().GetBrowserContext())) {
@@ -107,22 +124,18 @@ void SendTabToSelfBubbleController::OnDeviceSelected(
   SendTabToSelfModel* model =
       SendTabToSelfSyncServiceFactory::GetForProfile(GetProfile())
           ->GetSendTabToSelfModel();
-  content::NavigationEntry* navigation_entry =
-      GetWebContents().GetController().GetLastCommittedEntry();
   // TODO(crbug.com/1288843): This duplicates the ShouldOfferFeature() check,
   // instead the 2 codepaths should share code.
-  DCHECK(navigation_entry);
+  const GURL& shared_url = GetWebContents().GetLastCommittedURL();
   if (!model->IsReady()) {
     // TODO(https://crbug.com/1280681): Is this legit? In STTSv2, there may not
     // *be* a DesktopNotificationHandler for profile, and we're violating the
     // lifetime rules of DesktopNotificationHandler here I think.
-    DesktopNotificationHandler(GetProfile())
-        .DisplayFailureMessage(navigation_entry->GetURL());
+    DesktopNotificationHandler(GetProfile()).DisplayFailureMessage(shared_url);
     return;
   }
 
-  model->AddEntry(navigation_entry->GetURL(),
-                  base::UTF16ToUTF8(navigation_entry->GetTitle()),
+  model->AddEntry(shared_url, base::UTF16ToUTF8(GetWebContents().GetTitle()),
                   target_device_guid);
   // Show confirmation message.
   show_message_ = true;

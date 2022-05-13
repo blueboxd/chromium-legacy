@@ -127,7 +127,8 @@ class AttributionInternalsWebUiBrowserTest : public ContentBrowserTest {
   // the report table is empty.
   void SetTitleOnReportsTableEmpty(const std::u16string& title) {
     static constexpr char kObserveEmptyReportsTableScript[] = R"(
-    let table = document.querySelector("#report-table-wrapper tbody");
+    let table = document.querySelector('#reportTable')
+        .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
           table.children[0].children[0].innerText === "No sent or pending reports.") {
@@ -222,7 +223,8 @@ IN_PROC_BROWSER_TEST_F(
   OverrideWebUIAttributionManager();
 
   static constexpr char wait_script[] = R"(
-    let table = document.querySelector("#source-table-wrapper tbody");
+    let table = document.querySelector('#sourceTable')
+        .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
           table.children[0].children[0].innerText ===
@@ -272,8 +274,7 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
                .BuildStored()}));
 
   manager_.NotifySourceDeactivated(
-      DeactivatedSource(SourceBuilder(now + base::Hours(3)).BuildStored(),
-                        DeactivatedSource::Reason::kReplacedByNewerSource));
+      SourceBuilder(now + base::Hours(3)).BuildStored());
 
   // This shouldn't result in a row, as registration succeeded.
   manager_.NotifySourceHandled(SourceBuilder(now).Build(),
@@ -295,7 +296,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       StorableSource::Result::kExcessiveReportingOrigins);
 
   static constexpr char wait_script[] = R"(
-    let table = document.querySelector("#source-table-wrapper tbody");
+    let table = document.querySelector('#sourceTable')
+        .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver(() => {
       if (table.children.length === 8 &&
           table.children[0].children[0].innerText === $1 &&
@@ -462,7 +464,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   {
     static constexpr char wait_script[] = R"(
-      let table = document.querySelector("#report-table-wrapper tbody");
+      let table = document.querySelector('#reportTable')
+          .shadowRoot.querySelector('tbody');
       let obs = new MutationObserver(() => {
         if (table.children.length === 6 &&
             table.children[0].children[3].innerText ===
@@ -494,7 +497,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   {
     static constexpr char wait_script[] = R"(
-      let table = document.querySelector("#report-table-wrapper tbody");
+      let table = document.querySelector('#reportTable')
+          .shadowRoot.querySelector('tbody');
       let obs = new MutationObserver(() => {
         if (table.children.length === 6 &&
             table.children[5].children[3].innerText ===
@@ -521,14 +525,16 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle2);
     // Sort by priority ascending.
-    EXPECT_TRUE(ExecJsInWebUI(
-        "document.querySelectorAll('#report-table-wrapper th')[6].click();"));
+    EXPECT_TRUE(
+        ExecJsInWebUI("document.querySelector('#reportTable')"
+                      ".shadowRoot.querySelectorAll('th')[6].click();"));
     EXPECT_EQ(kCompleteTitle2, title_watcher.WaitAndGetTitle());
   }
 
   {
     static constexpr char wait_script[] = R"(
-      let table = document.querySelector("#report-table-wrapper tbody");
+      let table = document.querySelector('#reportTable')
+          .shadowRoot.querySelector('tbody');
       let obs = new MutationObserver(() => {
         if (table.children.length === 6 &&
             table.children[0].children[3].innerText ===
@@ -555,8 +561,9 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
     TitleWatcher title_watcher(shell()->web_contents(), kCompleteTitle3);
     // Sort by priority descending.
-    EXPECT_TRUE(ExecJsInWebUI(
-        "document.querySelectorAll('#report-table-wrapper th')[6].click();"));
+    EXPECT_TRUE(
+        ExecJsInWebUI("document.querySelector('#reportTable')"
+                      ".shadowRoot.querySelectorAll('th')[6].click();"));
 
     EXPECT_EQ(kCompleteTitle3, title_watcher.WaitAndGetTitle());
   }
@@ -592,7 +599,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   // Verify both rows get rendered.
   static constexpr char wait_script[] = R"(
-    let table = document.querySelector("#report-table-wrapper tbody");
+    let table = document.querySelector('#reportTable')
+        .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver(() => {
       if (table.children.length === 2 &&
           table.children[0].children[6].innerText === "7" &&
@@ -630,9 +638,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       .WillByDefault(InvokeCallback(
           {SourceBuilder(now).SetSourceEventId(5).BuildStored()}));
 
-  manager_.NotifySourceDeactivated(DeactivatedSource(
-      SourceBuilder(now + base::Hours(2)).SetSourceEventId(6).BuildStored(),
-      DeactivatedSource::Reason::kReplacedByNewerSource));
+  manager_.NotifySourceDeactivated(
+      SourceBuilder(now + base::Hours(2)).SetSourceEventId(6).BuildStored());
 
   EXPECT_CALL(manager_, ClearData)
       .WillOnce([](base::Time delete_begin, base::Time delete_end,
@@ -641,7 +648,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
 
   // Verify both rows get rendered.
   static constexpr char wait_script[] = R"(
-    let table = document.querySelector("#source-table-wrapper tbody");
+    let table = document.querySelector('#sourceTable')
+        .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver(() => {
       if (table.children.length === 2 &&
           table.children[0].children[0].innerText === "5" &&
@@ -661,7 +669,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   const std::u16string kDeleteTitle = u"Delete";
   TitleWatcher delete_title_watcher(shell()->web_contents(), kDeleteTitle);
   static constexpr char kObserveEmptySourcesTableScript[] = R"(
-    let table = document.querySelector("#source-table-wrapper tbody");
+    let table = document.querySelector('#sourceTable')
+        .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
           table.children[0].children[0].innerText === "No sources.") {
@@ -703,7 +712,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   OverrideWebUIAttributionManager();
 
   static constexpr char wait_script[] = R"(
-    let table = document.querySelector("#report-table-wrapper tbody");
+    let table = document.querySelector('#reportTable')
+        .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
           table.children[0].children[6].innerText === "7") {
@@ -724,7 +734,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   SetTitleOnReportsTableEmpty(kSentTitle);
 
   EXPECT_TRUE(ExecJsInWebUI(
-      R"(document.querySelector('#report-table-wrapper input[type="checkbox"]').click();)"));
+      R"(document.querySelector('#reportTable')
+         .shadowRoot.querySelector('input[type="checkbox"]').click();)"));
   EXPECT_TRUE(
       ExecJsInWebUI("document.getElementById('send-reports').click();"));
 
@@ -823,7 +834,8 @@ IN_PROC_BROWSER_TEST_F(
 
   {
     static constexpr char wait_script[] = R"(
-      let table = document.querySelector("#aggregatable-report-table-wrapper tbody");
+      let table = document.querySelector('#aggregatableReportTable')
+          .shadowRoot.querySelector('tbody');
       let obs = new MutationObserver(() => {
         if (table.children.length === 6 &&
             table.children[0].children[3].innerText ===
@@ -884,7 +896,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       R"json([ {  "data": "2",  "priority": "3",  "filters": {   "c": [    "d"   ]  } }, {  "data": "4",  "priority": "5",  "deduplication_key": "6",  "not_filters": {   "e": [    "f"   ]  } }])json";
 
   static constexpr char wait_script[] = R"(
-      let table = document.querySelector("#trigger-table-wrapper tbody");
+      let table = document.querySelector('#triggerTable')
+          .shadowRoot.querySelector('tbody');
       let obs = new MutationObserver(() => {
         if (table.children.length === 1 &&
             table.children[0].children[1].innerText === "Success: Report stored" &&
@@ -954,7 +967,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   OverrideWebUIAttributionManager();
 
   static constexpr char wait_script[] = R"(
-    let table = document.querySelector("#aggregatable-report-table-wrapper tbody");
+    let table = document.querySelector('#aggregatableReportTable')
+        .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver(() => {
       if (table.children.length === 1) {
         document.title = $1;
@@ -973,7 +987,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   TitleWatcher sent_title_watcher(shell()->web_contents(), kSentTitle);
 
   static constexpr char kObserveEmptyReportsTableScript[] = R"(
-    let table = document.querySelector("#aggregatable-report-table-wrapper tbody");
+    let table = document.querySelector('#aggregatableReportTable')
+        .shadowRoot.querySelector('tbody');
     let obs = new MutationObserver(() => {
       if (table.children.length === 1 &&
           table.children[0].children[0].innerText === "No sent or pending reports.") {
@@ -985,7 +1000,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
       ExecJsInWebUI(JsReplace(kObserveEmptyReportsTableScript, kSentTitle)));
 
   EXPECT_TRUE(ExecJsInWebUI(
-      R"(document.querySelectorAll('#aggregatable-report-table-wrapper input[type="checkbox"]')[1].click();)"));
+      R"(document.querySelector('#aggregatableReportTable')
+         .shadowRoot.querySelectorAll('input[type="checkbox"]')[1].click();)"));
   EXPECT_TRUE(ExecJsInWebUI(
       "document.getElementById('send-aggregatable-reports').click();"));
 
@@ -1026,7 +1042,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   // By default, debug reports are shown.
   {
     static constexpr char wait_script[] = R"(
-      let table = document.querySelector("#report-table-wrapper tbody");
+      let table = document.querySelector('#reportTable')
+          .shadowRoot.querySelector('tbody');
       let label = document.querySelector('#show-debug-event-reports span');
       let obs = new MutationObserver(() => {
         if (table.children.length === 2 &&
@@ -1063,7 +1080,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   // the label should indicate the number.
   {
     static constexpr char wait_script[] = R"(
-      let table = document.querySelector("#report-table-wrapper tbody");
+      let table = document.querySelector('#reportTable')
+          .shadowRoot.querySelector('tbody');
       let label = document.querySelector('#show-debug-event-reports span');
       let obs = new MutationObserver(() => {
         if (table.children.length === 1 &&
@@ -1089,7 +1107,8 @@ IN_PROC_BROWSER_TEST_F(AttributionInternalsWebUiBrowserTest,
   // cleared.
   {
     static constexpr char wait_script[] = R"(
-      let table = document.querySelector("#report-table-wrapper tbody");
+      let table = document.querySelector('#reportTable').shadowRoot
+          .querySelector('tbody');
       let label = document.querySelector('#show-debug-event-reports span');
       let obs = new MutationObserver(() => {
         if (table.children.length === 3 &&

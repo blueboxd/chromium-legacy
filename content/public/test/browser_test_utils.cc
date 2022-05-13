@@ -1391,12 +1391,17 @@ void ExecuteScriptAsync(const ToRenderFrameHost& adapter,
   // Prerendering pages will never have user gesture.
   if (adapter.render_frame_host()->GetLifecycleState() ==
       RenderFrameHost::LifecycleState::kPrerendering) {
-    adapter.render_frame_host()->ExecuteJavaScriptForTests(
-        base::UTF8ToUTF16(script), base::NullCallback());
+    ExecuteScriptAsyncWithoutUserGesture(adapter, script);
   } else {
     adapter.render_frame_host()->ExecuteJavaScriptWithUserGestureForTests(
         base::UTF8ToUTF16(script), base::NullCallback());
   }
+}
+
+void ExecuteScriptAsyncWithoutUserGesture(const ToRenderFrameHost& adapter,
+                                          const std::string& script) {
+  adapter.render_frame_host()->ExecuteJavaScriptForTests(
+      base::UTF8ToUTF16(script), base::NullCallback());
 }
 
 bool ExecuteScriptAndExtractDouble(const ToRenderFrameHost& adapter,
@@ -1972,7 +1977,7 @@ bool ExecuteWebUIResourceTest(WebContents* web_contents) {
   script.append("\n");
   ExecuteScriptAsync(web_contents, script);
 
-  DOMMessageQueue message_queue;
+  DOMMessageQueue message_queue(web_contents);
 
   bool should_wait_flag = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kWaitForDebuggerWebUI);

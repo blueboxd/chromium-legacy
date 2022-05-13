@@ -19,28 +19,24 @@
 namespace extensions {
 
 bool ExtensionRunsInAsh(const std::string& extension_id) {
-  static base::NoDestructor<std::set<base::StringPiece>> keep_list({
-#if BUILDFLAG(ENABLE_HANGOUT_SERVICES_EXTENSION)
-    extension_misc::kHangoutServiceExtensionId,
-#endif
-        extension_misc::kEspeakSpeechSynthesisExtensionId,
-        extension_misc::kGoogleSpeechSynthesisExtensionId,
-        extension_misc::kEnhancedNetworkTtsExtensionId,
-        extension_misc::kSelectToSpeakExtensionId,
-        extension_misc::kAccessibilityCommonExtensionId,
-        extension_misc::kChromeVoxExtensionId,
-        extension_misc::kSwitchAccessExtensionId,
-        extension_misc::kSigninProfileTestExtensionId,
-        extension_misc::kAssessmentAssistantExtensionId,
-        extension_misc::kQuickOfficeComponentExtensionId,
-        extension_misc::kQuickOfficeInternalExtensionId,
-        extension_misc::kQuickOfficeExtensionId,
-        extension_misc::kGuestModeTestExtensionId,
-        extension_misc::kKeyboardExtensionId,
-        extension_misc::kHelpAppExtensionId, extension_misc::kGCSEExtensionId,
-        extension_misc::kGnubbyV3ExtensionId,
-        file_manager::kImageLoaderExtensionId
-  });
+  static base::NoDestructor<std::set<base::StringPiece>> keep_list(
+      {extension_misc::kEspeakSpeechSynthesisExtensionId,
+       extension_misc::kGoogleSpeechSynthesisExtensionId,
+       extension_misc::kEnhancedNetworkTtsExtensionId,
+       extension_misc::kSelectToSpeakExtensionId,
+       extension_misc::kAccessibilityCommonExtensionId,
+       extension_misc::kChromeVoxExtensionId,
+       extension_misc::kSwitchAccessExtensionId,
+       extension_misc::kSigninProfileTestExtensionId,
+       extension_misc::kQuickOfficeComponentExtensionId,
+       extension_misc::kQuickOfficeInternalExtensionId,
+       extension_misc::kQuickOfficeExtensionId,
+       extension_misc::kGuestModeTestExtensionId,
+       extension_misc::kKeyboardExtensionId,
+       extension_misc::kHelpAppExtensionId, extension_misc::kGCSEExtensionId,
+       extension_misc::kGnubbyV3ExtensionId,
+       extension_misc::kBruSecurityKeyForwarderExtensionId,
+       file_manager::kImageLoaderExtensionId});
   return base::Contains(*keep_list, extension_id) ||
          ash::input_method::ComponentExtensionIMEManagerDelegateImpl::
              IsIMEExtensionID(extension_id);
@@ -48,9 +44,9 @@ bool ExtensionRunsInAsh(const std::string& extension_id) {
 
 bool ExtensionAppRunsInAsh(const std::string& app_id) {
   static base::NoDestructor<std::set<base::StringPiece>> keep_list(
-      {file_manager::kAudioPlayerAppId, extension_misc::kFeedbackExtensionId,
-       extension_misc::kFilesManagerAppId, extension_misc::kGoogleKeepAppId,
-       extension_misc::kCalculatorAppId, extension_misc::kTextEditorAppId,
+      {file_manager::kAudioPlayerAppId, extension_misc::kFilesManagerAppId,
+       extension_misc::kGoogleKeepAppId, extension_misc::kCalculatorAppId,
+       extension_misc::kTextEditorAppId,
        extension_misc::kInAppPaymentsSupportAppId,
        extension_misc::kWallpaperManagerId, arc::kPlayStoreAppId,
        extension_misc::kIdentityApiUiAppId, extension_misc::kGnubbyAppId});

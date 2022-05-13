@@ -4,8 +4,6 @@
 
 #include "content/public/browser/content_browser_client.h"
 
-#include "build/build_config.h"
-
 // content_browser_client.h is a widely included header and its size impacts
 // build time significantly. If you run into this limit, try using forward
 // declarations instead of including more headers. If that is infeasible, adjust
@@ -255,6 +253,13 @@ size_t ContentBrowserClient::GetProcessCountToIgnoreForLimit() {
   return 0;
 }
 
+blink::ParsedPermissionsPolicy
+ContentBrowserClient::GetPermissionsPolicyForIsolatedApp(
+    content::BrowserContext* browser_context,
+    const url::Origin& app_origin) {
+  return blink::ParsedPermissionsPolicy();
+}
+
 bool ContentBrowserClient::ShouldTryToUseExistingProcessHost(
     BrowserContext* browser_context,
     const GURL& url) {
@@ -480,6 +485,15 @@ bool ContentBrowserClient::IsConversionMeasurementOperationAllowed(
     const url::Origin* impression_origin,
     const url::Origin* conversion_origin,
     const url::Origin* reporting_origin) {
+  return true;
+}
+
+bool ContentBrowserClient::IsSharedStorageAllowed(
+    content::BrowserContext* browser_context,
+    const url::Origin& top_frame_origin,
+    const url::Origin& accessing_origin) {
+  // TODO(crbug.com/1325103): Change this to false and override in
+  // relevant content_browsertests and web_tests.
   return true;
 }
 

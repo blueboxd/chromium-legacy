@@ -19,7 +19,7 @@ try_.defaults.set(
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
     compilator_goma_jobs = goma.jobs.J150,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
@@ -75,7 +75,7 @@ try_.builder(
     properties = {
         "$build/binary_size": {
             "analyze_targets": [
-                "//fuchsia/release:fuchsia_sizes",
+                "//tools/fuchsia/size_tests:fuchsia_sizes",
             ],
             "compile_targets": [
                 "fuchsia_sizes",
@@ -210,6 +210,9 @@ try_.builder(
 
 try_.builder(
     name = "linux-bfcache-rel",
+    mirrors = [
+        "ci/linux-bfcache-rel",
+    ],
 )
 
 try_.builder(
@@ -264,6 +267,9 @@ try_.builder(
 
 try_.builder(
     name = "linux-extended-tracing-rel",
+    mirrors = [
+        "ci/linux-extended-tracing-rel",
+    ],
 )
 
 try_.builder(
@@ -573,6 +579,9 @@ try_.compilator_builder(
 
 try_.builder(
     name = "linux_chromium_ubsan_rel_ng",
+    mirrors = [
+        "ci/linux-ubsan-vptr",
+    ],
 )
 
 try_.builder(
@@ -624,6 +633,9 @@ try_.builder(
 try_.builder(
     name = "linux_vr",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/VR Linux",
+    ],
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [

@@ -14,7 +14,6 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/feature_engagement/tracker_factory.h"
 #import "ios/chrome/browser/follow/follow_action_state.h"
-#import "ios/chrome/browser/follow/follow_util.h"
 #import "ios/chrome/browser/main/browser.h"
 #import "ios/chrome/browser/ntp/features.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
@@ -321,6 +320,11 @@ enum class IOSOverflowMenuActionType {
             .triggerFollowUpAction;
     self.bubblePresenter.incognitoTabTipBubblePresenter.triggerFollowUpAction =
         NO;
+    if (IsWebChannelsEnabled()) {
+      ios::GetChromeBrowserProvider()
+          .GetFollowProvider()
+          ->SetFollowEventDelegate(self.browser);
+    }
   }
 
   OverlayPresenter* overlayPresenter = OverlayPresenter::FromBrowser(
@@ -363,13 +367,9 @@ enum class IOSOverflowMenuActionType {
             GetApplicationContext()->GetBrowserPolicyConnector();
 
         if (IsWebChannelsEnabled()) {
-          self.overflowMenuMediator.followActionState = GetFollowActionState(
-              self.browser->GetWebStateList()->GetActiveWebState());
           ios::GetChromeBrowserProvider()
               .GetFollowProvider()
               ->SetFollowEventDelegate(self.browser);
-        } else {
-          self.overflowMenuMediator.followActionState = FollowActionStateHidden;
         }
 
         self.contentBlockerMediator.consumer = self.overflowMenuMediator;

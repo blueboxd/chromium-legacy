@@ -22,10 +22,10 @@
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/userdataauth/fake_cryptohome_misc_client.h"
 #include "components/account_id/account_id.h"
@@ -50,8 +50,8 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
     // DBusThreadManager::Get() for GetAnomalyDetectorClient.
     chromeos::DBusThreadManager::Initialize();
 
-    chromeos::CiceroneClient::InitializeFake();
-    chromeos::ConciergeClient::InitializeFake();
+    ash::CiceroneClient::InitializeFake();
+    ash::ConciergeClient::InitializeFake();
     ash::SeneschalClient::InitializeFake();
 
     arc::SetArcAvailableCommandLineForTesting(
@@ -74,9 +74,9 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
     arc::ArcMetricsService::GetForBrowserContextForTesting(profile());
 
     // TODO(yusukes): Stop re-creating the client here.
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
-    fake_concierge_client_ = chromeos::FakeConciergeClient::Get();
+    ash::ConciergeClient::Shutdown();
+    ash::ConciergeClient::InitializeFake(/*fake_cicerone_client=*/nullptr);
+    fake_concierge_client_ = ash::FakeConciergeClient::Get();
   }
 
   void TearDown() override {
@@ -101,8 +101,8 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
     arc_service_manager_.reset();
     chromeos::CryptohomeMiscClient::Shutdown();
     ash::SeneschalClient::Shutdown();
-    chromeos::ConciergeClient::Shutdown();
-    chromeos::CiceroneClient::Shutdown();
+    ash::ConciergeClient::Shutdown();
+    ash::CiceroneClient::Shutdown();
     chromeos::DBusThreadManager::Shutdown();
   }
 
@@ -173,7 +173,7 @@ class LockToSingleUserManagerTest : public BrowserWithTestWindowTest {
   // Required for initialization.
   ash::SessionTerminationManager termination_manager_;
   std::unique_ptr<LockToSingleUserManager> lock_to_single_user_manager_;
-  chromeos::FakeConciergeClient* fake_concierge_client_;
+  ash::FakeConciergeClient* fake_concierge_client_;
   TestingPrefServiceSimple local_state_;
 };
 

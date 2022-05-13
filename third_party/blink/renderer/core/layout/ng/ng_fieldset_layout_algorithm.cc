@@ -9,6 +9,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_block_layout_algorithm.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_fieldset_break_token_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragmentation_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_layout_result.h"
@@ -81,6 +82,12 @@ const NGLayoutResult* NGFieldsetLayoutAlgorithm::Layout() {
   intrinsic_block_size_ =
       IsResumingLayout(BreakToken()) ? LayoutUnit() : Borders().block_start;
 
+  if (InvolvedInBlockFragmentation(container_builder_)) {
+    container_builder_.SetBreakTokenData(
+        MakeGarbageCollected<NGFieldsetBreakTokenData>(
+            container_builder_.GetBreakTokenData()));
+  }
+
   NGBreakStatus break_status = LayoutChildren();
   if (break_status == NGBreakStatus::kNeedsEarlierBreak) {
     // We need to abort the layout. No fragment will be generated.
@@ -104,12 +111,8 @@ const NGLayoutResult* NGFieldsetLayoutAlgorithm::Layout() {
   // contents, with the conjecture being that legend is part of the contents.
   // Thus, only do this adjustment if we do not contain size.
   if (!Node().ShouldApplyBlockSizeContainment()) {
-    // Similar to how we add the consumed block size to the intrinsic
-    // block size when calculating border_box_size_.block_size, we also need to
-    // do so when the fieldset is adjusted to encompass the legend.
     border_box_size_.block_size =
-        std::max(border_box_size_.block_size,
-                 minimum_border_box_block_size_ + consumed_block_size_);
+        std::max(border_box_size_.block_size, minimum_border_box_block_size_);
   }
 
   // TODO(almaher): end border and padding may overflow the parent
@@ -183,43 +186,36 @@ NGBreakStatus NGFieldsetLayoutAlgorithm::LayoutChildren() {
   if (legend) {
     if (!IsResumingLayout(BreakToken()))
       LayoutLegend(legend);
-    // The legend may eat from the available content box block size. Calculate
-    // the minimum block size needed to encompass the legend.
-    if (!Node().ShouldApplyBlockSizeContainment() &&
-        !IsResumingLayout(content_break_token)) {
-      minimum_border_box_block_size_ =
-          intrinsic_block_size_ + Padding().BlockSum() + Borders().block_end;
+    LayoutUnit legend_size_contribution;
+    if (IsResumingLayout(BreakToken())) {
+      const auto* token_data =
+          To<NGFieldsetBreakTokenData>(BreakToken()->TokenData());
+      legend_size_contribution = token_data->legend_block_size_contribution;
+    } else {
+      // We're at the first fragment. The current layout position
+      // (intrinsic_block_size_) is at the outer block-end edge of the legend
+      // or just after the block-start border, whichever is larger.
+      legend_size_contribution = intrinsic_block_size_ - Borders().block_start;
+    }
+
+    if (InvolvedInBlockFragmentation(container_builder_)) {
+      auto* token_data =
+          To<NGFieldsetBreakTokenData>(container_builder_.GetBreakTokenData());
+      token_data->legend_block_size_contribution = legend_size_contribution;
     }
 
     if (adjusted_padding_box_size.block_size != kIndefiniteSize) {
       DCHECK_NE(border_box_size_.block_size, kIndefiniteSize);
-      LayoutUnit legend_size_contribution;
-      if (IsResumingLayout(BreakToken())) {
-        // The legend has been laid out in previous fragments, and
-        // adjusted_padding_box_size will need to be adjusted further to account
-        // for block size taken up by the legend.
-        //
-        // To calculate its size contribution to the border block-start area,
-        // take the difference between the previously consumed block-size of the
-        // fieldset excluding its specified block-start border, and the consumed
-        // block-size of the contents wrapper.
-        LayoutUnit content_consumed_block_size =
-            content_break_token ? content_break_token->ConsumedBlockSize()
-                                : LayoutUnit();
-        legend_size_contribution = consumed_block_size_ -
-                                   Borders().block_start -
-                                   content_consumed_block_size;
-      } else {
-        // We're at the first fragment. The current layout position
-        // (intrinsic_block_size_) is at the outer block-end edge of the legend
-        // or just after the block-start border, whichever is larger.
-        legend_size_contribution =
-            intrinsic_block_size_ - Borders().block_start;
-      }
-
       adjusted_padding_box_size.block_size = std::max(
           adjusted_padding_box_size.block_size - legend_size_contribution,
           Padding().BlockSum());
+    }
+
+    // The legend may eat from the available content box block size. Calculate
+    // the minimum block size needed to encompass the legend.
+    if (!Node().ShouldApplyBlockSizeContainment()) {
+      minimum_border_box_block_size_ =
+          BorderPadding().BlockSum() + legend_size_contribution;
     }
   }
 

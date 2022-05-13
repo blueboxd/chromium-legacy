@@ -19,15 +19,12 @@ ci.defaults.set(
 consoles.console_view(
     name = "chromium.swangle",
     ordering = {
-        None: ["DEPS", "ToT ANGLE", "ToT SwiftShader"],
+        None: ["DEPS", "ToT SwiftShader", "Chromium"],
         "*os*": ["Windows", "Mac"],
         "*cpu*": consoles.ordering(short_names = ["x86", "x64"]),
         "DEPS": "*os*",
         "DEPS|Windows": "*cpu*",
         "DEPS|Linux": "*cpu*",
-        "ToT ANGLE": "*os*",
-        "ToT ANGLE|Windows": "*cpu*",
-        "ToT ANGLE|Linux": "*cpu*",
         "ToT SwiftShader": "*os*",
         "ToT SwiftShader|Windows": "*cpu*",
         "ToT SwiftShader|Linux": "*cpu*",
@@ -42,17 +39,6 @@ ci.gpu.linux_builder(
         short_name = "x64",
     ),
     executable = ci.DEFAULT_EXECUTABLE,
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.gpu.linux_builder(
-    name = "linux-swangle-tot-angle-x64",
-    console_view_entry = consoles.console_view_entry(
-        category = "ToT ANGLE|Linux",
-        short_name = "x64",
-    ),
     goma_backend = None,
     reclient_jobs = rbe_jobs.HIGH_JOBS_FOR_CI,
     reclient_instance = rbe_instance.DEFAULT,
@@ -104,26 +90,6 @@ ci.gpu.windows_builder(
 )
 
 ci.gpu.windows_builder(
-    name = "win-swangle-tot-angle-x64",
-    console_view_entry = consoles.console_view_entry(
-        category = "ToT ANGLE|Windows",
-        short_name = "x64",
-    ),
-    goma_backend = goma.backend.RBE_PROD,
-)
-
-ci.gpu.windows_builder(
-    name = "win-swangle-tot-angle-x86",
-    console_view_entry = consoles.console_view_entry(
-        category = "ToT ANGLE|Windows",
-        short_name = "x86",
-    ),
-    goma_backend = None,
-    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
-    reclient_instance = rbe_instance.DEFAULT,
-)
-
-ci.gpu.windows_builder(
     name = "win-swangle-tot-swiftshader-x64",
     console_view_entry = consoles.console_view_entry(
         category = "ToT SwiftShader|Windows",
@@ -140,7 +106,9 @@ ci.gpu.windows_builder(
         category = "ToT SwiftShader|Windows",
         short_name = "x86",
     ),
-    goma_backend = goma.backend.RBE_PROD,
+    goma_backend = None,
+    reclient_jobs = rbe_jobs.LOW_JOBS_FOR_CI,
+    reclient_instance = rbe_instance.DEFAULT,
 )
 
 ci.gpu.windows_builder(

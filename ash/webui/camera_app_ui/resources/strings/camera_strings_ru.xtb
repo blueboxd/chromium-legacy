@@ -32,6 +32,7 @@
 <translation id="2134029355740465625">Настройки видео</translation>
 <translation id="2144806332417375165">Свои параметры видео</translation>
 <translation id="2175927920773552910">QR-код</translation>
+<translation id="2244252133441425811">Разрешить выбор частоты кадров для видео</translation>
 <translation id="2271433936731426666">Разрешить делать полноразмерные снимки</translation>
 <translation id="229579744168541441">Экспортировать на диск</translation>
 <translation id="2320741269052147773">Панорамировать влево</translation>
@@ -118,6 +119,7 @@
 Если ваш отзыв касается качества фото или видео, прикрепите файл с примером проблемы (например, слишком темный или размытый снимок).</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> – <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> Мп</translation>
 <translation id="6527303717912515753">Поделиться</translation>
+<translation id="6617916774429601017">Показать все разрешения</translation>
 <translation id="6631515515009660915">Зеркальный режим отключен</translation>
 <translation id="6652737148136672975">Переместите угол с помощью клавиш со стрелками</translation>
 <translation id="667999046851023355">Документ</translation>

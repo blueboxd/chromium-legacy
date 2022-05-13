@@ -138,7 +138,7 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
       mojo::PendingRemote<media::mojom::MediaMetricsProvider> metrics_provider,
       CreateSurfaceLayerBridgeCB create_bridge_callback,
       scoped_refptr<viz::RasterContextProvider> raster_context_provider,
-      WebMediaPlayer::SurfaceLayerMode surface_layer_mode,
+      bool use_surface_layer,
       bool is_background_suspend_enabled,
       bool is_background_video_play_enabled,
       bool is_background_video_track_optimization_supported,
@@ -216,8 +216,6 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
   // them from members which would cause race conditions.
   WebMediaPlayer::NetworkState GetNetworkState() const override;
   WebMediaPlayer::ReadyState GetReadyState() const override;
-
-  WebMediaPlayer::SurfaceLayerMode GetVideoSurfaceLayerMode() const override;
 
   WebString GetErrorMessage() const override;
   bool DidLoadingProgress() override;
@@ -978,8 +976,7 @@ class PLATFORM_EXPORT WebMediaPlayerImpl
   bool embedded_media_experience_enabled_ = false;
 
   // When should we use SurfaceLayer for video?
-  WebMediaPlayer::SurfaceLayerMode surface_layer_mode_ =
-      WebMediaPlayer::SurfaceLayerMode::kNever;
+  bool use_surface_layer_ = false;
 
   // Whether surface layer is currently in use to display frames.
   bool surface_layer_for_video_enabled_ = false;

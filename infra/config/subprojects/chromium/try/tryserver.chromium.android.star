@@ -19,7 +19,7 @@ try_.defaults.set(
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
     compilator_goma_jobs = goma.jobs.J300,
-    os = os.LINUX_BIONIC_SWITCH_TO_DEFAULT,
+    os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.DEFAULT_SERVICE_ACCOUNT,
 )
@@ -110,6 +110,9 @@ try_.builder(
 try_.builder(
     name = "android-cronet-arm-dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/android-cronet-arm-dbg",
+    ],
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -138,6 +141,9 @@ try_.builder(
 
 try_.builder(
     name = "android-cronet-x86-dbg",
+    mirrors = [
+        "ci/android-cronet-x86-dbg",
+    ],
 )
 
 try_.builder(
@@ -147,6 +153,10 @@ try_.builder(
 try_.builder(
     name = "android-cronet-x86-dbg-10-tests",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/android-cronet-x86-dbg",
+        "ci/android-cronet-x86-dbg-10-tests",
+    ],
     check_for_flakiness = True,
     main_list_view = "try",
     tryjob = try_.job(
@@ -164,14 +174,26 @@ try_.builder(
 
 try_.builder(
     name = "android-cronet-x86-dbg-11-tests",
+    mirrors = [
+        "ci/android-cronet-x86-dbg",
+        "ci/android-cronet-x86-dbg-11-tests",
+    ],
 )
 
 try_.builder(
     name = "android-cronet-x86-dbg-oreo-tests",
+    mirrors = [
+        "ci/android-cronet-x86-dbg",
+        "ci/android-cronet-x86-dbg-oreo-tests",
+    ],
 )
 
 try_.builder(
     name = "android-cronet-x86-dbg-pie-tests",
+    mirrors = [
+        "ci/android-cronet-x86-dbg",
+        "ci/android-cronet-x86-dbg-pie-tests",
+    ],
 )
 
 try_.builder(
@@ -201,9 +223,7 @@ try_.builder(
 
 try_.orchestrator_builder(
     name = "android-marshmallow-arm64-rel",
-    # TODO(crbug.com/1313712): Re-enable check_for_flakiness when ResultDB RPCs
-    # no longer timeout.
-    #check_for_flakiness = True,
+    check_for_flakiness = True,
     compilator = "android-marshmallow-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
@@ -215,9 +235,7 @@ try_.orchestrator_builder(
 try_.compilator_builder(
     name = "android-marshmallow-arm64-rel-compilator",
     branch_selector = branches.STANDARD_MILESTONE,
-    # TODO(crbug.com/1313712): Re-enable check_for_flakiness when ResultDB RPCs
-    # no longer timeout.
-    #check_for_flakiness = True,
+    check_for_flakiness = True,
     cores = 64 if settings.is_main else 32,
     main_list_view = "try",
 )
@@ -359,10 +377,18 @@ try_.builder(
 
 try_.builder(
     name = "android-weblayer-10-x86-rel-tests",
+    mirrors = [
+        "ci/android-weblayer-with-aosp-webview-x86-rel",
+        "ci/android-weblayer-10-x86-rel-tests",
+    ],
 )
 
 try_.builder(
     name = "android-weblayer-marshmallow-x86-rel-tests",
+    mirrors = [
+        "ci/android-weblayer-with-aosp-webview-x86-rel",
+        "ci/android-weblayer-marshmallow-x86-rel-tests",
+    ],
 )
 
 try_.builder(
@@ -571,6 +597,25 @@ try_.builder(
 try_.gpu.optional_tests_builder(
     name = "android_optional_gpu_tests_rel",
     branch_selector = branches.STANDARD_MILESTONE,
+    builder_spec = builder_config.builder_spec(
+        gclient_config = builder_config.gclient_config(
+            config = "chromium",
+            apply_configs = [
+                "android",
+            ],
+        ),
+        chromium_config = builder_config.chromium_config(
+            config = "android",
+            target_platform = builder_config.target_platform.ANDROID,
+        ),
+        android_config = builder_config.android_config(
+            config = "main_builder",
+        ),
+        build_gs_bucket = "chromium-gpu-fyi-archive",
+    ),
+    try_settings = builder_config.try_settings(
+        retry_failed_shards = False,
+    ),
     check_for_flakiness = True,
     goma_jobs = goma.jobs.J150,
     main_list_view = "try",

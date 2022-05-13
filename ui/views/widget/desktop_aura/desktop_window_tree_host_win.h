@@ -159,6 +159,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   bool ShouldUseDesktopNativeCursorManager() const override;
   bool ShouldCreateVisibilityController() const override;
   DesktopNativeCursorManager* GetSingletonDesktopNativeCursorManager() override;
+  void SetBoundsInDIP(const gfx::Rect& bounds) override;
 
   // Overridden from aura::WindowTreeHost:
   ui::EventSource* GetEventSource() override;
@@ -205,6 +206,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   bool WantsMouseEventsWhenInactive() const override;
   bool WidgetSizeIsClientSize() const override;
   bool IsModal() const override;
+  bool IsHeadless() const override;
   int GetInitialShowState() const override;
   int GetNonClientComponent(const gfx::Point& point) const override;
   void GetWindowMask(const gfx::Size& size, SkPath* path) override;

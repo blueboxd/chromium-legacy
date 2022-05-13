@@ -251,8 +251,14 @@ void GinJavaBridgeDispatcherHost::AddNamedObject(
   // committed. See: http://crbug.com/1087806
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents());
-  web_contents_impl->SendToAllFramesIncludingPending(
-      new GinJavaBridgeMsg_AddNamedObject(MSG_ROUTING_NONE, name, object_id));
+  web_contents_impl->GetMainFrame()->ForEachRenderFrameHostIncludingSpeculative(
+      base::BindRepeating(
+          [](const std::string& name, GinJavaBoundObject::ObjectID object_id,
+             RenderFrameHostImpl* render_frame_host) {
+            render_frame_host->Send(new GinJavaBridgeMsg_AddNamedObject(
+                render_frame_host->GetRoutingID(), name, object_id));
+          },
+          name, object_id));
 }
 
 void GinJavaBridgeDispatcherHost::RemoveNamedObject(
@@ -282,8 +288,13 @@ void GinJavaBridgeDispatcherHost::RemoveNamedObject(
   // committed. See: http://crbug.com/1087806
   WebContentsImpl* web_contents_impl =
       static_cast<WebContentsImpl*>(web_contents());
-  web_contents_impl->SendToAllFramesIncludingPending(
-      new GinJavaBridgeMsg_RemoveNamedObject(MSG_ROUTING_NONE, copied_name));
+  web_contents_impl->GetMainFrame()->ForEachRenderFrameHostIncludingSpeculative(
+      base::BindRepeating(
+          [](const std::string& name, RenderFrameHostImpl* render_frame_host) {
+            render_frame_host->Send(new GinJavaBridgeMsg_RemoveNamedObject(
+                render_frame_host->GetRoutingID(), name));
+          },
+          copied_name));
 }
 
 void GinJavaBridgeDispatcherHost::SetAllowObjectContentsInspection(bool allow) {
@@ -367,7 +378,7 @@ void GinJavaBridgeDispatcherHost::OnInvokeMethod(
   DCHECK(routing_id != MSG_ROUTING_NONE);
   scoped_refptr<GinJavaBoundObject> object = FindObject(object_id);
   if (!object.get()) {
-    wrapped_result->Append(std::make_unique<base::Value>());
+    wrapped_result->GetList().Append(base::Value());
     *error_code = kGinJavaBridgeUnknownObjectId;
     return;
   }
@@ -393,10 +404,10 @@ void GinJavaBridgeDispatcherHost::OnInvokeMethod(
                                      false,
                                      routing_id);
     }
-    wrapped_result->Append(
-        GinJavaBridgeValue::CreateObjectIDValue(returned_object_id));
+    wrapped_result->Append(base::Value::FromUniquePtrValue(
+        GinJavaBridgeValue::CreateObjectIDValue(returned_object_id)));
   } else {
-    wrapped_result->Append(std::make_unique<base::Value>());
+    wrapped_result->Append(base::Value());
   }
 }
 

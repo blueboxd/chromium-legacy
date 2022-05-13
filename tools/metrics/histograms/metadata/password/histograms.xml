@@ -1232,7 +1232,8 @@ chromium-metrics-reviews@google.com.
     Records whether the provided intent to launch the Credential Manager for the
     {ProfileType} could be used successfully. This is recorded right after
     calling send() on the intent which happens when the async call to get the
-    intent from Google Play Services returns.
+    intent from Google Play Services returns. Metric will not be reported when
+    the Loading dialog is cancelled by user or timed out.
   </summary>
   <token key="ProfileType" variants="ProfileType"/>
 </histogram>
@@ -1268,7 +1269,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.CredentialsWithDuplicates2" units="units"
-    expires_after="2022-07-03">
+    expires_after="2022-11-06">
   <owner>kazinova@google.com</owner>
   <owner>vasilii@chromium.org</owner>
   <summary>
@@ -1628,7 +1629,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="PasswordManager.JavaScriptOnlyValueInSubmittedForm"
-    enum="JavaScriptOnlyValueInPasswordForm" expires_after="2022-08-31">
+    enum="JavaScriptOnlyValueInPasswordForm" expires_after="2022-11-06">
   <owner>kazinova@google.com</owner>
   <owner>battre@chromium.org</owner>
   <summary>
@@ -1847,6 +1848,35 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="PasswordManager.MigratedSettingsUPMAndroid"
+    enum="BooleanEnabled" expires_after="M106">
+  <owner>ioanap@chromium.org</owner>
+  <owner>kazinova@google.com</owner>
+  <summary>
+    Records true when a settings migration occurs as part of the UPM transition.
+    It is recorded when the settings service (profile-scoped) is instantiated in
+    a Chrome client with UPM enabled if a migration hasn't already occured. Note
+    that if UPM is disabled, the next time it is enabled a new migration will
+    happen and be recorded.
+  </summary>
+</histogram>
+
+<histogram name="PasswordManager.ModalLoadingDialog.{IntentType}.Outcome"
+    enum="PasswordManager.LoadingDialogOutcome" expires_after="M106">
+  <owner>maxan@chromium.org</owner>
+  <owner>fhorschig@chromium.org</owner>
+  <summary>
+    Records the outcome of the GMS Core UI loading dialog shown when the user
+    launches the {IntentType}. Recorded for both successful and failed attempts
+    to get and launch the {IntentType}. The outcome is recorded right before
+    attempting to send the {IntentType} PendingIntent.
+  </summary>
+  <token key="IntentType">
+    <variant name="CredentialManager"/>
+    <variant name="PasswordCheckup"/>
+  </token>
+</histogram>
+
 <histogram name="PasswordManager.MoveUIDismissalReason"
     enum="PasswordManagerUIDismissalReason" expires_after="2022-10-16">
 <!-- Name completed by histogram_suffixes name="PasswordAccountStorageUserState" -->
@@ -1880,6 +1910,39 @@ chromium-metrics-reviews@google.com.
     associated account is not syncing. Recorded when a non sync password hash is
     saved or cleared.
   </summary>
+</histogram>
+
+<histogram
+    name="PasswordManager.PasswordChangeFlowDuration{EntryPoint}{StartEvent}{EndEvent}"
+    units="ms" expires_after="2023-05-09">
+  <owner>jkeitel@google.com</owner>
+  <owner>kolos@chromium.org</owner>
+  <summary>
+    Duration of a password change flow {EntryPoint} {StartEvent} {EndEvent}.
+  </summary>
+  <token key="EntryPoint">
+    <variant name=".LeakCheckInSettings"
+        summary="that was triggered from a leak check"/>
+    <variant name=".LeakWarningDialog"
+        summary="that was triggered from a leak warning dialog"/>
+  </token>
+  <token key="StartEvent">
+    <variant name=".AutomatedFlow"
+        summary="as an automated change password flow"/>
+    <variant name=".ManualFlow" summary="as a manual change password flow"/>
+    <variant name=".ManualResetLinkFlow"
+        summary="as a manual password reset link flow"/>
+  </token>
+  <token key="EndEvent">
+    <variant name="" summary="aggregated over all end events"/>
+    <variant name=".AutomatedFlowPasswordChosen"
+        summary="and ended with a password from an automated flow"/>
+    <variant name=".AutomatedFlowResetLinkRequested"
+        summary="and ended with the request of a password reset link"/>
+    <variant name=".ManualFlowPasswordChosen"
+        summary="and ended with a password from a manual flow"/>
+    <variant name=".Timeout" summary="and ended with a timeout"/>
+  </token>
 </histogram>
 
 <histogram name="PasswordManager.PasswordCheckup.GetIntent.Error"
@@ -1925,7 +1988,8 @@ chromium-metrics-reviews@google.com.
     Records whether the provided intent to launch the Password Checkup could be
     used successfully. This is recorded right after calling send() on the intent
     which happens when the async call to get the intent from Google Play
-    Services returns.
+    Services returns. Metric will not be reported when the Loading dialog is
+    cancelled by user or timed out.
   </summary>
 </histogram>
 
@@ -2052,7 +2116,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram
-    name="PasswordManager.PasswordSettings.{Function}.{Setting}.APIError"
+    name="PasswordManager.PasswordSettings.{Function}.{Setting}.APIError1"
     enum="PasswordStoreAndroidBackendAPIError" expires_after="M106">
   <owner>maxan@google.com</owner>
   <owner>ioanap@chromium.org</owner>
@@ -2060,6 +2124,10 @@ chromium-metrics-reviews@google.com.
     The error codes returned by the GMS Core Password preferences 1P API while
     attempting to {Function} for {Setting}. Recorded when the asynchronous job
     has returned. This is currently only recorded on Android.
+
+    Replacing PasswordManager.PasswordSettings.{Function}.{Setting}.APIError
+    which incorrectly recorded *only* the enum values and crashed for all
+    unknown values.
   </summary>
   <token key="Function" variants="PasswordManagerSettingAccessorFunction"/>
   <token key="Setting" variants="PasswordManagerSetting"/>
@@ -2682,7 +2750,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.SyncControllerDelegateNotifiesCredentialManager.ErrorCode"
-    enum="PasswordStoreAndroidBackendError" expires_after="2022-08-10">
+    enum="PasswordStoreAndroidBackendError" expires_after="2022-11-06">
   <owner>kazinova@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>
@@ -2696,7 +2764,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="PasswordManager.SyncControllerDelegateNotifiesCredentialManager.Success"
-    enum="Boolean" expires_after="2022-08-10">
+    enum="Boolean" expires_after="2022-11-06">
   <owner>kazinova@google.com</owner>
   <owner>ioanap@chromium.org</owner>
   <summary>

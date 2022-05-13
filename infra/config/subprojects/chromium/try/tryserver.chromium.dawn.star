@@ -14,6 +14,7 @@ try_.defaults.set(
     executable = try_.DEFAULT_EXECUTABLE,
     execution_timeout = try_.DEFAULT_EXECUTION_TIMEOUT,
     goma_backend = goma.backend.RBE_PROD,
+    os = os.LINUX_DEFAULT,
     pool = try_.DEFAULT_POOL,
     service_account = try_.gpu.SERVICE_ACCOUNT,
 )
@@ -27,7 +28,6 @@ try_.builder(
     name = "dawn-linux-x64-deps-rel",
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
-    os = os.LINUX_BIONIC_REMOVE,
     tryjob = try_.job(
         location_regexp = [
             ".+/[+]/content/test/gpu/.+",
@@ -101,6 +101,11 @@ try_.builder(
 try_.builder(
     name = "dawn-win10-x86-deps-rel",
     branch_selector = branches.DESKTOP_EXTENDED_STABLE_MILESTONE,
+    mirrors = [
+        "ci/Dawn Win10 x86 DEPS Builder",
+        "ci/Dawn Win10 x86 DEPS Release (Intel HD 630)",
+        "ci/Dawn Win10 x86 DEPS Release (NVIDIA)",
+    ],
     main_list_view = "try",
     os = os.WINDOWS_ANY,
     tryjob = try_.job(
@@ -125,7 +130,6 @@ try_.builder(
 
 try_.builder(
     name = "linux-dawn-rel",
-    os = os.LINUX_BIONIC_REMOVE,
     test_presentation = resultdb.test_presentation(
         grouping_keys = ["status", "v.test_suite", "v.gpu"],
     ),

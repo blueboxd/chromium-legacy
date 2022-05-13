@@ -147,16 +147,35 @@ QuotaErrorOr<BucketInfo> QuotaManagerProxy::GetOrCreateBucketSync(
   QuotaErrorOr<BucketInfo> bucket;
   base::WaitableEvent waiter(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
-  // Call the async GetOrCreateBucket but block until it completes.
-  GetOrCreateBucket(
-      params, quota_manager_impl_task_runner_,
+  // Asynchronously call GetOrCreateBucket and block until it completes.
+  quota_manager_impl_task_runner_->PostTask(
+      FROM_HERE,
       base::BindOnce(
-          [](base::WaitableEvent* waiter, QuotaErrorOr<BucketInfo>* sync_bucket,
-             QuotaErrorOr<BucketInfo> result_bucket) {
-            *sync_bucket = std::move(result_bucket);
-            waiter->Signal();
+          [](const scoped_refptr<QuotaManagerProxy>& self,
+             const BucketInitParams& params, base::WaitableEvent* waiter,
+             QuotaErrorOr<BucketInfo>* sync_bucket) {
+            DCHECK_CALLED_ON_VALID_SEQUENCE(
+                self->quota_manager_impl_sequence_checker_);
+            // If the database is still bootstrapping, return an error rather
+            // than risking deadlock.
+            if (!self->quota_manager_impl_ ||
+                self->quota_manager_impl_->is_bootstrapping_database_) {
+              *sync_bucket = QuotaError::kUnknownError;
+              waiter->Signal();
+              return;
+            }
+            // Otherwise, return the bucket value and resolve the waiter.
+            self->quota_manager_impl_->GetOrCreateBucket(
+                params, base::BindOnce(
+                            [](base::WaitableEvent* waiter,
+                               QuotaErrorOr<BucketInfo>* sync_bucket,
+                               QuotaErrorOr<BucketInfo> result_bucket) {
+                              *sync_bucket = std::move(result_bucket);
+                              waiter->Signal();
+                            },
+                            waiter, sync_bucket));
           },
-          &waiter, &bucket));
+          base::WrapRefCounted(this), params, &waiter, &bucket));
   waiter.Wait();
   return bucket;
 }
@@ -255,6 +274,34 @@ void QuotaManagerProxy::GetBucket(
 
   quota_manager_impl_->GetBucket(storage_key, bucket_name, type,
                                  std::move(respond));
+}
+
+void QuotaManagerProxy::GetBucketById(
+    const BucketId& bucket_id,
+    scoped_refptr<base::SequencedTaskRunner> callback_task_runner,
+    base::OnceCallback<void(QuotaErrorOr<BucketInfo>)> callback) {
+  DCHECK(callback_task_runner);
+  DCHECK(callback);
+
+  if (!quota_manager_impl_task_runner_->RunsTasksInCurrentSequence()) {
+    quota_manager_impl_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&QuotaManagerProxy::GetBucketById, this, bucket_id,
+                       std::move(callback_task_runner), std::move(callback)));
+    return;
+  }
+
+  DCHECK_CALLED_ON_VALID_SEQUENCE(quota_manager_impl_sequence_checker_);
+
+  auto respond =
+      base::BindOnce(&RunCallbackOnCorrectSequence<QuotaErrorOr<BucketInfo>>,
+                     std::move(callback_task_runner), std::move(callback));
+  if (!quota_manager_impl_) {
+    std::move(respond).Run(QuotaError::kUnknownError);
+    return;
+  }
+
+  quota_manager_impl_->GetBucketById(bucket_id, std::move(respond));
 }
 
 void QuotaManagerProxy::DeleteBucket(

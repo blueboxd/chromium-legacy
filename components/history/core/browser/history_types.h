@@ -861,6 +861,11 @@ struct ClusterVisit {
   // Which positions matched the search query in various fields.
   query_parser::Snippet::MatchPositions title_match_positions;
   query_parser::Snippet::MatchPositions url_for_display_match_positions;
+
+  // If true, the visit should be "below the fold" and not initially shown in
+  // any UI. It is still included in the cluster so that it can be queried over,
+  // as well as deleted when the whole cluster is deleted.
+  bool hidden = false;
 };
 
 // A cluster of `ClusterVisit`s with associated metadata (i.e. `keywords` and
@@ -892,6 +897,11 @@ struct Cluster {
 
   // The positions within the label that match the search query, if it exists.
   query_parser::Snippet::MatchPositions label_match_positions;
+
+  // The vector of related searches for the whole cluster. This is derived from
+  // the related searches of the constituent visits, and computed in
+  // cross-platform code so we have a consistent set across platforms.
+  std::vector<std::string> related_searches;
 
   // A floating point score that's positive if the cluster matches the user's
   // search query, and zero otherwise. This score changes depending on the

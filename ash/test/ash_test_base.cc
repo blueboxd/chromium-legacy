@@ -194,36 +194,12 @@ aura::Window* AshTestBase::GetContext() {
   return ash_test_helper_->GetContext();
 }
 
-namespace {
-class DefaultWidgetDelegate : public views::WidgetDelegate {
- public:
-  DefaultWidgetDelegate() {
-    // In most situations where a Widget is used without a delegate the Widget
-    // is used as a container, so that we want focus to advance to the top-level
-    // widget. A good example of this is the find bar.
-    SetOwnedByWidget(true);
-    SetFocusTraversesOut(true);
-    SetCanMaximize(true);
-    SetCanMinimize(true);
-    SetCanResize(true);
-  }
-
-  DefaultWidgetDelegate(const DefaultWidgetDelegate&) = delete;
-  DefaultWidgetDelegate& operator=(const DefaultWidgetDelegate&) = delete;
-
-  ~DefaultWidgetDelegate() override = default;
-};
-}  // namespace
-
 // static
 std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
     views::WidgetDelegate* delegate,
     int container_id,
     const gfx::Rect& bounds,
     bool show) {
-  if (!delegate)
-    delegate = new DefaultWidgetDelegate();  // owned by widget
-
   return TestWidgetBuilder()
       .SetDelegate(delegate)
       .SetBounds(bounds)
@@ -235,7 +211,6 @@ std::unique_ptr<views::Widget> AshTestBase::CreateTestWidget(
 // static
 std::unique_ptr<views::Widget> AshTestBase::CreateFramelessTestWidget() {
   return TestWidgetBuilder()
-      .SetTestWidgetDelegate()
       .SetWidgetType(views::Widget::InitParams::TYPE_WINDOW_FRAMELESS)
       .BuildOwnsNativeWidget();
 }
@@ -243,15 +218,23 @@ std::unique_ptr<views::Widget> AshTestBase::CreateFramelessTestWidget() {
 std::unique_ptr<aura::Window> AshTestBase::CreateAppWindow(
     const gfx::Rect& bounds_in_screen,
     AppType app_type,
-    int shell_window_id) {
+    int shell_window_id,
+    views::WidgetDelegate* delegate) {
   TestWidgetBuilder builder;
   if (app_type != AppType::NON_APP) {
     builder.SetWindowProperty(aura::client::kAppType,
                               static_cast<int>(app_type));
   }
+
+  if (delegate) {
+    builder.SetDelegate(delegate);
+  } else {
+    builder.SetTestWidgetDelegate();
+  }
+
   // |widget| is configured to be owned by the underlying window.
   views::Widget* widget =
-      builder.SetTestWidgetDelegate()
+      builder
           .SetBounds(bounds_in_screen.IsEmpty() ? gfx::Rect(0, 0, 300, 300)
                                                 : bounds_in_screen)
           .SetContext(Shell::GetPrimaryRootWindow())

@@ -423,8 +423,6 @@ source_set("browser") {
     "attribution_reporting/attribution_observer.h",
     "attribution_reporting/attribution_observer_types.cc",
     "attribution_reporting/attribution_observer_types.h",
-    "attribution_reporting/attribution_page_metrics.cc",
-    "attribution_reporting/attribution_page_metrics.h",
     "attribution_reporting/attribution_random_generator.h",
     "attribution_reporting/attribution_report.cc",
     "attribution_reporting/attribution_report.h",
@@ -688,6 +686,8 @@ source_set("browser") {
     "code_cache/generated_code_cache.h",
     "code_cache/generated_code_cache_context.cc",
     "code_cache/generated_code_cache_context.h",
+    "code_cache/simple_lru_cache_index.cc",
+    "code_cache/simple_lru_cache_index.h",
     "compositor/surface_utils.cc",
     "compositor/surface_utils.h",
     "compute_pressure/compute_pressure_host.cc",
@@ -991,8 +991,6 @@ source_set("browser") {
     "host_zoom_map_impl.h",
     "idle/idle_manager_impl.cc",
     "idle/idle_manager_impl.h",
-    "idle/idle_polling_service.cc",
-    "idle/idle_polling_service.h",
     "image_capture/image_capture_impl.cc",
     "image_capture/image_capture_impl.h",
     "indexed_db/cursor_impl.cc",
@@ -2368,7 +2366,7 @@ source_set("browser") {
 
   if (is_chromeos_ash) {
     deps += [
-      "//ash/resources:resources",
+      "//chromeos/ash/resources",
       "//chromeos/resources",
       "//ui/base/ime/ash",
       "//ui/chromeos/styles:cros_styles_views",
@@ -2486,6 +2484,7 @@ source_set("browser") {
       "//media/fuchsia/mojom:fuchsia_media_resource_provider",
       "//third_party/abseil-cpp:absl",
       "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.accessibility.semantics",
+      "//third_party/fuchsia-sdk/sdk/fidl/fuchsia.mediacodec",
       "//third_party/fuchsia-sdk/sdk/pkg/inspect",
       "//third_party/fuchsia-sdk/sdk/pkg/scenic_cpp",
       "//third_party/fuchsia-sdk/sdk/pkg/sys_inspect_cpp",
@@ -2614,6 +2613,8 @@ source_set("browser") {
     deps += [
       "//chromeos/crosapi/mojom",
       "//chromeos/lacros",
+      "//chromeos/startup",
+      "//chromeos/startup:constants",
     ]
   }
 
@@ -3010,8 +3011,6 @@ source_set("browser") {
       "webauth/virtual_authenticator_manager_impl.cc",
       "webauth/virtual_authenticator_manager_impl.h",
       "webauth/virtual_authenticator_mojom_traits.h",
-      "webauth/virtual_authenticator_request_delegate.cc",
-      "webauth/virtual_authenticator_request_delegate.h",
       "webauth/virtual_discovery.cc",
       "webauth/virtual_discovery.h",
       "webauth/virtual_fido_discovery_factory.cc",

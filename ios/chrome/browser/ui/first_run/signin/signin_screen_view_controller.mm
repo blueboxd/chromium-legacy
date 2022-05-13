@@ -25,10 +25,8 @@
 
 namespace {
 
-// Width of the identity control if nothing is contraining it.
-constexpr CGFloat kIdentityControlMaxWidth = 327.;
-// Margin above the identity button.
-constexpr CGFloat kTopMarginForBottomView = 16.;
+// Top margin for the managed icon in the enteprised image view
+constexpr CGFloat kTopMarginForManagedIcon = 16.;
 
 // Banner at the top of the view.
 NSString* const kSigninBannerName = @"signin_banner";
@@ -105,18 +103,13 @@ NSString* const kEnterpriseIconName = @"enterprise_icon";
   if (self.signinStatus != SigninScreenConsumerSigninStatusDisabled) {
     [self.specificContentView addSubview:self.identityControl];
 
-    NSLayoutConstraint* widthConstraint = [self.identityControl.widthAnchor
-        constraintEqualToConstant:kIdentityControlMaxWidth];
-    widthConstraint.priority = UILayoutPriorityDefaultHigh;
     [NSLayoutConstraint activateConstraints:@[
       [self.identityControl.topAnchor
           constraintEqualToAnchor:self.specificContentView.topAnchor],
       [self.identityControl.centerXAnchor
           constraintEqualToAnchor:self.specificContentView.centerXAnchor],
       [self.identityControl.widthAnchor
-          constraintLessThanOrEqualToAnchor:self.specificContentView
-                                                .widthAnchor],
-      widthConstraint,
+          constraintEqualToAnchor:self.specificContentView.widthAnchor],
       [self.identityControl.bottomAnchor
           constraintLessThanOrEqualToAnchor:self.specificContentView
                                                 .bottomAnchor],
@@ -137,7 +130,7 @@ NSString* const kEnterpriseIconName = @"enterprise_icon";
     [NSLayoutConstraint activateConstraints:@[
       [enterpriseImageView.topAnchor
           constraintGreaterThanOrEqualToAnchor:topAnchorForEnterpriseIcon
-                                      constant:kTopMarginForBottomView],
+                                      constant:kTopMarginForManagedIcon],
       [enterpriseImageView.bottomAnchor
           constraintEqualToAnchor:self.specificContentView.bottomAnchor],
       [enterpriseImageView.centerXAnchor

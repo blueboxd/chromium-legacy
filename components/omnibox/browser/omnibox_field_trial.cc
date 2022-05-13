@@ -233,7 +233,11 @@ base::Time OmniboxFieldTrial::GetLocalHistoryZeroSuggestAgeThreshold() {
   // integer, return the default value.
   unsigned int param_value_as_int = 0;
   if (!base::StringToUint(param_value, &param_value_as_int)) {
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
     param_value_as_int = 7;
+#else
+    param_value_as_int = 60;
+#endif
   }
 
   return (base::Time::Now() - base::Days(param_value_as_int));
@@ -868,6 +872,23 @@ const base::FeatureParam<int> kRichAutocompletionSplitCompletionMinChar(
     "RichAutocompletionSplitCompletionMinChar",
     0);
 
+const base::FeatureParam<bool> kRichAutocompletionAutocompleteShortcutText(
+    &omnibox::kRichAutocompletion,
+    "RichAutocompletionAutocompleteShortcutText",
+    false);
+
+const base::FeatureParam<bool>
+    kRichAutocompletionAutocompleteShortcutTextNoInputsWithSpaces(
+        &omnibox::kRichAutocompletion,
+        "RichAutocompletionAutocompleteShortcutTextNoInputsWithSpaces",
+        false);
+
+const base::FeatureParam<int>
+    kRichAutocompletionAutocompleteShortcutTextMinChar(
+        &omnibox::kRichAutocompletion,
+        "RichAutocompletionAutocompleteShortcutTextMinChar",
+        0);
+
 const base::FeatureParam<bool> kRichAutocompletionCounterfactual(
     &omnibox::kRichAutocompletion,
     "RichAutocompletionCounterfactual",
@@ -949,7 +970,7 @@ const base::FeatureParam<int>
         "ShortBookmarkSuggestionsByTotalInputLengthThreshold",
         3);
 
-// Zero Suggest
+// Local history zero-prefix (aka zero-suggest) and prefix suggestions.
 const base::FeatureParam<bool> kZeroSuggestCacheCounterfactual(
     &omnibox::kZeroSuggestPrefetching,
     "ZeroSuggestCacheCounterfactual",
@@ -961,6 +982,15 @@ const base::FeatureParam<int> kZeroSuggestCacheDurationSec(
 const base::FeatureParam<bool> kZeroSuggestPrefetchBypassCache(
     &omnibox::kZeroSuggestPrefetching,
     "ZeroSuggestPrefetchBypassCache",
+    false);
+
+const base::FeatureParam<bool> kZeroSuggestIgnoreDuplicateVisits(
+    &omnibox::kLocalHistorySuggestRevamp,
+    "ZeroSuggestIgnoreDuplicateVisits",
+    true);
+const base::FeatureParam<bool> kPrefixSuggestIgnoreDuplicateVisits(
+    &omnibox::kLocalHistorySuggestRevamp,
+    "PrefixSuggestIgnoreDuplicateVisits",
     false);
 
 }  // namespace OmniboxFieldTrial

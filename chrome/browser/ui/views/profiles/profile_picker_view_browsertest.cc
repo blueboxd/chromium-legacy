@@ -543,8 +543,7 @@ class ProfilePickerCreationFlowBrowserTest : public ProfilePickerTestBase {
   void OpenProfileFromPicker(const base::FilePath& profile_path,
                              bool open_settings) {
     base::ListValue args;
-    args.Append(
-        base::Value::ToUniquePtrValue(base::FilePathToValue(profile_path)));
+    args.GetList().Append(base::FilePathToValue(profile_path));
     profile_picker_handler()->HandleLaunchSelectedProfile(open_settings, &args);
   }
 
@@ -1307,10 +1306,10 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerCreationFlowBrowserTest,
   // Imitate creating a new profile through the profile picker.
   ProfilePickerHandler* handler = profile_picker_handler();
   base::ListValue args;
-  args.Append(u"My Profile");                    // Profile name.
-  args.Append(std::make_unique<base::Value>());  // Profile color.
-  args.Append(0);                                // Avatar index.
-  args.Append(false);                            // Create shortcut.
+  args.GetList().Append(u"My Profile");  // Profile name.
+  args.GetList().Append(base::Value());  // Profile color.
+  args.GetList().Append(0);              // Avatar index.
+  args.GetList().Append(false);          // Create shortcut.
   handler->HandleCreateProfile(&args);
 
   BrowserAddedWaiter(1u).Wait();
@@ -1347,7 +1346,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   profiles::testing::ExpectPickerWelcomeScreenTypeAndProceed(
       /*expected_type=*/
       EnterpriseProfileWelcomeUI::ScreenType::kEntepriseAccountSyncEnabled,
-      /*choice=*/signin::SIGNIN_CHOICE_CONTINUE);
+      /*choice=*/signin::SIGNIN_CHOICE_NEW_PROFILE);
 
   WaitForLoadStop(GetSyncConfirmationURL());
   // Simulate finishing the flow with "No, thanks".
@@ -1404,7 +1403,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   profiles::testing::ExpectPickerWelcomeScreenTypeAndProceed(
       /*expected_type=*/
       EnterpriseProfileWelcomeUI::ScreenType::kConsumerAccountSyncDisabled,
-      /*choice=*/signin::SIGNIN_CHOICE_CONTINUE);
+      /*choice=*/signin::SIGNIN_CHOICE_NEW_PROFILE);
 
   Browser* new_browser = BrowserAddedWaiter(2u).Wait();
   WaitForLoadStop(GURL("chrome://newtab/"),
@@ -1456,7 +1455,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   profiles::testing::ExpectPickerWelcomeScreenTypeAndProceed(
       /*expected_type=*/
       EnterpriseProfileWelcomeUI::ScreenType::kEntepriseAccountSyncEnabled,
-      /*choice=*/signin::SIGNIN_CHOICE_CONTINUE);
+      /*choice=*/signin::SIGNIN_CHOICE_NEW_PROFILE);
 
   WaitForLoadStop(GetSyncConfirmationURL());
   // Simulate finishing the flow with "Configure sync".
@@ -1559,7 +1558,7 @@ IN_PROC_BROWSER_TEST_F(ProfilePickerEnterpriseCreationFlowBrowserTest,
   // Simulate clicking on the confirm switch button.
   ProfilePickerHandler* handler = profile_picker_handler();
   base::ListValue args;
-  args.Append(base::Value::ToUniquePtrValue(base::FilePathToValue(other_path)));
+  args.GetList().Append(base::FilePathToValue(other_path));
   handler->HandleConfirmProfileSwitch(&args);
 
   // Browser for a pre-existing profile is displayed.

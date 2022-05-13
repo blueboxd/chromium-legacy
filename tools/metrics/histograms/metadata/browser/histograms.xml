@@ -717,7 +717,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="BrowserRenderProcessHost.LabeledInTaskManager"
-    units="BooleanLabeledRendererTask" expires_after="2022-09-01">
+    units="BooleanLabeledRendererTask" expires_after="2022-11-06">
   <owner>creis@chromium.org</owner>
   <owner>avi@chromium.org</owner>
   <summary>
@@ -753,6 +753,57 @@ chromium-metrics-reviews@google.com.
   <summary>
     Records what happens when an attempt is made to use a spare
     RenderProcessHost - logs that either the attempt succeeded or why it failed.
+  </summary>
+</histogram>
+
+<histogram
+    name="BrowserRenderProcessHost.SuspendedChild.KernelExecutionRecorded"
+    enum="BooleanRecorded" expires_after="2022-09-01">
+  <owner>wfh@chromium.org</owner>
+  <owner>chrome-stability-core@google.com</owner>
+  <summary>
+    Whether or not kernel-mode execution was recorded for a suspended renderer
+    process. This is recorded after process creation but before process
+    resumption. This is recorded for every sandboxed Renderer process launched
+    on Windows only.
+  </summary>
+</histogram>
+
+<histogram name="BrowserRenderProcessHost.SuspendedChild.NtStatus"
+    enum="NTSTATUS" expires_after="2022-09-01">
+  <owner>wfh@chromium.org</owner>
+  <owner>chrome-stability-core@google.com</owner>
+  <summary>
+    The result of calling base::win::GetLastNtStatus() when a failure was
+    obtained when trying to obtain the user and kernel execution times for a
+    suspended child renderer process. This is recorded after process creation
+    but before process resumption. It is only recorded for failures to obtain
+    the user and kernel execution times. This is only recorded on Windows.
+  </summary>
+</histogram>
+
+<histogram name="BrowserRenderProcessHost.SuspendedChild.UserExecutionRecorded"
+    enum="BooleanRecorded" expires_after="2022-09-01">
+  <owner>wfh@chromium.org</owner>
+  <owner>chrome-stability-core@google.com</owner>
+  <summary>
+    Whether or not user-mode execution was recorded for a suspended renderer
+    process. This is recorded after process creation but before process
+    resumption. This is recorded for every sandboxed Renderer process launched
+    on Windows only.
+  </summary>
+</histogram>
+
+<histogram name="BrowserRenderProcessHost.SuspendedChild.Win32Error"
+    enum="WinGetLastError" expires_after="2022-09-01">
+  <owner>wfh@chromium.org</owner>
+  <owner>chrome-stability-core@google.com</owner>
+  <summary>
+    The result of calling GetLastError when a failure was obtained when trying
+    to obtain the user and kernel execution times for a suspended child renderer
+    process. This is recorded after process creation but before process
+    resumption. It is only recorded for failures to obtain the user and kernel
+    execution times. This is only recorded on Windows.
   </summary>
 </histogram>
 

@@ -190,6 +190,7 @@
 <translation id="2690858294534178585">Камерата се използва</translation>
 <translation id="2691653761409724435">Не е налице офлайн</translation>
 <translation id="2695507686909505111">Страницата е преведена</translation>
+<translation id="2697526135132990015">Излизане от профила и изчистване на данните</translation>
 <translation id="2700241355396984822">Опции за задаване на разрешения</translation>
 <translation id="2702801445560668637">Списък за четене</translation>
 <translation id="2704491540504985681">Изтегляния</translation>
@@ -222,10 +223,10 @@
 <translation id="2883151425485251736">Преглеждайте и редактирайте темите, които сте скрили от профила си</translation>
 <translation id="288655811176831528">Затваряне на раздела</translation>
 <translation id="2890171748217283516">Сайтовете, които следвате, се запазват в профила ви в Google. Можете да ги управлявате от настройките за Discover.</translation>
-<translation id="2893180576842394309">Възможно е да използваме историята ви, за да персонализираме търсенето и други услуги на Google</translation>
 <translation id="2898963176829412617">Нова папка…</translation>
 <translation id="2916171785467530738">Автоматично довършване на заявки за търсене и URL адреси</translation>
 <translation id="291754862089661335">Поставете кода за бърза реакция или баркода в тази рамка</translation>
+<translation id="2920866371965792875">За да виждате актуална информация от този сайт, последвайте го тук.</translation>
 <translation id="2921219216347069551">Стр. не може да се сподели</translation>
 <translation id="2923448633003185837">Поставяне и старт</translation>
 <translation id="292639812446257861">Означаване като непрочетено</translation>
@@ -364,6 +365,7 @@
 <translation id="4121993058175073134">За изпращане на експ. данни от мрежата конфиг. имейла си в Настройки.</translation>
 <translation id="4124987746317609294">Период от време</translation>
 <translation id="4133265950310064865">Подобрена защита</translation>
+<translation id="4148023517926189160">Този уебсайт иска да изтегли файл и да го добави към календара ви.</translation>
 <translation id="4152011295694446843">Тук ще се показват отметките ви</translation>
 <translation id="4172051516777682613">Показване винаги</translation>
 <translation id="418156467088430727">Преглед на офлайн версията в нов раздел</translation>
@@ -450,6 +452,7 @@
 <translation id="4840495572919996524">Вашите отметки, история, пароли и други неща повече няма да се синхронизират с профила ви в Google.</translation>
 <translation id="4844899002472726590">Преглеждайте и редактирайте темите, от които се интересувате</translation>
 <translation id="4854345657858711387">Задайте код за достъп</translation>
+<translation id="4858786880085262208">Надстройте до HTTPS, когато е възможно. В защитените сайтове може да има незащитено вградено съдържание.</translation>
 <translation id="4860895144060829044">Обаждане</translation>
 <translation id="4872323082491632254">Проверка на паролите</translation>
 <translation id="4881695831933465202">Отваряне</translation>
@@ -691,13 +694,13 @@
 <translation id="6760509555861141183">Назад към най-скорошния раздел</translation>
 <translation id="6762812039470893796">Премахване на избора от всички</translation>
 <translation id="6780034285637185932">Пощенски код</translation>
+<translation id="6781260999953472352">Да се включи ли синхронизирането?</translation>
 <translation id="6785453220513215166">Сигналите за сривове се изпращат...</translation>
 <translation id="6797885426782475225">Гласово търсене</translation>
 <translation id="6801927553864092214">За да сърфирате частно, отворете раздел в режим „инкогнито“</translation>
 <translation id="6807889908376551050">Показване на всички...</translation>
 <translation id="681368974849482173">Елементът е създаден</translation>
 <translation id="683022620450280906">Можете да използвате запазените пароли на което и да е устройство. Те се запазват в мениджъра на паролите в Google за <ph name="EMAIL" /></translation>
-<translation id="6830804042318138535">Прочетете повече</translation>
 <translation id="6831043979455480757">Превод</translation>
 <translation id="6842136130964845393">Потвърдете, че сте вие, за да имате постоянен достъп до запазените си пароли</translation>
 <translation id="6851516051005285358">Заявка за настолния сайт</translation>
@@ -799,10 +802,12 @@
 <translation id="7781069478569868053">Нов раздел в браузъра</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="778855399387580014">Започнете търсене в нов раздел в Chrome.</translation>
+<translation id="7790892308048519147">Опит за използване на защитени връзки</translation>
 <translation id="7791543448312431591">Добавяне</translation>
 <translation id="7807060072011926525">Предоставено от Google</translation>
 <translation id="7839985698273989086">Офлайн страница</translation>
 <translation id="7840771868269352570">Избраните елементи ще бъдат премахнати.</translation>
+<translation id="784551991304901159">За да виждате съдържание, изберете опцията за включване в менюто</translation>
 <translation id="7853202427316060426">Активност</translation>
 <translation id="7856733331829174190">Неуспешно изтегляне</translation>
 <translation id="7859704718976024901">История на сърфирането</translation>
@@ -901,7 +906,6 @@
 <translation id="8654802032646794042">Отказ</translation>
 <translation id="8668210798914567634">Тази страница е запазена в списъка ви за четене.</translation>
 <translation id="8680787084697685621">Данните за вход в профила ви не са актуални.</translation>
-<translation id="8691262314411702087">Изберете какво да синхронизирате</translation>
 <translation id="8693663554456874301">{count,plural, =1{Затваряне на раздела}other{Затваряне на разделите}}</translation>
 <translation id="8706588385081740091">Пароли</translation>
 <translation id="8717864919010420084">Копиране на връзката</translation>

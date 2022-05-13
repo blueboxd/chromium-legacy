@@ -200,6 +200,7 @@
 #include "chromeos/components/sensors/ash/sensor_hal_dispatcher.h"
 #include "chromeos/dbus/constants/cryptohome_key_delegate_constants.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/power/fake_power_manager_client.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
 #include "chromeos/dbus/session_manager/fake_session_manager_client.h"
@@ -212,6 +213,7 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/portal_detector/network_portal_detector_stub.h"
 #include "chromeos/network/system_token_cert_db_storage.h"
+#include "chromeos/services/cros_healthd/private/cpp/data_collector.h"
 #include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "chromeos/system/statistics_provider.h"
@@ -292,11 +294,34 @@ void ApplySigninProfileModifications(Profile* profile) {
   prefs->SetBoolean(::prefs::kSafeBrowsingEnabled, false);
 }
 
-void FakeSessionStopped() {
-  // Session manager would ask Chrome to exit. Fake this behavior.
+#if !defined(USE_REAL_DBUS_CLIENTS)
+chromeos::FakeSessionManagerClient* FakeSessionManagerClient() {
+  chromeos::FakeSessionManagerClient* fake_session_manager_client =
+      chromeos::FakeSessionManagerClient::Get();
+  DCHECK(fake_session_manager_client);
+  return fake_session_manager_client;
+}
+
+chromeos::FakePowerManagerClient* FakePowerManagerClient() {
+  chromeos::FakePowerManagerClient* fake_power_manager_client =
+      chromeos::FakePowerManagerClient::Get();
+  DCHECK(fake_power_manager_client);
+  return fake_power_manager_client;
+}
+
+void FakeShutdownSignal() {
+  // Receiving SIGTERM would result in `ExitIgnoreUnloadHandlers`.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(&chrome::ExitIgnoreUnloadHandlers));
 }
+
+void InstallFakeShutdownCalls() {
+  FakeSessionManagerClient()->set_stop_session_callback(
+      base::BindOnce(&FakeShutdownSignal));
+  FakePowerManagerClient()->set_restart_callback(
+      base::BindOnce(&FakeShutdownSignal));
+}
+#endif  // !defined(USE_REAL_DBUS_CLIENTS)
 
 }  // namespace
 
@@ -617,7 +642,7 @@ int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
   CHECK(DBusThreadManager::IsInitialized());
 
 #if !defined(USE_REAL_DBUS_CLIENTS)
-  // USE_REAL_DBUS clients may be undefined even if the device is using reals
+  // USE_REAL_DBUS clients may be undefined even if the device is using real
   // dbus clients.
   if (!base::SysInfo::IsRunningOnChromeOS()) {
     if (command_line->HasSwitch(switches::kFakeDriveFsLauncherChrootPath) &&
@@ -633,11 +658,10 @@ int ChromeBrowserMainPartsAsh::PreEarlyInitialization() {
     base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
     FakeUserDataAuthClient::Get()->set_user_data_dir(user_data_dir);
 
-    chromeos::FakeSessionManagerClient* fake_session_manager_client =
-        chromeos::FakeSessionManagerClient::Get();
-    DCHECK(fake_session_manager_client);
-    fake_session_manager_client->set_stop_session_callback(
-        base::BindOnce(&FakeSessionStopped));
+    // If we're not running on a device, i.e. either in a test or in ash Chrome
+    // on linux, fake dbus calls that would result in a shutdown of Chrome by
+    // the system.
+    InstallFakeShutdownCalls();
   }
 #endif  // !defined(USE_REAL_DBUS_CLIENTS)
 
@@ -1112,6 +1136,9 @@ void ChromeBrowserMainPartsAsh::PostProfileInit(Profile* profile,
     // Initialize the NetworkHealth aggregator.
     network_health::NetworkHealthService::GetInstance();
 
+    // Create cros_healthd data collector.
+    cros_healthd::internal::DataCollector::Initialize();
+
     // Create the service connection to CrosHealthd platform service instance.
     auto* cros_healthd = cros_healthd::ServiceConnection::GetInstance();
 
@@ -1221,20 +1248,7 @@ void ChromeBrowserMainPartsAsh::PreBrowserStart() {
 }
 
 void ChromeBrowserMainPartsAsh::PostBrowserStart() {
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  // Branded builds are packaged with valid google chrome api keys.
-  if (base::FeatureList::IsEnabled(features::kDeviceActiveClient)) {
-    device_activity_controller_ =
-        std::make_unique<device_activity::DeviceActivityController>(
-            device_activity::ChromeDeviceMetadataParameters{
-                chrome::GetChannel() /* chromeos_channel */},
-            g_browser_process->local_state(),
-            g_browser_process->system_network_context_manager()
-                ->GetSharedURLLoaderFactory(),
-            device_activity::DeviceActivityController::DetermineStartUpDelay(
-                first_run::GetFirstRunSentinelCreationTime()));
-  }
-#endif
+  StartDeviceActivityController();
 
   // Construct a delegate to connect the accessibility component extensions and
   // AccessibilityEventRewriter.
@@ -1589,6 +1603,52 @@ void ChromeBrowserMainPartsAsh::PostDestroyThreads() {
   // Shutdown these services after g_browser_process.
   InstallAttributes::Shutdown();
   DeviceSettingsService::Shutdown();
+}
+
+void ChromeBrowserMainPartsAsh::StartDeviceActivityController() {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
+  // Terminate immediately if feature is turned off.
+  if (!base::FeatureList::IsEnabled(features::kDeviceActiveClient))
+    return;
+
+  CrosSettingsProvider::TrustedStatus status =
+      CrosSettings::Get()->PrepareTrustedValues(base::BindOnce(
+          &ChromeBrowserMainPartsAsh::StartDeviceActivityController,
+          weak_ptr_factory_.GetWeakPtr()));
+
+  if (status == CrosSettingsProvider::TEMPORARILY_UNTRUSTED ||
+      status == CrosSettingsProvider::PERMANENTLY_UNTRUSTED) {
+    // When status is TEMPORARILY_UNTRUSTED, PrepareTrustedValues method takes
+    // ownership of the |StartDeviceActivityController| callback.
+    // It will retry later when the TRUSTED status becomes available.
+    //
+    // When status is PERMANENTLY_UNTRUSTED, client assumes this status is final
+    // until browser restarts. Client does not proceed without signature
+    // verification, so retry is not attempted. This status may be caused
+    // if device is running pre-OOBE, or if the policy proto blob fails the
+    // signature check.
+    return;
+  }
+
+  // CrosSettingsProvider::TRUSTED: device policies are loaded and trusted.
+  device_activity_controller_ =
+      std::make_unique<device_activity::DeviceActivityController>(
+          device_activity::ChromeDeviceMetadataParameters{
+              chrome::GetChannel() /* chromeos_channel */,
+              device_activity::DeviceActivityController::GetMarketSegment(
+                  g_browser_process->platform_part()
+                      ->browser_policy_connector_ash()
+                      ->GetDeviceMode(),
+                  g_browser_process->platform_part()
+                      ->browser_policy_connector_ash()
+                      ->GetEnterpriseMarketSegment()) /* market_segment */,
+          },
+          g_browser_process->local_state(),
+          g_browser_process->system_network_context_manager()
+              ->GetSharedURLLoaderFactory(),
+          device_activity::DeviceActivityController::DetermineStartUpDelay(
+              first_run::GetFirstRunSentinelCreationTime()));
+#endif
 }
 
 }  //  namespace ash

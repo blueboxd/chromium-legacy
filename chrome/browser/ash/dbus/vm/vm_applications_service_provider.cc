@@ -25,8 +25,8 @@
 #include "chrome/browser/ash/plugin_vm/plugin_vm_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/chrome_select_file_policy.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
-#include "chromeos/dbus/cicerone/cicerone_service.pb.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_service.pb.h"
 #include "chromeos/dbus/vm_applications/apps.pb.h"
 #include "dbus/bus.h"
 #include "dbus/message.h"
@@ -308,7 +308,7 @@ void VmApplicationsServiceProvider::MultiFilesSelected(
             for (const auto& file_url : file_urls) {
               data->signal.add_files(file_url);
             }
-            chromeos::CiceroneClient::Get()->FileSelected(data->signal);
+            CiceroneClient::Get()->FileSelected(data->signal);
           },
           std::move(data)));
 }

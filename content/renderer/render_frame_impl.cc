@@ -170,7 +170,6 @@
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/widget/platform_widget.mojom.h"
 #include "third_party/blink/public/platform/file_path_conversion.h"
-#include "third_party/blink/public/platform/impression_conversions.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/resource_load_info_notifier_wrapper.h"
 #include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
@@ -1517,6 +1516,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
     RenderViewImpl* render_view,
     blink::WebFrame* opener,
     bool is_for_nested_main_frame,
+    bool is_for_scalable_page,
     blink::mojom::FrameReplicationStatePtr replication_state,
     const base::UnguessableToken& devtools_frame_token,
     mojom::CreateLocalMainFrameParamsPtr params) {
@@ -1550,7 +1550,7 @@ RenderFrameImpl* RenderFrameImpl::CreateMainFrame(
       std::move(params->widget_params->widget),
       viz::FrameSinkId(RenderThread::Get()->GetClientId(),
                        params->widget_params->routing_id),
-      is_for_nested_main_frame,
+      is_for_nested_main_frame, is_for_scalable_page,
       /*hidden=*/true);
   web_frame_widget->InitializeCompositing(
       agent_scheduling_group.agent_group_scheduler(),
@@ -1747,6 +1747,7 @@ void RenderFrameImpl::CreateFrame(
         viz::FrameSinkId(RenderThread::Get()->GetClientId(),
                          widget_params->routing_id),
         is_for_nested_main_frame,
+        /*is_for_scalable_page=*/!is_for_nested_main_frame,
         /*hidden=*/true);
     web_frame_widget->InitializeCompositing(
         agent_scheduling_group.agent_group_scheduler(),
@@ -1789,6 +1790,7 @@ void RenderFrameImpl::CreateFrame(
         viz::FrameSinkId(RenderThread::Get()->GetClientId(),
                          widget_params->routing_id),
         /*is_for_nested_main_frame=*/false,
+        /*is_for_scalable_page=*/false,
         /*hidden=*/true);
     web_frame_widget->InitializeCompositing(
         agent_scheduling_group.agent_group_scheduler(),
@@ -2302,7 +2304,9 @@ void RenderFrameImpl::SnapshotAndDistillAXTree(
     SnapshotAndDistillAXTreeCallback callback) {
   if (!ax_tree_distiller_)
     ax_tree_distiller_ = std::make_unique<AXTreeDistiller>(this);
-  ax_tree_distiller_->Distill(std::move(callback));
+  ax_tree_distiller_->Distill();
+  std::move(callback).Run(*ax_tree_distiller_->GetSnapshot(),
+                          *ax_tree_distiller_->GetContentNodeIDs());
 }
 
 void RenderFrameImpl::GetSerializedHtmlWithLocalLinks(
@@ -2519,11 +2523,11 @@ void RenderFrameImpl::NotifyResourceResponseReceived(
     network::mojom::URLResponseHeadPtr response_head,
     network::mojom::RequestDestination request_destination) {
   if (!blink::IsRequestDestinationFrame(request_destination)) {
-    GetFrameHost()->SubresourceResponseStarted(response_url,
-                                               response_head->cert_status);
+    GetFrameHost()->SubresourceResponseStarted(
+        url::SchemeHostPort(response_url), response_head->cert_status);
   }
-  DidStartResponse(response_url, request_id, std::move(response_head),
-                   request_destination);
+  DidStartResponse(url::SchemeHostPort(response_url), request_id,
+                   std::move(response_head), request_destination);
 }
 
 void RenderFrameImpl::NotifyResourceTransferSizeUpdated(
@@ -3889,7 +3893,7 @@ void RenderFrameImpl::DidCommitNavigation(
   // disagree on the origin during commit navigation.
   if (pending_cookie_manager_info_ &&
       pending_cookie_manager_info_->origin ==
-          frame_->GetDocument().GetSecurityOrigin()) {
+          url::Origin(frame_->GetDocument().GetSecurityOrigin())) {
     frame_->GetDocument().SetCookieManager(
         std::move(pending_cookie_manager_info_->cookie_manager));
   }
@@ -3897,8 +3901,9 @@ void RenderFrameImpl::DidCommitNavigation(
   // TODO(crbug.com/888079): Turn this into a DCHECK for origin equality when
   // the linked bug is fixed. Currently sometimes the browser and renderer
   // disagree on the origin during commit navigation.
-  if (pending_storage_info_ && original_storage_key_.origin() ==
-                                   frame_->GetDocument().GetSecurityOrigin()) {
+  if (pending_storage_info_ &&
+      original_storage_key_.origin() ==
+          url::Origin(frame_->GetDocument().GetSecurityOrigin())) {
     if (pending_storage_info_->local_storage_area) {
       frame_->SetLocalStorageArea(
           std::move(pending_storage_info_->local_storage_area));
@@ -4253,12 +4258,21 @@ void RenderFrameImpl::DidChangeSelection(bool is_empty_selection,
 }
 
 void RenderFrameImpl::OnMainFrameIntersectionChanged(
-    const gfx::Rect& mainframe_intersection_rect) {
-  if (!mainframe_intersection_rect_ ||
-      mainframe_intersection_rect != mainframe_intersection_rect_) {
-    mainframe_intersection_rect_ = mainframe_intersection_rect;
+    const gfx::Rect& main_frame_intersection_rect) {
+  if (main_frame_intersection_rect != main_frame_intersection_rect_) {
+    main_frame_intersection_rect_ = main_frame_intersection_rect;
     for (auto& observer : observers_) {
-      observer.OnMainFrameIntersectionChanged(mainframe_intersection_rect);
+      observer.OnMainFrameIntersectionChanged(main_frame_intersection_rect);
+    }
+  }
+}
+
+void RenderFrameImpl::OnMainFrameViewportRectangleChanged(
+    const gfx::Rect& main_frame_viewport_rect) {
+  if (main_frame_viewport_rect != main_frame_viewport_rect_) {
+    main_frame_viewport_rect_ = main_frame_viewport_rect;
+    for (auto& observer : observers_) {
+      observer.OnMainFrameViewportRectangleChanged(main_frame_viewport_rect);
     }
   }
 }
@@ -4381,12 +4395,12 @@ void RenderFrameImpl::DidLoadResourceFromMemoryCache(
 }
 
 void RenderFrameImpl::DidStartResponse(
-    const GURL& response_url,
+    const url::SchemeHostPort& final_response_url,
     int request_id,
     network::mojom::URLResponseHeadPtr response_head,
     network::mojom::RequestDestination request_destination) {
   for (auto& observer : observers_) {
-    observer.DidStartResponse(response_url, request_id, *response_head,
+    observer.DidStartResponse(final_response_url, request_id, *response_head,
                               request_destination);
   }
 }
@@ -4982,7 +4996,7 @@ void RenderFrameImpl::DidCommitNavigationInternal(
   // Ensure we will propagate frame intersections when the main frame commits
   // even if the intersection does not change across navigations.
   if (IsMainFrame()) {
-    mainframe_intersection_rect_.reset();
+    main_frame_intersection_rect_.reset();
   }
 }
 
@@ -5534,10 +5548,7 @@ void RenderFrameImpl::OpenURL(std::unique_ptr<blink::WebNavigationInfo> info) {
   // navigations performed via OpenURL.
   params->source_location = network::mojom::SourceLocation::New();
 
-  if (info->impression) {
-    params->impression =
-        blink::ConvertWebImpressionToImpression(*info->impression);
-  }
+  params->impression = info->impression;
 
   if (GetContentClient()->renderer()->AllowPopup())
     params->user_gesture = true;
@@ -5852,12 +5863,8 @@ void RenderFrameImpl::BeginNavigationInternal(
           info->url_request.TrustTokenParams()
               ? info->url_request.TrustTokenParams()->Clone()
               : nullptr,
-          info->impression
-              ? absl::make_optional<blink::Impression>(
-                    blink::ConvertWebImpressionToImpression(*info->impression))
-              : absl::nullopt,
-          renderer_before_unload_start, renderer_before_unload_end,
-          web_bundle_token_params);
+          info->impression, renderer_before_unload_start,
+          renderer_before_unload_end, web_bundle_token_params);
 
   mojo::PendingAssociatedRemote<mojom::NavigationClient>
       navigation_client_remote;

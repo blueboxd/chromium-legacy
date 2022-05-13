@@ -6260,6 +6260,42 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContentSuggestions.Follow.SnackbarGoToFeedButtonTapped">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    The user tapped GO TO FEED button on the follow succeed snackbar.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Follow.SnackbarRetryFollowButtonTapped">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    The user tapped RETRY button on the follow failed snackbar.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Follow.SnackbarRetryUnfollowButtonTapped">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    The user tapped RETRY button on the unfollow failed snackbar.
+  </description>
+</action>
+
+<action name="ContentSuggestions.Follow.SnackbarUndoButtonTapped">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>
+    The user tapped UNDO button on the unfollow succeed snackbar.
+  </description>
+</action>
+
 <action name="ContentSuggestions.NotificationsPreferenceOff">
   <owner>dgn@chromium.org</owner>
   <owner>finkm@chromium.org</owner>
@@ -17556,6 +17592,11 @@ should be able to be added at any place in this file.
   <description>User pressed the back icon in the app menu.</description>
 </action>
 
+<action name="MobileMenuClearBrowsingData">
+  <owner>rkgibson@google.com</owner>
+  <description>User pressed 'Clear Browsing Data' in the app menu.</description>
+</action>
+
 <action name="MobileMenuCloseAllIncognitoTabs">
   <owner>gambard@chromium.org</owner>
   <description>
@@ -17795,6 +17836,13 @@ should be able to be added at any place in this file.
 <action name="MobileMenuSettings">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed 'Settings' in the app menu.</description>
+</action>
+
+<action name="MobileMenuSettingsAction">
+  <owner>rkgibson@chromium.org</owner>
+  <description>
+    User pressed the 'Settings' action in the app menu (iOS).
+  </description>
 </action>
 
 <action name="MobileMenuShare">
@@ -19459,7 +19507,10 @@ should be able to be added at any place in this file.
 
 <action name="MobileTabSwitched" not_user_triggered="true">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
-  <description>Please enter the description of this user action.</description>
+  <description>
+    User actively switched to a different tab. This does not include tab refocus
+    caused by cancelling a tab closure.
+  </description>
 </action>
 
 <action name="MobileTabSwitched.TabletTabStrip" not_user_triggered="true">
@@ -26376,6 +26427,17 @@ should be able to be added at any place in this file.
   <description>User dismissed the Privacy Sandbox notice.</description>
 </action>
 
+<action name="Settings.PrivacySandbox.Notice.LearnMore">
+  <owner>olesiamarukhno@google.com</owner>
+  <owner>sauski@google.com</owner>
+  <owner>msramek@chromium.org</owner>
+  <description>
+    User clicked on the link &quot;estimates your interests&quot; from the
+    Privacy Sandbox notice. It opens Privacy Sandbox settings page with
+    &quot;About Browser-based ad personalization&quot; dialog.
+  </description>
+</action>
+
 <action name="Settings.PrivacySandbox.Notice.OpenedSettings">
   <owner>harrisonsean@chromium.org</owner>
   <owner>sauski@google.com</owner>
@@ -27765,6 +27827,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Signin_Impression_FromSendTabToSelfPromo">
+  <owner>victorvianna@google.com</owner>
+  <owner>harrisonsean@chromium.org</owner>
+  <description>
+    Recorded when showing sign in entry in the send tab to self promo.
+  </description>
+</action>
+
 <action name="Signin_Impression_FromSettings" not_user_triggered="true">
   <owner>bzanotti@chromium.org</owner>
   <owner>gogerald@chromium.org</owner>
@@ -28325,6 +28395,15 @@ should be able to be added at any place in this file.
   <description>
     Recorded on sign in start from access point
     signin_metrics::AccessPoint::ACCESS_POINT_SAVE_CARD_BUBBLE.
+  </description>
+</action>
+
+<action name="Signin_Signin_FromSendTabToSelfPromo">
+  <owner>victorvianna@google.com</owner>
+  <owner>harrisonsean@chromium.org</owner>
+  <description>
+    Recorded on sign in start from access point
+    signin_metrics::AccessPoint::ACCESS_POINT_SEND_TAB_TO_SELF_PROMO.
   </description>
 </action>
 

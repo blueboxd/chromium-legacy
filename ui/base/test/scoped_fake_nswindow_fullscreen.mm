@@ -28,8 +28,7 @@ uint64_t g_instance_count = 0;
 
 }  // namespace
 
-namespace ui {
-namespace test {
+namespace ui::test {
 
 class ScopedFakeNSWindowFullscreen::Impl {
  public:
@@ -77,8 +76,8 @@ class ScopedFakeNSWindowFullscreen::Impl {
       return actual_style_mask;
 
     // The window should never "actually" be fullscreen.
-    DCHECK_EQ(0u, actual_style_mask & NSFullScreenWindowMask);
-    return actual_style_mask | NSFullScreenWindowMask;
+    DCHECK_EQ(0u, actual_style_mask & NSWindowStyleMaskFullScreen);
+    return actual_style_mask | NSWindowStyleMaskFullScreen;
   }
 
   void StartEnterFullscreen(NSWindow* window) {
@@ -88,9 +87,7 @@ class ScopedFakeNSWindowFullscreen::Impl {
       return;
     }
 
-    // This cannot be id<NSWindowDelegate> because on 10.6 it won't have
-    // window:willUseFullScreenContentSize:.
-    id delegate = [window delegate];
+    id<NSWindowDelegate> delegate = [window delegate];
 
     // Nothing is currently fullscreen. Make this window fullscreen.
     window_ = window;
@@ -106,7 +103,6 @@ class ScopedFakeNSWindowFullscreen::Impl {
     [[NSNotificationCenter defaultCenter]
         postNotificationName:NSWindowWillEnterFullScreenNotification
                       object:window];
-    // Starting with 10.11, OSX also posts LiveResize notifications.
     [[NSNotificationCenter defaultCenter]
         postNotificationName:NSWindowWillStartLiveResizeNotification
                       object:window];
@@ -122,13 +118,13 @@ class ScopedFakeNSWindowFullscreen::Impl {
     DCHECK(NSEqualRects(frame_before_fullscreen_, [window_ frame]));
 
     // Style mask must be set first because -[NSWindow frame] may be different
-    // depending on NSFullScreenWindowMask. Don't call -[NSWindow setStyleMask:]
-    // since that will trigger a fullscreen transition that bypasses the
-    // swizzled -toggleFullScreen: method. Instead, fake it.
+    // depending on NSWindowStyleMaskFullScreen. Don't call -[NSWindow
+    // setStyleMask:] since that will trigger a fullscreen transition that
+    // bypasses the swizzled -toggleFullScreen: method. Instead, fake it.
     style_as_fullscreen_ = true;
 
-    // The origin doesn't matter, NSFullScreenWindowMask means the origin will
-    // be adjusted.
+    // The origin doesn't matter, NSWindowStyleMaskFullScreen means the origin
+    // will be adjusted.
     NSRect target_fullscreen_frame = [window_
         frameRectForContentRect:NSMakeRect(0, 0, fullscreen_content_size.width,
                                            fullscreen_content_size.height)];
@@ -159,7 +155,7 @@ class ScopedFakeNSWindowFullscreen::Impl {
   void FinishExitFullscreen() {
     // The bounds may have changed during the transition. Check for this before
     // setting the style mask because -[NSWindow frame] may be different
-    // depending on NSFullScreenWindowMask.
+    // depending on NSWindowStyleMaskFullScreen.
     bool no_frame_change_during_fullscreen =
         NSEqualRects(frame_during_fullscreen_, [window_ frame]);
     // Set the original frame after setting the style mask.
@@ -188,8 +184,8 @@ class ScopedFakeNSWindowFullscreen::Impl {
 
   // Starting in 10.11, calling -[NSWindow setStyleMask:] can actually invoke
   // the fullscreen transitions we want to fake. So, when set, this will include
-  // NSFullScreenWindowMask in the swizzled styleMask so that client code can
-  // read it.
+  // NSWindowStyleMaskFullScreen in the swizzled styleMask so that client code
+  // can read it.
   bool style_as_fullscreen_ = false;
 };
 
@@ -214,8 +210,7 @@ void ScopedFakeNSWindowFullscreen::FinishTransition() {
   DCHECK(!impl_->is_in_transition());
 }
 
-}  // namespace test
-}  // namespace ui
+}  // namespace ui::test
 
 @implementation ToggleFullscreenDonorForWindow
 
@@ -233,12 +228,13 @@ void ScopedFakeNSWindowFullscreen::FinishTransition() {
   // Permit the non-fullscreen bits of the style mask to be changed while
   // currently fullscreen, but don't let AppKit see any fullscreen bits.
   NSUInteger currentMask = [self styleMask];
-  if ((newMask ^ currentMask) & NSFullScreenWindowMask) {
+  if ((newMask ^ currentMask) & NSWindowStyleMaskFullScreen) {
     // Since 10.11, OSX triggers fullscreen transitions via setStyleMask, but
     // the faker doesn't attempt to fake them yet.
-    NOTREACHED() << "Can't set NSFullScreenWindowMask while faking fullscreen.";
+    NOTREACHED()
+        << "Can't set NSWindowStyleMaskFullScreen while faking fullscreen.";
   }
-  newMask &= ~NSFullScreenWindowMask;
+  newMask &= ~NSWindowStyleMaskFullScreen;
   g_fake_fullscreen_impl->OriginalSetStyleMask(self, _cmd, newMask);
 }
 

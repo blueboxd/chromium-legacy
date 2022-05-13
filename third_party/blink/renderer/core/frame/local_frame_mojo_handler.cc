@@ -17,6 +17,7 @@
 #include "third_party/blink/public/mojom/devtools/inspector_issue.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/frame_owner_properties.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/media_player_action.mojom-blink.h"
+#include "third_party/blink/public/mojom/opengraph/metadata.mojom-blink.h"
 #include "third_party/blink/public/platform/interface_registry.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/web/web_frame_serializer.h"
@@ -46,6 +47,7 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
+#include "third_party/blink/renderer/core/html/html_meta_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/portal/dom_window_portal_host.h"
 #include "third_party/blink/renderer/core/html/portal/portal_activate_event.h"
@@ -318,6 +320,19 @@ HitTestResult HitTestResultForRootFramePos(
       location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
+}
+
+void ParseOpenGraphProperty(const HTMLMetaElement& element,
+                            const Document& document,
+                            mojom::blink::OpenGraphMetadata* metadata) {
+  if (element.Property() == "og:image" && !metadata->image)
+    metadata->image = document.CompleteURL(element.Content());
+
+  // Non-OpenGraph, non-standard thing that some sites use the same way:
+  // using <meta itemprop="image" content="$url">, which means the same thing
+  // as <meta property="og:image" content="$url".
+  if (element.Itemprop() == "image" && !metadata->image)
+    metadata->image = document.CompleteURL(element.Content());
 }
 
 }  // namespace
@@ -801,10 +816,7 @@ void LocalFrameMojoHandler::ReportContentSecurityPolicyViolation(
       violation->blocked_url, violation->report_endpoints,
       violation->use_reporting_api, violation->header, violation->type,
       ContentSecurityPolicyViolationType::kURLViolation,
-      std::move(source_location), context_frame,
-      violation->after_redirect ? RedirectStatus::kFollowedRedirect
-                                : RedirectStatus::kNoRedirect,
-      nullptr /* Element */);
+      std::move(source_location), context_frame, nullptr /* Element */);
 }
 
 void LocalFrameMojoHandler::DidUpdateFramePolicy(
@@ -1156,6 +1168,20 @@ void LocalFrameMojoHandler::GetCanonicalUrlForSharing(
 #endif
 }
 
+void LocalFrameMojoHandler::GetOpenGraphMetadata(
+    GetOpenGraphMetadataCallback callback) {
+  auto metadata = mojom::blink::OpenGraphMetadata::New();
+  for (const auto& child : Traversal<HTMLMetaElement>::DescendantsOf(
+           *frame_->GetDocument()->documentElement())) {
+    // If there are multiple OpenGraph tags for the same property, we always
+    // take the value from the first one - this is the specified behavior in
+    // the OpenGraph spec:
+    //   The first tag (from top to bottom) is given preference during conflicts
+    ParseOpenGraphProperty(child, *frame_->GetDocument(), metadata.get());
+  }
+  std::move(callback).Run(std::move(metadata));
+}
+
 void LocalFrameMojoHandler::SetNavigationApiHistoryEntriesForRestore(
     mojom::blink::NavigationApiHistoryEntryArraysPtr entry_arrays) {
   if (NavigationApi* navigation_api =
@@ -1174,7 +1200,7 @@ void LocalFrameMojoHandler::SetScaleFactor(float scale_factor) {
 
 void LocalFrameMojoHandler::ClosePage(
     mojom::blink::LocalMainFrame::ClosePageCallback completion_callback) {
-  SECURITY_CHECK(frame_->IsMainFrame());
+  SECURITY_CHECK(frame_->IsOutermostMainFrame());
 
   // There are two ways to close a page:
   //

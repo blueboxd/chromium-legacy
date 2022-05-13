@@ -19,13 +19,13 @@
 #include "ash/style/system_shadow.h"
 #include "ash/wm/desks/desk.h"
 #include "ash/wm/desks/desks_textfield.h"
-#include "ash/wm/desks/templates/desks_templates_metrics_util.h"
-#include "ash/wm/desks/templates/desks_templates_presenter.h"
 #include "ash/wm/desks/templates/saved_desk_dialog_controller.h"
 #include "ash/wm/desks/templates/saved_desk_grid_view.h"
 #include "ash/wm/desks/templates/saved_desk_icon_container.h"
 #include "ash/wm/desks/templates/saved_desk_library_view.h"
+#include "ash/wm/desks/templates/saved_desk_metrics_util.h"
 #include "ash/wm/desks/templates/saved_desk_name_view.h"
+#include "ash/wm/desks/templates/saved_desk_presenter.h"
 #include "ash/wm/overview/overview_constants.h"
 #include "ash/wm/overview/overview_controller.h"
 #include "ash/wm/overview/overview_grid.h"
@@ -203,11 +203,15 @@ SavedDeskItemView::SavedDeskItemView(const DeskTemplate* desk_template)
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
+  const int button_text_id =
+      desk_template_->type() == DeskTemplateType::kTemplate
+          ? IDS_ASH_DESKS_TEMPLATES_USE_TEMPLATE_BUTTON
+          : IDS_ASH_DESKS_TEMPLATES_OPEN_DESK_BUTTON;
   launch_button_ = hover_container_->AddChildView(std::make_unique<PillButton>(
       base::BindRepeating(&SavedDeskItemView::OnGridItemPressed,
                           weak_ptr_factory_.GetWeakPtr()),
-      l10n_util::GetStringUTF16(IDS_ASH_DESKS_TEMPLATES_USE_TEMPLATE_BUTTON),
-      PillButton::Type::kIconless, /*icon=*/nullptr));
+      l10n_util::GetStringUTF16(button_text_id), PillButton::Type::kIconless,
+      /*icon=*/nullptr));
 
   // Users cannot delete admin templates.
   if (!is_admin_managed) {
@@ -297,7 +301,7 @@ void SavedDeskItemView::MaybeRemoveNameNumber() {
 void SavedDeskItemView::ReplaceTemplate(const std::string& uuid) {
   // Make sure we delete the template we are replacing first, so that we don't
   // get template name collisions.
-  DesksTemplatesPresenter::Get()->DeleteEntry(uuid);
+  SavedDeskPresenter::Get()->DeleteEntry(uuid);
   UpdateTemplateName();
   RecordReplaceTemplateHistogram();
 }
@@ -331,14 +335,7 @@ void SavedDeskItemView::UpdateTemplate(const DeskTemplate& updated_template) {
 }
 
 void SavedDeskItemView::Layout() {
-  const int previous_name_view_width = name_view_->width();
-
   views::View::Layout();
-
-  // A change in the `name_view_`'s width might mean the need to elide the text
-  // differently.
-  if (previous_name_view_width != name_view_->width())
-    OnTemplateNameChanged(desk_template_->template_name());
 
   if (delete_button_) {
     const gfx::Size delete_button_size = delete_button_->GetPreferredSize();
@@ -501,7 +498,7 @@ void SavedDeskItemView::UpdateTemplateName() {
   desk_template_->set_template_name(name_view_->GetText());
   OnTemplateNameChanged(desk_template_->template_name());
 
-  DesksTemplatesPresenter::Get()->SaveOrUpdateDeskTemplate(
+  SavedDeskPresenter::Get()->SaveOrUpdateDeskTemplate(
       /*is_update=*/true, GetWidget()->GetNativeWindow()->GetRootWindow(),
       desk_template_->Clone());
 }
@@ -627,7 +624,7 @@ SavedDeskItemView* SavedDeskItemView::FindOtherTemplateWithName(
 }
 
 void SavedDeskItemView::OnDeleteTemplate() {
-  DesksTemplatesPresenter::Get()->DeleteEntry(
+  SavedDeskPresenter::Get()->DeleteEntry(
       desk_template_->uuid().AsLowercaseString());
 }
 
@@ -660,7 +657,7 @@ void SavedDeskItemView::MaybeLaunchTemplate(bool should_delay) {
     delay = base::Seconds(3);
 #endif
 
-  DesksTemplatesPresenter::Get()->LaunchDeskTemplate(
+  SavedDeskPresenter::Get()->LaunchDeskTemplate(
       desk_template_->uuid().AsLowercaseString(), delay,
       GetWidget()->GetNativeWindow()->GetRootWindow());
 }

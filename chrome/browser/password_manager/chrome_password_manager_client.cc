@@ -29,6 +29,7 @@
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
 #include "chrome/browser/password_manager/account_password_store_factory.h"
 #include "chrome/browser/password_manager/field_info_manager_factory.h"
+#include "chrome/browser/password_manager/password_manager_settings_service_factory.h"
 #include "chrome/browser/password_manager/password_reuse_manager_factory.h"
 #include "chrome/browser/password_manager/password_scripts_fetcher_factory.h"
 #include "chrome/browser/password_manager/password_store_factory.h"
@@ -71,6 +72,8 @@
 #include "components/password_manager/core/browser/password_form_manager_for_ui.h"
 #include "components/password_manager/core/browser/password_manager_constants.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
+#include "components/password_manager/core/browser/password_manager_setting.h"
+#include "components/password_manager/core/browser/password_manager_settings_service.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_requirements_service.h"
 #include "components/password_manager/core/browser/password_scripts_fetcher.h"
@@ -176,6 +179,7 @@ using password_manager::PasswordForm;
 using password_manager::PasswordManagerClientHelper;
 using password_manager::PasswordManagerDriver;
 using password_manager::PasswordManagerMetricsRecorder;
+using password_manager::PasswordManagerSetting;
 using password_manager::metrics_util::PasswordType;
 using sessions::SerializedNavigationEntry;
 
@@ -264,8 +268,10 @@ bool ChromePasswordManagerClient::IsSavingAndFillingEnabled(
     // page, and there is no API to access (or dismiss) UI bubbles/infobars.
     return false;
   }
-  return password_manager_util::IsSavingPasswordsEnabled(GetPrefs(),
-                                                         GetSyncService()) &&
+  PasswordManagerSettingsService* settings_service =
+      PasswordManagerSettingsServiceFactory::GetForProfile(profile_);
+  return settings_service->IsSettingEnabled(
+             PasswordManagerSetting::kOfferToSavePasswords) &&
          !IsIncognito() && IsFillingEnabled(url);
 }
 
@@ -286,6 +292,13 @@ bool ChromePasswordManagerClient::IsFillingFallbackEnabled(
   const Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   return IsFillingEnabled(url) && !profile->IsGuestSession();
+}
+
+bool ChromePasswordManagerClient::IsAutoSignInEnabled() const {
+  PasswordManagerSettingsService* settings_service =
+      PasswordManagerSettingsServiceFactory::GetForProfile(profile_);
+  return settings_service->IsSettingEnabled(
+      PasswordManagerSetting::kAutoSignIn);
 }
 
 bool ChromePasswordManagerClient::PromptUserToSaveOrUpdatePassword(
@@ -427,10 +440,10 @@ bool ChromePasswordManagerClient::PromptUserToChooseCredentials(
 #endif
 }
 
+#if BUILDFLAG(IS_ANDROID)
 void ChromePasswordManagerClient::ShowTouchToFill(
     PasswordManagerDriver* driver,
     autofill::mojom::SubmissionReadinessState submission_readiness) {
-#if BUILDFLAG(IS_ANDROID)
   std::vector<TouchToFillWebAuthnCredential> webauthn_credentials;
   if (GetWebAuthnCredentialsDelegate() &&
       GetWebAuthnCredentialsDelegate()->IsWebAuthnAutofillEnabled()) {
@@ -450,10 +463,8 @@ void ChromePasswordManagerClient::ShowTouchToFill(
               driver->GetLastCommittedURL().DeprecatedGetOriginAsURL()))
           .GetCredentials(),
       webauthn_credentials, driver->AsWeakPtr(), submission_readiness);
-#endif
 }
 
-#if BUILDFLAG(IS_ANDROID)
 void ChromePasswordManagerClient::OnPasswordSelected(
     const std::u16string& text) {
   password_reuse_detection_manager_.OnPaste(text);
@@ -616,7 +627,7 @@ void ChromePasswordManagerClient::AutofillHttpAuth(
 
 void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
     password_manager::CredentialLeakType leak_type,
-    const GURL& origin,
+    const GURL& url,
     const std::u16string& username) {
   if (GetPasswordFeatureManager()->IsGenerationEnabled() &&
       password_manager::features::IsPasswordScriptsFetchingEnabled()) {
@@ -634,13 +645,13 @@ void ChromePasswordManagerClient::NotifyUserCredentialsWereLeaked(
   }
 
   (new CredentialLeakControllerAndroid(
-       leak_type, origin, username, GetPasswordChangeSuccessTracker(),
+       leak_type, url, username, GetPasswordChangeSuccessTracker(),
        web_contents()->GetTopLevelNativeWindow()))
       ->ShowDialog();
 #else   // !BUILDFLAG(IS_ANDROID)
   PasswordsClientUIDelegate* manage_passwords_ui_controller =
       PasswordsClientUIDelegateFromWebContents(web_contents());
-  manage_passwords_ui_controller->OnCredentialLeak(leak_type, origin);
+  manage_passwords_ui_controller->OnCredentialLeak(leak_type, url, username);
 #endif  // BUILDFLAG(IS_ANDROID)
 }
 
@@ -1018,6 +1029,18 @@ ChromePasswordManagerClient::GetWebAuthnCredentialsDelegate() {
 
 version_info::Channel ChromePasswordManagerClient::GetChannel() const {
   return chrome::GetChannel();
+}
+
+void ChromePasswordManagerClient::RefreshPasswordManagerSettingsIfNeeded()
+    const {
+#if BUILDFLAG(IS_ANDROID)
+  // Settings need to be requested for android clients enrolled into the unified
+  // password manager experiment.
+  if (!password_manager::features::UsesUnifiedPasswordManagerUi())
+    return;
+  PasswordManagerSettingsServiceFactory::GetForProfile(profile_)
+      ->RequestSettingsFromBackend();
+#endif
 }
 
 void ChromePasswordManagerClient::AutomaticGenerationAvailable(

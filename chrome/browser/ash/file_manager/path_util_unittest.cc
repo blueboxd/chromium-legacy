@@ -33,6 +33,7 @@
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/file_manager/volume_manager_factory.h"
 #include "chrome/browser/ash/file_system_provider/provided_file_system_info.h"
+#include "chrome/browser/ash/guest_os/public/types.h"
 #include "chrome/browser/ash/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/ash/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/fileapi/file_system_backend.h"
@@ -42,9 +43,9 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
 #include "chromeos/dbus/cros_disks/cros_disks_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/account_id/account_id.h"
@@ -324,8 +325,8 @@ TEST_F(FileManagerPathUtilTest, ConvertBetweenFileSystemURLAndPathInsideVM) {
 
   // Initialize DBUS and running container.
   chromeos::DBusThreadManager::Initialize();
-  chromeos::CiceroneClient::InitializeFake();
-  chromeos::ConciergeClient::InitializeFake();
+  ash::CiceroneClient::InitializeFake();
+  ash::ConciergeClient::InitializeFake();
   ash::SeneschalClient::InitializeFake();
 
   crostini::CrostiniManager* crostini_manager =
@@ -499,7 +500,7 @@ TEST_F(FileManagerPathUtilTest, ConvertBetweenFileSystemURLAndPathInsideVM) {
 
   profile_.reset();
   ash::SeneschalClient::Shutdown();
-  chromeos::ConciergeClient::Shutdown();
+  ash::ConciergeClient::Shutdown();
   chromeos::DBusThreadManager::Shutdown();
 }
 
@@ -807,8 +808,8 @@ TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_MyDriveLegacy) {
 
 TEST_F(FileManagerPathUtilConvertUrlTest, ConvertPathToArcUrl_MyDriveArcvm) {
   chromeos::DBusThreadManager::Initialize();
-  chromeos::CiceroneClient::InitializeFake();
-  chromeos::ConciergeClient::InitializeFake();
+  ash::CiceroneClient::InitializeFake();
+  ash::ConciergeClient::InitializeFake();
   ash::SeneschalClient::InitializeFake();
 
   auto* command_line = base::CommandLine::ForCurrentProcess();
@@ -1122,6 +1123,7 @@ TEST_F(FileManagerPathUtilTest, GetDisplayablePathTest) {
   volume_manager->RegisterMediaViewForTesting(arc::kAudioRootDocumentId);
   volume_manager->RegisterMediaViewForTesting(arc::kImagesRootDocumentId);
   volume_manager->RegisterMediaViewForTesting(arc::kVideosRootDocumentId);
+  volume_manager->RegisterMediaViewForTesting(arc::kDocumentsRootDocumentId);
 
   volume_manager->AddVolumeForTesting(
       Volume::CreateForDrive(base::FilePath("/mount_path/drive")));
@@ -1156,7 +1158,8 @@ TEST_F(FileManagerPathUtilTest, GetDisplayablePathTest) {
 
   volume_manager->AddVolumeForTesting(Volume::CreateForSftpGuestOs(
       "guest_os_label", base::FilePath("/mount_path/guest_os"),
-      base::FilePath("/remote_mount_path/guest_os")));
+      base::FilePath("/remote_mount_path/guest_os"),
+      guest_os::VmType::ApplicationList_VmType_TERMINA));
 
   volume_manager->AddVolumeForTesting(Volume::CreateForMTP(
       base::FilePath("/mount_path/mtp"), "mtp_label", false));
@@ -1238,6 +1241,11 @@ TEST_F(FileManagerPathUtilTest, GetDisplayablePathTest) {
            .Append("foo/bar")
            .value(),
        "Videos/foo/bar"},
+      {arc::GetDocumentsProviderMountPath(arc::kMediaDocumentsProviderAuthority,
+                                          arc::kDocumentsRootDocumentId)
+           .Append("bar")
+           .value(),
+       "Documents/bar"},
       {
           "/mount_path/android",
           "My files/Play files",

@@ -566,10 +566,11 @@ TEST_F(AttributionStorageTest, MaxImpressionsPerOrigin_PerOriginNotSite) {
                           SourceEventIdIs(7u), SourceEventIdIs(11u)));
 }
 
-TEST_F(AttributionStorageTest, MaxConversionsPerOrigin) {
+TEST_F(AttributionStorageTest, MaxEventLevelAttributionsPerOrigin) {
   SourceBuilder source_builder = TestAggregatableSourceProvider().GetBuilder();
 
-  delegate()->set_max_attributions_per_origin(1);
+  delegate()->set_max_attributions_per_origin(
+      AttributionReport::ReportType::kEventLevel, 1);
   storage()->StoreSource(source_builder.Build());
   storage()->StoreSource(source_builder.Build());
 
@@ -580,17 +581,37 @@ TEST_F(AttributionStorageTest, MaxConversionsPerOrigin) {
                     CreateReportAggregatableStatusIs(
                         AttributionTrigger::AggregatableResult::kSuccess)));
 
-  // Verify that MaxConversionsPerOrigin is enforced.
-  auto contributions =
-      DefaultAggregatableHistogramContributions(/*histogram_values=*/{5});
-  ASSERT_THAT(contributions, SizeIs(1));
+  // Verify that MaxAttributionsPerOrigin is enforced.
   EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
-                  DefaultAggregatableTriggerBuilder(/*histogram_values=*/{5})
-                      .SetTriggerData(5)
-                      .Build()),
+                  DefaultAggregatableTriggerBuilder().Build()),
               AllOf(CreateReportEventLevelStatusIs(
                         AttributionTrigger::EventLevelResult::
                             kNoCapacityForConversionDestination),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess),
+                    ReplacedEventLevelReportIs(absl::nullopt)));
+}
+
+TEST_F(AttributionStorageTest, MaxAggregatableAttributionsPerOrigin) {
+  SourceBuilder source_builder = TestAggregatableSourceProvider().GetBuilder();
+
+  delegate()->set_max_attributions_per_origin(
+      AttributionReport::ReportType::kAggregatableAttribution, 1);
+  storage()->StoreSource(source_builder.Build());
+  storage()->StoreSource(source_builder.Build());
+
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
+                    CreateReportAggregatableStatusIs(
+                        AttributionTrigger::AggregatableResult::kSuccess)));
+
+  // Verify that MaxAttributionsPerOrigin is enforced.
+  EXPECT_THAT(storage()->MaybeCreateAndStoreReport(
+                  DefaultAggregatableTriggerBuilder().Build()),
+              AllOf(CreateReportEventLevelStatusIs(
+                        AttributionTrigger::EventLevelResult::kSuccess),
                     CreateReportAggregatableStatusIs(
                         AttributionTrigger::AggregatableResult::
                             kNoCapacityForConversionDestination),
@@ -1634,9 +1655,7 @@ TEST_F(AttributionStorageTest, StoreSource_ReturnsDeactivatedSources) {
 
   builder1.SetDedupKeys({13});
   EXPECT_THAT(storage()->StoreSource(builder2.Build()).deactivated_sources,
-              ElementsAre(DeactivatedSource(
-                  builder1.SetDefaultFilterData().BuildStored(),
-                  DeactivatedSource::Reason::kReplacedByNewerSource)));
+              ElementsAre(builder1.SetDefaultFilterData().BuildStored()));
 
   EXPECT_THAT(storage()->GetActiveSources(),
               ElementsAre(builder2.SetDefaultFilterData().BuildStored()));
@@ -1670,9 +1689,7 @@ TEST_F(AttributionStorageTest, StoreSource_ReturnsDeactivatedSources_Limited) {
                   ->StoreSource(builder3.Build(),
                                 /*deactivated_source_return_limit=*/1)
                   .deactivated_sources,
-              ElementsAre(DeactivatedSource(
-                  builder1.SetDefaultFilterData().BuildStored(),
-                  DeactivatedSource::Reason::kReplacedByNewerSource)));
+              ElementsAre(builder1.SetDefaultFilterData().BuildStored()));
   EXPECT_THAT(storage()->GetActiveSources(),
               ElementsAre(builder3.SetDefaultFilterData().BuildStored()));
 }

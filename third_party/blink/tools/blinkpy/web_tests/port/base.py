@@ -149,6 +149,7 @@ class Port(object):
         ('mac11-arm64', 'arm64'),
         ('win7', 'x86'),
         ('win10.20h2', 'x86'),
+        ('win11', 'x64'),
         ('trusty', 'x86_64'),
         ('fuchsia', 'x86_64'),
     )
@@ -158,7 +159,7 @@ class Port(object):
             'mac10.12', 'mac10.13', 'mac10.14', 'mac10.15', 'mac11',
             'mac11-arm64'
         ],
-        'win': ['win7', 'win10.20h2'],
+        'win': ['win7', 'win10.20h2', 'win11'],
         'linux': ['trusty'],
         'fuchsia': ['fuchsia'],
     }
@@ -1550,7 +1551,8 @@ class Port(object):
             [name, value] = string_variable.split('=', 1)
             clean_env[name] = value
 
-        if self.host.platform.is_linux():
+        if self.host.platform.is_linux() and not self.use_system_httpd():
+            # set up LD_LIBRARY_PATH when we are using httpd built from 3pp.
             path_to_libs = self._filesystem.join(self.apache_server_root(), 'lib')
             if clean_env.get('LD_LIBRARY_PATH'):
                 clean_env['LD_LIBRARY_PATH'] = path_to_libs + ':' + clean_env['LD_LIBRARY_PATH']
@@ -1907,6 +1909,10 @@ class Port(object):
 
     def clobber_old_port_specific_results(self):
         pass
+
+    def use_system_httpd(self):
+        # We use system httpd on linux-arm64 and BSD
+        return False
 
     # FIXME: This does not belong on the port object.
     @memoized

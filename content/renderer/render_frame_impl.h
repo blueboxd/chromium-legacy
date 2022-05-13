@@ -147,6 +147,7 @@ class MediaPermission;
 
 namespace url {
 class Origin;
+class SchemeHostPort;
 }
 
 namespace content {
@@ -179,6 +180,7 @@ class CONTENT_EXPORT RenderFrameImpl
       RenderViewImpl* render_view,
       blink::WebFrame* opener,
       bool is_for_nested_main_frame,
+      bool is_for_scalable_page,
       blink::mojom::FrameReplicationStatePtr replication_state,
       const base::UnguessableToken& devtools_frame_token,
       mojom::CreateLocalMainFrameParamsPtr params);
@@ -575,7 +577,10 @@ class CONTENT_EXPORT RenderFrameImpl
   void DidChangeSelection(bool is_empty_selection,
                           blink::SyncCondition force_sync) override;
   void FocusedElementChanged(const blink::WebElement& element) override;
-  void OnMainFrameIntersectionChanged(const gfx::Rect& intersect_rect) override;
+  void OnMainFrameIntersectionChanged(
+      const gfx::Rect& main_frame_intersection_rect) override;
+  void OnMainFrameViewportRectangleChanged(
+      const gfx::Rect& main_frame_viewport_rect) override;
   void WillSendRequest(blink::WebURLRequest& request,
                        ForRedirect for_redirect) override;
   void OnOverlayPopupAdDetected() override;
@@ -732,7 +737,7 @@ class CONTENT_EXPORT RenderFrameImpl
   // browser.
   void OnDroppedNavigation();
 
-  void DidStartResponse(const GURL& response_url,
+  void DidStartResponse(const url::SchemeHostPort& final_response_url,
                         int request_id,
                         network::mojom::URLResponseHeadPtr response_head,
                         network::mojom::RequestDestination request_destination);
@@ -1406,8 +1411,12 @@ class CONTENT_EXPORT RenderFrameImpl
   std::unique_ptr<AXTreeDistiller> ax_tree_distiller_;
 
   // Used for tracking a frame's main frame document intersection and
-  // and replicating it to the browser when it changes.
-  absl::optional<gfx::Rect> mainframe_intersection_rect_;
+  // replicating it to the browser when it changes.
+  absl::optional<gfx::Rect> main_frame_intersection_rect_;
+
+  // Used for tracking the main frame viewport rectangle (i.e. dimensions and
+  // scroll offset) within the main frame document.
+  absl::optional<gfx::Rect> main_frame_viewport_rect_;
 
   std::unique_ptr<blink::WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;

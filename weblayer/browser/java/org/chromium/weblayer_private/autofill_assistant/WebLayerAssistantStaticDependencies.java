@@ -43,10 +43,14 @@ import org.chromium.weblayer_private.interfaces.IUserIdentityCallbackClient;
 @JNINamespace("weblayer")
 public class WebLayerAssistantStaticDependencies
         implements AssistantStaticDependencies, SimpleFactoryKeyHandle {
-    private final WebContents mWebContents;
+    protected final WebContents mWebContents;
+    protected final WebLayerAssistantTabChangeObserver mWebLayerAssistantTabChangeObserver;
 
-    WebLayerAssistantStaticDependencies(WebContents webContents) {
+    // There exists one instance of this class per WebContents and per TabImpl.
+    WebLayerAssistantStaticDependencies(WebContents webContents,
+            WebLayerAssistantTabChangeObserver webLayerAssistantTabChangeObserver) {
         mWebContents = webContents;
+        mWebLayerAssistantTabChangeObserver = webLayerAssistantTabChangeObserver;
     }
 
     // AssistantStaticDependencies implementation:
@@ -54,12 +58,13 @@ public class WebLayerAssistantStaticDependencies
     @Override
     public long createNative() {
         return WebLayerAssistantStaticDependenciesJni.get().init(
-                new WebLayerAssistantStaticDependencies(mWebContents));
+                new WebLayerAssistantStaticDependencies(
+                        mWebContents, mWebLayerAssistantTabChangeObserver));
     }
 
     @Override
     public AssistantDependencies createDependencies(Activity activity) {
-        return new WebLayerAssistantDependencies(activity, mWebContents);
+        return new WebLayerAssistantDependencies(mWebContents, mWebLayerAssistantTabChangeObserver);
     }
 
     @Override
@@ -88,8 +93,8 @@ public class WebLayerAssistantStaticDependencies
 
     @Override
     public AssistantTabUtil createTabUtil() {
-        // TODO(b/222671580): Implement
-        return null;
+        // This method should do nothing under WebLayer as it is only used to close CCTs in Chrome.
+        return (activity) -> {};
     }
 
     @Override

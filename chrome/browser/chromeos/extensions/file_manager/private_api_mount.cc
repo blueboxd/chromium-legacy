@@ -21,6 +21,7 @@
 #include "chrome/browser/ash/file_manager/volume_manager.h"
 #include "chrome/browser/ash/smb_client/smb_service.h"
 #include "chrome/browser/ash/smb_client/smb_service_factory.h"
+#include "chrome/browser/chromeos/extensions/file_manager/event_router.h"
 #include "chrome/browser/chromeos/extensions/file_manager/private_api_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/extensions/api/file_manager_private.h"
@@ -50,19 +51,15 @@ ExtensionFunction::ResponseAction FileManagerPrivateAddMountFunction::Run() {
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* const profile = Profile::FromBrowserContext(browser_context());
-  drive::EventLogger* logger = file_manager::util::GetLogger(profile);
-  if (logger) {
+  if (drive::EventLogger* logger = file_manager::util::GetLogger(profile)) {
     logger->Log(logging::LOG_INFO, "%s[%d] called. (source: '%s')", name(),
                 request_id(),
-                params->source.empty() ? "(none)" : params->source.c_str());
+                params->file_url.empty() ? "(none)" : params->file_url.c_str());
   }
   set_log_on_completion(true);
 
   path_ = file_manager::util::GetLocalPathFromURL(render_frame_host(), profile,
-                                                  GURL(params->source));
-
-  if (path_.empty())
-    return RespondNow(Error("Invalid path"));
+                                                  GURL(params->file_url));
 
   if (auto* notifier =
           file_manager::file_tasks::FileTasksNotifier::GetForProfile(profile)) {
@@ -72,7 +69,7 @@ ExtensionFunction::ResponseAction FileManagerPrivateAddMountFunction::Run() {
 
     std::vector<storage::FileSystemURL> urls;
     const storage::FileSystemURL url =
-        file_system_context->CrackURLInFirstPartyContext(GURL(params->source));
+        file_system_context->CrackURLInFirstPartyContext(GURL(params->file_url));
     urls.push_back(url);
 
     notifier->NotifyFileTasks(urls);
@@ -123,14 +120,58 @@ void FileManagerPrivateAddMountFunction::FinishMounting() {
       base::DoNothing());
 }
 
+FileManagerPrivateCancelMountingFunction::
+    FileManagerPrivateCancelMountingFunction() = default;
+
+FileManagerPrivateCancelMountingFunction::
+    ~FileManagerPrivateCancelMountingFunction() = default;
+
+ExtensionFunction::ResponseAction
+FileManagerPrivateCancelMountingFunction::Run() {
+  using file_manager_private::CancelMounting::Params;
+  const std::unique_ptr<Params> params = Params::Create(args());
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Profile* const profile = Profile::FromBrowserContext(browser_context());
+
+  if (drive::EventLogger* logger = file_manager::util::GetLogger(profile)) {
+    logger->Log(logging::LOG_INFO, "%s[%d] called. (source: '%s')", name(),
+                request_id(),
+                params->file_url.empty() ? "(none)" : params->file_url.c_str());
+  }
+  set_log_on_completion(true);
+
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  base::FilePath path = file_manager::util::GetLocalPathFromURL(
+      render_frame_host(), profile, GURL(params->file_url));
+
+  DiskMountManager* const disk_mount_manager = DiskMountManager::GetInstance();
+  DCHECK(disk_mount_manager);
+  disk_mount_manager->UnmountPath(
+      path.AsUTF8Unsafe(),
+      base::BindOnce(&FileManagerPrivateCancelMountingFunction::OnCancelled,
+                     this));
+
+  return RespondLater();
+}
+
+void FileManagerPrivateCancelMountingFunction::OnCancelled(
+    chromeos::MountError error) {
+  if (error == chromeos::MOUNT_ERROR_NONE) {
+    return Respond(NoArguments());
+  }
+  return Respond(Error(file_manager_private::ToString(
+      file_manager::MountErrorToMountCompletedStatus(error))));
+}
+
 ExtensionFunction::ResponseAction FileManagerPrivateRemoveMountFunction::Run() {
   using file_manager_private::RemoveMount::Params;
   const std::unique_ptr<Params> params(Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
 
   Profile* const profile = Profile::FromBrowserContext(browser_context());
-  drive::EventLogger* logger = file_manager::util::GetLogger(profile);
-  if (logger) {
+  if (drive::EventLogger* logger = file_manager::util::GetLogger(profile)) {
     logger->Log(logging::LOG_INFO, "%s[%d] called. (volume_id: '%s')", name(),
                 request_id(), params->volume_id.c_str());
   }
@@ -210,8 +251,7 @@ FileManagerPrivateGetVolumeMetadataListFunction::Run() {
     log_string += volume->mount_path().AsUTF8Unsafe();
   }
 
-  drive::EventLogger* logger = file_manager::util::GetLogger(profile);
-  if (logger) {
+  if (drive::EventLogger* logger = file_manager::util::GetLogger(profile)) {
     logger->Log(logging::LOG_INFO,
                 "%s[%d] succeeded. (results: '[%s]', %" PRIuS " mount points)",
                 name(), request_id(), log_string.c_str(), result.size());

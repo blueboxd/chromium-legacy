@@ -642,47 +642,72 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.LocalHistoryPrefixSuggest.SearchTermsExtractedCount"
+    units="counts" expires_after="2022-10-16">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    The number of search terms extracted from the database to produce local
+    prefix search suggestions. Emitted when prefix search suggestions are
+    requested as a result of the user typing into the Omnibox or the Realbox on
+    the NTP.
+  </summary>
+</histogram>
+
+<histogram name="Omnibox.LocalHistoryPrefixSuggest.SearchTermsExtractionTime"
+    units="ms" expires_after="2022-10-16">
+  <owner>mahmadi@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    The length of time it takes to extract search terms from the database and
+    sort them by recency (if needed) to produce local prefix search suggestions.
+    Emitted when prefix search suggestions are requested as a result of the user
+    typing into the Omnibox or the Realbox on the NTP.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.LocalHistoryZeroSuggest.AsyncDeleteTime" units="ms"
     expires_after="2022-10-16">
   <owner>mahmadi@chromium.org</owner>
-  <owner>tommycli@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
   <summary>
     The length of time it takes for the corresponding URLs that would produce a
-    deleted match to be queried asynchronously and deleted. Triggered when user
+    deleted match to be queried asynchronously and deleted. Emitted when user
     deletes a local history zero-prefix suggestion.
   </summary>
 </histogram>
 
 <histogram name="Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractedCount"
-    units="count" expires_after="2022-10-16">
+    units="counts" expires_after="2022-10-16">
   <owner>mahmadi@chromium.org</owner>
-  <owner>tommycli@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
   <summary>
-    The number of search terms extracted from the keyword search terms database
-    and examined (e.g., sorted) to produce local zero-prefix suggestions.
-    Triggered when zero-prefix suggestions are enabled and requested as a result
-    of user focus into the Omnibox or the Realbox on the NTP.
+    The number of search terms extracted from the database to produce local
+    zero-prefix suggestions. Emitted when zero-prefix suggestions are requested
+    as a result of the user focusing into the Omnibox or the Realbox on the NTP.
   </summary>
 </histogram>
 
 <histogram name="Omnibox.LocalHistoryZeroSuggest.SearchTermsExtractionTime"
     units="ms" expires_after="2022-10-16">
   <owner>mahmadi@chromium.org</owner>
-  <owner>tommycli@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
   <summary>
-    The length of time it takes to extract search terms from the keyword search
-    terms database and examine (e.g., sort) them to produce local zero-prefix
-    suggestions.
+    The length of time it takes to extract search terms from the database and
+    sort them by frecency to produce local zero-prefix suggestions. Emitted when
+    zero-prefix suggestions are requested as a result of the user focusing into
+    the Omnibox or the Realbox on the NTP. In M103, this was changed to no
+    longer include the construction of the AutocompleteMatch values.
   </summary>
 </histogram>
 
 <histogram name="Omnibox.LocalHistoryZeroSuggest.SyncDeleteTime" units="ms"
     expires_after="2022-10-16">
   <owner>mahmadi@chromium.org</owner>
-  <owner>tommycli@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
   <summary>
     The length of time it takes to handle the deletion request for a match and
-    to update the list of provider matches synchronously. Triggered when user
+    to update the list of provider matches synchronously. Emitted when user
     requests to delete a local history zero-prefix suggestion.
   </summary>
 </histogram>
@@ -909,6 +934,28 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Omnibox.SearchPrefetch.ClickToNavigationIntercepted"
+    units="ms" expires_after="2023-05-02">
+  <owner>spelchat@chromium.org</owner>
+  <owner>chrome-brapp-loading@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Search Prefetch issues results page requests in response to either the
+    suggestion server or the Omnibox client being confident that the user will
+    navigate to a specific search suggestion. These requests are then served
+    instantly to the user when the user navigates to a search suggestion with
+    the same search terms. These requests can have mismatching query params as
+    the Omnibox client updates the search navigation URL as the user types more
+    into the Omnibox. The suggestion server issues prefetch hints along with the
+    suggestion request. Additionally, the Omnibox client decides to prefetch
+    when the user has chosen (or likely chosen) a search suggestion to initiate
+    the search suggestion navigation earlier. Whether a search prefetch request
+    finished with a success status or a status that could be served. Measures
+    the time between the user clicks the Omnibox suggestion and the moment the
+    navigation is intercepted by the Search Prefetch code.
+  </summary>
+</histogram>
+
 <histogram name="Omnibox.SearchPrefetch.FetchResult.SuggestionPrefetch"
     enum="BooleanSuccess" expires_after="2022-08-07">
   <owner>ryansturm@chromium.org</owner>
@@ -928,6 +975,32 @@ chromium-metrics-reviews@google.com.
     when prefetch requests receive headers. Recorded for omnibox search
     prefetches that are started when an omnibox suggestion from the suggestion
     server recommends a prefetch of a suggestion results page.
+  </summary>
+</histogram>
+
+<histogram
+    name="Omnibox.SearchPrefetch.NavigationInterceptedToForwardingComplete"
+    units="ms" expires_after="2023-05-02">
+  <owner>spelchat@chromium.org</owner>
+  <owner>chrome-brapp-loading@chromium.org</owner>
+  <owner>chrome-omnibox-team@google.com</owner>
+  <summary>
+    Search Prefetch issues results page requests in response to either the
+    suggestion server or the Omnibox client being confident that the user will
+    navigate to a specific search suggestion. These requests are then served
+    instantly to the user when the user navigates to a search suggestion with
+    the same search terms. These requests can have mismatching query params as
+    the Omnibox client updates the search navigation URL as the user types more
+    into the Omnibox. The suggestion server issues prefetch hints along with the
+    suggestion request. Additionally, the Omnibox client decides to prefetch
+    when the user has chosen (or likely chosen) a search suggestion to initiate
+    the search suggestion navigation earlier. Whether a search prefetch request
+    finished with a success status or a status that could be served. Measure the
+    time between the navigation is intercepted by the Search Prefetch code and
+    the moment the Search Prefetch URL loader has finished forwarding the whole
+    response to the navigation URL loader. This time includes finishing fetching
+    the Search response and any queuing delays in the UI thread preventing the
+    Search Prefetch URL loader from forwarding bytes to the navigation code.
   </summary>
 </histogram>
 

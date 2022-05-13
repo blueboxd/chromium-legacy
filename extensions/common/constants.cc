@@ -123,14 +123,13 @@ const int kUnknownTabId = -1;
 const int kUnknownWindowId = -1;
 const int kCurrentWindowId = -2;
 
-#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_CHROMECAST)
+#if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(ENABLE_CAST_RECEIVER)
 // The extension id for the built-in component extension.
 const char kChromeVoxExtensionId[] = "mndnfokpggljbaajbnioimlmbfngpief";
 #else
 // The extension id for the web store extension.
 const char kChromeVoxExtensionId[] = "kgejglhpjiefppelpmljglcjbhoiplfn";
 #endif
-const char kFeedbackExtensionId[] = "gfdkimpbcpahaombhbimeihdjnejgicl";
 const char kPdfExtensionId[] = "mhjfbmdgcfjbbpaeojofohoefgiehjai";
 const char kQuickOfficeComponentExtensionId[] =
     "bpmcpldpdmajfigpchkicefoigmkfalc";
@@ -178,7 +177,6 @@ bool IsSystemUIApp(base::StringPiece extension_id) {
   static const char* const kApps[] = {
       // clang-format off
       kChromeVoxExtensionId,
-      kFeedbackExtensionId,
       kFilesManagerAppId,
       kHighlightsAtlasAppId,
       kHighlightsAppId,

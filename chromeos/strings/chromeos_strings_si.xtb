@@ -24,7 +24,9 @@
 <translation id="1201402288615127009">ඊළඟ</translation>
 <translation id="1204296502688602597">DNS පමාව</translation>
 <translation id="123124571410524056">ද්වාරය සැක කරන ලදි</translation>
+<translation id="1236400083787698183">යළි ආරම්භ කිරීමට පෙර, ඔබගේ උපාංගය පවර්වොෂ් කරන්න. ඔබ‍ගේ උපාංගයට පියනක් තිබේ නම්, පියන වැසීමට පෙර පවර්වොෂ් සම්පූර්ණ වන තෙක් රැඳී සිටින්න. පවර්වොෂ් සම්පූර්ණ කිරීමට මිනිත්තුවක් දක්වා ගත විය හැකිය.</translation>
 <translation id="1238612778414822719">HTTPS පමාව</translation>
+<translation id="1240699967155581440">පවර්වොෂ් (කර්මාන්තශාලා යළි සැකසීම) අවශ්‍යයි</translation>
 <translation id="1264116747675686718">OS අනුවාදය යාවත්කාලීන කරමින්</translation>
 <translation id="1264369926465113395">නිර්මාපකයින් සඳහා Chromebook හි නව ඩිජිටල් සඟරාව බලන්න</translation>
 <translation id="1270369111467284986">පිවිසුම් දොරටුව සැක කරන ලදි</translation>
@@ -61,6 +63,7 @@
 <translation id="150962533380566081">වලංගු නොවන PUK.</translation>
 <translation id="1510238584712386396">දියත්කරණය</translation>
 <translation id="152892567002884378">හඬ පරිමාව වැඩි</translation>
+<translation id="1555130319947370107">නිල්</translation>
 <translation id="155865706765934889">ස්පර්ශ පුවරුව</translation>
 <translation id="1565038567006703504"><ph name="DEVICE_NAME" /> යාවත්කාලීන කළ නොහැකිය</translation>
 <translation id="1567064801249837505">ඇල්බම</translation>
@@ -91,6 +94,7 @@
 <translation id="1801418420130173017">අඳුරු තේමාව අබල කරන්න</translation>
 <translation id="1807246157184219062">එළිය</translation>
 <translation id="1827738518074806965">කලාගාරය</translation>
+<translation id="1840835860961531162">Write Protect ක්‍රියාවිරහිත කරන්න</translation>
 <translation id="1851218745569890714">වීඩියෝ සම්මන්ත්‍රණය</translation>
 <translation id="1852934301711881861">ChromeOS Flex ස්ථාපනය කරන්න</translation>
 <translation id="1856388568474281774">පහළ ඊතලය</translation>
@@ -111,7 +115,6 @@
 <translation id="202500043506723828">EID</translation>
 <translation id="2080070583977670716">තවත් සැකසුම්</translation>
 <translation id="2085089206770112532">සංදර්ශක දීප්තිය පහළට</translation>
-<translation id="2104796393919810494">අලුත්වැඩියාව සම්පූර්ණ කරන ලදි</translation>
 <translation id="2105810540595158374">උපාංගය ක්‍රීඩා පාලකයකි.</translation>
 <translation id="2115956742084455574">වැරදි කේතයකි</translation>
 <translation id="2119172414412204879"><ph name="BOARD_NAME" />, අනුවාදය <ph name="MILESTONE_VERSION" /></translation>
@@ -144,9 +147,11 @@
 <translation id="2336381494582898602">Powerwash</translation>
 <translation id="2338501278241028356">අවට උපාංග සොයා ගැනීමට බ්ලූටූත් ක්‍රියාත්මක කරන්න</translation>
 <translation id="2346474577291266260">අනර්ඝයි (<ph name="SIGNAL_STRENGTH" />)</translation>
+<translation id="2359808026110333948">කරගෙන යන්න</translation>
 <translation id="2360257214555822463"><ph name="LINK_BEGIN" />සුදුසුකම් නොලත් සංරචක<ph name="LINK_END" /> අනාවරණය කර ගන්නා ලදි. ඔබ මෙය ස්ථාපනය කර ඇති බව තහවුරු කිරීමට තෝරා ගන්නේ නම්, කරුණාකර දැන් එය කරන්න.</translation>
 <translation id="2363636958541445404">තිර සුරැකුම් විකල්ප තේරීමට විශේෂාංගය ක්‍රියාත්මක කරන්න</translation>
 <translation id="2364498172489649528">සමත් විය</translation>
+<translation id="236594517359128026">ඉදිරියට යාමට පෙර, ඔබ‍ගේ ලැප්ටොප් පරිගණකය පැතලි මතුපිටක් මත තබන්න</translation>
 <translation id="2380886658946992094">Legal</translation>
 <translation id="2391082728065870591">ප්‍රතිපෝෂණ වාර්තාව යවන්න</translation>
 <translation id="2407209115954268704">SIM අගුලු තත්ත්වය</translation>
@@ -156,6 +161,7 @@
 <translation id="2446553403094072641">පාවෙන ලක්ෂ්‍යය නිරවද්‍යතාව</translation>
 <translation id="2448312741937722512">වර්ගය</translation>
 <translation id="2461822463642141190">වත්මන්</translation>
+<translation id="2480034874476596812">හස්තීයව ක්‍රියාවිරහිත කරන්න</translation>
 <translation id="2491955442992294626">ඔබ වෙනත් කවුළුවක් භාවිත කරන විට යතුරු පරීක්ෂා නොකෙරේ</translation>
 <translation id="2493126929778606526">ස්වයංක්‍රියව තෝරන ලද, ඔබගේ හොඳම ඡායාරූප</translation>
 <translation id="249323605434939166"><ph name="QUERY_TEXT" /> · <ph name="SOURCE_LANGUAGE_NAME" /></translation>
@@ -171,8 +177,8 @@
 <translation id="2620436844016719705">පද්ධතිය</translation>
 <translation id="2638662041295312666">පුරන රූපය</translation>
 <translation id="2640549051766135490"><ph name="TITLE" /> <ph name="DESC" /> ඇල්බමය තෝරන ලදි</translation>
-<translation id="2695514675076754339">අනුලකුණු 8 අගුලු හැරීමේ කේතය ඇතුළත් කරන්න</translation>
 <translation id="2712812801627182647">TLS සත්‍යාපන යතුර</translation>
+<translation id="2713444072780614174">සුදු</translation>
 <translation id="2717139507051041123">අඳුරු වර්ණ ප්‍රකාරය සබල කරන්න</translation>
 <translation id="2740531572673183784">හරි</translation>
 <translation id="2751739896257479635">EAP අදියර 2 සත්‍යාපනය</translation>
@@ -187,6 +193,7 @@
 <translation id="2878387241690264070">තත්පර <ph name="NUM_SECONDS" />ක් තුළ <ph name="RATE" /> විසර්ජනය වේ.</translation>
 <translation id="291142119251986300">සුදුසුකම් නොලත් සංරචක</translation>
 <translation id="2926057806159140518">ඔබගේ පරිශීලක නාමය සහ මුරපදය ඇතුළත් කරන්න හෝ ඔබගේ QR කේතය ස්කෑන් කරන්න</translation>
+<translation id="2928420929544864228">ස්ථාපනය සම්පූර්ණයි.</translation>
 <translation id="3008341117444806826">නැවුම් කරන්න</translation>
 <translation id="3009958530611748826">සුරැකීමට ෆෝල්ඩරයක් තෝරන්න</translation>
 <translation id="3017079585324758401">පසුබිම</translation>
@@ -251,6 +258,7 @@
 <translation id="3606583719724308068">HTTPS වෙබ් අඩවිවලට ඉහළ පමාව</translation>
 <translation id="3621202678540785336">ආදානය</translation>
 <translation id="3632579075709132555">පෞද්ගලිකත්ව තිරය ටොගල කිරීම</translation>
+<translation id="3678765385266369662">ඔබ Write Protect ක්‍රියාවිරහිත කිරීමට කැමති ආකාරය තෝරන්න</translation>
 <translation id="3689839747745352263"><ph name="TEST_NAME" /> පරීක්ෂණය</translation>
 <translation id="370665806235115550">පූරණය වේ...</translation>
 <translation id="3708186454126126312">පෙර සම්බන්ධිත</translation>
@@ -263,6 +271,7 @@
 <translation id="3820172043799983114">වලංගු නොවන PIN.</translation>
 <translation id="3838338534323494292">නව මුරපදය</translation>
 <translation id="385051799172605136">ආපසු</translation>
+<translation id="385832974417157471">වැසීමට පෙර, ඔබගේ උපාංගය පවර්වොෂ් කරන්න. ඔබ‍ගේ උපාංගයට පියනක් තිබේ නම්, පියන වැසීමට පෙර පවර්වොෂ් සම්පූර්ණ වන තෙක් රැඳී සිටින්න. පවර්වොෂ් සම්පූර්ණ කිරීමට මිනිත්තුවක් දක්වා ගත විය හැකිය.</translation>
 <translation id="3858860766373142691">නම</translation>
 <translation id="3865414814144988605">විභේදනය</translation>
 <translation id="387301095347517405">ඔබගේ බැටරිය පූර්ණ ආරෝපණ චක්‍රයක් හරහා ගිය වාර ගණන</translation>
@@ -272,6 +281,7 @@
 <translation id="3941014780699102620">සත්කාරක විසඳීම අසාර්ථක විය</translation>
 <translation id="3942420633017001071">දෝෂ විනිශ්චය</translation>
 <translation id="3954678691475912818">උපාංග වර්ගය නොදනී.</translation>
+<translation id="3958703339436883942">යළි ආරම්භ කිරීමට සූදානම් වෙමින්...</translation>
 <translation id="3966286471246132217">වඩාත් නිවැරදි ප්‍රතිඵල සඳහා, පරීක්ෂණය අවසන් වන තුරු සියලු යෙදුම් වසන්න.</translation>
 <translation id="3967822245660637423">බාගැනීම සම්පූර්ණයි</translation>
 <translation id="3969602104473960991">ChromeOS මුරපදය යාවත්කාලීන කරන ලදි</translation>
@@ -293,6 +303,7 @@
 <translation id="4145784616224233563">HTTP ෆයර්වෝලය</translation>
 <translation id="4147897805161313378">Google ඡායාරූප</translation>
 <translation id="4155551848414053977">ස්කෑනරය ක්‍රියාත්මක කර ඇති බව සහ ඔබගේ ජාලය හරහා හෝ සෘජු සබැඳුමක් හරහා ලබා ගත හැකි බව සහතික කර ගන්න</translation>
+<translation id="4159784952369912983">දම්</translation>
 <translation id="4170180284036919717">ඡායාරූපයක් ගන්න</translation>
 <translation id="4170700058716978431">අසාර්ථක විය</translation>
 <translation id="4176463684765177261">අබල කරන ලද</translation>
@@ -305,6 +316,7 @@
 <translation id="4244962993387259361">මතක පරීක්ෂණයක් ධාවනය කිරීමට ඔබට අවම වශයෙන් 500 MB ඉඩ අවශ්‍ය වේ. ඉඩ නිදහස් කිරීමට, සැකසීම් &gt; ගබඩාව කළමනාකරණය වෙත යන්න.</translation>
 <translation id="4250229828105606438">තිරරූපය</translation>
 <translation id="4258281355379922695">HTTP පමාව</translation>
+<translation id="4258561075226177474">උපාංගය එම හිමිකරු වෙතම යනු ඇත. පරිශීලක දත්ත මකන්නද?</translation>
 <translation id="4271957103967917607">පූර්ණ තිරය බලන්න</translation>
 <translation id="4275799948641988986">අලුත්වැඩියා කිරීමෙන් පසු, උපාංගය භාවිත කරන්නේ කවුද?</translation>
 <translation id="4289540628985791613">දළ විශ්ලේෂණය</translation>
@@ -353,6 +365,7 @@
 <translation id="473775607612524610">යාවත්කාලීනය</translation>
 <translation id="4744944742468440486">ඔබගේ තේරීමට අදාළ තොරතුරු</translation>
 <translation id="4773299976671772492">නවත්වන ලදි</translation>
+<translation id="4774530504324923332">ඔබට RSU-සබල කළ ආරක්ෂක යතුරක්, QR කේත ස්කෑනරයක් සහ අන්තර්ජාල සම්බන්ධතාවක් සහිත දෙවන උපාංගයක් අවශ්‍ය වනු ඇත</translation>
 <translation id="4782311465517282004">ඔබ දකුණු-ක්ලික් කළ විට හෝ පෙළ ස්පර්ශ කර අල්ලාගෙන සිටින විට නිර්වචන, පරිවර්තන හෝ ඒකක පරිවර්තන ලබා ගන්න</translation>
 <translation id="4791000909649665275">ඡායාරූප <ph name="NUMBER" />ක්</translation>
 <translation id="4793710386569335688">තවත් උදව් සඳහා, <ph name="BEGIN_LINK" />උදවු මධ්‍යස්ථානය<ph name="END_LINK" /> වෙත යන්න.</translation>
@@ -376,6 +389,7 @@
 <translation id="4890353053343094602">වහාම අලුත් එකක් තෝරන්න</translation>
 <translation id="4891842000192098784">ආතතිය</translation>
 <translation id="4897058166682006107">උපාංගයෙහි බැටරි බඩ් <ph name="BATTERY_PERCENTAGE" />% ඉතිරිව ඇත.</translation>
+<translation id="4915052247106771211">මෙය උපාංගය කර්මාන්තශාලා සැකසීම් වෙත යළි සකසනු ඇත (Powerwash).</translation>
 <translation id="4917385247580444890">ශක්තිමත්</translation>
 <translation id="4917889632206600977">නැවතිණි - කඩදාසි අවසන් වී ඇත</translation>
 <translation id="4921665434385737356">තත්පර <ph name="NUM_SECONDS" />ක් තුළ <ph name="RATE" /> ආරෝපණය විය.</translation>
@@ -417,6 +431,7 @@
 <translation id="5275828089655680674">දින චර්යා යළි ධාවනය කරන්න</translation>
 <translation id="5286252187236914003">L2TP/IPsec</translation>
 <translation id="5294769550414936029">අනුවාදය <ph name="MILESTONE_VERSION" /></translation>
+<translation id="5298334025463010990">ඊළඟ තිරය වෙත යාමට ලිවීමේ ආරක්ෂාව අබල කරන්න. උපදෙස් සඳහා උපාංග නිෂ්පාදකයාගේ සහාය පිටුවට යන්න.</translation>
 <translation id="5300814202279832142">කවුළුව ඩෙස්ක් වෙත ගෙන යන්න</translation>
 <translation id="5304899856529773394">EVDO</translation>
 <translation id="5308380583665731573">සම්බන්ධ කරන්න</translation>
@@ -430,6 +445,8 @@
 <translation id="5358174242040570474">යම් දෙයක් වැරදිණි. නැවත වෝල්පේපරයක් තෝරා ගැනීමට හෝ යෙදුම යළි විවෘත කිරීමට උත්සාහ කරන්න.</translation>
 <translation id="5372659122375744710">WiFi ජාලය ආරක්ෂිත නැත</translation>
 <translation id="5376354385557966694">ස්වයංක්‍රිය ආලෝක ප්‍රකාරය</translation>
+<translation id="537872351913703572">උපාංගය වෙනත් පරිශීලකයෙකු හෝ සංවිධානයක් වෙත යනු ඇත</translation>
+<translation id="5395600419410242651">සියලු දත්ත මකන්න</translation>
 <translation id="5400907029458559844">උපාංගය සම්බන්ධ වෙමින් පවතී.</translation>
 <translation id="5401938042319910061">සියලු දින චර්යා ධාවනය කරන්න</translation>
 <translation id="5423849171846380976">සක්‍රිය කෙරිණි</translation>
@@ -444,6 +461,7 @@
 <translation id="5507300744274596613">Chrome OS යාවත්කාලීන බව සහතික කර ගන්න</translation>
 <translation id="5519195206574732858">LTE</translation>
 <translation id="554517032089923082">GTC</translation>
+<translation id="5548284010950733518">සංරචක ක්‍රමාංකනය</translation>
 <translation id="5578477003638479617">UMTS</translation>
 <translation id="5578519639599103840">යළි ස්කෑන් කරන්න</translation>
 <translation id="5583640892426849032">ආපසුයවනය</translation>
@@ -466,12 +484,14 @@
 <translation id="583281660410589416">නොදනී</translation>
 <translation id="5843706793424741864">ෆැරන්හයිට්</translation>
 <translation id="5849570051105887917">නිවෙස් සපයන්නාගේ කේතය</translation>
+<translation id="5856532218727053281">ලිවීමේ ආරක්ෂක තත්ත්වය සත්‍යාපනය කිරීමෙන් පසු පද්ධතිය යළි ආරම්භ වනු ඇත</translation>
 <translation id="5859603669299126575">කලා ගැලරි ඇල්බමය</translation>
 <translation id="5860033963881614850">අක්‍රීය</translation>
 <translation id="5860491529813859533">ක්‍රියාත්මක කරන්න</translation>
 <translation id="5866840822086176774">ඉතා ශක්තිමත්</translation>
 <translation id="588258955323874662">සම්පුර්ණ තිරය</translation>
 <translation id="5895138241574237353">යළි අරඹන්න</translation>
+<translation id="5901630391730855834">කහ</translation>
 <translation id="5903200662178656908">උපාංගය යතුරු පුවරු සහ මූසික සංයෝජනයකි.</translation>
 <translation id="5916084858004523819">තහනම්</translation>
 <translation id="5916664084637901428">ක්‍රියාත්මකයි</translation>
@@ -481,6 +501,7 @@
 <translation id="594552776027197022">අහඹු යතුරු යුගල උත්පාදනය කරන්න</translation>
 <translation id="5972388717451707488">යන්ත්‍රය යාවත්කාලීන කරන්න</translation>
 <translation id="5984145644188835034">පෙරනිමි වෝල්පේපරය</translation>
+<translation id="6017514345406065928">කොළ</translation>
 <translation id="6034694447310538551">ස්වයංක්‍රීය මාසික යළි සැකසීම සබල කරන්න</translation>
 <translation id="6037291330010597344">ස්කෑනරයේ ලේඛන සංග්‍රහය හිස්ය. ලේඛන එක් කර නැවත උත්සාහ කරන්න.</translation>
 <translation id="6040143037577758943">වසන්න</translation>
@@ -640,6 +661,7 @@
 <translation id="7570674786725311828">USB ස්පර්ශ තිරය</translation>
 <translation id="7595982850646262331"><ph name="TIME_VALUE" /> ඉතිරිය</translation>
 <translation id="7620771111601174153">උදවු මධ්‍යස්ථානය තුළ තව දැන ගන්න</translation>
+<translation id="7626501172915339021">RMA සේවාදායක අගුලු හැරීම සිදු කරන්න (RSU)</translation>
 <translation id="763165478673169849">අවසන් යළි සැකසීමේ වේලාව</translation>
 <translation id="7648838807254605802">ඉහළ HTTPS පමාව</translation>
 <translation id="7656388927906093505">උපාංගය මූසිකයකි.</translation>
@@ -667,6 +689,7 @@
 <translation id="7882501334836096755">පොදු යතුර</translation>
 <translation id="7890841768028788197">අභ්‍යන්තර ස්පර්ශ තිරය</translation>
 <translation id="7936303884198020182">නම් සේවාදායක හමු නොවීය</translation>
+<translation id="7942349550061667556">රතු</translation>
 <translation id="7943235353293548836">ස්ථිර keepalive විරාමය</translation>
 <translation id="7955587717700691983">බ්ලූටූත් යතුරු පුවරුව</translation>
 <translation id="7960831585769876809">උෂ්ණත්වය</translation>
@@ -692,9 +715,11 @@
 <translation id="8206859287963243715">සෙලියුලර්</translation>
 <translation id="8208861521865154048">අමතර වාසි</translation>
 <translation id="8217675307824400706">සම්බන්ධ කර ගන්න</translation>
+<translation id="8221728673725659466">ක්‍රමාංකනය සම්පූර්ණයි</translation>
 <translation id="8226628635270268143">ඔබේ ප්‍රියතම ඡායාරූප සහ ඇල්බම තෝරන්න</translation>
 <translation id="8230672074305416752">පෙරනිමි ජාල වාහල පින්ග් කිරීම අසාර්ථක විය</translation>
 <translation id="8246209727385807362">නොදන්නා වාහකයෙකි</translation>
+<translation id="827422111966801947">අවරිය</translation>
 <translation id="8281886186245836920">මඟහරින්න</translation>
 <translation id="8286154143153872371">වෝල්පේපරය බැලීමට කරුණාකර ජාලයකට සම්බන්ධ වී පිටුව නැවත පූරණය කරන්න.</translation>
 <translation id="8291967909914612644">නිවෙස් සපයන්නාගේ රට</translation>
@@ -702,11 +727,13 @@
 <translation id="8297006494302853456">දුර්වලයි</translation>
 <translation id="8302368968391049045">HTTPS ෆයර්වෝලය</translation>
 <translation id="8318753676953949627">රූප නැත</translation>
+<translation id="8327249300223641918">ඉදිරියට යාමට පෙර, ඔබ‍ගේ සම්පූර්ණ උපාංගය (පාදම සහ පියන) පැතලි මතුපිටක් මත තබන්න.</translation>
 <translation id="8336739000755212683">උපාංග ගිණුම් රූපය මාරු කරන්න</translation>
 <translation id="8347227221149377169">මුද්‍රණ වැඩ</translation>
 <translation id="8352772353338965963">බහු පිවිසුම් සඳහා ගිනුමක් එක් කරන්න. සියළු පිවිසි ගිනුම් වෙත මුරපදයක් නොමැතිව පිවිසිය හැක. එම නිසා මෙම විශේෂාංගය භාවිත කළ යුත්තේ විශ්වාසී ගිනුම් සමඟ පමණි.</translation>
 <translation id="8364946094152050673">හිස් නම් සේවාදායක</translation>
 <translation id="8372477600026034341">අතිරේක සංග්‍රාහක</translation>
+<translation id="8378855320830505539">කලාපය</translation>
 <translation id="8395584934117017006">මෙම <ph name="DEVICE_TYPE" /> ව්‍යවසාය කළමනාකරණය කෙරේ</translation>
 <translation id="8398927464629426868">උපාංගය දැනට ආරෝපණය වන හෝ විසර්ජනය වන වේගය</translation>
 <translation id="8422748173858722634">IMEI</translation>
@@ -716,6 +743,7 @@
 <translation id="844521431886043384">DNS පිහිටුවා නැත</translation>
 <translation id="8456761643544401578">ස්වයංක්‍රිය අඳුරු ප්‍රකාරය</translation>
 <translation id="8461329675984532579">නිවෙස් සපයන්නාගේ නම</translation>
+<translation id="8467104829907989997">සංරචක ක්‍රමාංකනය කරමින්...</translation>
 <translation id="8475690821716466388">WiFi ජාලය දුර්වල ප්‍රොටොකෝලයකින් ආරක්ෂිතයි WEP PSK</translation>
 <translation id="8477551185774834963">DNS පමාව ඉඩ දිය හැකි මායිමෙන් මදක් ඉහළය</translation>
 <translation id="8483248364096924578">IP ලිපිනය</translation>
@@ -733,6 +761,7 @@
 <translation id="8671972493856476349"><ph name="VERSION_NUMBER" /> වෙත යාවත්කාලීන කර යළි අරඹන්න</translation>
 <translation id="8675354002693747642">පෙර-බෙදාගත් යතුර</translation>
 <translation id="8677859815076891398">ඇල්බම නොමැත. <ph name="LINK_BEGIN" />Google ඡායාරූප<ph name="LINK_END" /> තුළ ඇල්බමයක් තනන්න.</translation>
+<translation id="8680431479333800907">උපාංගය එම හිමිකරු වෙතම යනු ඇත</translation>
 <translation id="8709616837707653427"><ph name="DESC_TEXT" /> මෙම විශේෂාංගය කළමනාකරණය කිරීමට වම් හෝ දකුණු ඊතල යතුරු භාවිත කරන්න.</translation>
 <translation id="8712637175834984815">එය ලැබුණා</translation>
 <translation id="871560550817059752">අසාර්ථක විය - තීන්ත නැත</translation>
@@ -774,6 +803,7 @@
 <translation id="8987565828374052507">{NUMBER_OF_PAGES,plural, =0{ස්කෑන් කරන්න}=1{පිටු {NUMBER_OF_PAGES}ක් ස්කෑන් කරන්න}one{පිටු {NUMBER_OF_PAGES}ක් ස්කෑන් කරන්න}other{පිටු {NUMBER_OF_PAGES}ක් ස්කෑන් කරන්න}}</translation>
 <translation id="8997710128084572139">උපාංගයට බැටරිය <ph name="BATTERY_PERCENTAGE" />% ක් ඇත.</translation>
 <translation id="9003704114456258138">සංඛ්‍යාතය</translation>
+<translation id="9025198690966128418">පුද්ගලික උපාංගයක් ලෙස භාවිත කරන්න</translation>
 <translation id="9039663905644212491">PEAP</translation>
 <translation id="9062831201344759865">DNS විභේදනයට ඉහළ පමාවක් ඇත</translation>
 <translation id="9073281213608662541">PAP</translation>
@@ -782,6 +812,8 @@
 <translation id="9087578468327036362">මෙම විමසුම වාර්තා කරන්න</translation>
 <translation id="9088306295921699330">වත්මන් භාවිතය</translation>
 <translation id="9095775724867566971">Pluginvm</translation>
+<translation id="90977145661420967">ඔබට උපාංගය වෙන් කිරීමට අවශ්‍ය වනු ඇත</translation>
+<translation id="9098156406873149060">පරිශීලක දත්ත තබා ගන්න</translation>
 <translation id="910415269708673980"><ph name="PRINCIPAL_NAME" /> සඳහා ප්‍රවේශපත්‍රය නැවුම් කරන්න</translation>
 <translation id="9106415115617144481"><ph name="PAGE_NUMBER" /> පිටුව ස්කෑන් කරමින්</translation>
 <translation id="9111102763498581341">අගුලු හරන්න</translation>

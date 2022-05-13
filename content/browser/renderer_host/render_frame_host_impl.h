@@ -448,6 +448,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void WriteIntoTrace(perfetto::TracedProto<TraceProto> context) const override;
   void GetCanonicalUrl(
       base::OnceCallback<void(const absl::optional<GURL>&)> callback) override;
+  void GetOpenGraphMetadata(
+      base::OnceCallback<void(blink::mojom::OpenGraphMetadataPtr)> callback)
+      override;
   bool IsErrorDocument() override;
   DocumentRef GetDocumentRef() override;
   WeakDocumentPtr GetWeakDocumentPtr() override;
@@ -2735,7 +2738,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingAssociatedRemote<mojom::NavigationClient> navigation_client,
       mojo::PendingRemote<blink::mojom::PolicyContainerHostKeepAliveHandle>
           initiator_policy_container_host_keep_alive_handle) override;
-  void SubresourceResponseStarted(const GURL& url,
+  void SubresourceResponseStarted(const url::SchemeHostPort& final_response_url,
                                   net::CertStatus cert_status) override;
   void ResourceLoadComplete(
       blink::mojom::ResourceLoadInfoPtr resource_load_info) override;
@@ -3110,6 +3113,22 @@ class CONTENT_EXPORT RenderFrameHostImpl
       NavigationRequest* committing_navigation_request,
       mojom::DidCommitProvisionalLoadParamsPtr params,
       mojom::DidCommitProvisionalLoadInterfaceParamsPtr interface_params);
+
+  // Updates tracking of potentially isolatable sandboxed iframes, i.e. iframes
+  // that could be isolated if features::kIsolateSandboxedIframes is enabled.
+  // A frame can only be an out-of-process sandboxed iframe (OOPSIF) if, in
+  // addition to the iframe being sandboxed, the url being committed is not
+  // about:blank and is same-site to the parent's site (i.e. is not already an
+  // OOPIF). Also, the sandbox permissions must not include 'allow-same-origin'.
+  // Anytime the commit is a potential OOPSIF, this RenderFrameHostImpl will be
+  // tracked in a global list from which we can determine how many potential
+  // OOPSIFs exist at any instant in time. Metrics based on the tracked
+  // isolatable frames are generated in LogSandboxedIframesIsolationMetrics()
+  // when it is called by the metrics recording codepath. Note: sandboxed main
+  // frames that have been opened by an OOPSIF are considered isolatable for the
+  // purposes of this function, since they could lead to process overhead under
+  // a per-origin isolation model. Assumes that `policy_container_host_` is set.
+  void UpdateIsolatableSandboxedIframeTracking();
 
   // Called when we receive the confirmation that a navigation committed in the
   // renderer. Used by both DidCommitSameDocumentNavigation and

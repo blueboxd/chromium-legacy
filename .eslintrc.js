@@ -73,17 +73,31 @@ module.exports = {
       'semi': 'off',
       '@typescript-eslint/semi': ['error'],
 
+      // https://google.github.io/styleguide/jsguide.html#naming
       '@typescript-eslint/naming-convention': [
         'error',
         {
-          // https://google.github.io/styleguide/jsguide.html#naming-enum-names
-          selector: 'enum',
+          selector: ['class', 'interface', 'typeAlias', 'enum', 'typeParameter'],
           format: ['PascalCase'],
         },
         {
-          // https://google.github.io/styleguide/jsguide.html#naming-enum-names
           selector: 'enumMember',
           format: ['UPPER_CASE'],
+        },
+        {
+          selector: 'classMethod',
+          format: ['camelCase'],
+          leadingUnderscore: 'allow',
+          trailingUnderscore: 'allow',
+        },
+        {
+          selector: 'parameter',
+          format: ['camelCase'],
+          leadingUnderscore: 'allow',
+        },
+        {
+          selector: 'function',
+          format: ['camelCase'],
         },
       ],
 

@@ -8,6 +8,7 @@
 #include <stddef.h>
 
 #include "base/check.h"
+#include "base/mac/mac_util.h"
 #include "base/mac/scoped_cftyperef.h"
 #include "base/notreached.h"
 #include "content/app/resources/grit/content_resources.h"
@@ -19,8 +20,8 @@
 #include "ui/gfx/geometry/size_conversions.h"
 #include "ui/gfx/image/image.h"
 
-// Private interface to CoreCursor, as of Mac OS X 10.7. This is essentially the
-// implementation of WKCursor in WebKitSystemInterface.
+// Private interface to CoreCursor. See
+// https://github.com/WebKit/WebKit/blob/main/Source/WebCore/PAL/pal/spi/mac/HIServicesSPI.h
 
 enum {
   kArrowCursor = 0,
@@ -58,10 +59,10 @@ enum {
   kResizeSouthwestCursor = 37,
   kResizeWestCursor = 38,
   kMoveCursor = 39,
-  kHelpCursor = 40,  // Present on >= 10.7.3.
-  kCellCursor = 41,  // Present on >= 10.7.3.
-  kZoomInCursor = 42,  // Present on >= 10.7.3.
-  kZoomOutCursor = 43  // Present on >= 10.7.3.
+  kHelpCursor = 40,
+  kCellCursor = 41,
+  kZoomInCursor = 42,
+  kZoomOutCursor = 43
 };
 typedef long long CrCoreCursorType;
 
@@ -141,7 +142,8 @@ NSCursor* CreateCustomCursor(const ui::Cursor& cursor) {
   // Both the image and its representation need to have the same size for
   // cursors to appear in high resolution on retina displays. Note that the
   // size of a representation is not the same as pixelsWide or pixelsHigh.
-  NSImage* cursor_image = skia::SkBitmapToNSImage(cursor.custom_bitmap());
+  NSImage* cursor_image = skia::SkBitmapToNSImageWithColorSpace(
+      cursor.custom_bitmap(), base::mac::GetSRGBColorSpace());
   [cursor_image setSize:dip_size];
   [[[cursor_image representations] objectAtIndex:0] setSize:dip_size];
 

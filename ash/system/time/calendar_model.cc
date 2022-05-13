@@ -10,6 +10,7 @@
 
 #include "ash/calendar/calendar_client.h"
 #include "ash/calendar/calendar_controller.h"
+#include "ash/constants/ash_features.h"
 #include "ash/shell.h"
 #include "ash/system/time/calendar_event_fetch.h"
 #include "ash/system/time/calendar_utils.h"
@@ -22,6 +23,9 @@
 #include "base/time/time.h"
 #include "google_apis/calendar/calendar_api_response_types.h"
 #include "google_apis/common/api_error_codes.h"
+
+#undef ENABLED_VLOG_LEVEL
+#define ENABLED_VLOG_LEVEL 1
 
 namespace {
 
@@ -93,8 +97,8 @@ void CalendarModel::MaybeFetchMonth(base::Time start_of_month) {
   if (!calendar_utils::IsActiveUser())
     return;
 
-  // Bail out early if we have no CalendarClient.  This will be the case in most
-  // unit tests.
+  // Bail out early if there is no CalendarClient.  This will be the case in
+  // most unit tests.
   CalendarClient* client = Shell::Get()->calendar_controller()->GetClient();
   if (!client)
     return;
@@ -161,7 +165,7 @@ void CalendarModel::ClearAllCachedEvents() {
   // Destroy all outstanding fetch requests.
   pending_fetches_.clear();
 
-  // Destroy the set of months we've fetched.
+  // Destroy the set of months that have been fetched.
   months_fetched_.clear();
 
   // Destroy all prunable months.
@@ -215,6 +219,16 @@ void CalendarModel::FetchEventsSurrounding(int num_months,
   FetchEvents(months);
 }
 
+void CalendarModel::CancelFetch(const base::Time& start_of_month) {
+  if (base::Contains(pending_fetches_, start_of_month)) {
+    // Note that the `CalendarEventFetch` here will be removed from
+    // `pending_fetches_` in `OnEventsFetched`, which will receive an error code
+    // of `google_apis::CANCELLED` and an empty event list, so there's no need
+    // to remove it here.
+    pending_fetches_[start_of_month]->Cancel();
+  }
+}
+
 int CalendarModel::EventsNumberOfDayInternal(base::Time day,
                                              SingleDayEventList* events) const {
   const SingleDayEventList& list = FindEvents(day);
@@ -222,7 +236,7 @@ int CalendarModel::EventsNumberOfDayInternal(base::Time day,
   if (list.empty())
     return 0;
 
-  // We have events, and we assume the destination is empty.
+  // There are events, and the destination should be empty.
   if (events) {
     DCHECK(events->empty());
     *events = list;
@@ -245,14 +259,43 @@ void CalendarModel::OnEventsFetched(
     const google_apis::calendar::EventList* events) {
   base::UmaHistogramSparse("Ash.Calendar.FetchEvents.Result", error);
   if (error != google_apis::HTTP_SUCCESS) {
-    LOG(ERROR) << __FUNCTION__ << " Event fetch received error: " << error;
     // Request is no longer outstanding, so it can be destroyed.
-    // TODO: https://crbug.com/1298187 We need to respond further based on the
-    // specific error code, retry in some cases, etc.
     pending_fetches_.erase(start_of_month);
-    // TODO: https://crbug.com/1298187 maybe notify observers.
-    // e.g. observer.OnEventsFetched(kError, start_of_month, events);
+    // TODO(https://crbug.com/1298187): Possibly respond further based on the
+    // specific error code, retry in some cases, etc. Or notify observers e.g.
+    // observer.OnEventsFetched(kError, start_of_month, events);
     return;
+  }
+
+  if (ash::features::IsCalendarModelDebugModeEnabled() && events) {
+    VLOG(1) << __FUNCTION__ << " month " << start_of_month << " num events "
+            << events->items().size();
+
+    // It is possible for incoming events to have a start date (adjusted for
+    // timezone differences) that's not in `start_of_month`. The code below
+    // outputs a breakdown of the events by month.
+    if (events->items().size() > 0) {
+      std::map<base::Time, int> included_months;
+      for (auto& event : events->items()) {
+        base::Time adjusted_start = GetStartTimeAdjusted(event.get());
+        base::Time adjusted_start_of_month =
+            calendar_utils::GetStartOfMonthUTC(adjusted_start);
+        if (included_months.find(adjusted_start_of_month) ==
+            included_months.end()) {
+          included_months[adjusted_start_of_month] = 1;
+        } else {
+          included_months[adjusted_start_of_month]++;
+        }
+      }
+
+      if (included_months.size() > 1) {
+        VLOG(1) << __FUNCTION__ << " breakdown:";
+        for (auto& included_month : included_months) {
+          VLOG(1) << __FUNCTION__ << "   " << included_month.first << " ("
+                  << included_month.second << ")";
+        }
+      }
+    }
   }
 
   // Keep us within storage limits.
@@ -262,7 +305,7 @@ void CalendarModel::OnEventsFetched(
   event_months_.erase(start_of_month);
 
   if (!events || events->items().empty()) {
-    // Even though `start_of_month` has no events, we insert an empty map to
+    // Even though `start_of_month` has no events, insert an empty map to
     // indicate a successful fetch.
     SingleMonthEventMap empty_event_map;
     event_months_.emplace(start_of_month, empty_event_map);
@@ -287,20 +330,17 @@ void CalendarModel::OnEventsFetched(
                              GetEventMapSize(event_months_[start_of_month]));
 
   // If `start_of_month` is further, in months, from the on-screen month when
-  // the calendar first opened, then update our max distance.
+  // the calendar first opened, then update the max distance.
   UpdateMaxDistanceBrowsed(start_of_month);
 }
 
 void CalendarModel::OnEventFetchFailedInternalError(
     base::Time start_of_month,
     CalendarEventFetchInternalErrorCode error) {
-  LOG(ERROR) << __FUNCTION__
-             << " Event fetch received internal error: " << (int)error;
-
   // Request is no longer outstanding, so it can be destroyed.
-  // TODO: https://crbug.com/1298187 We need to respond further based on the
-  // specific error code, retry in some cases, etc.
   pending_fetches_.erase(start_of_month);
+  // TODO(https://crbug.com/1298187): May need to respond further based on the
+  // specific error code, retry in some cases, etc.
 }
 
 void CalendarModel::UpdateMaxDistanceBrowsed(const base::Time& start_of_month) {
@@ -325,6 +365,11 @@ void CalendarModel::InsertEvent(
 
   base::Time start_of_month =
       calendar_utils::GetStartOfMonthUTC(GetStartTimeMidnightAdjusted(event));
+
+  if (ash::features::IsCalendarModelDebugModeEnabled()) {
+    VLOG(1) << __FUNCTION__ << " start_of_month " << start_of_month;
+    DebugDumpEventLarge(__FUNCTION__, event);
+  }
 
   auto it = event_months_.find(start_of_month);
   if (it == event_months_.end()) {
@@ -364,14 +409,27 @@ void CalendarModel::InsertEventInMonth(
   }
 }
 
-base::Time CalendarModel::GetStartTimeMidnightAdjusted(
+base::Time CalendarModel::GetStartTimeAdjusted(
     const google_apis::calendar::CalendarEvent* event) const {
   if (time_difference_minutes_.has_value()) {
-    return (event->start_time().date_time() +
-            base::Minutes(time_difference_minutes_.value()))
-        .UTCMidnight();
+    return event->start_time().date_time() +
+           base::Minutes(time_difference_minutes_.value());
   }
-  return event->start_time().date_time().UTCMidnight();
+  return event->start_time().date_time();
+}
+
+base::Time CalendarModel::GetEndTimeAdjusted(
+    const google_apis::calendar::CalendarEvent* event) const {
+  if (time_difference_minutes_.has_value()) {
+    return event->end_time().date_time() +
+           base::Minutes(time_difference_minutes_.value());
+  }
+  return event->start_time().date_time();
+}
+
+base::Time CalendarModel::GetStartTimeMidnightAdjusted(
+    const google_apis::calendar::CalendarEvent* event) const {
+  return GetStartTimeAdjusted(event).UTCMidnight();
 }
 
 void CalendarModel::InsertEvents(
@@ -404,13 +462,13 @@ void CalendarModel::InsertEventsForTesting(
 SingleDayEventList CalendarModel::FindEvents(base::Time day) const {
   SingleDayEventList event_list;
 
-  // Early return if we know we have no events for this month.
+  // Early return if there are no events for this month.
   base::Time start_of_month = calendar_utils::GetStartOfMonthUTC(day);
   auto it = event_months_.find(start_of_month);
   if (it == event_months_.end())
     return event_list;
 
-  // Early return if we know we have no events for this day.
+  // Early return if there are no events for this day.
   base::Time midnight = day.UTCMidnight();
   const SingleMonthEventMap& month = it->second;
   auto it2 = month.find(midnight);
@@ -429,6 +487,102 @@ CalendarModel::FetchingStatus CalendarModel::FindFetchingStatus(
     return kSuccess;
 
   return kNever;
+}
+
+void CalendarModel::DebugDumpEventSmall(
+    std::ostringstream* out,
+    const char* prefix,
+    const google_apis::calendar::CalendarEvent* event) {
+  if (!event)
+    return;
+
+  *out << prefix << "      "
+       << calendar_utils::GetTwelveHourClockTime(
+              event->start_time().date_time())
+       << " -> "
+       << calendar_utils::GetTwelveHourClockTime(event->end_time().date_time())
+       << " (" << event->summary().substr(0, 6) << "...)"
+       << "\n";
+}
+
+void CalendarModel::DebugDumpEventLarge(
+    const char* prefix,
+    const google_apis::calendar::CalendarEvent* event) {
+  if (!event)
+    return;
+
+  VLOG(1) << prefix << " ID: " << event->id();
+  VLOG(1) << prefix << "  summary: \"" << event->summary().substr(0, 6)
+          << "...\"";
+  VLOG(1) << prefix << "  st/et: " << event->start_time().date_time() << " => "
+          << event->end_time().date_time();
+  VLOG(1) << prefix << "  (adj): " << GetStartTimeAdjusted(event) << " => "
+          << GetEndTimeAdjusted(event);
+}
+
+void CalendarModel::DebugDumpEvents(std::ostringstream* out,
+                                    const char* prefix) {
+  *out << prefix << " event_months_ START size: " << event_months_.size()
+       << "\n";
+  for (auto& month : event_months_) {
+    *out << prefix << " month: " << month.first << "\n";
+    for (auto& day : month.second) {
+      *out << prefix << "   day: " << day.first << "\n";
+      for (auto it = day.second.begin(); it != day.second.end(); ++it) {
+        google_apis::calendar::CalendarEvent event = *it;
+        DebugDumpEventSmall(out, prefix, &event);
+      }
+    }
+  }
+  *out << prefix << " event_months_ END"
+       << "\n";
+}
+
+void CalendarModel::DebugDumpMruMonths(std::ostringstream* out,
+                                       const char* prefix) {
+  *out << prefix << " mru_months_ START size: " << mru_months_.size() << "\n";
+  for (auto& month : mru_months_) {
+    *out << prefix << "   " << month << "\n";
+  }
+  *out << prefix << " mru_months_ END"
+       << "\n";
+}
+
+void CalendarModel::DebugDumpNonPrunableMonths(std::ostringstream* out,
+                                               const char* prefix) {
+  *out << prefix
+       << " non_prunable_months_ START size: " << non_prunable_months_.size()
+       << "\n";
+  for (auto& month : non_prunable_months_) {
+    *out << prefix << "   " << month << "\n";
+  }
+  *out << prefix << " non_prunable_months_ END"
+       << "\n";
+}
+
+void CalendarModel::DebugDumpMonthsFetched(std::ostringstream* out,
+                                           const char* prefix) {
+  *out << prefix << " months_fetched_ START size: " << months_fetched_.size()
+       << "\n";
+  for (auto& month : months_fetched_) {
+    *out << prefix << "   " << month << "\n";
+  }
+  *out << prefix << " months_fetched_ END"
+       << "\n";
+}
+
+void CalendarModel::DebugDump() {
+  std::ostringstream out;
+  const char* kDebugDumpPrefix = "CalendarModelDump: ";
+  out << __FUNCTION__ << " START"
+      << "\n";
+  DebugDumpEvents(&out, kDebugDumpPrefix);
+  DebugDumpMruMonths(&out, kDebugDumpPrefix);
+  DebugDumpNonPrunableMonths(&out, kDebugDumpPrefix);
+  DebugDumpMonthsFetched(&out, kDebugDumpPrefix);
+  out << __FUNCTION__ << " END"
+      << "\n";
+  VLOG(1) << out.str();
 }
 
 void CalendarModel::RedistributeEvents(int time_difference_minutes) {

@@ -17,28 +17,16 @@ public class TapSuppressionHeuristics extends ContextualSearchHeuristics {
      * @param previousTapState The state of the previous tap, or {@code null}.
      * @param x The x position of the Tap.
      * @param y The y position of the Tap.
-     * @param contextualSearchContext The {@link ContextualSearchContext} of this tap.
-     * @param tapDurationMs The duration of this tap in milliseconds.
      * @param wasSelectionEmptyBeforeTap Whether the selection was empty before this tap.
-     * @param fontSizeDips The font size from Blink in dips.
-     * @param elementRunLength The length of the text in the element tapped, in characters.
      */
     TapSuppressionHeuristics(ContextualSearchSelectionController selectionController,
             @Nullable ContextualSearchTapState previousTapState, int x, int y,
-            ContextualSearchContext contextualSearchContext, int tapDurationMs,
-            boolean wasSelectionEmptyBeforeTap, int fontSizeDips, int elementRunLength) {
+            boolean wasSelectionEmptyBeforeTap) {
         super();
         mHeuristics.add(new EngagementSuppression());
         mHeuristics.add(new RecentScrollTapSuppression(selectionController));
         mHeuristics.add(new TapFarFromPreviousSuppression(
                 selectionController, previousTapState, x, y, wasSelectionEmptyBeforeTap));
-        mHeuristics.add(new TapDurationSuppression(tapDurationMs));
-        mHeuristics.add(new TapWordLengthSuppression(contextualSearchContext));
-        mHeuristics.add(new TapWordEdgeSuppression(contextualSearchContext));
-        mHeuristics.add(new ContextualSearchEntityHeuristic(contextualSearchContext));
-        mHeuristics.add(new NearTopTapSuppression(selectionController, y));
-        mHeuristics.add(new ShortTextRunSuppression(contextualSearchContext, elementRunLength));
-        mHeuristics.add(new SmallTextSuppression(fontSizeDips));
         // Quick Answer that appears in the Caption via the JS API.
         QuickAnswersHeuristic quickAnswersHeuristic = new QuickAnswersHeuristic();
         setQuickAnswersHeuristic(quickAnswersHeuristic);

@@ -49,6 +49,7 @@ constexpr int kMaxRetriesGetUserData = 2;
 void OnURLLoaderComplete(
     autofill_assistant::ServiceRequestSender::ResponseCallback callback,
     std::unique_ptr<::network::SimpleURLLoader> loader,
+    int max_retries,
     std::unique_ptr<std::string> response_body) {
   std::string response_str;
   if (response_body != nullptr) {
@@ -66,6 +67,10 @@ void OnURLLoaderComplete(
   }
   VLOG(3) << "Received response: status=" << response_code << ", "
           << response_str.length() << " bytes";
+  if (max_retries > 0) {
+    autofill_assistant::Metrics::RecordServiceRequestRetryCount(
+        loader->GetNumRetries(), response_code == net::HTTP_OK);
+  }
   std::move(callback).Run(response_code, response_str, response_info);
 }
 
@@ -90,7 +95,8 @@ void SendRequestImpl(
   if (max_retries > 0) {
     loader->SetRetryOptions(
         max_retries, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE |
-                         network::SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED);
+                         network::SimpleURLLoader::RETRY_ON_NAME_NOT_RESOLVED |
+                         network::SimpleURLLoader::RETRY_ON_5XX);
   }
   loader->AttachStringForUpload(request_body, "application/x-protobuffer");
 #ifndef NDEBUG
@@ -102,7 +108,7 @@ void SendRequestImpl(
           ->GetURLLoaderFactoryForBrowserProcess()
           .get(),
       base::BindOnce(&OnURLLoaderComplete, std::move(callback),
-                     std::move(loader)));
+                     std::move(loader), max_retries));
 }
 
 void SendRequestNoAuth(
@@ -206,7 +212,7 @@ void ServiceRequestSenderImpl::SendRequest(
     max_retries = kMaxRetriesGetUserData;
   }
 
-  if (!cup::IsRpcTypeSupported(rpc_type)) {
+  if (!cup::IsRpcTypeSupported(rpc_type) || disable_rpc_signing_) {
     InternalSendRequest(url, request_body, auth_mode, max_retries,
                         std::move(callback));
     return;
@@ -338,6 +344,10 @@ bool ServiceRequestSenderImpl::OAuthEnabled(
          (auth_mode ==
               ServiceRequestSender::AuthMode::OAUTH_WITH_API_KEY_FALLBACK &&
           !failed_to_fetch_oauth_token_);
+}
+
+void ServiceRequestSenderImpl::SetDisableRpcSigning(bool disable_rpc_signing) {
+  disable_rpc_signing_ = disable_rpc_signing;
 }
 
 }  // namespace autofill_assistant

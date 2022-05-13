@@ -22,10 +22,10 @@
 #include "chrome/browser/ash/borealis/testing/dbus.h"
 #include "chrome/browser/ash/guest_os/guest_os_stability_monitor.h"
 #include "chrome/test/base/testing_profile.h"
+#include "chromeos/ash/components/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/fake_concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/fake_seneschal_client.h"
 #include "chromeos/dbus/chunneld/fake_chunneld_client.h"
-#include "chromeos/dbus/cicerone/fake_cicerone_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/exo/shell_surface_util.h"
 #include "content/public/test/browser_task_environment.h"
@@ -97,7 +97,7 @@ class BorealisContextTest : public testing::Test,
 };
 
 TEST_F(BorealisContextTest, ConciergeFailure) {
-  auto* concierge_client = chromeos::FakeConciergeClient::Get();
+  auto* concierge_client = ash::FakeConciergeClient::Get();
 
   concierge_client->NotifyConciergeStopped();
   histogram_tester_.ExpectUniqueSample(
@@ -111,7 +111,7 @@ TEST_F(BorealisContextTest, ConciergeFailure) {
 }
 
 TEST_F(BorealisContextTest, CiceroneFailure) {
-  auto* cicerone_client = chromeos::FakeCiceroneClient::Get();
+  auto* cicerone_client = ash::FakeCiceroneClient::Get();
 
   cicerone_client->NotifyCiceroneStopped();
   histogram_tester_.ExpectUniqueSample(

@@ -561,6 +561,10 @@ extern const char kManagedWebHidAllowDevicesForUrls[];
 extern const char kManagedWebHidAllowDevicesWithHidUsagesForUrls[];
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+#if !BUILDFLAG(IS_ANDROID)
+extern const char kAutofillAssistantOnDesktopEnabled[];
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 extern const char kProfileLastUsed[];
 extern const char kProfilesLastActive[];
 extern const char kProfilesNumCreated[];
@@ -682,6 +686,7 @@ extern const char kDevToolsTCPDiscoveryConfig[];
 extern const char kDiceSigninUserMenuPromoCount[];
 #endif
 
+extern const char kUserUninstalledPreinstalledWebAppPref[];
 extern const char kManagedConfigurationPerOrigin[];
 extern const char kLastManagedConfigurationHashForOrigin[];
 
@@ -991,6 +996,28 @@ extern const char kRestartInBackground[];
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 extern const char kAnimationPolicy[];
 extern const char kSecurityKeyPermitAttestation[];
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// FocusHighlight is special as the feature also exists in lacros.
+// However, extensions can only set the ash-value (computed here
+// and later sent to ash).
+extern const char kLacrosAccessibilityFocusHighlightEnabled[];
+
+extern const char kLacrosAccessibilityAutoclickEnabled[];
+extern const char kLacrosAccessibilityCaretHighlightEnabled[];
+extern const char kLacrosAccessibilityCursorColorEnabled[];
+extern const char kLacrosAccessibilityCursorHighlightEnabled[];
+extern const char kLacrosAccessibilityDictationEnabled[];
+extern const char kLacrosAccessibilityHighContrastEnabled[];
+extern const char kLacrosAccessibilityLargeCursorEnabled[];
+extern const char kLacrosAccessibilityScreenMagnifierEnabled[];
+extern const char kLacrosAccessibilitySelectToSpeakEnabled[];
+extern const char kLacrosAccessibilitySpokenFeedbackEnabled[];
+extern const char kLacrosAccessibilityStickyKeysEnabled[];
+extern const char kLacrosAccessibilitySwitchAccessEnabled[];
+extern const char kLacrosAccessibilityVirtualKeyboardEnabled[];
+extern const char kLacrosDockedMagnifierEnabled[];
 #endif
 
 extern const char kBackgroundTracingLastUpload[];

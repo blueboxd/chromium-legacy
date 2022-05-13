@@ -57,6 +57,9 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(
   absl::optional<XGapTag> gap_tag;
   absl::optional<XDiscontinuityTag> discontinuity_tag;
   absl::optional<XPlaylistTypeTag> playlist_type_tag;
+  absl::optional<XEndListTag> end_list_tag;
+  absl::optional<XIFramesOnlyTag> i_frames_only_tag;
+  absl::optional<XMediaSequenceTag> media_sequence_tag;
   std::vector<MediaSegment> segments;
 
   // If this media playlist was found through a multivariant playlist, it may
@@ -132,14 +135,34 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(
           }
           break;
         }
-        case MediaPlaylistTagName::kXEndList:
-          // TODO(crbug.com/1266991): Implement the #EXT-X-END-LIST Tag
+        case MediaPlaylistTagName::kXEndList: {
+          auto error = ParseUniqueTag(*tag, end_list_tag);
+          if (error.has_value()) {
+            return std::move(error).value();
+          }
           break;
-        case MediaPlaylistTagName::kXIFramesOnly:
-          // TODO(crbug.com/1266991): Implement the #EXT-X-I-FRAMES-ONLY tag
+        }
+        case MediaPlaylistTagName::kXIFramesOnly: {
+          auto error = ParseUniqueTag(*tag, i_frames_only_tag);
+          if (error.has_value()) {
+            return std::move(error).value();
+          }
           break;
+        }
         case MediaPlaylistTagName::kXPlaylistType: {
           auto error = ParseUniqueTag(*tag, playlist_type_tag);
+          if (error.has_value()) {
+            return std::move(error).value();
+          }
+          break;
+        }
+        case MediaPlaylistTagName::kXMediaSequence: {
+          // This tag must appear before any media segment
+          if (!segments.empty()) {
+            return ParseStatusCode::kMediaSegmentBeforeMediaSequenceTag;
+          }
+
+          auto error = ParseUniqueTag(*tag, media_sequence_tag);
           if (error.has_value()) {
             return std::move(error).value();
           }
@@ -167,8 +190,16 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(
       return ParseStatusCode::kMediaSegmentMissingInfTag;
     }
 
-    segments.emplace_back(inf_tag->duration, std::move(segment_uri),
-                          discontinuity_tag.has_value(), gap_tag.has_value());
+    // The media sequence number of this segment can be calculated by the value
+    // given by `EXT-X-MEDIA-SEQUENCE:n` (or 0), plus the number of prior
+    // segments in this playlist. It's an error for the EXT-X-MEDIA-SEQUENCE
+    // tag to appear after the first media segment (handled above).
+    const types::DecimalInteger media_sequence_number =
+        (media_sequence_tag ? media_sequence_tag->number : 0) + segments.size();
+
+    segments.emplace_back(inf_tag->duration, media_sequence_number,
+                          std::move(segment_uri), discontinuity_tag.has_value(),
+                          gap_tag.has_value());
 
     // Reset per-segment tags
     inf_tag.reset();
@@ -203,10 +234,11 @@ ParseStatus::Or<MediaPlaylist> MediaPlaylist::Parse(
     playlist_type = playlist_type_tag->type;
   }
 
-  return MediaPlaylist(std::move(uri), common_state.GetVersion(),
-                       independent_segments,
-                       base::Seconds(target_duration_tag->duration),
-                       std::move(segments), playlist_type);
+  return MediaPlaylist(
+      std::move(uri), common_state.GetVersion(), independent_segments,
+      base::Seconds(target_duration_tag->duration), std::move(segments),
+      playlist_type, end_list_tag.has_value(), i_frames_only_tag.has_value(),
+      media_sequence_tag.has_value());
 }
 
 MediaPlaylist::MediaPlaylist(GURL uri,
@@ -214,11 +246,17 @@ MediaPlaylist::MediaPlaylist(GURL uri,
                              bool independent_segments,
                              base::TimeDelta target_duration,
                              std::vector<MediaSegment> segments,
-                             absl::optional<PlaylistType> playlist_type)
+                             absl::optional<PlaylistType> playlist_type,
+                             bool end_list,
+                             bool i_frames_only,
+                             bool has_media_sequence_tag)
     : Playlist(std::move(uri), version, independent_segments),
       target_duration_(target_duration),
       segments_(std::move(segments)),
-      playlist_type_(playlist_type) {
+      playlist_type_(playlist_type),
+      end_list_(end_list),
+      i_frames_only_(i_frames_only),
+      has_media_sequence_tag_(has_media_sequence_tag) {
   base::TimeDelta duration;
   for (const auto& segment : segments_) {
     duration += base::Seconds(segment.GetDuration());

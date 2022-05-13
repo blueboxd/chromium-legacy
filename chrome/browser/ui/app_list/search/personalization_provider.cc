@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "ash/constants/ash_features.h"
+#include "ash/constants/personalization_entry_point.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
@@ -15,10 +16,13 @@
 #include "ash/webui/personalization_app/search/search.mojom.h"
 #include "ash/webui/personalization_app/search/search_handler.h"
 #include "base/bind.h"
+#include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_manager_factory.h"
+#include "chrome/browser/ash/web_applications/personalization_app/personalization_app_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/search/common/icon_constants.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
@@ -65,6 +69,9 @@ PersonalizationResult::~PersonalizationResult() = default;
 void PersonalizationResult::Open(int event_flags) {
   ::web_app::SystemAppLaunchParams launch_params;
   launch_params.url = GURL(id());
+  // Record entry point to Personalization Hub through Launcher search.
+  ash::personalization_app::LogPersonalizationEntryPoint(
+      ash::PersonalizationEntryPoint::kLauncherSearch);
   web_app::LaunchSystemWebAppAsync(
       profile_, web_app::SystemAppType::PERSONALIZATION, launch_params);
 }
@@ -103,14 +110,17 @@ void PersonalizationProvider::Start(const std::u16string& query) {
   }
 
   if (icon_.isNull()) {
+    VLOG(1) << "No personalization icon for search results";
     return;
   }
 
   current_query_ = query;
   weak_ptr_factory_.InvalidateWeakPtrs();
-  search_handler_->Search(query, kNumRequestedResults,
-                          base::BindOnce(&PersonalizationProvider::OnSearchDone,
-                                         weak_ptr_factory_.GetWeakPtr()));
+  search_handler_->Search(
+      query, kNumRequestedResults,
+      base::BindOnce(&PersonalizationProvider::OnSearchDone,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     /*start_time=*/base::TimeTicks::Now()));
 }
 
 ash::AppListSearchResultType PersonalizationProvider::ResultType() const {
@@ -144,6 +154,7 @@ void PersonalizationProvider::OnAppRegistryCacheWillBeDestroyed(
     apps::AppRegistryCache* cache) {}
 
 void PersonalizationProvider::OnSearchDone(
+    base::TimeTicks start_time,
     std::vector<::ash::personalization_app::mojom::SearchResultPtr> results) {
   SearchProvider::Results search_results;
   for (const auto& result : results) {
@@ -151,6 +162,10 @@ void PersonalizationProvider::OnSearchDone(
     search_results.push_back(std::make_unique<PersonalizationResult>(
         profile_, *result, current_query_, icon_));
   }
+
+  base::UmaHistogramTimes("Apps.AppList.PersonalizationProvider.QueryTime",
+                          base::TimeTicks::Now() - start_time);
+
   SwapResults(&search_results);
 }
 

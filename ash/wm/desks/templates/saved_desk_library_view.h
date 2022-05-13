@@ -13,6 +13,8 @@
 #include "ui/aura/window_observer.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/animation/bounds_animator.h"
+#include "ui/views/controls/label.h"
+#include "ui/views/controls/scroll_view.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
@@ -63,14 +65,10 @@ class SavedDeskLibraryView : public views::View, public aura::WindowObserver {
   friend class SavedDeskLibraryViewTestApi;
   friend class SavedDeskLibraryWindowTargeter;
 
-  // Compute the bounds for all sub-views.
-  std::vector<std::pair<views::View*, gfx::Rect>> CalculatePositions() const;
-
   // Called when the feedback button is pressed. Shows the feedback dialog with
   // desks templates information.
   void OnFeedbackButtonPressed();
 
-  void AnimateItems();
   bool IsAnimating();
 
   // Called from `SavedDeskLibraryWindowTargeter`. Returns true if `location`
@@ -96,8 +94,16 @@ class SavedDeskLibraryView : public views::View, public aura::WindowObserver {
   SavedDeskGridView* desk_template_grid_view_ = nullptr;
   SavedDeskGridView* save_and_recall_grid_view_ = nullptr;
 
+  // Used for scroll functionality of the library page. Owned by views
+  // hierarchy.
+  views::ScrollView* scroll_view_ = nullptr;
+
   // Holds the active ones, for convenience.
   std::vector<SavedDeskGridView*> grid_views_;
+
+  // Owned by views hierarchy. Section headers above grids. Will match size and
+  // order of items in `grid_views_`.
+  std::vector<views::Label*> grid_labels_;
 
   // Owned by views hierarchy. Temporary button to help users give feedback.
   // TODO(crbug.com/1289880): Remove this button when it is no longer needed.
@@ -105,9 +111,6 @@ class SavedDeskLibraryView : public views::View, public aura::WindowObserver {
 
   // Handles mouse/touch events on saved desk library widget.
   std::unique_ptr<SavedDeskLibraryEventHandler> event_handler_;
-
-  // Used to animate individual view positions.
-  views::BoundsAnimator bounds_animator_;
 };
 
 }  // namespace ash

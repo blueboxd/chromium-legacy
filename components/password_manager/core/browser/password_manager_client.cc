@@ -27,11 +27,17 @@ bool PasswordManagerClient::IsFillingFallbackEnabled(const GURL& url) const {
   return true;
 }
 
+bool PasswordManagerClient::IsAutoSignInEnabled() const {
+  return false;
+}
+
+#if BUILDFLAG(IS_ANDROID)
 void PasswordManagerClient::ShowTouchToFill(
     PasswordManagerDriver* driver,
     autofill::mojom::SubmissionReadinessState submission_readiness) {}
 
 void PasswordManagerClient::OnPasswordSelected(const std::u16string& text) {}
+#endif
 
 scoped_refptr<device_reauth::BiometricAuthenticator>
 PasswordManagerClient::GetBiometricAuthenticator() {
@@ -159,6 +165,10 @@ PasswordManagerClient::GetWebAuthnCredentialsDelegate() {
 
 version_info::Channel PasswordManagerClient::GetChannel() const {
   return version_info::Channel::UNKNOWN;
+}
+
+void PasswordManagerClient::RefreshPasswordManagerSettingsIfNeeded() const {
+  // For most implementations settings do not need to be refreshed.
 }
 
 }  // namespace password_manager

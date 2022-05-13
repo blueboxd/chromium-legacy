@@ -32,6 +32,7 @@
 <translation id="2134029355740465625">Nastavenia videí</translation>
 <translation id="2144806332417375165">Vlastné parametre videa</translation>
 <translation id="2175927920773552910">QR kód</translation>
+<translation id="2244252133441425811">Povoliť výber počtu sním./s videa</translation>
 <translation id="2271433936731426666">Povoliť prehľad stavu videa v plnej veľkosti</translation>
 <translation id="229579744168541441">Exportovať na disk</translation>
 <translation id="2320741269052147773">Posunúť doľava</translation>
@@ -118,6 +119,7 @@
 Ak sa týka kvality obrázkov či videí, priložte ukážku fotky alebo videa a opíšte, čo nie je v poriadku. (Napríklad fotka je príliš tmavá alebo snímaný objekt nie je zaostrený).</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> – <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> Mpx</translation>
 <translation id="6527303717912515753">Zdieľať</translation>
+<translation id="6617916774429601017">Zobraziť všetky rozlíšenia</translation>
 <translation id="6631515515009660915">Vypnutie zrkadlenia</translation>
 <translation id="6652737148136672975">Presuňte pozíciu rohu klávesmi so šípkami</translation>
 <translation id="667999046851023355">Dokument</translation>

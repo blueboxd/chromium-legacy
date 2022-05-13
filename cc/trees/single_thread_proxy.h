@@ -94,6 +94,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   DrawResult ScheduledActionDrawIfPossible() override;
   DrawResult ScheduledActionDrawForced() override;
   void ScheduledActionCommit() override;
+  void ScheduledActionPostCommit() override;
   void ScheduledActionActivateSyncTree() override;
   void ScheduledActionBeginLayerTreeFrameSinkCreation() override;
   void ScheduledActionPrepareTiles() override;
@@ -146,6 +147,8 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
       const base::flat_set<viz::FrameSinkId>& ids) override;
   void ClearHistory() override;
   size_t CommitDurationSampleCountForTesting() const override;
+  void ReportEventLatency(
+      std::vector<EventLatencyTracker::LatencyData> latencies) override;
 
   void RequestNewLayerTreeFrameSink();
 
@@ -169,6 +172,7 @@ class CC_EXPORT SingleThreadProxy : public Proxy,
   void DoBeginMainFrame(const viz::BeginFrameArgs& begin_frame_args);
   void DoPainting(const viz::BeginFrameArgs& commit_args);
   void DoCommit(const viz::BeginFrameArgs& commit_args);
+  void DoPostCommit();
   DrawResult DoComposite(LayerTreeHostImpl::FrameData* frame);
   void DoSwap();
   void DidCommitAndDrawFrame();

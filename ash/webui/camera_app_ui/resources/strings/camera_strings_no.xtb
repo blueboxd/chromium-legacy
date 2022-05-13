@@ -32,6 +32,7 @@
 <translation id="2134029355740465625">Videoinnstillinger</translation>
 <translation id="2144806332417375165">Egendefinerte videoparametre</translation>
 <translation id="2175927920773552910">QR-kode</translation>
+<translation id="2244252133441425811">Slå på velger for videobilder per sekund</translation>
 <translation id="2271433936731426666">Slå på full størrelse for øyeblikksbilder fra videoer</translation>
 <translation id="229579744168541441">Eksportér til disk</translation>
 <translation id="2320741269052147773">Panorer til venstre</translation>
@@ -118,6 +119,7 @@ Apper med lagringstillatelser har tilgang til bildene og videoene dine.</transla
 Hvis tilbakemeldingen din gjelder bilde- eller videokvalitet, ber vi deg legge ved et eksempelbilde eller en eksempelvideo og forklare hva som er galt. (Eksempel: Bildet er for mørkt, eller motivet er ute av fokus.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> – <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> megapiksel</translation>
 <translation id="6527303717912515753">Del</translation>
+<translation id="6617916774429601017">Vis alle oppløsninger</translation>
 <translation id="6631515515009660915">Speiling av</translation>
 <translation id="6652737148136672975">Flytt hjørneposisjonen med piltastene</translation>
 <translation id="667999046851023355">Dokument</translation>

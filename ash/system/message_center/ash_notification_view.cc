@@ -120,6 +120,10 @@ constexpr int kIconViewSize = 48;
 // Target contrast ratio to reach when adjusting colors in dark mode.
 constexpr float kDarkModeMinContrastRatio = 6.0;
 
+// If the image displayed in `icon_view()` is smaller in either width or height
+// than this value, we draw a background around the image.
+constexpr int kSmallImageBackgroundThreshold = 6;
+
 // Helpers ---------------------------------------------------------------------
 
 // Configure the style for labels in notification view. `is_color_primary`
@@ -662,10 +666,6 @@ void AshNotificationView::AddGroupNotification(
   auto notification_view =
       std::make_unique<AshNotificationView>(notification,
                                             /*shown_in_popup=*/false);
-  notification_view->SetVisible(
-      total_grouped_notifications_ <
-          message_center_style::kMaxGroupedNotificationsInCollapsedState ||
-      IsExpanded());
   notification_view->SetGroupedChildExpanded(IsExpanded());
   notification_view->set_scroller(
       scroller() ? scroller() : grouped_notifications_scroll_view_);
@@ -675,6 +675,7 @@ void AshNotificationView::AddGroupNotification(
 
   total_grouped_notifications_++;
   left_content_->SetVisible(false);
+  UpdateGroupedNotificationsVisibility();
   expand_button_->UpdateGroupedNotificationsCount(total_grouped_notifications_);
   PreferredSizeChanged();
 }
@@ -718,6 +719,7 @@ void AshNotificationView::RemoveGroupNotification(
   grouped_notifications_container_->RemoveChildViewT(to_be_deleted);
   total_grouped_notifications_--;
   left_content_->SetVisible(total_grouped_notifications_ == 0);
+  UpdateGroupedNotificationsVisibility();
   expand_button_->UpdateGroupedNotificationsCount(total_grouped_notifications_);
   PreferredSizeChanged();
 }
@@ -1011,6 +1013,19 @@ void AshNotificationView::OnThemeChanged() {
     inline_reply()->textfield()->SetTextColor(text_color);
     inline_reply()->textfield()->set_placeholder_text_color(text_color);
   }
+
+  if (icon_view() &&
+      (right_content()->width() - icon_view()->GetImageDrawingSize().width() >
+           kSmallImageBackgroundThreshold ||
+       right_content()->height() - icon_view()->GetImageDrawingSize().height() >
+           kSmallImageBackgroundThreshold)) {
+    icon_view()->set_apply_rounded_corners(false);
+    right_content()->SetBackground(views::CreateRoundedRectBackground(
+        ash::AshColorProvider::Get()->GetControlsLayerColor(
+            ash::AshColorProvider::ControlsLayerType::
+                kControlBackgroundColorInactive),
+        message_center::kImageCornerRadius));
+  }
 }
 
 std::unique_ptr<message_center::NotificationInputContainer>
@@ -1026,11 +1041,6 @@ AshNotificationView::GenerateNotificationLabelButton(
       std::make_unique<PillButton>(
           std::move(callback), label, PillButton::Type::kIconlessAccentFloating,
           /*icon=*/nullptr, kNotificationPillButtonHorizontalSpacing);
-  // Override the inkdrop configuration to make sure it will show up when hover
-  // or focus on the button.
-  StyleUtil::SetUpInkDropForButton(actions_button.get(), gfx::Insets(),
-                                   /*highlight_on_hover=*/true,
-                                   /*highlight_on_focus=*/true);
   return actions_button;
 }
 
@@ -1160,6 +1170,21 @@ void AshNotificationView::CreateOrUpdateSnoozeButton(
       IconButton::Type::kSmallFloating, &kNotificationSnoozeButtonIcon,
       IDS_MESSAGE_CENTER_NOTIFICATION_SNOOZE_BUTTON_TOOLTIP);
   snooze_button_ = action_buttons_row()->AddChildView(std::move(snooze_button));
+}
+
+void AshNotificationView::UpdateGroupedNotificationsVisibility() {
+  for (size_t i = 0; i < grouped_notifications_container_->children().size();
+       i++) {
+    auto* view = grouped_notifications_container_->children()[i];
+    bool show_notification_view =
+        IsExpanded() ||
+        i < message_center_style::kMaxGroupedNotificationsInCollapsedState;
+
+    if (view->GetVisible() == show_notification_view)
+      continue;
+
+    view->SetVisible(show_notification_view);
+  }
 }
 
 void AshNotificationView::UpdateMessageLabelInExpandedState(

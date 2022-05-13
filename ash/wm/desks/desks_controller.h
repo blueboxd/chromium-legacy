@@ -17,7 +17,9 @@
 #include "ash/wm/desks/templates/restore_data_collector.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/flat_set.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chromeos/ui/wm/desks/desks_helper.h"
 #include "components/account_id/account_id.h"
@@ -35,15 +37,19 @@ namespace ash {
 // functions to support a range of different close methods, such as combining
 // desks and closing desks with windows, as well as closing desks with windows
 // and providing an undo toast when done manually.
-enum DeskCloseType {
+// These values are logged to UMA. Entries should not be renumbered and
+// numeric values should never be reused. Please keep in sync with
+// DeskCloseType in src/tools/metrics/histograms/enums.xml.
+enum class DeskCloseType {
   // Closes the target desk and moves its windows to another desk.
-  kCombineDesks,
+  kCombineDesks = 0,
   // Closes the target desk and all of its windows.
-  kCloseAllWindows,
+  kCloseAllWindows = 1,
   // Closes the target desk, saves its data to the `temporary_removed_desk_`
   // member variable, and creates a toast that will fully destroy the desk if
   // the user does not interact with it before it expires.
-  kCloseAllWindowsAndWait,
+  kCloseAllWindowsAndWait = 2,
+  kMaxValue = kCloseAllWindowsAndWait,
 };
 
 class Desk;
@@ -93,6 +99,11 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
    protected:
     virtual ~Observer() = default;
   };
+
+  // The timeout duration that we allow an app window on a closed desk to run
+  // its "close" hooks before being forcefully closed.
+  static constexpr base::TimeDelta kCloseAllWindowCloseTimeout =
+      base::Seconds(1);
 
   DesksController();
 
@@ -370,7 +381,14 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
   // this function in the combine desks process.
   void FinalizeDeskRemoval(RemovedDeskData* removed_desk_data);
 
-  void CommitPendingDeskRemoval();
+  // Saves metrics and resets `temporary_removed_desk_` if `toast_id` is empty
+  // or it matches the toast ID stored in `temporary_removed_desk_`.
+  void MaybeCommitPendingDeskRemoval(
+      const std::string& toast_id = std::string());
+
+  // Forcefully cleans up app windows that should be closed.
+  void CleanUpClosedAppWindowsTask(
+      std::unique_ptr<aura::WindowTracker> closing_window_tracker);
 
   // Moves all the windows that are visible on all desks that currently
   // reside on |active_desk_| to |new_desk|.
@@ -446,6 +464,10 @@ class ASH_EXPORT DesksController : public chromeos::DesksHelper,
 
   // Does the job for the `CaptureActiveDeskAsTemplate()` method.
   mutable RestoreDataCollector restore_data_collector_;
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<DesksController> weak_ptr_factory_{this};
 };
 
 }  // namespace ash

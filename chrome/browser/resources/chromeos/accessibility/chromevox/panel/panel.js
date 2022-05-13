@@ -13,7 +13,6 @@ import {KeyUtil} from '/chromevox/common/key_util.js';
 import {ISearchUI} from '/chromevox/panel/i_search_ui.js';
 import {PanelInterface} from '/chromevox/panel/panel_interface.js';
 import {PanelMenu, PanelNodeMenu, PanelSearchMenu} from '/chromevox/panel/panel_menu.js';
-import {PanelMenuItem} from '/chromevox/panel/panel_menu_item.js';
 import {PanelMode, PanelModeInfo} from '/chromevox/panel/panel_mode.js';
 import {EventGenerator} from '/common/event_generator.js';
 
@@ -301,10 +300,6 @@ export class Panel extends PanelInterface {
       Panel.clearMenus();
       Panel.pendingCallback_ = null;
 
-      // Save the ChromeVox range (on the non-ChromeVox Menu UI first).
-      const bkgnd = chrome.extension.getBackgroundPage();
-      const range = bkgnd.ChromeVoxState.instance.getCurrentRange();
-      const node = range ? range.start.node : null;
       const eventSourceState = await BackgroundBridge.EventSourceState.get();
       const touchScreen =
           (eventSourceState === EventSourceType.TOUCH_GESTURE ||
@@ -453,27 +448,13 @@ export class Panel extends PanelInterface {
       }
 
       // Add all open tabs to the Tabs menu.
-      bkgnd.chrome.windows.getLastFocused(function(lastFocusedWindow) {
-        bkgnd.chrome.windows.getAll({'populate': true}, function(windows) {
-          for (let i = 0; i < windows.length; i++) {
-            const tabs = windows[i].tabs;
-            for (let j = 0; j < tabs.length; j++) {
-              let title = tabs[j].title;
-              if (tabs[j].active && windows[i].id === lastFocusedWindow.id) {
-                title += ' ' + Msgs.getMsg('active_tab');
-              }
-              tabsMenu.addMenuItem(
-                  title, '', '', '', (function(win, tab) {
-                                       bkgnd.chrome.windows.update(
-                                           win.id, {focused: true}, function() {
-                                             bkgnd.chrome.tabs.update(
-                                                 tab.id, {active: true});
-                                           });
-                                     }).bind(this, windows[i], tabs[j]));
-            }
-          }
-        });
-      });
+      const data = await BackgroundBridge.PanelBackground.getTabMenuData();
+      for (const menuInfo of data) {
+        tabsMenu.addMenuItem(
+            menuInfo.title, '', '', '',
+            () => BackgroundBridge.PanelTabMenuBackground.focus(
+                menuInfo.windowId, menuInfo.tabId));
+      }
 
       if (Panel.sessionState !== 'IN_SESSION') {
         tabsMenu.disable();
@@ -498,9 +479,8 @@ export class Panel extends PanelInterface {
       for (const menuData of ALL_NODE_MENU_DATA) {
         Panel.addNodeMenu(menuData);
       }
-      chrome.extension.getBackgroundPage()
-          .panelBackground.createAllNodeMenuBackgrounds(
-              Panel.addNodeMenuItem, opt_activateMenuTitle);
+      await BackgroundBridge.PanelBackground.createAllNodeMenuBackgrounds(
+          opt_activateMenuTitle);
 
       const actions =
           await BackgroundBridge.PanelBackground.getActionsForCurrentNode();
@@ -1016,9 +996,7 @@ export class Panel extends PanelInterface {
    * Open the ChromeVox Options.
    */
   static onOptions() {
-    const bkgnd =
-        chrome.extension.getBackgroundPage()['ChromeVoxState']['instance'];
-    bkgnd['showOptionsPage']();
+    chrome.runtime.openOptionsPage();
     Panel.setMode(PanelMode.COLLAPSED);
   }
 
@@ -1118,12 +1096,10 @@ export class Panel extends PanelInterface {
 
     // Add listeners. These are custom events fired from custom components.
     const backgroundPage = chrome.extension.getBackgroundPage();
-    const chromeVoxState = backgroundPage['ChromeVoxState'];
-    const chromeVoxStateInstance = chromeVoxState['instance'];
 
-    $('chromevox-tutorial').addEventListener('closetutorial', (evt) => {
+    $('chromevox-tutorial').addEventListener('closetutorial', async (evt) => {
       // Ensure UserActionMonitor is destroyed before closing tutorial.
-      chromeVoxStateInstance.destroyUserActionMonitor();
+      await BackgroundBridge.UserActionMonitor.destroy();
       Panel.onCloseTutorial();
     });
     $('chromevox-tutorial').addEventListener('requestspeech', (evt) => {
@@ -1145,18 +1121,19 @@ export class Panel extends PanelInterface {
       const cvox = backgroundPage['ChromeVox'];
       cvox.tts.speak(text, queueMode, properties);
     });
-    $('chromevox-tutorial').addEventListener('startinteractivemode', (evt) => {
-      const actions = evt.detail.actions;
-      chromeVoxStateInstance.createUserActionMonitor(actions, () => {
-        chromeVoxStateInstance.destroyUserActionMonitor();
-        if (Panel.tutorial && Panel.tutorial.showNextLesson) {
-          Panel.tutorial.showNextLesson();
-        }
-      });
-    });
-    $('chromevox-tutorial').addEventListener('stopinteractivemode', (evt) => {
-      chromeVoxStateInstance.destroyUserActionMonitor();
-    });
+    $('chromevox-tutorial')
+        .addEventListener('startinteractivemode', async (evt) => {
+          const actions = evt.detail.actions;
+          await BackgroundBridge.UserActionMonitor.create(actions);
+          await BackgroundBridge.UserActionMonitor.destroy();
+          if (Panel.tutorial && Panel.tutorial.showNextLesson) {
+            Panel.tutorial.showNextLesson();
+          }
+        });
+    $('chromevox-tutorial')
+        .addEventListener('stopinteractivemode', async (evt) => {
+          await BackgroundBridge.UserActionMonitor.destroy();
+        });
     $('chromevox-tutorial').addEventListener('requestfullydescribe', (evt) => {
       BackgroundBridge.CommandHandler.onCommand('fullyDescribe');
     });
@@ -1171,18 +1148,16 @@ export class Panel extends PanelInterface {
     $('chromevox-tutorial').addEventListener('readyfortesting', () => {
       Panel.tutorialReadyForTesting_ = true;
     });
-    $('chromevox-tutorial').addEventListener('openUrl', (evt) => {
+    $('chromevox-tutorial').addEventListener('openUrl', async (evt) => {
       const url = evt.detail.url;
       // Ensure UserActionMonitor is destroyed before closing tutorial.
-      chromeVoxStateInstance.destroyUserActionMonitor();
+      await BackgroundBridge.UserActionMonitor.destroy();
       Panel.onCloseTutorial();
       chrome.tabs.create({url});
     });
   }
 
-  /**
-   * Close the tutorial.
-   */
+  /** Close the tutorial. */
   static onCloseTutorial() {
     Panel.setMode(PanelMode.COLLAPSED);
   }
@@ -1293,6 +1268,9 @@ function $(id) {
   return document.getElementById(id);
 }
 
+BridgeHelper.registerHandler(
+    BridgeTarget.PANEL, BridgeAction.ADD_MENU_ITEM,
+    (itemData) => Panel.addNodeMenuItem(itemData));
 BridgeHelper.registerHandler(
     BridgeTarget.PANEL, BridgeAction.ON_CURRENT_RANGE_CHANGED,
     () => Panel.onCurrentRangeChanged());

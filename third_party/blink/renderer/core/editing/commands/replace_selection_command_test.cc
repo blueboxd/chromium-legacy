@@ -181,7 +181,7 @@ TEST_F(ReplaceSelectionCommandTest, SmartPlainTextPaste) {
 
   EXPECT_TRUE(command.Apply());
   // Smart paste inserts a space before pasted text.
-  EXPECT_EQ(u8"<div contenteditable>abc<div>def XYZ|</div></div>",
+  EXPECT_EQ("<div contenteditable>abc<div>def XYZ|</div></div>",
             GetSelectionTextFromBody());
 }
 
@@ -203,7 +203,7 @@ TEST_F(ReplaceSelectionCommandTest, TableAndImages) {
 
   // Should not crash
   EXPECT_TRUE(command.Apply());
-  EXPECT_EQ("<table> <tbody><img><img></tbody><br><img>|<br> </table>",
+  EXPECT_EQ("<table> <tbody><img><img>|</tbody><br> </table>",
             GetSelectionTextFromBody());
 }
 

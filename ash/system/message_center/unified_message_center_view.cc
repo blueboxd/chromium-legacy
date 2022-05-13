@@ -140,9 +140,11 @@ void UnifiedMessageCenterView::Init() {
 void UnifiedMessageCenterView::SetMaxHeight(int max_height) {
   int max_scroller_height = max_height;
   if (notification_bar_->GetVisible()) {
-    max_scroller_height -= is_notifications_refresh_enabled_
-                               ? notification_bar_->GetPreferredSize().height()
-                               : kStackedNotificationBarHeight;
+    max_scroller_height -=
+        is_notifications_refresh_enabled_
+            ? notification_bar_->GetPreferredSize().height() +
+                  2 * kMessageCenterPadding
+            : kStackedNotificationBarHeight;
   }
   scroller_->ClipHeightTo(0, max_scroller_height);
 }
@@ -513,6 +515,11 @@ UnifiedMessageCenterView::GetStackedNotifications() const {
     // When in collapsed state, all notifications are hidden, so all
     // notifications are stacked.
     return message_list_view_->GetAllNotifications();
+  }
+
+  if (is_notifications_refresh_enabled_) {
+    const int y_offset = scroller_->GetVisibleRect().bottom() - scroller_->y();
+    return message_list_view_->GetNotificationsBelowY(y_offset);
   }
 
   const int notification_bar_height =

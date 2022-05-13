@@ -11,6 +11,7 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/human_presence/snooping_protection_view.h"
 #include "ash/system/message_center/ash_message_popup_collection.h"
 #include "ash/system/message_center/message_center_ui_controller.h"
 #include "ash/system/message_center/message_center_ui_delegate.h"
@@ -36,7 +37,6 @@
 #include "ash/system/unified/managed_device_tray_item_view.h"
 #include "ash/system/unified/notification_counter_view.h"
 #include "ash/system/unified/notification_icons_controller.h"
-#include "ash/system/unified/snooping_protection_view.h"
 #include "ash/system/unified/unified_slider_bubble_controller.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_model.h"
@@ -163,9 +163,9 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
           std::make_unique<PrivacyScreenToastController>(this)),
       notification_icons_controller_(
           std::make_unique<NotificationIconsController>(this)),
-      hps_notify_view_(features::IsSnoopingProtectionEnabled()
-                           ? new HpsNotifyView(shelf)
-                           : nullptr),
+      snooping_protection_view_(features::IsSnoopingProtectionEnabled()
+                                    ? new SnoopingProtectionView(shelf)
+                                    : nullptr),
       current_locale_view_(new CurrentLocaleView(shelf)),
       ime_mode_view_(new ImeModeView(shelf)),
       managed_device_view_(new ManagedDeviceTrayItemView(shelf)),
@@ -198,7 +198,7 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   AddObservedTrayItem(notification_icons_controller_->quiet_mode_view());
 
   if (features::IsSnoopingProtectionEnabled())
-    AddTrayItemToContainer(hps_notify_view_);
+    AddTrayItemToContainer(snooping_protection_view_);
 
   AddTrayItemToContainer(current_locale_view_);
   AddTrayItemToContainer(ime_mode_view_);
@@ -220,8 +220,8 @@ UnifiedSystemTray::UnifiedSystemTray(Shelf* shelf)
   AddTrayItemToContainer(new PowerTrayView(shelf));
 
   auto vertical_clock_padding = std::make_unique<views::View>();
-  vertical_clock_padding->SetPreferredSize(
-      gfx::Size(0, kTrayTimeIconTopPadding));
+  vertical_clock_padding->SetPreferredSize(gfx::Size(
+      0, features::IsCalendarViewEnabled() ? 0 : kTrayTimeIconTopPadding));
   vertical_clock_padding_ =
       tray_container()->AddChildView(std::move(vertical_clock_padding));
 

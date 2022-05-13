@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/callback_helpers.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/strings/string_number_conversions.h"
@@ -19,6 +20,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_switches.h"
 #include "media/base/mock_media_log.h"
 #include "media/base/video_decoder.h"
 #include "media/base/video_encoder.h"
@@ -46,6 +48,10 @@
 
 #if BUILDFLAG(ENABLE_DAV1D_DECODER)
 #include "media/filters/dav1d_video_decoder.h"
+#endif
+
+#if BUILDFLAG(ENABLE_LIBGAV1_DECODER)
+#include "media/filters/gav1_video_decoder.h"
 #endif
 
 namespace media {
@@ -94,9 +100,16 @@ class SoftwareVideoEncoderTest
       decoder_ = std::make_unique<VpxVideoDecoder>();
 #endif
     } else if (codec_ == VideoCodec::kAV1) {
-#if BUILDFLAG(ENABLE_DAV1D_DECODER)
-      decoder_ = std::make_unique<Dav1dVideoDecoder>(&media_log_);
+#if BUILDFLAG(ENABLE_LIBGAV1_DECODER)
+      if (base::FeatureList::IsEnabled(kGav1VideoDecoder)) {
+        decoder_ = std::make_unique<Gav1VideoDecoder>(&media_log_);
+      } else
 #endif
+      {
+#if BUILDFLAG(ENABLE_DAV1D_DECODER)
+        decoder_ = std::make_unique<Dav1dVideoDecoder>(&media_log_);
+#endif
+      }
     }
 
     EXPECT_NE(decoder_, nullptr);
@@ -119,10 +132,10 @@ class SoftwareVideoEncoderTest
         frame->data(VideoFrame::kYPlane), frame->stride(VideoFrame::kYPlane),
         frame->data(VideoFrame::kUPlane), frame->stride(VideoFrame::kUPlane),
         frame->data(VideoFrame::kVPlane), frame->stride(VideoFrame::kVPlane),
-        0,                               // left
-        0,                               // top
-        frame->visible_rect().width(),   // right
-        frame->visible_rect().height(),  // bottom
+        frame->visible_rect().x(),       // x
+        frame->visible_rect().y(),       // y
+        frame->visible_rect().width(),   // width
+        frame->visible_rect().height(),  // height
         y,                               // Y color
         u,                               // U color
         v);                              // V color
@@ -148,10 +161,10 @@ class SoftwareVideoEncoderTest
 
     libyuv::ARGBRect(frame->data(VideoFrame::kARGBPlane),
                      frame->stride(VideoFrame::kARGBPlane),
-                     0,                               // left
-                     0,                               // top
-                     frame->visible_rect().width(),   // right
-                     frame->visible_rect().height(),  // bottom
+                     frame->visible_rect().x(),       // dst_x
+                     frame->visible_rect().y(),       // dst_y
+                     frame->visible_rect().width(),   // width
+                     frame->visible_rect().height(),  // height
                      color);
 
     return frame;
@@ -260,7 +273,7 @@ class SoftwareVideoEncoderTest
     uint8_t tolerance = 10;
 
     if (frame1.format() != frame2.format() ||
-        frame1.visible_rect() != frame2.visible_rect()) {
+        frame1.visible_rect().size() != frame2.visible_rect().size()) {
       return frame1.coded_size().GetArea();
     }
 
@@ -471,7 +484,8 @@ TEST_P(SoftwareVideoEncoderTest, EncodeAndDecode) {
     auto original_frame = frames_to_encode[i];
     auto decoded_frame = decoded_frames[i];
     EXPECT_EQ(decoded_frame->timestamp(), original_frame->timestamp());
-    EXPECT_EQ(decoded_frame->visible_rect(), original_frame->visible_rect());
+    EXPECT_EQ(decoded_frame->visible_rect().size(),
+              original_frame->visible_rect().size());
     EXPECT_EQ(decoded_frame->format(), PIXEL_FORMAT_I420);
     if (decoded_frame->format() == original_frame->format()) {
       EXPECT_LE(CountDifferentPixels(*decoded_frame, *original_frame),

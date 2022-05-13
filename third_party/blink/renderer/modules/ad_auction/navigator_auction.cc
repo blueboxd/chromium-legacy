@@ -7,9 +7,11 @@
 #include <utility>
 
 #include "base/check.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/fenced_frame/fenced_frame_utils.h"
 #include "third_party/blink/public/common/interest_group/ad_auction_constants.h"
 #include "third_party/blink/public/mojom/interest_group/interest_group_types.mojom-blink.h"
 #include "third_party/blink/public/mojom/parakeet/ad_request.mojom-blink.h"
@@ -36,9 +38,11 @@
 #include "third_party/blink/renderer/core/loader/document_loader.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/modules/ad_auction/ads.h"
+#include "third_party/blink/renderer/modules/ad_auction/join_leave_queue.h"
 #include "third_party/blink/renderer/modules/ad_auction/validate_blink_interest_group.h"
 #include "third_party/blink/renderer/modules/geolocation/geolocation_coordinates.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin_hash.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
@@ -47,6 +51,12 @@
 namespace blink {
 
 namespace {
+
+// The maximum number of active cross-site joins and leaves. Once these are hit,
+// cross-site joins/leaves are queued until they drop below this number. Queued
+// pending operations are dropped on destruction / navigation away.
+const int kMaxActiveCrossSiteJoins = 20;
+const int kMaxActiveCrossSiteLeaves = 20;
 
 // Error string builders.
 
@@ -868,6 +878,13 @@ void RecordCommonFledgeUseCounters(Document* document) {
 
 NavigatorAuction::NavigatorAuction(Navigator& navigator)
     : Supplement(navigator),
+      queued_cross_site_joins_(kMaxActiveCrossSiteJoins,
+                               WTF::BindRepeating(&NavigatorAuction::StartJoin,
+                                                  WrapWeakPersistent(this))),
+      queued_cross_site_leaves_(
+          kMaxActiveCrossSiteLeaves,
+          WTF::BindRepeating(&NavigatorAuction::StartLeave,
+                             WrapWeakPersistent(this))),
       ad_auction_service_(navigator.GetExecutionContext()) {
   navigator.GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
       ad_auction_service_.BindNewPipeAndPassReceiver(
@@ -942,12 +959,23 @@ ScriptPromise NavigatorAuction::joinAdInterestGroup(
     return ScriptPromise();
   }
 
+  bool is_cross_origin =
+      !context->GetSecurityOrigin()->IsSameOriginWith(mojo_group->owner.get());
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  ad_auction_service_->JoinInterestGroup(
-      std::move(mojo_group),
+  mojom::blink::AdAuctionService::JoinInterestGroupCallback callback =
       resolver->WrapCallbackInScriptScope(
-          WTF::Bind(&NavigatorAuction::JoinComplete, WrapPersistent(this))));
+          WTF::Bind(&NavigatorAuction::JoinComplete, WrapWeakPersistent(this),
+                    is_cross_origin));
+
+  PendingJoin pending_join{std::move(mojo_group), std::move(callback)};
+  if (is_cross_origin) {
+    queued_cross_site_joins_.Enqueue(std::move(pending_join));
+  } else {
+    StartJoin(std::move(pending_join));
+  }
+
   return promise;
 }
 
@@ -992,12 +1020,25 @@ ScriptPromise NavigatorAuction::leaveAdInterestGroup(
     return ScriptPromise();
   }
 
+  bool is_cross_origin = !ExecutionContext::From(script_state)
+                              ->GetSecurityOrigin()
+                              ->IsSameOriginWith(owner.get());
+
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  ad_auction_service_->LeaveInterestGroup(
-      owner, group->name(),
+  mojom::blink::AdAuctionService::LeaveInterestGroupCallback callback =
       resolver->WrapCallbackInScriptScope(
-          WTF::Bind(&NavigatorAuction::LeaveComplete, WrapPersistent(this))));
+          WTF::Bind(&NavigatorAuction::LeaveComplete, WrapWeakPersistent(this),
+                    is_cross_origin));
+
+  PendingLeave pending_leave{std::move(owner), std::move(group->name()),
+                             std::move(callback)};
+  if (is_cross_origin) {
+    queued_cross_site_leaves_.Enqueue(std::move(pending_leave));
+  } else {
+    StartLeave(std::move(pending_leave));
+  }
+
   return promise;
 }
 
@@ -1170,19 +1211,18 @@ ScriptPromise NavigatorAuction::deprecatedURNToURL(
     ScriptState* script_state,
     const String& uuid_url_string,
     ExceptionState& exception_state) {
-  if (!uuid_url_string.StartsWithIgnoringCase("urn:uuid:")) {
-    exception_state.ThrowTypeError(
-        String::Format("Passed URL must start with 'urn:uuid:'."));
+  KURL uuid_url(uuid_url_string);
+  if (!blink::IsValidUrnUuidURL(uuid_url)) {
+    exception_state.ThrowTypeError("Passed URL must be a valid URN URL.");
     return ScriptPromise();
   }
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
-  KURL uuid_url(uuid_url_string);
   ad_auction_service_->DeprecatedGetURLFromURN(
       std::move(uuid_url),
-      WTF::Bind(&NavigatorAuction::GetURLFromURNComplete, WrapPersistent(this),
-                WrapPersistent(resolver)));
+      resolver->WrapCallbackInScriptScope(WTF::Bind(
+          &NavigatorAuction::GetURLFromURNComplete, WrapPersistent(this))));
   return promise;
 }
 
@@ -1193,6 +1233,49 @@ ScriptPromise NavigatorAuction::deprecatedURNToURL(
     ExceptionState& exception_state) {
   return From(ExecutionContext::From(script_state), navigator)
       .deprecatedURNToURL(script_state, uuid_url, exception_state);
+}
+
+ScriptPromise NavigatorAuction::deprecatedReplaceInURN(
+    ScriptState* script_state,
+    const String& uuid_url_string,
+    const Vector<std::pair<String, String>>& replacements,
+    ExceptionState& exception_state) {
+  KURL uuid_url(uuid_url_string);
+  if (!blink::IsValidUrnUuidURL(uuid_url)) {
+    exception_state.ThrowTypeError("Passed URL must be a valid URN URL.");
+    return ScriptPromise();
+  }
+  Vector<mojom::blink::ReplacementPtr> replacements_list;
+  for (const auto& replacement : replacements) {
+    if (!(replacement.first.StartsWith("${") &&
+          replacement.first.EndsWith("}")) &&
+        !(replacement.first.StartsWith("%%") &&
+          replacement.first.EndsWith("%%"))) {
+      exception_state.ThrowTypeError(
+          "Replacements must be of the form '${...}' or '%%...%%'");
+      return ScriptPromise();
+    }
+    replacements_list.push_back(
+        mojom::blink::Replacement::New(replacement.first, replacement.second));
+  }
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  ScriptPromise promise = resolver->Promise();
+  ad_auction_service_->DeprecatedReplaceInURN(
+      std::move(uuid_url), std::move(replacements_list),
+      resolver->WrapCallbackInScriptScope(WTF::Bind(
+          &NavigatorAuction::ReplaceInURNComplete, WrapPersistent(this))));
+  return promise;
+}
+
+ScriptPromise NavigatorAuction::deprecatedReplaceInURN(
+    ScriptState* script_state,
+    Navigator& navigator,
+    const String& uuid_url_string,
+    const Vector<std::pair<String, String>>& replacements,
+    ExceptionState& exception_state) {
+  return From(ExecutionContext::From(script_state), navigator)
+      .deprecatedReplaceInURN(script_state, uuid_url_string,
+                              std::move(replacements), exception_state);
 }
 
 ScriptPromise NavigatorAuction::createAdRequest(
@@ -1313,8 +1396,17 @@ void NavigatorAuction::FinalizeAdComplete(
   }
 }
 
-void NavigatorAuction::JoinComplete(ScriptPromiseResolver* resolver,
+void NavigatorAuction::StartJoin(PendingJoin&& pending_join) {
+  ad_auction_service_->JoinInterestGroup(std::move(pending_join.interest_group),
+                                         std::move(pending_join.callback));
+}
+
+void NavigatorAuction::JoinComplete(bool is_cross_origin,
+                                    ScriptPromiseResolver* resolver,
                                     bool failed_well_known_check) {
+  if (is_cross_origin)
+    queued_cross_site_joins_.OnComplete();
+
   if (failed_well_known_check) {
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         resolver->GetScriptState()->GetIsolate(),
@@ -1325,8 +1417,18 @@ void NavigatorAuction::JoinComplete(ScriptPromiseResolver* resolver,
   resolver->Resolve();
 }
 
-void NavigatorAuction::LeaveComplete(ScriptPromiseResolver* resolver,
+void NavigatorAuction::StartLeave(PendingLeave&& pending_leave) {
+  ad_auction_service_->LeaveInterestGroup(pending_leave.owner,
+                                          pending_leave.name,
+                                          std::move(pending_leave.callback));
+}
+
+void NavigatorAuction::LeaveComplete(bool is_cross_origin,
+                                     ScriptPromiseResolver* resolver,
                                      bool failed_well_known_check) {
+  if (is_cross_origin)
+    queued_cross_site_leaves_.OnComplete();
+
   if (failed_well_known_check) {
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
         resolver->GetScriptState()->GetIsolate(),
@@ -1352,14 +1454,15 @@ void NavigatorAuction::AuctionComplete(ScriptPromiseResolver* resolver,
 void NavigatorAuction::GetURLFromURNComplete(
     ScriptPromiseResolver* resolver,
     const absl::optional<KURL>& decoded_url) {
-  if (!resolver->GetExecutionContext() ||
-      resolver->GetExecutionContext()->IsContextDestroyed())
-    return;
   if (decoded_url) {
     resolver->Resolve(*decoded_url);
   } else {
     resolver->Resolve(v8::Null(resolver->GetScriptState()->GetIsolate()));
   }
+}
+
+void NavigatorAuction::ReplaceInURNComplete(ScriptPromiseResolver* resolver) {
+  resolver->Resolve();
 }
 
 }  // namespace blink

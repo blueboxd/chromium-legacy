@@ -62,6 +62,7 @@ void AccessCodeCastDialog::ShowWebDialog() {
 
   auto extra_params = CreateParams();
 
+  dialog_creation_timestamp_ = base::Time::Now();
   gfx::NativeWindow dialog_window = chrome::ShowWebDialogWithParams(
       GetParentView(), context_, this,
       absl::make_optional<views::Widget::InitParams>(std::move(extra_params)));
@@ -140,7 +141,12 @@ void AccessCodeCastDialog::GetWebUIMessageHandlers(
 void AccessCodeCastDialog::GetDialogSize(gfx::Size* size) const {
   const int kDefaultWidth = 448;
   const int kDefaultHeight = 271;
-  size->SetSize(kDefaultWidth, kDefaultHeight);
+  const int kRememberDevicesHeight = 310;
+  base::TimeDelta duration_pref = GetAccessCodeDeviceDurationPref(
+      context_->GetPrefs());
+  bool rememberDevices = duration_pref != base::Seconds(0);
+  size->SetSize(kDefaultWidth,
+      rememberDevices ? kRememberDevicesHeight : kDefaultHeight);
 }
 
 std::string AccessCodeCastDialog::GetDialogArgs() const {
@@ -155,6 +161,7 @@ void AccessCodeCastDialog::OnDialogShown(content::WebUI* webui) {
   AccessCodeCastUI* controller =
       webui_->GetController()->GetAs<AccessCodeCastUI>();
   controller->SetCastModeSet(cast_mode_set_);
+  controller->SetDialogCreationTimestamp(dialog_creation_timestamp_);
   controller->SetMediaRouteStarter(std::move(media_route_starter_));
 }
 

@@ -358,12 +358,14 @@ WebViewHelper::WebViewHelper(
          scoped_refptr<base::SingleThreadTaskRunner> task_runner,
          const viz::FrameSinkId& frame_sink_id, bool hidden,
          bool never_composited, bool is_for_child_local_root,
-         bool is_for_nested_main_frame) -> WebFrameWidget* {
+         bool is_for_nested_main_frame,
+         bool is_for_scalable_page) -> WebFrameWidget* {
         return create_test_web_widget.Run(
             std::move(pass_key), std::move(frame_widget_host),
             std::move(frame_widget), std::move(widget_host), std::move(widget),
             std::move(task_runner), frame_sink_id, hidden, never_composited,
-            is_for_child_local_root, is_for_nested_main_frame);
+            is_for_child_local_root, is_for_nested_main_frame,
+            is_for_scalable_page);
       },
       std::move(create_callback));
 }
@@ -942,7 +944,7 @@ WebView* TestWebViewClient::CreateView(WebLocalFrame* opener,
                                        network::mojom::blink::WebSandboxFlags,
                                        const SessionStorageNamespaceId&,
                                        bool& consumed_user_gesture,
-                                       const absl::optional<WebImpression>&) {
+                                       const absl::optional<Impression>&) {
   auto webview_helper = std::make_unique<WebViewHelper>();
   WebView* result = webview_helper->InitializeWithOpener(opener);
   child_web_views_.push_back(std::move(webview_helper));

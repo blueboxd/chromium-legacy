@@ -7,8 +7,8 @@ import 'chrome://resources/cr_elements/icons.m.js';
 import 'chrome://resources/cr_elements/shared_vars_css.m.js';
 import 'chrome://resources/js/cr.m.js';
 import 'chrome://resources/polymer/v3_0/iron-icon/iron-icon.js';
-import '../shared/animations_css.js';
-import '../shared/chooser_shared_css.js';
+import '../shared/animations.css.js';
+import '../shared/chooser_shared.css.js';
 import '../shared/step_indicator.js';
 import '../strings.m.js';
 
@@ -19,7 +19,7 @@ import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bu
 
 import {navigateToNextStep, NavigationMixin} from '../navigation_mixin.js';
 import {ModuleMetricsManager} from '../shared/module_metrics_proxy.js';
-import {stepIndicatorModel} from '../shared/nux_types.js';
+import {StepIndicatorModel} from '../shared/nux_types.js';
 
 import {NtpBackgroundMetricsProxyImpl} from './ntp_background_metrics_proxy.js';
 import {NtpBackgroundData, NtpBackgroundProxy, NtpBackgroundProxyImpl} from './ntp_background_proxy.js';
@@ -68,7 +68,7 @@ export class NuxNtpBackgroundElement extends NuxNtpBackgroundElementBase {
   private metricsManager_: ModuleMetricsManager;
   private ntpBackgroundProxy_: NtpBackgroundProxy;
   private selectedBackground_: NtpBackgroundData|undefined;
-  indicatorModel?: stepIndicatorModel;
+  indicatorModel?: StepIndicatorModel;
 
   constructor() {
     super();

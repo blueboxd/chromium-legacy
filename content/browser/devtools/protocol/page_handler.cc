@@ -457,6 +457,31 @@ static network::mojom::ReferrerPolicy ParsePolicyFromString(
   return network::mojom::ReferrerPolicy::kDefault;
 }
 
+namespace {
+
+void DispatchNavigateCallback(
+    NavigationRequest* request,
+    std::unique_ptr<PageHandler::NavigateCallback> callback) {
+  std::string frame_id =
+      request->frame_tree_node()->devtools_frame_token().ToString();
+  // A new NavigationRequest may have been created before |request|
+  // started, in which case it is not marked as aborted. We report this as an
+  // abort to DevTools anyway.
+  if (!request->IsNavigationStarted()) {
+    callback->sendSuccess(frame_id, Maybe<std::string>(),
+                          net::ErrorToString(net::ERR_ABORTED));
+    return;
+  }
+  Maybe<std::string> opt_error;
+  if (request->GetNetErrorCode() != net::OK)
+    opt_error = net::ErrorToString(request->GetNetErrorCode());
+  callback->sendSuccess(frame_id,
+                        request->devtools_navigation_token().ToString(),
+                        std::move(opt_error));
+}
+
+}  // namespace
+
 void PageHandler::Navigate(const std::string& url,
                            Maybe<std::string> referrer,
                            Maybe<std::string> maybe_transition_type,
@@ -534,44 +559,40 @@ void PageHandler::Navigate(const std::string& url,
   // Handler may be destroyed while navigating if the session
   // gets disconnected as a result of access checks.
   base::WeakPtr<PageHandler> weak_self = weak_factory_.GetWeakPtr();
-  frame_tree_node->navigator().controller().LoadURLWithParams(params);
+  base::WeakPtr<NavigationHandle> navigation_handle =
+      frame_tree_node->navigator().controller().LoadURLWithParams(params);
+  // TODO(caseq): should we still dispatch callback here?
   if (!weak_self)
     return;
-  if (frame_tree_node->navigation_request()) {
-    navigate_callbacks_[frame_tree_node->navigation_request()
-                            ->devtools_navigation_token()] =
-        std::move(callback);
-  } else {
+  if (!navigation_handle) {
     callback->sendSuccess(out_frame_id, Maybe<std::string>(),
-                          Maybe<std::string>());
+                          net::ErrorToString(net::ERR_ABORTED));
+    return;
   }
+  auto* navigation_request =
+      static_cast<NavigationRequest*>(navigation_handle.get());
+  if (frame_tree_node->navigation_request() != navigation_request) {
+    // The ownership of the navigation request should have been transferred to
+    // RFH at this point, so we won't get `NavigationReset` for it any more --
+    // fire the callback now!
+    DispatchNavigateCallback(navigation_request, std::move(callback));
+    return;
+  }
+  // At this point, we expect the callback to get dispatched upon
+  // `NavigationReset()` is called when `NavigationRequest` is taken from
+  // `FrameTreeNode`.
+  const base::UnguessableToken& navigation_token =
+      navigation_request->devtools_navigation_token();
+  navigate_callbacks_[navigation_token] = std::move(callback);
 }
 
 void PageHandler::NavigationReset(NavigationRequest* navigation_request) {
-  auto navigate_callback =
+  auto it =
       navigate_callbacks_.find(navigation_request->devtools_navigation_token());
-  if (navigate_callback == navigate_callbacks_.end())
+  if (it == navigate_callbacks_.end())
     return;
-  std::string frame_id =
-      navigation_request->frame_tree_node()->devtools_frame_token().ToString();
-  // A new NavigationRequest may have been created before |navigation_request|
-  // started, in which case it is not marked as aborted. We report this as an
-  // abort to DevTools anyway.
-  if (!navigation_request->IsNavigationStarted()) {
-    navigate_callback->second->sendSuccess(
-        frame_id, Maybe<std::string>(),
-        Maybe<std::string>(net::ErrorToString(net::ERR_ABORTED)));
-  } else {
-    bool success = navigation_request->GetNetErrorCode() == net::OK;
-    std::string error_string =
-        net::ErrorToString(navigation_request->GetNetErrorCode());
-    navigate_callback->second->sendSuccess(
-        frame_id,
-        Maybe<std::string>(
-            navigation_request->devtools_navigation_token().ToString()),
-        success ? Maybe<std::string>() : Maybe<std::string>(error_string));
-  }
-  navigate_callbacks_.erase(navigate_callback);
+  DispatchNavigateCallback(navigation_request, std::move(it->second));
+  navigate_callbacks_.erase(it);
 }
 
 void PageHandler::DownloadWillBegin(FrameTreeNode* ftn,
@@ -1423,6 +1444,80 @@ Page::BackForwardCacheNotRestoredReason NotRestoredReasonToProtocol(
   }
 }
 
+Page::PrerenderFinalStatus PrerenderFinalStatusToProtocol(
+    PrerenderHost::FinalStatus feature) {
+  switch (feature) {
+    case PrerenderHost::FinalStatus::kActivated:
+      return Page::PrerenderFinalStatusEnum::Activated;
+    case PrerenderHost::FinalStatus::kAudioOutputDeviceRequested:
+      return Page::PrerenderFinalStatusEnum::AudioOutputDeviceRequested;
+    case PrerenderHost::FinalStatus::kBlockedByClient:
+      return Page::PrerenderFinalStatusEnum::BlockedByClient;
+    case PrerenderHost::FinalStatus::kCancelAllHostsForTesting:
+      return Page::PrerenderFinalStatusEnum::CancelAllHostsForTesting;
+    case PrerenderHost::FinalStatus::kClientCertRequested:
+      return Page::PrerenderFinalStatusEnum::ClientCertRequested;
+    case PrerenderHost::FinalStatus::kCrossOriginNavigation:
+      return Page::PrerenderFinalStatusEnum::CrossOriginNavigation;
+    case PrerenderHost::FinalStatus::kCrossOriginRedirect:
+      return Page::PrerenderFinalStatusEnum::CrossOriginRedirect;
+    case PrerenderHost::FinalStatus::kDestroyed:
+      return Page::PrerenderFinalStatusEnum::Destroyed;
+    case PrerenderHost::FinalStatus::kDidFailLoad:
+      return Page::PrerenderFinalStatusEnum::DidFailLoad;
+    case PrerenderHost::FinalStatus::kDownload:
+      return Page::PrerenderFinalStatusEnum::Download;
+    case PrerenderHost::FinalStatus::kEmbedderTriggeredAndCrossOriginRedirected:
+      return Page::PrerenderFinalStatusEnum::
+          EmbedderTriggeredAndCrossOriginRedirected;
+    case PrerenderHost::FinalStatus::kEmbedderTriggeredAndDestroyed:
+      return Page::PrerenderFinalStatusEnum::EmbedderTriggeredAndDestroyed;
+    case PrerenderHost::FinalStatus::kEmbedderTriggeredAndSameOriginRedirected:
+      return Page::PrerenderFinalStatusEnum::
+          EmbedderTriggeredAndSameOriginRedirected;
+    case PrerenderHost::FinalStatus::kInProgressNavigation:
+      return Page::PrerenderFinalStatusEnum::InProgressNavigation;
+    case PrerenderHost::FinalStatus::kInvalidSchemeNavigation:
+      return Page::PrerenderFinalStatusEnum::InvalidSchemeNavigation;
+    case PrerenderHost::FinalStatus::kInvalidSchemeRedirect:
+      return Page::PrerenderFinalStatusEnum::InvalidSchemeRedirect;
+    case PrerenderHost::FinalStatus::kLoginAuthRequested:
+      return Page::PrerenderFinalStatusEnum::LoginAuthRequested;
+    case PrerenderHost::FinalStatus::kLowEndDevice:
+      return Page::PrerenderFinalStatusEnum::LowEndDevice;
+    case PrerenderHost::FinalStatus::kMainFrameNavigation:
+      return Page::PrerenderFinalStatusEnum::MainFrameNavigation;
+    case PrerenderHost::FinalStatus::kMaxNumOfRunningPrerendersExceeded:
+      return Page::PrerenderFinalStatusEnum::MaxNumOfRunningPrerendersExceeded;
+    case PrerenderHost::FinalStatus::kMixedContent:
+      return Page::PrerenderFinalStatusEnum::MixedContent;
+    case PrerenderHost::FinalStatus::kMojoBinderPolicy:
+      return Page::PrerenderFinalStatusEnum::MojoBinderPolicy;
+    case PrerenderHost::FinalStatus::kNavigationBadHttpStatus:
+      return Page::PrerenderFinalStatusEnum::NavigationBadHttpStatus;
+    case PrerenderHost::FinalStatus::kNavigationNotCommitted:
+      return Page::PrerenderFinalStatusEnum::NavigationNotCommitted;
+    case PrerenderHost::FinalStatus::kNavigationRequestBlockedByCsp:
+      return Page::PrerenderFinalStatusEnum::NavigationRequestBlockedByCsp;
+    case PrerenderHost::FinalStatus::kNavigationRequestNetworkError:
+      return Page::PrerenderFinalStatusEnum::NavigationRequestNetworkError;
+    case PrerenderHost::FinalStatus::kRendererProcessCrashed:
+      return Page::PrerenderFinalStatusEnum::RendererProcessCrashed;
+    case PrerenderHost::FinalStatus::kRendererProcessKilled:
+      return Page::PrerenderFinalStatusEnum::RendererProcessKilled;
+    case PrerenderHost::FinalStatus::kSslCertificateError:
+      return Page::PrerenderFinalStatusEnum::SslCertificateError;
+    case PrerenderHost::FinalStatus::kStop:
+      return Page::PrerenderFinalStatusEnum::CancelAllHostsForTesting;
+    case PrerenderHost::FinalStatus::kTriggerBackgrounded:
+      return Page::PrerenderFinalStatusEnum::TriggerBackgrounded;
+    case PrerenderHost::FinalStatus::kTriggerDestroyed:
+      return Page::PrerenderFinalStatusEnum::TriggerDestroyed;
+    case PrerenderHost::FinalStatus::kUaChangeRequiresReload:
+      return Page::PrerenderFinalStatusEnum::UaChangeRequiresReload;
+  }
+}
+
 using blink::scheduler::WebSchedulerTrackedFeature;
 Page::BackForwardCacheNotRestoredReason BlocklistedFeatureToProtocol(
     WebSchedulerTrackedFeature feature) {
@@ -1877,6 +1972,17 @@ void PageHandler::DidActivatePrerender(const NavigationRequest& nav_request) {
   frontend_->PrerenderAttemptCompleted(
       initiating_frame_id, prerendering_url.spec(),
       Page::PrerenderFinalStatusEnum::Activated);
+}
+
+void PageHandler::DidCancelPrerender(const GURL& prerendering_url,
+                                     const std::string& initiating_frame_id,
+                                     PrerenderHost::FinalStatus status) {
+  if (!enabled_)
+    return;
+  DCHECK_NE(status, PrerenderHost::FinalStatus::kActivated);
+  frontend_->PrerenderAttemptCompleted(initiating_frame_id,
+                                       prerendering_url.spec(),
+                                       PrerenderFinalStatusToProtocol(status));
 }
 
 bool PageHandler::ShouldBypassCSP() {

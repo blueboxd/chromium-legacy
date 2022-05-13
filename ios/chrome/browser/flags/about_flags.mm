@@ -84,8 +84,8 @@
 #import "ios/chrome/browser/ui/tab_switcher/tab_grid/features.h"
 #import "ios/chrome/browser/ui/toolbar_container/toolbar_container_features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#import "ios/chrome/browser/ui/upgrade/utils/features.h"
 #include "ios/chrome/browser/ui/util/features.h"
+#import "ios/chrome/browser/upgrade/utils/features.h"
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/components/security_interstitials/https_only_mode/feature.h"
@@ -666,6 +666,14 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"new-overflow-menu", flag_descriptions::kNewOverflowMenuName,
      flag_descriptions::kNewOverflowMenuDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kNewOverflowMenu)},
+    {"new-overflow-menu-settings-action",
+     flag_descriptions::kNewOverflowMenuSettingsActionName,
+     flag_descriptions::kNewOverflowMenuSettingsActionName, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kNewOverflowMenuSettingsAction)},
+    {"new-overflow-menu-cbd-action",
+     flag_descriptions::kNewOverflowMenuCBDActionName,
+     flag_descriptions::kNewOverflowMenuCBDActionDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kNewOverflowMenuCBDAction)},
     {"enable-new-download-api", flag_descriptions::kEnableNewDownloadAPIName,
      flag_descriptions::kEnableNewDownloadAPIDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(web::features::kEnableNewDownloadAPI)},
@@ -901,6 +909,11 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"upgrade-center-refactor", flag_descriptions::kUpgradeCenterRefactorName,
      flag_descriptions::kUpgradeCenterRefactorDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kUpgradeCenterRefactor)},
+    {"autofill-enable-ranking-formula",
+     flag_descriptions::kAutofillEnableRankingFormulaName,
+     flag_descriptions::kAutofillEnableRankingFormulaDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableRankingFormula)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

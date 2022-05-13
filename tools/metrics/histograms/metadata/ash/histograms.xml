@@ -1358,6 +1358,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.ClipboardHistory.PasteType"
+    enum="ClipboardHistoryPasteType" expires_after="2022-10-25">
+  <owner>ckincaid@chromium.org</owner>
+  <owner>multipaste@google.com</owner>
+  <summary>
+    Emits information about the type (plain vs. rich text) and input source of
+    each clipboard history paste.
+  </summary>
+</histogram>
+
 <histogram name="Ash.DarkTheme.Settings.IsDarkModeEnabled" enum="Boolean"
     expires_after="2023-03-01">
   <owner>minch@chromium.org</owner>
@@ -1486,6 +1496,27 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Desks.CloseAllUndo" enum="BooleanHit"
+    expires_after="2023-05-09">
+  <owner>aprilzhou@google.com</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    Emitted after a virtual desk being removed with close all option and undo
+    toast being clicked.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.CloseAllUndoAndExpired" enum="BooleanHit"
+    expires_after="2023-05-09">
+  <owner>aprilzhou@google.com</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    Emitted after a virtual desk being removed with close all option and undo
+    toast being showed. This metrics is a sum of user undo remove and ignore
+    undo.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Desks.ConsecutiveDailyVisits" units="days"
     expires_after="2022-10-24">
   <owner>afakhry@chromium.org</owner>
@@ -1585,6 +1616,16 @@ chromium-metrics-reviews@google.com.
     example if the user has moved from desk 1 to 2 to 1 to 2 to 3, the number
     recorded is 4. This only gets recorded if a traversal starts. A traversal
     means that the desk has changed onscreen.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.NumberOfWindowsClosed" units="units"
+    expires_after="2023-05-09">
+  <owner>aprilzhou@google.com</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    Emitted when a virtual desk is removed and all windows on the desk being
+    closed to record the total number of windows being closed by this operation.
   </summary>
 </histogram>
 
@@ -1704,6 +1745,16 @@ chromium-metrics-reviews@google.com.
   <summary>
     Emitted when a virtual desk is removed to specify the source of this remove
     operation, i.e. whether from the close-desk button, or keyboard shortcut.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Desks.RemoveDeskType" enum="DeskCloseType"
+    expires_after="2023-05-09">
+  <owner>aprilzhou@google.com</owner>
+  <owner>janetmac@chromium.org</owner>
+  <summary>
+    Emitted when a virtual desk is removed to specify the category of this
+    remove operation among close all, combine desk, and close all and wait.
   </summary>
 </histogram>
 
@@ -2233,7 +2284,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Ash.Lacros.Launch.Mode" enum="LacrosLaunchMode"
-    expires_after="2022-09-01">
+    expires_after="2022-11-06">
   <owner>skuhne@chromium.org</owner>
   <owner>lacros-team@google.com</owner>
   <summary>
@@ -3074,6 +3125,16 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
+<histogram name="Ash.Personalization.EntryPoint"
+    enum="PersonalizationEntryPoint" expires_after="2023-05-05">
+  <owner>thuongphan@chromium.org</owner>
+  <owner>assistive-eng@google.com</owner>
+  <summary>
+    Records which entry point is used to access Personalization Hub. Emitted
+    every time Personalization hub is accessed.
+  </summary>
+</histogram>
+
 <histogram name="Ash.Personalization.Path" enum="PersonalizationPath"
     expires_after="2023-04-15">
   <owner>jasontt@chromium.org</owner>
@@ -3190,6 +3251,17 @@ chromium-metrics-reviews@google.com.
   <summary>
     Tracks the processing time of batch pending screencast files validation on
     IO thread. Recorded each time when IO task finishes.
+  </summary>
+</histogram>
+
+<histogram name="Ash.Projector.PendingScreencastChangeInterval" units="ms"
+    expires_after="2023-04-15">
+  <owner>xiqiruan@chromium.org</owner>
+  <owner>cros-projector@google.com</owner>
+  <summary>
+    Tracks the interval between UI updates during screencast uploading. Recorded
+    at each pending screencast's UI change except for the first one of current
+    uploading phase.
   </summary>
 </histogram>
 

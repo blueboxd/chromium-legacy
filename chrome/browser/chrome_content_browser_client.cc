@@ -137,6 +137,7 @@
 #include "chrome/browser/ui/login/login_handler.h"
 #include "chrome/browser/ui/login/login_navigation_throttle.h"
 #include "chrome/browser/ui/login/login_tab_helper.h"
+#include "chrome/browser/ui/passwords/password_manager_navigation_throttle.h"
 #include "chrome/browser/ui/passwords/well_known_change_password_navigation_throttle.h"
 #include "chrome/browser/ui/prefs/pref_watcher.h"
 #include "chrome/browser/ui/tab_contents/chrome_web_contents_view_delegate.h"
@@ -313,6 +314,7 @@
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "third_party/blink/public/common/navigation/navigation_policy.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
+#include "third_party/blink/public/common/permissions_policy/permissions_policy.h"
 #include "third_party/blink/public/common/switches.h"
 #include "third_party/blink/public/mojom/browsing_topics/browsing_topics.mojom.h"
 #include "third_party/blink/public/public_buildflags.h"
@@ -355,7 +357,6 @@
 #include "chrome/browser/ash/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/ash/arc/fileapi/arc_documents_provider_backend_delegate.h"
 #include "chrome/browser/ash/chrome_browser_main_parts_ash.h"
-#include "chrome/browser/ash/chrome_content_browser_client_ash_part.h"
 #include "chrome/browser/ash/drive/fileapi/drivefs_file_system_backend_delegate.h"
 #include "chrome/browser/ash/file_manager/app_id.h"
 #include "chrome/browser/ash/file_system_provider/fileapi/backend_delegate.h"
@@ -400,6 +401,7 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/webauthn/chrome_conditional_ui_delegate_android.h"
 #include "chrome/common/chrome_descriptors.h"
+#include "components/autofill_assistant/content/common/switches.h"
 #include "components/browser_ui/accessibility/android/font_size_prefs_android.h"
 #include "components/cdm/browser/cdm_message_filter_android.h"
 #include "components/crash/content/browser/child_exit_observer_android.h"
@@ -426,6 +428,7 @@
 #endif  // !BUILDFLAG(IS_CHROMEOS_ASH)
 
 #if BUILDFLAG(IS_CHROMEOS)
+#include "chrome/browser/chromeos/tablet_mode/chrome_content_browser_client_tablet_mode_part.h"
 #include "chrome/browser/policy/networking/policy_cert_service.h"
 #include "chrome/browser/policy/networking/policy_cert_service_factory.h"
 #include "third_party/cros_system_api/switches/chrome_switches.h"
@@ -1285,9 +1288,9 @@ ChromeContentBrowserClient::ChromeContentBrowserClient() {
   extra_parts_.push_back(new ChromeContentBrowserClientPluginsPart);
 #endif
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-  extra_parts_.push_back(new ash::ChromeContentBrowserClientAshPart);
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
+#if BUILDFLAG(IS_CHROMEOS)
+  extra_parts_.push_back(new ChromeContentBrowserClientTabletModePart);
+#endif  // BUILDFLAG(IS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_WEBUI_TAB_STRIP)
   extra_parts_.push_back(new ChromeContentBrowserClientTabStripPart);
@@ -1971,6 +1974,27 @@ size_t ChromeContentBrowserClient::GetProcessCountToIgnoreForLimit() {
 #endif
 }
 
+blink::ParsedPermissionsPolicy
+ChromeContentBrowserClient::GetPermissionsPolicyForIsolatedApp(
+    content::BrowserContext* browser_context,
+    const url::Origin& app_origin) {
+#if !BUILDFLAG(IS_ANDROID)
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto& registrar =
+      web_app::WebAppProvider::GetForWebApps(profile)->registrar();
+  std::vector<web_app::AppId> app_ids_for_origin =
+      registrar.FindAppsInScope(app_origin.GetURL());
+  if (app_ids_for_origin.empty()) {
+    return blink::ParsedPermissionsPolicy();
+  }
+
+  return registrar.GetPermissionsPolicy(app_ids_for_origin[0]);
+#else
+  NOTIMPLEMENTED();
+  return blink::ParsedPermissionsPolicy();
+#endif
+}
+
 bool ChromeContentBrowserClient::ShouldTryToUseExistingProcessHost(
     content::BrowserContext* browser_context,
     const GURL& url) {
@@ -2536,6 +2560,14 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
                                     switches::kChangeStackGuardOnForkEnabled);
   }
 #endif  // BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_CHROMEOS)
+
+#if BUILDFLAG(IS_ANDROID)
+  if (browser_command_line.HasSwitch(
+          autofill_assistant::switches::kAutofillAssistantDebugAnnotateDom)) {
+    command_line->AppendSwitch(
+        autofill_assistant::switches::kAutofillAssistantDebugAnnotateDom);
+  }
+#endif  // BUILDFLAG(IS_ANDROID)
 }
 
 std::string
@@ -2864,6 +2896,19 @@ bool ChromeContentBrowserClient::IsConversionMeasurementOperationAllowed(
     case ConversionMeasurementOperation::kAny:
       return privacy_sandbox_settings->IsPrivacySandboxEnabled();
   }
+}
+
+bool ChromeContentBrowserClient::IsSharedStorageAllowed(
+    content::BrowserContext* browser_context,
+    const url::Origin& top_frame_origin,
+    const url::Origin& accessing_origin) {
+  Profile* profile = Profile::FromBrowserContext(browser_context);
+  auto* privacy_sandbox_settings =
+      PrivacySandboxSettingsFactory::GetForProfile(profile);
+  DCHECK(privacy_sandbox_settings);
+
+  return privacy_sandbox_settings->IsSharedStorageAllowed(top_frame_origin,
+                                                          accessing_origin);
 }
 
 #if BUILDFLAG(IS_CHROMEOS)
@@ -4295,6 +4340,10 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
 
   MaybeAddThrottle(
       WellKnownChangePasswordNavigationThrottle::MaybeCreateThrottleFor(handle),
+      &throttles);
+
+  MaybeAddThrottle(
+      PasswordManagerNavigationThrottle::MaybeCreateThrottleFor(handle),
       &throttles);
 
   throttles.push_back(std::make_unique<PolicyBlocklistNavigationThrottle>(

@@ -7,10 +7,10 @@
 
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
+#include "chromeos/ash/components/dbus/cicerone/cicerone_client.h"
 #include "chromeos/ash/components/dbus/concierge/concierge_client.h"
 #include "chromeos/ash/components/dbus/seneschal/seneschal_client.h"
 #include "chromeos/dbus/chunneld/chunneld_client.h"
-#include "chromeos/dbus/cicerone/cicerone_client.h"
 
 namespace guest_os {
 
@@ -53,8 +53,8 @@ enum class FailureClasses {
 // Implementers should also listen for VmStopped events from concierge, and
 // call |LogUnexpectedVmShutdown| if any are considered unexpected.
 // Take care to ignore VMs owned by other implementers.
-class GuestOsStabilityMonitor : chromeos::ConciergeClient::Observer,
-                                chromeos::CiceroneClient::Observer,
+class GuestOsStabilityMonitor : ash::ConciergeClient::Observer,
+                                ash::CiceroneClient::Observer,
                                 ash::SeneschalClient::Observer,
                                 chromeos::ChunneldClient::Observer {
  public:
@@ -71,11 +71,11 @@ class GuestOsStabilityMonitor : chromeos::ConciergeClient::Observer,
   void SeneschalStarted(bool is_available);
   void ChunneldStarted(bool is_available);
 
-  //  chromeos::ConciergeClient::Observer::
+  //  ash::ConciergeClient::Observer::
   void ConciergeServiceStopped() override;
   void ConciergeServiceStarted() override;
 
-  //  chromeos::CiceroneClient::Observer::
+  //  ash::CiceroneClient::Observer::
   void CiceroneServiceStopped() override;
   void CiceroneServiceStarted() override;
 
@@ -89,11 +89,9 @@ class GuestOsStabilityMonitor : chromeos::ConciergeClient::Observer,
 
  private:
   std::string histogram_;
-  base::ScopedObservation<chromeos::ConciergeClient,
-                          chromeos::ConciergeClient::Observer>
+  base::ScopedObservation<ash::ConciergeClient, ash::ConciergeClient::Observer>
       concierge_observer_;
-  base::ScopedObservation<chromeos::CiceroneClient,
-                          chromeos::CiceroneClient::Observer>
+  base::ScopedObservation<ash::CiceroneClient, ash::CiceroneClient::Observer>
       cicerone_observer_;
   base::ScopedObservation<ash::SeneschalClient, ash::SeneschalClient::Observer>
       seneschal_observer_;

@@ -1721,6 +1721,13 @@ const char kManagedWebHidAllowDevicesWithHidUsagesForUrls[] =
     "managed.web_hid_allow_devices_with_hid_usages_for_urls";
 #endif  // !BUILDFLAG(IS_ANDROID)
 
+#if !BUILDFLAG(IS_ANDROID)
+// Boolean indicating whether the user has given consent to use Autofill
+// Assistant. Prefs are not synced across devices or platforms and pref
+// keys differ.
+const char kAutofillAssistantOnDesktopEnabled[] = "autofill_assistant.enabled";
+#endif  // !BUILDFLAG(IS_ANDROID)
+
 // Directory of the last profile used.
 const char kProfileLastUsed[] = "profile.last_used";
 
@@ -2050,13 +2057,19 @@ const char kWebAppInstallForceList[] = "profile.web_app.install.forcelist";
 // A list of dictionaries for managing Web Apps.
 const char kWebAppSettings[] = "profile.web_app.policy_settings";
 
-// A list of dictionaries for managed configurations. Each dictionary contains
-// 3 strings -- origin to be configured, link to the configuration, and the
-// hashed value to that configuration.
+// A map of App ID to install URLs to keep track of preinstalled web apps
+// after they have been deleted.
+const char kUserUninstalledPreinstalledWebAppPref[] =
+    "web_app.app_id.install_url";
+
+// A list of dictionaries for managed configurations. Each dictionary
+// contains 3 strings -- origin to be configured, link to the configuration,
+// and the hashed value to that configuration.
 const char kManagedConfigurationPerOrigin[] =
     "profile.managed_configuration.list";
-// Dictionary that maps the hash of the last downloded managed configuration for
-// a particular origin.
+
+// Dictionary that maps the hash of the last downloaded managed configuration
+// for a particular origin.
 const char kLastManagedConfigurationHashForOrigin[] =
     "profile.managed_configuration.last_hash";
 
@@ -2953,6 +2966,75 @@ const char kAnimationPolicy[] = "settings.a11y.animation_policy";
 // A list of URLs (for U2F) or domains (for webauthn) that automatically permit
 // direct attestation of a Security Key.
 const char kSecurityKeyPermitAttestation[] = "securitykey.permit_attestation";
+#endif
+
+#if BUILDFLAG(IS_CHROMEOS_LACROS)
+// In Lacros, these prefs store the expected value of the equivalent ash pref
+// used by extensions. The values are sent to ash.
+
+// A boolean pref which determines whether focus highlighting is enabled.
+const char kLacrosAccessibilityFocusHighlightEnabled[] =
+    "lacros.settings.a11y.focus_highlight";
+
+// A boolean pref storing the enabled status of the Docked Magnifier feature.
+const char kLacrosDockedMagnifierEnabled[] = "lacros.docked_magnifier.enabled";
+
+// A boolean pref which determines whether autoclick is enabled.
+const char kLacrosAccessibilityAutoclickEnabled[] =
+    "lacros.settings.a11y.autoclick";
+
+// A boolean pref which determines whether caret highlighting is enabled.
+const char kLacrosAccessibilityCaretHighlightEnabled[] =
+    "lacros.settings.a11y.caret_highlight";
+
+// A boolean pref which determines whether custom cursor color is enabled.
+const char kLacrosAccessibilityCursorColorEnabled[] =
+    "lacros.settings.a11y.cursor_color_enabled";
+
+// A boolean pref which determines whether cursor highlighting is enabled.
+const char kLacrosAccessibilityCursorHighlightEnabled[] =
+    "lacros.settings.a11y.cursor_highlight";
+
+// A boolean pref which determines whether dictation is enabled.
+const char kLacrosAccessibilityDictationEnabled[] =
+    "lacros.settings.a11y.dictation";
+
+// A boolean pref which determines whether high contrast is enabled.
+const char kLacrosAccessibilityHighContrastEnabled[] =
+    "lacros.settings.a11y.high_contrast_enabled";
+
+// A boolean pref which determines whether the large cursor feature is enabled.
+const char kLacrosAccessibilityLargeCursorEnabled[] =
+    "lacros.settings.a11y.large_cursor_enabled";
+
+// A boolean pref which determines whether screen magnifier is enabled.
+// NOTE: We previously had prefs named settings.a11y.screen_magnifier_type and
+// settings.a11y.screen_magnifier_type2, but we only shipped one type (full).
+// See http://crbug.com/170850 for history.
+const char kLacrosAccessibilityScreenMagnifierEnabled[] =
+    "lacros.ettings.a11y.screen_magnifier";
+
+// A boolean pref which determines whether select-to-speak is enabled.
+const char kLacrosAccessibilitySelectToSpeakEnabled[] =
+    "lacros.settings.a11y.select_to_speak";
+
+// A boolean pref which determines whether spoken feedback is enabled.
+const char kLacrosAccessibilitySpokenFeedbackEnabled[] =
+    "lacros.settings.accessibility";
+
+// A boolean pref which determines whether the sticky keys feature is enabled.
+const char kLacrosAccessibilityStickyKeysEnabled[] =
+    "lacros.settings.a11y.sticky_keys_enabled";
+
+// A boolean pref which determines whether Switch Access is enabled.
+const char kLacrosAccessibilitySwitchAccessEnabled[] =
+    "lacros.settings.a11y.switch_access.enabled";
+
+// A boolean pref which determines whether the virtual keyboard is enabled for
+// accessibility.  This feature is separate from displaying an onscreen keyboard
+// due to lack of a physical keyboard.
+const char kLacrosAccessibilityVirtualKeyboardEnabled[] =
+    "lacros.settings.a11y.virtual_keyboard";
 #endif
 
 const char kBackgroundTracingLastUpload[] = "background_tracing.last_upload";

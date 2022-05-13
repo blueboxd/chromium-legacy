@@ -3753,7 +3753,8 @@ bool Document::DispatchBeforeUnloadEvent(ChromeClient* chrome_client,
 
   // Since we do not allow registering the beforeunload event handlers in
   // fenced frames, it should not be fired by fencedframes.
-  DCHECK(!GetFrame()->IsInFencedFrameTree() || !GetEventTargetData() ||
+  DCHECK(!GetFrame() || !GetFrame()->IsInFencedFrameTree() ||
+         !GetEventTargetData() ||
          !GetEventTargetData()->event_listener_map.Contains(
              event_type_names::kBeforeunload));
 
@@ -3849,7 +3850,8 @@ void Document::DispatchUnloadEvents(UnloadEventTimingInfo* unload_timing_info) {
 
   // Since we do not allow registering the unload event handlers in
   // fenced frames, it should not be fired by fencedframes.
-  DCHECK(!GetFrame()->IsInFencedFrameTree() || !GetEventTargetData() ||
+  DCHECK(!GetFrame() || !GetFrame()->IsInFencedFrameTree() ||
+         !GetEventTargetData() ||
          !GetEventTargetData()->event_listener_map.Contains(
              event_type_names::kUnload));
 
@@ -6712,7 +6714,7 @@ void Document::FinishedParsing() {
     if (frame->GetFrameScheduler())
       frame->GetFrameScheduler()->OnDomContentLoaded();
 
-    if (frame->IsMainFrame() && ShouldMarkFontPerformance())
+    if (ShouldMarkFontPerformance())
       FontPerformance::MarkDomContentLoaded();
 
     DEVTOOLS_TIMELINE_TRACE_EVENT_INSTANT(
@@ -6987,7 +6989,7 @@ FontMatchingMetrics* Document::GetFontMatchingMetrics() {
   if (font_matching_metrics_)
     return font_matching_metrics_.get();
   font_matching_metrics_ = std::make_unique<FontMatchingMetrics>(
-      IsInMainFrame(), UkmRecorder(), UkmSourceID(),
+      IsInOutermostMainFrame(), UkmRecorder(), UkmSourceID(),
       GetTaskRunner(TaskType::kInternalDefault));
   return font_matching_metrics_.get();
 }

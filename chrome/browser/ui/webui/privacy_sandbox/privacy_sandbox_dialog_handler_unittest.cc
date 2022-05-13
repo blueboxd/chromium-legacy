@@ -6,9 +6,6 @@
 
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service.h"
 #include "chrome/browser/privacy_sandbox/privacy_sandbox_service_factory.h"
-#include "chrome/browser/ui/hats/mock_trust_safety_sentiment_service.h"
-#include "chrome/browser/ui/hats/trust_safety_sentiment_service.h"
-#include "chrome/browser/ui/hats/trust_safety_sentiment_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_renderer_host.h"
@@ -55,11 +52,6 @@ class PrivacySandboxDialogHandlerTest : public testing::Test {
     mock_privacy_sandbox_service_ = static_cast<MockPrivacySandboxService*>(
         PrivacySandboxServiceFactory::GetInstance()->SetTestingFactoryAndUse(
             profile(), base::BindRepeating(&BuildMockPrivacySandboxService)));
-    mock_sentiment_service_ = static_cast<MockTrustSafetySentimentService*>(
-        TrustSafetySentimentServiceFactory::GetInstance()
-            ->SetTestingFactoryAndUse(
-                profile(),
-                base::BindRepeating(&BuildMockTrustSafetySentimentService)));
 
     web_ui_ = std::make_unique<content::TestWebUI>();
     web_ui_->set_web_contents(web_contents_.get());
@@ -75,6 +67,21 @@ class PrivacySandboxDialogHandlerTest : public testing::Test {
     web_ui_.reset();
   }
 
+  void ShowDialog(PrivacySandboxService::DialogAction expected_action) {
+    EXPECT_CALL(*dialog_mock(), ShowNativeView());
+    EXPECT_CALL(*mock_privacy_sandbox_service(),
+                DialogActionOccurred(expected_action));
+    base::Value args(base::Value::Type::LIST);
+    handler()->HandleShowDialog(args.GetList());
+  }
+
+  void IdempotentDialogActionOccurred(const base::Value::List& args) {
+    // Inform the handler multiple times that a dialog action occurred. The test
+    // using this function expects the call to be idempotent.
+    handler()->HandleDialogActionOccurred(args);
+    handler()->HandleDialogActionOccurred(args);
+  }
+
   content::TestWebUI* web_ui() { return web_ui_.get(); }
   PrivacySandboxDialogHandler* handler() { return handler_.get(); }
   TestingProfile* profile() { return &profile_; }
@@ -87,7 +94,6 @@ class PrivacySandboxDialogHandlerTest : public testing::Test {
 
  protected:
   virtual std::unique_ptr<PrivacySandboxDialogHandler> CreateHandler() = 0;
-  raw_ptr<MockTrustSafetySentimentService> mock_sentiment_service_;
 
  private:
   content::BrowserTaskEnvironment browser_task_environment_;
@@ -114,7 +120,7 @@ class PrivacySandboxConsentDialogHandlerTest
         base::BindOnce(
             &MockPrivacySandboxDialogView::OpenPrivacySandboxSettings,
             dialog_mock()),
-        PrivacySandboxService::DialogType::kConsent);
+        PrivacySandboxService::PromptType::kConsent);
   }
 };
 
@@ -138,22 +144,18 @@ TEST_F(PrivacySandboxConsentDialogHandlerTest, HandleResizeDialog) {
 }
 
 TEST_F(PrivacySandboxConsentDialogHandlerTest, HandleShowDialog) {
-  EXPECT_CALL(*dialog_mock(), ShowNativeView());
-  EXPECT_CALL(
-      *mock_privacy_sandbox_service(),
-      DialogActionOccurred(PrivacySandboxService::DialogAction::kConsentShown));
   EXPECT_CALL(
       *mock_privacy_sandbox_service(),
       DialogActionOccurred(
           PrivacySandboxService::DialogAction::kConsentClosedNoDecision));
 
-  base::Value args(base::Value::Type::LIST);
-  handler()->HandleShowDialog(args.GetList());
+  ShowDialog(PrivacySandboxService::DialogAction::kConsentShown);
 
   ASSERT_EQ(0U, web_ui()->call_data().size());
 }
 
 TEST_F(PrivacySandboxConsentDialogHandlerTest, HandleClickLearnMore) {
+  ShowDialog(PrivacySandboxService::DialogAction::kConsentShown);
   EXPECT_CALL(*mock_privacy_sandbox_service(),
               DialogActionOccurred(
                   PrivacySandboxService::DialogAction::kConsentMoreInfoOpened));
@@ -181,6 +183,7 @@ TEST_F(PrivacySandboxConsentDialogHandlerTest, HandleClickLearnMore) {
 }
 
 TEST_F(PrivacySandboxConsentDialogHandlerTest, HandleConsentAccepted) {
+  ShowDialog(PrivacySandboxService::DialogAction::kConsentShown);
   EXPECT_CALL(*dialog_mock(), Close());
   EXPECT_CALL(*mock_privacy_sandbox_service(),
               DialogActionOccurred(
@@ -191,21 +194,16 @@ TEST_F(PrivacySandboxConsentDialogHandlerTest, HandleConsentAccepted) {
           PrivacySandboxService::DialogAction::kConsentClosedNoDecision))
       .Times(0);
 
-  EXPECT_CALL(
-      *mock_sentiment_service_,
-      InteractedWithPrivacySandbox3(TrustSafetySentimentService::FeatureArea::
-                                        kPrivacySandbox3ConsentAccept))
-      .Times(1);
-
   base::Value args(base::Value::Type::LIST);
   args.Append(
       static_cast<int>(PrivacySandboxService::DialogAction::kConsentAccepted));
-  handler()->HandleDialogActionOccurred(args.GetList());
+  IdempotentDialogActionOccurred(args.GetList());
 
   ASSERT_EQ(0U, web_ui()->call_data().size());
 }
 
 TEST_F(PrivacySandboxConsentDialogHandlerTest, HandleConsentDeclined) {
+  ShowDialog(PrivacySandboxService::DialogAction::kConsentShown);
   EXPECT_CALL(*dialog_mock(), Close());
   EXPECT_CALL(*mock_privacy_sandbox_service(),
               DialogActionOccurred(
@@ -216,16 +214,10 @@ TEST_F(PrivacySandboxConsentDialogHandlerTest, HandleConsentDeclined) {
           PrivacySandboxService::DialogAction::kConsentClosedNoDecision))
       .Times(0);
 
-  EXPECT_CALL(
-      *mock_sentiment_service_,
-      InteractedWithPrivacySandbox3(TrustSafetySentimentService::FeatureArea::
-                                        kPrivacySandbox3ConsentDecline))
-      .Times(1);
-
   base::Value args(base::Value::Type::LIST);
   args.Append(
       static_cast<int>(PrivacySandboxService::DialogAction::kConsentDeclined));
-  handler()->HandleDialogActionOccurred(args.GetList());
+  IdempotentDialogActionOccurred(args.GetList());
 
   ASSERT_EQ(0U, web_ui()->call_data().size());
 }
@@ -243,7 +235,7 @@ class PrivacySandboxNoticeDialogHandlerTest
         base::BindOnce(
             &MockPrivacySandboxDialogView::OpenPrivacySandboxSettings,
             dialog_mock()),
-        PrivacySandboxService::DialogType::kNotice);
+        PrivacySandboxService::PromptType::kNotice);
   }
 };
 
@@ -267,22 +259,17 @@ TEST_F(PrivacySandboxNoticeDialogHandlerTest, HandleResizeDialog) {
 }
 
 TEST_F(PrivacySandboxNoticeDialogHandlerTest, HandleShowDialog) {
-  EXPECT_CALL(*dialog_mock(), ShowNativeView());
-  EXPECT_CALL(
-      *mock_privacy_sandbox_service(),
-      DialogActionOccurred(PrivacySandboxService::DialogAction::kNoticeShown));
   EXPECT_CALL(
       *mock_privacy_sandbox_service(),
       DialogActionOccurred(
           PrivacySandboxService::DialogAction::kNoticeClosedNoInteraction));
-
-  base::Value args(base::Value::Type::LIST);
-  handler()->HandleShowDialog(args.GetList());
+  ShowDialog(PrivacySandboxService::DialogAction::kNoticeShown);
 
   ASSERT_EQ(0U, web_ui()->call_data().size());
 }
 
 TEST_F(PrivacySandboxNoticeDialogHandlerTest, HandleOpenSettings) {
+  ShowDialog(PrivacySandboxService::DialogAction::kNoticeShown);
   EXPECT_CALL(*dialog_mock(), OpenPrivacySandboxSettings());
   EXPECT_CALL(*dialog_mock(), Close());
   EXPECT_CALL(*mock_privacy_sandbox_service(),
@@ -294,21 +281,16 @@ TEST_F(PrivacySandboxNoticeDialogHandlerTest, HandleOpenSettings) {
           PrivacySandboxService::DialogAction::kNoticeClosedNoInteraction))
       .Times(0);
 
-  EXPECT_CALL(
-      *mock_sentiment_service_,
-      InteractedWithPrivacySandbox3(TrustSafetySentimentService::FeatureArea::
-                                        kPrivacySandbox3NoticeSettings))
-      .Times(1);
-
   base::Value args(base::Value::Type::LIST);
   args.Append(static_cast<int>(
       PrivacySandboxService::DialogAction::kNoticeOpenSettings));
-  handler()->HandleDialogActionOccurred(args.GetList());
+  IdempotentDialogActionOccurred(args.GetList());
 
   ASSERT_EQ(0U, web_ui()->call_data().size());
 }
 
 TEST_F(PrivacySandboxNoticeDialogHandlerTest, HandleNoticeAcknowledge) {
+  ShowDialog(PrivacySandboxService::DialogAction::kNoticeShown);
   EXPECT_CALL(*dialog_mock(), Close());
   EXPECT_CALL(*mock_privacy_sandbox_service(),
               DialogActionOccurred(
@@ -319,16 +301,10 @@ TEST_F(PrivacySandboxNoticeDialogHandlerTest, HandleNoticeAcknowledge) {
           PrivacySandboxService::DialogAction::kNoticeClosedNoInteraction))
       .Times(0);
 
-  EXPECT_CALL(
-      *mock_sentiment_service_,
-      InteractedWithPrivacySandbox3(
-          TrustSafetySentimentService::FeatureArea::kPrivacySandbox3NoticeOk))
-      .Times(1);
-
   base::Value args(base::Value::Type::LIST);
   args.Append(static_cast<int>(
       PrivacySandboxService::DialogAction::kNoticeAcknowledge));
-  handler()->HandleDialogActionOccurred(args.GetList());
+  IdempotentDialogActionOccurred(args.GetList());
 
   ASSERT_EQ(0U, web_ui()->call_data().size());
 }

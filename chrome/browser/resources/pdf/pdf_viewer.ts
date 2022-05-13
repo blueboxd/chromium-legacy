@@ -37,7 +37,7 @@ import {InkController, InkControllerEventType} from './ink_controller.js';
 import {LocalStorageProxyImpl} from './local_storage_proxy.js';
 import {record, UserAction} from './metrics.js';
 import {NavigatorDelegateImpl, PdfNavigator, WindowOpenDisposition} from './navigator.js';
-import {DeserializeKeyEvent, LoadState} from './pdf_scripting_api.js';
+import {deserializeKeyEvent, LoadState} from './pdf_scripting_api.js';
 import {getTemplate} from './pdf_viewer.html.js';
 import {KeyEventData, PDFViewerBaseElement} from './pdf_viewer_base.js';
 import {DestinationMessageData, DocumentDimensionsMessageData, hasCtrlModifier, shouldIgnoreKeyEvents} from './pdf_viewer_utils.js';
@@ -514,14 +514,15 @@ export class PDFViewerElement extends PDFViewerBaseElement {
           // Switch viewport's wheel behavior.
           this.viewport.setPresentationMode(true);
 
-          // Restrict the content to read only (e.g. disable forms and links).
-          this.pluginController_!.setReadOnly(true);
+          // Set presentation mode, which restricts the content to read only
+          // (e.g. disable forms and links).
+          this.pluginController_!.setPresentationMode(true);
 
           // Revert back to the normal state when exiting Presentation mode.
           eventToPromise('fullscreenchange', scroller).then(() => {
             assert(document.fullscreenElement === null);
             this.viewport.setPresentationMode(false);
-            this.pluginController_!.setReadOnly(false);
+            this.pluginController_!.setPresentationMode(false);
 
             // Ensure that directional keys still work after exiting.
             this.shadowRoot!.querySelector('embed')!.focus();
@@ -749,7 +750,7 @@ export class PDFViewerElement extends PDFViewerBaseElement {
       case 'sendKeyEvent':
         const keyEventData = data as unknown as KeyEventData;
         const keyEvent =
-            DeserializeKeyEvent(keyEventData.keyEvent) as ExtendedKeyEvent;
+            deserializeKeyEvent(keyEventData.keyEvent) as ExtendedKeyEvent;
         keyEvent.fromPlugin = true;
         this.handleKeyEvent(keyEvent);
         return;

@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_FILE_HANDLE_IMPL_H_
 #define CONTENT_BROWSER_FILE_SYSTEM_ACCESS_FILE_SYSTEM_ACCESS_FILE_HANDLE_IMPL_H_
 
+#include "base/callback_helpers.h"
 #include "base/files/file.h"
 #include "base/files/file_error_or.h"
 #include "base/memory/weak_ptr.h"
+#include "base/thread_annotations.h"
 #include "content/browser/file_system_access/file_system_access_handle_base.h"
 #include "content/browser/file_system_access/file_system_access_manager_impl.h"
 #include "content/common/content_export.h"
@@ -112,7 +114,7 @@ class CONTENT_EXPORT FileSystemAccessFileHandleImpl
       OpenAccessHandleCallback callback,
       scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
       base::File file,
-      base::OnceClosure on_close_callback);
+      base::ScopedClosureRunner on_close_callback);
   void DidOpenFileAndGetLength(
       OpenAccessHandleCallback callback,
       scoped_refptr<FileSystemAccessWriteLockManager::WriteLock> lock,
@@ -130,7 +132,8 @@ class CONTENT_EXPORT FileSystemAccessFileHandleImpl
 
   base::WeakPtr<FileSystemAccessHandleBase> AsWeakPtr() override;
 
-  base::WeakPtrFactory<FileSystemAccessFileHandleImpl> weak_factory_{this};
+  base::WeakPtrFactory<FileSystemAccessFileHandleImpl> weak_factory_
+      GUARDED_BY_CONTEXT(sequence_checker_){this};
 };
 
 }  // namespace content

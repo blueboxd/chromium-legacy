@@ -1076,14 +1076,15 @@ void LocalFrameView::RunIntersectionObserverSteps() {
   if (frame_->IsOutermostMainFrame()) {
     EnsureOverlayInterstitialAdDetector().MaybeFireDetection(frame_.Get());
     EnsureStickyAdDetector().MaybeFireDetection(frame_.Get());
-  }
 
-  if (frame_->IsMainFrame()) {
     // Report the main frame's document intersection with itself.
     LayoutObject* layout_object = GetLayoutView();
     gfx::Rect main_frame_dimensions(ToRoundedSize(
         To<LayoutBox>(layout_object)->PhysicalLayoutOverflowRect().size));
     GetFrame().Client()->OnMainFrameIntersectionChanged(main_frame_dimensions);
+    GetFrame().Client()->OnMainFrameViewportRectangleChanged(
+        gfx::Rect(frame_->GetMainFrameScrollPosition(),
+                  frame_->GetMainFrameViewportSize()));
   }
 
   TRACE_EVENT0("blink,benchmark",
@@ -1904,6 +1905,8 @@ void LocalFrameView::PerformPostLayoutTasks(bool visual_viewport_size_changed) {
       cache->HandleLayoutComplete(document);
     }
   }
+
+  UpdateDocumentAnnotatedRegions();
 
   GetLayoutView()->EnclosingLayer()->UpdateLayerPositionsAfterLayout();
   frame_->Selection().DidLayout();
@@ -3049,7 +3052,8 @@ void LocalFrameView::PushPaintArtifactToCompositor(bool repainted) {
       layer_debug_info_enabled_);
 
   PaintArtifactCompositor::ViewportProperties viewport_properties;
-  if (GetFrame().IsMainFrame()) {
+  // TODO(crbug.com/1254770): revisit this for embedded portals.
+  if (GetFrame().IsOutermostMainFrame()) {
     const auto& viewport = page->GetVisualViewport();
     viewport_properties.overscroll_elasticity_effect =
         viewport.GetOverscrollElasticityEffectNode();
@@ -3253,7 +3257,6 @@ void LocalFrameView::UpdateStyleAndLayout() {
     PerformPostLayoutTasks(visual_viewport_size_changed);
     GetFrame().GetDocument()->LayoutUpdated();
   }
-  UpdateDocumentAnnotatedRegions();
   UpdateGeometriesIfNeeded();
 }
 
@@ -4711,7 +4714,7 @@ void LocalFrameView::OnFirstContentfulPaint() {
   GetPage()->GetChromeClient().StopDeferringCommits(
       *frame_, cc::PaintHoldingCommitTrigger::kFirstContentfulPaint);
   const bool is_main_frame = frame_->IsMainFrame();
-  if (is_main_frame && frame_->GetDocument()->ShouldMarkFontPerformance())
+  if (frame_->GetDocument()->ShouldMarkFontPerformance())
     FontPerformance::MarkFirstContentfulPaint();
   EnsureUkmAggregator().DidReachFirstContentfulPaint(is_main_frame);
 }

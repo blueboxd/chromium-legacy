@@ -7478,7 +7478,7 @@ class TestNewWindowWebViewClient
                       network::mojom::blink::WebSandboxFlags,
                       const SessionStorageNamespaceId&,
                       bool& consumed_user_gesture,
-                      const absl::optional<WebImpression>&) override {
+                      const absl::optional<Impression>&) override {
     EXPECT_TRUE(false);
     return nullptr;
   }
@@ -12625,8 +12625,8 @@ TEST_F(WebFrameSimTest, ScrollFocusedIntoViewClipped) {
   EXPECT_GT(clip->scrollTop(), 0);
 }
 
-//  This test ensures that we scroll to the correct scale when the focused
-//  element has a selection rather than a carret.
+// This test ensures that we scroll to the correct scale when the focused
+// element has a selection rather than a caret.
 TEST_F(WebFrameSimTest, ScrollFocusedSelectionIntoView) {
   UseAndroidSettings();
   WebView().MainFrameViewWidget()->Resize(gfx::Size(400, 600));

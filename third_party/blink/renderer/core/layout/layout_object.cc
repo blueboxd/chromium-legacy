@@ -63,6 +63,7 @@
 #include "third_party/blink/renderer/core/html/html_table_cell_element.h"
 #include "third_party/blink/renderer/core/html/html_table_element.h"
 #include "third_party/blink/renderer/core/html/image_document.h"
+#include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/core/intersection_observer/element_intersection_observer_data.h"
@@ -85,6 +86,7 @@
 #include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inl.h"
 #include "third_party/blink/renderer/core/layout/layout_object_inlines.h"
+#include "third_party/blink/renderer/core/layout/layout_ruby_run.h"
 #include "third_party/blink/renderer/core/layout/layout_table_caption.h"
 #include "third_party/blink/renderer/core/layout/layout_text_fragment.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
@@ -108,7 +110,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/paint/paint_property_tree_builder.h"
 #include "third_party/blink/renderer/core/paint/paint_timing_detector.h"
-#include "third_party/blink/renderer/core/scroll/smooth_scroll_sequencer.h"
+#include "third_party/blink/renderer/core/scroll/scroll_into_view_util.h"
 #include "third_party/blink/renderer/core/style/content_data.h"
 #include "third_party/blink/renderer/core/style/cursor_data.h"
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
@@ -194,48 +196,6 @@ inline bool MightTraversePhysicalFragments(const LayoutObject& obj) {
     }
   }
   return true;
-}
-
-bool HasNativeBackgroundPainter(Node* node) {
-  if (!RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled())
-    return false;
-
-  Element* element = DynamicTo<Element>(node);
-  if (!element)
-    return false;
-
-  ElementAnimations* element_animations = element->GetElementAnimations();
-  if (!element_animations)
-    return false;
-
-  return element_animations->CompositedBackgroundColorStatus() ==
-         ElementAnimations::CompositedPaintStatus::kComposited;
-}
-
-StyleDifference AdjustForBackgroundColorPaint(
-    scoped_refptr<const ComputedStyle> old_style,
-    scoped_refptr<const ComputedStyle> new_style,
-    Node* node,
-    StyleDifference diff) {
-  // Background color changes that are triggered by animations on the compositor
-  // thread can skip paint invalidation.
-  bool had_background_color_animation =
-      old_style ? old_style->HasCurrentBackgroundColorAnimation() : false;
-  DCHECK(new_style);
-  bool has_background_color_animation =
-      new_style->HasCurrentBackgroundColorAnimation();
-  // If animation status changed, we need a paint invalidation regardless of
-  // whether the background color changed.
-  if (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
-      (had_background_color_animation != has_background_color_animation))
-    diff.SetNeedsPaintInvalidation();
-
-  bool skip_background_color_paint_invalidation =
-      !diff.BackgroundColorChanged() || HasNativeBackgroundPainter(node);
-  if (!skip_background_color_paint_invalidation)
-    diff.SetNeedsPaintInvalidation();
-
-  return diff;
 }
 
 }  // namespace
@@ -1023,38 +983,6 @@ bool LayoutObject::IsFixedPositionObjectInPagedMedia() const {
          // TODO(crbug.com/619094): Figure out the correct behaviour for fixed
          // position objects in paged media with vertical writing modes.
          view->IsHorizontalWritingMode();
-}
-
-PhysicalRect LayoutObject::ScrollRectToVisible(
-    const PhysicalRect& absolute_rect,
-    mojom::blink::ScrollIntoViewParamsPtr params) {
-  NOT_DESTROYED();
-  LayoutBox* enclosing_box = EnclosingBox();
-  if (!enclosing_box)
-    return absolute_rect;
-
-  GetFrame()->GetSmoothScrollSequencer().AbortAnimations();
-  GetFrame()->GetSmoothScrollSequencer().SetScrollType(params->type);
-  params->is_for_scroll_sequence |=
-      params->type == mojom::blink::ScrollType::kProgrammatic;
-  PhysicalRect updated_absolute_rect =
-      enclosing_box->ScrollRectToVisibleLocally(absolute_rect, params);
-
-  // Continue the scroll via IPC if there's a remote ancestor.
-  // TODO(bokan): This probably needs to happen fenced frames in at least some
-  // cases. crbug.com/1314858.
-  LocalFrame& local_root = GetFrame()->LocalFrameRoot();
-  if (!local_root.IsMainFrame()) {
-    LocalFrameView* view = local_root.View();
-    if (view->AllowedToPropagateScrollIntoView(params)) {
-      view->ScrollRectToVisibleInRemoteParent(updated_absolute_rect,
-                                              std::move(params));
-    }
-  }
-
-  GetFrame()->GetSmoothScrollSequencer().RunQueuedAnimations();
-
-  return updated_absolute_rect;
 }
 
 LayoutBox* LayoutObject::EnclosingBox() const {
@@ -2471,10 +2399,6 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
 
   diff = AdjustStyleDifference(diff);
 
-  // A change to the background color or status of BG color animation may
-  // require paint invalidation.
-  diff = AdjustForBackgroundColorPaint(style_, style, GetNode(), diff);
-
   StyleWillChange(diff, *style);
 
   scoped_refptr<const ComputedStyle> old_style = std::move(style_);
@@ -2965,8 +2889,6 @@ void LayoutObject::ApplyFirstLineChanges(const ComputedStyle* old_style) {
       if (const auto* new_first_line_style = FirstLineStyleWithoutFallback()) {
         diff = old_first_line_style->VisualInvalidationDiff(
             GetDocument(), *new_first_line_style);
-        diff = AdjustForBackgroundColorPaint(
-            old_first_line_style, new_first_line_style, GetNode(), diff);
         has_diff = true;
       }
     }
@@ -3839,6 +3761,12 @@ void LayoutObject::DestroyAndCleanupAnonymousWrappers(
     if (destroy_root_parent->Parent() &&
         destroy_root_parent->Parent()->IsLayoutNGFieldset())
       break;
+    // RubyBase should be kept if RubyText exists
+    if (destroy_root_parent->IsRubyBase()) {
+      auto* ruby_run = DynamicTo<LayoutRubyRun>(destroy_root_parent->Parent());
+      if (ruby_run && ruby_run->HasRubyText())
+        break;
+    }
 
     // We need to keep the anonymous parent, if it won't become empty by the
     // removal of this LayoutObject.
@@ -4017,14 +3945,32 @@ const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
 
   if (BehavesLikeBlockContainer()) {
     if (const ComputedStyle* cached =
-            StyleRef().GetCachedPseudoElementStyle(kPseudoIdFirstLine))
+            StyleRef().GetCachedPseudoElementStyle(kPseudoIdFirstLine)) {
       return cached;
+    }
 
-    if (const LayoutBlock* first_line_block =
-            To<LayoutBlock>(this)->EnclosingFirstLineStyleBlock()) {
-      if (first_line_block->Style() == Style()) {
-        return first_line_block->GetCachedPseudoElementStyle(
-            kPseudoIdFirstLine);
+    if (Element* element = DynamicTo<Element>(GetNode())) {
+      if (element->ShadowPseudoId() ==
+          shadow_element_names::kPseudoInternalInputSuggested) {
+        // Disable ::first-line style for autofill previews. See
+        // crbug.com/1227170.
+        return nullptr;
+      }
+    }
+
+    for (const LayoutBlock* first_line_block = To<LayoutBlock>(this);
+         first_line_block;
+         first_line_block = first_line_block->FirstLineStyleParentBlock()) {
+      const ComputedStyle& style = first_line_block->StyleRef();
+      if (!style.HasPseudoElementStyle(kPseudoIdFirstLine))
+        continue;
+      if (first_line_block == this) {
+        if (const ComputedStyle* cached =
+                first_line_block->GetCachedPseudoElementStyle(
+                    kPseudoIdFirstLine)) {
+          return cached;
+        }
+        continue;
       }
 
       // We can't use first_line_block->GetCachedPseudoElementStyle() because

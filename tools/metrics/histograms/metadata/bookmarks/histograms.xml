@@ -130,7 +130,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Bookmarks.Count.OnProfileLoad" units="bookmarks"
-    expires_after="2022-10-30">
+    expires_after="2022-11-06">
   <owner>supertri@chromium.org</owner>
   <owner>isherman@chromium.org</owner>
   <owner>aidanday@google.com</owner>
@@ -667,6 +667,36 @@ chromium-metrics-reviews@google.com.
   <component>UI&gt;Browser&gt;Bookmarks</component>
   <summary>
     Recorded when an action in the Bookmark icon menu is clicked.
+  </summary>
+</histogram>
+
+<histogram name="Bookmarks.Storage.FileSizeAtStartup" units="KB"
+    expires_after="2023-04-21">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <component>UI&gt;Browser&gt;Bookmarks</component>
+  <summary>Size of the bookmarks file, recorded at startup.</summary>
+</histogram>
+
+<histogram name="Bookmarks.Storage.TimeSinceLastScheduledSave" units="ms"
+    expires_after="2023-04-21">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <component>UI&gt;Browser&gt;Bookmarks</component>
+  <summary>
+    Time delta between bookmark file saves, recorded when a save occurs.
+    Recorded on the first save as the time since startup.
+  </summary>
+</histogram>
+
+<histogram name="Bookmarks.Storage.TimeToLoadAtStartup" units="ms"
+    expires_after="2023-04-21">
+  <owner>wylieb@chromium.org</owner>
+  <owner>chrome-collections@google.com</owner>
+  <component>UI&gt;Browser&gt;Bookmarks</component>
+  <summary>
+    Duration of loading the bookmarks file, recorded when the bookmark model is
+    loaded.
   </summary>
 </histogram>
 

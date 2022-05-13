@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/containers/contains.h"
-#include "base/feature_list.h"
 #include "base/guid.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
@@ -27,7 +26,6 @@
 #include "components/policy/core/common/cloud/encrypted_reporting_job_configuration.h"
 #include "components/policy/core/common/cloud/realtime_reporting_job_configuration.h"
 #include "components/policy/core/common/cloud/signing_service.h"
-#include "components/policy/core/common/features.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
@@ -452,10 +450,8 @@ void CloudPolicyClient::FetchPolicy() {
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
     // Only set browser device identifier for CBCM Chrome cloud policy on
     // desktop.
-    if (base::FeatureList::IsEnabled(
-            features::kUploadBrowserDeviceIdentifier) &&
-        type_to_fetch.first ==
-            dm_protocol::kChromeMachineLevelUserCloudPolicyType) {
+    if (type_to_fetch.first ==
+        dm_protocol::kChromeMachineLevelUserCloudPolicyType) {
       fetch_request->set_allocated_browser_device_identifier(
           GetBrowserDeviceIdentifier().release());
     }
@@ -722,15 +718,22 @@ void CloudPolicyClient::UploadEncryptedReport(
     return;
   }
 
-  std::unique_ptr<EncryptedReportingJobConfiguration> config =
-      std::make_unique<EncryptedReportingJobConfiguration>(
-          this, service()->configuration()->GetEncryptedReportingServerUrl(),
-          std::move(merging_payload),
-          base::BindOnce(&CloudPolicyClient::OnEncryptedReportUploadCompleted,
-                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  auto config = std::make_unique<EncryptedReportingJobConfiguration>(
+      this, service()->configuration()->GetEncryptedReportingServerUrl(),
+      std::move(merging_payload),
+      base::BindOnce(&CloudPolicyClient::OnEncryptedReportUploadCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   if (context.has_value()) {
     config->UpdateContext(std::move(context.value()));
   }
+  const auto delay = config->WhenIsAllowedToProceed();
+  if (delay.is_positive()) {
+    // Reject upload.
+    config->CancelNotAllowedJob();  // Invokes callback to response back.
+    return;
+  }
+  // Accept upload.
+  config->AccountForAllowedJob();
   request_jobs_.push_back(service_->CreateJob(std::move(config)));
 }
 
@@ -1433,7 +1436,7 @@ void CloudPolicyClient::OnRealtimeReportUploadCompleted(
     StatusCallback callback,
     DeviceManagementService::Job* job,
     DeviceManagementStatus status,
-    int net_error,
+    int reponse_code,
     absl::optional<base::Value::Dict> response) {
   status_ = status;
   if (status != DM_STATUS_SUCCESS)
@@ -1450,8 +1453,9 @@ void CloudPolicyClient::OnEncryptedReportUploadCompleted(
     ResponseCallback callback,
     DeviceManagementService::Job* job,
     DeviceManagementStatus status,
-    int net_error,
+    int reponse_code,
     absl::optional<base::Value::Dict> response) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (job == nullptr) {
     std::move(callback).Run(absl::nullopt);
     return;

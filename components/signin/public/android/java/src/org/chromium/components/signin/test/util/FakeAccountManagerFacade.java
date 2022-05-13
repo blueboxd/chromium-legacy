@@ -12,8 +12,6 @@ import androidx.annotation.GuardedBy;
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 
-import com.google.common.base.Optional;
-
 import org.chromium.base.Callback;
 import org.chromium.base.Promise;
 import org.chromium.base.ThreadUtils;
@@ -46,6 +44,9 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     private final Set<AccountHolder> mAccountHolders = new LinkedHashSet<>();
     private final List<AccountsChangeObserver> mObservers = new ArrayList<>();
 
+    /** Can be used to block {@link #getAccounts()} result. */
+    private @Nullable Promise<List<Account>> mBlockedGetAccountsPromise;
+
     /**
      * Creates an object of FakeAccountManagerFacade.
      */
@@ -67,13 +68,12 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
 
     @Override
     public Promise<List<Account>> getAccounts() {
-        List<Account> accounts = new ArrayList<>();
         synchronized (mLock) {
-            for (AccountHolder accountHolder : mAccountHolders) {
-                accounts.add(accountHolder.getAccount());
+            if (mBlockedGetAccountsPromise != null) {
+                return mBlockedGetAccountsPromise;
             }
+            return Promise.fulfilled(getAccountsInternal());
         }
-        return Promise.fulfilled(accounts);
     }
 
     @Override
@@ -115,12 +115,6 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
     @Override
     public Promise<AccountCapabilities> getAccountCapabilities(Account account) {
         return Promise.fulfilled(new AccountCapabilities(new HashMap<>()));
-    }
-
-    @Override
-    public Optional<Boolean> canOfferExtendedSyncPromos(Account account) {
-        assert account != null;
-        return Optional.absent();
     }
 
     @Override
@@ -175,6 +169,40 @@ public class FakeAccountManagerFacade implements AccountManagerFacade {
      */
     public static String generateChildEmail(String baseEmail) {
         return CHILD_ACCOUNT_NAME_PREFIX + baseEmail;
+    }
+
+    /**
+     * Blocks callers from getting accounts through {@link #getAccounts}.
+     * After this method is called, subsequent calls to {@link #getAccounts} will return
+     * a non-fulfilled promise. Use {@link #unblockGetAccounts} to unblock this promise.
+     */
+    public void blockGetAccounts() {
+        synchronized (mLock) {
+            assert mBlockedGetAccountsPromise == null;
+            mBlockedGetAccountsPromise = new Promise<>();
+        }
+    }
+
+    /**
+     * Unblocks callers that are waiting for {@link #getAccounts} result.
+     * Use after {@link #blockGetAccounts} to unblock callers waiting for promises obtained from
+     * {@link #getAccounts}.
+     */
+    public void unblockGetAccounts() {
+        synchronized (mLock) {
+            assert mBlockedGetAccountsPromise != null;
+            mBlockedGetAccountsPromise.fulfill(getAccountsInternal());
+            mBlockedGetAccountsPromise = null;
+        }
+    }
+
+    @GuardedBy("mLock")
+    private List<Account> getAccountsInternal() {
+        List<Account> accounts = new ArrayList<>();
+        for (AccountHolder accountHolder : mAccountHolders) {
+            accounts.add(accountHolder.getAccount());
+        }
+        return accounts;
     }
 
     @GuardedBy("mLock")

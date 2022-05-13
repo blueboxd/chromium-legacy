@@ -69,11 +69,18 @@ async function fetchAllImagesForCollections(
 export async function fetchGooglePhotosAlbum(
     provider: WallpaperProviderInterface, store: PersonalizationStore,
     albumId: string): Promise<void> {
-  // Photos should only be fetched after confirming access is allowed.
+  // Photos should only be fetched after determining whether access is allowed.
   const enabled = store.data.wallpaper.googlePhotos.enabled;
-  assert(enabled === GooglePhotosEnablementState.kEnabled);
+  assert(enabled !== undefined);
 
   store.dispatch(action.beginLoadGooglePhotosAlbumAction(albumId));
+
+  // If access is *not* allowed, short-circuit the request.
+  if (enabled !== GooglePhotosEnablementState.kEnabled) {
+    store.dispatch(action.appendGooglePhotosPhotosAction(
+        /*photos=*/ null, /*resumeToken=*/ null));
+    return;
+  }
 
   let photos: Array<GooglePhotosPhoto>|null = [];
   let resumeToken =
@@ -106,11 +113,18 @@ export async function fetchGooglePhotosAlbum(
 export async function fetchGooglePhotosAlbums(
     provider: WallpaperProviderInterface,
     store: PersonalizationStore): Promise<void> {
-  // Albums should only be fetched after confirming access is allowed.
+  // Albums should only be fetched after determining whether access is allowed.
   const enabled = store.data.wallpaper.googlePhotos.enabled;
-  assert(enabled === GooglePhotosEnablementState.kEnabled);
+  assert(enabled !== undefined);
 
   store.dispatch(action.beginLoadGooglePhotosAlbumsAction());
+
+  // If access is *not* allowed, short-circuit the request.
+  if (enabled !== GooglePhotosEnablementState.kEnabled) {
+    store.dispatch(action.appendGooglePhotosAlbumsAction(
+        /*albums=*/ null, /*resumeToken=*/ null));
+    return;
+  }
 
   let albums: Array<GooglePhotosAlbum>|null = [];
   let resumeToken = store.data.wallpaper.googlePhotos.resumeTokens.albums;
@@ -155,11 +169,18 @@ async function fetchGooglePhotosEnabled(
 export async function fetchGooglePhotosPhotos(
     provider: WallpaperProviderInterface,
     store: PersonalizationStore): Promise<void> {
-  // Photos should only be fetched after confirmed access is allowed.
+  // Photos should only be fetched after determining whether access is allowed.
   const enabled = store.data.wallpaper.googlePhotos.enabled;
-  assert(enabled === GooglePhotosEnablementState.kEnabled);
+  assert(enabled !== undefined);
 
   store.dispatch(action.beginLoadGooglePhotosPhotosAction());
+
+  // If access is *not* allowed, short-circuit the request.
+  if (enabled !== GooglePhotosEnablementState.kEnabled) {
+    store.dispatch(action.appendGooglePhotosPhotosAction(
+        /*photos=*/ null, /*resumeToken=*/ null));
+    return;
+  }
 
   let photos: Array<GooglePhotosPhoto>|null = [];
   let resumeToken = store.data.wallpaper.googlePhotos.resumeTokens.photos;
@@ -407,30 +428,13 @@ export async function initializeBackdropData(
   await fetchAllImagesForCollections(provider, store);
 }
 
+// TODO(b:230635452): Remove this method since it is now just a thin wrapper.
 /** Fetches initial Google Photos data and saves it to the store. */
 export async function initializeGooglePhotosData(
     provider: WallpaperProviderInterface,
     store: PersonalizationStore): Promise<void> {
   // Fetch whether the user is allowed to access Google Photos.
   await fetchGooglePhotosEnabled(provider, store);
-
-  // Only proceed to fetch Google Photos data if the user is allowed.
-  const enabled = store.data.wallpaper.googlePhotos.enabled;
-  if (enabled === GooglePhotosEnablementState.kEnabled) {
-    await Promise.all([
-      fetchGooglePhotosAlbums(provider, store),
-      fetchGooglePhotosPhotos(provider, store),
-    ]);
-  } else {
-    const result = null;
-    const resumeToken = null;
-    store.beginBatchUpdate();
-    store.dispatch(action.beginLoadGooglePhotosAlbumsAction());
-    store.dispatch(action.beginLoadGooglePhotosPhotosAction());
-    store.dispatch(action.appendGooglePhotosAlbumsAction(result, resumeToken));
-    store.dispatch(action.appendGooglePhotosPhotosAction(result, resumeToken));
-    store.endBatchUpdate();
-  }
 }
 
 /**

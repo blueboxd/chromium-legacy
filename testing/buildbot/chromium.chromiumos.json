@@ -38,27 +38,12 @@
       "chromiumos_preflight"
     ]
   },
-  "chromeos-amd64-generic-asan-rel (reclient shadow)": {
-    "additional_compile_targets": [
-      "chromiumos_preflight"
-    ]
-  },
   "chromeos-amd64-generic-cfi-thin-lto-rel": {
     "additional_compile_targets": [
       "chromiumos_preflight"
     ]
   },
-  "chromeos-amd64-generic-cfi-thin-lto-rel (reclient shadow)": {
-    "additional_compile_targets": [
-      "chromiumos_preflight"
-    ]
-  },
   "chromeos-amd64-generic-dbg": {
-    "additional_compile_targets": [
-      "chromiumos_preflight"
-    ]
-  },
-  "chromeos-amd64-generic-dbg (reclient shadow)": {
     "additional_compile_targets": [
       "chromiumos_preflight"
     ]
@@ -1266,11 +1251,6 @@
       "chromiumos_preflight"
     ]
   },
-  "chromeos-arm-generic-dbg (reclient shadow)": {
-    "additional_compile_targets": [
-      "chromiumos_preflight"
-    ]
-  },
   "chromeos-arm-generic-rel": {
     "additional_compile_targets": [
       "chromiumos_preflight"
@@ -1382,11 +1362,6 @@
       }
     ]
   },
-  "chromeos-kevin-rel (reclient shadow)": {
-    "additional_compile_targets": [
-      "chromiumos_preflight"
-    ]
-  },
   "lacros-amd64-generic-binary-size-rel": {
     "additional_compile_targets": [
       "chrome"
@@ -1398,6 +1373,35 @@
       "browser_tests"
     ],
     "gtest_tests": [
+      {
+        "args": [
+          "--board=amd64-generic",
+          "--use-vm"
+        ],
+        "merge": {
+          "args": [],
+          "script": "//testing/merge_scripts/standard_gtest_merge.py"
+        },
+        "name": "base_unittests amd64-generic",
+        "resultdb": {
+          "enable": true,
+          "has_native_resultdb_integration": true
+        },
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "cpu": "x86",
+              "kvm": "1",
+              "os": "Ubuntu-18.04"
+            }
+          ],
+          "service_account": "chromium-tester@chops-service-accounts.iam.gserviceaccount.com"
+        },
+        "test": "base_unittests",
+        "test_id_prefix": "ninja://base:base_unittests/",
+        "variant_id": "amd64-generic"
+      },
       {
         "args": [
           "--board=amd64-generic",
@@ -5797,21 +5801,21 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v100.0.4896.133/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v101.0.4951.59/test_ash_chrome"
         ],
         "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "lacros_chrome_browsertests Lacros version skew testing ash 100.0.4896.133",
+        "name": "lacros_chrome_browsertests Lacros version skew testing ash 101.0.4951.59",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v100.0.4896.133",
-              "revision": "version:100.0.4896.133"
+              "location": "lacros_version_skew_tests_v101.0.4951.59",
+              "revision": "version:101.0.4951.59"
             }
           ],
           "dimension_sets": [
@@ -5823,7 +5827,7 @@
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/",
-        "variant_id": "Lacros version skew testing ash 100.0.4896.133"
+        "variant_id": "Lacros version skew testing ash 101.0.4951.59"
       },
       {
         "args": [
@@ -5859,21 +5863,21 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v103.0.5037.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v103.0.5045.0/test_ash_chrome"
         ],
         "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "lacros_chrome_browsertests Lacros version skew testing ash 103.0.5037.0",
+        "name": "lacros_chrome_browsertests Lacros version skew testing ash 103.0.5045.0",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v103.0.5037.0",
-              "revision": "version:103.0.5037.0"
+              "location": "lacros_version_skew_tests_v103.0.5045.0",
+              "revision": "version:103.0.5045.0"
             }
           ],
           "dimension_sets": [
@@ -5885,26 +5889,26 @@
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/",
-        "variant_id": "Lacros version skew testing ash 103.0.5037.0"
+        "variant_id": "Lacros version skew testing ash 103.0.5045.0"
       },
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v103.0.5047.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v103.0.5059.0/test_ash_chrome"
         ],
         "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "lacros_chrome_browsertests Lacros version skew testing ash 103.0.5047.0",
+        "name": "lacros_chrome_browsertests Lacros version skew testing ash 103.0.5059.0",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v103.0.5047.0",
-              "revision": "version:103.0.5047.0"
+              "location": "lacros_version_skew_tests_v103.0.5059.0",
+              "revision": "version:103.0.5059.0"
             }
           ],
           "dimension_sets": [
@@ -5916,7 +5920,7 @@
         },
         "test": "lacros_chrome_browsertests",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests/",
-        "variant_id": "Lacros version skew testing ash 103.0.5047.0"
+        "variant_id": "Lacros version skew testing ash 103.0.5059.0"
       },
       {
         "args": [
@@ -5943,21 +5947,21 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v100.0.4896.133/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v101.0.4951.59/test_ash_chrome"
         ],
         "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "lacros_chrome_browsertests_run_in_series Lacros version skew testing ash 100.0.4896.133",
+        "name": "lacros_chrome_browsertests_run_in_series Lacros version skew testing ash 101.0.4951.59",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v100.0.4896.133",
-              "revision": "version:100.0.4896.133"
+              "location": "lacros_version_skew_tests_v101.0.4951.59",
+              "revision": "version:101.0.4951.59"
             }
           ],
           "dimension_sets": [
@@ -5969,7 +5973,7 @@
         },
         "test": "lacros_chrome_browsertests_run_in_series",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests_run_in_series/",
-        "variant_id": "Lacros version skew testing ash 100.0.4896.133"
+        "variant_id": "Lacros version skew testing ash 101.0.4951.59"
       },
       {
         "args": [
@@ -6005,21 +6009,21 @@
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v103.0.5037.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v103.0.5045.0/test_ash_chrome"
         ],
         "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "lacros_chrome_browsertests_run_in_series Lacros version skew testing ash 103.0.5037.0",
+        "name": "lacros_chrome_browsertests_run_in_series Lacros version skew testing ash 103.0.5045.0",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v103.0.5037.0",
-              "revision": "version:103.0.5037.0"
+              "location": "lacros_version_skew_tests_v103.0.5045.0",
+              "revision": "version:103.0.5045.0"
             }
           ],
           "dimension_sets": [
@@ -6031,26 +6035,26 @@
         },
         "test": "lacros_chrome_browsertests_run_in_series",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests_run_in_series/",
-        "variant_id": "Lacros version skew testing ash 103.0.5037.0"
+        "variant_id": "Lacros version skew testing ash 103.0.5045.0"
       },
       {
         "args": [
           "--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.lacros_chrome_browsertests.skew.filter",
-          "--ash-chrome-path-override=../../lacros_version_skew_tests_v103.0.5047.0/test_ash_chrome"
+          "--ash-chrome-path-override=../../lacros_version_skew_tests_v103.0.5059.0/test_ash_chrome"
         ],
         "isolate_profile_data": true,
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "lacros_chrome_browsertests_run_in_series Lacros version skew testing ash 103.0.5047.0",
+        "name": "lacros_chrome_browsertests_run_in_series Lacros version skew testing ash 103.0.5059.0",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "cipd_packages": [
             {
               "cipd_package": "chromium/testing/linux-ash-chromium/x86_64/ash.zip",
-              "location": "lacros_version_skew_tests_v103.0.5047.0",
-              "revision": "version:103.0.5047.0"
+              "location": "lacros_version_skew_tests_v103.0.5059.0",
+              "revision": "version:103.0.5059.0"
             }
           ],
           "dimension_sets": [
@@ -6062,7 +6066,7 @@
         },
         "test": "lacros_chrome_browsertests_run_in_series",
         "test_id_prefix": "ninja://chrome/test:lacros_chrome_browsertests_run_in_series/",
-        "variant_id": "Lacros version skew testing ash 103.0.5047.0"
+        "variant_id": "Lacros version skew testing ash 103.0.5059.0"
       },
       {
         "isolate_profile_data": true,

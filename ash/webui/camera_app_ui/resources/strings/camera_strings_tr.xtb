@@ -32,6 +32,7 @@
 <translation id="2134029355740465625">Video ayarları</translation>
 <translation id="2144806332417375165">Özel video parametreleri</translation>
 <translation id="2175927920773552910">QR Kodu</translation>
+<translation id="2244252133441425811">Video FPS seçiciyi etkinleştirin</translation>
 <translation id="2271433936731426666">Videonun tam boyutlu anlık görüntüsünü etkinleştir</translation>
 <translation id="229579744168541441">Diske aktar</translation>
 <translation id="2320741269052147773">Sola kaydır</translation>
@@ -118,6 +119,7 @@
 Geri bildiriminiz resim ya da video kalitesi ile ilgiliyse lütfen örnek bir fotoğraf veya video ekleyip sorunun ne olduğunu açıklayın. (Örneğin, fotoğraf çok karanlık veya özne net değil.)</translation>
 <translation id="6420689864531458495">(<ph name="ASPECT_RATIO_WIDTH" />:<ph name="ASPECT_RATIO_HEIGHT" /> - <ph name="WIDTH" />x<ph name="HEIGHT" />) <ph name="MEGAPIXEL" /> megapiksel</translation>
 <translation id="6527303717912515753">Paylaş</translation>
+<translation id="6617916774429601017">Tüm çözünürlükleri göster</translation>
 <translation id="6631515515009660915">Yansıtma kapalı</translation>
 <translation id="6652737148136672975">Köşe konumunu ok tuşlarıyla taşıyın</translation>
 <translation id="667999046851023355">Doküman</translation>

@@ -5,9 +5,11 @@
 #include "chrome/browser/ui/webui/profile_internals/profile_internals_handler.h"
 
 #include "base/bind.h"
+#include "base/containers/flat_set.h"
 #include "base/json/values_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/keep_alive/profile_keep_alive_types.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -40,6 +42,34 @@ base::Value CreateProfileEntry(const ProfileAttributesEntry* entry) {
   profile_entry.SetStringKey("gaiaId", entry->GetGAIAId());
   profile_entry.SetStringKey("userName", entry->GetUserName());
   profile_entry.SetStringKey("hostedDomain", entry->GetHostedDomain());
+  profile_entry.SetBoolKey("isSupervised", entry->IsSupervised());
+  profile_entry.SetBoolKey("isOmitted", entry->IsOmitted());
+  profile_entry.SetBoolKey("isEphemeral", entry->IsEphemeral());
+  profile_entry.SetBoolKey("userAcceptedAccountManagement",
+                           entry->UserAcceptedAccountManagement());
+
+  base::Value keep_alives(base::Value::Type::LIST);
+  std::map<ProfileKeepAliveOrigin, int> keep_alives_map =
+      g_browser_process->profile_manager()->GetKeepAlivesByPath(
+          entry->GetPath());
+  for (const auto& pair : keep_alives_map) {
+    if (pair.second != 0) {
+      std::stringstream ss;
+      ss << pair.first;
+      base::Value keep_alive_pair(base::Value::Type::DICTIONARY);
+      keep_alive_pair.SetStringKey("origin", ss.str());
+      keep_alive_pair.SetIntKey("count", pair.second);
+      keep_alives.Append(std::move(keep_alive_pair));
+    }
+  }
+  profile_entry.SetKey("keepAlives", std::move(keep_alives));
+
+  base::Value signedAccounts(base::Value::Type::LIST);
+  for (const std::string& gaiaId : entry->GetGaiaIds()) {
+    signedAccounts.Append(gaiaId);
+  }
+  profile_entry.SetKey("signedAccounts", std::move(signedAccounts));
+
   return profile_entry;
 }
 

@@ -399,10 +399,6 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
           "Scheduler.InIdlePeriod",
           &main_thread_scheduler_impl->tracing_controller_,
           YesNoStateToString),
-      use_virtual_time(false,
-                       "Scheduler.UseVirtualTime",
-                       &main_thread_scheduler_impl->tracing_controller_,
-                       YesNoStateToString),
       is_audio_playing(false,
                        "RendererAudioState",
                        &main_thread_scheduler_impl->tracing_controller_,
@@ -720,7 +716,6 @@ scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerImpl::NewTaskQueue(
   // be suspended by adding a fence to prevent immediate tasks from running when
   // they're not supposed to.
   if (main_thread_only().virtual_time_stopped &&
-      main_thread_only().use_virtual_time &&
       !task_queue->CanRunWhenVirtualTimePaused()) {
     task_queue->GetTaskQueue()->InsertFence(
         TaskQueue::InsertFencePosition::kNow);
@@ -1756,17 +1751,14 @@ IdleTimeEstimator* MainThreadSchedulerImpl::GetIdleTimeEstimatorForTesting() {
 
 base::TimeTicks MainThreadSchedulerImpl::EnableVirtualTime(
     base::Time initial_time) {
-  if (main_thread_only().use_virtual_time)
-    return main_thread_only().initial_virtual_time_ticks;
-  main_thread_only().use_virtual_time = true;
-  main_thread_only().initial_virtual_time =
-      initial_time.is_null() ? base::Time::Now() : initial_time;
-  DCHECK(main_thread_only().initial_virtual_time_ticks.is_null());
-  main_thread_only().initial_virtual_time_ticks = NowTicks();
+  if (virtual_time_domain_)
+    return virtual_time_domain_->InitialTicks();
+  if (initial_time.is_null())
+    initial_time = base::Time::Now();
+  base::TimeTicks initial_ticks = NowTicks();
   DCHECK(!virtual_time_domain_);
   virtual_time_domain_ = std::make_unique<AutoAdvancingVirtualTimeDomain>(
-      main_thread_only().initial_virtual_time,
-      main_thread_only().initial_virtual_time_ticks, &helper_);
+      initial_time, initial_ticks, &helper_);
   helper_.SetTimeDomain(virtual_time_domain_.get());
 
   DCHECK(!virtual_time_control_task_queue_);
@@ -1781,30 +1773,22 @@ base::TimeTicks MainThreadSchedulerImpl::EnableVirtualTime(
     page_scheduler->OnVirtualTimeEnabled();
   }
 
-  virtual_time_domain_->SetCanAdvanceVirtualTime(
-      !main_thread_only().virtual_time_stopped);
+  DCHECK(!main_thread_only().virtual_time_stopped);
+  virtual_time_domain_->SetCanAdvanceVirtualTime(true);
 
-  if (main_thread_only().virtual_time_stopped)
-    VirtualTimePaused();
-  return main_thread_only().initial_virtual_time_ticks;
+  return initial_ticks;
 }
 
 bool MainThreadSchedulerImpl::IsVirtualTimeEnabled() const {
-  return main_thread_only().use_virtual_time;
+  return !!virtual_time_domain_;
 }
 
 void MainThreadSchedulerImpl::DisableVirtualTimeForTesting() {
-  if (!main_thread_only().use_virtual_time)
+  if (!IsVirtualTimeEnabled())
     return;
   // Reset virtual time and all tasks queues back to their initial state.
-  main_thread_only().use_virtual_time = false;
+  SetVirtualTimeStopped(false);
 
-  if (main_thread_only().virtual_time_stopped) {
-    main_thread_only().virtual_time_stopped = false;
-    VirtualTimeResumed();
-  }
-
-  ForceUpdatePolicy();
   // This can only happen during test tear down, in which case there is no need
   // to notify the pages that virtual time was disabled.
 
@@ -1812,10 +1796,8 @@ void MainThreadSchedulerImpl::DisableVirtualTimeForTesting() {
   virtual_time_control_task_queue_->ShutdownTaskQueue();
   virtual_time_control_task_queue_ = nullptr;
   virtual_time_domain_.reset();
-  ApplyVirtualTimePolicy();
 
-  main_thread_only().initial_virtual_time = base::Time();
-  main_thread_only().initial_virtual_time_ticks = base::TimeTicks();
+  ForceUpdatePolicy();
 
   // Reset the MetricsHelper because it gets confused by time going backwards.
   base::TimeTicks now = NowTicks();
@@ -1823,12 +1805,10 @@ void MainThreadSchedulerImpl::DisableVirtualTimeForTesting() {
 }
 
 void MainThreadSchedulerImpl::SetVirtualTimeStopped(bool virtual_time_stopped) {
+  DCHECK(IsVirtualTimeEnabled());
   if (main_thread_only().virtual_time_stopped == virtual_time_stopped)
     return;
   main_thread_only().virtual_time_stopped = virtual_time_stopped;
-
-  if (!main_thread_only().use_virtual_time)
-    return;
 
   virtual_time_domain_->SetCanAdvanceVirtualTime(!virtual_time_stopped);
 
@@ -1876,55 +1856,51 @@ void MainThreadSchedulerImpl::GrantVirtualTimeBudget(
 
 base::TimeTicks MainThreadSchedulerImpl::IncrementVirtualTimePauseCount() {
   main_thread_only().virtual_time_pause_count++;
-  ApplyVirtualTimePolicy();
-
+  if (IsVirtualTimeEnabled())
+    ApplyVirtualTimePolicy();
   return NowTicks();
 }
 
 void MainThreadSchedulerImpl::DecrementVirtualTimePauseCount() {
   main_thread_only().virtual_time_pause_count--;
   DCHECK_GE(main_thread_only().virtual_time_pause_count, 0);
-  ApplyVirtualTimePolicy();
+  if (IsVirtualTimeEnabled())
+    ApplyVirtualTimePolicy();
 }
 
 void MainThreadSchedulerImpl::MaybeAdvanceVirtualTime(
     base::TimeTicks new_virtual_time) {
-  if (virtual_time_domain_)
+  if (IsVirtualTimeEnabled())
     virtual_time_domain_->MaybeAdvanceVirtualTime(new_virtual_time);
 }
 
 void MainThreadSchedulerImpl::SetVirtualTimePolicy(VirtualTimePolicy policy) {
-  DCHECK(main_thread_only().use_virtual_time);
+  DCHECK(IsVirtualTimeEnabled());
   main_thread_only().virtual_time_policy = policy;
   ApplyVirtualTimePolicy();
 }
 
 void MainThreadSchedulerImpl::ApplyVirtualTimePolicy() {
+  DCHECK(IsVirtualTimeEnabled());
   switch (main_thread_only().virtual_time_policy) {
     case VirtualTimePolicy::kAdvance:
-      if (virtual_time_domain_) {
-        virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(
-            main_thread_only().IsInNestedRunloop()
-                ? 0
-                : main_thread_only().max_virtual_time_task_starvation_count);
-        virtual_time_domain_->SetVirtualTimeFence(base::TimeTicks());
-      }
+      virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(
+          main_thread_only().IsInNestedRunloop()
+              ? 0
+              : main_thread_only().max_virtual_time_task_starvation_count);
+      virtual_time_domain_->SetVirtualTimeFence(base::TimeTicks());
       SetVirtualTimeStopped(false);
       break;
     case VirtualTimePolicy::kPause:
-      if (virtual_time_domain_) {
-        virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(0);
-        virtual_time_domain_->SetVirtualTimeFence(NowTicks());
-      }
+      virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(0);
+      virtual_time_domain_->SetVirtualTimeFence(NowTicks());
       SetVirtualTimeStopped(true);
       break;
     case VirtualTimePolicy::kDeterministicLoading:
-      if (virtual_time_domain_) {
-        virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(
-            main_thread_only().IsInNestedRunloop()
-                ? 0
-                : main_thread_only().max_virtual_time_task_starvation_count);
-      }
+      virtual_time_domain_->SetMaxVirtualTimeTaskStarvationCount(
+          main_thread_only().IsInNestedRunloop()
+              ? 0
+              : main_thread_only().max_virtual_time_task_starvation_count);
 
       // We pause virtual time while the run loop is nested because that implies
       // something modal is happening such as the DevTools debugger pausing the
@@ -1938,7 +1914,7 @@ void MainThreadSchedulerImpl::ApplyVirtualTimePolicy() {
 
 void MainThreadSchedulerImpl::SetMaxVirtualTimeTaskStarvationCount(
     int max_task_starvation_count) {
-  DCHECK(main_thread_only().use_virtual_time);
+  DCHECK(IsVirtualTimeEnabled());
   main_thread_only().max_virtual_time_task_starvation_count =
       max_task_starvation_count;
   ApplyVirtualTimePolicy();
@@ -2024,7 +2000,7 @@ void MainThreadSchedulerImpl::WriteIntoTraceLocked(
            main_thread_only().virtual_time_pause_count);
   dict.Add("virtual_time_policy",
            VirtualTimePolicyToString(main_thread_only().virtual_time_policy));
-  dict.Add("virtual_time", main_thread_only().use_virtual_time);
+  dict.Add("virtual_time", !!virtual_time_domain_);
 
   dict.Add("page_schedulers", [&](perfetto::TracedValue context) {
     auto array = std::move(context).WriteArray();
@@ -2686,13 +2662,15 @@ TaskQueue::QueuePriority MainThreadSchedulerImpl::ComputePriority(
 void MainThreadSchedulerImpl::OnBeginNestedRunLoop() {
   DCHECK(!main_thread_only().running_queues.empty());
   main_thread_only().nested_runloop_depth++;
-  ApplyVirtualTimePolicy();
+  if (IsVirtualTimeEnabled())
+    ApplyVirtualTimePolicy();
 }
 
 void MainThreadSchedulerImpl::OnExitNestedRunLoop() {
   DCHECK(!main_thread_only().running_queues.empty());
   main_thread_only().nested_runloop_depth--;
-  ApplyVirtualTimePolicy();
+  if (IsVirtualTimeEnabled())
+    ApplyVirtualTimePolicy();
 }
 
 void MainThreadSchedulerImpl::AddTaskTimeObserver(

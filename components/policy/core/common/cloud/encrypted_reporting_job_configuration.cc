@@ -46,7 +46,7 @@ EncryptedReportingJobConfiguration::~EncryptedReportingJobConfiguration() {
     // failure to the callback.
     std::move(callback_).Run(/*job=*/nullptr,
                              DeviceManagementStatus::DM_STATUS_REQUEST_FAILED,
-                             /*net_error=*/418,
+                             /*response_code=*/418,
                              /*response_body=*/absl::nullopt);
   }
 }
@@ -65,6 +65,23 @@ void EncryptedReportingJobConfiguration::UpdatePayloadBeforeGetInternal() {
 void EncryptedReportingJobConfiguration::UpdateContext(
     base::Value::Dict context) {
   context_ = std::move(context);
+}
+
+base::TimeDelta EncryptedReportingJobConfiguration::WhenIsAllowedToProceed()
+    const {
+  return base::TimeDelta();  // 0 - allowed right away. TODO(b/214044545):
+                             // implement.
+}
+
+void EncryptedReportingJobConfiguration::CancelNotAllowedJob() {
+  std::move(callback_).Run(
+      /*job=*/nullptr, DeviceManagementStatus::DM_STATUS_REQUEST_FAILED,
+      /*response_code=*/DeviceManagementService::kTooManyRequests,
+      /*response_body=*/absl::nullopt);
+}
+
+void EncryptedReportingJobConfiguration::AccountForAllowedJob() {
+  // TODO(b/214044545): implement.
 }
 
 DeviceManagementService::Job::RetryMethod

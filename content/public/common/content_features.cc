@@ -662,6 +662,10 @@ const base::Feature kProcessSharingWithStrictSiteInstances{
 const base::Feature kHighPriorityBeforeUnload{
     "HighPriorityBeforeUnload", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Preload cookie database on NetworkContext creation.
+const base::Feature kPreloadCookies{"PreloadCookies",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables exposure of ads APIs in the renderer: Attribution Reporting,
 // FLEDGE, Topics.
 const base::Feature kPrivacySandboxAdsAPIsOverride{
@@ -1161,6 +1165,10 @@ const base::Feature kBackgroundMediaRendererHasModerateBinding{
 // threads on.
 const base::Feature kBigLittleScheduling{"BigLittleScheduling",
                                          base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Coalesce independent begin frame by ignoring begin frame that is out of date.
+const base::Feature kCoalesceIndependentBeginFrame{
+    "CoalesceIndependentBeginFrame", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Allows the use of an experimental feature to drop any AccessibilityEvents
 // that are not relevant to currently enabled accessibility services.

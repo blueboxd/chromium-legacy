@@ -169,7 +169,7 @@ std::vector<SupportedVideoDecoderConfig> GetSupportedConfigsInternal(
                                  false);  // require_encrypted
 
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
-  if (base::FeatureList::IsEnabled(kMediaCodecHEVC)) {
+  if (base::FeatureList::IsEnabled(kPlatformHEVCDecoderSupport)) {
     supported_configs.emplace_back(HEVCPROFILE_MIN, HEVCPROFILE_MAX,
                                    gfx::Size(0, 0), gfx::Size(3840, 2160),
                                    true,    // allow_encrypted
@@ -719,7 +719,7 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
                           BindToCurrentLoop(base::BindRepeating(
                               &MediaCodecVideoDecoder::StartTimerOrPumpCodec,
                               weak_factory_.GetWeakPtr()))),
-      base::SequencedTaskRunnerHandle::Get());
+      base::SequencedTaskRunnerHandle::Get(), decoder_config_.coded_size());
 
   // If the target surface changed while codec creation was in progress,
   // transition to it immediately.

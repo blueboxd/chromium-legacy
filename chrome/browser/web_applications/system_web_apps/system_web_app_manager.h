@@ -16,10 +16,11 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate_map.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/web_applications/externally_managed_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_background_task.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "chrome/browser/web_applications/web_app_install_info.h"
 #include "chrome/browser/web_applications/web_app_url_loader.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -50,9 +51,6 @@ class WebAppUiManager;
 class WebAppSyncBridge;
 class WebAppPolicyManager;
 
-using SystemAppDelegateMap =
-    base::flat_map<SystemAppType, std::unique_ptr<SystemWebAppDelegate>>;
-
 // Installs, uninstalls, and updates System Web Apps.
 // System Web Apps are built-in, highly-privileged Web Apps for Chrome OS. They
 // have access to more APIs and are part of the Chrome OS image.
@@ -72,7 +70,7 @@ class SystemWebAppManager {
       "Webapp.SystemApps.FreshInstallDuration";
 
   // Returns whether the given app type is enabled.
-  bool IsAppEnabled(SystemAppType type);
+  bool IsAppEnabled(ash::SystemWebAppType type) const;
 
   explicit SystemWebAppManager(Profile* profile);
   SystemWebAppManager(const SystemWebAppManager&) = delete;
@@ -102,14 +100,15 @@ class SystemWebAppManager {
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
   // Returns the app id for the given System App |type|.
-  absl::optional<AppId> GetAppIdForSystemApp(SystemAppType type) const;
+  absl::optional<AppId> GetAppIdForSystemApp(ash::SystemWebAppType type) const;
 
   // Returns the System App Type for the given |app_id|.
-  absl::optional<SystemAppType> GetSystemAppTypeForAppId(
+  absl::optional<ash::SystemWebAppType> GetSystemAppTypeForAppId(
       const AppId& app_id) const;
 
   // Returns the System App Delegate for the given App |type|.
-  const SystemWebAppDelegate* GetSystemApp(SystemAppType type) const;
+  const ash::SystemWebAppDelegate* GetSystemApp(
+      ash::SystemWebAppType type) const;
 
   // Returns the App Ids for all installed System Web Apps.
   std::vector<AppId> GetAppIds() const;
@@ -122,13 +121,16 @@ class SystemWebAppManager {
   void OnReadyToCommitNavigation(const AppId& app_id,
                                  content::NavigationHandle* navigation_handle);
 
-  // Returns the SystemAppType that should capture the navigation to |url|.
-  absl::optional<SystemAppType> GetCapturingSystemAppForURL(
+  // Returns the ash::SystemWebAppType that should capture the navigation to
+  // |url|.
+  absl::optional<ash::SystemWebAppType> GetCapturingSystemAppForURL(
       const GURL& url) const;
 
   // Returns a map of registered system app types and infos, these apps will be
   // installed on the system.
-  const SystemAppDelegateMap& GetRegisteredSystemAppsForTesting() const;
+  // TODO(crbug.com/1321984): Delete this accessor in favor of
+  // system_app_delegates().
+  const ash::SystemWebAppDelegateMap& GetRegisteredSystemAppsForTesting() const;
 
   const base::OneShotEvent& on_apps_synchronized() const {
     return *on_apps_synchronized_;
@@ -140,9 +142,15 @@ class SystemWebAppManager {
     return *on_tasks_started_;
   }
 
+  // Returns a map of registered system app types and infos, these apps will be
+  // installed on the system.
+  const ash::SystemWebAppDelegateMap& system_app_delegates() const {
+    return system_app_delegates_;
+  }
+
   // This call will override default System Apps configuration. You should call
   // Start() after this call to install |system_apps|.
-  void SetSystemAppsForTesting(SystemAppDelegateMap system_apps);
+  void SetSystemAppsForTesting(ash::SystemWebAppDelegateMap system_apps);
 
   // Overrides the update policy. If AlwaysReinstallSystemWebApps feature is
   // enabled, this method does nothing, and system apps will be reinstalled.
@@ -167,7 +175,7 @@ class SystemWebAppManager {
   // App |type|. Returns an empty vector if the App does not specify origin
   // trials for |url|.
   const std::vector<std::string>* GetEnabledOriginTrials(
-      const SystemWebAppDelegate* system_app,
+      const ash::SystemWebAppDelegate* system_app,
       const GURL& url) const;
 
   void StopBackgroundTasks();
@@ -204,7 +212,7 @@ class SystemWebAppManager {
 
   UpdatePolicy update_policy_;
 
-  SystemAppDelegateMap system_app_delegates_;
+  ash::SystemWebAppDelegateMap system_app_delegates_;
 
   const raw_ptr<PrefService> pref_service_;
 

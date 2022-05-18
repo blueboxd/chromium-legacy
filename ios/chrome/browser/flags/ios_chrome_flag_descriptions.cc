@@ -67,6 +67,12 @@ const char kAutofillPruneSuggestionsName[] = "Autofill Prune Suggestions";
 const char kAutofillPruneSuggestionsDescription[] =
     "Further limits the number of suggestions in the Autofill dropdown.";
 
+const char kAutofillRemoveCardExpiryFromDownstreamSuggestionName[] =
+    "Remove card expiration date from the Autofill card suggestions";
+const char kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription[] =
+    "When enabled, card expiration date will no longer be displayed in a card "
+    "suggestion";
+
 const char kAutofillSaveCardDismissOnNavigationName[] =
     "Save Card Dismiss on Navigation";
 const char kAutofillSaveCardDismissOnNavigationDescription[] =
@@ -171,6 +177,12 @@ const char kDiscoverFeedInNtpName[] = "Enable new content Suggestion Feed";
 const char kDiscoverFeedInNtpDescription[] =
     "When enabled, replaces articles feed with new content Suggestion Feed in "
     "the NTP.";
+
+const char kEnableDiscoverFeedTopSyncPromoName[] =
+    "Enable the sync promo on top of the feed.";
+const char kEnableDiscoverFeedTopSyncPromoDescription[] =
+    "When enabled, a sync promotion will be presented to eligible users on top "
+    "of the feed cards.";
 
 const char kDisplaySyncErrorsRefactorName[] =
     "Enable Display Sync Errors refactored code";
@@ -392,6 +404,11 @@ const char kNewOverflowMenuSettingsActionName[] =
     "Settings action in the new overflow menu";
 const char kNewOverflowMenuSettingsActionDescription[] =
     "Adds a Settings action to the new overflow menu";
+
+extern const char kNewOverflowMenuSimpleDestinationIconsName[] =
+    "Simple Destination icons in the new overflow menu";
+extern const char kNewOverflowMenuSimpleDestinationIconsDescription[] =
+    "Uses a simple icon style for destination icons in the new overflow menu";
 
 const char kNTPViewHierarchyRepairName[] = "NTP View Hierarchy Repair";
 const char kNTPViewHierarchyRepairDescription[] =

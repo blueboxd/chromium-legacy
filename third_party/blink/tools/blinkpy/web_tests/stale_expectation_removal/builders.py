@@ -45,9 +45,6 @@ class WebTestBuilders(builders.Builders):
                     'linux-blink-rel',
                     'v8_linux_blink_rel',
                 },
-                'mac10.12-blink-rel-dummy': {
-                    'mac10.12-blink-rel',
-                },
                 'mac10.13-blink-rel-dummy': {
                     'mac10.13-blink-rel',
                 },
@@ -76,10 +73,6 @@ class WebTestBuilders(builders.Builders):
                     'win11-blink-rel',
                 },
                 # tryserver.chromium.linux
-                # Explicit trybot.
-                'linux-blink-web-tests-force-accessibility-rel': {
-                    'linux-blink-web-tests-force-accessibility-rel',
-                },
                 # Explicit trybot.
                 'linux-layout-tests-edit-ng': {
                     'linux-layout-tests-edit-ng',

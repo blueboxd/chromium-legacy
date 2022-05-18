@@ -18,7 +18,7 @@ namespace ipcz::test {
 class TestTransportListener : public DriverTransport::Listener {
  public:
   using GenericMessageHandler =
-      std::function<IpczResult(const DriverTransport::Message&)>;
+      std::function<bool(const DriverTransport::RawMessage& message)>;
   using ErrorHandler = std::function<void()>;
 
   TestTransportListener(IpczHandle node, IpczDriverHandle handle);
@@ -45,13 +45,13 @@ class TestTransportListener : public DriverTransport::Listener {
   void OnError(ErrorHandler handler);
 
   template <typename MessageType>
-  using MessageHandler = std::function<IpczResult(MessageType&)>;
+  using MessageHandler = std::function<bool(MessageType&)>;
 
   // Listens only for a specific type of message and passes its deserialized
   // representation to `handler`. Any other message is failure.
   template <typename MessageType>
   void OnMessage(MessageHandler<MessageType> handler) {
-    OnRawMessage([this, handler](const DriverTransport::Message& message) {
+    OnRawMessage([this, handler](const DriverTransport::RawMessage& message) {
       MessageType m;
       EXPECT_TRUE(m.Deserialize(message, *transport_));
       return handler(m);
@@ -69,8 +69,8 @@ class TestTransportListener : public DriverTransport::Listener {
   void ActivateTransportIfNecessary();
 
   // DriverTransport::Listener:
-  IpczResult OnTransportMessage(
-      const DriverTransport::Message& message) override;
+  bool OnTransportMessage(const DriverTransport::RawMessage& message,
+                          const DriverTransport& transport) override;
   void OnTransportError() override;
 
   const Ref<DriverTransport> transport_;

@@ -357,6 +357,7 @@ void Frame::RenderFallbackContentWithResourceTiming(
 }
 
 bool Frame::IsInFencedFrameTree() const {
+  DCHECK(!IsDetached());
   if (!blink::features::IsFencedFramesEnabled())
     return false;
 
@@ -366,6 +367,21 @@ bool Frame::IsInFencedFrameTree() const {
     case blink::features::FencedFramesImplementationType::kShadowDOM:
       return Tree().Top(FrameTreeBoundary::kFenced) !=
              Tree().Top(FrameTreeBoundary::kIgnoreFence);
+    default:
+      return false;
+  }
+}
+
+bool Frame::IsFencedFrameRoot() const {
+  if (!blink::features::IsFencedFramesEnabled())
+    return false;
+
+  switch (blink::features::kFencedFramesImplementationTypeParam.Get()) {
+    case blink::features::FencedFramesImplementationType::kMPArch:
+      return IsInFencedFrameTree() && IsMainFrame();
+    case blink::features::FencedFramesImplementationType::kShadowDOM:
+      return IsInFencedFrameTree() &&
+             this == &Tree().Top(FrameTreeBoundary::kFenced);
     default:
       return false;
   }

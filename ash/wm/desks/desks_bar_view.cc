@@ -217,10 +217,11 @@ class DesksBarScrollViewLayout : public views::LayoutManager {
       // prevent calls to the model. Some animations on the desks bar may still
       // call this function past shutdown start. In this case we just continue
       // as if the saved desks Ui should be hidden.
+      OverviewSession* session = bar_view_->overview_grid()->overview_session();
       const bool should_show_templates_ui =
           saved_desk_util::IsSavedDesksEnabled() &&
-          !bar_view_->overview_grid()->overview_session()->is_shutting_down() &&
-          SavedDeskPresenter::Get()->should_show_templates_ui();
+          !session->is_shutting_down() &&
+          session->saved_desk_presenter()->should_show_templates_ui();
       auto* zero_state_desks_templates_button =
           bar_view_->zero_state_desks_templates_button();
       const gfx::Size zero_state_desks_templates_button_size =
@@ -386,20 +387,22 @@ DesksBarView::DesksBarView(OverviewGrid* overview_grid)
                               base::Unretained(this),
                               DesksCreationRemovalSource::kButton)));
   if (saved_desk_util::IsSavedDesksEnabled()) {
+    int button_text_id = IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON_LIBRARY;
+    if (!saved_desk_util::AreDesksTemplatesEnabled())
+      button_text_id = IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON_SAVED_FOR_LATER;
+
     expanded_state_desks_templates_button_ =
         scroll_view_contents_->AddChildView(
             std::make_unique<ExpandedDesksBarButton>(
                 this, &kDesksTemplatesIcon,
-                l10n_util::GetStringUTF16(
-                    IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON),
+                l10n_util::GetStringUTF16(button_text_id),
                 /*initially_enabled=*/true,
                 base::BindRepeating(
                     &DesksBarView::OnDesksTemplatesButtonPressed,
                     base::Unretained(this))));
     zero_state_desks_templates_button_ = scroll_view_contents_->AddChildView(
         std::make_unique<ZeroStateIconButton>(
-            &kDesksTemplatesIcon,
-            l10n_util::GetStringUTF16(IDS_ASH_DESKS_TEMPLATES_DESKS_BAR_BUTTON),
+            &kDesksTemplatesIcon, l10n_util::GetStringUTF16(button_text_id),
             base::BindRepeating(&DesksBarView::OnDesksTemplatesButtonPressed,
                                 base::Unretained(this))));
   }
@@ -1005,8 +1008,9 @@ void DesksBarView::UpdateDesksTemplatesButtonVisibility() {
   if (!saved_desk_util::IsSavedDesksEnabled())
     return;
 
-  const bool should_show_ui =
-      SavedDeskPresenter::Get()->should_show_templates_ui();
+  const bool should_show_ui = overview_grid_->overview_session()
+                                  ->saved_desk_presenter()
+                                  ->should_show_templates_ui();
   const bool is_zero_state = IsZeroState();
 
   zero_state_desks_templates_button_->SetVisible(should_show_ui &&

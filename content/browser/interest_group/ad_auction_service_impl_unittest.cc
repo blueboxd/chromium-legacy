@@ -430,9 +430,10 @@ class SameProcessAuctionProcessManager : public AuctionProcessManager {
   ~SameProcessAuctionProcessManager() override = default;
 
  private:
-  void LaunchProcess(
+  RenderProcessHost* LaunchProcess(
       mojo::PendingReceiver<auction_worklet::mojom::AuctionWorkletService>
           auction_worklet_service_receiver,
+      const ProcessHandle* handle,
       const std::string& display_name) override {
     // Create one AuctionWorkletServiceImpl per Mojo pipe, just like in
     // production code. Don't bother to delete the service on pipe close,
@@ -440,6 +441,17 @@ class SameProcessAuctionProcessManager : public AuctionProcessManager {
     auction_worklet_services_.push_back(
         std::make_unique<auction_worklet::AuctionWorkletServiceImpl>(
             std::move(auction_worklet_service_receiver)));
+    return nullptr;
+  }
+
+  scoped_refptr<SiteInstance> MaybeComputeSiteInstance(
+      SiteInstance* frame_site_instance,
+      const url::Origin& worklet_origin) override {
+    return nullptr;
+  }
+
+  bool TryUseSharedProcess(ProcessHandle* process_handle) override {
+    return false;
   }
 
   std::vector<std::unique_ptr<auction_worklet::AuctionWorkletServiceImpl>>
@@ -685,15 +697,23 @@ class AdAuctionServiceImplTest : public RenderViewHostTestHarness {
     interest_service.FlushForTesting();
   }
 
-  void FinalizeAd(std::string guid,
-                  blink::mojom::AuctionAdConfigPtr config,
-                  AdAuctionServiceImpl::FinalizeAdCallback callback) {
+  // Finalizes an ad and expects the Mojo pipe to be closed without invoking the
+  // callback, as should be done in the case of a bad Mojo message.
+  void FinalizeAdAndExpectPipeClosed(const std::string& guid,
+                                     blink::mojom::AuctionAdConfigPtr config) {
     mojo::Remote<blink::mojom::AdAuctionService> interest_service;
     AdAuctionServiceImpl::CreateMojoService(
         main_rfh(), interest_service.BindNewPipeAndPassReceiver());
 
-    interest_service->FinalizeAd(guid, std::move(config), std::move(callback));
-    interest_service.FlushForTesting();
+    base::RunLoop run_loop;
+    interest_service.set_disconnect_handler(run_loop.QuitClosure());
+    interest_service->FinalizeAd(
+        guid, std::move(config),
+        base::BindLambdaForTesting(
+            [&](const absl::optional<GURL>& creative_url) {
+              ADD_FAILURE() << "Callback unexpectedly invoked.";
+            }));
+    run_loop.Run();
   }
 
  protected:
@@ -4271,6 +4291,115 @@ function reportResult(auctionConfig, browserSignals) {
   EXPECT_FALSE(network_responder_->ReportSent("/report_seller_2"));
 }
 
+TEST_F(AdAuctionServiceImplTest, SendReportsMaxReportRoundDuration) {
+  const std::string kBiddingScript = base::StringPrintf(R"(
+function generateBid(
+    interestGroup, auctionSignals, perBuyerSignals, trustedBiddingSignals,
+    browserSignals) {
+  return {'ad': 'example', 'bid': 1, 'render': 'https://example.com/render'};
+}
+function reportWin(
+    auctionSignals, perBuyerSignals, sellerSignals, browserSignals) {
+  sendReportTo('%s/report_bidder');
+}
+  )",
+                                                        kOriginStringA);
+
+  const std::string kDecisionScript =
+      base::StringPrintf(R"(
+function scoreAd(
+    adMetadata, bid, auctionConfig, trustedScoringSignals, browserSignals) {
+  return bid;
+}
+function reportResult(auctionConfig, browserSignals) {
+  sendReportTo('%s/report_seller');
+  return {
+    'success': true,
+    'signalsForWinner': {'signalForWinner': 1},
+    'reportUrl': '%s/report_seller',
+  };
+}
+)",
+                         kOriginStringA, kOriginStringA);
+
+  // `max_reporting_round_duration_` is set lower than `reporting_interval_` so
+  // that we can exceed the max round duration with pending unsent reports.
+  manager_->set_reporting_interval_for_testing(base::Seconds(5));
+  manager_->set_max_reporting_round_duration_for_testing(base::Seconds(1));
+  manager_->set_max_active_report_requests_for_testing(1);
+
+  network_responder_->RegisterScriptResponse(kBiddingUrlPath, kBiddingScript);
+  network_responder_->RegisterScriptResponse(kDecisionUrlPath, kDecisionScript);
+  network_responder_->RegisterReportResponse("/report_bidder", /*response=*/"");
+  network_responder_->RegisterReportResponse("/report_seller", /*response=*/"");
+
+  blink::InterestGroup interest_group = CreateInterestGroup();
+  interest_group.bidding_url = kUrlA.Resolve(kBiddingUrlPath);
+  interest_group.ads.emplace();
+  blink::InterestGroup::Ad ad(
+      /*render_url=*/GURL("https://example.com/render"),
+      /*metadata=*/absl::nullopt);
+  interest_group.ads->emplace_back(std::move(ad));
+  JoinInterestGroupAndFlush(interest_group);
+  EXPECT_EQ(1, GetJoinCount(kOriginA, kInterestGroupName));
+
+  auto auction_config = blink::mojom::AuctionAdConfig::New();
+  auction_config->seller = kOriginA;
+  auction_config->decision_logic_url = kUrlA.Resolve(kDecisionUrlPath);
+  auction_config->auction_ad_config_non_shared_params =
+      blink::mojom::AuctionAdConfigNonSharedParams::New();
+  auction_config->auction_ad_config_non_shared_params->interest_group_buyers = {
+      kOriginA};
+  absl::optional<GURL> auction_result =
+      RunAdAuctionAndFlush(std::move(auction_config));
+  EXPECT_NE(auction_result, absl::nullopt);
+
+  task_environment()->FastForwardBy(base::Seconds(2));
+  // There should only be the seller report, and the bidder report request is
+  // waiting in the report queue.
+  EXPECT_EQ(network_responder_->ReportCount(), 1u);
+  EXPECT_EQ(manager_->report_queue_length_for_testing(), 1u);
+
+  // Run a second auction while the first auction's reporting is in progress.
+  auto auction_config2 = blink::mojom::AuctionAdConfig::New();
+  auction_config2->seller = kOriginA;
+  auction_config2->decision_logic_url = kUrlA.Resolve(kDecisionUrlPath);
+  auction_config2->auction_ad_config_non_shared_params =
+      blink::mojom::AuctionAdConfigNonSharedParams::New();
+  auction_config2->auction_ad_config_non_shared_params
+      ->interest_group_buyers = {kOriginA};
+  auction_result = RunAdAuctionAndFlush(std::move(auction_config2));
+  EXPECT_NE(auction_result, absl::nullopt);
+  // Two more reports are enqueued.
+  EXPECT_EQ(manager_->report_queue_length_for_testing(), 3u);
+
+  task_environment()->FastForwardBy(base::Seconds(20));
+  // Should still only have 1 report sent because the report queue is cleared
+  // after `max_reporting_round_duration` passed, before popping the second
+  // report from the queue and send it.
+  EXPECT_EQ(network_responder_->ReportCount(), 1u);
+  EXPECT_EQ(manager_->report_queue_length_for_testing(), 0u);
+
+  // Run a third auction after report queue is cleared, to make sure further
+  // auction's reports can be normally enqueued and sent again.
+  auto auction_config3 = blink::mojom::AuctionAdConfig::New();
+  auction_config3->seller = kOriginA;
+  auction_config3->decision_logic_url = kUrlA.Resolve(kDecisionUrlPath);
+  auction_config3->auction_ad_config_non_shared_params =
+      blink::mojom::AuctionAdConfigNonSharedParams::New();
+  auction_config3->auction_ad_config_non_shared_params
+      ->interest_group_buyers = {kOriginA};
+  auction_result = RunAdAuctionAndFlush(std::move(auction_config3));
+  EXPECT_NE(auction_result, absl::nullopt);
+
+  // Set `max_reporting_round_duration_` high enough so that the auction's two
+  // reports can be sent successfully.
+  manager_->set_max_reporting_round_duration_for_testing(base::Seconds(20));
+  task_environment()->FastForwardBy(base::Seconds(20));
+  // Two more reports from the third auction are sent.
+  EXPECT_EQ(network_responder_->ReportCount(), 3u);
+}
+
 // Run several auctions, some of which have a winner, and some of which do
 // not. Verify that the auction result UMA is recorded correctly.
 TEST_F(AdAuctionServiceImplTest,
@@ -4786,22 +4915,17 @@ TEST_F(AdAuctionServiceImplTest, CreateAdRequestRejectsHttpFallback) {
   ASSERT_TRUE(callback_fired);
 }
 
-// An empty config will cause FinalizeAd to fail and run the supplied callback.
+// An empty config should be treated as a bad message.
 TEST_F(AdAuctionServiceImplTest, FinalizeAdRejectsEmptyConfig) {
   auto mojo_config = blink::mojom::AuctionAdConfig::New();
   mojo_config->auction_ad_config_non_shared_params =
       blink::mojom::AuctionAdConfigNonSharedParams::New();
 
-  bool callback_fired = false;
-  FinalizeAd(
-      /*guid=*/std::string("1234"), std::move(mojo_config),
-      base::BindLambdaForTesting([&](const absl::optional<GURL>& creative_url) {
-        ASSERT_FALSE(creative_url.has_value());
-        callback_fired = true;
-      }));
-  ASSERT_TRUE(callback_fired);
+  FinalizeAdAndExpectPipeClosed(
+      /*guid=*/std::string("1234"), std::move(mojo_config));
 }
 
+// An HTTP decision logic URL should be treated as a bad message.
 TEST_F(AdAuctionServiceImplTest, FinalizeAdRejectsHTTPDecisionUrl) {
   auto mojo_config = blink::mojom::AuctionAdConfig::New();
   mojo_config->auction_ad_config_non_shared_params =
@@ -4809,17 +4933,11 @@ TEST_F(AdAuctionServiceImplTest, FinalizeAdRejectsHTTPDecisionUrl) {
   mojo_config->seller = url::Origin::Create(GURL("https://site.test"));
   mojo_config->decision_logic_url = GURL("http://site.test/");
 
-  bool callback_fired = false;
-  FinalizeAd(
-      /*guid=*/"1234", std::move(mojo_config),
-      base::BindLambdaForTesting([&](const absl::optional<GURL>& creative_url) {
-        ASSERT_FALSE(creative_url.has_value());
-        callback_fired = true;
-      }));
-  ASSERT_TRUE(callback_fired);
+  FinalizeAdAndExpectPipeClosed(
+      /*guid=*/"1234", std::move(mojo_config));
 }
 
-// An empty GUID should trigger any FinalizeAd request to fail.
+// An empty GUID should be treated as a bad message.
 TEST_F(AdAuctionServiceImplTest, FinalizeAdRejectsMissingGuid) {
   auto mojo_config = blink::mojom::AuctionAdConfig::New();
   mojo_config->auction_ad_config_non_shared_params =
@@ -4827,14 +4945,8 @@ TEST_F(AdAuctionServiceImplTest, FinalizeAdRejectsMissingGuid) {
   mojo_config->seller = url::Origin::Create(GURL("https://site.test"));
   mojo_config->decision_logic_url = GURL("https://site.test/");
 
-  bool callback_fired = false;
-  FinalizeAd(
-      /*guid=*/std::string(), std::move(mojo_config),
-      base::BindLambdaForTesting([&](const absl::optional<GURL>& creative_url) {
-        ASSERT_FALSE(creative_url.has_value());
-        callback_fired = true;
-      }));
-  ASSERT_TRUE(callback_fired);
+  FinalizeAdAndExpectPipeClosed(
+      /*guid=*/std::string(), std::move(mojo_config));
 }
 
 class AdAuctionServiceImplNumAuctionLimitTest
@@ -5268,13 +5380,15 @@ function reportResult(auctionConfig, browserSignals) {
   for (int i = 1; i < 3; i++) {
     const std::string name = base::NumberToString(i);
     network_responder_->RegisterReportResponse(
-        base::StringPrintf("/report_bidder_%s", name.c_str()), "");
+        base::StringPrintf("/report_bidder_%s", name.c_str()), /*response=*/"");
     network_responder_->RegisterReportResponse(
-        base::StringPrintf("/report_seller_%s", name.c_str()), "");
+        base::StringPrintf("/report_seller_%s", name.c_str()), /*response=*/"");
     network_responder_->RegisterReportResponse(
-        base::StringPrintf("/seller_debug_win_%s", name.c_str()), "");
+        base::StringPrintf("/seller_debug_win_%s", name.c_str()),
+        /*response=*/"");
     network_responder_->RegisterReportResponse(
-        base::StringPrintf("/bidder_debug_win_%s", name.c_str()), "");
+        base::StringPrintf("/bidder_debug_win_%s", name.c_str()),
+        /*response=*/"");
     blink::InterestGroup interest_group = CreateInterestGroup();
     interest_group.bidding_url = kUrlA.Resolve(kBiddingUrlPath);
     interest_group.name = name;

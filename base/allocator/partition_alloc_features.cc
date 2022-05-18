@@ -11,6 +11,11 @@
 namespace base {
 namespace features {
 
+// When set, instead of crashing when encountering a dangling raw_ptr, the
+// signatures of the two stacktraces are logged. This is meant to be used only
+// by Chromium developers. See /docs/dangling_ptr.md
+const BASE_EXPORT Feature kPartitionAllocDanglingPtrRecord{
+    "PartitionAllocDanglingPtrRecord", FEATURE_DISABLED_BY_DEFAULT};
 #if defined(PA_ALLOW_PCSCAN)
 // If enabled, PCScan is turned on by default for all partitions that don't
 // disable it explicitly.
@@ -47,8 +52,14 @@ const Feature kPartitionAllocLargeThreadCacheSize{
 const BASE_EXPORT Feature kPartitionAllocLargeEmptySlotSpanRing{
     "PartitionAllocLargeEmptySlotSpanRing", FEATURE_DISABLED_BY_DEFAULT};
 
-const Feature kPartitionAllocBackupRefPtr{"PartitionAllocBackupRefPtr",
-                                          FEATURE_DISABLED_BY_DEFAULT};
+const Feature kPartitionAllocBackupRefPtr {
+  "PartitionAllocBackupRefPtr",
+#if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_WIN)
+      FEATURE_ENABLED_BY_DEFAULT
+#else
+      FEATURE_DISABLED_BY_DEFAULT
+#endif
+};
 
 constexpr FeatureParam<BackupRefPtrEnabledProcesses>::Option
     kBackupRefPtrEnabledProcessesOptions[] = {

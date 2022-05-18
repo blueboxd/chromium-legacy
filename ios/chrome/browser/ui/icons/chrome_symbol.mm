@@ -59,10 +59,12 @@ NSString* const kPopupBadgeMinusSymbol = @"popup_badge_minus";
 
 // Default symbol names.
 NSString* const kCreditCardSymbol = @"creditcard";
+NSString* const kCreditCardFillSymbol = @"creditcard.fill";
 NSString* const kMicrophoneFillSymbol = @"mic.fill";
 NSString* const kMicrophoneSymbol = @"mic";
 NSString* const kEllipsisCircleFillSymbol = @"ellipsis.circle.fill";
 NSString* const kPinSymbol = @"pin";
+NSString* const kPinFillSymbol = @"pin.fill";
 NSString* const kGearShapeSymbol = @"gearshape.fill";
 NSString* const kShareSymbol = @"square.and.arrow.up";
 NSString* const kXMarkSymbol = @"xmark";
@@ -70,6 +72,7 @@ NSString* const kPlusSymbol = @"plus";
 NSString* const kSearchSymbol = @"magnifyingglass";
 NSString* const kCheckmarkSymbol = @"checkmark";
 NSString* const kArrowDownCircleFillSymbol = @"arrow.down.circle.fill";
+NSString* const kWarningSymbol = @"exclamationmark.triangle";
 NSString* const kWarningFillSymbol = @"exclamationmark.triangle.fill";
 NSString* const kHelpFillSymbol = @"questionmark.circle";
 NSString* const kCheckMarkCircleFillSymbol = @"checkmark.circle.fill";

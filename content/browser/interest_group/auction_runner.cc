@@ -627,15 +627,14 @@ void AuctionRunner::Auction::OnInterestGroupRead(
     base::RandomShuffle(rand_begin, rand_end);
     interest_groups.resize(std::min(interest_groups.size(), size_limit));
 
-    for (auto bidder = std::make_move_iterator(interest_groups.begin());
-         bidder != std::make_move_iterator(interest_groups.end()); ++bidder) {
+    for (auto& bidder : interest_groups) {
       // Ignore interest groups with no bidding script or no ads.
-      if (!bidder->interest_group.bidding_url)
+      if (!bidder.interest_group.bidding_url)
         continue;
-      if (bidder->interest_group.ads->empty())
+      if (bidder.interest_group.ads->empty())
         continue;
       bid_states_.emplace_back(BidState());
-      bid_states_.back().bidder = std::move(*bidder);
+      bid_states_.back().bidder = std::move(bidder);
     }
     post_auction_update_owners_.push_back(
         interest_groups[0].interest_group.owner);
@@ -1133,6 +1132,7 @@ void AuctionRunner::Auction::OnTopBidTie(double score,
   // If there's a tie for top bid, the highest score is second highest score
   // as well.
   second_highest_score_ = score;
+  num_second_highest_bids_ = num_top_bids_;
   if (owner != top_bid_->bid->interest_group->owner) {
     at_most_one_top_bid_owner_ = false;
     at_most_one_second_highest_scoring_bids_owner_ = false;
@@ -1151,6 +1151,7 @@ void AuctionRunner::Auction::OnNewTopBid() {
     // Previous top bid becomes highest scoring other bid.
     highest_scoring_other_bid_ = top_bid_->bid->bid;
     second_highest_score_ = top_bid_->score;
+    num_second_highest_bids_ = num_top_bids_;
     highest_scoring_other_bid_owner_ = top_bid_->bid->interest_group->owner;
     at_most_one_second_highest_scoring_bids_owner_ = at_most_one_top_bid_owner_;
   }
@@ -1161,15 +1162,24 @@ void AuctionRunner::Auction::OnNewHighestScoringOtherBid(
     double bid_value,
     const url::Origin& owner) {
   // Current (the most recent) bid becomes highest scoring other bid.
-  highest_scoring_other_bid_ = bid_value;
-  at_most_one_second_highest_scoring_bids_owner_ = true;
-  if (score == second_highest_score_) {
+  if (score > second_highest_score_) {
+    highest_scoring_other_bid_ = bid_value;
+    at_most_one_second_highest_scoring_bids_owner_ = true;
+    num_second_highest_bids_ = 1;
+    highest_scoring_other_bid_owner_ = owner;
+  } else {
+    // score == second_highest_score_
     DCHECK(highest_scoring_other_bid_owner_.has_value());
     if (owner != highest_scoring_other_bid_owner_.value())
       at_most_one_second_highest_scoring_bids_owner_ = false;
+    // In case of a tie, randomly decide which to pick.
+    ++num_second_highest_bids_;
+    if (1 == base::RandInt(1, num_second_highest_bids_)) {
+      highest_scoring_other_bid_owner_ = owner;
+      highest_scoring_other_bid_ = bid_value;
+    }
   }
   second_highest_score_ = score;
-  highest_scoring_other_bid_owner_ = owner;
 }
 
 absl::optional<std::string> AuctionRunner::Auction::PerBuyerSignals(

@@ -25,15 +25,15 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view_class_properties.h"
 
-using DialogAction = PrivacySandboxService::DialogAction;
+using PromptAction = PrivacySandboxService::PromptAction;
 
 namespace {
 
 constexpr int kDialogWidth = 448;
 
-void NotifyServiceAboutDialogAction(Profile* profile, DialogAction action) {
+void NotifyServiceAboutPromptAction(Profile* profile, PromptAction action) {
   if (auto* service = PrivacySandboxServiceFactory::GetForProfile(profile)) {
-    service->DialogActionOccurred(action);
+    service->PromptActionOccurred(action);
   }
 }
 
@@ -72,12 +72,12 @@ class PrivacySandboxNoticeBubbleDelegate : public views::BubbleDialogDelegate {
   void WindowClosing() override {
     switch (GetWidget()->closed_reason()) {
       case views::Widget::ClosedReason::kEscKeyPressed:
-        NotifyServiceAboutDialogAction(browser_->profile(),
-                                       DialogAction::kNoticeDismiss);
+        NotifyServiceAboutPromptAction(browser_->profile(),
+                                       PromptAction::kNoticeDismiss);
         break;
       case views::Widget::ClosedReason::kUnspecified:
-        NotifyServiceAboutDialogAction(
-            browser_->profile(), DialogAction::kNoticeClosedNoInteraction);
+        NotifyServiceAboutPromptAction(
+            browser_->profile(), PromptAction::kNoticeClosedNoInteraction);
         break;
       default:
         break;
@@ -108,8 +108,8 @@ void ShowPrivacySandboxNoticeBubble(Browser* browser) {
           IDS_PRIVACY_SANDBOX_DIALOG_NOTICE_ACKNOWLEDGE_BUTTON));
   bubble_delegate->SetAcceptCallback(base::BindOnce(
       [](Browser* browser) {
-        NotifyServiceAboutDialogAction(browser->profile(),
-                                       DialogAction::kNoticeAcknowledge);
+        NotifyServiceAboutPromptAction(browser->profile(),
+                                       PromptAction::kNoticeAcknowledge);
       },
       base::Unretained(browser)));
 
@@ -120,8 +120,8 @@ void ShowPrivacySandboxNoticeBubble(Browser* browser) {
   bubble_delegate->SetCancelCallback(base::BindOnce(
       [](Browser* browser) {
         chrome::ShowPrivacySandboxSettings(browser);
-        NotifyServiceAboutDialogAction(browser->profile(),
-                                       DialogAction::kNoticeOpenSettings);
+        NotifyServiceAboutPromptAction(browser->profile(),
+                                       PromptAction::kNoticeOpenSettings);
       },
       base::Unretained(browser)));
 
@@ -178,6 +178,7 @@ PrivacySandboxNoticeBubbleView::PrivacySandboxNoticeBubbleView(
   auto* description_label =
       container->AddChildView(std::make_unique<views::StyledLabel>());
   description_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  description_label->SetID(kNoticeLearnMoreLinkId);
   // The description contains a link that opens settings page. Find the position
   // of the link by inserting text into the placeholder.
   auto intesets_settings_link = l10n_util::GetStringUTF16(
@@ -198,8 +199,8 @@ PrivacySandboxNoticeBubbleView::PrivacySandboxNoticeBubbleView(
     app_menu_button->AddObserver(this);
   }
 
-  NotifyServiceAboutDialogAction(browser_->profile(),
-                                 DialogAction::kNoticeShown);
+  NotifyServiceAboutPromptAction(browser_->profile(),
+                                 PromptAction::kNoticeShown);
 }
 
 PrivacySandboxNoticeBubbleView::~PrivacySandboxNoticeBubbleView() {
@@ -209,15 +210,15 @@ PrivacySandboxNoticeBubbleView::~PrivacySandboxNoticeBubbleView() {
 }
 
 void PrivacySandboxNoticeBubbleView::AppMenuShown() {
-  NotifyServiceAboutDialogAction(browser_->profile(),
-                                 DialogAction::kNoticeDismiss);
+  NotifyServiceAboutPromptAction(browser_->profile(),
+                                 PromptAction::kNoticeDismiss);
   GetWidget()->CloseWithReason(views::Widget::ClosedReason::kLostFocus);
 }
 
 void PrivacySandboxNoticeBubbleView::OpenAboutAdPersonalizationSettings() {
   chrome::ShowPrivacySandboxLearnMore(browser_);
-  NotifyServiceAboutDialogAction(browser_->profile(),
-                                 DialogAction::kNoticeLearnMore);
+  NotifyServiceAboutPromptAction(browser_->profile(),
+                                 PromptAction::kNoticeLearnMore);
   GetWidget()->CloseWithReason(
       views::Widget::ClosedReason::kCancelButtonClicked);
 }

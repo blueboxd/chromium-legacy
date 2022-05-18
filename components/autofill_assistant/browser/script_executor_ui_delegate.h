@@ -43,7 +43,8 @@ class ScriptExecutorUiDelegate {
   virtual void ClearInfoBox() = 0;
   virtual void SetCollectUserDataOptions(
       CollectUserDataOptions* collect_user_data_options) = 0;
-  virtual void SetCollectUserDataUiState(bool enabled) = 0;
+  virtual void SetCollectUserDataUiState(bool loading,
+                                         UserDataEventField event_field) = 0;
   virtual void SetLastSuccessfulUserDataOptions(
       std::unique_ptr<CollectUserDataOptions> collect_user_data_options) = 0;
   virtual const CollectUserDataOptions* GetLastSuccessfulUserDataOptions()
@@ -96,8 +97,9 @@ class ScriptExecutorUiDelegate {
   // Executes the external action.
   virtual void ExecuteExternalAction(
       const external::Action& external_action,
+      base::OnceCallback<void()> start_dom_checks_callback,
       base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
-          callback) = 0;
+          end_action_callback) = 0;
 
  protected:
   virtual ~ScriptExecutorUiDelegate() {}

@@ -4,7 +4,7 @@
 
 """Top-level presubmit script for Chromium.
 
-See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
+See https://www.chromium.org/developers/how-tos/depottools/presubmit-scripts/
 for more details about the presubmit API built into depot_tools.
 """
 
@@ -1115,6 +1115,7 @@ _GENERIC_PYDEPS_FILES = [
     'build/android/gyp/prepare_resources.pydeps',
     'build/android/gyp/process_native_prebuilt.pydeps',
     'build/android/gyp/proguard.pydeps',
+    'build/android/gyp/system_image_apks.pydeps',
     'build/android/gyp/trace_event_bytecode_rewriter.pydeps',
     'build/android/gyp/turbine.pydeps',
     'build/android/gyp/unused_resources.pydeps',
@@ -1593,7 +1594,7 @@ def CheckValidHostsInDEPSOnUpload(input_api, output_api):
                                               'third_party', 'depot_tools',
                                               'gclient.py')
         input_api.subprocess.check_output(
-            [input_api.python_executable, gclient_path, 'verify'],
+            [input_api.python3_executable, gclient_path, 'verify'],
             stderr=input_api.subprocess.STDOUT)
         return []
     except input_api.subprocess.CalledProcessError as error:
@@ -1903,7 +1904,7 @@ def CheckFilePermissions(input_api, output_api):
                                              'tools', 'checkperms',
                                              'checkperms.py')
     args = [
-        input_api.python_executable, checkperms_tool, '--root',
+        input_api.python3_executable, checkperms_tool, '--root',
         input_api.change.RepositoryRoot()
     ]
     with input_api.CreateTemporaryFile() as file_list:
@@ -2768,6 +2769,12 @@ def _ChangeHasSecurityReviewer(input_api, owners_file):
     Note: if the presubmit is running for commit rather than for upload, this
     only returns True if a security reviewer has also approved the CL.
     """
+    # Owners-Override should bypass all additional OWNERS enforcement checks.
+    # A CR+1 vote will still be required to land this change.
+    if (input_api.change.issue and input_api.gerrit.IsOwnersOverrideApproved(
+            input_api.change.issue)):
+        return True
+
     owner_email, reviewers = (
         input_api.canned_checks.GetCodereviewOwnerAndReviewers(
             input_api,
@@ -2843,7 +2850,7 @@ def _FindMissingSecurityOwners(input_api,
 
     def AddPatternToCheck(file, pattern):
         owners_file = input_api.os_path.join(
-            input_api.os_path.dirname(file.AbsoluteLocalPath()), 'OWNERS')
+            input_api.os_path.dirname(file.LocalPath()), 'OWNERS')
         if owners_file not in to_check:
             to_check[owners_file] = {}
         if pattern not in to_check[owners_file]:
@@ -2952,9 +2959,8 @@ def _CheckChangeForIpcSecurityOwners(input_api, output_api):
         'third_party/blink/renderer/platform/bindings/*',
         'third_party/protobuf/benchmarks/python/*',
         'third_party/win_build_output/*',
-        # Enums used for web metrics, so no security review needed.
-        'third_party/blink/public/mojom/use_counter/css_property_id.mojom',
-        'third_party/blink/public/mojom/web_feature/web_feature.mojom',
+        # Enum-only mojoms used for web metrics, so no security review needed.
+        'third_party/blink/public/mojom/use_counter/metrics/*',
         # These files are just used to communicate between class loaders running
         # in the same process.
         'weblayer/browser/java/org/chromium/weblayer_private/interfaces/*',
@@ -3024,9 +3030,13 @@ def CheckSecurityOwners(input_api, output_api):
     missing_reviewer_errors.extend(fuchsia_results.missing_reviewer_errors)
 
     if missing_reviewer_errors:
-        # Missing reviewers are only a warning at upload time; otherwise, it'd
-        # be impossible to upload a change.
-        if input_api.is_committing:
+        # Missing reviewers are an error unless there's no issue number
+        # associated with this branch; in that case, the presubmit is being run
+        # with --all or --files.
+        #
+        # Note that upload should never be an error; otherwise, it would be
+        # impossible to upload changes at all.
+        if input_api.is_committing and input_api.change.issue:
             make_presubmit_message = output_api.PresubmitError
         else:
             make_presubmit_message = output_api.PresubmitPromptWarning

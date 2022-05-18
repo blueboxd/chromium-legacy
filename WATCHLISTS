@@ -169,7 +169,7 @@
                   '|ash/public/cpp/wallpaper/'\
                   '|ash/wallpaper/'\
                   '|ash/webui/personalization_app/'\
-                  '|chromeos/assistant/'\
+                  '|chromeos/ash/components/assistant/'\
                   '|chromeos/services/assistant/'\
                   '|chromeos/services/libassistant/'\
                   '|chrome/browser/ash/wallpaper_handlers/'\
@@ -971,6 +971,10 @@
     'download': {
       'filepath': 'chrome/browser/download/|'\
                   'content/browser/download/',
+    },
+    'download_bubble': {
+      'filepath': 'chrome/browser/download/bubble/|' \
+                  'chrome/browser/ui/views/download/bubble/'
     },
     'downloads_ui': {
       'filepath': 'chrome/browser/resources/downloads/|' \
@@ -2515,6 +2519,8 @@
     'disk_cache': ['gavinp+disk@chromium.org'],
     'dom_storage': ['dmurph+watchingdomstorage@chromium.org'],
     'download': ['dtrainor+watch@chromium.org'],
+    'download_bubble': ['bhatiarohit+watch@chromium.org',
+                        'xinghuilu+watch@chromium.org'],
     'downloads_ui': ['dtrainor+watch@chromium.org'],
     'drive_resource_metadata': ['hashimoto+watch@chromium.org'],
     'eme': ['eme-reviews@chromium.org'],
@@ -2676,8 +2682,7 @@
                'nohle+watch-nearby@chromium.org',
                'xlythe+watch-nearby@google.com'],
     'net': ['net-reviews@chromium.org'],
-    'net_base': ['bnc+watch@chromium.org',
-                 'juke+watch@chromium.org'],
+    'net_base': ['bnc+watch@chromium.org'],
     'net_http2': ['bnc+watch@chromium.org'],
     'net_log': ['bnc+watch@chromium.org'],
     'net_server': ['ricea+watch@chromium.org'],

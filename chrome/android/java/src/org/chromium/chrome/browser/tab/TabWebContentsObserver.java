@@ -16,11 +16,13 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.ObserverList.RewindableIterator;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.SwipeRefreshHandler;
 import org.chromium.chrome.browser.app.bluetooth.BluetoothNotificationService;
+import org.chromium.chrome.browser.app.usb.UsbNotificationService;
 import org.chromium.chrome.browser.bluetooth.BluetoothNotificationManager;
 import org.chromium.chrome.browser.display_cutout.DisplayCutoutTabHelper;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
@@ -28,6 +30,7 @@ import org.chromium.chrome.browser.media.MediaCaptureNotificationServiceImpl;
 import org.chromium.chrome.browser.policy.PolicyAuditor;
 import org.chromium.chrome.browser.policy.PolicyAuditor.AuditEvent;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.usb.UsbNotificationManager;
 import org.chromium.content_public.browser.GlobalRenderFrameHostId;
 import org.chromium.content_public.browser.LifecycleState;
 import org.chromium.content_public.browser.NavigationHandle;
@@ -232,6 +235,8 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             mTab.updateTitle(title);
         }
 
+        // The string passed is safe since it is class and method name.
+        @SuppressWarnings("NoDynamicStringsInTraceEventCheck")
         @Override
         public void didStartNavigation(NavigationHandle navigation) {
             if (navigation.isInPrimaryMainFrame() && !navigation.isSameDocument()) {
@@ -240,23 +245,42 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
-                observers.next().onDidStartNavigation(mTab, navigation);
+                TabObserver observer = observers.next();
+                String s = "TabWebContentsObserver::didStartNavigation observer:"
+                        + observer.getClass().getName();
+                try (TraceEvent e = TraceEvent.scoped(s, "scroll jank observer investigation")) {
+                    observer.onDidStartNavigation(mTab, navigation);
+                }
             }
         }
 
         @Override
+        // The string passed is safe since it is class and method name.
+        @SuppressWarnings("NoDynamicStringsInTraceEventCheck")
         public void didRedirectNavigation(NavigationHandle navigation) {
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
-                observers.next().onDidRedirectNavigation(mTab, navigation);
+                TabObserver observer = observers.next();
+                String s = "TabWebContentsObserver::didRedirectNavigation observer:"
+                        + observer.getClass().getName();
+                try (TraceEvent e = TraceEvent.scoped(s, "scroll jank observer investigation")) {
+                    observer.onDidRedirectNavigation(mTab, navigation);
+                }
             }
         }
 
         @Override
+        // The string passed is safe since it is class and method name.
+        @SuppressWarnings("NoDynamicStringsInTraceEventCheck")
         public void didFinishNavigation(NavigationHandle navigation) {
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
-                observers.next().onDidFinishNavigation(mTab, navigation);
+                TabObserver observer = observers.next();
+                String s = "TabWebContentsObserver::didFinishNavigation.onDidFinishNavigation "
+                        + "observer:" + observer.getClass().getName();
+                try (TraceEvent e = TraceEvent.scoped(s, "scroll jank observer investigation")) {
+                    observer.onDidFinishNavigation(mTab, navigation);
+                }
             }
 
             if (navigation.errorCode() != NetError.OK) {
@@ -279,7 +303,13 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
 
                 observers.rewind();
                 while (observers.hasNext()) {
-                    observers.next().onUrlUpdated(mTab);
+                    TabObserver observer = observers.next();
+                    String s = "TabWebContentsObserver::didFinishNavigation.onUrlUpdated "
+                            + "observer:" + observer.getClass().getName();
+                    try (TraceEvent e =
+                                    TraceEvent.scoped(s, "scroll jank observer investigation")) {
+                        observer.onUrlUpdated(mTab);
+                    }
                 }
             }
 
@@ -297,10 +327,17 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
         }
 
         @Override
+        // The string passed is safe since it is class and method name.
+        @SuppressWarnings("NoDynamicStringsInTraceEventCheck")
         public void didFirstVisuallyNonEmptyPaint() {
             RewindableIterator<TabObserver> observers = mTab.getTabObservers();
             while (observers.hasNext()) {
-                observers.next().didFirstVisuallyNonEmptyPaint(mTab);
+                TabObserver observer = observers.next();
+                String s = "TabWebContentsObserver::didFirstVisuallyNonEmptyPaint observer:"
+                        + observer.getClass().getName();
+                try (TraceEvent e = TraceEvent.scoped(s, "scroll jank observer investigation")) {
+                    observer.didFirstVisuallyNonEmptyPaint(mTab);
+                }
             }
         }
 
@@ -333,6 +370,8 @@ public class TabWebContentsObserver extends TabWebContentsUserData {
             BluetoothNotificationManager.updateBluetoothNotificationForTab(
                     ContextUtils.getApplicationContext(), BluetoothNotificationService.class,
                     mTab.getId(), null, mLastUrl, mTab.isIncognito());
+            UsbNotificationManager.updateUsbNotificationForTab(ContextUtils.getApplicationContext(),
+                    UsbNotificationService.class, mTab.getId(), null, mLastUrl, mTab.isIncognito());
             super.destroy();
         }
     }

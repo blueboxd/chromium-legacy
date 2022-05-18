@@ -85,6 +85,7 @@ public class ContextualSearchFieldTrial {
          */
         int IS_TRANSLATION_DISABLED = 0;
         /**
+         * @deprecated
          * Whether detection of device-online should be disabled (default false).
          * (safety switch for disabling online-detection also used to disable detection when
          * running tests).
@@ -132,7 +133,10 @@ public class ContextualSearchFieldTrial {
          * Whether triggering is suppressed for a tap that's not on an entity.
          */
         int IS_NOT_AN_ENTITY_SUPPRESSION_ENABLED = 10;
-        /** Whether triggering is suppressed due to lack of engagement with the feature. */
+        /**
+         * @deprecated
+         * Whether triggering is suppressed due to lack of engagement with the feature.
+         */
         int IS_ENGAGEMENT_SUPPRESSION_ENABLED = 11;
         /**
          * @deprecated

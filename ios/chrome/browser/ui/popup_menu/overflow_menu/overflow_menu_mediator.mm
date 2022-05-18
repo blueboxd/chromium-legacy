@@ -133,29 +133,34 @@ OverflowMenuAction* CreateOverflowMenuAction(int nameID,
                                           handler:handler];
 }
 
-std::string UmaNameForDestination(Destination destination) {
+void RecordUmaActionForDestination(Destination destination) {
   switch (destination) {
     case Destination::Bookmarks:
-      return "MobileMenuAllBookmarks";
+      RecordAction(UserMetricsAction("MobileMenuAllBookmarks"));
+      break;
     case Destination::History:
-      return "MobileMenuHistory";
+      RecordAction(UserMetricsAction("MobileMenuHistory"));
+      break;
     case Destination::ReadingList:
-      return "MobileMenuReadingList";
+      RecordAction(UserMetricsAction("MobileMenuReadingList"));
+      break;
     case Destination::Passwords:
-      return "MobileMenuPasswords";
+      RecordAction(UserMetricsAction("MobileMenuPasswords"));
+      break;
     case Destination::Downloads:
-      return "MobileDownloadFolderUIShownFromToolsMenu";
+      RecordAction(
+          UserMetricsAction("MobileDownloadFolderUIShownFromToolsMenu"));
+      break;
     case Destination::RecentTabs:
-      return "MobileMenuRecentTabs";
+      RecordAction(UserMetricsAction("MobileMenuRecentTabs"));
+      break;
     case Destination::SiteInfo:
-      return "MobileMenuSiteInformation";
+      RecordAction(UserMetricsAction("MobileMenuSiteInformation"));
+      break;
     case Destination::Settings:
-      return "MobileMenuSettings";
+      RecordAction(UserMetricsAction("MobileMenuSettings"));
+      break;
   }
-}
-
-base::UserMetricsAction UmaActionForDestination(Destination destination) {
-  return UserMetricsAction(UmaNameForDestination(destination).c_str());
 }
 
 OverflowMenuDestination* CreateOverflowMenuDestination(
@@ -167,16 +172,15 @@ OverflowMenuDestination* CreateOverflowMenuDestination(
   NSString* name = l10n_util::GetNSString(nameID);
 
   auto handlerWithMetrics = ^{
-    RecordAction(UmaActionForDestination(destinationEnum));
+    RecordUmaActionForDestination(destinationEnum);
     handler();
   };
 
-  return [[OverflowMenuDestination alloc]
-                 initWithName:name
-                      uiImage:[UIImage imageNamed:imageName]
-      accessibilityIdentifier:accessibilityID
-           enterpriseDisabled:NO
-                      handler:handlerWithMetrics];
+  return [[OverflowMenuDestination alloc] initWithName:name
+                                             imageName:imageName
+                               accessibilityIdentifier:accessibilityID
+                                    enterpriseDisabled:NO
+                                               handler:handlerWithMetrics];
 }
 
 OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
@@ -187,7 +191,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
   NSString* link = l10n_util::GetNSString(linkID);
   return [[OverflowMenuFooter alloc] initWithName:name
                                              link:link
-                                          uiImage:[UIImage imageNamed:imageName]
+                                        imageName:imageName
                           accessibilityIdentifier:kTextMenuEnterpriseInfo
                                           handler:handler];
 }
@@ -428,19 +432,30 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
 - (OverflowMenuModel*)createModel {
   __weak __typeof(self) weakSelf = self;
 
+  NSString* bookmarksIconName =
+      IsNewOverflowMenuSimpleDestinationIconsEnabled()
+          ? @"overflow_menu_destination_bookmarks_simple"
+          : @"overflow_menu_destination_bookmarks";
   self.bookmarksDestination = CreateOverflowMenuDestination(
-      IDS_IOS_TOOLS_MENU_BOOKMARKS, Destination::Bookmarks,
-      @"overflow_menu_destination_bookmarks", kToolsMenuBookmarksId, ^{
+      IDS_IOS_TOOLS_MENU_BOOKMARKS, Destination::Bookmarks, bookmarksIconName,
+      kToolsMenuBookmarksId, ^{
         [weakSelf openBookmarks];
       });
+  NSString* downloadsIconName =
+      IsNewOverflowMenuSimpleDestinationIconsEnabled()
+          ? @"overflow_menu_destination_downloads_simple"
+          : @"overflow_menu_destination_downloads";
   self.downloadsDestination = CreateOverflowMenuDestination(
-      IDS_IOS_TOOLS_MENU_DOWNLOADS, Destination::Downloads,
-      @"overflow_menu_destination_downloads", kToolsMenuDownloadsId, ^{
+      IDS_IOS_TOOLS_MENU_DOWNLOADS, Destination::Downloads, downloadsIconName,
+      kToolsMenuDownloadsId, ^{
         [weakSelf openDownloads];
       });
+  NSString* historyIconName = IsNewOverflowMenuSimpleDestinationIconsEnabled()
+                                  ? @"overflow_menu_destination_history_simple"
+                                  : @"overflow_menu_destination_history";
   self.historyDestination = CreateOverflowMenuDestination(
-      IDS_IOS_TOOLS_MENU_HISTORY, Destination::History,
-      @"overflow_menu_destination_history", kToolsMenuHistoryId, ^{
+      IDS_IOS_TOOLS_MENU_HISTORY, Destination::History, historyIconName,
+      kToolsMenuHistoryId, ^{
         [weakSelf openHistory];
       });
 
@@ -448,32 +463,50 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
                             ? IDS_IOS_TOOLS_MENU_PASSWORD_MANAGER
                             : IDS_IOS_TOOLS_MENU_PASSWORDS;
   NSString* passwordIconImageName =
-      IsPasswordManagerBrandingUpdateEnabled()
-          ? @"overflow_menu_destination_passwords_rebrand"
-          : @"overflow_menu_destination_passwords";
+      IsNewOverflowMenuSimpleDestinationIconsEnabled()
+          ? @"overflow_menu_destination_passwords_simple"
+          : (IsPasswordManagerBrandingUpdateEnabled()
+                 ? @"overflow_menu_destination_passwords_rebrand"
+                 : @"overflow_menu_destination_passwords");
   self.passwordsDestination = CreateOverflowMenuDestination(
       passwordTitleID, Destination::Passwords, passwordIconImageName, @"", ^{
         [weakSelf openPasswords];
       });
 
+  NSString* readingListIconName =
+      IsNewOverflowMenuSimpleDestinationIconsEnabled()
+          ? @"overflow_menu_destination_reading_list_simple"
+          : @"overflow_menu_destination_reading_list";
   self.readingListDestination = CreateOverflowMenuDestination(
       IDS_IOS_TOOLS_MENU_READING_LIST, Destination::ReadingList,
-      @"overflow_menu_destination_reading_list", kToolsMenuReadingListId, ^{
+      readingListIconName, kToolsMenuReadingListId, ^{
         [weakSelf openReadingList];
       });
+  NSString* recentTabsIconName =
+      IsNewOverflowMenuSimpleDestinationIconsEnabled()
+          ? @"overflow_menu_destination_recent_tabs_simple"
+          : @"overflow_menu_destination_recent_tabs";
   self.recentTabsDestination = CreateOverflowMenuDestination(
       IDS_IOS_TOOLS_MENU_RECENT_TABS, Destination::RecentTabs,
-      @"overflow_menu_destination_recent_tabs", kToolsMenuOtherDevicesId, ^{
+      recentTabsIconName, kToolsMenuOtherDevicesId, ^{
         [weakSelf openRecentTabs];
       });
+  NSString* settingsIconName =
+      IsNewOverflowMenuSimpleDestinationIconsEnabled()
+          ? @"overflow_menu_destination_settings_simple"
+          : @"overflow_menu_destination_settings";
   self.settingsDestination = CreateOverflowMenuDestination(
-      IDS_IOS_TOOLS_MENU_SETTINGS, Destination::Settings,
-      @"overflow_menu_destination_settings", kToolsMenuSettingsId, ^{
+      IDS_IOS_TOOLS_MENU_SETTINGS, Destination::Settings, settingsIconName,
+      kToolsMenuSettingsId, ^{
         [weakSelf openSettings];
       });
+  NSString* siteInfoIconName =
+      IsNewOverflowMenuSimpleDestinationIconsEnabled()
+          ? @"overflow_menu_destination_site_info_simple"
+          : @"overflow_menu_destination_site_info";
   self.siteInfoDestination = CreateOverflowMenuDestination(
       IDS_IOS_TOOLS_MENU_SITE_INFORMATION, Destination::SiteInfo,
-      @"overflow_menu_destination_site_info", kToolsMenuSiteInformation, ^{
+      siteInfoIconName, kToolsMenuSiteInformation, ^{
         [weakSelf openSiteInformation];
       });
 
@@ -593,7 +626,7 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
                                  });
 
     self.reportIssueAction = CreateOverflowMenuAction(
-        IDS_IOS_OPTIONS_REPORT_AN_ISSUE, kWarningFillSymbol, YES,
+        IDS_IOS_OPTIONS_REPORT_AN_ISSUE, kWarningSymbol, YES,
         kToolsMenuReportAnIssueId, ^{
           [weakSelf reportAnIssue];
         });
@@ -1136,10 +1169,13 @@ OverflowMenuFooter* CreateOverflowMenuManagedFooter(int nameID,
                                        base::SysNSStringToUTF16(domainName))
              : l10n_util::GetNSStringF(IDS_IOS_TOOLS_MENU_FOLLOW,
                                        base::SysNSStringToUTF16(domainName));
-  self.followAction.uiImage = [UIImage
-      imageNamed:status ? @"popup_menu_unfollow" : @"popup_menu_follow"];
+  [self.followAction setStoredImageName:status ? @"popup_menu_unfollow"
+                                               : @"popup_menu_follow"];
   __weak __typeof(self) weakSelf = self;
   self.followAction.handler = ^{
+    RecordAction(status ? UserMetricsAction("MobileMenuUnfollow")
+                        : UserMetricsAction("MobileMenuFollow"));
+    // TODO(crbug.com/1324452): Record histogram.
     [weakSelf updateFollowStatus:!status withFollowWebPageURLs:webPageURLs];
   };
 }

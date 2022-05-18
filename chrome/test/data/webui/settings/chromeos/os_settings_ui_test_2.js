@@ -8,19 +8,11 @@ import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min
 
 import {eventToPromise, waitBeforeNextRender} from '../../../test_util.js';
 import {assertEquals, assertFalse, assertTrue} from '../../chai_assert.js';
-import {FakeContactManager} from '../../nearby_share/shared/fake_nearby_contact_manager.m.js';
-import {FakeNearbyShareSettings} from '../../nearby_share/shared/fake_nearby_share_settings.m.js';
+import {FakeContactManager} from '../../nearby_share/shared/fake_nearby_contact_manager.js';
+import {FakeNearbyShareSettings} from '../../nearby_share/shared/fake_nearby_share_settings.js';
 
 import {FakeUserActionRecorder} from './fake_user_action_recorder.js';
-
-/**
- * Checks whether a given element is visible to the user.
- * @param {!Element} element
- * @returns {boolean}
- */
-function isVisible(element) {
-  return !!(element && element.getBoundingClientRect().width > 0);
-}
+import {isVisible} from './test_util.js';
 
 suite('os-settings-ui', () => {
   let ui;
@@ -209,6 +201,21 @@ suite('os-settings-ui', () => {
     const aboutSection = aboutPage.$$('settings-section[section="about"]');
     assertEquals(aboutSection, aboutPage.shadowRoot.activeElement);
   });
+
+  test(
+      'Detailed build info page is directly navigable and renders',
+      async () => {
+        const router = Router.getInstance();
+        router.navigateTo(routes.DETAILED_BUILD_INFO);
+
+        const settingsMain = ui.shadowRoot.querySelector('os-settings-main');
+        const aboutPage =
+            settingsMain.shadowRoot.querySelector('os-settings-about-page');
+        const detailedBuildInfoPage =
+            aboutPage.shadowRoot.querySelector('settings-detailed-build-info');
+        await waitBeforeNextRender(detailedBuildInfoPage);
+        assertTrue(isVisible(detailedBuildInfoPage));
+      });
 
   test('userActionRouteChange', function() {
     assertEquals(userActionRecorder.navigationCount, 0);

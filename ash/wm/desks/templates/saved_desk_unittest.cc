@@ -36,6 +36,7 @@
 #include "ash/wm/desks/templates/saved_desk_name_view.h"
 #include "ash/wm/desks/templates/saved_desk_presenter.h"
 #include "ash/wm/desks/templates/saved_desk_test_util.h"
+#include "ash/wm/desks/templates/saved_desk_util.h"
 #include "ash/wm/desks/zero_state_button.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_constants.h"
@@ -295,7 +296,7 @@ class SavedDeskTest : public OverviewTestBase {
 
     // Click the delete button on the delete dialog. Show delete dialog and
     // select accept.
-    auto* dialog_controller = SavedDeskDialogController::Get();
+    auto* dialog_controller = saved_desk_util::GetSavedDeskDialogController();
     auto* dialog_delegate = dialog_controller->dialog_widget()
                                 ->widget_delegate()
                                 ->AsDialogDelegate();
@@ -742,8 +743,9 @@ TEST_F(SavedDeskTest, DialogSystemModal) {
   ASSERT_TRUE(GetOverviewSession());
 
   // Show one of the dialogs. Activating the dialog keeps us in overview mode.
-  auto* dialog_controller = SavedDeskDialogController::Get();
+  auto* dialog_controller = saved_desk_util::GetSavedDeskDialogController();
   dialog_controller->ShowReplaceDialog(Shell::GetPrimaryRootWindow(), u"Bento",
+                                       DeskTemplateType::kTemplate,
                                        base::DoNothing(), base::DoNothing());
   EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
   ASSERT_TRUE(GetOverviewSession());
@@ -916,59 +918,91 @@ TEST_F(SavedDeskTest, SaveDeskButtonContainerAligned) {
 // Tests that the save desk as template button and save for later button are
 // enabled and disabled as expected based on the number of templates.
 TEST_F(SavedDeskTest, SaveDeskButtonsEnabledDisabled) {
-  desks_storage::LocalDeskDataManager::
-      SetExcludeSaveAndRecallDeskInMaxEntryCountForTesting(true);
-  // Create an app window which should be supported.
+  // Prepare the test environment, like creating an app window which should be
+  // supported.
   auto no_app_id_window = CreateAppWindow();
+  aura::Window* root_window = Shell::GetPrimaryRootWindow();
   auto* delegate = Shell::Get()->desks_templates_delegate();
   ASSERT_TRUE(
       delegate->IsWindowSupportedForDeskTemplate(no_app_id_window.get()));
 
-  // TODO(yongshun): Once `GetEntryCount()` and `GetMaxEntryCount()` support
-  // `DeskTemplateType`, create `kSaveAndRecall` and add test for save for later
-  // button.
-  std::array<std::string, 6> desk_names_template;
-  for (size_t i = 0; i < desk_names_template.size(); i++)
-    desk_names_template[i] += "desk_template " + base::NumberToString(i + 1);
-  for (const std::string& desk_name : desk_names_template)
-    AddEntry(base::GUID::GenerateRandomV4(), desk_name, base::Time::Now(),
-             DeskTemplateType::kTemplate);
+  // Test `Save Desk as Template` button.
+  {
+    // Add 6 `kTemplate` entries.
+    for (size_t i = 1; i <= 6; i++) {
+      const std::string desk_name = "desk_template " + base::NumberToString(i);
+      AddEntry(base::GUID::GenerateRandomV4(), desk_name, base::Time::Now(),
+               DeskTemplateType::kTemplate);
+    }
 
-  // Open overview and expect the save template button to be disabled.
-  ToggleOverview();
-  auto* overview_controller = Shell::Get()->overview_controller();
-  ASSERT_TRUE(overview_controller->InOverviewSession());
-  WaitForDesksTemplatesUI();
-  EXPECT_EQ(0, GetOverviewGridList()[0]->num_incognito_windows());
-  EXPECT_EQ(0, GetOverviewGridList()[0]->num_unsupported_windows());
+    // Open overview and expect the button to be disabled.
+    ToggleOverview();
+    WaitForDesksTemplatesUI();
+    EXPECT_EQ(views::Button::STATE_DISABLED,
+              GetSaveDeskAsTemplateButtonForRoot(root_window)->GetState());
 
-  aura::Window* root = Shell::GetPrimaryRootWindow();
-  auto* save_as_template_button = GetSaveDeskAsTemplateButtonForRoot(root);
-  auto* save_for_later_button = GetSaveDeskForLaterButtonForRoot(root);
-  EXPECT_EQ(views::Button::STATE_DISABLED, save_as_template_button->GetState());
-  EXPECT_EQ(views::Button::STATE_DISABLED, save_for_later_button->GetState());
+    // Exit and reopen overview, then verify that the entry count reaches the
+    // maximum.
+    ToggleOverview();
+    OpenOverviewAndShowTemplatesGrid();
+    const SavedDeskPresenter* saved_desk_presenter =
+        saved_desk_util::GetSavedDeskPresenter();
+    ASSERT_EQ(saved_desk_presenter->GetMaxDeskTemplateEntryCount(),
+              saved_desk_presenter->GetDeskTemplateEntryCount());
 
-  std::vector<const DeskTemplate*> entries = GetAllEntries();
+    // Verify that the button is re-enabled after we delete all entries and exit
+    // the templates grid.
+    std::vector<const DeskTemplate*> entries = GetAllEntries();
+    for (size_t i = entries.size(); i > 0; i--) {
+      DeleteTemplate(/*uuid=*/entries[i - 1]->uuid(),
+                     /*expected_current_item_count=*/i);
+    }
+    EXPECT_FALSE(GetOverviewGridList()[0]->IsShowingDesksTemplatesGrid());
+    EXPECT_EQ(views::Button::STATE_NORMAL,
+              GetSaveDeskAsTemplateButtonForRoot(root_window)->GetState());
 
-  // Exit and reopen overview to delete the template.
-  ToggleOverview();
-  OpenOverviewAndShowTemplatesGrid();
-  const SavedDeskPresenter* saved_desk_presenter = SavedDeskPresenter::Get();
-  EXPECT_EQ(saved_desk_presenter->GetMaxEntryCount(),
-            saved_desk_presenter->GetEntryCount());
-
-  // Verify that the button is re-enabled after we delete all templates and exit
-  // the templates grid.
-  for (size_t i = desk_names_template.size(); i > 0; i--) {
-    DeleteTemplate(/*uuid=*/entries[i - 1]->uuid(),
-                   /*expected_current_item_count=*/i);
+    // Exit overview.
+    ToggleOverview();
   }
-  EXPECT_FALSE(GetOverviewGridList()[0]->IsShowingDesksTemplatesGrid());
 
-  save_as_template_button = GetSaveDeskAsTemplateButtonForRoot(root);
-  save_for_later_button = GetSaveDeskForLaterButtonForRoot(root);
-  EXPECT_EQ(views::Button::STATE_NORMAL, save_as_template_button->GetState());
-  EXPECT_EQ(views::Button::STATE_NORMAL, save_for_later_button->GetState());
+  // Test `Save Desk for Later` button.
+  {
+    // Add 6 `kSaveAndRecall` entries.
+    for (size_t i = 1; i <= 6; i++) {
+      const std::string desk_name = "saved_desk " + base::NumberToString(i);
+      AddEntry(base::GUID::GenerateRandomV4(), desk_name, base::Time::Now(),
+               DeskTemplateType::kSaveAndRecall);
+    }
+
+    // Open overview and expect the button to be disabled.
+    ToggleOverview();
+    WaitForDesksTemplatesUI();
+    EXPECT_EQ(views::Button::STATE_DISABLED,
+              GetSaveDeskForLaterButtonForRoot(root_window)->GetState());
+
+    // Exit and reopen overview, then verify that the entry count reaches the
+    // maximum.
+    ToggleOverview();
+    OpenOverviewAndShowTemplatesGrid();
+    const SavedDeskPresenter* saved_desk_presenter =
+        saved_desk_util::GetSavedDeskPresenter();
+    ASSERT_EQ(saved_desk_presenter->GetMaxSaveAndRecallDeskEntryCount(),
+              saved_desk_presenter->GetSaveAndRecallDeskEntryCount());
+
+    // Verify that the button is re-enabled after we delete all entries and exit
+    // the templates grid.
+    std::vector<const DeskTemplate*> entries = GetAllEntries();
+    for (size_t i = entries.size(); i > 0; i--) {
+      DeleteTemplate(/*uuid=*/entries[i - 1]->uuid(),
+                     /*expected_current_item_count=*/i);
+    }
+    EXPECT_FALSE(GetOverviewGridList()[0]->IsShowingDesksTemplatesGrid());
+    EXPECT_EQ(views::Button::STATE_NORMAL,
+              GetSaveDeskForLaterButtonForRoot(root_window)->GetState());
+
+    // Exit overview.
+    ToggleOverview();
+  }
 }
 
 // Tests that clicking the save desk as template button shows the templates
@@ -1865,7 +1899,7 @@ TEST_F(SavedDeskTest, UnsupportedAppsDialog) {
 
   // Decline the dialog. We should stay in overview and no template should have
   // been saved.
-  auto* dialog_controller = SavedDeskDialogController::Get();
+  auto* dialog_controller = saved_desk_util::GetSavedDeskDialogController();
   dialog_controller->dialog_widget()
       ->widget_delegate()
       ->AsDialogDelegate()
@@ -1881,7 +1915,7 @@ TEST_F(SavedDeskTest, UnsupportedAppsDialog) {
 
   // Accept the dialog. The template should have been saved and the templates
   // grid should now be shown.
-  dialog_controller = SavedDeskDialogController::Get();
+  dialog_controller = saved_desk_util::GetSavedDeskDialogController();
   dialog_controller->dialog_widget()
       ->widget_delegate()
       ->AsDialogDelegate()
@@ -2920,7 +2954,7 @@ TEST_F(SavedDeskTest, SaveDeskRecordsWindowAndTabCountMetrics) {
   WaitForDesksTemplatesUI();
 
   // Mocks saving templates with some browsers.
-  SavedDeskPresenter::Get()->SaveOrUpdateDeskTemplate(
+  saved_desk_util::GetSavedDeskPresenter()->SaveOrUpdateDeskTemplate(
       /*is_update=*/false, Shell::GetPrimaryRootWindow(),
       std::move(desk_template));
 
@@ -2992,13 +3026,13 @@ TEST_F(SavedDeskTest, ReplaceTemplateMetric) {
   SavedDeskItemView* item_view = GetItemViewFromTemplatesGrid(
       /*grid_item_index=*/1);
   // Show replace dialogs.
-  auto* dialog_controller = SavedDeskDialogController::Get();
+  auto* dialog_controller = saved_desk_util::GetSavedDeskDialogController();
   auto callback = base::BindLambdaForTesting(
       [&]() { item_view->ReplaceTemplate(uuid_1.AsLowercaseString()); });
 
-  dialog_controller->ShowReplaceDialog(Shell::GetPrimaryRootWindow(),
-                                       base::UTF8ToUTF16(name_1), callback,
-                                       base::DoNothing());
+  dialog_controller->ShowReplaceDialog(
+      Shell::GetPrimaryRootWindow(), base::UTF8ToUTF16(name_1),
+      DeskTemplateType::kTemplate, callback, base::DoNothing());
   EXPECT_TRUE(Shell::IsSystemModalWindowOpen());
   ASSERT_TRUE(GetOverviewSession());
 
@@ -3468,13 +3502,13 @@ TEST_F(SavedDeskTest, NoDuplicateDisplayedName) {
   // The actual template name will still have "(1)" appended to maintain its
   // uniqueness.
   EXPECT_EQ(u"Desk 1 (1)",
-            GetItemViewFromTemplatesGrid(0)->desk_template()->template_name());
+            GetItemViewFromTemplatesGrid(0)->desk_template().template_name());
 
   // Set the second template to have a new unique name by updating the model
   // directly. This mimics updating the name on a different device and is the
   // only way to change the name without prompting the replace dialog.
   SavedDeskItemView* second_item = GetItemViewFromTemplatesGrid(1);
-  auto new_desk_template = second_item->desk_template()->Clone();
+  auto new_desk_template = second_item->desk_template().Clone();
   new_desk_template->set_template_name(u"Desk 2");
   const base::GUID uuid = new_desk_template->uuid();
 
@@ -3500,10 +3534,10 @@ TEST_F(SavedDeskTest, NoDuplicateDisplayedName) {
             // `LocalDeskStorage` does not support
             // `EntriesAddedOrUpdatedRemotely`, so
             // manually call it to simluate what the real model would do.
-            SavedDeskPresenter::Get()->EntriesAddedOrUpdatedRemotely(
-                {entry.get()});
+            saved_desk_util::GetSavedDeskPresenter()
+                ->EntriesAddedOrUpdatedRemotely({entry.get()});
             ASSERT_EQ(u"Desk 2", second_item->name_view()->GetText());
-            ASSERT_EQ(u"Desk 2", second_item->desk_template()->template_name());
+            ASSERT_EQ(u"Desk 2", second_item->desk_template().template_name());
             loop1.Quit();
           }));
   loop1.Run();

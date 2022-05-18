@@ -184,6 +184,7 @@ test("device_unittests") {
       "fido/u2f_register_operation_unittest.cc",
       "fido/u2f_sign_operation_unittest.cc",
       "fido/virtual_ctap2_device_unittest.cc",
+      "fido/virtual_fido_device_authenticator_unittest.cc",
       "fido/virtual_u2f_device_unittest.cc",
     ]
 
@@ -441,7 +442,6 @@ if (is_android) {
     deps = [
       "//base:base_java",
       "//base:jni_java",
-      "//build/android:build_java",
       "//components/location/android:location_java",
       "//device/bluetooth:java",
       "//third_party/android_sdk:android_test_mock_java",
@@ -462,7 +462,6 @@ if (is_android) {
       "$google_play_services_package:google_play_services_location_java",
       "//base:base_java_test_support",
       "//base:base_junit_test_support",
-      "//build/android:build_java",
       "//device/gamepad:java",
       "//mojo/public/java:bindings_java",
       "//third_party/androidx:androidx_annotation_annotation_java",

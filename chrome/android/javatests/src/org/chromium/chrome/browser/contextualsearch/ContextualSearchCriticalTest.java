@@ -11,6 +11,7 @@ import android.os.Build;
 import androidx.test.filters.SmallTest;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -41,6 +42,13 @@ import org.chromium.ui.test.util.UiRestriction;
 @Restriction(RESTRICTION_TYPE_NON_LOW_END_DEVICE)
 @Batch(Batch.PER_CLASS)
 public class ContextualSearchCriticalTest extends ContextualSearchInstrumentationBase {
+    @Override
+    @Before
+    public void setUp() throws Exception {
+        mTestPage = "/chrome/test/data/android/contextualsearch/tap_test.html";
+        super.setUp();
+    }
+
     //============================================================================================
     // Test Cases
     //============================================================================================
@@ -71,7 +79,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
         // When the bar opens, we should not make any additional request.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         assertLoadedLowPriorityUrl();
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
         assertLoadedLowPriorityUrl();
@@ -104,7 +112,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
         // Once the bar opens, we make a new request at normal priority.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         assertLoadedNormalPriorityUrl();
         Assert.assertEquals(2, mFakeServer.getLoadedUrlCount());
     }
@@ -121,7 +129,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
     public void testLivePrefetchFailoverRequestMadeAfterOpen(@EnabledFeature int enabledFeature)
             throws Exception {
         // Test fails with out-of-process network service. crbug.com/1071721
-        if (!ChromeFeatureList.isEnabled("NetworkServiceInProcess")) return;
+        if (!ChromeFeatureList.isEnabled("NetworkServiceInProcess2")) return;
 
         mFakeServer.reset();
         mFakeServer.setLowPriorityPathInvalid();
@@ -143,7 +151,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         }
 
         // Once the bar opens, we make a new request at normal priority.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         waitForNormalPriorityUrlLoaded();
         Assert.assertEquals(2, mFakeServer.getLoadedUrlCount());
     }
@@ -156,10 +164,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(ContextualSearchManagerTest.FeatureParamProvider.class)
     // Previously flaky and disabled 4/2021.  https://crbug.com/1192285
-    @DisabledTest(
-            message = "TODO:donnd fix and reeenable once expanding resolve works for base tests.")
-    public void
-    testResolveDisablePreload(@EnabledFeature int enabledFeature) throws Exception {
+    public void testResolveDisablePreload(@EnabledFeature int enabledFeature) throws Exception {
         simulateSlowResolveSearch("intelligence");
 
         assertSearchTermRequested();
@@ -179,7 +184,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(ContextualSearchManagerTest.FeatureParamProvider.class)
-    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/765403")
+    //   @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/765403")
     @DisabledTest(
             message = "TODO:donnd fix and reeenable once expanding resolve works for base tests.")
     public void
@@ -188,7 +193,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         assertSearchTermRequested();
         fakeResponse(false, 403, "", "", "", false);
         assertLoadedNoUrl();
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         assertLoadedNormalPriorityUrl();
     }
 
@@ -213,7 +218,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         assertWebContentsCreatedButNeverMadeVisible();
 
         // Expanding the Panel should make the Content visible.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         assertWebContentsVisible();
 
         // Closing the Panel should destroy the Content.
@@ -239,7 +244,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         assertNoSearchesLoaded();
 
         // Expanding the Panel should make the Content visible.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         assertWebContentsCreated();
         assertWebContentsVisible();
 
@@ -266,7 +271,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
         // Expanding the Panel should make the Content visible.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         assertWebContentsVisible();
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
@@ -277,7 +282,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
         // Expanding the Panel should not change the visibility or load content again.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         assertWebContentsVisible();
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
@@ -306,7 +311,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         assertNoSearchesLoaded();
 
         // Expanding the Panel should load the URL and make the Content visible.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         assertWebContentsCreated();
         assertWebContentsVisible();
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
@@ -318,7 +323,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
         // Expanding the Panel should not change the visibility or load content again.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         assertWebContentsVisible();
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
@@ -337,9 +342,11 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(ContextualSearchManagerTest.FeatureParamProvider.class)
-    @DisabledTest(message = "http://crbug.com/1296677")
     public void testChainedSearchCreatesNewContent(@EnabledFeature int enabledFeature)
             throws Exception {
+        // This flakes when running the Translations Feature, probably due to DOMUtils issues.
+        if (enabledFeature == EnabledFeature.TRANSLATIONS) return;
+
         // This test depends on preloading the content - which is loaded and not made visible.
         // We only preload when the user has decided to accept the privacy opt-in.
         mPolicy.overrideDecidedStateForTesting(true);
@@ -392,7 +399,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         WebContents wc1 = getPanelWebContents();
 
         // Expanding the Panel should make the Content visible.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         assertWebContentsVisible();
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
@@ -408,7 +415,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         simulateNonResolveSearch("resolution");
 
         // Expanding the Panel should load and display the new search.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         assertWebContentsCreated();
         assertWebContentsVisible();
         Assert.assertEquals(2, mFakeServer.getLoadedUrlCount());
@@ -450,7 +457,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
         // Expanding the Panel should load and display the new search.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         assertWebContentsCreated();
         assertWebContentsVisible();
         Assert.assertEquals(2, mFakeServer.getLoadedUrlCount());
@@ -470,7 +477,6 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(ContextualSearchManagerTest.FeatureParamProvider.class)
-    @DisabledTest(message = "http://crbug.com/1296677")
     public void testTapCloseRemovedFromHistory(@EnabledFeature int enabledFeature)
             throws Exception {
         // Simulate a resolving search and make sure a URL was loaded.
@@ -492,7 +498,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
     @SmallTest
     @Feature({"ContextualSearch"})
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1184410")
+    //  @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1184410")
     @ParameterAnnotations.UseMethodParameter(ContextualSearchManagerTest.FeatureParamProvider.class)
     @DisabledTest(
             message = "TODO:donnd fix and reeenable once expanding resolve works for base tests.")
@@ -504,7 +510,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
         String url = mFakeServer.getLoadedUrl();
 
         // Expand Panel so that the Content becomes visible.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
 
         // Close the Panel.
         tapBasePageToClosePanel();
@@ -520,10 +526,7 @@ public class ContextualSearchCriticalTest extends ContextualSearchInstrumentatio
     @SmallTest
     @Feature({"ContextualSearch"})
     @DisableIf.Build(sdk_is_less_than = Build.VERSION_CODES.P, message = "crbug.com/1161540")
-    @DisabledTest(
-            message = "TODO:donnd fix and reeenable once expanding resolve works for base tests.")
-    public void
-    testChainedTapsRemovedFromHistory() throws Exception {
+    public void testChainedTapsRemovedFromHistory() throws Exception {
         // Make sure we use tap for the simulateResolveSearch since only tap chains.
         FeatureList.setTestFeatures(ENABLE_NONE);
 

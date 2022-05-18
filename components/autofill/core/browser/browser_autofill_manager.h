@@ -196,13 +196,16 @@ class BrowserAutofillManager : public AutofillManager,
   // from the database. Returns true if deletion is allowed.
   bool RemoveAutofillProfileOrCreditCard(int unique_id);
 
-  // Remove the specified suggestion from single field filling.
+  // Remove the specified suggestion from single field filling. |frontend_id| is
+  // the PopupItemId of the suggestion.
   void RemoveCurrentSingleFieldSuggestion(const std::u16string& name,
-                                          const std::u16string& value);
+                                          const std::u16string& value,
+                                          int frontend_id);
 
   // Invoked when the user selected |value| in a suggestions list from single
-  // field filling.
-  void OnSingleFieldSuggestionSelected(const std::u16string& value);
+  // field filling. |frontend_id| is the PopupItemId of the suggestion.
+  void OnSingleFieldSuggestionSelected(const std::u16string& value,
+                                       int frontend_id);
 
   // Invoked when the user selects the "Hide Suggestions" item in the
   // Autocomplete drop-down.
@@ -248,7 +251,6 @@ class BrowserAutofillManager : public AutofillManager,
   void OnHidePopup() override;
   void SelectFieldOptionsDidChange(const FormData& form) override;
   void PropagateAutofillPredictions(
-      content::RenderFrameHost* rfh,
       const std::vector<FormStructure*>& forms) override;
   void Reset() override;
 
@@ -746,6 +748,7 @@ class BrowserAutofillManager : public AutofillManager,
   base::WeakPtrFactory<BrowserAutofillManager> weak_ptr_factory_{this};
 
   friend class AutofillAssistantTest;
+  friend class AutofillMetricsCrossFrameFormTest;
   friend class BrowserAutofillManagerTest;
   friend class AutofillMetricsTest;
   friend class metrics::AutofillMetricsBaseTest;

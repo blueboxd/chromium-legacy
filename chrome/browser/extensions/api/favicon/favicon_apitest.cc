@@ -1,6 +1,6 @@
 // Copyright 2022 The Chromium Authors. All rights reserved.
-// // Use of this source code is governed by a BSD-style license that can be
-// // found in the LICENSE file.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
@@ -29,7 +29,7 @@ class FaviconApiTest : public ExtensionApiTest {
 
  private:
   base::test::ScopedFeatureList feature_list_;
-  ScopedCurrentChannel current_cnannel_{version_info::Channel::CANARY};
+  ScopedCurrentChannel current_channel_{version_info::Channel::CANARY};
 };
 
 // TODO(crbug.com/1319934): Test is flaky on Mac.

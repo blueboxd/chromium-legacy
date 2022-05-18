@@ -15,6 +15,7 @@
 #include "build/chromeos_buildflags.h"
 #include "chrome/browser/apps/intent_helper/apps_navigation_types.h"
 #include "chrome/browser/lifetime/browser_close_manager.h"
+#include "chrome/browser/share/share_attempt.h"
 #include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/ui/bookmarks/bookmark_bar.h"
@@ -447,7 +448,7 @@ class BrowserWindow : public ui::BaseWindow {
   // Shows the Sharing Hub bubble. This must only be called as a direct result
   // of user action.
   virtual sharing_hub::SharingHubBubbleView* ShowSharingHubBubble(
-      content::WebContents* contents) = 0;
+      share::ShareAttempt attempt) = 0;
 #endif  // BUILDFLAG(IS_CHROMEOS)
 
   // Shows the translate bubble.
@@ -462,13 +463,11 @@ class BrowserWindow : public ui::BaseWindow {
       translate::TranslateErrors::Type error_type,
       bool is_user_gesture) = 0;
 
-#if BUILDFLAG(ENABLE_ONE_CLICK_SIGNIN)
   // Shows the one-click sign in confirmation UI. |email| holds the full email
   // address of the account that has signed in.
   virtual void ShowOneClickSigninConfirmation(
       const std::u16string& email,
       base::OnceCallback<void(bool)> confirmed_callback) = 0;
-#endif
 
   // Whether or not the shelf view is visible.
   virtual bool IsDownloadShelfVisible() const = 0;

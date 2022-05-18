@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/system_web_apps/test/system_web_app_browsertest_base.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/webapps/browser/install_result_code.h"
 #include "content/public/browser/notification_types.h"
@@ -44,7 +45,7 @@ class OSFeedbackAppIntegrationTest : public SystemWebAppIntegrationTest {
 IN_PROC_BROWSER_TEST_P(OSFeedbackAppIntegrationTest, OSFeedbackAppInLauncher) {
   const GURL url(ash::kChromeUIOSFeedbackUrl);
   EXPECT_NO_FATAL_FAILURE(ExpectSystemWebAppValid(
-      web_app::SystemAppType::OS_FEEDBACK, url, "Feedback"));
+      ash::SystemWebAppType::OS_FEEDBACK, url, "Feedback"));
 
   histogram_tester_.ExpectBucketCount(
       "Webapp.InstallResult.System.Apps.OSFeedback",
@@ -79,6 +80,32 @@ IN_PROC_BROWSER_TEST_P(OSFeedbackAppIntegrationTest, NavigateToFeedback) {
                                    ->GetVisibleURL());
 }
 
+// This test verifies that the Feedback app is not opened when
+// UserFeedbackAllowed is set to false.
+IN_PROC_BROWSER_TEST_P(OSFeedbackAppIntegrationTest, UserFeedbackNotAllowed) {
+  WaitForTestSystemAppInstall();
+
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kUserFeedbackAllowed,
+                                               false);
+
+  GURL main_feedback_url(ash::kChromeUIOSFeedbackUrl);
+  GURL old_url = browser()->tab_strip_model()->GetActiveWebContents()->GetURL();
+  ui_test_utils::SendToOmniboxAndSubmit(browser(), main_feedback_url.spec());
+  web_app::FlushSystemWebAppLaunchesForTesting(browser()->profile());
+
+  // browser() tab contents should be unaffected.
+  EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  EXPECT_EQ(old_url,
+            browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
+
+  // We now still have one browser.
+  EXPECT_EQ(1u, chrome::GetTotalBrowserCount());
+  EXPECT_EQ(old_url, chrome::FindLastActive()
+                         ->tab_strip_model()
+                         ->GetActiveWebContents()
+                         ->GetVisibleURL());
+}
+
 // Test that the Feedback App has a default bounds of 640(height)x600(width)
 // and is in the center of the screen.
 IN_PROC_BROWSER_TEST_P(OSFeedbackAppIntegrationTest, DefaultWindowBounds) {
@@ -88,7 +115,7 @@ IN_PROC_BROWSER_TEST_P(OSFeedbackAppIntegrationTest, DefaultWindowBounds) {
 
   WaitForTestSystemAppInstall();
   Browser* browser;
-  LaunchApp(web_app::SystemAppType::OS_FEEDBACK, &browser);
+  LaunchApp(ash::SystemWebAppType::OS_FEEDBACK, &browser);
 
   gfx::Rect work_area =
       display::Screen::GetScreen()->GetDisplayForNewWindows().work_area();
@@ -97,11 +124,11 @@ IN_PROC_BROWSER_TEST_P(OSFeedbackAppIntegrationTest, DefaultWindowBounds) {
   int expected_height = 640;
   int x = (work_area.width() - expected_width) / 2;
   int y = (work_area.height() - expected_height) / 2;
-  EXPECT_EQ(browser->window()->GetBounds(),
-            gfx::Rect(x, y, expected_width, expected_height));
+  EXPECT_EQ(gfx::Rect(x, y, expected_width, expected_height),
+            browser->window()->GetBounds());
 }
 
-// Test that the Feedback App
+// Test that when the policy UserFeedbackAllowed is true, the Feedback App
 //  1) shows in launcher
 //  2) shows in search
 //  3) is single window
@@ -113,13 +140,29 @@ IN_PROC_BROWSER_TEST_P(OSFeedbackAppIntegrationTest, FeedbackAppAttributes) {
 
   // Check the correct attributes for Feedback App.
   auto* system_app =
-      GetManager().GetSystemApp(web_app::SystemAppType::OS_FEEDBACK);
+      GetManager().GetSystemApp(ash::SystemWebAppType::OS_FEEDBACK);
   EXPECT_TRUE(system_app->ShouldShowInLauncher());
   EXPECT_TRUE(system_app->ShouldShowInSearch());
   EXPECT_TRUE(system_app->ShouldReuseExistingWindow());
   EXPECT_TRUE(system_app->ShouldAllowScriptsToCloseWindows());
   EXPECT_FALSE(system_app->ShouldAllowResize());
   EXPECT_FALSE(system_app->ShouldAllowMaximize());
+}
+
+// Test that when the policy UserFeedbackAllowed is false, the Feedback App
+//  1) does not show in launcher
+//  2) does not show in search
+IN_PROC_BROWSER_TEST_P(OSFeedbackAppIntegrationTest,
+                       HideInLauncherAndSearchWhenUserFeedbackNotAllowed) {
+  WaitForTestSystemAppInstall();
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kUserFeedbackAllowed,
+                                               false);
+
+  // Check the correct attributes for Feedback App.
+  auto* system_app =
+      GetManager().GetSystemApp(ash::SystemWebAppType::OS_FEEDBACK);
+  EXPECT_FALSE(system_app->ShouldShowInLauncher());
+  EXPECT_FALSE(system_app->ShouldShowInSearch());
 }
 
 INSTANTIATE_SYSTEM_WEB_APP_MANAGER_TEST_SUITE_REGULAR_PROFILE_P(

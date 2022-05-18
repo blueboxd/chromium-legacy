@@ -6,6 +6,7 @@
 
 #include "ash/constants/ash_features.h"
 #include "ash/controls/rounded_scroll_bar.h"
+#include "ash/controls/scroll_view_gradient_helper.h"
 #include "ash/public/cpp/desk_template.h"
 #include "ash/public/cpp/desks_templates_delegate.h"
 #include "ash/public/cpp/shell_window_ids.h"
@@ -26,9 +27,11 @@
 #include "ui/compositor/layer.h"
 #include "ui/events/event_handler.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 namespace ash {
 namespace {
@@ -45,6 +48,9 @@ constexpr gfx::Size kLabelSizePortrait = {464, 24};
 
 // Between child spacing of Library page scroll content view.
 constexpr int kLibraryPageScrollContentsBetweenChildSpacingDp = 32;
+
+// The size of the gradient applied to the top and bottom of the scroll view.
+constexpr int kScrollViewGradientSize = 32;
 
 // Insets of Library page scroll content view.
 constexpr gfx::Insets kLibraryPageScrollContentsInsets = gfx::Insets::VH(32, 0);
@@ -108,16 +114,26 @@ class SavedDeskLibraryWindowTargeter : public aura::WindowTargeter {
   // aura::WindowTargeter:
   bool SubtreeShouldBeExploredForEvent(aura::Window* window,
                                        const ui::LocatedEvent& event) override {
-    // Process the event only if it intersects with grid items or it is for
-    // scrolling.
-    if (!owner_->IntersectsWithUi(event.location()) &&
-        !event.IsMouseWheelEvent()) {
-      return false;
-    }
+    // Process the event it is for scrolling.
+    if (event.IsMouseWheelEvent())
+      return true;
 
-    // None of the libary's children will handle the event, so `window` won't
+    // Check if the located event intersects with the library's children.
+    // Convert to screen coordinate.
+    gfx::Point screen_location;
+    if (event.target()) {
+      screen_location = event.target()->GetScreenLocation(event);
+    } else {
+      screen_location = event.root_location();
+      wm::ConvertPointToScreen(window->GetRootWindow(), &screen_location);
+    }
+    // Process the event if it intersects with grid items.
+    if (owner_->IntersectsWithUi(screen_location))
+      return true;
+
+    // None of the library's children will handle the event, so `window` won't
     // handle the event and it will fall through to the wallpaper.
-    return aura::WindowTargeter::SubtreeShouldBeExploredForEvent(window, event);
+    return false;
   }
 
  private:
@@ -206,6 +222,9 @@ SavedDeskLibraryView::SavedDeskLibraryView() {
   vertical_scroll->SetInsets(kLibraryPageVerticalScrollInsets);
   vertical_scroll->SetSnapBackOnDragOutside(false);
   scroll_view_->SetVerticalScrollBar(std::move(vertical_scroll));
+
+  scroll_view_gradient_helper_ = std::make_unique<ScrollViewGradientHelper>(
+      scroll_view_, kScrollViewGradientSize);
 
   // Set up scroll contents.
   auto scroll_contents = std::make_unique<views::View>();
@@ -312,7 +331,7 @@ void SavedDeskLibraryView::OnFeedbackButtonPressed() {
   std::string extra_diagnostics;
   for (auto* grid : grid_views()) {
     for (auto* item : grid->grid_items())
-      extra_diagnostics += (item->desk_template()->ToString() + "\n");
+      extra_diagnostics += (item->desk_template().ToString() + "\n");
   }
 
   // Note that this will activate the dialog which will exit overview and delete
@@ -330,16 +349,16 @@ bool SavedDeskLibraryView::IsAnimating() {
   return false;
 }
 
-bool SavedDeskLibraryView::IntersectsWithUi(const gfx::Point& location) {
+bool SavedDeskLibraryView::IntersectsWithUi(const gfx::Point& screen_location) {
   // Check saved desk items.
   for (auto* grid : grid_views()) {
     for (auto* item : grid->grid_items()) {
-      if (item->GetBoundsInScreen().Contains(location))
+      if (item->GetBoundsInScreen().Contains(screen_location))
         return true;
     }
   }
   // Check feedback button.
-  return feedback_button_->GetBoundsInScreen().Contains(location);
+  return feedback_button_->GetBoundsInScreen().Contains(screen_location);
 }
 
 aura::Window* SavedDeskLibraryView::GetWidgetWindow() {
@@ -417,6 +436,7 @@ void SavedDeskLibraryView::Layout() {
   }
 
   scroll_view_->SetBoundsRect({0, 0, width(), height()});
+  scroll_view_gradient_helper_->UpdateGradientZone();
 }
 
 void SavedDeskLibraryView::OnThemeChanged() {

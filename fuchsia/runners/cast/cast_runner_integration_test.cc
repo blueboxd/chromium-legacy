@@ -230,7 +230,7 @@ class TestCastComponent {
   explicit TestCastComponent(fuchsia::sys::Runner* cast_runner)
       : app_config_manager_binding_(&component_services_, &app_config_manager_),
         cast_runner_(cast_runner) {
-    DCHECK(cast_runner_);
+    EXPECT_TRUE(cast_runner_);
   }
 
   ~TestCastComponent() {
@@ -253,17 +253,20 @@ class TestCastComponent {
     WaitQueryApiConnected();
   }
 
-  void CreateComponentContext(const base::StringPiece& component_url) {
+  void CreateComponentContext(const base::StringPiece& component_url,
+                              bool with_fake_agent = true) {
     ASSERT_FALSE(component_context_)
         << "ComponentContext may only be created once";
     url_request_rewrite_rules_provider_ =
         std::make_unique<FakeUrlRequestRewriteRulesProvider>();
     component_context_ = std::make_unique<cr_fuchsia::FakeComponentContext>(
         &component_services_, component_url);
-    component_context_->RegisterCreateComponentStateCallback(
-        FakeApplicationConfigManager::kFakeAgentUrl,
-        base::BindRepeating(&TestCastComponent::OnComponentConnect,
-                            base::Unretained(this)));
+    if (with_fake_agent) {
+      component_context_->RegisterCreateComponentStateCallback(
+          FakeApplicationConfigManager::kFakeAgentUrl,
+          base::BindRepeating(&TestCastComponent::OnComponentConnect,
+                              base::Unretained(this)));
+    }
   }
 
   void StartCastComponent(base::StringPiece component_url) {
@@ -280,10 +283,10 @@ class TestCastComponent {
         outgoing_directory.NewRequest().TakeChannel();
 
     fidl::InterfaceHandle<fuchsia::io::Directory> svc_directory;
-    CHECK_EQ(fdio_service_connect_at(
-                 outgoing_directory.channel().get(), "svc",
-                 svc_directory.NewRequest().TakeChannel().release()),
-             ZX_OK);
+    EXPECT_EQ(fdio_service_connect_at(
+                  outgoing_directory.channel().get(), "svc",
+                  svc_directory.NewRequest().TakeChannel().release()),
+              ZX_OK);
 
     component_services_client_ =
         std::make_unique<sys::ServiceDirectory>(std::move(svc_directory));
@@ -320,7 +323,8 @@ class TestCastComponent {
     fuchsia::web::ContentDirectoryProvider provider;
     provider.set_name("testdata");
     base::FilePath pkg_path;
-    CHECK(base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &pkg_path));
+    ASSERT_TRUE(
+        base::PathService::Get(base::DIR_SRC_TEST_DATA_ROOT, &pkg_path));
     provider.set_directory(base::OpenDirectoryHandle(
         pkg_path.AppendASCII("fuchsia/runners/cast/testdata")));
     std::vector<fuchsia::web::ContentDirectoryProvider> providers;
@@ -363,7 +367,7 @@ class TestCastComponent {
   }
 
   void ShutdownComponent() {
-    DCHECK(component_controller_);
+    EXPECT_TRUE(component_controller_);
 
     if (component_state_) {
       base::RunLoop run_loop;
@@ -374,7 +378,7 @@ class TestCastComponent {
   }
 
   void ExpectControllerDisconnectWithStatus(zx_status_t expected_status) {
-    DCHECK(component_controller_);
+    EXPECT_TRUE(component_controller_);
 
     base::RunLoop loop;
     component_controller_.ptr().set_error_handler(
@@ -457,7 +461,7 @@ class TestCastComponent {
   }
 
   void WaitQueryApiConnected() {
-    CHECK(!test_port_);
+    EXPECT_FALSE(test_port_);
     test_port_ = api_bindings_.RunAndReturnConnectedPort("testport").Bind();
   }
 
@@ -822,7 +826,7 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrl) {
   dummy_agent_api_bindings.set_bindings(std::move(binding_list));
 
   auto component_url = base::StrCat({"cast:", kTestAppId});
-  component.CreateComponentContext(component_url);
+  component.CreateComponentContext(component_url, /*with_fake_agent=*/false);
   EXPECT_TRUE(component.component_context());
 
   base::RunLoop run_loop;
@@ -881,7 +885,7 @@ TEST_F(CastRunnerIntegrationTest, ApplicationConfigAgentUrlRewriteOptional) {
   dummy_agent_api_bindings.set_bindings(std::move(binding_list));
 
   auto component_url = base::StrCat({"cast:", kTestAppId});
-  component.CreateComponentContext(component_url);
+  component.CreateComponentContext(component_url, /*with_fake_agent=*/false);
   base::RunLoop run_loop;
   FakeComponentState* dummy_component_state = nullptr;
   component.component_context()->RegisterCreateComponentStateCallback(

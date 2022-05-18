@@ -417,6 +417,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   // tracker list after the provisional load is committed.
   void SetPageMainFrame(content::RenderFrameHost* rfh);
 
+  // Gets a bound ukm::SourceId without any check for testing.
+  ukm::SourceId GetPageUkmSourceIdForTesting() const { return source_id_; }
+
   // Obtains a weak pointer for this instance.
   base::WeakPtr<PageLoadTracker> GetWeakPtr();
 
@@ -443,7 +446,9 @@ class PageLoadTracker : public PageLoadMetricsUpdateDispatcher::Client,
   using InvokeCallback =
       base::RepeatingCallback<PageLoadMetricsObserver::ObservePolicy(
           PageLoadMetricsObserverInterface*)>;
-  void InvokeAndPruneObservers(const char* trace_name, InvokeCallback callback);
+  void InvokeAndPruneObservers(const char* trace_name,
+                               InvokeCallback callback,
+                               bool permit_forwarding);
 
   void AddObserverInterface(
       std::unique_ptr<PageLoadMetricsObserverInterface> observer);

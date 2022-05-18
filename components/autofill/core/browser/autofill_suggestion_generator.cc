@@ -4,11 +4,13 @@
 
 #include <string>
 
+#include "base/feature_list.h"
 #include "components/autofill/core/browser/autofill_suggestion_generator.h"
 
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_browser_util.h"
 #include "components/autofill/core/browser/autofill_client.h"
+#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/metrics/autofill_metrics.h"
@@ -57,13 +59,17 @@ AutofillSuggestionGenerator::GetSuggestionsForCreditCards(
     const FormStructure& form_structure,
     const FormFieldData& field,
     const AutofillType& type,
-    const std::string& app_locale) {
+    const std::string& app_locale,
+    bool* should_display_gpay_logo) {
   std::vector<Suggestion> suggestions;
 
   DCHECK(personal_data_);
   std::vector<CreditCard*> cards_to_suggest =
       personal_data_->GetCreditCardsToSuggest(
           autofill_client_->AreServerCardsSupported());
+
+  *should_display_gpay_logo = base::ranges::all_of(
+      cards_to_suggest, base::not_fn(&CreditCard::IsLocalCard));
 
   // The field value is sanitized before attempting to match it to the user's
   // data.
@@ -120,6 +126,23 @@ AutofillSuggestionGenerator::GetSuggestionsForCreditCards(
         autofill_client_->GetLastCommittedURL(), suggestions);
   }
 
+  return suggestions;
+}
+
+// static
+std::vector<Suggestion>
+AutofillSuggestionGenerator::GetPromoCodeSuggestionsFromPromoCodeOffers(
+    const std::vector<const AutofillOfferData*>& promo_code_offers) {
+  std::vector<Suggestion> suggestions;
+  for (const AutofillOfferData* promo_code_offer : promo_code_offers) {
+    // For each promo code, create a suggestion.
+    suggestions.emplace_back(base::ASCIIToUTF16(promo_code_offer->promo_code));
+    Suggestion* suggestion = &suggestions.back();
+    suggestion->label =
+        base::ASCIIToUTF16(promo_code_offer->display_strings.value_prop_text);
+    suggestion->backend_id = base::NumberToString(promo_code_offer->offer_id);
+    suggestion->frontend_id = POPUP_ITEM_ID_MERCHANT_PROMO_CODE_ENTRY;
+  }
   return suggestions;
 }
 
@@ -215,12 +238,15 @@ Suggestion AutofillSuggestionGenerator::CreateCreditCardSuggestion(
                              suggestion_nickname, obfuscation_length),
                          Suggestion::Text::IsPrimary(true));
 
+    if (!base::FeatureList::IsEnabled(
+            features::kAutofillRemoveCardExpiryFromDownstreamSuggestion)) {
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
-    suggestion.label = credit_card.GetInfo(
-        AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale);
+      suggestion.label = credit_card.GetInfo(
+          AutofillType(CREDIT_CARD_EXP_DATE_2_DIGIT_YEAR), app_locale);
 #else
-    suggestion.label = credit_card.DescriptiveExpiration(app_locale);
+      suggestion.label = credit_card.DescriptiveExpiration(app_locale);
 #endif  // BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
+    }
 
   } else if (credit_card.number().empty()) {
     DCHECK_EQ(credit_card.record_type(), CreditCard::LOCAL_CARD);

@@ -5,11 +5,15 @@
 #include "ash/system/diagnostics/diagnostics_log_controller.h"
 
 #include <memory>
+#include <string>
+#include <vector>
 
 #include "ash/constants/ash_features.h"
 #include "ash/shell.h"
 #include "ash/system/diagnostics/diagnostics_browser_delegate.h"
+#include "ash/system/diagnostics/log_test_helpers.h"
 #include "ash/system/diagnostics/networking_log.h"
+#include "ash/system/diagnostics/routine_log.h"
 #include "ash/system/diagnostics/telemetry_log.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/webui/diagnostics_ui/mojom/network_health_provider.mojom-forward.h"
@@ -19,7 +23,6 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/scoped_feature_list.h"
 #include "components/user_manager/user_type.h"
-#include "routine_log.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace ash {
@@ -27,12 +30,19 @@ namespace diagnostics {
 
 namespace {
 
-const char kLogFileContents[] = "Diagnostics Log";
 const char kTestSessionLogFileName[] = "test_session_log.txt";
 const char kDiangosticsDirName[] = "diagnostics";
 const char kDefaultUserDir[] = "/fake/user-dir";
 const char kTmpDiagnosticsDir[] = "/tmp/diagnostics";
 const char kTestUserEmail[] = "test-user@gmail.com";
+const char kFakeUserDir[] = "fake-user";
+
+// Log headers content.
+const char kRoutineLogSubsectionHeader[] = "--- Test Routines ---";
+const char kSystemLogSectionHeader[] = "=== System ===";
+const char kNetworkingLogSectionHeader[] = "=== Networking ===";
+const char kNetworkingLogNetworkInfoHeader[] = "--- Network Info ---";
+const char kNetworkingLogNetworkEventsHeader[] = "--- Network Events ---";
 
 // Fake delegate used to set the expected user directory path.
 class FakeDiagnosticsBrowserDelegate : public DiagnosticsBrowserDelegate {
@@ -110,6 +120,18 @@ TEST_F(DiagnosticsLogControllerTest, IsInitializedAfterDelegateProvided) {
 }
 
 TEST_F(DiagnosticsLogControllerTest, GenerateSessionLogOnBlockingPoolFile) {
+  base::ScopedTempDir scoped_diagnostics_log_dir;
+
+  EXPECT_TRUE(scoped_diagnostics_log_dir.CreateUniqueTempDir());
+  const base::FilePath expected_path_regular_user =
+      base::FilePath(scoped_diagnostics_log_dir.GetPath().Append(kFakeUserDir));
+  const base::FilePath expected_diagnostics_log_path =
+      expected_path_regular_user.Append(kDiangosticsDirName);
+  SimulateUserLogin(kTestUserEmail);
+  DiagnosticsLogController::Initialize(
+      std::make_unique<FakeDiagnosticsBrowserDelegate>(
+          expected_path_regular_user));
+
   const base::FilePath save_file_path = GetSessionLogPath();
   EXPECT_TRUE(DiagnosticsLogController::Get()->GenerateSessionLogOnBlockingPool(
       save_file_path));
@@ -117,7 +139,66 @@ TEST_F(DiagnosticsLogControllerTest, GenerateSessionLogOnBlockingPoolFile) {
 
   std::string contents;
   EXPECT_TRUE(base::ReadFileToString(save_file_path, &contents));
-  EXPECT_EQ(kLogFileContents, contents);
+  const std::vector<std::string> log_lines = GetLogLines(contents);
+  EXPECT_EQ(8u, log_lines.size());
+
+  EXPECT_EQ(kSystemLogSectionHeader, log_lines[0]);
+  EXPECT_EQ(kRoutineLogSubsectionHeader, log_lines[1]);
+  const std::string expected_no_routine_msg =
+      "No routines of this type were run in the session.";
+  EXPECT_EQ(expected_no_routine_msg, log_lines[2]);
+  EXPECT_EQ(kNetworkingLogSectionHeader, log_lines[3]);
+  EXPECT_EQ(kNetworkingLogNetworkInfoHeader, log_lines[4]);
+  EXPECT_EQ(kRoutineLogSubsectionHeader, log_lines[5]);
+  EXPECT_EQ(expected_no_routine_msg, log_lines[6]);
+  EXPECT_EQ(kNetworkingLogNetworkEventsHeader, log_lines[7]);
+}
+
+TEST_F(DiagnosticsLogControllerTest,
+       GenerateWithRoutinesSessionLogOnBlockingPoolFile) {
+  base::ScopedTempDir scoped_diagnostics_log_dir;
+
+  EXPECT_TRUE(scoped_diagnostics_log_dir.CreateUniqueTempDir());
+  const base::FilePath expected_path_regular_user =
+      base::FilePath(scoped_diagnostics_log_dir.GetPath().Append(kFakeUserDir));
+  const base::FilePath expected_diagnostics_log_path =
+      expected_path_regular_user.Append(kDiangosticsDirName);
+  SimulateUserLogin(kTestUserEmail);
+  DiagnosticsLogController::Initialize(
+      std::make_unique<FakeDiagnosticsBrowserDelegate>(
+          expected_path_regular_user));
+  RoutineLog* routine_log = DiagnosticsLogController::Get()->GetRoutineLog();
+  routine_log->LogRoutineCancelled(mojom::RoutineType::kArcHttp);
+  routine_log->LogRoutineCancelled(mojom::RoutineType::kBatteryCharge);
+  task_environment()->RunUntilIdle();
+
+  // Generate log file at test path.
+  const base::FilePath save_file_path = GetSessionLogPath();
+  EXPECT_TRUE(DiagnosticsLogController::Get()->GenerateSessionLogOnBlockingPool(
+      save_file_path));
+  EXPECT_TRUE(base::PathExists(save_file_path));
+  std::string contents;
+  EXPECT_TRUE(base::ReadFileToString(save_file_path, &contents));
+  const std::vector<std::string> log_lines = GetLogLines(contents);
+  EXPECT_EQ(8u, log_lines.size());
+
+  // System state and routine data.
+  EXPECT_EQ(kSystemLogSectionHeader, log_lines[0]);
+  EXPECT_EQ(kRoutineLogSubsectionHeader, log_lines[1]);
+  const std::string expected_canceled_routine_msg =
+      "Inflight Routine Cancelled";
+  auto system_routine_line = GetLogLineContents(log_lines[2]);
+  EXPECT_EQ(2u, system_routine_line.size());
+  EXPECT_EQ(expected_canceled_routine_msg, system_routine_line[1]);
+
+  // Network state and routine data.
+  EXPECT_EQ(kNetworkingLogSectionHeader, log_lines[3]);
+  EXPECT_EQ(kNetworkingLogNetworkInfoHeader, log_lines[4]);
+  EXPECT_EQ(kRoutineLogSubsectionHeader, log_lines[5]);
+  auto network_routine_line = GetLogLineContents(log_lines[6]);
+  EXPECT_EQ(2u, network_routine_line.size());
+  EXPECT_EQ(expected_canceled_routine_msg, network_routine_line[1]);
+  EXPECT_EQ(kNetworkingLogNetworkEventsHeader, log_lines[7]);
 }
 
 TEST_F(DiagnosticsLogControllerTest,
@@ -200,7 +281,7 @@ TEST_F(DiagnosticsLogControllerTest, SetLogWritersUsingLogBasePath) {
 
   EXPECT_TRUE(scoped_dir.CreateUniqueTempDir());
   const base::FilePath expected_path_regular_user =
-      base::FilePath(scoped_dir.GetPath().Append("fake-user"));
+      base::FilePath(scoped_dir.GetPath().Append(kFakeUserDir));
   const base::FilePath expected_diagnostics_log_path =
       expected_path_regular_user.Append(kDiangosticsDirName);
   SimulateUserLogin(kTestUserEmail);
@@ -229,14 +310,46 @@ TEST_F(DiagnosticsLogControllerTest, SetLogWritersUsingLogBasePath) {
   // Wait for Append tasks which create the logs to complete.
   task_environment()->RunUntilIdle();
 
-  EXPECT_FALSE(routine_log->GetContentsForCategory("network").empty());
-  EXPECT_FALSE(routine_log->GetContentsForCategory("system").empty());
+  EXPECT_FALSE(
+      routine_log->GetContentsForCategory(RoutineLog::RoutineCategory::kNetwork)
+          .empty());
+  EXPECT_FALSE(
+      routine_log->GetContentsForCategory(RoutineLog::RoutineCategory::kSystem)
+          .empty());
   EXPECT_TRUE(base::PathExists(
       expected_diagnostics_log_path.Append("network_events.log")));
   EXPECT_TRUE(base::PathExists(expected_diagnostics_log_path.Append(
       "diagnostics_routines_network.log")));
   EXPECT_TRUE(base::PathExists(
       expected_diagnostics_log_path.Append("diagnostics_routines_system.log")));
+}
+
+TEST_F(DiagnosticsLogControllerTest, ClearLogDirectoryOnInitialize) {
+  base::ScopedTempDir scoped_dir;
+  EXPECT_TRUE(scoped_dir.CreateUniqueTempDir());
+  const base::FilePath expected_path_regular_user =
+      base::FilePath(scoped_dir.GetPath().Append(kFakeUserDir));
+  const base::FilePath expected_diagnostics_log_path =
+      expected_path_regular_user.Append(kDiangosticsDirName);
+  EXPECT_TRUE(base::CreateDirectory(expected_diagnostics_log_path));
+  EXPECT_TRUE(base::PathExists(expected_diagnostics_log_path));
+  SimulateUserLogin(kTestUserEmail);
+  DiagnosticsLogController::Initialize(
+      std::make_unique<FakeDiagnosticsBrowserDelegate>(
+          expected_path_regular_user));
+
+  // Wait for delete to complete.
+  task_environment()->RunUntilIdle();
+  EXPECT_FALSE(base::PathExists(expected_diagnostics_log_path));
+
+  // Before routines updated log file does not exist.
+  RoutineLog* routine_log = DiagnosticsLogController::Get()->GetRoutineLog();
+  routine_log->LogRoutineCancelled(mojom::RoutineType::kDnsResolution);
+
+  // Wait for append to write logs.
+  task_environment()->RunUntilIdle();
+  EXPECT_EQ(expected_diagnostics_log_path, log_base_path());
+  EXPECT_TRUE(base::PathExists(expected_diagnostics_log_path));
 }
 
 }  // namespace diagnostics

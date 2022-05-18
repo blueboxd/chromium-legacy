@@ -74,6 +74,7 @@ enum ConfigureBottomSheetProto_PeekMode : int;
 enum ConfigureUiStateProto_OverlayBehavior : int;
 enum DocumentReadyState : int;
 enum class UserDataFieldChange;
+enum class UserDataEventField;
 
 // Action delegate called when processing actions.
 class ActionDelegate {
@@ -464,6 +465,7 @@ class ActionDelegate {
   // the result through the |callback|. Enters the |RUNNING| state while doing
   // so.
   virtual void RequestUserData(
+      UserDataEventField event_field,
       const CollectUserDataOptions& options,
       base::OnceCallback<void(bool, const GetUserDataResponseProto&)>
           callback) = 0;
@@ -474,8 +476,9 @@ class ActionDelegate {
   // Executes the |external_action|.
   virtual void RequestExternalAction(
       const ExternalActionProto& external_action,
+      base::OnceCallback<void()> start_dom_checks_callback,
       base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
-          callback) = 0;
+          end_action_callback) = 0;
 
   // Returns whether or not this instance of Autofill Assistant must use a
   // backend endpoint to query data.

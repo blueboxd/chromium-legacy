@@ -38,6 +38,7 @@
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/apps/app_service/browser_app_launcher.h"
 #include "chrome/browser/apps/platform_apps/app_load_service.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
 #include "chrome/browser/autocomplete/autocomplete_classifier_factory.h"
 #include "chrome/browser/browser_features.h"
 #include "chrome/browser/browser_process.h"
@@ -94,7 +95,6 @@
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chrome/browser/ui/webui/history/foreign_session_handler.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
 #include "chrome/browser/web_applications/system_web_apps/system_web_app_manager.h"
 #include "chrome/browser/web_applications/user_display_mode.h"
 #include "chrome/browser/web_applications/web_app_helpers.h"
@@ -594,8 +594,7 @@ void AddAvatarToLastMenuItem(const gfx::Image& icon,
   int target_dip_height = icon.Height();
   gfx::CalculateFaviconTargetSize(&target_dip_width, &target_dip_height);
   gfx::Image sized_icon = profiles::GetSizedAvatarIcon(
-      icon, true /* is_rectangle */, target_dip_width, target_dip_height,
-      profiles::SHAPE_CIRCLE);
+      icon, target_dip_width, target_dip_height, profiles::SHAPE_CIRCLE);
   menu->SetIcon(menu->GetItemCount() - 1,
                 ui::ImageModel::FromImage(sized_icon));
 }
@@ -634,8 +633,8 @@ bool DoesInputFieldTypeSupportEmoji(
 
 // If the link points to a system web app (in |profile|), return its type.
 // Otherwise nullopt.
-absl::optional<web_app::SystemAppType> GetLinkSystemAppType(Profile* profile,
-                                                            const GURL& url) {
+absl::optional<ash::SystemWebAppType> GetLinkSystemAppType(Profile* profile,
+                                                           const GURL& url) {
   absl::optional<web_app::AppId> link_app_id =
       web_app::FindInstalledAppWithUrlInScope(profile, url);
 
@@ -1342,7 +1341,7 @@ void RenderViewContextMenu::AppendLinkItems() {
         browser && (browser->is_type_app() || browser->is_type_app_popup());
 
     Profile* profile = GetProfile();
-    absl::optional<web_app::SystemAppType> link_system_app_type =
+    absl::optional<ash::SystemWebAppType> link_system_app_type =
         GetLinkSystemAppType(profile, params_.link_url);
     if (system_app_ && link_system_app_type) {
       // Show "Open in new tab" if this link points to the current app, and the
@@ -1932,19 +1931,16 @@ void RenderViewContextMenu::AppendEditableItems() {
   }
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-  if (chromeos::features::IsClipboardHistoryEnabled()) {
-    menu_model_.AddItemWithStringId(
-        IDC_CONTENT_CLIPBOARD_HISTORY_MENU,
-        IDS_CONTEXT_MENU_SHOW_CLIPBOARD_HISTORY_MENU);
-    ash::ClipboardHistoryController* clipboard_history_controller =
-        ash::ClipboardHistoryController::Get();
-    if (clipboard_history_controller &&
-        clipboard_history_controller->ShouldShowNewFeatureBadge()) {
-      menu_model_.SetIsNewFeatureAt(
-          menu_model_.GetIndexOfCommandId(IDC_CONTENT_CLIPBOARD_HISTORY_MENU),
-          true);
-      clipboard_history_controller->MarkNewFeatureBadgeShown();
-    }
+  menu_model_.AddItemWithStringId(IDC_CONTENT_CLIPBOARD_HISTORY_MENU,
+                                  IDS_CONTEXT_MENU_SHOW_CLIPBOARD_HISTORY_MENU);
+  ash::ClipboardHistoryController* clipboard_history_controller =
+      ash::ClipboardHistoryController::Get();
+  if (clipboard_history_controller &&
+      clipboard_history_controller->ShouldShowNewFeatureBadge()) {
+    menu_model_.SetIsNewFeatureAt(
+        menu_model_.GetIndexOfCommandId(IDC_CONTENT_CLIPBOARD_HISTORY_MENU),
+        true);
+    clipboard_history_controller->MarkNewFeatureBadgeShown();
   }
 #endif
 
@@ -2405,8 +2401,7 @@ bool RenderViewContextMenu::IsCommandIdEnabled(int id) const {
 
     case IDC_CONTENT_CLIPBOARD_HISTORY_MENU:
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-      return chromeos::features::IsClipboardHistoryEnabled() &&
-             ash::ClipboardHistoryController::Get()->CanShowMenu();
+      return ash::ClipboardHistoryController::Get()->CanShowMenu();
 #elif BUILDFLAG(IS_CHROMEOS_LACROS)
     {
       auto* service = chromeos::LacrosService::Get();

@@ -181,7 +181,7 @@ template <typename ProtocolCallback>
 bool CanExecuteGlobalCommands(
     RenderFrameHost* host,
     const std::unique_ptr<ProtocolCallback>& callback) {
-  if (!host || !host->GetParent())
+  if (!host || host->IsInPrimaryMainFrame())
     return true;
   callback->sendFailure(
       Response::ServerError(kCommandIsOnlyAvailableAtTopTarget));
@@ -475,9 +475,11 @@ void DispatchNavigateCallback(
   Maybe<std::string> opt_error;
   if (request->GetNetErrorCode() != net::OK)
     opt_error = net::ErrorToString(request->GetNetErrorCode());
-  callback->sendSuccess(frame_id,
-                        request->devtools_navigation_token().ToString(),
-                        std::move(opt_error));
+  Maybe<std::string> loader_id =
+      request->IsSameDocument()
+          ? Maybe<std::string>()
+          : request->devtools_navigation_token().ToString();
+  callback->sendSuccess(frame_id, std::move(loader_id), std::move(opt_error));
 }
 
 }  // namespace

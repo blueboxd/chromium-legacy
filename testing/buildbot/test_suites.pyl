@@ -591,6 +591,7 @@
         'args': [
           '--test-type=integration',
         ],
+        'check_flakiness_for_new_tests': False,
         'resultdb': {
           'enable': True,
         },
@@ -3580,22 +3581,6 @@
       },
     },
 
-    'gpu_webgl_conformance_fast_call_passthrough_telemetry_tests': {
-      'webgl_conformance_fast_call': {
-        'telemetry_test_name': 'webgl_conformance',
-        'args': [
-          # On dual-GPU devices we want the high-performance GPU to be active
-          '--extra-browser-args=--enable-unsafe-fast-js-calls --enable-fake-no-alloc-direct-call-for-testing --use-gl=angle --use-cmd-decoder=passthrough --force_high_performance_gpu',
-        ],
-        'mixins': [
-          'has_native_resultdb_integration',
-        ],
-        'swarming': {
-          'shards': 2,
-        },
-      },
-    },
-
     'gpu_webgl_conformance_gl_passthrough_telemetry_tests': {
       'webgl_conformance_gl_passthrough': {
         'telemetry_test_name': 'webgl_conformance',
@@ -4262,7 +4247,9 @@
     },
 
     'linux_lacros_chrome_interactive_ui_tests_version_skew': {
-      'interactive_ui_tests': {
+      'interactive_ui_tests version skew': {
+        'name': 'interactive_ui_tests',
+        'test': 'interactive_ui_tests',
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/linux-lacros.interactive_ui_tests.filter',
         ],
@@ -4453,6 +4440,7 @@
       },
       'chrome_app_unittests': {},
       'chromedriver_unittests': {},
+      'color_unittests': {},
       'extensions_browsertests': {},
       'extensions_unittests': {},
       'filesystem_service_unittests': {},  # https://crbug.com/862712
@@ -4657,6 +4645,7 @@
           "../../tools/perf/run_benchmark",
           "--benchmarks=rendering.desktop",
         ],
+        'check_flakiness_for_new_tests': False,
         'swarming': {},
       }
     },
@@ -4669,6 +4658,7 @@
           "--benchmarks=rendering.mobile",
           "--browser=android-chromium"
         ],
+        'check_flakiness_for_new_tests': False,
         'swarming': {},
       }
     },
@@ -4681,6 +4671,7 @@
           "--benchmarks=rendering.mobile",
           "--browser=android-chromium"
         ],
+        'check_flakiness_for_new_tests': False,
         'swarming': {},
         'experiment_percentage': 10,
       }
@@ -4992,6 +4983,7 @@
           '--passthrough',
           '--retry-limit=2',
         ],
+        'check_flakiness_for_new_tests': False,
         'isolate_name': 'telemetry_perf_unittests_android_chrome',
         'resultdb': {
           'enable': True,
@@ -5021,6 +5013,7 @@
           '--passthrough',
           '--retry-limit=2',
         ],
+        'check_flakiness_for_new_tests': False,
         'isolate_name': 'telemetry_perf_unittests',
         'resultdb': {
           'enable': True,
@@ -6164,19 +6157,6 @@
       'gpu_angle_unit_gtests',
     ],
 
-    'gpu_angle_gtests': [
-      'gpu_angle_end2end_gtests',
-      'gpu_angle_unit_gtests',
-    ],
-
-    'gpu_angle_linux_gtests': [
-      'gpu_angle_end2end_gtests',
-      'gpu_angle_unit_gtests',
-      'gpu_angle_white_box_gtests',
-      'gpu_common_gtests_passthrough',
-      'gpu_gles2_conform_gtests',
-    ],
-
     'gpu_angle_linux_intel_gtests': [
       'gpu_angle_deqp_gles2_gl_gtests',
       'gpu_angle_end2end_gtests',
@@ -6556,6 +6536,7 @@
       'gpu_mediapipe_validating_telemetry_tests',
       'gpu_passthrough_telemetry_tests',
       'gpu_validating_telemetry_tests',
+      'gpu_webcodecs_telemetry_test',
       'gpu_webgl2_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_metal_passthrough_telemetry_tests',
       'gpu_webgl2_conformance_validating_telemetry_tests',
@@ -6662,7 +6643,6 @@
       'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_fast_call_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
@@ -6707,7 +6687,6 @@
       'gpu_webgl2_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d11_passthrough_telemetry_tests',
       'gpu_webgl_conformance_d3d9_passthrough_telemetry_tests',
-      'gpu_webgl_conformance_fast_call_passthrough_telemetry_tests',
       'gpu_webgl_conformance_gl_passthrough_telemetry_tests',
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests',
     ],
@@ -7482,8 +7461,10 @@
         'variants': [
           'CROS_HANA_RELEASE_LKGM',
           'CROS_HANA_RELEASE_DEV',
+          'CROS_HANA_RELEASE_BETA',
           'CROS_JACUZZI_RELEASE_LKGM',
           'CROS_JACUZZI_RELEASE_DEV',
+          'CROS_JACUZZI_RELEASE_BETA',
         ]
       },
     },
@@ -7506,8 +7487,10 @@
         'variants': [
           'CROS_ATLAS_RELEASE_LKGM',
           'CROS_ATLAS_RELEASE_DEV',
+          'CROS_ATLAS_RELEASE_BETA',
           'CROS_EVE_RELEASE_LKGM',
           'CROS_EVE_RELEASE_DEV',
+          'CROS_EVE_RELEASE_BETA',
         ]
       },
     },
@@ -7542,6 +7525,14 @@
       },
       'linux_lacros_chrome_browsertests_non_version_skew': { },
       'linux_lacros_chrome_browsertests_version_skew': {
+        'variants': [
+          'LACROS_VERSION_SKEW_CANARY',
+          'LACROS_VERSION_SKEW_DEV',
+          'LACROS_VERSION_SKEW_BETA',
+          'LACROS_VERSION_SKEW_STABLE',
+        ]
+      },
+      'linux_lacros_chrome_interactive_ui_tests_version_skew': {
         'variants': [
           'LACROS_VERSION_SKEW_CANARY',
           'LACROS_VERSION_SKEW_DEV',
@@ -7747,11 +7738,6 @@
       'gpu_webgl_conformance_vulkan_passthrough_telemetry_tests': {
         'variants': [
           'WIN10_INTEL_HD_630_STABLE',
-          'WIN10_NVIDIA_GTX_1660_STABLE',
-        ],
-      },
-      'gpu_webgl_conformance_fast_call_passthrough_telemetry_tests': {
-        'variants': [
           'WIN10_NVIDIA_GTX_1660_STABLE',
         ],
       },

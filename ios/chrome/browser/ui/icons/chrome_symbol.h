@@ -21,10 +21,12 @@ extern NSString* const kPopupBadgeMinusSymbol;
 
 // Default symbol names.
 extern NSString* const kCreditCardSymbol;
+extern NSString* const kCreditCardFillSymbol;
 extern NSString* const kMicrophoneFillSymbol;
 extern NSString* const kMicrophoneSymbol;
 extern NSString* const kEllipsisCircleFillSymbol;
 extern NSString* const kPinSymbol;
+extern NSString* const kPinFillSymbol;
 extern NSString* const kGearShapeSymbol;
 extern NSString* const kShareSymbol;
 extern NSString* const kXMarkSymbol;
@@ -32,6 +34,7 @@ extern NSString* const kPlusSymbol;
 extern NSString* const kSearchSymbol;
 extern NSString* const kCheckmarkSymbol;
 extern NSString* const kArrowDownCircleFillSymbol;
+extern NSString* const kWarningSymbol;
 extern NSString* const kWarningFillSymbol;
 extern NSString* const kHelpFillSymbol;
 extern NSString* const kCheckMarkCircleFillSymbol;

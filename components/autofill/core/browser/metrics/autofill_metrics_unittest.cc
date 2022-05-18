@@ -12154,8 +12154,10 @@ TEST_F(AutofillMetricsTest, FormInteractionsAreCounted) {
   autofill_manager().OnTextFieldDidChange(form, field, gfx::RectF(),
                                           TimeTicks());
   // Simulate Autocomplete filling twice.
-  autofill_manager().OnSingleFieldSuggestionSelected(u"");
-  autofill_manager().OnSingleFieldSuggestionSelected(u"");
+  autofill_manager().OnSingleFieldSuggestionSelected(
+      u"", POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY);
+  autofill_manager().OnSingleFieldSuggestionSelected(
+      u"", POPUP_ITEM_ID_AUTOCOMPLETE_ENTRY);
   // Simulate Autofill filling.
   std::string guid(kTestGuid);
   autofill_manager().FillOrPreviewForm(
@@ -12225,11 +12227,13 @@ class AutofillMetricsCrossFrameFormTest : public AutofillMetricsTest {
                         false /* include_full_server_credit_card */,
                         false /* masked_card_is_enrolled_for_virtual_card */);
 
-    credit_card_with_cvc_ = {.credit_card = *autofill_manager()
-                                                 .GetCreditCardAccessManager()
-                                                 ->GetCreditCardsToSuggest()
-                                                 .front(),
-                             .cvc = u"123"};
+    credit_card_with_cvc_ = {
+        .credit_card = *autofill_manager()
+                            .personal_data_
+                            ->GetCreditCardsToSuggest(
+                                autofill_client_->AreServerCardsSupported())
+                            .front(),
+        .cvc = u"123"};
 
     url::Origin main_origin =
         url::Origin::Create(GURL("https://example.test/"));

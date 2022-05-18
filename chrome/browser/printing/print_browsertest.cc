@@ -339,7 +339,7 @@ class PrintPreviewObserver : PrintPreviewUI::TestDelegate {
   uint32_t expected_rendered_page_count_ = 1;
   uint32_t rendered_page_count_ = 0;
 
-  const bool wait_for_loaded_ = false;
+  const bool wait_for_loaded_;
   raw_ptr<content::WebContents> preview_dialog_ = nullptr;
   base::RunLoop* run_loop_ = nullptr;
 };
@@ -3525,7 +3525,7 @@ class ContentAnalysisScriptedPreviewlessPrintBrowserTest
 // TODO(crbug.com/1256506): Re-enable test on Windows
 // TODO(crbug.com/1321689): Re-enable test on Mac
 #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_WIN) && !BUILDFLAG(IS_MAC)
-IN_PROC_BROWSER_TEST_P(ContentAnalysisPrintBrowserTest, PrintNow) {
+IN_PROC_BROWSER_TEST_P(ContentAnalysisPrintBrowserTest, DISABLED_PrintNow) {
   ASSERT_TRUE(embedded_test_server()->Started());
   GURL url(embedded_test_server()->GetURL("/printing/test1.html"));
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), url));

@@ -26,6 +26,7 @@
 #include "ios/web/public/navigation/navigation_item.h"
 #include "ios/web/public/navigation/navigation_manager.h"
 #import "net/base/mac/url_conversions.h"
+#include "net/base/url_util.h"
 #include "url/url_constants.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -106,12 +107,21 @@ bool HttpsOnlyModeUpgradeTabHelper::IsTimerRunningForTesting() const {
 void HttpsOnlyModeUpgradeTabHelper::ClearAllowlistForTesting() {
   HttpsUpgradeService* service = HttpsUpgradeServiceFactory::GetForBrowserState(
       web_state()->GetBrowserState());
-  service->ClearAllowlist();
+  service->ClearAllowlistForTesting();
 }
 
 bool HttpsOnlyModeUpgradeTabHelper::IsFakeHTTPSForTesting(
     const GURL& url) const {
   return url.IntPort() == https_port_for_testing_;
+}
+
+bool HttpsOnlyModeUpgradeTabHelper::IsLocalhost(const GURL& url) const {
+  // Tests use 127.0.0.1 for embedded servers, which is a localhost URL.
+  // Only check for "localhost" in tests.
+  if (http_port_for_testing_) {
+    return url.host() == "localhost";
+  }
+  return net::IsLocalhost(url);
 }
 
 bool HttpsOnlyModeUpgradeTabHelper::IsHttpAllowedForUrl(const GURL& url) const {
@@ -252,47 +262,6 @@ void HttpsOnlyModeUpgradeTabHelper::OnHttpsLoadTimeout() {
   web_state()->Stop();
 }
 
-void HttpsOnlyModeUpgradeTabHelper::ShouldAllowRequest(
-    NSURLRequest* request,
-    WebStatePolicyDecider::RequestInfo request_info,
-    WebStatePolicyDecider::PolicyDecisionCallback callback) {
-  // Ignore subframe requests.
-  if (!request_info.target_frame_is_main) {
-    std::move(callback).Run(
-        web::WebStatePolicyDecider::PolicyDecision::Allow());
-    return;
-  }
-  DCHECK(!stopped_loading_to_upgrade_);
-
-  // Show an interstitial if this is a fallback HTTP navigation.
-  if (!is_http_fallback_navigation_) {
-    std::move(callback).Run(
-        web::WebStatePolicyDecider::PolicyDecision::Allow());
-    return;
-  }
-  // This is a fallback navigation, no need to keep the slow upgrade timer
-  // running.
-  timer_.Stop();
-
-  // If the URL is in the allowlist, don't show any warning. This can happen
-  // if another tab allowlists the host before we initiate the fallback
-  // navigation.
-  DCHECK(!was_upgraded_);
-  is_http_fallback_navigation_ = false;
-  GURL url = net::GURLWithNSURL(request.URL);
-  if (IsHttpAllowedForUrl(url)) {
-    std::move(callback).Run(
-        web::WebStatePolicyDecider::PolicyDecision::Allow());
-    return;
-  }
-  DCHECK(url.SchemeIs(url::kHttpScheme) && !IsFakeHTTPSForTesting(url));
-  DCHECK(!was_upgraded_);
-  HttpsOnlyModeContainer* container =
-      HttpsOnlyModeContainer::FromWebState(web_state());
-  container->SetHttpUrl(http_url_);
-  std::move(callback).Run(CreateHttpsOnlyModeErrorDecision());
-}
-
 void HttpsOnlyModeUpgradeTabHelper::ShouldAllowResponse(
     NSURLResponse* response,
     WebStatePolicyDecider::ResponseInfo response_info,
@@ -300,15 +269,12 @@ void HttpsOnlyModeUpgradeTabHelper::ShouldAllowResponse(
         callback) {
   GURL url = net::GURLWithNSURL(response.URL);
   // Ignore subframe navigations and schemes that we don't care about.
-  // TODO(crbug.com/1302509): Exclude prerender navigations here.
   if (!response_info.for_main_frame ||
       !(url.SchemeIs(url::kHttpScheme) || url.SchemeIs(url::kHttpsScheme))) {
     std::move(callback).Run(
         web::WebStatePolicyDecider::PolicyDecision::Allow());
     return;
   }
-  // Fallback navigations are handled in ShouldAllowRequest().
-  DCHECK(!is_http_fallback_navigation_);
 
   // If the URL is in the allowlist, don't upgrade.
   if (IsHttpAllowedForUrl(url)) {
@@ -316,10 +282,23 @@ void HttpsOnlyModeUpgradeTabHelper::ShouldAllowResponse(
         web::WebStatePolicyDecider::PolicyDecision::Allow());
     return;
   }
+
   // If already HTTPS (real or faux), simply allow the response.
   if (url.SchemeIs(url::kHttpsScheme) || IsFakeHTTPSForTesting(url)) {
     std::move(callback).Run(
         web::WebStatePolicyDecider::PolicyDecision::Allow());
+    return;
+  }
+
+  if (is_http_fallback_navigation_) {
+    DCHECK(!stopped_loading_to_upgrade_);
+    DCHECK(!was_upgraded_);
+    DCHECK(!timer_.IsRunning());
+    is_http_fallback_navigation_ = false;
+    HttpsOnlyModeContainer* container =
+        HttpsOnlyModeContainer::FromWebState(web_state());
+    container->SetHttpUrl(http_url_);
+    std::move(callback).Run(CreateHttpsOnlyModeErrorDecision());
     return;
   }
 
@@ -328,8 +307,15 @@ void HttpsOnlyModeUpgradeTabHelper::ShouldAllowResponse(
   DCHECK(item_pending);
   // Upgrade to HTTPS if the navigation wasn't upgraded before.
   if (!item_pending->IsUpgradedToHttps()) {
-    if (!prefs_ || !prefs_->GetBoolean(prefs::kHttpsOnlyModeEnabled)) {
-      // If the feature is disabled, don't upgrade.
+    if (!prefs_ || !prefs_->GetBoolean(prefs::kHttpsOnlyModeEnabled) ||
+        IsLocalhost(url)) {
+      // Don't upgrade if the feature is disabled or the URL is localhost.
+      // See ShouldCreateLoader() function in
+      // https_only_mode_upgrade_interceptor.cc for the desktop/Android
+      // implementation.
+      // TODO(crbug.com/1302509): Also ignore POST requests. On Desktop and
+      // Android we ignore all requests with methods other than "GET", but we
+      // don't have method information here.
       std::move(callback).Run(
           web::WebStatePolicyDecider::PolicyDecision::Allow());
       return;

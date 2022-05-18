@@ -1,5 +1,4 @@
 This is a testharness.js-based test.
-Found 60 tests; 59 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS name
 PASS length
 PASS No arguments
@@ -7,7 +6,7 @@ PASS Calling
 PASS Order of evaluation
 PASS Invalid descriptor argument
 PASS Invalid type argument
-FAIL Construct v128 global assert_throws_js: function "() => new WebAssembly.Global(argument)" threw object "TypeError: WebAssembly.Global(): Descriptor property 'value' must be a WebAssembly type" ("TypeError") expected instance of function "function LinkError() { [native code] }" ("LinkError")
+PASS Construct v128 global
 PASS i64 with default
 PASS Default value for type i32
 PASS Explicit value undefined for type i32

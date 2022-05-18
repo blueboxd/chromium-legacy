@@ -417,7 +417,8 @@ public class StartSurfaceCoordinator implements StartSurface {
                     mDynamicResourceLoaderSupplier.get(), mSnackbarManager, mModalDialogManager);
         }
         if (mTasksSurface != null) {
-            mTasksSurface.onFinishNativeInitialization(mActivity, mOmniboxStubSupplier.get());
+            mTasksSurface.onFinishNativeInitialization(mActivity, mOmniboxStubSupplier.get(),
+                    mStartSurfaceMediator.getFeedReliabilityLogger());
         }
 
         if (mIsInitPending) {
@@ -427,7 +428,7 @@ public class StartSurfaceCoordinator implements StartSurface {
         if (mIsSecondaryTaskInitPending) {
             mIsSecondaryTaskInitPending = false;
             mSecondaryTasksSurface.onFinishNativeInitialization(
-                    mActivity, mOmniboxStubSupplier.get());
+                    mActivity, mOmniboxStubSupplier.get(), /*feedReliabilityLogger=*/null);
             mSecondaryTasksSurface.initialize();
         }
     }
@@ -634,7 +635,7 @@ public class StartSurfaceCoordinator implements StartSurface {
                 mShareDelegateSupplier, mMultiWindowModeStateDispatcher, mContainerView);
         if (mIsInitializedWithNative) {
             mSecondaryTasksSurface.onFinishNativeInitialization(
-                    mActivity, mOmniboxStubSupplier.get());
+                    mActivity, mOmniboxStubSupplier.get(), /*feedReliabilityLogger=*/null);
             mSecondaryTasksSurface.initialize();
         } else {
             mIsSecondaryTaskInitPending = true;
@@ -714,11 +715,6 @@ public class StartSurfaceCoordinator implements StartSurface {
                 + (getPixelSize(R.dimen.fake_search_box_lateral_padding)
                         - getPixelSize(R.dimen.search_box_start_padding));
 
-        float fakeTextSize = mActivity.getResources().getDimension(
-                R.dimen.tasks_surface_location_bar_url_text_size);
-        float realTextSize =
-                mActivity.getResources().getDimension(R.dimen.location_bar_url_text_size);
-
         int fakeButtonSize = getPixelSize(R.dimen.tasks_surface_location_bar_url_button_size);
         int realButtonSize = getPixelSize(R.dimen.location_bar_action_icon_width);
 
@@ -743,7 +739,6 @@ public class StartSurfaceCoordinator implements StartSurface {
 
             mTasksSurface.updateFakeSearchBox(fakeHeight - reducedHeight, reducedHeight,
                     (int) (fakeEndPadding * (1 - expansionFraction)),
-                    fakeTextSize + (realTextSize - fakeTextSize) * expansionFraction,
                     SearchEngineLogoUtils.getInstance().shouldShowSearchEngineLogo(false)
                             ? realTranslationX * expansionFraction
                             : 0,

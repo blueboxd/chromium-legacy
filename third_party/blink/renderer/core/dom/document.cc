@@ -308,6 +308,7 @@
 #include "third_party/blink/renderer/core/svg/svg_use_element.h"
 #include "third_party/blink/renderer/core/svg_element_factory.h"
 #include "third_party/blink/renderer/core/svg_names.h"
+#include "third_party/blink/renderer/core/timing/soft_navigation_heuristics.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_html.h"
 #include "third_party/blink/renderer/core/xml/parser/xml_document_parser.h"
 #include "third_party/blink/renderer/core/xml_names.h"
@@ -647,6 +648,18 @@ ExplicitlySetAttrElementsMap* Document::GetExplicitlySetAttrElementsMap(
         MakeGarbageCollected<ExplicitlySetAttrElementsMap>();
   }
   return add_result.stored_value->value;
+}
+
+void Document::MoveElementExplicitlySetAttrElementsMapToNewDocument(
+    Element* element,
+    Document& new_document) {
+  DCHECK(element);
+  auto it = element_explicitly_set_attr_elements_map_.find(element);
+  if (it != element_explicitly_set_attr_elements_map_.end()) {
+    new_document.element_explicitly_set_attr_elements_map_.insert(element,
+                                                                  it->value);
+    element_explicitly_set_attr_elements_map_.erase(it);
+  }
 }
 
 UnloadEventTimingInfo::UnloadEventTimingInfo(
@@ -1738,6 +1751,18 @@ AtomicString Document::visibilityState() const {
 
 bool Document::prerendering() const {
   return IsPrerendering();
+}
+uint32_t Document::softNavigations() const {
+  if (LocalDOMWindow* window = domWindow()) {
+    if (LocalFrame* frame = window->GetFrame()) {
+      if (frame->IsMainFrame()) {
+        SoftNavigationHeuristics* heuristics =
+            SoftNavigationHeuristics::From(*window);
+        return heuristics->SoftNavigationCount();
+      }
+    }
+  }
+  return 0;
 }
 
 bool Document::hidden() const {

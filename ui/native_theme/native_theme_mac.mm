@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 #include <MediaAccessibility/MediaAccessibility.h>
 #include <stddef.h>
+
 #include <vector>
 #include <dlfcn.h>
 
@@ -43,20 +44,9 @@ bool IsDarkMode() {
 }
 
 bool IsHighContrast() {
-  NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
-  if ([workspace respondsToSelector:@selector
-                 (accessibilityDisplayShouldIncreaseContrast)]) {
-    return workspace.accessibilityDisplayShouldIncreaseContrast;
-  }
-  return false;
+  return NSWorkspace.sharedWorkspace.accessibilityDisplayShouldIncreaseContrast;
 }
 }  // namespace
-
-@interface NSWorkspace (Redeclarations)
-
-@property(readonly) BOOL accessibilityDisplayShouldIncreaseContrast;
-
-@end
 
 // Helper object to respond to light mode/dark mode changeovers.
 @interface NativeThemeEffectiveAppearanceObserver : NSObject
@@ -584,7 +574,7 @@ void NativeThemeMac::ConfigureWebInstance() {
 //  CFNotificationCenterAddObserver(
 //      CFNotificationCenterGetLocalCenter(), this,
 //      CaptionSettingsChangedNotificationCallback,
-//      kMACaptionAppearanceSettingsChangedNotification, 0,
+//      kMACaptionAppearanceSettingsChangedNotification, nullptr,
 //      CFNotificationSuspensionBehaviorDeliverImmediately);
 }
 

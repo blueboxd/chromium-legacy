@@ -40,9 +40,6 @@ tast_disabled_tests_from_chrome_all = [
   # crbug.com/1259127
   "ui.TabletOperations",
 
-  # crbug.com/1257474
-  "shelf.OpenCloseSwitchApps",
-
   # crbug.com/1239838
   "graphics.FPS",
 
@@ -213,6 +210,15 @@ tast_disabled_tests_from_chrome_all = [
   "crostini.AppEmacs",
   "crostini.AppVscode",
   "crostini.AppGeditFilesharing",
+
+  # https://crbug.com/1326279
+  "policy.AccessibilityPolicies.focus_highlight",
+
+  # https://crbug.com/1326331
+  "policy.AccessibilityPolicies.high_contrast",
+
+  # https://crbug.com/1326403
+  "policy.AccessibilityPolicies.large_cursor",
 ]
 
 # To create filters to be used on specific builders add them like this:

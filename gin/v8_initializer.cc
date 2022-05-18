@@ -353,7 +353,7 @@ void SetFlags(IsolateHolder::ScriptMode mode,
 // static
 void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
                                const std::string js_command_line_flags,
-                               v8::LegacyOOMErrorCallback oom_error_callback) {
+                               v8::OOMErrorCallback oom_error_callback) {
   static bool v8_is_initialized = false;
   if (v8_is_initialized)
     return;
@@ -442,10 +442,10 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     // and Blink then creates the ArrayBuffer partition in that Pool.
     v8::VirtualAddressSpace* sandbox_address_space =
         v8::V8::GetSandboxAddressSpace();
-    const size_t max_pool_size =
-        base::internal::PartitionAddressSpace::ConfigurablePoolMaxSize();
-    const size_t min_pool_size =
-        base::internal::PartitionAddressSpace::ConfigurablePoolMinSize();
+    const size_t max_pool_size = partition_alloc::internal::
+        PartitionAddressSpace::ConfigurablePoolMaxSize();
+    const size_t min_pool_size = partition_alloc::internal::
+        PartitionAddressSpace::ConfigurablePoolMinSize();
     size_t pool_size = max_pool_size;
 #if BUILDFLAG(IS_WIN)
     // On Windows prior to 8.1 we allocate a smaller Pool since reserving
@@ -475,8 +475,8 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     }
     // The V8 sandbox is guaranteed to be large enough to host the pool.
     CHECK(pool_base);
-    base::internal::PartitionAddressSpace::InitConfigurablePool(pool_base,
-                                                                pool_size);
+    partition_alloc::internal::PartitionAddressSpace::InitConfigurablePool(
+        pool_base, pool_size);
     // TODO(saelo) maybe record the size of the Pool into UMA.
 
     // If this CHECK fails, it means that something used the array buffer

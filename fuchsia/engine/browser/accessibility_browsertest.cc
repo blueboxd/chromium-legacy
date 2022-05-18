@@ -229,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(FuchsiaFrameAccessibilityTest, HitTest) {
 
   float scale_factor = 20.f;
   // Make the bridge use scaling in hit test calculations.
-  frame_impl_->set_device_scale_factor_for_test(scale_factor);
+  frame_impl_->OnPixelScaleUpdate(scale_factor);
 
   // Downscale the target point, since the hit test calculation will scale it
   // back up.
@@ -430,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(FuchsiaFrameAccessibilityTest,
     frame_->ExecuteJavaScript(
         {"*"}, base::MemBufferFromString(script, "add node"),
         [](fuchsia::web::Frame_ExecuteJavaScript_Result result) {
-          CHECK(result.is_response());
+          EXPECT_TRUE(result.is_response());
         });
 
     semantic_tree->RunUntilNodeWithLabelIsInTree("new_label");
@@ -448,7 +448,7 @@ IN_PROC_BROWSER_TEST_F(FuchsiaFrameAccessibilityTest,
     frame_->ExecuteJavaScript(
         {"*"}, base::MemBufferFromString(script, "reparent nodes"),
         [](fuchsia::web::Frame_ExecuteJavaScript_Result result) {
-          CHECK(result.is_response());
+          EXPECT_TRUE(result.is_response());
         });
 
     semantic_tree->RunUntilConditionIsTrue(
@@ -480,7 +480,7 @@ IN_PROC_BROWSER_TEST_F(FuchsiaFrameAccessibilityTest, OutOfProcessIframe) {
                              out_of_process_url.spec().c_str()),
           "test"),
       [](fuchsia::web::Frame_AddBeforeLoadJavaScript_Result result) {
-        CHECK(result.is_response());
+        EXPECT_TRUE(result.is_response());
       });
   LoadPage(kPageIframePath, "iframe loaded");
 
@@ -514,7 +514,7 @@ IN_PROC_BROWSER_TEST_F(FuchsiaFrameAccessibilityTest, OutOfProcessIframe) {
   frame_->ExecuteJavaScript(
       {"*"}, base::MemBufferFromString(script, "test2"),
       [](fuchsia::web::Frame_ExecuteJavaScript_Result result) {
-        CHECK(result.is_response());
+        EXPECT_TRUE(result.is_response());
       });
 
   semantics_manager_.semantic_tree()->RunUntilNodeWithLabelIsInTree(

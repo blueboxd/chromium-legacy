@@ -22,9 +22,11 @@ class MockPrivacySandboxService : public PrivacySandboxService {
   ~MockPrivacySandboxService() override;
 
   MOCK_METHOD(void,
-              DialogActionOccurred,
-              (PrivacySandboxService::DialogAction),
+              PromptActionOccurred,
+              (PrivacySandboxService::PromptAction),
               (override));
+  // Mock this method to enable opening the settings page in tests.
+  MOCK_METHOD(bool, IsPrivacySandboxRestricted, (), (override));
 };
 
 std::unique_ptr<KeyedService> BuildMockPrivacySandboxService(

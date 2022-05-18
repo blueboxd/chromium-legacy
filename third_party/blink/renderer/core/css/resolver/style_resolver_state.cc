@@ -22,7 +22,7 @@
 
 #include "third_party/blink/renderer/core/css/resolver/style_resolver_state.h"
 
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/css/css_light_dark_value_pair.h"
 #include "third_party/blink/renderer/core/css/css_property_value_set.h"
@@ -120,7 +120,10 @@ scoped_refptr<ComputedStyle> StyleResolverState::TakeStyle() {
 void StyleResolverState::UpdateLengthConversionData() {
   css_to_length_conversion_data_ = CSSToLengthConversionData(
       Style(), RootElementStyle(), GetDocument().GetLayoutView(),
-      nearest_container_, Style()->EffectiveZoom());
+      CSSToLengthConversionData::ContainerSizes(nearest_container_),
+      Style()->EffectiveZoom());
+  element_style_resources_.UpdateLengthConversionData(
+      &css_to_length_conversion_data_);
 }
 
 CSSToLengthConversionData StyleResolverState::UnzoomedLengthConversionData(

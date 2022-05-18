@@ -5,6 +5,7 @@
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_theme_provider_impl.h"
 
 #include "ash/constants/ash_pref_names.h"
+#include "ash/public/cpp/schedule_enums.h"
 #include "ash/style/ash_color_provider.h"
 #include "ash/system/scheduled_feature/scheduled_feature.h"
 #include "chrome/browser/ash/web_applications/personalization_app/personalization_app_metrics.h"
@@ -18,11 +19,6 @@ PersonalizationAppThemeProviderImpl::PersonalizationAppThemeProviderImpl(
     content::WebUI* web_ui)
     : profile_(Profile::FromWebUI(web_ui)) {
   pref_change_registrar_.Init(profile_->GetPrefs());
-  pref_change_registrar_.Add(
-      ash::prefs::kDarkModeScheduleType,
-      base::BindRepeating(&PersonalizationAppThemeProviderImpl::
-                              NotifyColorModeAutoScheduleChanged,
-                          base::Unretained(this)));
 }
 
 PersonalizationAppThemeProviderImpl::~PersonalizationAppThemeProviderImpl() =
@@ -45,6 +41,15 @@ void PersonalizationAppThemeProviderImpl::SetThemeObserver(
     color_mode_observer_.Observe(ash::AshColorProvider::Get());
   // Call it once to get the current color mode.
   OnColorModeChanged(ash::ColorProvider::Get()->IsDarkModeEnabled());
+
+  // Listen to |ash::prefs::kDarkModeScheduleType| changes.
+  if (!pref_change_registrar_.IsObserved(ash::prefs::kDarkModeScheduleType)) {
+    pref_change_registrar_.Add(
+        ash::prefs::kDarkModeScheduleType,
+        base::BindRepeating(&PersonalizationAppThemeProviderImpl::
+                                NotifyColorModeAutoScheduleChanged,
+                            base::Unretained(this)));
+  }
   // Call it once to get the status of auto mode.
   NotifyColorModeAutoScheduleChanged();
 }
@@ -65,10 +70,10 @@ void PersonalizationAppThemeProviderImpl::SetColorModeAutoScheduleEnabled(
   DCHECK(pref_service);
   if (enabled)
     LogPersonalizationTheme(ColorMode::kAuto);
-  ash::ScheduledFeature::ScheduleType schedule_type =
-      enabled ? ash::ScheduledFeature::ScheduleType::kSunsetToSunrise
-              : ash::ScheduledFeature::ScheduleType::kNone;
-  pref_service->SetInteger(ash::prefs::kDarkModeScheduleType, schedule_type);
+  const ScheduleType schedule_type =
+      enabled ? ScheduleType::kSunsetToSunrise : ScheduleType::kNone;
+  pref_service->SetInteger(ash::prefs::kDarkModeScheduleType,
+                           static_cast<int>(schedule_type));
 }
 
 void PersonalizationAppThemeProviderImpl::IsDarkModeEnabled(
@@ -91,9 +96,9 @@ void PersonalizationAppThemeProviderImpl::OnColorModeChanged(
 bool PersonalizationAppThemeProviderImpl::IsColorModeAutoScheduleEnabled() {
   PrefService* pref_service = profile_->GetPrefs();
   DCHECK(pref_service);
-  auto schedule_type = static_cast<ash::ScheduledFeature::ScheduleType>(
+  const auto schedule_type = static_cast<ScheduleType>(
       pref_service->GetInteger(ash::prefs::kDarkModeScheduleType));
-  return schedule_type == ash::ScheduledFeature::ScheduleType::kSunsetToSunrise;
+  return schedule_type == ScheduleType::kSunsetToSunrise;
 }
 
 void PersonalizationAppThemeProviderImpl::NotifyColorModeAutoScheduleChanged() {

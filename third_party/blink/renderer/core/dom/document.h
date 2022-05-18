@@ -504,6 +504,8 @@ class CORE_EXPORT Document : public ContainerNode,
 
   bool prerendering() const;
 
+  uint32_t softNavigations() const;
+
   bool wasDiscarded() const;
   void SetWasDiscarded(bool);
 
@@ -971,6 +973,9 @@ class CORE_EXPORT Document : public ContainerNode,
   }
 
   ExplicitlySetAttrElementsMap* GetExplicitlySetAttrElementsMap(Element*);
+  void MoveElementExplicitlySetAttrElementsMapToNewDocument(
+      Element*,
+      Document& new_document);
 
   // Returns false if the function fails.  e.g. |pseudo| is not supported.
   bool SetPseudoStateForTesting(Element& element,

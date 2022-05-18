@@ -34,13 +34,13 @@ from update import (CDS_URL, CHROMIUM_DIR, CLANG_REVISION, LLVM_BUILD_DIR,
 THIRD_PARTY_DIR = os.path.join(CHROMIUM_DIR, 'third_party')
 LLVM_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm')
 COMPILER_RT_DIR = os.path.join(LLVM_DIR, 'compiler-rt')
-LLVM_BUILD_TOOLS_DIR = os.path.abspath(
-    os.path.join(THIRD_PARTY_DIR, 'llvm-build-tools'))
-LLVM_BOOTSTRAP_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'llvm-bootstrap')
-LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR,
+LLVM_BOOTSTRAP_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-bootstrap')
+LLVM_BOOTSTRAP_INSTALL_DIR = os.path.join(THIRD_PARTY_DIR,
                                           'llvm-bootstrap-install')
-LLVM_INSTRUMENTED_DIR = os.path.join(LLVM_BUILD_TOOLS_DIR, 'llvm-instrumented')
+LLVM_INSTRUMENTED_DIR = os.path.join(THIRD_PARTY_DIR, 'llvm-instrumented')
 LLVM_PROFDATA_FILE = os.path.join(LLVM_INSTRUMENTED_DIR, 'profdata.prof')
+LLVM_BUILD_TOOLS_DIR = os.path.abspath(
+    os.path.join(LLVM_DIR, '..', 'llvm-build-tools'))
 ANDROID_NDK_DIR = os.path.join(
     CHROMIUM_DIR, 'third_party', 'android_ndk')
 FUCHSIA_SDK_DIR = os.path.join(CHROMIUM_DIR, 'third_party', 'fuchsia-sdk',
@@ -410,9 +410,11 @@ def MaybeDownloadHostGcc(args):
   assert sys.platform.startswith('linux')
   if args.gcc_toolchain:
     return
-  gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc-10.2.0-trusty')
+  gcc_dir = os.path.join(LLVM_BUILD_TOOLS_DIR, 'gcc-10.2.0-bionic')
+  if os.path.isdir(gcc_dir):  # TODO(thakis): Remove this branch after a few weeks.
+    RmTree(gcc_dir)
   if not os.path.exists(gcc_dir):
-    DownloadAndUnpack(CDS_URL + '/tools/gcc-10.2.0-trusty.tgz', gcc_dir)
+    DownloadAndUnpack(CDS_URL + '/tools/gcc-10.2.0-bionic.tgz', gcc_dir)
   args.gcc_toolchain = gcc_dir
 
 

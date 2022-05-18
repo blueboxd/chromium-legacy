@@ -6250,6 +6250,22 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="ContentSuggestions.Feed.Selected">
+  <owner>adamta@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>The user has selected the Discover feed in the NTP.</description>
+</action>
+
+<action name="ContentSuggestions.Feed.WebFeed.Selected">
+  <owner>adamta@google.com</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>feed@chromium.org</owner>
+  <description>
+    The user has selected the Following feed in the NTP.
+  </description>
+</action>
+
 <action name="ContentSuggestions.Feed.WillRefresh">
   <owner>adamta@google.org</owner>
   <owner>sczs@chromium.org</owner>
@@ -16219,6 +16235,27 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MediaApp.PDF.DefaultApp.SwitchedAway">
+  <owner>patricialor@chromium.org</owner>
+  <owner>backlight-swe@google.com</owner>
+  <description>
+    Records that the user used the Files App to change their default app for PDF
+    to a different app, including if they change it from non-MediaApp to another
+    non-MediaApp. Recorded only when the MediaApp is enabled as a handler for
+    PDF files.
+  </description>
+</action>
+
+<action name="MediaApp.PDF.DefaultApp.SwitchedTo">
+  <owner>patricialor@chromium.org</owner>
+  <owner>backlight-swe@google.com</owner>
+  <description>
+    Records that the user used the Files App to change their default app for PDF
+    from a different app back to MediaApp, which is the factory setting.
+    Recorded only when the MediaApp is enabled as a handler for PDF files.
+  </description>
+</action>
+
 <action name="MediaContextMenu_Controls">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
@@ -17671,6 +17708,13 @@ should be able to be added at any place in this file.
   <description>User pressed 'Find in page' in the app menu.</description>
 </action>
 
+<action name="MobileMenuFollow">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>User pressed the follow option in the app menu.</description>
+</action>
+
 <action name="MobileMenuForward">
   <owner>aurimas@chromium.org</owner>
   <description>User pressed the forward icon in the app menu.</description>
@@ -17881,6 +17925,13 @@ should be able to be added at any place in this file.
 <action name="MobileMenuTranslate">
   <owner>frechette@chromium.org</owner>
   <description>User pressed the 'Translate' in the app menu.</description>
+</action>
+
+<action name="MobileMenuUnfollow">
+  <owner>adamta@google.org</owner>
+  <owner>sczs@chromium.org</owner>
+  <owner>tinazwang@chromium.org</owner>
+  <description>User pressed the unfollow option in the app menu.</description>
 </action>
 
 <action name="MobileMenuVoiceSearch">
@@ -29706,6 +29757,15 @@ should be able to be added at any place in this file.
   <description>The start surface overview is shown.</description>
 </action>
 
+<action name="StartSurface.ShownFromBackNavigation">
+  <owner>hanxi@chromium.org</owner>
+  <owner>spdonghao@chromium.org</owner>
+  <owner>andrewheard@chromium.org</owner>
+  <description>
+    The Start surface is showing due to the user taps the back button.
+  </description>
+</action>
+
 <action name="StartSurface.SinglePane">
   <obsolete>
     Split in StartSurface.SinglePane.Home and
@@ -33440,6 +33500,13 @@ should be able to be added at any place in this file.
   <suffix name="Search" label="User started searching from the top menu."/>
   <suffix name="Settings" label="User entered settings from the top menu."/>
   <affected-action name="Android.DownloadManager.Menu.Action"/>
+</action-suffix>
+
+<action-suffix separator="." ordering="suffix">
+  <suffix name="FromTab" label="The back navigation is initiated from a Tab."/>
+  <suffix name="FromTabSwitcher"
+      label="The back navigation is initiated from the Tab switcher."/>
+  <affected-action name="StartSurface.ShownFromBackNavigation"/>
 </action-suffix>
 
 <action-suffix separator="." ordering="suffix">

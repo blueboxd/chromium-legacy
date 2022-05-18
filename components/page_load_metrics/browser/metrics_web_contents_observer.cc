@@ -281,11 +281,15 @@ void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
   // Prepare ukm::SourceId that is based on outermost page's navigation ID.
   ukm::SourceId source_id = ukm::kInvalidSourceId;
   base::WeakPtr<PageLoadTracker> parent_tracker;
-  if (navigation_handle->IsInPrimaryMainFrame() ||
-      navigation_handle->IsInPrerenderedMainFrame()) {
-    // Primary and Prerender pages use own page's navigation ID.
+  if (navigation_handle->IsInPrimaryMainFrame()) {
+    // Primary pages use own page's navigation ID.
     source_id = ukm::ConvertToSourceId(navigation_handle->GetNavigationId(),
                                        ukm::SourceIdType::NAVIGATION_ID);
+  } else if (navigation_handle->IsInPrerenderedMainFrame()) {
+    // Prerendering pages should not record UKM until its activation. So, we
+    // start with ukm::kInvalidSourceId and set a correct ukm::SourceId on
+    // activation.
+    DCHECK_EQ(ukm::kInvalidSourceId, source_id);
   } else if (navigation_handle->GetNavigatingFrameType() ==
              content::FrameType::kFencedFrameRoot) {
     // For FencedFrames, use the primary page's ukm::SourceId. `primary_page_`
@@ -293,10 +297,23 @@ void MetricsWebContentsObserver::WillStartNavigationRequestImpl(
     if (primary_page_) {
       source_id = primary_page_->GetPageUkmSourceId();
       parent_tracker = primary_page_->GetWeakPtr();
+    } else {
+      // Use ukm::NoURLSourceId() rather than kInvalidSourceId to avoid
+      // unexpected check failure. This happens on tests that create a
+      // FencedFrame via FencedFrameTestHelper directly without a correct setup
+      // being finished on the embedder frame.
+      source_id = ukm::NoURLSourceId();
     }
   } else {
     NOTREACHED();
   }
+
+  // For prerendered page activations, we don't create a new PageLoadTracker,
+  // but reuse an existing one that was created for the initial prerendering
+  // navigation so that the same instance will bee OnPrerenderStart and
+  // DidActivatePrerenderedPage.
+  if (navigation_handle->IsPrerenderedPageActivation())
+    return;
 
   // Passing raw pointers to `embedder_interface_` is safe because the
   // MetricsWebContentsObserver owns them both list and they are torn down after

@@ -55,6 +55,7 @@
       'android-archive-rel': 'android_without_codecs_release_bot_minimal_symbols_reclient',
       'android-official': 'android_official_optimize_reclient',
       'fuchsia-official': 'fuchsia_official_optimize_goma',
+      'lacros-arm-archive-rel': 'chromeos_arm-generic_lacros_rel_reclient',
       'lacros64-archive-rel': 'chromeos_amd64-generic_lacros_rel',
       'linux-archive-dbg': 'debug_bot_reclient',
       'linux-archive-rel': 'release_bot_reclient',
@@ -70,6 +71,10 @@
       'win32-archive-dbg': 'debug_bot_x86_reclient',
       'win32-archive-rel': 'release_bot_x86_minimal_symbols_enable_archive_compression_reclient',
       'win32-official': 'x86_official_optimize_goma',
+    },
+
+    'chromium.accessibility': {
+      'linux-blink-web-tests-force-accessibility-rel': 'release_bot_blink_accessibility_reclient',
     },
 
     'chromium.android': {
@@ -508,7 +513,6 @@
 
     'chromium.gpu.fyi': {
       # These all use the 'trybot' mixins to ensure that dcheck is on.
-      'ANGLE GPU Android Release (Nexus 5X)': 'gpu_tests_android_release_trybot_arm64',
       'ChromeOS FYI Release (amd64-generic)': 'gpu_tests_chromeos_amd64_release_trybot_dcheck_off_no_symbols_reclient',
       'ChromeOS FYI Release (kevin)': 'gpu_tests_chromeos_kevin_release_trybot_dcheck_off_no_symbols_reclient',
       'GPU FYI Android arm Builder': 'gpu_tests_android_release_trybot_reclient',
@@ -771,6 +775,11 @@
       'lacros-arm-generic-chrome-fyi': 'chromeos_arm-generic_lacros_official_skylab',
     },
 
+    # Internal codesearch builders.
+    'luci.infra-internal.codesearch': {
+      'codesearch-gen-chrome-internal-linux': 'codesearch_gen_chromium_bot',
+    },
+
     # Manually triggered internal builders running on LUCI.
     'luci.infra-internal.prod': {
       'gn-builder-linux': 'gn_linux_upload',
@@ -862,6 +871,10 @@
       'win32-official': 'x86_official_optimize_goma_trybot',
     },
 
+    'tryserver.chromium.accessibility': {
+      'linux-blink-web-tests-force-accessibility-rel': 'release_bot_blink_accessibility',
+    },
+
     'tryserver.chromium.android': {
       'android-10-arm64-rel': 'android_release_trybot_arm64_fastbuild_webview_trichrome',
       'android-11-x86-rel': 'android_release_trybot_x86_fastbuild_webview_trichrome',
@@ -948,12 +961,9 @@
     'tryserver.chromium.angle': {
       'android-angle-chromium-try': 'gpu_tests_android_release_trybot_arm64_fastbuild',
       'android-angle-try': 'angle_deqp_android_release_trybot_arm64',
-      'android_angle_rel_ng': 'gpu_tests_android_release_trybot_arm64',
-      'fuchsia-angle-rel': 'gpu_fyi_tests_release_trybot_fuchsia',
       'fuchsia-angle-try': 'angle_deqp_release_trybot_fuchsia',
       'ios-angle-try-intel': 'angle_deqp_release_trybot_ios',
       'linux-angle-chromium-try': 'gpu_tests_release_trybot',
-      'linux-angle-rel': 'gpu_fyi_tests_release_trybot',
       'linux-angle-try': 'angle_deqp_release_trybot',
       'mac-angle-chromium-try': 'gpu_tests_release_trybot',
       'win-angle-chromium-x64-try': 'gpu_tests_release_trybot',
@@ -1060,7 +1070,6 @@
       'linux-bfcache-rel': 'release_bot_blink',
       'linux-blink-heap-concurrent-marking-tsan-rel': 'release_trybot_tsan',
       'linux-blink-heap-verification-try': 'release_trybot_enable_blink_heap_verification',
-      'linux-blink-web-tests-force-accessibility-rel': 'release_trybot',
       'linux-clang-tidy-dbg': 'debug_bot',
       'linux-clang-tidy-rel': 'release_trybot',
       'linux-dcheck-off-rel': 'release_trybot_dcheck_off',
@@ -2438,10 +2447,6 @@
       'gpu_fyi_tests', 'release_trybot_minimal_symbols', 'asan', 'disable_nacl',
     ],
 
-    'gpu_fyi_tests_release_trybot_fuchsia': [
-      'gpu_fyi_tests', 'release_trybot_minimal_symbols', 'fuchsia', 'disable_nacl',
-    ],
-
     'gpu_fyi_tests_release_trybot_reclient': [
       'gpu_fyi_tests', 'release_trybot_minimal_symbols_reclient', 'disable_nacl',
     ],
@@ -3136,6 +3141,14 @@
 
     'release_bot_blink': [
       'release_bot_blink',
+    ],
+
+    'release_bot_blink_accessibility': [
+      'release_bot_blink', 'dcheck_always_on',
+    ],
+
+    'release_bot_blink_accessibility_reclient': [
+      'release_bot_blink_reclient', 'dcheck_always_on',
     ],
 
     'release_bot_blink_arm64_minimal_symbols': [

@@ -183,9 +183,10 @@ gfx::Rect ChromeNativeAppWindowViewsAuraAsh::GetRestoredBounds() const {
 
 ui::WindowShowState
 ChromeNativeAppWindowViewsAuraAsh::GetRestoredState() const {
-  // Use kPreMinimizedShowStateKey in case a window is minimized/hidden.
+  // Use kRestoreShowStateKey to get the window restore show state in case a
+  // window is minimized/hidden.
   ui::WindowShowState restore_state =
-      GetNativeWindow()->GetProperty(aura::client::kPreMinimizedShowStateKey);
+      GetNativeWindow()->GetProperty(aura::client::kRestoreShowStateKey);
 
   bool is_fullscreen = false;
   if (GetNativeWindow()->GetProperty(ash::kRestoreBoundsOverrideKey)) {
@@ -205,8 +206,7 @@ ChromeNativeAppWindowViewsAuraAsh::GetRestoredState() const {
       // Restore windows which were previously in immersive fullscreen to their
       // pre-fullscreen state. Restoring the window to a different fullscreen
       // type makes for a bad experience.
-      return GetNativeWindow()->GetProperty(
-          aura::client::kPreFullscreenShowStateKey);
+      return GetNativeWindow()->GetProperty(aura::client::kRestoreShowStateKey);
     }
     return ui::SHOW_STATE_FULLSCREEN;
   }

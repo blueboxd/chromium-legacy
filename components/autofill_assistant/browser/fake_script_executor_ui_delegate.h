@@ -52,7 +52,8 @@ class FakeScriptExecutorUiDelegate : public ScriptExecutorUiDelegate {
   void SetUserActions(
       std::unique_ptr<std::vector<UserAction>> user_actions) override;
   void SetCollectUserDataOptions(CollectUserDataOptions* options) override;
-  void SetCollectUserDataUiState(bool enabled) override;
+  void SetCollectUserDataUiState(bool loading,
+                                 UserDataEventField event_field) override;
   void SetLastSuccessfulUserDataOptions(std::unique_ptr<CollectUserDataOptions>
                                             collect_user_data_options) override;
   const CollectUserDataOptions* GetLastSuccessfulUserDataOptions()
@@ -81,8 +82,9 @@ class FakeScriptExecutorUiDelegate : public ScriptExecutorUiDelegate {
   bool SupportsExternalActions() override;
   void ExecuteExternalAction(
       const external::Action& external_action,
+      base::OnceCallback<void()> start_dom_checks_callback,
       base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
-          callback) override;
+          end_action_callback) override;
 
   const std::vector<Details>& GetDetails() { return details_; }
 
@@ -96,7 +98,9 @@ class FakeScriptExecutorUiDelegate : public ScriptExecutorUiDelegate {
 
   CollectUserDataOptions* GetOptions() { return collect_user_data_options_; }
 
-  bool GetCollectUserDataUiEnabled() { return collect_user_data_ui_enabled_; }
+  UserDataEventField GetCollectUserDataUiLoadingField() {
+    return collect_user_data_ui_loading__field_;
+  }
 
  private:
   std::string status_message_;
@@ -107,7 +111,8 @@ class FakeScriptExecutorUiDelegate : public ScriptExecutorUiDelegate {
   std::unique_ptr<std::vector<UserAction>> user_actions_;
   std::unique_ptr<CollectUserDataOptions> last_collect_user_data_options_;
   raw_ptr<CollectUserDataOptions> collect_user_data_options_;
-  bool collect_user_data_ui_enabled_ = true;
+  UserDataEventField collect_user_data_ui_loading__field_ =
+      UserDataEventField::NONE;
   std::unique_ptr<UserData> payment_request_info_;
   ConfigureBottomSheetProto::PeekMode peek_mode_ =
       ConfigureBottomSheetProto::HANDLE;

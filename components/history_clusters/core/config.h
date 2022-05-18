@@ -26,12 +26,6 @@ struct Config {
   // the number of visits sent to the clustering backend per batch.
   int max_visits_to_cluster = 1000;
 
-  // The recency threshold controlling which visits will be clustered. This
-  // isn't the only factor; i.e. visits older than `MaxDaysToCluster()` may
-  // still be clustered. Only applies when using persisted visit context
-  // annotations; i.e. `kPersistContextAnnotationsInHistoryDb` is true.
-  int max_days_to_cluster = 9;
-
   // A soft cap on the number of keyword phrases to cache. 5000 should be more
   // than enough, as the 99.9th percentile of users has 2000. A few nuances:
   //  - We cache both entity keywords and URLs, each limited separately.
@@ -86,6 +80,22 @@ struct Config {
   // If enabled, allows the Omnibox Action chip to appear on URLs from noisy
   // visits. This does nothing if `omnibox_action_on_urls` is false.
   bool omnibox_action_on_noisy_urls = true;
+
+  // If enabled, adds the keywords of aliases for detected entity names to a
+  // cluster.
+  bool keyword_filter_on_entity_aliases = false;
+
+  // If greater than 0, the max number of aliases to include in keywords. If <=
+  // 0, all aliases will be included.
+  size_t max_entity_aliases_in_keywords = 0;
+
+  // If enabled, adds the keywords of categories for detected entities to a
+  // cluster.
+  bool keyword_filter_on_categories = true;
+
+  // If enabled, adds the keywords of detected entities from noisy visits to a
+  // cluster.
+  bool keyword_filter_on_noisy_visits = true;
 
   // Enables debug info in non-user-visible surfaces, like Chrome Inspector.
   // Does nothing if `kJourneys` is disabled.
@@ -143,6 +153,10 @@ struct Config {
   // Whether to hide single-visit clusters on prominent UI surfaces.
   bool should_hide_single_visit_clusters_on_prominent_ui_surfaces = true;
 
+  // Whether to hide clusters that only contain URLs from the same domain on
+  // prominent UI surfaces.
+  bool should_hide_single_domain_clusters_on_prominent_ui_surfaces = false;
+
   // Whether to filter clusters that are noisy from the UI. This will
   // heuristically remove clusters that are unlikely to be "interesting".
   bool should_filter_noisy_clusters = true;
@@ -187,13 +201,6 @@ struct Config {
   // use when clustering based on intersection score.
   int cluster_interaction_threshold = 2;
 
-  // Whether to include category names in the keywords for a cluster.
-  bool should_include_categories_in_keywords = true;
-
-  // Whether to exclude keywords from visits that may be considered "noisy" to
-  // the user (i.e. highly engaged, non-SRP).
-  bool should_exclude_keywords_from_noisy_visits = false;
-
   // Returns the default batch size for annotating visits when clustering.
   size_t clustering_tasks_batch_size = 250;
 
@@ -218,6 +225,13 @@ struct Config {
 
   // Whether to check if all visits for a host should be in resulting clusters.
   bool should_check_hosts_to_skip_clustering_for = false;
+
+  // The max number of hosts that should be stored in the engagement score
+  // cache.
+  int engagement_score_cache_size = 100;
+
+  // The max time a host should be stored in the engagement score cache.
+  base::TimeDelta engagement_score_cache_refresh_duration = base::Minutes(120);
 
   // True if the task runner should use trait CONTINUE_ON_SHUTDOWN.
   bool use_continue_on_shutdown = true;

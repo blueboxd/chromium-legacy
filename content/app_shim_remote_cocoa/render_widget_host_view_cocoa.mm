@@ -169,7 +169,6 @@ void ExtractUnderlines(NSAttributedString* string,
   bool _keyboardLockActive;
   absl::optional<base::flat_set<ui::DomCode>> _lockedKeys;
 
-  API_AVAILABLE(macos(10.12.2))
   base::scoped_nsobject<NSCandidateListTouchBarItem> _candidateListTouchBarItem;
   NSInteger _textSuggestionsSequenceNumber;
   BOOL _shouldRequestTextSubstitutions;
@@ -192,18 +191,16 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)windowDidResignKey:(NSNotification*)notification;
 - (void)sendViewBoundsInWindowToHost;
 - (void)requestTextSubstitutions;
-- (void)requestTextSuggestions API_AVAILABLE(macos(10.12.2));
+- (void)requestTextSuggestions;
 - (void)sendWindowFrameInScreenToHost;
 - (bool)hostIsDisconnected;
-- (void)invalidateTouchBar API_AVAILABLE(macos(10.12.2));
+- (void)invalidateTouchBar;
 
 // NSCandidateListTouchBarItemDelegate implementation
 - (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
-     endSelectingCandidateAtIndex:(NSInteger)index
-    API_AVAILABLE(macos(10.12.2));
+     endSelectingCandidateAtIndex:(NSInteger)index;
 - (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
-    changedCandidateListVisibility:(BOOL)isVisible
-    API_AVAILABLE(macos(10.12.2));
+    changedCandidateListVisibility:(BOOL)isVisible;
 @end
 
 @implementation RenderWidgetHostViewCocoa
@@ -220,7 +217,7 @@ void ExtractUnderlines(NSAttributedString* string,
               withHostHelper:(RenderWidgetHostNSViewHostHelper*)hostHelper {
   self = [super initWithFrame:NSZeroRect];
   if (self) {
-    self.acceptsTouchEvents = YES;
+    self.allowedTouchTypes |= NSTouchTypeMaskDirect;
     _editCommandHelper =
         std::make_unique<RenderWidgetHostViewMacEditCommandHelper>();
 
@@ -363,13 +360,11 @@ void ExtractUnderlines(NSAttributedString* string,
       trailingRange.location < NSMaxRange(availableTextRange)) {
     NSRange trailingRangeInAvailableText = NSMakeRange(
         trailingRange.location - _availableTextOffset, trailingRange.length);
-    if (@available(macOS 10.12, *)) {
-      NSString* trailingString =
-          [attString.string substringWithRange:trailingRangeInAvailableText];
-      if ([self.spellChecker preventsAutocorrectionBeforeString:trailingString
-                                                       language:nil])
-        return;
-    }
+    NSString* trailingString =
+        [attString.string substringWithRange:trailingRangeInAvailableText];
+    if ([self.spellChecker preventsAutocorrectionBeforeString:trailingString
+                                                     language:nil])
+      return;
     if ([attString doubleClickAtIndex:trailingRangeInAvailableText.location]
             .location < trailingRangeInAvailableText.location)
       return;
@@ -498,8 +493,7 @@ void ExtractUnderlines(NSAttributedString* string,
     _shouldRequestTextSubstitutions = NO;
     [self requestTextSubstitutions];
   }
-  if (@available(macOS 10.12.2, *))
-    [self requestTextSuggestions];
+  [self requestTextSuggestions];
 }
 
 - (void)candidateListTouchBarItem:(NSCandidateListTouchBarItem*)anItem
@@ -525,8 +519,7 @@ void ExtractUnderlines(NSAttributedString* string,
     return;
   _textInputType = textInputType;
 
-  if (@available(macOS 10.12.2, *))
-    [self invalidateTouchBar];
+  [self invalidateTouchBar];
 }
 
 - (std::u16string)selectedText {
@@ -560,10 +553,8 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (void)resetCursorRects {
-  if (_currentCursor) {
+  if (_currentCursor)
     [self addCursorRect:[self visibleRect] cursor:_currentCursor];
-    [_currentCursor setOnMouseEntered:YES];
-  }
 }
 
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event

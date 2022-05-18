@@ -49,12 +49,18 @@ class InterestGroupStorage;
 // as it performs blocking file IO when backed by on-disk storage.
 class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
  public:
+  // Controls how auction worklets will be run. kDedicated will use
+  // fully-isolated utility processes solely for worklet. kInRenderer will
+  // re-use regular renderers following the normal site isolation policy.
+  enum class ProcessMode { kDedicated, kInRenderer };
+
   // Creates an interest group manager using the provided directory path for
   // persistent storage. If `in_memory` is true the path is ignored and only
   // in-memory storage is used.
   explicit InterestGroupManagerImpl(
       const base::FilePath& path,
       bool in_memory,
+      ProcessMode process_mode,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~InterestGroupManagerImpl() override;
   InterestGroupManagerImpl(const InterestGroupManagerImpl& other) = delete;
@@ -189,18 +195,26 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
     auction_process_manager_ = std::move(auction_process_manager);
   }
 
+  // For testing *only*; changes the maximum number of active report requests
+  // at a time.
+  void set_max_active_report_requests_for_testing(
+      int max_active_report_requests);
+
   // For testing *only*; changes the maximum number of report requests that can
   // be stored in `report_requests_` queue.
   void set_max_report_queue_length_for_testing(int max_queue_length);
+
+  // For testing *only*; changes `max_reporting_round_duration_`.
+  void set_max_reporting_round_duration_for_testing(
+      base::TimeDelta max_reporting_round_duration);
 
   // For testing *only*; changes the time interval to wait before sending the
   // next report after sending one.
   void set_reporting_interval_for_testing(base::TimeDelta interval);
 
-  // For testing *only*; changes the maximum number of active report requests
-  // at a time.
-  void set_max_active_report_requests_for_testing(
-      int max_active_report_requests);
+  size_t report_queue_length_for_testing() const {
+    return report_requests_.size();
+  }
 
  private:
   // InterestGroupUpdateManager calls private members to write updates to the
@@ -335,6 +349,17 @@ class CONTENT_EXPORT InterestGroupManagerImpl : public InterestGroupManager {
   //
   // Should *only* be changed by tests.
   base::TimeDelta reporting_interval_;
+
+  // The maximum amount of time that the reporting process can run before the
+  // report queue is cleared due to taking too long.
+  //
+  // Should *only* be changed by tests.
+  base::TimeDelta max_reporting_round_duration_;
+
+  // The last time we started sending reports from the `report_requests_` queue;
+  // used to clear pending report requests in the queue if reporting takes too
+  // long.
+  base::TimeTicks reporting_started_ = base::TimeTicks::Min();
 
   base::WeakPtrFactory<InterestGroupManagerImpl> weak_factory_{this};
 };

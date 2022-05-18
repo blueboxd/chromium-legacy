@@ -2292,13 +2292,18 @@ SpecificTrustedType Element::ExpectedTrustedTypeForAttribute(
   if (iter != attribute_types->end())
     return iter->value;
 
-  if (q_name.LocalName().StartsWith("on")) {
-    // TODO(jakubvrana): This requires TrustedScript in all attributes
-    // starting with "on", including e.g. "one". We use this pattern elsewhere
-    // (e.g. in IsEventHandlerAttribute) but it's not ideal. Consider using
-    // the event attribute of the resulting AttributeTriggers.
+  // Since event handlers can be defined on nearly all elements, we will
+  // consider them independently of the specific element they're attached to.
+  //
+  // Note: Element::IsEventHandlerAttribute is different and over-approximates
+  // event-handler-ness, since it is expected to work only for builtin
+  // attributes (like "onclick"), while Trusted Types needs to deal with
+  // whatever users pass into setAttribute (for example "one"). Also, it
+  // requires the actual Attribute rather than the QName, which means
+  // Element::IsEventHandlerAttribute can only be called after an attribute has
+  // been constructed.
+  if (IsTrustedTypesEventHandlerAttribute(q_name))
     return SpecificTrustedType::kScript;
-  }
 
   return SpecificTrustedType::kNone;
 }
@@ -3827,7 +3832,7 @@ StyleRecalcChange Element::RecalcOwnStyle(
   if (new_style && !ShouldStoreComputedStyle(*new_style))
     new_style = nullptr;
 
-  if (new_style) {
+  if (new_style && !CanSkipRecalcForHighlightPseudos(*new_style)) {
     const StyleHighlightData* parent_highlights =
         parent_style ? parent_style->HighlightData().get() : nullptr;
 
@@ -3874,16 +3879,13 @@ StyleRecalcChange Element::RecalcOwnStyle(
     }
     // Use new inheritance model for custom highlights even if it is not enabled
     // for other types of highlights.
-    if (new_style && new_style->HasPseudoElementStyle(kPseudoIdHighlight)) {
-      const StyleHighlightData* parent_highlights =
-          parent_style ? parent_style->HighlightData().get() : nullptr;
-      StyleHighlightData& highlights = new_style->MutableHighlightData();
-
+    if (new_style->HasPseudoElementStyle(kPseudoIdHighlight)) {
       const HashSet<AtomicString>* custom_highlight_names =
           new_style->CustomHighlightNames();
       if (custom_highlight_names) {
         for (const AtomicString& custom_highlight_name :
              *custom_highlight_names) {
+          StyleHighlightData& highlights = new_style->MutableHighlightData();
           const ComputedStyle* highlight_parent =
               parent_highlights
                   ? parent_highlights->CustomHighlight(custom_highlight_name)
@@ -4296,6 +4298,7 @@ struct Element::AffectedByPseudoStateChange {
             element.AncestorsOrSiblingsAffectedByActiveInHas();
         break;
 
+      case CSSSelector::kPseudoAnyLink:
       case CSSSelector::kPseudoChecked:
       case CSSSelector::kPseudoDefault:
       case CSSSelector::kPseudoDisabled:
@@ -4303,12 +4306,14 @@ struct Element::AffectedByPseudoStateChange {
       case CSSSelector::kPseudoIndeterminate:
       case CSSSelector::kPseudoInRange:
       case CSSSelector::kPseudoInvalid:
+      case CSSSelector::kPseudoLink:
       case CSSSelector::kPseudoOutOfRange:
       case CSSSelector::kPseudoOptional:
       case CSSSelector::kPseudoPlaceholderShown:
       case CSSSelector::kPseudoReadOnly:
       case CSSSelector::kPseudoReadWrite:
       case CSSSelector::kPseudoRequired:
+      case CSSSelector::kPseudoTarget:
       case CSSSelector::kPseudoValid:
         ancestors_or_siblings = true;
         break;
@@ -4340,6 +4345,27 @@ void Element::PseudoStateChanged(
   GetDocument().GetStyleEngine().PseudoStateChangedForElement(
       pseudo, *this, affected_by_pseudo.children_or_siblings,
       affected_by_pseudo.ancestors_or_siblings);
+}
+
+bool Element::CanSkipRecalcForHighlightPseudos(
+    const ComputedStyle& new_style) const {
+  // If we are a root element (our parent is a Document or ShadowRoot), we need
+  // to recalc iff there are any highlight rules for the pseudo in question,
+  // regardless of whether or not they are non-universal.
+  if (parentNode() == ContainingTreeScope().RootNode())
+    return false;
+
+  // If the parent matched any non-universal highlight rules, then we need
+  // to recalc, in case there are universal highlight rules.
+  bool parent_non_universal =
+      ParentComputedStyle() != nullptr &&
+      ParentComputedStyle()->HasNonUniversalHighlightPseudoStyles();
+
+  // If we matched any non-universal highlight rules, then we need to recalc
+  // and our children also need to recalc (see above).
+  bool self_non_universal = new_style.HasNonUniversalHighlightPseudoStyles();
+
+  return !parent_non_universal && !self_non_universal;
 }
 
 void Element::SetAnimationStyleChange(bool animation_style_change) {
@@ -8260,6 +8286,10 @@ void Element::RemoveAttributeHinted(const AtomicString& name,
   }
 
   RemoveAttributeInternal(index, kNotInSynchronizationOfLazyAttribute);
+}
+
+bool Element::IsDocumentElement() const {
+  return this == GetDocument().documentElement();
 }
 
 }  // namespace blink

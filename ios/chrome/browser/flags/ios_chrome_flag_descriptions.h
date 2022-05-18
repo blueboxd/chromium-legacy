@@ -57,6 +57,12 @@ extern const char kAutofillParseMerchantPromoCodeFieldsDescription[];
 extern const char kAutofillPruneSuggestionsName[];
 extern const char kAutofillPruneSuggestionsDescription[];
 
+// Title and description for the flag to control removing card expiration date
+// from the downstream suggestions.
+extern const char kAutofillRemoveCardExpiryFromDownstreamSuggestionName[];
+extern const char
+    kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription[];
+
 // Title and description for the flag to control dismissing the Save Card
 // Infobar on Navigation.
 extern const char kAutofillSaveCardDismissOnNavigationName[];
@@ -148,6 +154,11 @@ extern const char kDetectMainThreadFreezeDescription[];
 // Discover feed in the Bling NTP.
 extern const char kDiscoverFeedInNtpName[];
 extern const char kDiscoverFeedInNtpDescription[];
+
+// Title and description for the flag to enable the sync promotion on top of the
+// discover feed.
+extern const char kEnableDiscoverFeedTopSyncPromoName[];
+extern const char kEnableDiscoverFeedTopSyncPromoDescription[];
 
 // Title and description for the flag to enable DisplaySyncErrors refactored
 // code.
@@ -361,6 +372,11 @@ extern const char kNewOverflowMenuDescription[];
 // overflow menu.
 extern const char kNewOverflowMenuSettingsActionName[];
 extern const char kNewOverflowMenuSettingsActionDescription[];
+
+// Title and description for the flag to use simple icons for the Destinations
+// in the new overflow menu.
+extern const char kNewOverflowMenuSimpleDestinationIconsName[];
+extern const char kNewOverflowMenuSimpleDestinationIconsDescription[];
 
 // Title and description for temporary bug fix to broken NTP view hierarhy.
 // TODO(crbug.com/1262536): Remove this when fixed.

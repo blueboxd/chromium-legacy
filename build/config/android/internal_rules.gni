@@ -553,8 +553,6 @@ template("write_build_config") {
     }
     if (defined(invoker.add_view_trace_events) &&
         invoker.add_view_trace_events) {
-      args += [ "--add-view-trace-events" ]
-
       # Adding trace events involves rewriting bytecode and generating a new set
       # of jar files. In order to avoid conflicts between bundles we save the
       # new jars in a bundle specific gen/ directory. The build config for the
@@ -563,24 +561,22 @@ template("write_build_config") {
       # We use the base module's target_gen_dir because non-base modules and the
       # app bundle targets have a reference to it (base_module_target).
       if (_type == "android_app_bundle") {
-        _base_module_target_name =
+        _trace_events_target_name =
             get_label_info(_parent_invoker.base_module_target, "name")
-        _base_module_gen_dir =
-            get_label_info(_base_module_target_name, "target_gen_dir")
+      } else if (defined(invoker.base_module_target)) {
+        _trace_events_target_name =
+            get_label_info(invoker.base_module_target, "name")
       } else {
-        if (defined(invoker.base_module_target)) {
-          _base_module_name = get_label_info(invoker.base_module_target, "name")
-          _base_module_gen_dir =
-              get_label_info(_base_module_name, "target_gen_dir")
-        } else {
-          _grandparent_invoker = _parent_invoker.invoker
-          _base_module_gen_dir =
-              get_label_info(_grandparent_invoker.target_name, "target_gen_dir")
-        }
+        _grandparent_invoker = _parent_invoker.invoker
+        _trace_events_target_name = _grandparent_invoker.target_name
       }
+
+      # FIXME: This should likely be using the base module's target_out_dir
+      #     rather than the current target's.
       args += [
-        "--base-module-gen-dir",
-        rebase_path(_base_module_gen_dir, root_build_dir),
+        "--trace-events-jar-dir",
+        rebase_path("$target_out_dir/$_trace_events_target_name",
+                    root_build_dir),
       ]
     }
     if (defined(invoker.version_name)) {
@@ -2441,13 +2437,13 @@ if (enable_java_templates) {
 
     action_with_pydeps(target_name) {
       script = _script
-      depfile = "$target_gen_dir/${target_name}.d"
+      _depfile = "$target_gen_dir/${target_name}.d"
       inputs = _inputs
       outputs = _outputs
       deps = _deps
       args = _args + [
                "--depfile",
-               rebase_path(depfile, root_build_dir),
+               rebase_path(_depfile, root_build_dir),
              ]
     }
   }
@@ -2683,9 +2679,18 @@ if (enable_java_templates) {
     _apksigner = "$android_sdk_build_tools/lib/apksigner.jar"
     _zipalign = "$android_sdk_build_tools/zipalign"
 
+    _keystore_path = android_keystore_path
+    _keystore_name = android_keystore_name
+    _keystore_password = android_keystore_password
+
+    if (defined(invoker.keystore_path)) {
+      _keystore_path = invoker.keystore_path
+      _keystore_name = invoker.keystore_name
+      _keystore_password = invoker.keystore_password
+    }
+
     _inputs = [
-      invoker.build_config,
-      invoker.keystore_path,
+      _keystore_path,
       invoker.packaged_resources_path,
       _apksigner,
       _zipalign,
@@ -2698,28 +2703,30 @@ if (enable_java_templates) {
         rebase_path(invoker.packaged_resources_path, root_build_dir)
     _rebased_packaged_apk_path =
         rebase_path(invoker.output_apk_path, root_build_dir)
-    _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
     _args = [
       "--resource-apk=$_rebased_compiled_resources_path",
       "--output-apk=$_rebased_packaged_apk_path",
-      "--assets=@FileArg($_rebased_build_config:assets)",
-      "--uncompressed-assets=@FileArg($_rebased_build_config:uncompressed_assets)",
       "--apksigner-jar",
       rebase_path(_apksigner, root_build_dir),
       "--zipalign-path",
       rebase_path(_zipalign, root_build_dir),
       "--key-path",
-      rebase_path(invoker.keystore_path, root_build_dir),
+      rebase_path(_keystore_path, root_build_dir),
       "--key-name",
-      invoker.keystore_name,
+      _keystore_name,
       "--key-passwd",
-      invoker.keystore_password,
+      _keystore_password,
       "--min-sdk-version=${invoker.min_sdk_version}",
-
-      # TODO(mlopatkin) We are relying on the fact that build_config is an APK
-      # build_config.
-      "--java-resources=@FileArg($_rebased_build_config:java_resources_jars)",
     ]
+    if (defined(invoker.build_config)) {
+      _inputs += [ invoker.build_config ]
+      _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
+      _args += [
+        "--assets=@FileArg($_rebased_build_config:assets)",
+        "--uncompressed-assets=@FileArg($_rebased_build_config:uncompressed_assets)",
+        "--java-resources=@FileArg($_rebased_build_config:java_resources_jars)",
+      ]
+    }
     if (is_official_build) {
       _args += [ "--best-compression" ]
     }
@@ -2798,10 +2805,10 @@ if (enable_java_templates) {
         _failure_file =
             "$expectations_failure_dir/" +
             string_replace(invoker.expected_libs_and_assets, "/", "_")
-        inputs = [
-          invoker.build_config,
-          invoker.expected_libs_and_assets,
-        ]
+        inputs = [ invoker.expected_libs_and_assets ]
+        if (defined(invoker.build_config)) {
+          inputs += [ invoker.build_config ]
+        }
         deps = [ invoker.build_config_dep ]
         outputs = [
           _actual_file,

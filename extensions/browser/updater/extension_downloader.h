@@ -255,16 +255,10 @@ class ExtensionDownloader {
       ExtensionDownloaderDelegate::Error error,
       const ExtensionDownloaderDelegate::FailureData& data);
 
-  // Tries fetching the extension from cache if manifest fetch is failed for
-  // force installed extensions, and notifies the failure reason for remaining
-  // extensions.
-  void TryFetchingExtensionsFromCache(
-      ManifestFetchData* fetch_data,
-      ExtensionDownloaderDelegate::Error error,
-      const int net_error,
-      const int response_code,
-      const absl::optional<ManifestInvalidFailureDataList>&
-          manifest_invalid_errors);
+  // Tries fetching the extension from cache. Returns true if all extensions
+  // have been found, otherwise modifies |fetch_data| to keep only not found
+  // extension there.
+  bool TryFetchingExtensionsFromCache(ManifestFetchData* fetch_data);
 
   // Makes a retry attempt, reports failure by calling
   // AddFailureDataOnManifestFetchFailed when fetching of update manifest
@@ -352,6 +346,12 @@ class ExtensionDownloader {
   // Send a notification that an update was found for |id| that we'll
   // attempt to download.
   void NotifyUpdateFound(const std::string& id, const std::string& version);
+
+  // Helper method to populate lists of manifest fetch requests.
+  void AddToFetches(std::map<FetchDataGroupKey,
+                             std::vector<std::unique_ptr<ManifestFetchData>>>&
+                        fetches_preparing,
+                    ExtensionDownloaderTask task);
 
   // Do real work of StartAllPending. If .crx cache is used, this function
   // is called when cache is ready.

@@ -44,6 +44,8 @@ chromium-metrics-reviews@google.com.
   <variant name="SegmentationChromeStartAndroid"
       summary="Chrome Start Android"/>
   <variant name="SegmentationDummyFeature" summary="Dummy feature"/>
+  <variant name="SegmentationFeedUser"
+      summary="Segmentation: Feed usage in Chrome"/>
   <variant name="SegmentationNewTab" summary="Segmentation: New tab page user"/>
   <variant name="SegmentationQueryTiles" summary="Query tiles"/>
   <variant name="SegmentationShare" summary="Segmentation: Share user"/>
@@ -96,6 +98,7 @@ chromium-metrics-reviews@google.com.
 <variants name="PageContentAnnotationsStorageType">
   <variant name="ModelAnnotations" summary="Model Annotations"/>
   <variant name="RelatedSearches" summary="Related Searches"/>
+  <variant name="RemoteMetadata" summary="Remote Metadata"/>
   <variant name="SearchMetadata" summary="Search Metadata"/>
   <variant name="Unknown" summary="Unknown"/>
 </variants>
@@ -276,7 +279,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.NetErrorCode"
-    enum="NetErrorCodes" expires_after="2022-09-11">
+    enum="NetErrorCodes" expires_after="2022-11-13">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -286,7 +289,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="OptimizationGuide.HintsFetcher.GetHintsRequest.Status"
-    enum="HttpResponseCode" expires_after="2022-09-11">
+    enum="HttpResponseCode" expires_after="2022-11-13">
   <owner>mcrouse@chromium.org</owner>
   <owner>sophiechang@chromium.org</owner>
   <summary>
@@ -915,7 +918,7 @@ chromium-metrics-reviews@google.com.
 
 <histogram
     name="OptimizationGuide.PredictionManager.DownloadServiceAvailabilityBlockedFetch"
-    enum="BooleanBlocked" expires_after="M106">
+    enum="BooleanBlocked" expires_after="2022-11-13">
   <owner>sophiechang@chromium.org</owner>
   <owner>mcrouse@chromium.org</owner>
   <summary>

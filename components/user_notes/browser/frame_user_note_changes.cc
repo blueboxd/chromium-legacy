@@ -70,18 +70,16 @@ void FrameUserNoteChanges::Apply(base::OnceClosure callback) {
     const UserNote* note = service_->GetNoteModel(note_id);
     DCHECK(note);
 
-    // TODO(gujen): Support the note authoring workflow, in which case a
-    // temporary note instance will already exist in the service's temporary
-    // map, which we can synchronously move to the note manager here.
-
-    std::unique_ptr<UserNoteInstance> instance_unique = MakeNoteInstance(note);
+    std::unique_ptr<UserNoteInstance> instance_unique =
+        MakeNoteInstance(note, manager);
     manager->AddNoteInstance(std::move(instance_unique), barrier);
   }
 }
 
 std::unique_ptr<UserNoteInstance> FrameUserNoteChanges::MakeNoteInstance(
-    const UserNote* note_model) const {
-  return std::make_unique<UserNoteInstance>(note_model->GetSafeRef());
+    const UserNote* note_model,
+    UserNoteManager* manager) const {
+  return std::make_unique<UserNoteInstance>(note_model->GetSafeRef(), manager);
 }
 
 }  // namespace user_notes

@@ -120,7 +120,6 @@ group("resources") {
 if (enable_js_type_check) {
   group("closure_compile") {
     deps = [
-      "accessibility:closure_compile",
       "components:closure_compile",
       "domain_reliability_internals:closure_compile",
       "engagement:closure_compile",
@@ -132,7 +131,6 @@ if (enable_js_type_check) {
         "gaia_auth_host:closure_compile",
         "image_editor:closure_compile",
         "inline_login:closure_compile",
-        "internals/user_education:closure_compile",
         "media_router:closure_compile",
         "nearby_internals:closure_compile",
         "ntp4:closure_compile",

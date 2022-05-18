@@ -32,9 +32,9 @@ const char kTypedURLModelTypeStateKey[] = "typed_url_model_type_state";
 //   value            Serialize sync EntityMetadata, which is for tracking sync
 //                    state of each typed url.
 
-TypedURLSyncMetadataDatabase::TypedURLSyncMetadataDatabase() {}
+TypedURLSyncMetadataDatabase::TypedURLSyncMetadataDatabase() = default;
 
-TypedURLSyncMetadataDatabase::~TypedURLSyncMetadataDatabase() {}
+TypedURLSyncMetadataDatabase::~TypedURLSyncMetadataDatabase() = default;
 
 bool TypedURLSyncMetadataDatabase::GetAllSyncMetadata(
     syncer::MetadataBatch* metadata_batch) {
@@ -44,8 +44,9 @@ bool TypedURLSyncMetadataDatabase::GetAllSyncMetadata(
   }
 
   sync_pb::ModelTypeState model_type_state;
-  if (!GetModelTypeState(&model_type_state))
+  if (!GetModelTypeState(&model_type_state)) {
     return false;
+  }
 
   metadata_batch->SetModelTypeState(model_type_state);
   return true;
@@ -158,8 +159,9 @@ bool TypedURLSyncMetadataDatabase::
         SQL_FROM_HERE,
         "DELETE FROM typed_url_sync_metadata WHERE storage_key=?"));
     del.BindInt64(0, rowid);
-    if (!del.Run())
+    if (!del.Run()) {
       return false;
+    }
   }
 
   return true;

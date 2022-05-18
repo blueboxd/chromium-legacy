@@ -210,6 +210,7 @@ extern const char kHideWebStoreIcon[];
 #if BUILDFLAG(IS_CHROMEOS)
 extern const char kAttestationExtensionAllowlist[];
 extern const char kPrintingAPIExtensionsAllowlist[];
+extern const char kEnableSyncConsent[];
 #endif
 #if BUILDFLAG(IS_CHROMEOS_ASH)
 extern const char kTapToClickEnabled[];
@@ -319,7 +320,6 @@ extern const char kTextToSpeechVolume[];
 extern const char kTimeLimitLocalOverride[];
 extern const char kUsageTimeLimit[];
 extern const char kScreenTimeLastState[];
-extern const char kEnableSyncConsent[];
 extern const char kNetworkFileSharesAllowed[];
 extern const char kManagedSessionEnabled[];
 extern const char kManagedSessionUseFullLoginWarning[];
@@ -367,6 +367,8 @@ extern const char kExternalStorageDisabled[];
 extern const char kExternalStorageReadOnly[];
 extern const char kForceMaximizeOnFirstRun[];
 extern const char kInsightsExtensionEnabled[];
+extern const char kOOMKillsDailyCount[];
+extern const char kOOMKillsDailySample[];
 extern const char kSettingsShowOSBanner[];
 extern const char kUsedPolicyCertificates[];
 #endif  // BUILDFLAG(IS_CHROMEOS)

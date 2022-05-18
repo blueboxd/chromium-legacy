@@ -262,14 +262,16 @@ class ScriptExecutor : public ActionDelegate,
   base::WeakPtr<ActionDelegate> GetWeakPtr() const override;
   ProcessedActionStatusDetailsProto& GetLogInfo() override;
   void RequestUserData(
+      UserDataEventField event_field,
       const CollectUserDataOptions& options,
       base::OnceCallback<void(bool, const GetUserDataResponseProto&)> callback)
       override;
   bool SupportsExternalActions() override;
   void RequestExternalAction(
       const ExternalActionProto& external_action,
+      base::OnceCallback<void()> start_dom_checks_callback,
       base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
-          callback) override;
+          end_action_callback) override;
   bool MustUseBackendData() const override;
 
  private:

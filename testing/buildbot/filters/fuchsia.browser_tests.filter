@@ -45,7 +45,6 @@
 -AppWindowApiTest.OnRestoredEvent
 -BackForwardCacheSiteDetailsBrowserTest.MemoryDetailsForBackForwardCache
 -BluetoothApiTest.Discovery
--BrowserTest.FaviconChange
 -BrowserViewTest.GetAccessibleTabModalDialogTitle
 -BrowsingDataRemoverBrowserTest.Database
 -BrowsingDataRemoverBrowserTest.SessionOnlyStorageRemoved
@@ -125,8 +124,6 @@
 -CrossProfileDebuggerApiTest.Attach
 -CrossProfileDebuggerApiTest.GetTargets
 -DebuggerExtensionApiTest.AttachToPdf
--DesktopMediaPickerViewsBrowserTest.InvokeUi_default
--DesktopMediaPickerViewsBrowserTest.InvokeUi_tabs
 -DestroyProfileOnBrowserClose/ProfileHelperTestWithDestroyProfile.DeleteInactiveProfile/0
 -DestroyProfileOnBrowserClose/ProfileHelperTestWithDestroyProfile.DeleteInactiveProfile/1
 -DestroyProfileOnBrowserClose/ProfileManagerBrowserTest.DeleteAllProfiles/0
@@ -335,7 +332,6 @@
 -WebViewTests/WebViewTest.DownloadCookieIsolation_CrossSession/SiteIsolationForGuestsEnabled
 -WebViewTests/WebViewTest.NoPrerenderer/SiteIsolationForGuestsDisabled
 -WebViewTests/WebViewTest.NoPrerenderer/SiteIsolationForGuestsEnabled
--WorkerDevToolsTest.PauseInSharedWorkerInitialization
 
 # TODO(crbug.com/1306610): crbug.com/1306610: Enable once PDF rendering can be
 # enabled without PPAPI.

@@ -235,5 +235,6 @@ export class BrailleCommandHandler {
 BrailleCommandHandler.instance_;
 
 BridgeHelper.registerHandler(
-    BridgeTarget.BRAILLE_COMMAND_HANDLER, BridgeAction.SET_ENABLED,
+    BridgeConstants.BrailleCommandHandler.TARGET,
+    BridgeConstants.BrailleCommandHandler.Action.SET_ENABLED,
     enabled => BrailleCommandHandler.setEnabled(enabled));

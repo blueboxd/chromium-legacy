@@ -560,10 +560,6 @@ const ComputedStyle* ComputedStyle::GetCachedPseudoElementStyle(
   if (!HasCachedPseudoElementStyles())
     return nullptr;
 
-  if (StyleType() != kPseudoIdNone &&
-      StyleType() != kPseudoIdFirstLineInherited)
-    return nullptr;
-
   for (const auto& pseudo_style : *GetPseudoElementStyleCache()) {
     if (pseudo_style->StyleType() == pseudo_id &&
         (!PseudoElementHasArguments(pseudo_id) ||
@@ -611,6 +607,26 @@ const ComputedStyle* ComputedStyle::AddCachedPseudoElementStyle(
   EnsurePseudoElementStyleCache().push_back(std::move(pseudo));
 
   return result;
+}
+
+const ComputedStyle* ComputedStyle::ReplaceCachedPseudoElementStyle(
+    scoped_refptr<const ComputedStyle> pseudo_style,
+    PseudoId pseudo_id,
+    const AtomicString& pseudo_argument) const {
+  DCHECK(pseudo_style->StyleType() != kPseudoIdNone &&
+         pseudo_style->StyleType() != kPseudoIdFirstLineInherited);
+  if (HasCachedPseudoElementStyles()) {
+    for (auto& cached_style : *GetPseudoElementStyleCache()) {
+      if (cached_style->StyleType() == pseudo_id &&
+          (!PseudoElementHasArguments(pseudo_id) ||
+           cached_style->PseudoArgument() == pseudo_argument)) {
+        SECURITY_CHECK(cached_style->IsEnsuredInDisplayNone());
+        cached_style = pseudo_style;
+        return pseudo_style.get();
+      }
+    }
+  }
+  return AddCachedPseudoElementStyle(pseudo_style, pseudo_id, pseudo_argument);
 }
 
 void ComputedStyle::ClearCachedPseudoElementStyles() const {
@@ -910,9 +926,18 @@ void ComputedStyle::AdjustDiffForBackgroundVisuallyEqual(
     const ComputedStyle& other,
     StyleDifference& diff) const {
   if (BackgroundColorInternal() != other.BackgroundColorInternal()) {
-    diff.SetNeedsPaintInvalidation();
-    return;
+    // If the background color change is not due to a composited animation, then
+    // paint invalidation is required; but we can defer the decision until we
+    // know whether the color change will be rendered by the compositor.
+    diff.SetBackgroundColorChanged();
   }
+  // The rendered color may differ from the reported color for a link to prevent
+  // leaking the visited status of a link.
+  if (InternalVisitedBackgroundColor() !=
+      other.InternalVisitedBackgroundColor()) {
+    diff.SetBackgroundColorChanged();
+  }
+
   if (!BackgroundInternal().VisuallyEqual(other.BackgroundInternal())) {
     diff.SetNeedsPaintInvalidation();
     return;

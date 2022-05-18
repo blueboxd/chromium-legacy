@@ -232,7 +232,7 @@
 #include "third_party/blink/public/mojom/frame/blocked_navigation_types.mojom.h"
 #include "third_party/blink/public/mojom/frame/frame.mojom.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom.h"
 #include "third_party/blink/public/mojom/window_features/window_features.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/window_open_disposition.h"
@@ -373,6 +373,8 @@ Browser::CreateParams::CreateParams(const CreateParams& other) = default;
 
 Browser::CreateParams& Browser::CreateParams::operator=(
     const CreateParams& other) = default;
+
+Browser::CreateParams::~CreateParams() = default;
 
 // static
 Browser::CreateParams Browser::CreateParams::CreateForAppBase(

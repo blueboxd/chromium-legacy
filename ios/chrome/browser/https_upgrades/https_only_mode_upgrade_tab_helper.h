@@ -72,6 +72,7 @@ class HttpsOnlyModeUpgradeTabHelper
   // test HTTP server. We shouldn't upgrade HTTP URLs from from the fake HTTPS
   // server.
   bool IsFakeHTTPSForTesting(const GURL& url) const;
+  bool IsLocalhost(const GURL& url) const;
   bool IsHttpAllowedForUrl(const GURL& url) const;
 
   // Called when the upgrade timer times out.
@@ -82,10 +83,6 @@ class HttpsOnlyModeUpgradeTabHelper
   void FallbackToHttp();
 
   // web::WebStatePolicyDecider implementation
-  void ShouldAllowRequest(
-      NSURLRequest* request,
-      WebStatePolicyDecider::RequestInfo request_info,
-      WebStatePolicyDecider::PolicyDecisionCallback callback) override;
   void ShouldAllowResponse(
       NSURLResponse* response,
       WebStatePolicyDecider::ResponseInfo response_info,

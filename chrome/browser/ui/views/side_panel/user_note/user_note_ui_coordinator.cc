@@ -18,7 +18,6 @@
 #include "ui/views/layout/fill_layout.h"
 
 namespace {
-
 // Compares two UserNoteInstances by their rect's origin, which represents their
 // position in a web page. If the UserNoteInstances have the same position,
 // compare them by their modification date.
@@ -38,9 +37,7 @@ UserNoteUICoordinator::UserNoteUICoordinator(Browser* browser)
   browser_->tab_strip_model()->AddObserver(this);
 }
 
-UserNoteUICoordinator::~UserNoteUICoordinator() {
-  browser_->tab_strip_model()->RemoveObserver(this);
-}
+UserNoteUICoordinator::~UserNoteUICoordinator() = default;
 
 void UserNoteUICoordinator::CreateAndRegisterEntry(
     SidePanelRegistry* global_registry) {
@@ -58,8 +55,8 @@ void UserNoteUICoordinator::FocusNote(const std::string& guid) {
   // corresponding note into view in the side panel.
 }
 
-void UserNoteUICoordinator::StartNoteCreation(const std::string& guid,
-                                              gfx::Rect bounds) {
+void UserNoteUICoordinator::StartNoteCreation(
+    user_notes::UserNoteInstance* instance) {
   // TODO(cheickcisse): Implement StartNoteCreation, which will be called by
   // UserNoteService to add a new note in the side panel. The new note entry row
   // will be position at y relative to existing notes in the side panel.
@@ -159,10 +156,12 @@ std::unique_ptr<views::View> UserNoteUICoordinator::CreateUserNotesView() {
   // [| ...                     |]
 
   auto root_view = std::make_unique<views::View>();
+  root_view->SetID(kUserNoteUIViewId);
   root_view->SetLayoutManager(std::make_unique<views::FillLayout>());
 
   auto* scroll_view =
       root_view->AddChildView(std::make_unique<views::ScrollView>());
+  scroll_view->SetID(kUserNoteScrollViewId);
   scroll_view->SetHorizontalScrollBarMode(
       views::ScrollView::ScrollBarMode::kDisabled);
   // Setting clip height is necessary to make ScrollView take into account its
@@ -170,9 +169,9 @@ std::unique_ptr<views::View> UserNoteUICoordinator::CreateUserNotesView() {
   // correctly.
   scroll_view->ClipHeightTo(0, 0);
 
-  // TODO(cheickcisse): Populate scroll content view.
   scroll_contents_view_ =
       scroll_view->SetContents(std::make_unique<views::View>());
+  scroll_contents_view_->SetID(kUserNoteScrollContentsViewId);
 
   constexpr int edge_margin = 16;
   constexpr int vertical_padding = 16;

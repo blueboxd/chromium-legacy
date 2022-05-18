@@ -5,7 +5,7 @@
 #ifndef CHROMEOS_SERVICES_ASSISTANT_TEST_SUPPORT_SCOPED_ASSISTANT_BROWSER_DELEGATE_H_
 #define CHROMEOS_SERVICES_ASSISTANT_TEST_SUPPORT_SCOPED_ASSISTANT_BROWSER_DELEGATE_H_
 
-#include "chromeos/assistant/buildflags.h"
+#include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/assistant_browser_delegate.h"
 #include "chromeos/services/assistant/public/cpp/assistant_service.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
@@ -54,6 +54,7 @@ class ScopedAssistantBrowserDelegate : AssistantBrowserDelegate {
   void RequestNetworkConfig(
       mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver)
       override {}
+  void OpenUrl(GURL url) override;
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   void RequestLibassistantService(
       mojo::PendingReceiver<chromeos::libassistant::mojom::LibassistantService>

@@ -34,6 +34,9 @@ consoles.list_view(
 
 try_.builder(
     name = "cast_shell_audio_linux",
+    mirrors = [
+        "ci/Cast Audio Linux",
+    ],
 )
 
 try_.builder(
@@ -47,6 +50,9 @@ try_.builder(
 try_.builder(
     name = "cast_shell_linux_dbg",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Cast Linux Debug",
+    ],
     main_list_view = "try",
     tryjob = try_.job(
         location_regexp = [
@@ -173,6 +179,9 @@ try_.builder(
 
 try_.builder(
     name = "layout_test_leak_detection",
+    mirrors = [
+        "ci/WebKit Linux Leak",
+    ],
 )
 
 try_.builder(
@@ -222,26 +231,6 @@ try_.builder(
 try_.builder(
     name = "linux-blink-v8-sandbox-future-rel",
     mirrors = ["ci/linux-blink-v8-sandbox-future-rel"],
-)
-
-try_.builder(
-    name = "linux-blink-web-tests-force-accessibility-rel",
-    builder_spec = builder_config.builder_spec(
-        gclient_config = builder_config.gclient_config(
-            config = "chromium",
-        ),
-        chromium_config = builder_config.chromium_config(
-            config = "chromium",
-            apply_configs = [
-                "mb",
-            ],
-            build_config = builder_config.build_config.RELEASE,
-            target_bits = 64,
-        ),
-        test_results_config = builder_config.test_results_config(
-            config = "staging_server",
-        ),
-    ),
 )
 
 try_.builder(
@@ -398,6 +387,15 @@ try_.compilator_builder(
 try_.builder(
     name = "linux-wayland-rel",
     branch_selector = branches.STANDARD_MILESTONE,
+    mirrors = [
+        "ci/Linux Builder (Wayland)",
+        "ci/Linux Tests (Wayland)",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
     builderless = not settings.is_main,
     main_list_view = "try",
     tryjob = try_.job(),
@@ -440,6 +438,15 @@ try_.orchestrator_builder(
     branch_selector = branches.STANDARD_MILESTONE,
     main_list_view = "try",
     tryjob = try_.job(),
+    mirrors = [
+        "ci/Linux ASan LSan Builder",
+        "ci/Linux ASan LSan Tests (1)",
+    ],
+    try_settings = builder_config.try_settings(
+        rts_config = builder_config.rts_config(
+            condition = builder_config.rts_condition.QUICK_RUN_ONLY,
+        ),
+    ),
 )
 
 try_.compilator_builder(
@@ -475,6 +482,10 @@ try_.builder(
 
 try_.builder(
     name = "linux_chromium_chromeos_msan_rel_ng",
+    mirrors = [
+        "ci/Linux ChromiumOS MSan Builder",
+        "ci/Linux ChromiumOS MSan Tests",
+    ],
     goma_jobs = goma.jobs.J150,
 )
 
@@ -647,6 +658,9 @@ try_.builder(
 
 try_.builder(
     name = "network_service_linux",
+    mirrors = [
+        "ci/Network Service Linux",
+    ],
 )
 
 try_.builder(

@@ -631,7 +631,7 @@ chromium-metrics-reviews@google.com.
   </token>
 </histogram>
 
-<histogram name="Power.BacklightLevelOnAC" units="%" expires_after="2022-04-17">
+<histogram name="Power.BacklightLevelOnAC" units="%" expires_after="2023-05-12">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -641,7 +641,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BacklightLevelOnBattery" units="%"
-    expires_after="2022-04-10">
+    expires_after="2023-05-12">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -651,7 +651,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryChargeHealth" units="%"
-    expires_after="2022-04-24">
+    expires_after="2023-05-13">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -702,7 +702,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.BatteryDischargeRateWhileSuspended" units="mW"
-    expires_after="2022-04-03">
+    expires_after="2023-05-12">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -913,7 +913,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.CpuTimeSecondsPerProcessType" enum="ProcessType2"
-    expires_after="2022-11-06">
+    expires_after="2022-11-13">
   <owner>eseckler@chromium.org</owner>
   <owner>skyostil@chromium.org</owner>
   <owner>woa-performance@google.com</owner>
@@ -1168,6 +1168,14 @@ chromium-metrics-reviews@google.com.
     in which at least one WebView is visible on the screen as
     &quot;foreground&quot; time. For Chrome, it considers any time the Chrome
     app is visible, including when in multi-window mode.
+
+    Note that the capacity counter can be implemented in different ways by
+    different devices/OEMs and its accuracy can vary (across devices and at
+    different times on the same device, also due to environmental factors like
+    device temperature or charge level).
+
+    We've found looking at the 99%ile-trimmed mean more useful than looking at
+    specific percentiles, especially when filtering for specific device models.
   </summary>
   <token key="Exclusive">
     <variant name="" summary=""/>
@@ -1223,6 +1231,11 @@ chromium-metrics-reviews@google.com.
     in which at least one WebView is visible on the screen as
     &quot;foreground&quot; time. For Chrome, it considers any time the Chrome
     app is visible, including when in multi-window mode.
+
+    Note that the capacity counter can be implemented in different ways by
+    different devices/OEMs and its accuracy can vary (across devices and at
+    different times on the same device, also due to environmental factors like
+    device temperature or charge level).
   </summary>
   <token key="Exclusive">
     <variant name="" summary=""/>
@@ -1255,6 +1268,11 @@ chromium-metrics-reviews@google.com.
     in which at least one WebView is visible on the screen as
     &quot;foreground&quot; time. For Chrome, it considers any time the Chrome
     app is visible, including when in multi-window mode.
+
+    Note that the capacity counter can be implemented in different ways by
+    different devices/OEMs and its accuracy can vary (across devices and at
+    different times on the same device, also due to environmental factors like
+    device temperature or charge level).
 
     For a histogram of daily per-user values, see the computed histogram
     Power.DailyForegroundBatteryDrain.
@@ -1507,7 +1525,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.IOPMPowerSource.SamplingEventDelta" units="ms"
-    expires_after="2022-09-11">
+    expires_after="2022-11-13">
   <owner>pmonette@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1518,7 +1536,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.IOPMPowerSource.SamplingEventDelta.MediumTimes"
-    units="ms" expires_after="2022-09-11">
+    units="ms" expires_after="2022-11-13">
   <owner>pmonette@chromium.org</owner>
   <owner>catan-team@chromium.org</owner>
   <summary>
@@ -1529,7 +1547,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.KernelResumeTimeOnAC" units="ms"
-    expires_after="2021-10-17">
+    expires_after="2023-05-12">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1567,7 +1585,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.KeyboardBacklightLevel" units="%"
-    expires_after="2020-06-21">
+    expires_after="2023-05-12">
   <owner>tbroch@chromium.org</owner>
   <summary>
     The level of the keyboard backlight as a percentage. Sampled every 30
@@ -1601,7 +1619,7 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram base="true" name="Power.Mac" units="mW" expires_after="2022-11-06">
+<histogram base="true" name="Power.Mac" units="mW" expires_after="2022-11-13">
   <owner>olivierli@chromium.org</owner>
   <owner>markchang@chromium.org</owner>
   <summary>
@@ -1829,7 +1847,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SuspendAttempt" enum="SuspendAttempt"
-    expires_after="2022-04-17">
+    expires_after="2023-05-12">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1840,7 +1858,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SuspendAttemptsBeforeCancel" units="units"
-    expires_after="2022-04-24">
+    expires_after="2023-05-12">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1852,7 +1870,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SuspendAttemptsBeforeSuccess" units="units"
-    expires_after="2022-04-24">
+    expires_after="2023-05-12">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>
@@ -1863,7 +1881,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Power.SuspendResult" enum="SuspendResult"
-    expires_after="2022-04-24">
+    expires_after="2023-05-12">
   <owner>puthik@chromium.org</owner>
   <owner>chromeos-platform-power@google.com</owner>
   <summary>

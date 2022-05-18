@@ -7,26 +7,37 @@
 
 #include <memory>
 
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_delegate.h"
+#include "chrome/browser/ash/system_web_apps/types/system_web_app_type.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_delegate.h"
-#include "chrome/browser/web_applications/system_web_apps/system_web_app_types.h"
 #include "ui/gfx/geometry/rect.h"
 
 class Browser;
 struct WebAppInstallInfo;
 
-class OSFeedbackAppDelegate : public web_app::SystemWebAppDelegate {
+namespace web_app {
+class WebAppProvider;
+}  // namespace web_app
+
+class OSFeedbackAppDelegate : public ash::SystemWebAppDelegate {
  public:
   explicit OSFeedbackAppDelegate(Profile* profile);
 
-  // web_app::SystemWebAppDelegate overrides:
+  // ash::SystemWebAppDelegate overrides:
   std::unique_ptr<WebAppInstallInfo> GetWebAppInfo() const override;
   bool IsAppEnabled() const override;
   bool ShouldAllowScriptsToCloseWindows() const override;
   bool ShouldCaptureNavigations() const override;
   bool ShouldAllowMaximize() const override;
   bool ShouldAllowResize() const override;
+  bool ShouldShowInLauncher() const override;
+  bool ShouldShowInSearch() const override;
   gfx::Rect GetDefaultBounds(Browser*) const override;
+  Browser* LaunchAndNavigateSystemWebApp(
+      Profile* profile,
+      web_app::WebAppProvider* provider,
+      const GURL& url,
+      const apps::AppLaunchParams& params) const override;
 };
 
 // Returns a WebAppInstallInfo used to install the app.

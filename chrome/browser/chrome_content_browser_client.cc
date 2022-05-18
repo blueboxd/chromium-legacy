@@ -399,7 +399,6 @@
 #include "chrome/browser/download/android/intercept_oma_download_navigation_throttle.h"
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
-#include "chrome/browser/webauthn/chrome_conditional_ui_delegate_android.h"
 #include "chrome/common/chrome_descriptors.h"
 #include "components/autofill_assistant/content/common/switches.h"
 #include "components/browser_ui/accessibility/android/font_size_prefs_android.h"
@@ -628,6 +627,10 @@
 #if defined(_WINDOWS_)  // Detect whether windows.h was included.
 #include "base/win/windows_h_disallowed.h"
 #endif  // defined(_WINDOWS_)
+
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+#include "components/services/screen_ai/public/cpp/utilities.h"
+#endif
 
 using blink::mojom::EffectiveConnectionType;
 using blink::web_pref::WebPreferences;
@@ -2325,20 +2328,6 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
         // Turn this policy into a command line switch.
         command_line->AppendSwitch(switches::kDisable3DAPIs);
       }
-
-#if BUILDFLAG(SAFE_BROWSING_AVAILABLE)
-      bool client_side_detection_enabled =
-          safe_browsing::IsSafeBrowsingEnabled(*prefs) &&
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              ::switches::kDisableClientSidePhishingDetection);
-      // Disable client-side phishing detection in the renderer if it is
-      // disabled in the Profile preferences, or by command line flag, or by not
-      // being enabled on Android.
-      if (!client_side_detection_enabled) {
-        command_line->AppendSwitch(
-            switches::kDisableClientSidePhishingDetection);
-      }
-#endif  // BUILDFLAG(SAFE_BROWSING_AVAILABLE)
 
       if (prefs->GetBoolean(prefs::kPrintPreviewDisabled))
         command_line->AppendSwitch(switches::kDisablePrintPreview);
@@ -6367,6 +6356,17 @@ bool ChromeContentBrowserClient::SetupEmbedderSandboxParameters(
     CHECK(client->SetParameter(sandbox::policy::kParamSodaLanguagePackPath,
                                soda_language_pack_path.value()));
     return true;
+  } else if (sandbox_type == sandbox::mojom::Sandbox::kScreenAI) {
+#if BUILDFLAG(ENABLE_SCREEN_AI_SERVICE)
+    base::FilePath screen_ai_component_path =
+        screen_ai::GetLatestLibraryFilePath();
+    if (screen_ai_component_path.empty())
+      return false;
+
+    CHECK(client->SetParameter(sandbox::policy::kParamScreenAiComponentPath,
+                               screen_ai_component_path.value()));
+    return true;
+#endif
   }
 
   return false;
@@ -6569,12 +6569,3 @@ ChromeContentBrowserClient::GetAlternativeErrorPageOverrideInfo(
 
   return web_app::GetOfflinePageInfo(url, browser_context);
 }
-
-#if BUILDFLAG(IS_ANDROID)
-content::ConditionalUiDelegateAndroid*
-ChromeContentBrowserClient::GetConditionalUiDelegate(
-    content::RenderFrameHost* host) {
-  return ChromeConditionalUiDelegateAndroid::GetConditionalUiDelegate(
-      content::WebContents::FromRenderFrameHost(host));
-}
-#endif

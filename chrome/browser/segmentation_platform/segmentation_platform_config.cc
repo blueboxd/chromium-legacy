@@ -11,6 +11,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/metrics/chrome_metrics_service_accessor.h"
+#include "chrome/browser/segmentation_platform/default_model/feed_user_segment.h"
 #include "chrome/browser/segmentation_platform/default_model/low_user_engagement_model.h"
 #include "components/optimization_guide/proto/models.pb.h"
 #include "components/segmentation_platform/public/config.h"
@@ -39,7 +40,10 @@ constexpr char kDefaultModelEnabledParam[] = "enable_default_model";
 
 constexpr int kDummyFeatureSelectionTTLDays = 1;
 
-constexpr int kChromeLowUserEngagementSelectionTTLDays = 30;
+constexpr int kChromeLowUserEngagementSelectionTTLDays = 7;
+
+constexpr int kFeedUserSegmentSelectionTTLDays = 14;
+constexpr int kFeedUserSegmentUnknownSelectionTTLDays = 14;
 
 #if BUILDFLAG(IS_ANDROID)
 
@@ -154,7 +158,7 @@ std::unique_ptr<Config> GetConfigForQueryTiles() {
 std::unique_ptr<ModelProvider> GetLowEngagementDefaultModel() {
   if (!base::GetFieldTrialParamByFeatureAsBool(
           features::kSegmentationPlatformLowEngagementFeature,
-          kDefaultModelEnabledParam, false)) {
+          kDefaultModelEnabledParam, true)) {
     return nullptr;
   }
   return std::make_unique<LowUserEngagementModel>();
@@ -186,12 +190,41 @@ std::unique_ptr<Config> GetConfigForChromeLowUserEngagement() {
       feature_guide::features::kSegmentationModelLowEngagedUsers,
       "segment_selection_ttl_days", kChromeLowUserEngagementSelectionTTLDays);
 #else
-  int segment_selection_ttl_days = kChromeLowUserEngagementSelectionTTLDays;
+  int segment_selection_ttl_days = base::GetFieldTrialParamByFeatureAsInt(
+      features::kSegmentationPlatformLowEngagementFeature,
+      "segment_selection_ttl_days", kChromeLowUserEngagementSelectionTTLDays);
 #endif
 
   config->segment_selection_ttl = base::Days(segment_selection_ttl_days);
   config->unknown_selection_ttl = base::Days(segment_selection_ttl_days);
   return config;
+}
+
+std::unique_ptr<Config> GetConfigForFeedSegments() {
+  auto config = std::make_unique<Config>();
+  config->segmentation_key = kFeedUserSegmentationKey;
+  config->segment_ids = {
+      OptimizationTarget::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER,
+  };
+  config->segment_selection_ttl =
+      base::Days(base::GetFieldTrialParamByFeatureAsInt(
+          features::kSegmentationPlatformFeedSegmentFeature,
+          "segment_selection_ttl_days", kFeedUserSegmentSelectionTTLDays));
+  config->unknown_selection_ttl =
+      base::Days(base::GetFieldTrialParamByFeatureAsInt(
+          features::kSegmentationPlatformFeedSegmentFeature,
+          "unknown_selection_ttl_days",
+          kFeedUserSegmentUnknownSelectionTTLDays));
+  return config;
+}
+
+std::unique_ptr<ModelProvider> GetFeedUserSegmentDefautlModel() {
+  if (!base::GetFieldTrialParamByFeatureAsBool(
+          features::kSegmentationPlatformFeedSegmentFeature,
+          kDefaultModelEnabledParam, false)) {
+    return nullptr;
+  }
+  return std::make_unique<FeedUserSegment>();
 }
 
 }  // namespace
@@ -217,6 +250,11 @@ std::vector<std::unique_ptr<Config>> GetSegmentationPlatformConfig() {
 #endif
   if (IsLowEngagementFeatureEnabled()) {
     configs.emplace_back(GetConfigForChromeLowUserEngagement());
+  }
+
+  if (base::FeatureList::IsEnabled(
+          features::kSegmentationPlatformFeedSegmentFeature)) {
+    configs.emplace_back(GetConfigForFeedSegments());
   }
   return configs;
 }
@@ -251,6 +289,10 @@ std::unique_ptr<ModelProvider> DefaultModelsRegister::GetModelProvider(
       optimization_guide::proto::
           OPTIMIZATION_TARGET_SEGMENTATION_CHROME_LOW_USER_ENGAGEMENT) {
     return GetLowEngagementDefaultModel();
+  }
+  if (target ==
+      optimization_guide::proto::OPTIMIZATION_TARGET_SEGMENTATION_FEED_USER) {
+    return GetFeedUserSegmentDefautlModel();
   }
   return nullptr;
 }

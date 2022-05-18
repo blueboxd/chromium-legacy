@@ -435,6 +435,7 @@ void MockRenderProcessHost::IncrementWorkerRefCount() {
 }
 
 void MockRenderProcessHost::DecrementWorkerRefCount() {
+  DCHECK_GT(worker_ref_count_, 0);
   --worker_ref_count_;
 }
 
@@ -505,7 +506,7 @@ void MockRenderProcessHost::SetProcessLock(
     const IsolationContext& isolation_context,
     const ProcessLock& process_lock) {
   ChildProcessSecurityPolicyImpl::GetInstance()->LockProcess(
-      isolation_context, GetID(), process_lock);
+      isolation_context, GetID(), !IsUnused(), process_lock);
   if (process_lock.IsASiteOrOrigin())
     is_renderer_locked_to_site_ = true;
 }

@@ -83,7 +83,6 @@ import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.base.PageTransition;
-import org.chromium.ui.test.util.UiDisableIf;
 import org.chromium.ui.test.util.UiRestriction;
 import org.chromium.url.GURL;
 
@@ -262,7 +261,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     public void testLivePrefetchFailoverRequestMadeAfterOpen(@EnabledFeature int enabledFeature)
             throws Exception {
         // Test fails with out-of-process network service. crbug.com/1071721
-        if (!ChromeFeatureList.isEnabled("NetworkServiceInProcess")) return;
+        if (!ChromeFeatureList.isEnabled("NetworkServiceInProcess2")) return;
 
         mFakeServer.reset();
         mFakeServer.setLowPriorityPathInvalid();
@@ -284,7 +283,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         }
 
         // Once the bar opens, we make a new request at normal priority.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         waitForNormalPriorityUrlLoaded();
         Assert.assertEquals(2, mFakeServer.getLoadedUrlCount());
     }
@@ -413,89 +412,6 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         mPolicy.overrideDecidedStateForTesting(true);
 
         simulateResolvableSearchAndAssertResolveAndPreload("states", true);
-    }
-
-    // --------------------------------------------------------------------------------------------
-    // Promo open count - watches if the promo has never been opened.
-    // --------------------------------------------------------------------------------------------
-
-    /**
-     * Tests the promo open counter for users that have not opted-in to privacy.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/596533")
-    // Only useful for disabling Tap triggering.
-    @DisabledTest(message = "crbug.com/965706")
-    public void testPromoOpenCountForUndecided() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_NONE);
-
-        mPolicy.overrideDecidedStateForTesting(false);
-
-        // A simple click / resolve / prefetch sequence without open should not change the counter.
-        clickToTriggerPrefetch();
-        Assert.assertEquals(0, mPolicy.getPromoOpenCount());
-
-        // An open should count.
-        clickToExpandAndClosePanel();
-        Assert.assertEquals(1, mPolicy.getPromoOpenCount());
-
-        // Another open should count.
-        clickToExpandAndClosePanel();
-        Assert.assertEquals(2, mPolicy.getPromoOpenCount());
-
-        // Once the user has decided, we should stop counting.
-        mPolicy.overrideDecidedStateForTesting(true);
-        clickToExpandAndClosePanel();
-        Assert.assertEquals(2, mPolicy.getPromoOpenCount());
-    }
-
-    /**
-     * Tests the promo open counter for users that have already opted-in to privacy.
-     */
-    @Test
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
-    @DisableIf.Build(supported_abis_includes = "arm64-v8a", message = "crbug.com/596533")
-    public void testPromoOpenCountForDecided() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_NONE);
-
-        mPolicy.overrideDecidedStateForTesting(true);
-
-        // An open should not count for decided users.
-        clickToExpandAndClosePanel();
-        Assert.assertEquals(0, mPolicy.getPromoOpenCount());
-    }
-
-    // --------------------------------------------------------------------------------------------
-    // Tap count - number of taps between opens.
-    // --------------------------------------------------------------------------------------------
-    /**
-     * Tests the counter for the number of taps between opens.
-     */
-    @Test
-    @DisabledTest(message = "crbug.com/800334")
-    @SmallTest
-    @Feature({"ContextualSearch"})
-    public void testTapCount() throws Exception {
-        FeatureList.setTestFeatures(ENABLE_NONE);
-
-        Assert.assertEquals(0, mPolicy.getTapCount());
-
-        // A simple Tap should change the counter.
-        clickToTriggerPrefetch();
-        Assert.assertEquals(1, mPolicy.getTapCount());
-
-        // Another Tap should increase the counter.
-        clickToTriggerPrefetch();
-        Assert.assertEquals(2, mPolicy.getTapCount());
-
-        // An open should reset the counter.
-        clickToExpandAndClosePanel();
-        Assert.assertEquals(0, mPolicy.getTapCount());
     }
 
     /**
@@ -750,7 +666,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         simulateResolveSearch("search");
 
         // Expand the panel and assert that it ends up in the right place.
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         final ContextualSearchPanel panel =
                 (ContextualSearchPanel) mManager.getContextualSearchPanel();
         Assert.assertEquals(
@@ -767,7 +683,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @DisableIf.Device(type = {UiDisableIf.PHONE}) // Flaking on phones crbug.com/765796
+    // Previously flaky on phones: https://crbug.com/765796
     public void testPanelDismissedOnToggleFullscreen(@EnabledFeature int enabledFeature)
             throws Exception {
         // Simulate a resolving search and assert that the panel peeks.
@@ -833,7 +749,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @DisabledTest(message = "https://crbug.com/1291558")
+    // Previously disabled: https://crbug.com/1291558
     public void testQuickActionCaptionAndImage(@EnabledFeature int enabledFeature)
             throws Exception {
         CompositorAnimationHandler.setTestingMode(true);
@@ -893,7 +809,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @SmallTest
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
-    @FlakyTest(message = "Disabled 4/2021.  https://crbug.com/1315417")
+    // Previously disabled: https://crbug.com/1315417
     public void testQuickActionIntent(@EnabledFeature int enabledFeature) throws Exception {
         // Add a new filter to the activity monitor that matches the intent that should be fired.
         IntentFilter quickActionFilter = new IntentFilter(Intent.ACTION_VIEW);
@@ -937,7 +853,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
     @Feature({"ContextualSearch"})
     @ParameterAnnotations.UseMethodParameter(FeatureParamProvider.class)
     @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.O, message = "crbug.com/1075895")
-    @DisabledTest(message = "Flaky https://crbug.com/1127796")
+    // Previously disabled: https://crbug.com/1127796
     public void testQuickActionUrl(@EnabledFeature int enabledFeature) throws Exception {
         final String testUrl = mTestServer.getURL("/chrome/test/data/android/google.html");
 
@@ -971,7 +887,7 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
                                 null /* relatedSearchesInContent */,
                                 false /* showDefaultSearchInContent */));
 
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
     }
 
     /**
@@ -1241,19 +1157,17 @@ public class ContextualSearchManagerTest extends ContextualSearchInstrumentation
         FeatureList.setTestFeatures(ENABLE_NONE);
         mFakeServer.reset();
         simulateResolveSearch("intelligence-logged-event-id");
-        tapPeekingBarToExpandAndAssert();
+        expandPanelAndAssert();
         closePanel();
         // Now the event and outcome should be in local storage.
         simulateResolveSearch("search");
         // Check that we sent the logged event ID and outcome with the request.
         Assert.assertEquals(ContextualSearchFakeServer.LOGGED_EVENT_ID,
                 mManager.getContext().getPreviousEventId());
-        Assert.assertEquals(1, mManager.getContext().getPreviousUserInteractions());
         closePanel();
         // Now that we've sent them to the server, the local storage should be clear.
         simulateResolveSearch("search");
         Assert.assertEquals(0, mManager.getContext().getPreviousEventId());
-        Assert.assertEquals(0, mManager.getContext().getPreviousUserInteractions());
         closePanel();
         // Make sure a duration was recorded in bucket 0 (due to 0 days duration running this test).
         Assert.assertEquals(1,

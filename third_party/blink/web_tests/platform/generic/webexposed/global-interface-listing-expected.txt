@@ -1897,6 +1897,7 @@ interface Document : Node
     getter rootElement
     getter scripts
     getter scrollingElement
+    getter softNavigations
     getter styleSheets
     getter timeline
     getter title
@@ -2701,6 +2702,14 @@ interface FocusableMediaStreamTrack : MediaStreamTrack
     attribute @@toStringTag
     method constructor
     method focus
+interface FontData
+    attribute @@toStringTag
+    getter family
+    getter fullName
+    getter postscriptName
+    getter style
+    method blob
+    method constructor
 interface FontFace
     attribute @@toStringTag
     getter ascentOverride
@@ -5062,10 +5071,19 @@ interface ML
 interface MLContext
     attribute @@toStringTag
     method constructor
+interface MLGraphBuilder
+    attribute @@toStringTag
+    method add
+    method constant
+    method constructor
+    method input
 interface MLModelLoader
     attribute @@toStringTag
     method constructor
     method load
+interface MLOperand
+    attribute @@toStringTag
+    method constructor
 interface Magnetometer : Sensor
     attribute @@toStringTag
     getter x
@@ -8516,8 +8534,8 @@ interface SharedStorage
     method clear
     method constructor
     method delete
-    method runOperation
-    method runURLSelectionOperation
+    method run
+    method selectURL
     method set
 interface SharedWorker : EventTarget
     attribute @@toStringTag
@@ -11725,6 +11743,7 @@ namespace CSS
     method postMessage
     method print
     method prompt
+    method queryLocalFonts
     method queueMicrotask
     method releaseEvents
     method reportError

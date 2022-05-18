@@ -48,7 +48,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom.h"
 
 namespace {
 
@@ -1436,6 +1436,7 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessWithFeatureEnabledBrowserTest,
 // AUTO-RELOAD TESTS
 // =================
 
+// Intercepts the first load to a URL and fails the request with an error.
 class NetErrorInterceptor final {
  public:
   NetErrorInterceptor(GURL url, net::Error error)
@@ -1451,11 +1452,13 @@ class NetErrorInterceptor final {
   NetErrorInterceptor& operator=(const NetErrorInterceptor&) = delete;
 
  private:
-  bool Intercept(content::URLLoaderInterceptor::RequestParams* params) const {
+  bool Intercept(content::URLLoaderInterceptor::RequestParams* params) {
     const GURL& request_url = params->url_request.url;
-    if (request_url != url_) {
+    if (request_url != url_ || did_intercept_) {
       return false;
     }
+
+    did_intercept_ = true;
 
     network::URLLoaderCompletionStatus status;
     status.error_code = error_;
@@ -1463,12 +1466,15 @@ class NetErrorInterceptor final {
     return true;
   }
 
-  GURL url_;
-  net::Error error_;
+  const GURL url_;
+  const net::Error error_;
+
+  // Whether this instance already intercepted and failed a request.
+  bool did_intercept_ = false;
 
   // Interceptor must be declared after all state used in `Intercept()`, to
   // avoid use-after-free at destruction time.
-  content::URLLoaderInterceptor interceptor_;
+  const content::URLLoaderInterceptor interceptor_;
 };
 
 class PrivateNetworkAccessAutoReloadBrowserTest
@@ -1501,11 +1507,10 @@ IN_PROC_BROWSER_TEST_F(PrivateNetworkAccessAutoReloadBrowserTest,
   // There should be two navigations in total: one failed, one successful.
   content::TestNavigationObserver observer(web_contents(), 2);
 
-  {
-    NetErrorInterceptor interceptor(url, net::ERR_UNEXPECTED);
+  // This interceptor will only fail the first request to `url`.
+  NetErrorInterceptor interceptor(url, net::ERR_UNEXPECTED);
 
-    EXPECT_FALSE(content::NavigateToURL(web_contents(), url));
-  }
+  EXPECT_FALSE(content::NavigateToURL(web_contents(), url));
 
   // Observe second navigation, which succeeds.
   observer.Wait();

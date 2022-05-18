@@ -207,12 +207,6 @@
     "args": ["--enable-blink-features=FractionalScrollOffsets"]
   },
   {
-    "prefix": "font-access",
-    "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["external/wpt/font-access"],
-    "args": ["--enable-features=FontAccess"]
-  },
-  {
     "prefix": "compute-pressure",
     "platforms": ["Linux", "Mac", "Win"],
     "bases": ["external/wpt/compute-pressure"],
@@ -461,11 +455,10 @@
     "args": ["--enable-blink-features=ExtraWebGLVideoTextureMetadata"]
   },
   {
-    "prefix": "wasm-site-isolated-code-cache",
+    "prefix": "wasm-code-caching",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["http/tests/devtools/wasm-isolated-code-cache"],
-    "args": ["--disable-features=WebAssemblyBaseline",
-             "--site-per-process"]
+    "bases": ["http/tests/wasm/caching"],
+    "args": ["--js-flags=--allow-natives-syntax"]
   },
   {
     "prefix": "wasm-csp",
@@ -1019,7 +1012,9 @@
   {
     "prefix": "document-transition",
     "platforms": ["Linux", "Mac", "Win"],
-    "bases": ["wpt_internal/document-transition", "document-transition"],
+    "bases": ["wpt_internal/document-transition",
+              "document-transition",
+              "inspector-protocol/css/css-get-styles-for-document-transition.js"],
     "args": ["--enable-features=DocumentTransition",
              "--enable-threaded-compositing",
              "--enable-gpu-rasterization"]

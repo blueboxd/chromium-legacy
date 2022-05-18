@@ -519,7 +519,6 @@
 <translation id="1506061864768559482">Поисковая система</translation>
 <translation id="1507170440449692343">Доступ к вашей камере для этой страницы заблокирован.</translation>
 <translation id="1507246803636407672">&amp;Отменить</translation>
-<translation id="1507884455975553832">Трансляция приложений для обмена сообщениями</translation>
 <translation id="1509163368529404530">&amp;Восстановить группу</translation>
 <translation id="1509281256533087115">Доступ к любому устройству <ph name="DEVICE_NAME_AND_VENDOR" /> по USB</translation>
 <translation id="1510238584712386396">Панель запуска</translation>
@@ -863,6 +862,7 @@
 <translation id="1813278315230285598">Службы</translation>
 <translation id="18139523105317219">Имя стороны EDI</translation>
 <translation id="1815083418640426271">Вставить как обычный текст</translation>
+<translation id="1815097521077272760">Позволяет управлять действиями в этой игре с помощью клавиатуры.</translation>
 <translation id="1815181278146012280">Запрашивать разрешение на доступ сайтов к HID-устройствам</translation>
 <translation id="181577467034453336">Ещё <ph name="NUMBER_OF_VIEWS" /></translation>
 <translation id="1816036116994822943">Скорость сканирования клавиатуры</translation>
@@ -996,6 +996,7 @@
 <translation id="1935303383381416800">Разрешить сайтам определять ваше местоположение</translation>
 <translation id="1936931585862840749">Укажите количество копий для печати, используя цифры (от 1 до <ph name="MAX_COPIES" />).</translation>
 <translation id="1937774647013465102">Не удалось импортировать тип архитектуры контейнера <ph name="ARCHITECTURE_CONTAINER" /> на это устройство (<ph name="ARCHITECTURE_DEVICE" />). Вы можете попробовать восстановить этот контейнер на другом устройстве или получить доступ к файлам, открыв образ контейнера в приложении "Файлы".</translation>
+<translation id="1938320257168860255">Произошла ошибка. Убедитесь, что телефон находится рядом, разблокирован и на нем включены функции Bluetooth и Wi-Fi.</translation>
 <translation id="1938351510777341717">Внешняя клавиша Command</translation>
 <translation id="1940546824932169984">Подключенные устройства</translation>
 <translation id="1941410638996203291">Время начала: <ph name="TIME" /></translation>
@@ -1078,6 +1079,7 @@
 <translation id="2030455719695904263">Сенсорная панель</translation>
 <translation id="2031639749079821948">Пароль сохранен в вашем аккаунте Google.</translation>
 <translation id="2031914984822377766">Добавьте <ph name="LINK_BEGIN" />языки для сайтов<ph name="LINK_END" />. Для перевода будет использоваться первый язык в списке.</translation>
+<translation id="2033758234986231162">Подключение к телефону прервано. Убедитесь, что он находится рядом, разблокирован и на нем включены функции Bluetooth и Wi-Fi.</translation>
 <translation id="2034346955588403444">Добавить сеть Wi-Fi</translation>
 <translation id="203574396658008164">Делать заметки, когда экран заблокирован</translation>
 <translation id="2037445849770872822">Для этого аккаунта Google настроен родительский контроль. Чтобы изменить некоторые параметры, нажмите "Продолжить".
@@ -3743,6 +3745,7 @@
 <translation id="461661862154729886">Источник электропитания</translation>
 <translation id="4617001782309103936">Слишком короткий</translation>
 <translation id="4617270414136722281">Параметры расширений</translation>
+<translation id="4617880081511131945">Не удается подключиться</translation>
 <translation id="4619564267100705184">Подтвердить личность</translation>
 <translation id="4619615317237390068">Вкладки с других устройств</translation>
 <translation id="4620809267248568679">Этот параметр определяется расширением.</translation>
@@ -3778,6 +3781,7 @@
 <translation id="4648491805942548247">Недостаточно прав</translation>
 <translation id="4650591383426000695">Телефон будет отключен от устройства <ph name="DEVICE_TYPE" /></translation>
 <translation id="4651484272688821107">Не удалось загрузить онлайн-компонент с ресурсами демонстрационного режима.</translation>
+<translation id="4651921906638302153">Не удалось войти в аккаунт</translation>
 <translation id="4652935475563630866">Изменено разрешение на доступ к камере. Чтобы продолжить, перезапустите Parallels Desktop.</translation>
 <translation id="4653405415038586100">Ошибка при настройке Linux</translation>
 <translation id="465406513924180949">Эти корзины помогут вам вернуться к товарам, которые вы добавляли в заказы в интернет-магазинах.
@@ -4035,6 +4039,7 @@
 <translation id="4907306957610201395">Категория разрешения</translation>
 <translation id="4908811072292128752">Откройте новую вкладку, чтобы перейти на другой сайт, не закрывая предыдущий</translation>
 <translation id="4909038193460299775">Ваш аккаунт управляется доменом <ph name="DOMAIN" />. Все закладки, история, пароли и настройки будут удалены с устройства, однако данные в аккаунте Google сохранятся. Вы можете просмотреть и изменить их в <ph name="BEGIN_LINK" />Личном кабинете Google<ph name="END_LINK" />.</translation>
+<translation id="4912265719039610598">Стриминг приложений отключен администратором телефона</translation>
 <translation id="4912643508233590958">Переходы в активный режим</translation>
 <translation id="4915961947098019832">Разрешить сайтам показывать изображения</translation>
 <translation id="4916542008280060967">Разрешить сайту изменять файл "<ph name="FILE_NAME" />"?</translation>
@@ -5058,7 +5063,6 @@
 <translation id="5957987129450536192">Коснитесь значка "Озвучивание при нажатии" рядом с фотографией профиля и выберите текст для прослушивания.</translation>
 <translation id="5959471481388474538">Сеть недоступна</translation>
 <translation id="595959584676692139">Перезагрузите страницу, чтобы использовать расширение</translation>
-<translation id="5960410286721553511">Просматривайте недавно добавленные на телефон фотографии и медиафайлы.</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (макс. <ph name="NUM_KILOBYTES_LIVE" />)</translation>
 <translation id="5964113968897211042">{COUNT,plural, =0{Открыть все URL в &amp;новом окне}=1{Открыть URL в &amp;новом окне}one{Открыть все URL ({COUNT}) в &amp;новом окне}few{Открыть все URL ({COUNT}) в &amp;новом окне}many{Открыть все URL ({COUNT}) в &amp;новом окне}other{Открыть все URL ({COUNT}) в &amp;новом окне}}</translation>
 <translation id="5965661248935608907">Кроме того, расширение изменило страницу, которая отображается при нажатии кнопки "Главная страница", и поисковую систему, используемую по умолчанию при вводе запроса в омнибокс.</translation>
@@ -5434,6 +5438,7 @@
 <translation id="6327785803543103246">Автоматическое определение настроек прокси-сервера</translation>
 <translation id="6331818708794917058">Разрешить сайтам отправлять запрос на подключение к MIDI-устройствам</translation>
 <translation id="6333064448949140209">Файл будет отправлен в Google для отладки</translation>
+<translation id="6333170995003625229">Введен недействительный адрес электронной почты или пароль. Повторите попытку.</translation>
 <translation id="6335920438823100346">Для запуска Linux требуется (источник правила: <ph name="MANAGER" />) выполнить резервное копирование данных и сбросить настройки устройства Chromebook до заводских.</translation>
 <translation id="6336038146639916978">Отладка с помощью ADB отключена администратором (<ph name="MANAGER" />). Настройки устройства <ph name="DEVICE_TYPE" /> будут сброшены через 24 часа. Чтобы сохранить нужные файлы, создайте их резервную копию.</translation>
 <translation id="6338981933082930623">Разрешить всем сайтам показывать любые объявления</translation>
@@ -5848,6 +5853,7 @@
 <translation id="6735304988756581115">Показать cookie и другие данные...</translation>
 <translation id="6736243959894955139">Адрес</translation>
 <translation id="6737663862851963468">Удалить билет Kerberos</translation>
+<translation id="6738430949033571771">Проверка аккаунта…</translation>
 <translation id="6739923123728562974">Показывать ярлык на рабочем столе</translation>
 <translation id="6740234557573873150">Скачивание файла "<ph name="FILE_NAME" />" приостановлено</translation>
 <translation id="6741063444351041466"><ph name="BEGIN_LINK" />Администратор<ph name="END_LINK" /> отключил Безопасный просмотр.</translation>
@@ -6870,6 +6876,7 @@
 <translation id="7758143121000533418">Family Link</translation>
 <translation id="7758450972308449809">Настройте границы экрана</translation>
 <translation id="7760004034676677601">Другая стартовая страница?</translation>
+<translation id="7762024824096060040">Не удается использовать этот аккаунт</translation>
 <translation id="7762463735017901568">Синхронизация уведомлений отключена администратором телефона</translation>
 <translation id="7764225426217299476">Добавить адрес</translation>
 <translation id="7764256770584298012"><ph name="DOWNLOAD_RECEIVED" /> с сайта <ph name="DOWNLOAD_DOMAIN" /></translation>
@@ -7039,6 +7046,7 @@
 <translation id="7919210519031517829"><ph name="DURATION" /> сек.</translation>
 <translation id="7920363873148656176"><ph name="ORIGIN" /> может просматривать файл "<ph name="FILENAME" />".</translation>
 <translation id="7920482456679570420">Добавьте ниже слова, правописание которых не нужно проверять.</translation>
+<translation id="7921347341284348270">Вы не можете просматривать уведомления с телефона в этом управляемом аккаунте. Повторите попытку, используя другой аккаунт. <ph name="LINK_BEGIN" />Подробнее…<ph name="LINK_END" /></translation>
 <translation id="7922935920104868876">Подробнее о блокировке сторонних файлов cookie в режиме инкогнито</translation>
 <translation id="7923564237306226146">Обновление Linux завершено</translation>
 <translation id="7924358170328001543">При переадресации порта произошла ошибка.</translation>
@@ -7664,6 +7672,8 @@
 <translation id="8546306075665861288">Кеш изображений</translation>
 <translation id="8546930481464505581">Настроить Touch Bar</translation>
 <translation id="8547013269961688403">Включить полноэкранную лупу</translation>
+<translation id="8547821378890700958"><ph name="BEGIN_PARAGRAPH1" /><ph name="USER_EMAIL" /> управляется менеджером <ph name="MANAGER" />. Вы не можете использовать этот адрес электронной почты как дополнительный аккаунт.<ph name="END_PARAGRAPH1" />
+    <ph name="BEGIN_PARAGRAPH2" />Чтобы войти как <ph name="USER_EMAIL" />, сперва выйдите из аккаунта на устройстве <ph name="DEVICE_TYPE" />. Затем в нижней части экрана входа нажмите "Добавить пользователя".<ph name="END_PARAGRAPH2" /></translation>
 <translation id="85486688517848470">Чтобы сменить режим клавиш верхнего ряда, удерживайте кнопку поиска</translation>
 <translation id="8549316893834449916">Это тот же аккаунт, что и в других сервисах Google, таких как Gmail, Диск или YouTube.</translation>
 <translation id="8551388862522347954">Лицензии</translation>

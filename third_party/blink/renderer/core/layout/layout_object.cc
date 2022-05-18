@@ -198,6 +198,48 @@ inline bool MightTraversePhysicalFragments(const LayoutObject& obj) {
   return true;
 }
 
+bool HasNativeBackgroundPainter(Node* node) {
+  if (!RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled())
+    return false;
+
+  Element* element = DynamicTo<Element>(node);
+  if (!element)
+    return false;
+
+  ElementAnimations* element_animations = element->GetElementAnimations();
+  if (!element_animations)
+    return false;
+
+  return element_animations->CompositedBackgroundColorStatus() ==
+         ElementAnimations::CompositedPaintStatus::kComposited;
+}
+
+StyleDifference AdjustForBackgroundColorPaint(
+    scoped_refptr<const ComputedStyle> old_style,
+    scoped_refptr<const ComputedStyle> new_style,
+    Node* node,
+    StyleDifference diff) {
+  // Background color changes that are triggered by animations on the compositor
+  // thread can skip paint invalidation.
+  bool had_background_color_animation =
+      old_style ? old_style->HasCurrentBackgroundColorAnimation() : false;
+  DCHECK(new_style);
+  bool has_background_color_animation =
+      new_style->HasCurrentBackgroundColorAnimation();
+  // If animation status changed, we need a paint invalidation regardless of
+  // whether the background color changed.
+  if (RuntimeEnabledFeatures::CompositeBGColorAnimationEnabled() &&
+      (had_background_color_animation != has_background_color_animation))
+    diff.SetNeedsPaintInvalidation();
+
+  bool skip_background_color_paint_invalidation =
+      !diff.BackgroundColorChanged() || HasNativeBackgroundPainter(node);
+  if (!skip_background_color_paint_invalidation)
+    diff.SetNeedsPaintInvalidation();
+
+  return diff;
+}
+
 }  // namespace
 
 static int g_allow_destroying_layout_object_in_finalizer = 0;
@@ -2399,6 +2441,10 @@ void LayoutObject::SetStyle(scoped_refptr<const ComputedStyle> style,
 
   diff = AdjustStyleDifference(diff);
 
+  // A change to the background color or status of BG color animation may
+  // require paint invalidation.
+  diff = AdjustForBackgroundColorPaint(style_, style, GetNode(), diff);
+
   StyleWillChange(diff, *style);
 
   scoped_refptr<const ComputedStyle> old_style = std::move(style_);
@@ -2889,6 +2935,8 @@ void LayoutObject::ApplyFirstLineChanges(const ComputedStyle* old_style) {
       if (const auto* new_first_line_style = FirstLineStyleWithoutFallback()) {
         diff = old_first_line_style->VisualInvalidationDiff(
             GetDocument(), *new_first_line_style);
+        diff = AdjustForBackgroundColorPaint(
+            old_first_line_style, new_first_line_style, GetNode(), diff);
         has_diff = true;
       }
     }
@@ -3946,7 +3994,13 @@ const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
   if (BehavesLikeBlockContainer()) {
     if (const ComputedStyle* cached =
             StyleRef().GetCachedPseudoElementStyle(kPseudoIdFirstLine)) {
-      return cached;
+      // If the style is cached by getComputedStyle(element, "::first-line"), it
+      // is marked with IsEnsuredInDisplayNone(). In that case we might not have
+      // the correct ::first-line style for laying out the ::first-line. Ignore
+      // the cached ComputedStyle and overwrite it using
+      // ReplaceCachedPseudoElementStyle() below.
+      if (!cached->IsEnsuredInDisplayNone())
+        return cached;
     }
 
     if (Element* element = DynamicTo<Element>(GetNode())) {
@@ -3980,7 +4034,7 @@ const ComputedStyle* LayoutObject::FirstLineStyleWithoutFallback() const {
       if (scoped_refptr<ComputedStyle> first_line_style =
               first_line_block->GetUncachedPseudoElementStyle(
                   StyleRequest(kPseudoIdFirstLine, Style()))) {
-        return StyleRef().AddCachedPseudoElementStyle(
+        return StyleRef().ReplaceCachedPseudoElementStyle(
             std::move(first_line_style), kPseudoIdFirstLine, g_null_atom);
       }
     }

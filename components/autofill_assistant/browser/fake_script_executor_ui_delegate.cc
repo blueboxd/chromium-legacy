@@ -95,8 +95,10 @@ void FakeScriptExecutorUiDelegate::SetCollectUserDataOptions(
   collect_user_data_options_ = options;
 }
 
-void FakeScriptExecutorUiDelegate::SetCollectUserDataUiState(bool enabled) {
-  collect_user_data_ui_enabled_ = enabled;
+void FakeScriptExecutorUiDelegate::SetCollectUserDataUiState(
+    bool loading,
+    UserDataEventField event_field) {
+  collect_user_data_ui_loading__field_ = event_field;
 }
 
 void FakeScriptExecutorUiDelegate::SetLastSuccessfulUserDataOptions(
@@ -168,7 +170,10 @@ bool FakeScriptExecutorUiDelegate::SupportsExternalActions() {
 
 void FakeScriptExecutorUiDelegate::ExecuteExternalAction(
     const external::Action& external_action,
+    base::OnceCallback<void()> start_dom_checks_callback,
     base::OnceCallback<void(ExternalActionDelegate::ActionResult result)>
-        callback) {}
+        end_action_callback) {
+  std::move(end_action_callback).Run({true});
+}
 
 }  // namespace autofill_assistant

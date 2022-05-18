@@ -100,6 +100,7 @@ void ExternallyManagedAppManagerImpl::Shutdown() {
   pending_registrations_.clear();
   current_registration_.reset();
   pending_installs_.clear();
+  url_loader_.reset();
   // `current_install_` keeps a pointer to `web_contents_` so destroy it before
   // releasing the WebContents.
   current_install_.reset();
@@ -175,8 +176,8 @@ void ExternallyManagedAppManagerImpl::MaybeStartNext() {
     absl::optional<AppId> app_id = externally_installed_app_prefs_.LookupAppId(
         install_options.install_url);
 
-    // If the URL is not in ExternallyInstalledWebAppPrefs, then no external
-    // source has installed it.
+    // If the URL is not in ExternallyInstalledWebAppPrefs,
+    // then no external source has installed it.
     if (!app_id.has_value()) {
       StartInstallationTask(std::move(front));
       return;
@@ -221,18 +222,6 @@ void ExternallyManagedAppManagerImpl::MaybeStartNext() {
                ExternallyManagedAppManager::InstallResult(
                    webapps::InstallResultCode::kSuccessAlreadyInstalled,
                    app_id));
-      continue;
-    }
-
-    // The app is not installed, but it might have been previously uninstalled
-    // by the user. If that's the case, don't install it again unless
-    // |override_previous_user_uninstall| is true.
-    if (finalizer()->WasPreinstalledWebAppUninstalled(app_id.value()) &&
-        !install_options.override_previous_user_uninstall) {
-      std::move(front->callback)
-          .Run(install_options.install_url,
-               ExternallyManagedAppManager::InstallResult(
-                   webapps::InstallResultCode::kPreviouslyUninstalled, app_id));
       continue;
     }
 

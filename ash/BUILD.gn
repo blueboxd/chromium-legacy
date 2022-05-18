@@ -6,7 +6,7 @@ import("//ash/ambient/resources/resources.gni")
 import("//build/config/chromeos/ui_mode.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
-import("//chromeos/assistant/ambient.gni")
+import("//chromeos/ash/components/assistant/ambient.gni")
 import("//chromeos/components/sensors/buildflags.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
@@ -156,6 +156,8 @@ component("ash") {
     "ambient/ambient_photo_controller.h",
     "ambient/ambient_view_delegate_impl.cc",
     "ambient/ambient_view_delegate_impl.h",
+    "ambient/ambient_weather_controller.cc",
+    "ambient/ambient_weather_controller.h",
     "ambient/autotest_ambient_api.cc",
     "ambient/model/ambient_animation_attribution_provider.cc",
     "ambient/model/ambient_animation_attribution_provider.h",
@@ -176,6 +178,9 @@ component("ash") {
     "ambient/model/ambient_topic_queue_animation_delegate.h",
     "ambient/model/ambient_topic_queue_slideshow_delegate.cc",
     "ambient/model/ambient_topic_queue_slideshow_delegate.h",
+    "ambient/model/ambient_weather_model.cc",
+    "ambient/model/ambient_weather_model.h",
+    "ambient/model/ambient_weather_model_observer.h",
     "ambient/resources/ambient_animation_resource_constants.h",
     "ambient/resources/ambient_animation_static_resources.h",
     "ambient/ui/ambient_animation_attribution_transformer.cc",
@@ -2210,6 +2215,7 @@ component("ash") {
     "//cc",
     "//cc/debug",
     "//cc/paint:paint",
+    "//chromeos/ash/components/assistant:buildflags",
     "//chromeos/ash/components/dbus/hammerd",
     "//chromeos/ash/components/dbus/rgbkbd",
     "//chromeos/ash/components/dbus/rmad",
@@ -2217,9 +2223,8 @@ component("ash") {
     "//chromeos/ash/components/dbus/services",
     "//chromeos/ash/components/dbus/system_clock",
     "//chromeos/ash/components/dbus/usb",
-    "//chromeos/assistant:buildflags",
+    "//chromeos/ash/components/human_presence",
     "//chromeos/components/feature_usage",
-    "//chromeos/components/human_presence",
     "//chromeos/components/quick_answers/public/cpp:prefs",
     "//chromeos/components/sensors:buildflags",
     "//chromeos/components/sensors:sensors",
@@ -2994,12 +2999,12 @@ test("ash_unittests") {
     "//build:branding_buildflags",
     "//cc:test_support",
     "//chromeos:test_support",
+    "//chromeos/ash/components/assistant:buildflags",
     "//chromeos/ash/components/dbus/hammerd",
     "//chromeos/ash/components/dbus/rgbkbd",
     "//chromeos/ash/components/dbus/services:test_support",
-    "//chromeos/assistant:buildflags",
+    "//chromeos/ash/components/human_presence:human_presence",
     "//chromeos/components/feature_usage",
-    "//chromeos/components/human_presence:human_presence",
     "//chromeos/components/sensors:sensors",
     "//chromeos/components/sensors:test_support",
     "//chromeos/components/sensors/mojom",

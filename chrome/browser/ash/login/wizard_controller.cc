@@ -643,7 +643,7 @@ WizardController::CreateScreens() {
       base::BindRepeating(&WizardController::OnAutoEnrollmentCheckScreenExit,
                           weak_factory_.GetWeakPtr())));
   append(std::make_unique<DeviceDisabledScreen>(
-      oobe_ui->GetView<DeviceDisabledScreenHandler>()));
+      oobe_ui->GetView<DeviceDisabledScreenHandler>()->AsWeakPtr()));
   append(std::make_unique<EncryptionMigrationScreen>(
       oobe_ui->GetView<EncryptionMigrationScreenHandler>()));
   append(std::make_unique<ManagementTransitionScreen>(
@@ -762,7 +762,7 @@ WizardController::CreateScreens() {
         base::BindRepeating(&WizardController::OnOsInstallScreenExit,
                             weak_factory_.GetWeakPtr())));
     append(std::make_unique<OsTrialScreen>(
-        oobe_ui->GetView<OsTrialScreenHandler>(),
+        oobe_ui->GetView<OsTrialScreenHandler>()->AsWeakPtr(),
         base::BindRepeating(&WizardController::OnOsTrialScreenExit,
                             weak_factory_.GetWeakPtr())));
   }
@@ -775,7 +775,7 @@ WizardController::CreateScreens() {
   }
 
   append(std::make_unique<SmartPrivacyProtectionScreen>(
-      oobe_ui->GetView<SmartPrivacyProtectionScreenHandler>(),
+      oobe_ui->GetView<SmartPrivacyProtectionScreenHandler>()->AsWeakPtr(),
       base::BindRepeating(&WizardController::OnSmartPrivacyProtectionScreenExit,
                           weak_factory_.GetWeakPtr())));
 

@@ -30,7 +30,7 @@
 
 #include "third_party/blink/renderer/core/css/resolver/style_resolver.h"
 
-#include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
+#include "third_party/blink/public/mojom/use_counter/metrics/web_feature.mojom-blink.h"
 #include "third_party/blink/renderer/core/animation/css/compositor_keyframe_value_factory.h"
 #include "third_party/blink/renderer/core/animation/css/css_animations.h"
 #include "third_party/blink/renderer/core/animation/document_animations.h"
@@ -913,9 +913,6 @@ scoped_refptr<ComputedStyle> StyleResolver::ResolveStyle(
 
   GetDocument().AddViewportUnitFlags(state.StyleRef().ViewportUnitFlags());
 
-  if (state.Style()->HasContainerRelativeUnits())
-    state.Style()->SetDependsOnContainerQueries(true);
-
   if (state.Style()->HasRemUnits())
     GetDocument().GetStyleEngine().SetUsesRemUnit(true);
 
@@ -1215,40 +1212,6 @@ void StyleResolver::ApplyBaseStyleNoCache(
     if (!collector.MatchedResult().HasMatchedProperties()) {
       StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
       state.SetHadNoMatchedProperties();
-      return;
-    }
-
-    bool skip_apply_highlight = false;
-
-    // Highlight pseudos inherit all properties from the corresponding highlight
-    // in the parent, but virtually all existing content uses universal rules
-    // like *::selection. To ensure copy-on-write inheritance still works, avoid
-    // reapplying styles if both parent and child only matched universal rules.
-    if (RuntimeEnabledFeatures::HighlightInheritanceEnabled() &&
-        IsHighlightPseudoElement(style_request.pseudo_id)) {
-      // If the parent matched any non-universal highlight rules, then we need
-      // to apply, in case there are universal highlight rules.
-      bool parent_non_universal =
-          state.Style()->DidMatchNonUniversalHighlights();
-
-      // If we matched any non-universal highlight rules, then we need to apply
-      // and our children also need to apply (see above).
-      bool self_non_universal =
-          collector.MatchedResult().MatchesNonUniversalHighlights();
-
-      if (parent_non_universal || self_non_universal) {
-        // Set or reset the did-match-non-universal flag only if necessary.
-        state.Style()->SetDidMatchNonUniversalHighlights(self_non_universal);
-      } else if (element->parentNode() !=
-                 element->ContainingTreeScope().RootNode()) {
-        // The root node of the tree scope needs to apply, in case there are
-        // only universal highlight rules.
-        skip_apply_highlight = true;
-      }
-    }
-
-    if (skip_apply_highlight) {
-      StyleAdjuster::AdjustComputedStyle(state, nullptr /* element */);
       return;
     }
   }
@@ -1555,7 +1518,7 @@ StyleRuleList* StyleResolver::StyleRulesForElement(Element* element,
                                  selector_filter_, match_result, state.Style(),
                                  EInsideLink::kNotInsideLink);
   collector.SetMode(SelectorChecker::kCollectingStyleRules);
-  CollectPseudoRulesForElement(*element, collector, kPseudoIdNone,
+  CollectPseudoRulesForElement(*element, collector, kPseudoIdNone, g_null_atom,
                                rules_to_include);
   return collector.MatchedStyleRuleList();
 }
@@ -1587,6 +1550,7 @@ Element* StyleResolver::FindContainerForElement(
 RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
     Element* element,
     PseudoId pseudo_id,
+    const AtomicString& document_transition_tag,
     unsigned rules_to_include) {
   DCHECK(element);
   StyleResolverState state(GetDocument(), *element);
@@ -1600,7 +1564,7 @@ RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
   // TODO(obrufau): support collecting rules for nested ::marker
   if (!element->IsPseudoElement()) {
     CollectPseudoRulesForElement(*element, collector, pseudo_id,
-                                 rules_to_include);
+                                 document_transition_tag, rules_to_include);
   }
 
   if (tracker_)
@@ -1610,15 +1574,18 @@ RuleIndexList* StyleResolver::PseudoCSSRulesForElement(
 
 RuleIndexList* StyleResolver::CssRulesForElement(Element* element,
                                                  unsigned rules_to_include) {
-  return PseudoCSSRulesForElement(element, kPseudoIdNone, rules_to_include);
+  return PseudoCSSRulesForElement(element, kPseudoIdNone, g_null_atom,
+                                  rules_to_include);
 }
 
 void StyleResolver::CollectPseudoRulesForElement(
     const Element& element,
     ElementRuleCollector& collector,
     PseudoId pseudo_id,
+    const AtomicString& document_transition_tag,
     unsigned rules_to_include) {
-  collector.SetPseudoElementStyleRequest(StyleRequest(pseudo_id, nullptr));
+  collector.SetPseudoElementStyleRequest(
+      StyleRequest(pseudo_id, nullptr, document_transition_tag));
 
   if (rules_to_include & kUACSSRules)
     MatchUARules(element, collector);
@@ -1834,8 +1801,20 @@ StyleResolver::CacheSuccess StyleResolver::ApplyMatchedCache(
       is_inherited_cache_hit = true;
     }
     if (!IsForcedColorsModeEnabled() || is_inherited_cache_hit) {
+      bool non_universal_highlights =
+          state.Style()->HasNonUniversalHighlightPseudoStyles();
+
       state.Style()->CopyNonInheritedFromCached(
           *cached_matched_properties->computed_style);
+
+      // Restore the non-universal highlight pseudo flag that was set while
+      // collecting matching rules. These fields are in a raredata field group,
+      // so CopyNonInheritedFromCached will clobber them despite custom_copy.
+      // TODO(crbug.com/1024156): do this for CustomHighlightNames too, so we
+      // can remove the cache-busting for ::highlight() in IsStyleCacheable
+      state.Style()->SetHasNonUniversalHighlightPseudoStyles(
+          non_universal_highlights);
+
       // If the child style is a cache hit, we'll never reach StyleBuilder::
       // ApplyProperty, hence we'll never set the flag on the parent.
       if (state.Style()->HasExplicitInheritance())

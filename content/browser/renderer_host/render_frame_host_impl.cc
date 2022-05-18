@@ -261,7 +261,6 @@
 #include "content/browser/android/java_interfaces_impl.h"
 #include "content/browser/renderer_host/render_frame_host_android.h"
 #include "content/public/browser/android/java_interfaces.h"
-#include "device/fido/discoverable_credential_metadata.h"
 #else
 #include "content/browser/hid/hid_service.h"
 #include "content/browser/host_zoom_map_impl.h"
@@ -1455,6 +1454,12 @@ RenderFrameHostImpl::RenderFrameHostImpl(
   TRACE_EVENT_BEGIN("navigation", "RenderFrameHostImpl",
                     perfetto::Track::FromPointer(this),
                     "render_frame_host_when_created", this);
+  // Update lifecycle state on track of RenderFrameHostImpl.
+  TRACE_EVENT_BEGIN(
+      "navigation",
+      perfetto::StaticString{LifecycleStateImplToString(lifecycle_state_)},
+      perfetto::Track::FromPointer(this));
+
   DCHECK(delegate_);
   DCHECK(lifecycle_state_ == LifecycleStateImpl::kSpeculative ||
          lifecycle_state_ == LifecycleStateImpl::kPrerendering ||
@@ -1566,6 +1571,8 @@ RenderFrameHostImpl::RenderFrameHostImpl(
 }
 
 RenderFrameHostImpl::~RenderFrameHostImpl() {
+  TRACE_EVENT("navigation", "~RenderFrameHostImpl()",
+              ChromeTrackEvent::kRenderFrameHost, this);
   // The lifetime of this object has ended, so remove it from the id map before
   // calling any delegates/observers, so that any calls to |FromID| no longer
   // return |this|.
@@ -1730,7 +1737,10 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (prefetched_signed_exchange_cache_)
     prefetched_signed_exchange_cache_->RecordHistograms();
 
-  // Matches the TRACE_EVENT_BEGIN in the constructor.
+  // Matches the pair of TRACE_EVENT_BEGINS in the constructor: one for
+  // "RenderFrameHostImpl" slice itself, one for the slice with the lifecycle
+  // state name.
+  TRACE_EVENT_END("navigation", perfetto::Track::FromPointer(this));
   TRACE_EVENT_END("navigation", perfetto::Track::FromPointer(this));
 }
 
@@ -6450,9 +6460,30 @@ void RenderFrameHostImpl::HadStickyUserActivationBeforeNavigationChanged(
 void RenderFrameHostImpl::ScrollRectToVisibleInParentFrame(
     const gfx::RectF& rect_to_scroll,
     blink::mojom::ScrollIntoViewParamsPtr params) {
-  RenderFrameProxyHost* proxy = GetProxyToParent();
+  RenderFrameProxyHost* proxy = nullptr;
+
+  if (IsFencedFrameRoot()) {
+    // TODO(bokan): This is overy trusting of the renderer. We'll need some way
+    // to verify that the browser is the one that initiated this
+    // ScrollFocusedEditable process.
+    // https://crbug.com/1123606. I&S tracker row 484.
+    if (!params->for_focused_editable) {
+      local_frame_host_receiver_.ReportBadMessage(
+          "ScrollRectToVisibleInParentFrame can only be used for "
+          "is_for_editable from a fenced frame");
+      return;
+    }
+
+    proxy = blink::features::IsFencedFramesMPArchBased()
+                ? GetProxyToOuterDelegate()
+                : GetProxyToParent();
+  } else {
+    proxy = GetProxyToParent();
+  }
+
   if (!proxy)
     return;
+
   proxy->ScrollRectToVisible(rect_to_scroll, std::move(params));
 }
 
@@ -12760,18 +12791,20 @@ void RenderFrameHostImpl::MaybeEvictFromBackForwardCache() {
   RenderFrameHostImpl* top_document = this;
   while (RenderFrameHostImpl* parent = top_document->GetParent())
     top_document = parent;
-  BackForwardCacheCanStoreDocumentResultWithTree can_store =
-      frame_tree()->controller().GetBackForwardCache().CanStorePageNow(
-          top_document);
+  BackForwardCacheCanStoreDocumentResultWithTree bfcache_eligibility =
+      frame_tree()
+          ->controller()
+          .GetBackForwardCache()
+          .GetCurrentBackForwardCacheEligibility(top_document);
 
   TRACE_EVENT("navigation",
               "RenderFrameHostImpl::MaybeEvictFromBackForwardCache",
-              "render_frame_host", this, "can_store",
-              can_store.flattened_reasons.ToString());
+              "render_frame_host", this, "bfcache_eligibility",
+              bfcache_eligibility.flattened_reasons.ToString());
 
-  if (can_store)
+  if (bfcache_eligibility.CanStore())
     return;
-  EvictFromBackForwardCacheWithFlattenedAndTreeReasons(can_store);
+  EvictFromBackForwardCacheWithFlattenedAndTreeReasons(bfcache_eligibility);
 }
 
 void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
@@ -13008,18 +13041,6 @@ RenderFrameHostImpl::PerformMakeCredentialWebAuthSecurityChecks(
 
   return blink::mojom::AuthenticatorStatus::SUCCESS;
 }
-
-void RenderFrameHostImpl::WebAuthnConditionalUiRequestPending(
-    const std::vector<device::DiscoverableCredentialMetadata>& credentials,
-    base::OnceCallback<void(const std::vector<uint8_t>& id)> callback) {
-  auto* delegate =
-      GetContentClient()->browser()->GetConditionalUiDelegate(this);
-  if (!delegate) {
-    std::move(callback).Run(std::vector<uint8_t>());
-    return;
-  }
-  delegate->OnWebAuthnRequestPending(credentials, std::move(callback));
-}
 #endif
 
 void RenderFrameHostImpl::IsClipboardPasteContentAllowed(
@@ -13073,6 +13094,13 @@ void RenderFrameHostImpl::SetLifecycleState(LifecycleStateImpl new_state) {
   TRACE_EVENT2("content", "RenderFrameHostImpl::SetLifecycleState",
                "render_frame_host", this, "new_state",
                LifecycleStateImplToString(new_state));
+  // Finish the slice corresponding to the old lifecycle state and begin a new
+  // slice for the lifecycle state we are transitioning to.
+  TRACE_EVENT_END("navigation", perfetto::Track::FromPointer(this));
+  TRACE_EVENT_BEGIN(
+      "navigation",
+      perfetto::StaticString{LifecycleStateImplToString(new_state)},
+      perfetto::Track::FromPointer(this));
 // TODO(crbug.com/1256898): Consider associating expectations with each
 // transitions.
 #if DCHECK_IS_ON()

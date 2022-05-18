@@ -5,6 +5,7 @@
 import("//build/android/resource_sizes.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
+import("//build/config/android/system_image.gni")
 import("//build/config/python.gni")
 import("//build/util/process_version.gni")
 import("//build/util/version.gni")
@@ -451,6 +452,7 @@ android_library("chrome_java") {
     "//chrome/browser/ui/android/toolbar:java",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/uid/android:java",
+    "//chrome/browser/usb/android:java",
     "//chrome/browser/user_education:java",
     "//chrome/browser/util:java",
     "//chrome/browser/version:java",
@@ -950,7 +952,6 @@ junit_binary("chrome_junit_tests") {
     "//base:base_java_test_support",
     "//base:base_junit_test_support",
     "//base/test:test_support_java",
-    "//build/android:build_java",
     "//build/config/android/test/classpath_order:junit_tests",
     "//cc:cc_java",
     "//chrome/android:update_proto_java",
@@ -1072,6 +1073,7 @@ junit_binary("chrome_junit_tests") {
     "//chrome/browser/ui/android/webid/internal:junit",
     "//chrome/browser/ui/messages/android:java",
     "//chrome/browser/ui/messages/android:junit",
+    "//chrome/browser/usb/android:junit",
     "//chrome/browser/user_education:java",
     "//chrome/browser/util:java",
     "//chrome/browser/util:junit_tests",
@@ -1301,7 +1303,6 @@ android_library("chrome_unit_test_java") {
     ":chrome_unit_test_util_java",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//build/android:build_java",
     "//chrome/android:chrome_java",
     "//chrome/browser/contextmenu:java",
     "//chrome/browser/first_run/android:java",
@@ -1360,7 +1361,6 @@ android_library("chrome_test_java") {
     "$google_play_services_package:google_play_services_tasks_java",
     "//base:base_java_test_support",
     "//base/test:test_support_java",
-    "//build/android:build_java",
     "//build/config/android/test/resource_overlay:javatests",
     "//cc:cc_java",
     "//chrome/android:chrome_java",
@@ -1580,6 +1580,8 @@ android_library("chrome_test_java") {
     "//components/offline_items_collection/core:core_java",
     "//components/offline_pages/core/prefetch:offline_prefetch_proto_java",
     "//components/omnibox/browser:browser_java",
+    "//components/omnibox/browser:javatests",
+    "//components/omnibox/browser:test_util_java",
     "//components/optimization_guide/proto:optimization_guide_proto_java",
     "//components/page_info/android:java",
     "//components/page_info/android:page_info_action_enum_java",
@@ -1753,7 +1755,6 @@ if (enable_vr || enable_arcore) {
     ":chrome_test_util_java",
     "//base:base_java",
     "//base:base_java_test_support",
-    "//build/android:build_java",
     "//chrome/android:chrome_java",
     "//chrome/android:delegate_public_impl_java",
     "//chrome/android/features/vr:java",
@@ -2583,6 +2584,7 @@ android_library("base_module_java") {
     "java/src/org/chromium/chrome/browser/ChromeBackupAgent.java",
     "java/src/org/chromium/chrome/browser/DeferredStartupHandler.java",
     "java/src/org/chromium/chrome/browser/app/bluetooth/BluetoothNotificationService.java",
+    "java/src/org/chromium/chrome/browser/app/usb/UsbNotificationService.java",
     "java/src/org/chromium/chrome/browser/base/DexFixer.java",
     "java/src/org/chromium/chrome/browser/base/DexFixerReason.java",
     "java/src/org/chromium/chrome/browser/base/SplitChromeApplication.java",
@@ -2630,7 +2632,6 @@ android_library("base_module_java") {
     "$google_play_services_package:google_play_services_gcm_java",
     "//base:base_java",
     "//base:jni_java",
-    "//build/android:build_java",
     "//chrome/browser/download/android:file_provider_java",
     "//chrome/browser/flags:java",
     "//chrome/browser/language/android:base_module_java",
@@ -2861,6 +2862,12 @@ if (android_64bit_target_cpu && skip_secondary_abi_for_cq) {
     if (_enable_libs_and_assets_verification) {
       expected_libs_and_assets = "expectations/trichrome_library_apk.$target_cpu.libs_and_assets.expected"
     }
+  }
+
+  # Can be used to install compressed apks on system images.
+  system_image_stub_apk("trichrome_library_system_stub_apk") {
+    package_name = chrome_public_manifest_package
+    stub_output = "$root_out_dir/apks/TrichromeLibrary-Stub.apk"
   }
 }
 
@@ -3694,6 +3701,22 @@ if (android_64bit_target_cpu && skip_secondary_abi_for_cq) {
     if (_enable_libs_and_assets_verification) {
       expected_libs_and_assets = "expectations/trichrome_chrome_bundle.$target_cpu.libs_and_assets.expected"
     }
+  }
+
+  # Creates .zip of .apk splits suitable for the Android system image.
+  system_image_apks("trichrome_chrome_system_zip") {
+    apk_or_bundle_target = ":trichrome_chrome_bundle"
+    input_apk_or_bundle = "$root_out_dir/apks/TrichromeChrome.aab"
+    output = "$root_out_dir/apks/TrichromeChromeSystem.zip"
+    stub_output = "$root_out_dir/apks/TrichromeChrome-Stub.apk"
+  }
+
+  # Combines all splits into a single .apk for the Android system image.
+  system_image_apks("trichrome_chrome_system_apk") {
+    apk_or_bundle_target = ":trichrome_chrome_bundle"
+    input_apk_or_bundle = "$root_out_dir/apks/TrichromeChrome.aab"
+    output = "$root_out_dir/apks/TrichromeChromeSystem.apk"
+    fuse_apk = true
   }
 
   if (is_official_build) {

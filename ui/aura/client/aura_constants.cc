@@ -68,18 +68,14 @@ DEFINE_UI_CLASS_PROPERTY_KEY(gfx::NativeViewAccessible,
                              kParentNativeViewAccessibleKey,
                              nullptr)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Size, kPreferredSize, nullptr)
-DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
-                             kPreMinimizedShowStateKey,
-                             ui::SHOW_STATE_DEFAULT)
-DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
-                             kPreFullscreenShowStateKey,
-                             ui::SHOW_STATE_DEFAULT)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kResizeBehaviorKey, kResizeBehaviorCanResize)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
                              kShowStateKey,
                              ui::SHOW_STATE_DEFAULT)
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kIsRestoringKey, false)
+DEFINE_UI_CLASS_PROPERTY_KEY(ui::WindowShowState,
+                             kRestoreShowStateKey,
+                             ui::SHOW_STATE_NORMAL)
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSkipImeProcessing, false)
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::u16string, kTitleKey, nullptr)
 DEFINE_UI_CLASS_PROPERTY_KEY(int, kTopViewInset, 0)

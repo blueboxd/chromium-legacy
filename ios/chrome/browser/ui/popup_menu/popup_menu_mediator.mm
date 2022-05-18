@@ -10,6 +10,8 @@
 #include "base/mac/foundation_util.h"
 #import "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
@@ -37,7 +39,6 @@
 #import "ios/chrome/browser/overlays/public/overlay_request_queue.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/http_auth_overlay.h"
 #include "ios/chrome/browser/policy/browser_policy_connector_ios.h"
-#include "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #import "ios/chrome/browser/search_engines/search_engines_util.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -88,6 +89,9 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+using base::RecordAction;
+using base::UserMetricsAction;
 
 namespace {
 PopupMenuToolsItem* CreateTableViewItem(int titleID,
@@ -651,6 +655,9 @@ PopupMenuTextItem* CreateEnterpriseInfoItem(NSString* imageName,
 
 - (void)updateFollowStatus {
   DCHECK(IsWebChannelsEnabled());
+  RecordAction(self.followStatus ? UserMetricsAction("MobileMenuUnfollow")
+                                 : UserMetricsAction("MobileMenuFollow"));
+  // TODO(crbug.com/1324452): Record histogram.
   ios::GetChromeBrowserProvider().GetFollowProvider()->UpdateFollowStatus(
       self.webPageURLs, !self.followStatus);
 }

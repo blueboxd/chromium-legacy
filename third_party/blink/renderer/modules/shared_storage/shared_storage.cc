@@ -8,7 +8,6 @@
 #include <tuple>
 #include <utility>
 
-#include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
@@ -123,6 +122,12 @@ ScriptPromise SharedStorage::set(ScriptState* script_state,
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   CHECK(execution_context->IsWindow());
 
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "A browsing context is required.");
+    return ScriptPromise();
+  }
+
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -159,6 +164,12 @@ ScriptPromise SharedStorage::append(ScriptState* script_state,
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   CHECK(execution_context->IsWindow());
 
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "A browsing context is required.");
+    return ScriptPromise();
+  }
+
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -192,6 +203,12 @@ ScriptPromise SharedStorage::Delete(ScriptState* script_state,
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   CHECK(execution_context->IsWindow());
 
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "A browsing context is required.");
+    return ScriptPromise();
+  }
+
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -216,6 +233,12 @@ ScriptPromise SharedStorage::clear(ScriptState* script_state,
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   CHECK(execution_context->IsWindow());
 
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "A browsing context is required.");
+    return ScriptPromise();
+  }
+
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
@@ -228,17 +251,16 @@ ScriptPromise SharedStorage::clear(ScriptState* script_state,
   return promise;
 }
 
-ScriptPromise SharedStorage::runURLSelectionOperation(
-    ScriptState* script_state,
-    const String& name,
-    const Vector<String>& urls,
-    ExceptionState& exception_state) {
-  return runURLSelectionOperation(
-      script_state, name, urls,
-      SharedStorageRunOperationMethodOptions::Create(), exception_state);
+ScriptPromise SharedStorage::selectURL(ScriptState* script_state,
+                                       const String& name,
+                                       const Vector<String>& urls,
+                                       ExceptionState& exception_state) {
+  return selectURL(script_state, name, urls,
+                   SharedStorageRunOperationMethodOptions::Create(),
+                   exception_state);
 }
 
-ScriptPromise SharedStorage::runURLSelectionOperation(
+ScriptPromise SharedStorage::selectURL(
     ScriptState* script_state,
     const String& name,
     const Vector<String>& urls,
@@ -247,9 +269,26 @@ ScriptPromise SharedStorage::runURLSelectionOperation(
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   CHECK(execution_context->IsWindow());
 
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "A browsing context is required.");
+    return ScriptPromise();
+  }
+
+  LocalFrame* frame = To<LocalDOMWindow>(execution_context)->GetFrame();
+  DCHECK(frame);
+
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
+
+  if (frame->IsInFencedFrameTree()) {
+    // https://github.com/pythagoraskitty/shared-storage/blob/main/README.md#url-selection
+    resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
+        script_state->GetIsolate(), DOMExceptionCode::kInvalidAccessError,
+        "sharedStorage.selectURL() is not allowed in fenced frame."));
+    return promise;
+  }
 
   if (!IsValidSharedStorageURLsArrayLength(urls.size())) {
     resolver->Reject(V8ThrowDOMException::CreateOrEmpty(
@@ -302,21 +341,26 @@ ScriptPromise SharedStorage::runURLSelectionOperation(
   return promise;
 }
 
-ScriptPromise SharedStorage::runOperation(ScriptState* script_state,
-                                          const String& name,
-                                          ExceptionState& exception_state) {
-  return runOperation(script_state, name,
-                      SharedStorageRunOperationMethodOptions::Create(),
-                      exception_state);
+ScriptPromise SharedStorage::run(ScriptState* script_state,
+                                 const String& name,
+                                 ExceptionState& exception_state) {
+  return run(script_state, name,
+             SharedStorageRunOperationMethodOptions::Create(), exception_state);
 }
 
-ScriptPromise SharedStorage::runOperation(
+ScriptPromise SharedStorage::run(
     ScriptState* script_state,
     const String& name,
     const SharedStorageRunOperationMethodOptions* options,
     ExceptionState& exception_state) {
   ExecutionContext* execution_context = ExecutionContext::From(script_state);
   CHECK(execution_context->IsWindow());
+
+  if (!script_state->ContextIsValid()) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidAccessError,
+                                      "A browsing context is required.");
+    return ScriptPromise();
+  }
 
   Vector<uint8_t> serialized_data;
   if (!Serialize(script_state, options, exception_state, serialized_data))
@@ -350,31 +394,14 @@ SharedStorage::GetSharedStorageDocumentService(
     ExecutionContext* execution_context) {
   CHECK(execution_context->IsWindow());
   if (!shared_storage_document_service_.is_bound()) {
-    LocalDOMWindow* window = To<LocalDOMWindow>(execution_context);
-    if (!window->GetFrame())
-      return GetEmptySharedStorageDocumentService();
+    LocalFrame* frame = To<LocalDOMWindow>(execution_context)->GetFrame();
+    DCHECK(frame);
 
-    window->GetFrame()->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
+    frame->GetRemoteNavigationAssociatedInterfaces()->GetInterface(
         shared_storage_document_service_.BindNewEndpointAndPassReceiver(
             execution_context->GetTaskRunner(TaskType::kMiscPlatformAPI)));
   }
   return shared_storage_document_service_.get();
-}
-
-mojom::blink::SharedStorageDocumentService*
-SharedStorage::GetEmptySharedStorageDocumentService() {
-  static base::SequenceLocalStorageSlot<
-      mojo::Remote<mojom::blink::SharedStorageDocumentService>>
-      slot;
-
-  if (!slot.GetValuePointer()) {
-    auto& remote = slot.GetOrCreateValue();
-    mojo::PendingRemote<mojom::blink::SharedStorageDocumentService>
-        pending_remote;
-    std::ignore = pending_remote.InitWithNewPipeAndPassReceiver();
-    remote.Bind(std::move(pending_remote), base::ThreadTaskRunnerHandle::Get());
-  }
-  return slot.GetOrCreateValue().get();
 }
 
 }  // namespace blink

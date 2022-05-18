@@ -780,7 +780,7 @@ bool BrowserAutofillManager::MaybeStartVoteUploadProcess(
   }
 
   const std::vector<CreditCard*>& credit_cards =
-      credit_card_access_manager_->GetCreditCards();
+      personal_data_->GetCreditCards();
 
   if (profiles.empty() && credit_cards.empty())
     return false;
@@ -1049,7 +1049,7 @@ void BrowserAutofillManager::OnAskForValuesToFillImpl(
     single_field_form_fill_router_->OnGetSingleFieldSuggestions(
         query_id, client()->IsAutocompleteEnabled(),
         autoselect_first_suggestion, field.name, field.value,
-        field.form_control_type, weak_ptr_factory_.GetWeakPtr());
+        field.form_control_type, weak_ptr_factory_.GetWeakPtr(), context);
     return;
   }
 
@@ -1131,7 +1131,8 @@ void BrowserAutofillManager::FillOrPreviewProfileForm(
   if (!GetCachedFormAndField(form, field, &form_structure, &autofill_field))
     return;
   FillOrPreviewDataModelForm(action, query_id, form, field, &profile,
-                             /*cvc=*/nullptr, form_structure, autofill_field);
+                             /*optional_cvc=*/nullptr, form_structure,
+                             autofill_field);
 }
 
 void BrowserAutofillManager::FillOrPreviewForm(
@@ -1417,14 +1418,17 @@ bool BrowserAutofillManager::RemoveAutofillProfileOrCreditCard(int unique_id) {
 
 void BrowserAutofillManager::RemoveCurrentSingleFieldSuggestion(
     const std::u16string& name,
-    const std::u16string& value) {
-  single_field_form_fill_router_->OnRemoveCurrentSingleFieldSuggestion(name,
-                                                                       value);
+    const std::u16string& value,
+    int frontend_id) {
+  single_field_form_fill_router_->OnRemoveCurrentSingleFieldSuggestion(
+      name, value, frontend_id);
 }
 
 void BrowserAutofillManager::OnSingleFieldSuggestionSelected(
-    const std::u16string& value) {
-  single_field_form_fill_router_->OnSingleFieldSuggestionSelected(value);
+    const std::u16string& value,
+    int frontend_id) {
+  single_field_form_fill_router_->OnSingleFieldSuggestionSelected(value,
+                                                                  frontend_id);
   form_interactions_counter_->OnAutocompleteFill();
 }
 
@@ -1475,9 +1479,8 @@ void BrowserAutofillManager::SelectFieldOptionsDidChange(const FormData& form) {
 }
 
 void BrowserAutofillManager::PropagateAutofillPredictions(
-    content::RenderFrameHost* rfh,
     const std::vector<FormStructure*>& forms) {
-  client()->PropagateAutofillPredictions(rfh, forms);
+  client()->PropagateAutofillPredictions(driver(), forms);
 }
 
 void BrowserAutofillManager::OnCreditCardFetched(CreditCardFetchResult result,
@@ -1653,8 +1656,7 @@ bool BrowserAutofillManager::RefreshDataModels() {
         local_record_type_count);
   }
 
-  return !profiles.empty() ||
-         !credit_card_access_manager_->GetCreditCards().empty();
+  return !profiles.empty() || !personal_data_->GetCreditCards().empty();
 }
 
 CreditCard* BrowserAutofillManager::GetCreditCard(int unique_id) {
@@ -1662,7 +1664,7 @@ CreditCard* BrowserAutofillManager::GetCreditCard(int unique_id) {
   std::string credit_card_id;
   std::string profile_id;
   SplitFrontendID(unique_id, &credit_card_id, &profile_id);
-  return credit_card_access_manager_->GetCreditCard(credit_card_id);
+  return personal_data_->GetCreditCardByGUID(credit_card_id);
 }
 
 AutofillProfile* BrowserAutofillManager::GetProfile(int unique_id) {
@@ -2038,9 +2040,9 @@ std::vector<Suggestion> BrowserAutofillManager::GetProfileSuggestions(
     }
   }
 
-  for (size_t i = 0; i < suggestions.size(); ++i) {
-    suggestions[i].frontend_id =
-        MakeFrontendID(std::string(), suggestions[i].backend_id);
+  for (auto& suggestion : suggestions) {
+    suggestion.frontend_id =
+        MakeFrontendID(std::string(), suggestion.backend_id);
   }
   return suggestions;
 }
@@ -2052,13 +2054,10 @@ std::vector<Suggestion> BrowserAutofillManager::GetCreditCardSuggestions(
     bool* should_display_gpay_logo) const {
   credit_card_form_event_logger_->OnDidPollSuggestions(field, sync_state_);
 
-  *should_display_gpay_logo =
-      credit_card_access_manager_->ShouldDisplayGPayLogo();
-
   std::vector<Suggestion> suggestions;
   if (!IsInAutofillSuggestionsDisabledExperiment()) {
     suggestions = suggestion_generator_->GetSuggestionsForCreditCards(
-        form_structure, field, type, app_locale_);
+        form_structure, field, type, app_locale_, should_display_gpay_logo);
   }
 
   // TODO(crbug.com/1196021): Once the profile suggestion creation is moved to
@@ -2450,7 +2449,8 @@ bool BrowserAutofillManager::FillFieldWithValue(
       const AutofillProfile* profile =
           absl::get<const AutofillProfile*>(profile_or_credit_card);
       client()->DidFillOrPreviewField(
-          /*value=*/profile->GetInfo(autofill_field->Type(), app_locale_),
+          /*autofilled_value=*/profile->GetInfo(autofill_field->Type(),
+                                                app_locale_),
           /*profile_full_name=*/profile->GetInfo(AutofillType(NAME_FULL),
                                                  app_locale_));
     }

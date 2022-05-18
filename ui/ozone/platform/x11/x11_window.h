@@ -79,8 +79,8 @@ class X11Window : public PlatformWindow,
   void Close() override;
   bool IsVisible() const override;
   void PrepareForShutdown() override;
-  void SetBounds(const gfx::Rect& bounds) override;
-  gfx::Rect GetBounds() const override;
+  void SetBoundsInPixels(const gfx::Rect& bounds) override;
+  gfx::Rect GetBoundsInPixels() const override;
   void SetBoundsInDIP(const gfx::Rect& bounds) override;
   gfx::Rect GetBoundsInDIP() const override;
   void SetTitle(const std::u16string& title) override;
@@ -119,6 +119,7 @@ class X11Window : public PlatformWindow,
   void SetDecorationInsets(const gfx::Insets* insets_px) override;
   void SetOpaqueRegion(const std::vector<gfx::Rect>* region_px) override;
   void SetInputRegion(const gfx::Rect* region_px) override;
+  void NotifyStartupComplete(const std::string& startup_id) override;
 
   // WorkspaceExtension:
   std::string GetWorkspace() const override;

@@ -486,6 +486,12 @@
       status: "stable",
     },
     {
+      // Allows positioning a positioned element relative to another one.
+      // https://tabatkins.github.io/specs/css-anchor-position/
+      name: "CSSAnchorPositioning",
+      status: "test",
+    },
+    {
       // Whether <image> values are allowed as counter style <symbol>
       name: "CSSAtRuleCounterStyleImageSymbols",
     },
@@ -649,6 +655,7 @@
       //
       // https://drafts.csswg.org/mediaqueries-4/#mq-syntax
       name: "CSSMediaQueries4",
+      status: "stable",
     },
     {
       name: "CSSMixBlendModePlusLighter",
@@ -1104,7 +1111,6 @@
     },
     {
       name: "FontAccess",
-      origin_trial_feature_name: "FontAccess",
       // No status because this blink runtime feature doesn't work by itself.
       // It's controlled by the corresponding Chromium feature which needs to
       // be enabled to make the whole feature work.
@@ -1372,6 +1378,10 @@
     {
       name: "MachineLearningModelLoader",
       status: "experimental",
+    },
+    {
+      name: "MachineLearningNeuralNetwork",
+      status: "test",
     },
     {
       name: "ManagedConfiguration",
@@ -2180,13 +2190,21 @@
       name: "SkipTouchEventFilter",
       settable_from_internals: true,
     },
+    {
+      name: "SoftNavigationHeuristics",
+      status: "test",
+    },
+    {
+      name: "SoftNavigationHeuristicsLogging",
+      status: "experimental",
+    },
     // An origin trial feature name is required for this, even though it's
     // actually enabled by the more specific trial. Having these as separate
     // features will allow Blink to distinguish for which thing the trial
     // was enabled.
     {
       name: "SpeculationRules",
-      implied_by: ["SpeculationRulesPrefetchProxy", "Prerender2"],
+      implied_by: ["SpeculationRulesPrefetchProxy", "SpeculationRulesPrefetchWithSubresources", "Prerender2"],
       origin_trial_feature_name: "SpeculationRules__DONOTUSE",
     },
     // Origin trial to enable Speculation Rules for access to the prefetch proxy.
@@ -2194,6 +2212,10 @@
     {
       name: "SpeculationRulesPrefetchProxy",
       origin_trial_feature_name: "SpeculationRulesPrefetch",
+      status: {"Android": "stable"},
+    },
+    {
+      "name": "SpeculationRulesPrefetchWithSubresources",
     },
     {
       name: "SrcsetMaxDensity",
@@ -2526,11 +2548,6 @@
     {
       name: "WebAssemblyCSP",
       status: "stable",
-    },
-    {
-      name: "WebAssemblyDynamicTiering",
-      origin_trial_feature_name: "WebAssemblyDynamicTiering",
-      status: "test",
     },
     {
       name: "WebAssemblyExceptions",

@@ -38,6 +38,7 @@
 #include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
 #include "components/sync/base/time.h"
+#include "components/sync/engine/cycle/entity_change_metric_recording.h"
 #include "components/sync/protocol/entity_specifics.pb.h"
 #include "components/sync/protocol/proto_value_conversions.h"
 #include "components/sync/protocol/session_specifics.pb.h"
@@ -70,7 +71,6 @@ using sessions_helper::NavigateTabBack;
 using sessions_helper::NavigateTabForward;
 using sessions_helper::OpenTab;
 using sessions_helper::OpenTabAtIndex;
-using sessions_helper::OpenTabFromSourceIndex;
 using sessions_helper::ScopedWindowMap;
 using sessions_helper::SessionWindowMap;
 using sessions_helper::SyncedSessionVector;
@@ -238,7 +238,7 @@ class SingleClientSessionsSyncTest : public SyncTest {
   SingleClientSessionsSyncTest& operator=(const SingleClientSessionsSyncTest&) =
       delete;
 
-  ~SingleClientSessionsSyncTest() override {}
+  ~SingleClientSessionsSyncTest() override = default;
 
   void ExpectNavigationChain(const std::vector<GURL>& urls) {
     ScopedWindowMap windows;
@@ -434,7 +434,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, NavigateThenCloseTab) {
   // issue another navigation to make sure association logic kicks in.
   NavigateTab(0, GURL(kURL3));
   ASSERT_TRUE(WaitForTabsToLoad(0, {GURL(kURL1), GURL(kURL3)}));
-  CloseTab(/*index=*/0, /*tab_index=*/1);
+  CloseTab(/*browser_index=*/0, /*tab_index=*/1);
   NavigateTab(0, GURL(kURL4));
 
   ASSERT_TRUE(
@@ -462,7 +462,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   // addition, a new tab is opened.
   NavigateTab(0, GURL(kURL3));
   ASSERT_TRUE(WaitForTabsToLoad(0, {GURL(kURL1), GURL(kURL3)}));
-  CloseTab(/*index=*/0, /*tab_index=*/1);
+  CloseTab(/*browser_index=*/0, /*tab_index=*/1);
   ASSERT_TRUE(OpenTab(0, GURL(kURL4)));
 
   ASSERT_TRUE(
@@ -682,9 +682,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
     EXPECT_NE(kForeignSessionTag, entity.specifics().session().session_tag());
   }
 
-  EXPECT_EQ(
-      3, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.SESSION",
-                                         /*LOCAL_DELETION=*/0));
+  EXPECT_EQ(3, histogram_tester.GetBucketCount(
+                   "Sync.ModelTypeEntityChange3.SESSION",
+                   syncer::ModelTypeEntityChange::kLocalDeletion));
 }
 
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
@@ -729,9 +729,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
     EXPECT_NE(kForeignSessionTag, entity.specifics().session().session_tag());
   }
 
-  EXPECT_EQ(
-      2, histogram_tester.GetBucketCount("Sync.ModelTypeEntityChange3.SESSION",
-                                         /*LOCAL_DELETION=*/0));
+  EXPECT_EQ(2, histogram_tester.GetBucketCount(
+                   "Sync.ModelTypeEntityChange3.SESSION",
+                   syncer::ModelTypeEntityChange::kLocalDeletion));
 }
 
 // Regression test for crbug.com/915133 that verifies the browser doesn't crash
@@ -874,8 +874,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
 class SingleClientSessionsSyncTestWithFaviconTestServer
     : public SingleClientSessionsSyncTest {
  public:
-  SingleClientSessionsSyncTestWithFaviconTestServer()
-      : SingleClientSessionsSyncTest() {}
+  SingleClientSessionsSyncTestWithFaviconTestServer() = default;
 
   SingleClientSessionsSyncTestWithFaviconTestServer(
       const SingleClientSessionsSyncTestWithFaviconTestServer&) = delete;

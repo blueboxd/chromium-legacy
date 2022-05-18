@@ -371,13 +371,13 @@ void AdAuctionServiceImpl::CreateAdRequest(
 void AdAuctionServiceImpl::FinalizeAd(const std::string& ads_guid,
                                       ::blink::mojom::AuctionAdConfigPtr config,
                                       FinalizeAdCallback callback) {
-  if (!config->decision_logic_url.SchemeIs(url::kHttpsScheme)) {
-    std::move(callback).Run(absl::nullopt);
+  if (!IsAuctionValid(*config, /*is_top_level_auction=*/true)) {
+    ReportBadMessageAndDeleteThis("Invalid auction");
     return;
   }
 
   if (ads_guid.empty()) {
-    std::move(callback).Run(absl::nullopt);
+    ReportBadMessageAndDeleteThis("GUID empty");
     return;
   }
 
@@ -441,6 +441,10 @@ AdAuctionServiceImpl::GetRefCountedTrustedURLLoaderFactory() {
 
 RenderFrameHostImpl* AdAuctionServiceImpl::GetFrame() {
   return static_cast<RenderFrameHostImpl*>(render_frame_host());
+}
+
+scoped_refptr<SiteInstance> AdAuctionServiceImpl::GetFrameSiteInstance() {
+  return render_frame_host()->GetSiteInstance();
 }
 
 network::mojom::ClientSecurityStatePtr

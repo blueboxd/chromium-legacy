@@ -97,6 +97,7 @@
 #include "components/flags_ui/flags_ui_metrics.h"
 #include "components/flags_ui/flags_ui_switches.h"
 #include "components/heavy_ad_intervention/heavy_ad_features.h"
+#include "components/history/core/browser/features.h"
 #include "components/history_clusters/core/features.h"
 #include "components/history_clusters/core/on_device_clustering_features.h"
 #include "components/invalidation/impl/invalidation_switches.h"
@@ -237,7 +238,7 @@
 #include "chrome/browser/memory/memory_ablation_study.h"
 #include "chrome/browser/nearby_sharing/common/nearby_share_features.h"
 #include "chrome/common/webui_url_constants.h"
-#include "chromeos/assistant/buildflags.h"
+#include "chromeos/ash/components/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/features.h"
 #include "components/app_restore/features.h"
 #include "components/metrics/structured/structured_metrics_features.h"  // nogncheck
@@ -859,47 +860,6 @@ const FeatureEntry::Choice kForceColorProfileChoices[] = {
      switches::kForceDisplayColorProfile, "hdr10"},
 };
 
-const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitNone[] = {
-    {"max_srp_prefetches", "-1"}};
-const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitZero[] = {
-    {"max_srp_prefetches", "0"}};
-const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitOne[] = {
-    {"max_srp_prefetches", "1"}};
-const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitTwo[] = {
-    {"max_srp_prefetches", "2"}};
-const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitThree[] = {
-    {"max_srp_prefetches", "3"}};
-const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitFour[] = {
-    {"max_srp_prefetches", "4"}};
-const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitFive[] = {
-    {"max_srp_prefetches", "5"}};
-const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitTen[] = {
-    {"max_srp_prefetches", "10"}};
-const FeatureEntry::FeatureParam kIsolatedPrerenderPrefetchLimitFifteen[] = {
-    {"max_srp_prefetches", "15"}};
-
-const FeatureEntry::FeatureVariation
-    kIsolatedPrerenderFeatureWithPrefetchLimit[] = {
-        {"Unlimited Prefetches", kIsolatedPrerenderPrefetchLimitNone,
-         std::size(kIsolatedPrerenderPrefetchLimitNone), nullptr},
-        {"Zero Prefetches", kIsolatedPrerenderPrefetchLimitZero,
-         std::size(kIsolatedPrerenderPrefetchLimitZero), nullptr},
-        {"One Prefetch", kIsolatedPrerenderPrefetchLimitOne,
-         std::size(kIsolatedPrerenderPrefetchLimitOne), nullptr},
-        {"Two Prefetches", kIsolatedPrerenderPrefetchLimitTwo,
-         std::size(kIsolatedPrerenderPrefetchLimitTwo), nullptr},
-        {"Three Prefetches", kIsolatedPrerenderPrefetchLimitThree,
-         std::size(kIsolatedPrerenderPrefetchLimitThree), nullptr},
-        {"Four Prefetches", kIsolatedPrerenderPrefetchLimitFour,
-         std::size(kIsolatedPrerenderPrefetchLimitFour), nullptr},
-        {"Five Prefetches", kIsolatedPrerenderPrefetchLimitFive,
-         std::size(kIsolatedPrerenderPrefetchLimitFive), nullptr},
-        {"Ten Prefetches", kIsolatedPrerenderPrefetchLimitTen,
-         std::size(kIsolatedPrerenderPrefetchLimitTen), nullptr},
-        {"Fifteen Prefetches", kIsolatedPrerenderPrefetchLimitFifteen,
-         std::size(kIsolatedPrerenderPrefetchLimitFifteen), nullptr},
-};
-
 const FeatureEntry::Choice kMemlogModeChoices[] = {
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
     {flag_descriptions::kMemlogModeMinimal, heap_profiling::kMemlogMode,
@@ -1433,6 +1393,27 @@ const FeatureEntry::FeatureVariation
          std::size(kOmniboxDynamicMaxAutocomplete101), nullptr},
         {"10 suggestions if 2 or fewer URLs", kOmniboxDynamicMaxAutocomplete102,
          std::size(kOmniboxDynamicMaxAutocomplete102), nullptr}};
+
+const FeatureEntry::FeatureParam kFiveOrganicRepeatableQueries[] = {
+    {"MaxNumRepeatableQueries", "5"}};
+const FeatureEntry::FeatureParam kFiveOrganicRepeatableQueriesScaled[] = {
+    {"MaxNumRepeatableQueries", "5"},
+    {"ScaleRepeatableQueriesScores", "true"}};
+const FeatureEntry::FeatureParam
+    kFiveOrganicRepeatableQueriesScaledPrivileged[] = {
+        {"MaxNumRepeatableQueries", "5"},
+        {"ScaleRepeatableQueriesScores", "true"},
+        {"PrivilegeRepeatableQueries", "true"}};
+
+const FeatureEntry::FeatureVariation kOrganicRepeatableQueriesVariations[] = {
+    {"- up to 5 repeatable queries", kFiveOrganicRepeatableQueries,
+     std::size(kFiveOrganicRepeatableQueries), nullptr},
+    {"- up to 5 repeatable queries - scaled for mixing",
+     kFiveOrganicRepeatableQueriesScaled,
+     std::size(kFiveOrganicRepeatableQueriesScaled), nullptr},
+    {"- up to 5 repeatable queries - scaled and privileged for mixing",
+     kFiveOrganicRepeatableQueriesScaledPrivileged,
+     std::size(kFiveOrganicRepeatableQueriesScaledPrivileged), nullptr}};
 
 const FeatureEntry::FeatureParam kMinimumTabWidthSettingPinned[] = {
     {features::kMinimumTabWidthFeatureParameterName, "54"}};
@@ -2221,14 +2202,6 @@ const FeatureEntry::FeatureVariation kLensCameraAssistedSearchVariations[] = {
      std::size(kLensCameraAssistedSkipAgsaVersionCheckDisabled), nullptr},
     {"(on Tablet)", kLensCameraAssistedSearchOnTablet,
      std::size(kLensCameraAssistedSearchOnTablet), nullptr}};
-
-const FeatureEntry::FeatureParam kLensContextMenuTranslateHideRemoveIcon[] = {
-    {"hideChipRemoveIcon", "true"}};
-
-const FeatureEntry::FeatureVariation kLensContextMenuTranslateVariations[] = {
-    {"(Hide Remove Icon)", kLensContextMenuTranslateHideRemoveIcon,
-     std::size(kLensContextMenuTranslateHideRemoveIcon), nullptr},
-};
 
 const FeatureEntry::FeatureParam kLensContextMenuSearchOnTablet[] = {
     {"enableContextMenuSearchOnTablet", "true"}};
@@ -4101,20 +4074,13 @@ const FeatureEntry kFeatureEntries[] = {
     {"isolation-by-default", flag_descriptions::kIsolationByDefaultName,
      flag_descriptions::kIsolationByDefaultDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kIsolationByDefault)},
-    {"enable-google-srp-isolated-prerender-probing",
-     flag_descriptions::kEnableSRPIsolatedPrerenderProbingName,
-     flag_descriptions::kEnableSRPIsolatedPrerenderProbingDescription, kOsAll,
-     FEATURE_VALUE_TYPE(features::kIsolatePrerendersMustProbeOrigin)},
-    {"enable-google-srp-isolated-prerenders",
-     flag_descriptions::kEnableSRPIsolatedPrerendersName,
-     flag_descriptions::kEnableSRPIsolatedPrerendersDescription, kOsAll,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(features::kIsolatePrerenders,
-                                    kIsolatedPrerenderFeatureWithPrefetchLimit,
-                                    "Prefetch Limit")},
-    {"enable-google-srp-isolated-prerender-nsp",
-     flag_descriptions::kEnableSRPIsolatedPrerendersNSPName,
-     flag_descriptions::kEnableSRPIsolatedPrerendersNSPDescription, kOsAll,
-     SINGLE_VALUE_TYPE(kIsolatedPrerenderEnableNSPCmdLineFlag)},
+    {"enable-prefetch-proxy",
+     flag_descriptions::kEnablePrivatePrefetchProxyName,
+     flag_descriptions::kEnablePrivatePrefetchProxyDescription, kOsAll,
+     SINGLE_VALUE_TYPE_AND_VALUE(
+         switches::kEnableFeatures,
+         "IsolatePrerenders:allow_all_domains/true/max_srp_prefetches/-1/"
+         "use_speculation_rules/true,SpeculationRulesPrefetchProxy")},
     {"allow-insecure-localhost", flag_descriptions::kAllowInsecureLocalhostName,
      flag_descriptions::kAllowInsecureLocalhostDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kAllowInsecureLocalhost)},
@@ -4184,6 +4150,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDesktopPWAsWindowControlsOverlayDescription,
      kOsWin | kOsLinux | kOsLacros | kOsMac | kOsCrOS | kOsFuchsia,
      FEATURE_VALUE_TYPE(features::kWebAppWindowControlsOverlay)},
+    {"enable-desktop-pwas-borderless",
+     flag_descriptions::kDesktopPWAsBorderlessName,
+     flag_descriptions::kDesktopPWAsBorderlessDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(blink::features::kWebAppBorderless)},
     {"enable-desktop-pwas-additional-windowing-controls",
      flag_descriptions::kDesktopPWAsAdditionalWindowingControlsName,
      flag_descriptions::kDesktopPWAsAdditionalWindowingControlsDescription,
@@ -4660,6 +4630,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kVirtualKeyboardMultitouchName,
      flag_descriptions::kVirtualKeyboardMultitouchDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardMultitouch)},
+    {"enable-cros-virtual-keyboard-round-corners",
+     flag_descriptions::kVirtualKeyboardRoundCornersName,
+     flag_descriptions::kVirtualKeyboardRoundCornersDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kVirtualKeyboardRoundCorners)},
     {"enable-experimental-accessibility-dictation-with-pumpkin",
      flag_descriptions::kExperimentalAccessibilityDictationWithPumpkinName,
      flag_descriptions::
@@ -4827,6 +4801,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kPreferConstantFrameRateName,
      flag_descriptions::kPreferConstantFrameRateDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(chromeos::features::kPreferConstantFrameRate)},
+    {"more-video-capture-buffers",
+     flag_descriptions::kMoreVideoCaptureBuffersName,
+     flag_descriptions::kMoreVideoCaptureBuffersDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::features::kMoreVideoCaptureBuffers)},
     {"force-control-face-ae", flag_descriptions::kForceControlFaceAeName,
      flag_descriptions::kForceControlFaceAeDescription, kOsCrOS,
      MULTI_VALUE_TYPE(kForceControlFaceAeChoices)},
@@ -4962,6 +4940,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxExperimentalSuggestScoringName,
      flag_descriptions::kOmniboxExperimentalSuggestScoringDescription, kOsAll,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxExperimentalSuggestScoring)},
+
+    {"omnibox-fuzzy-url-suggestions",
+     flag_descriptions::kOmniboxFuzzyUrlSuggestionsName,
+     flag_descriptions::kOmniboxFuzzyUrlSuggestionsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kOmniboxFuzzyUrlSuggestions)},
 
     {"omnibox-trending-zero-prefix-suggestions-on-ntp",
      flag_descriptions::kOmniboxTrendingZeroPrefixSuggestionsOnNTPName,
@@ -5178,6 +5161,13 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOptimizationGuideDebugLogsName,
      flag_descriptions::kOptimizationGuideDebugLogsDescription, kOsAll,
      SINGLE_VALUE_TYPE(optimization_guide::switches::kDebugLoggingEnabled)},
+
+    {"organic-repeatable-queries",
+     flag_descriptions::kOrganicRepeatableQueriesName,
+     flag_descriptions::kOrganicRepeatableQueriesDescription, kOsDesktop,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(history::kOrganicRepeatableQueries,
+                                    kOrganicRepeatableQueriesVariations,
+                                    "OrganicRepeatableQueries")},
 
     {"history-journeys", flag_descriptions::kJourneysName,
      flag_descriptions::kJourneysDescription, kOsDesktop | kOsAndroid,
@@ -6512,15 +6502,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(
          chrome::android::kContextMenuSearchAndShopWithGoogleLens)},
 
-    {"context-menu-translate-with-google-lens",
-     flag_descriptions::kContextMenuTranslateWithGoogleLensName,
-     flag_descriptions::kContextMenuTranslateWithGoogleLensDescription,
-     kOsAndroid,
-     FEATURE_WITH_PARAMS_VALUE_TYPE(
-         chrome::android::kContextMenuTranslateWithGoogleLens,
-         kLensContextMenuTranslateVariations,
-         "LensContextMenuTranslate")},
-
     {"google-lens-sdk-intent", flag_descriptions::kGoogleLensSdkIntentName,
      flag_descriptions::kGoogleLensSdkIntentDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kGoogleLensSdkIntent)},
@@ -6886,9 +6867,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(page_info::kPageInfoAboutThisSiteMoreInfo)},
 
 #if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enhanced_clipboard", flag_descriptions::kEnhancedClipboardName,
-     flag_descriptions::kEnhancedClipboardDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(chromeos::features::kClipboardHistory)},
     {"enhanced_clipboard_nudge_session_reset",
      flag_descriptions::kEnhancedClipboardNudgeSessionResetName,
      flag_descriptions::kEnhancedClipboardNudgeSessionResetDescription, kOsCrOS,
@@ -7039,6 +7017,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"shelf-drag-to-pin", flag_descriptions::kShelfDragToPinName,
      flag_descriptions::kShelfDragToPinDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kDragUnpinnedAppToPin)},
+    {"shelf-gestures-with-vk",
+     flag_descriptions::kShelfGesturesWithVirtualKeyboardName,
+     flag_descriptions::kShelfGesturesWithVirtualKeyboardDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kShelfGesturesWithVirtualKeyboard)},
     {"force-show-continue-section",
      flag_descriptions::kForceShowContinueSectionName,
      flag_descriptions::kForceShowContinueSectionDescription, kOsCrOS,
@@ -8144,12 +8126,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(features::kSharesheetCopyToClipboard)},
 #endif  // BUILDFLAG(IS_CHROMEOS_ASH)
 
-#if BUILDFLAG(IS_CHROMEOS_ASH)
-    {"enable-idle-inhibit", flag_descriptions::kEnableIdleInhibitName,
-     flag_descriptions::kEnableIdleInhibitDescription, kOsCrOS,
-     FEATURE_VALUE_TYPE(ash::features::kEnableIdleInhibit)},
-#endif  // BUILDFLAG(IS_CHROMEOS_ASH)
-
 #if BUILDFLAG(IS_ANDROID)
     {"context-menu-popup-style", flag_descriptions::kContextMenuPopupStyleName,
      flag_descriptions::kContextMenuPopupStyleDescription, kOsAndroid,
@@ -8568,6 +8544,21 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kForce60HzDescription, kOsMac,
      FEATURE_VALUE_TYPE(display::features::kForce60Hz)},
 #endif  // BUILDFLAG(IS_MAC)
+
+#if BUILDFLAG(IS_ANDROID)
+    {"network-service-in-process",
+     flag_descriptions::kNetworkServiceInProcessName,
+     flag_descriptions::kNetworkServiceInProcessDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(features::kNetworkServiceInProcess)},
+#endif
+
+    {"autofill-remove-card-expiry-from-downstream-suggestion",
+     flag_descriptions::kAutofillRemoveCardExpiryFromDownstreamSuggestionName,
+     flag_descriptions::
+         kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription,
+     kOsAll,
+     FEATURE_VALUE_TYPE(autofill::features::
+                            kAutofillRemoveCardExpiryFromDownstreamSuggestion)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

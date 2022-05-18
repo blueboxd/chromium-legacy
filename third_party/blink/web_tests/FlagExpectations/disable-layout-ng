@@ -83,6 +83,9 @@ crbug.com/591099 editing/selection/select-line-up-down.html [ Failure ]
 ### external/wpt/css/CSS2/floats/
 crbug.com/591099 external/wpt/css/CSS2/floats/float-nowrap-3.html [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/floats/floats-line-wrap-shifted-001.html [ Failure ]
+crbug.com/591099 external/wpt/css/CSS2/floats/floats-wrap-bfc-with-margin-003.tentative.html [ Failure ]
+crbug.com/591099 external/wpt/css/CSS2/floats/floats-wrap-bfc-with-margin-004.html [ Failure ]
+crbug.com/591099 external/wpt/css/CSS2/floats/floats-wrap-bfc-with-margin-005.html [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/floats/overhanging-float-paint-order.html [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/floats/zero-width-floats-positioning.tentative.html [ Failure ]
 
@@ -1878,3 +1881,13 @@ external/wpt/html/interaction/focus/focusgroup/tentative/grid-navigation/row-wra
 external/wpt/html/interaction/focus/focusgroup/tentative/grid-navigation/simple-case.html [ Failure ]
 external/wpt/html/interaction/focus/focusgroup/tentative/grid-navigation/simple-case-with-non-focusable-cell-in-the-center.html [ Failure ]
 external/wpt/html/interaction/focus/focusgroup/tentative/grid-navigation/wraps-in-both-axes.html [ Failure ]
+
+crbug.com/1047358 [ Linux ] paint/pagination/composited-paginated-outlined-box.html [ Failure ]
+
+crbug.com/829028 [ Linux ] compositing/gestures/gesture-tapHighlight-lines-and-float-in-multicol.html [ Failure ]
+
+crbug.com/591099 [ Linux ] fast/backgrounds/quirks-mode-line-box-backgrounds.html [ Failure ]
+crbug.com/591099 [ Linux ] fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-under.html [ Failure ]
+crbug.com/591099 [ Linux ] editing/selection/paint-hyphen.html [ Failure Pass ]
+
+crbug.com/1012289 [ Linux ] external/wpt/css/css-lists/list-style-type-string-005b.html [ Failure ]

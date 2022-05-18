@@ -100,7 +100,7 @@ gfx::Size GetDefaultPdfMediaSizeMicrons() {
                    pdf_media_size.height() * device_microns_per_device_unit);
 }
 
-base::Value GetPdfCapabilities(
+base::Value::Dict GetPdfCapabilities(
     const std::string& locale,
     PrinterSemanticCapsAndDefaults::Papers custom_papers) {
   using cloud_devices::printer::MediaType;
@@ -148,7 +148,15 @@ base::Value GetPdfCapabilities(
   }
   media.SaveTo(&description);
 
-  return std::move(description).ToValue();
+  // DPI value should match PrintingContext::UsePdfSettings().
+  cloud_devices::printer::DpiCapability dpi;
+  dpi.AddDefaultOption(
+      cloud_devices::printer::Dpi(kDefaultPdfDpi, kDefaultPdfDpi),
+      /*is_default=*/true);
+  dpi.SaveTo(&description);
+
+  base::Value capabilities = std::move(description).ToValue();
+  return std::move(capabilities.GetDict());
 }
 
 // Callback that stores a PDF file on disk.
@@ -198,12 +206,11 @@ void ConstructCapabilitiesAndCompleteCallback(
     PrinterSemanticCapsAndDefaults::Papers custom_papers) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  base::Value printer_info(base::Value::Type::DICTIONARY);
-  printer_info.SetStringKey(kSettingDeviceName, destination_id);
-  printer_info.SetKey(
-      kSettingCapabilities,
-      GetPdfCapabilities(g_browser_process->GetApplicationLocale(),
-                         custom_papers));
+  base::Value::Dict printer_info;
+  printer_info.Set(kSettingDeviceName, destination_id);
+  printer_info.Set(kSettingCapabilities,
+                   GetPdfCapabilities(g_browser_process->GetApplicationLocale(),
+                                      custom_papers));
   std::move(callback).Run(std::move(printer_info));
 }
 

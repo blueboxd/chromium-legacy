@@ -1385,13 +1385,13 @@ AutotestPrivateGetAllEnterprisePoliciesFunction::Run() {
 
   auto client = std::make_unique<policy::ChromePolicyConversionsClient>(
       browser_context());
-  base::Value all_policies_array =
+  base::Value::Dict all_policies_dict =
       policy::DictionaryPolicyConversions(std::move(client))
           .EnableDeviceLocalAccountPolicies(true)
           .EnableDeviceInfo(true)
-          .ToValue();
+          .ToValueDict();
 
-  return RespondNow(OneArgument(std::move(all_policies_array)));
+  return RespondNow(OneArgument(base::Value(std::move(all_policies_dict))));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2123,7 +2123,7 @@ AutotestPrivateGetRegisteredSystemWebAppsFunction::Run() {
   for (const auto& type_and_info :
        provider->system_web_app_manager().GetRegisteredSystemAppsForTesting()) {
     api::autotest_private::SystemApp system_app;
-    web_app::SystemWebAppDelegate* delegate = type_and_info.second.get();
+    ash::SystemWebAppDelegate* delegate = type_and_info.second.get();
     system_app.internal_name = delegate->GetInternalName();
     system_app.url =
         delegate->GetInstallUrl().DeprecatedGetOriginAsURL().spec();
@@ -2158,7 +2158,7 @@ AutotestPrivateIsSystemWebAppOpenFunction::Run() {
       api::autotest_private::IsSystemWebAppOpen::Params::Create(args()));
   EXTENSION_FUNCTION_VALIDATE(params);
   DVLOG(1) << "AutotestPrivateIsSystemWebAppOpenFunction " << params->app_id;
-  absl::optional<web_app::SystemAppType> app_type =
+  absl::optional<ash::SystemWebAppType> app_type =
       web_app::GetSystemWebAppTypeForAppId(profile, params->app_id);
   if (!app_type)
     return RespondNow(Error("No system web app is found by given app id."));
@@ -2234,7 +2234,7 @@ AutotestPrivateLaunchSystemWebAppFunction::Run() {
   if (!provider)
     return RespondNow(Error("Web Apps not enabled for profile."));
 
-  absl::optional<web_app::SystemAppType> app_type;
+  absl::optional<ash::SystemWebAppType> app_type;
   for (const auto& type_and_info :
        provider->system_web_app_manager().GetRegisteredSystemAppsForTesting()) {
     if (type_and_info.second->GetInternalName() == params->app_name) {

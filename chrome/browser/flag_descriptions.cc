@@ -427,6 +427,12 @@ const char kAutofillFillMerchantPromoCodeFieldsDescription[] =
     "When enabled, Autofill will attempt to fill merchant promo/coupon/gift "
     "code fields when data is available.";
 
+const char kAutofillRemoveCardExpiryFromDownstreamSuggestionName[] =
+    "Remove card expiration date from the Autofill card suggestions";
+const char kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription[] =
+    "When enabled, card expiration date will no longer be displayed in "
+    "a card suggestion.";
+
 const char kAutofillHighlightOnlyChangedValuesInPreviewModeName[] =
     "Highlight only changed values in preview mode.";
 const char kAutofillHighlightOnlyChangedValuesInPreviewModeDescription[] =
@@ -633,12 +639,6 @@ const char kContextMenuSearchAndShopWithGoogleLensName[] =
 const char kContextMenuSearchAndShopWithGoogleLensDescription[] =
     "Display an additional menu item for a Shopping intent to Google Lens "
     "below Search with Google Lens when Lens shopping feature is enabled";
-
-const char kContextMenuTranslateWithGoogleLensName[] =
-    "Google Lens powered image search for translatable images surfaced as a "
-    "chip under the context menu.";
-const char kContextMenuTranslateWithGoogleLensDescription[] =
-    "Enable a chip for a Translate intent into Google Lens when supported.";
 
 const char kClientStorageAccessContextAuditingName[] =
     "Access contexts for client-side storage";
@@ -920,6 +920,11 @@ const char kDesktopPWAsWindowControlsOverlayDescription[] =
     "override. Prototype implementation of: "
     "https://github.com/WICG/window-controls-overlay/blob/main/explainer.md";
 
+const char kDesktopPWAsBorderlessName[] = "Desktop PWA Borderless";
+const char kDesktopPWAsBorderlessDescription[] =
+    "Enable web app manifests to declare borderless mode as a display "
+    "override. Prototype implementation of: go/borderless-mode.";
+
 const char kDesktopPWAsWebBundlesName[] = "Desktop PWAs Web Bundles";
 const char kDesktopPWAsWebBundlesDescription[] =
     "Adds support for web bundles, making web apps able to be launched "
@@ -1014,7 +1019,15 @@ const char kEnableGpuServiceLoggingDescription[] =
 
 const char kEnableIphName[] = "Enable IPH";
 const char kEnableIphDescription[] =
-    "Enables the ability to show IPH. When disabled, IPHs are disabled system wide.";
+    "Enables the ability to show IPH. When disabled, IPHs are disabled system "
+    "wide.";
+
+const char kEnablePrivatePrefetchProxyName[] =
+    "Enables prefetching using the prefetch proxy";
+const char kEnablePrivatePrefetchProxyDescription[] =
+    "Enables for prefetches to be made using the prefetch proxy when specified "
+    "via the speculation rules API. When enabled, will allow prefetches from "
+    "all domains without any limit on the number of prefetches.";
 
 const char kEnableRgbKeyboardName[] = "Enable RGB Keyboard Support";
 const char kEnableRgbKeyboardDescription[] =
@@ -1025,21 +1038,6 @@ const char kEnableShortcutCustomizationAppName[] =
 const char kEnableShortcutCustomizationAppDescription[] =
     "Enable the shortcut customization SWA, allowing users to customize system "
     "shortcuts.";
-
-const char kEnableSRPIsolatedPrerendersName[] =
-    "Enable Navigation Predictor Isolated Prerenders";
-const char kEnableSRPIsolatedPrerendersDescription[] =
-    "Enable Navigation Predictions on the Google SRP to be fully isolated.";
-
-const char kEnableSRPIsolatedPrerenderProbingName[] =
-    "Enable Probing on Navigation Predictor Isolated Prerenders";
-const char kEnableSRPIsolatedPrerenderProbingDescription[] =
-    "Enable probing checks for Isolated Prerenders which will block commit.";
-
-const char kEnableSRPIsolatedPrerendersNSPName[] =
-    "Enable NoStatePrefetch on Navigation Predictor Isolated Prerenders";
-const char kEnableSRPIsolatedPrerendersNSPDescription[] =
-    "Enables NoStatePrefetch on Isolated Prerenders.";
 
 const char kExperimentalRgbKeyboardPatternsName[] =
     "Enable experimental RGB Keyboard patterns support";
@@ -1775,6 +1773,10 @@ const char kOmniboxExperimentalSuggestScoringDescription[] =
     "Enables an experimental scoring mode for suggestions when Google is the "
     "default search engine.";
 
+const char kOmniboxFuzzyUrlSuggestionsName[] = "Omnibox Fuzzy URL Suggestions";
+const char kOmniboxFuzzyUrlSuggestionsDescription[] =
+    "Enables URL suggestions for inputs that may contain typos.";
+
 const char kOmniboxMostVisitedTilesName[] = "Omnibox Most Visited Tiles";
 const char kOmniboxMostVisitedTilesDescription[] =
     "Display a list of frequently visited pages from history as a single row "
@@ -1915,6 +1917,12 @@ const char kEnableDeJellyDescription[] =
     "\"jelly-scrolling\". This is an experimental implementation with known "
     "bugs, visual artifacts, and performance cost. This implementation may be "
     "removed at any time.";
+
+const char kOrganicRepeatableQueriesName[] =
+    "Organic repeatable queries in Most Visited tiles";
+const char kOrganicRepeatableQueriesDescription[] =
+    "Enables showing the most repeated queries, from the device browsing "
+    "history, organically among the most visited sites in the MV tiles.";
 
 const char kOriginAgentClusterDefaultName[] =
     "Origin-keyed Agent Clusters by default";
@@ -2341,6 +2349,12 @@ const char kShelfDragToPinName[] = "Pin apps in shelf using drag";
 const char kShelfDragToPinDescription[] =
     "Enables pinning unpinned items in shelf by dragging them to the part of "
     "the shelf that contains pinned apps.";
+
+const char kShelfGesturesWithVirtualKeyboardName[] =
+    "Enable shelf gestures from virtual keyboard";
+const char kShelfGesturesWithVirtualKeyboardDescription[] =
+    "Enables shelf tablet mode gestures to show hotseat, got to home screen, "
+    "or to go to overview while virtual keyboard is visible";
 
 const char kShelfHoverPreviewsName[] =
     "Show previews of running apps when hovering over the shelf.";
@@ -3330,6 +3344,12 @@ const char kMessagesForAndroidUpdatePasswordName[] =
 const char kMessagesForAndroidUpdatePasswordDescription[] =
     "When enabled, update password prompt will use the new Messages UI.";
 
+const char kNetworkServiceInProcessName[] =
+    "Run the network service on the browser process";
+const char kNetworkServiceInProcessDescription[] =
+    "When enabled, the network service runs on the browser process. Otherwise, "
+    "it runs on a dedicated process.";
+
 const char kNewWindowAppMenuName[] = "Show a menu item 'New Window'";
 const char kNewWindowAppMenuDescription[] =
     "Show a new menu item 'New Window' on tablet-sized screen when Chrome "
@@ -4296,6 +4316,12 @@ const char kPreferConstantFrameRateDescription[] =
     "Enables this flag to prefer using constant frame rate for camera when "
     "streaming";
 
+const char kMoreVideoCaptureBuffersName[] = "More Video Capture Buffers";
+const char kMoreVideoCaptureBuffersDescription[] =
+    "This flag enables using a larger amount Chrome-allocated buffers for "
+    "video capture. This larger amount is needed for deeper pipelines, e.g. "
+    "sophisticated camera effects.";
+
 const char kForceControlFaceAeName[] = "Force control face AE";
 const char kForceControlFaceAeDescription[] =
     "Control this flag to force enable or disable face AE for camera";
@@ -4560,14 +4586,6 @@ const char kEnableBackgroundBlurName[] = "Enable background blur.";
 const char kEnableBackgroundBlurDescription[] =
     "Enables background blur for the Launcher, Shelf, Unified System Tray etc.";
 
-const char kEnhancedClipboardName[] =
-    "Productivity Experiment: Enable Enhanced Clipboard";
-const char kEnhancedClipboardDescription[] =
-    "Enables an experimental clipboard history which aims to reduce context "
-    "switching. After copying to the clipboard, press search + v to show the "
-    "history. Selecting something from the menu will result in a paste to the "
-    "active window.";
-
 const char kEnhancedClipboardNudgeSessionResetName[] =
     "Enable resetting enhanced clipboard nudge data";
 const char kEnhancedClipboardNudgeSessionResetDescription[] =
@@ -4757,15 +4775,14 @@ const char kEchePhoneHubPermissionsOnboardingDescription[] =
     "Enable the new permissions onboarding flow for Phone Hub notifications "
     "and Eche.";
 
-const char kEcheSWAName[] = "Enable Eche App SWA.";
-const char kEcheSWADescription[] = "Enable the SWA version of the Eche.";
+const char kEcheSWAName[] = "Enable Eche feature";
+const char kEcheSWADescription[] = "This is the main flag for enabling Eche.";
 
 const char kEcheSWADebugModeName[] = "Enable Eche Debug Mode";
-const char kEcheSWADebugModeDescription[] = "Enable the Debug Mode of the Eche";
-
-const char kEnableIdleInhibitName[] = "Enable Idle Inhibit Protocol";
-const char kEnableIdleInhibitDescription[] =
-    "Enables the Wayland idle-inhibit-unstable-v1 protocol";
+const char kEcheSWADebugModeDescription[] =
+    "Enables the Debug Mode of Eche in which the window is not closed after "
+    "a failure happens in order to give the user a chance to look at the "
+    "console logs.";
 
 const char kEnableIkev2VpnName[] = "Enable IKEv2 VPN";
 const char kEnableIkev2VpnDescription[] =
@@ -5465,6 +5482,11 @@ const char kVirtualKeyboardDisabledDescription[] =
 const char kVirtualKeyboardMultitouchName[] = "Virtual Keyboard Multitouch";
 const char kVirtualKeyboardMultitouchDescription[] =
     "Enables multitouch on the virtual keyboard.";
+
+const char kVirtualKeyboardRoundCornersName[] =
+    "Virtual Keyboard Round Corners";
+const char kVirtualKeyboardRoundCornersDescription[] =
+    "Enables round corners on the virtual keyboard.";
 
 const char kWakeOnWifiAllowedName[] = "Allow enabling wake on WiFi features";
 const char kWakeOnWifiAllowedDescription[] =

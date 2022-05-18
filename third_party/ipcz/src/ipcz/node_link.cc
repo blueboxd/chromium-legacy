@@ -12,7 +12,7 @@
 
 #include "ipcz/ipcz.h"
 #include "ipcz/link_type.h"
-#include "ipcz/message_internal.h"
+#include "ipcz/message.h"
 #include "ipcz/node.h"
 #include "ipcz/node_messages.h"
 #include "ipcz/remote_router_link.h"
@@ -117,14 +117,7 @@ void NodeLink::Deactivate() {
   transport_->Deactivate();
 }
 
-SequenceNumber NodeLink::GenerateOutgoingSequenceNumber() {
-  return SequenceNumber(next_outgoing_sequence_number_generator_.fetch_add(
-      1, std::memory_order_relaxed));
-}
-
-void NodeLink::TransmitMessage(
-    internal::MessageBase& message,
-    absl::Span<const internal::ParamMetadata> metadata) {
+void NodeLink::Transmit(Message& message) {
   if (!message.CanTransmitOn(*transport_)) {
     // The driver has indicated that it can't transmit this message through our
     // transport, so the message must instead be relayed through a broker.
@@ -134,35 +127,16 @@ void NodeLink::TransmitMessage(
     return;
   }
 
-  message.Serialize(metadata, *transport_);
   message.header().sequence_number = GenerateOutgoingSequenceNumber();
-  transport_->TransmitMessage(
-      DriverTransport::Message(DriverTransport::Data(message.data_view()),
-                               message.transmissible_driver_handles()));
+  transport_->Transmit(message);
 }
 
-IpczResult NodeLink::OnTransportMessage(
-    const DriverTransport::Message& message) {
-  return DispatchMessage(message);
+SequenceNumber NodeLink::GenerateOutgoingSequenceNumber() {
+  return SequenceNumber(next_outgoing_sequence_number_generator_.fetch_add(
+      1, std::memory_order_relaxed));
 }
 
-void NodeLink::OnTransportError() {
-  // TODO: Notify all routers attached to sublinks here that this link is dead.
-}
-
-bool NodeLink::OnConnectFromBrokerToNonBroker(
-    const msg::ConnectFromBrokerToNonBroker&) {
-  // This message is never valid to receive once a NodeLink is established.
-  return false;
-}
-
-bool NodeLink::OnConnectFromNonBrokerToBroker(
-    const msg::ConnectFromNonBrokerToBroker&) {
-  // This message is never valid to receive once a NodeLink is established.
-  return false;
-}
-
-bool NodeLink::OnRouteClosed(const msg::RouteClosed& route_closed) {
+bool NodeLink::OnRouteClosed(msg::RouteClosed& route_closed) {
   absl::optional<Sublink> sublink = GetSublink(route_closed.params().sublink);
   if (!sublink) {
     // The sublink may have already been removed, for example if the application
@@ -175,28 +149,8 @@ bool NodeLink::OnRouteClosed(const msg::RouteClosed& route_closed) {
       sublink->router_link->GetType(), route_closed.params().sequence_length);
 }
 
-IpczResult NodeLink::DispatchMessage(const DriverTransport::Message& message) {
-  if (message.data.size() < sizeof(internal::MessageHeader)) {
-    return IPCZ_RESULT_INVALID_ARGUMENT;
-  }
-
-  const auto& header =
-      *reinterpret_cast<const internal::MessageHeader*>(message.data.data());
-  switch (header.message_id) {
-// clang-format off
-#include "ipcz/message_macros/message_dispatch_macros.h"
-#include "ipcz/node_messages_generator.h"
-#include "ipcz/message_macros/undef_message_macros.h"
-      // clang-format on
-
-    default:
-      // Future versions may introduce new messages. Silently ignore them.
-      DLOG(WARNING) << "Ignoring unknown transport message with ID "
-                    << static_cast<int>(header.message_id);
-      break;
-  }
-
-  return IPCZ_RESULT_OK;
+void NodeLink::OnTransportError() {
+  // TODO: Notify all routers attached to sublinks here that this link is dead.
 }
 
 NodeLink::Sublink::Sublink(Ref<RemoteRouterLink> router_link,

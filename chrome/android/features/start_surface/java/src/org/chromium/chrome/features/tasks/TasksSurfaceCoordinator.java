@@ -21,6 +21,7 @@ import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
+import org.chromium.chrome.browser.feed.FeedReliabilityLogger;
 import org.chromium.chrome.browser.feedback.HelpAndFeedbackLauncherImpl;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.multiwindow.MultiWindowModeStateDispatcher;
@@ -234,13 +235,14 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     }
 
     @Override
-    public void onFinishNativeInitialization(Context context, OmniboxStub omniboxStub) {
+    public void onFinishNativeInitialization(Context context, OmniboxStub omniboxStub,
+            @Nullable FeedReliabilityLogger feedReliabilityLogger) {
         if (mTabSwitcher != null) {
             mTabSwitcher.initWithNative(context, mTabContentManager,
                     mDynamicResourceLoaderSupplier.get(), mSnackbarManager, mModalDialogManager);
         }
 
-        mMediator.initWithNative(omniboxStub);
+        mMediator.initWithNative(omniboxStub, feedReliabilityLogger);
     }
 
     @Override
@@ -256,10 +258,10 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     }
 
     @Override
-    public void updateFakeSearchBox(int height, int topMargin, int endPadding, float textSize,
-            float translationX, int buttonSize, int lensButtonLeftMargin) {
-        mView.updateFakeSearchBox(height, topMargin, endPadding, textSize, translationX, buttonSize,
-                lensButtonLeftMargin);
+    public void updateFakeSearchBox(int height, int topMargin, int endPadding, float translationX,
+            int buttonSize, int lensButtonLeftMargin) {
+        mView.updateFakeSearchBox(
+                height, topMargin, endPadding, translationX, buttonSize, lensButtonLeftMargin);
     }
 
     @Override

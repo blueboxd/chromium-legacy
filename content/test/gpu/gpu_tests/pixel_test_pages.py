@@ -9,6 +9,8 @@ from __future__ import print_function
 
 import os
 
+from enum import Enum
+
 from gpu_tests import common_browser_args as cba
 from gpu_tests import skia_gold_matching_algorithms as algo
 
@@ -129,11 +131,8 @@ class PixelTestPages():
   @staticmethod
   def DefaultPages(base_name):
     sw_compositing_args = [cba.DISABLE_GPU_COMPOSITING]
-
-    webgpu_args = [
-        cba.ENABLE_UNSAFE_WEBGPU, cba.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES
-    ]
-    webgpu_args_compiler = webgpu_args + ['--disable-metal-shader-cache']
+    browser_swap_args = ['--enable-features=ReportFCPOnlyOnSuccessfulCommit']
+    browser_args_DXVA = [cba.DISABLE_FEATURES_D3D11_VIDEO_DECODER]
 
     # The optimizer script spat out pretty similar values for most MP4 tests, so
     # combine into a single set of parameters.
@@ -194,21 +193,24 @@ class PixelTestPages():
                       base_name + '_SolidColorBackground',
                       test_rect=[500, 500, 100, 100]),
         PixelTestPage(
-            'pixel_video_mp4.html?width=240&height=135',
+            'pixel_video_mp4.html?width=240&height=135&use_timer=1',
             base_name + '_Video_MP4',
+            browser_args=browser_swap_args,
             test_rect=[0, 0, 240, 135],
             # Most images are actually very similar, but Pixel 2
             # tends to produce images with all colors shifted by a
             # small amount.
             matching_algorithm=general_mp4_algo),
         # Surprisingly stable, does not appear to require inexact matching.
-        PixelTestPage('pixel_video_mp4.html?width=240&height=135',
+        PixelTestPage('pixel_video_mp4.html?width=240&height=135&use_timer=1',
                       base_name + '_Video_MP4_DXVA',
-                      browser_args=[cba.DISABLE_FEATURES_D3D11_VIDEO_DECODER],
+                      browser_args=browser_args_DXVA + browser_swap_args,
                       test_rect=[0, 0, 240, 135]),
         PixelTestPage(
-            'pixel_video_mp4_four_colors_aspect_4x3.html?width=240&height=135',
+            'pixel_video_mp4_four_colors_aspect_4x3.html'
+            '?width=240&height=135&use_timer=1',
             base_name + '_Video_MP4_FourColors_Aspect_4x3',
+            browser_args=browser_swap_args,
             test_rect=[0, 0, 240, 135],
             matching_algorithm=algo.SobelMatchingAlgorithm(
                 max_different_pixels=41700,
@@ -216,40 +218,49 @@ class PixelTestPages():
                 edge_threshold=40,
                 ignored_border_thickness=1)),
         PixelTestPage(
-            'pixel_video_mp4_four_colors_rot_90.html?width=270&height=240',
+            'pixel_video_mp4_four_colors_rot_90.html'
+            '?width=270&height=240&use_timer=1',
             base_name + '_Video_MP4_FourColors_Rot_90',
+            browser_args=browser_swap_args,
             test_rect=[0, 0, 270, 240],
             matching_algorithm=general_mp4_algo),
         PixelTestPage(
-            'pixel_video_mp4_four_colors_rot_180.html?width=240&height=135',
+            'pixel_video_mp4_four_colors_rot_180.html'
+            '?width=240&height=135&use_timer=1',
             base_name + '_Video_MP4_FourColors_Rot_180',
+            browser_args=browser_swap_args,
             test_rect=[0, 0, 240, 135],
             matching_algorithm=general_mp4_algo),
         PixelTestPage(
-            'pixel_video_mp4_four_colors_rot_270.html?width=270&height=240',
+            'pixel_video_mp4_four_colors_rot_270.htm'
+            'l?width=270&height=240&use_timer=1',
             base_name + '_Video_MP4_FourColors_Rot_270',
+            browser_args=browser_swap_args,
             test_rect=[0, 0, 270, 240],
             matching_algorithm=general_mp4_algo),
         PixelTestPage(
-            'pixel_video_mp4_rounded_corner.html?width=240&height=135',
+            'pixel_video_mp4_rounded_corner.html'
+            '?width=240&height=135&use_timer=1',
             base_name + '_Video_MP4_Rounded_Corner',
+            browser_args=browser_swap_args,
             test_rect=[0, 0, 240, 135],
             matching_algorithm=algo.SobelMatchingAlgorithm(
                 max_different_pixels=30500,
                 pixel_delta_threshold=15,
                 edge_threshold=70,
                 ignored_border_thickness=1)),
-        PixelTestPage('pixel_video_vp9.html?width=240&height=135',
+        PixelTestPage('pixel_video_vp9.html?width=240&height=135&use_timer=1',
                       base_name + '_Video_VP9',
+                      browser_args=browser_swap_args,
                       test_rect=[0, 0, 240, 135],
                       matching_algorithm=algo.SobelMatchingAlgorithm(
                           max_different_pixels=114000,
                           pixel_delta_threshold=30,
                           edge_threshold=20,
                           ignored_border_thickness=1)),
-        PixelTestPage('pixel_video_vp9.html?width=240&height=135',
+        PixelTestPage('pixel_video_vp9.html?width=240&height=135&use_timer=1',
                       base_name + '_Video_VP9_DXVA',
-                      browser_args=[cba.DISABLE_FEATURES_D3D11_VIDEO_DECODER],
+                      browser_args=browser_args_DXVA + browser_swap_args,
                       test_rect=[0, 0, 240, 135],
                       matching_algorithm=algo.SobelMatchingAlgorithm(
                           max_different_pixels=31100,
@@ -292,14 +303,16 @@ class PixelTestPages():
                       expected_per_process_crashes={
                           CRASH_TYPE_GPU: 1,
                       }),
-        PixelTestPage('pixel_video_backdrop_filter.html?width=240&height=135',
-                      base_name + '_Video_BackdropFilter',
-                      test_rect=[0, 0, 240, 135],
-                      matching_algorithm=algo.SobelMatchingAlgorithm(
-                          max_different_pixels=1000,
-                          pixel_delta_threshold=20,
-                          edge_threshold=40,
-                          ignored_border_thickness=1)),
+        PixelTestPage(
+            'pixel_video_backdrop_filter.html?width=240&height=135&use_timer=1',
+            base_name + '_Video_BackdropFilter',
+            test_rect=[0, 0, 240, 135],
+            browser_args=browser_swap_args,
+            matching_algorithm=algo.SobelMatchingAlgorithm(
+                max_different_pixels=1000,
+                pixel_delta_threshold=20,
+                edge_threshold=40,
+                ignored_border_thickness=1)),
         PixelTestPage('pixel_webgl_premultiplied_alpha_false.html',
                       base_name + '_WebGL_PremultipliedAlpha_False',
                       test_rect=[0, 0, 150, 150]),
@@ -350,83 +363,124 @@ class PixelTestPages():
                       base_name + '_WebGLPreservedAfterTabSwitch',
                       test_rect=[0, 0, 300, 300],
                       optional_action='SwitchTabsAndCopyImage'),
-        PixelTestPage('pixel_webgpu_import_webgl_canvas.html',
-                      base_name + '_WebGPUImportWebGLCanvas',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
-        PixelTestPage('pixel_webgpu_import_2d_canvas.html',
-                      base_name + '_WebGPUImport2DCanvas',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
-        PixelTestPage('pixel_webgpu_import_2d_canvas.html',
-                      base_name + '_WebGPUImportUnaccelerated2DCanvas',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args +
-                      [cba.DISABLE_ACCELERATED_2D_CANVAS]),
-        PixelTestPage('pixel_webgpu_import_webgpu_canvas.html',
-                      base_name + '_WebGPUImportWebGPUCanvas',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
-        PixelTestPage('pixel_webgpu_import_video_frame.html',
-                      base_name + '_WebGPUImportVideoFrame',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
-        PixelTestPage('pixel_webgpu_import_video_frame.html',
-                      base_name + '_WebGPUImportVideoFrameUnaccelerated',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args +
-                      [cba.DISABLE_ACCELERATED_2D_CANVAS]),
-        PixelTestPage('pixel_webgpu_import_video_frame_offscreen_canvas.html',
-                      base_name + '_WebGPUImportVideoFrameOffscreenCanvas',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
-        PixelTestPage(
-            'pixel_webgpu_import_video_frame_offscreen_canvas.html',
-            base_name + '_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas',
-            test_rect=[0, 0, 400, 200],
-            browser_args=webgpu_args + [cba.DISABLE_ACCELERATED_2D_CANVAS]),
-        PixelTestPage('pixel_webgpu_webgl_teximage2d.html',
-                      base_name + '_WebGPUWebGLTexImage2D',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
-        PixelTestPage('pixel_webgpu_canvas2d_drawimage.html',
-                      base_name + '_WebGPUCanvas2DDrawImage',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
-        PixelTestPage('pixel_webgpu_copy_image.html',
-                      base_name + '_WebGPUToDataURL',
-                      test_rect=[0, 0, 400, 300],
-                      browser_args=webgpu_args_compiler),
-        PixelTestPage('pixel_webgpu_cached_swap_buffer_invalidated.html',
-                      base_name +
-                      '_WebGPUCachedSwapBufferInvalidatedShouldBeBlank',
-                      test_rect=[0, 0, 300, 300],
-                      browser_args=webgpu_args),
-        PixelTestPage('pixel_webgpu_copy_externalImage_2d_canvas.html',
-                      base_name + '_WebGPUCopyExternalImage2DCanvas',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
-        PixelTestPage('pixel_webgpu_copy_externalImage_imageData.html',
-                      base_name + '_WebGPUCopyExternalImageImageData',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
-        PixelTestPage('pixel_webgpu_copy_externalImage_imageBitmap.html',
-                      base_name + '_WebGPUCopyExternalImageImageBitmap',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
-        PixelTestPage('pixel_webgpu_copy_externalImage_offscreenCanvas.html',
-                      base_name + '_WebGPUCopyExternalImageOffscreenCanvas',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
-        PixelTestPage('pixel_webgpu_copy_externalImage_webgl_canvas.html',
-                      base_name + '_WebGPUCopyExternalImageWebGLCanvas',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
-        PixelTestPage('pixel_webgpu_copy_externalImage_webgpu_canvas.html',
-                      base_name + '_WebGPUCopyExternalImageWebGPUCanvas',
-                      test_rect=[0, 0, 400, 200],
-                      browser_args=webgpu_args),
     ]
+
+  @staticmethod
+  def WebGPUPages(base_name):
+    class Mode(Enum):
+      WEBGPU_DEFAULT = 0
+      WEBGPU_SWIFTSHADER = 1
+      VULKAN_SWIFTSHADER = 2
+
+    def webgpu_pages_helper(base_name, mode):
+      webgpu_args = [
+          cba.ENABLE_UNSAFE_WEBGPU,
+          cba.ENABLE_EXPERIMENTAL_WEB_PLATFORM_FEATURES
+      ]
+      video_frame_query_params = '?sourceType=hw_decoder'
+      if mode == Mode.WEBGPU_SWIFTSHADER:
+        base_name += '_WebGPUSwiftShader'
+        webgpu_args += [
+            '--enable-features=UseSkiaRenderer,Vulkan',
+            '--use-webgpu-adapter=swiftshader'
+        ]
+        video_frame_query_params = '?sourceType=sw_decoder'
+      elif mode == Mode.VULKAN_SWIFTSHADER:
+        base_name += '_VulkanSwiftShader'
+        webgpu_args += [
+            '--enable-features=UseSkiaRenderer,Vulkan',
+            '--use-angle=swiftshader', '--use-vulkan=swiftshader',
+            '--use-webgpu-adapter=swiftshader', '--disable-vulkan-surface'
+        ]
+        video_frame_query_params = '?sourceType=sw_decoder'
+
+      return [
+          PixelTestPage('pixel_webgpu_import_webgl_canvas.html',
+                        base_name + '_WebGPUImportWebGLCanvas',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_import_2d_canvas.html',
+                        base_name + '_WebGPUImport2DCanvas',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_import_2d_canvas.html',
+                        base_name + '_WebGPUImportUnaccelerated2DCanvas',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args +
+                        [cba.DISABLE_ACCELERATED_2D_CANVAS]),
+          PixelTestPage('pixel_webgpu_import_webgpu_canvas.html',
+                        base_name + '_WebGPUImportWebGPUCanvas',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_import_video_frame.html' +
+                        video_frame_query_params,
+                        base_name + '_WebGPUImportVideoFrame',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+          PixelTestPage(
+              'pixel_webgpu_import_video_frame.html' + video_frame_query_params,
+              base_name + '_WebGPUImportVideoFrameUnaccelerated',
+              test_rect=[0, 0, 400, 200],
+              browser_args=webgpu_args + [cba.DISABLE_ACCELERATED_2D_CANVAS]),
+          PixelTestPage(
+              'pixel_webgpu_import_video_frame_offscreen_canvas.html' +
+              video_frame_query_params,
+              base_name + '_WebGPUImportVideoFrameOffscreenCanvas',
+              test_rect=[0, 0, 400, 200],
+              browser_args=webgpu_args),
+          PixelTestPage(
+              'pixel_webgpu_import_video_frame_offscreen_canvas.html' +
+              video_frame_query_params,
+              base_name + '_WebGPUImportVideoFrameUnacceleratedOffscreenCanvas',
+              test_rect=[0, 0, 400, 200],
+              browser_args=webgpu_args + [cba.DISABLE_ACCELERATED_2D_CANVAS]),
+          PixelTestPage('pixel_webgpu_webgl_teximage2d.html',
+                        base_name + '_WebGPUWebGLTexImage2D',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_canvas2d_drawimage.html',
+                        base_name + '_WebGPUCanvas2DDrawImage',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_copy_image.html',
+                        base_name + '_WebGPUToDataURL',
+                        test_rect=[0, 0, 400, 300],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_cached_swap_buffer_invalidated.html',
+                        base_name +
+                        '_WebGPUCachedSwapBufferInvalidatedShouldBeBlank',
+                        test_rect=[0, 0, 300, 300],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_copy_externalImage_2d_canvas.html',
+                        base_name + '_WebGPUCopyExternalImage2DCanvas',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_copy_externalImage_imageData.html',
+                        base_name + '_WebGPUCopyExternalImageImageData',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_copy_externalImage_imageBitmap.html',
+                        base_name + '_WebGPUCopyExternalImageImageBitmap',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_copy_externalImage_offscreenCanvas.html',
+                        base_name + '_WebGPUCopyExternalImageOffscreenCanvas',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_copy_externalImage_webgl_canvas.html',
+                        base_name + '_WebGPUCopyExternalImageWebGLCanvas',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+          PixelTestPage('pixel_webgpu_copy_externalImage_webgpu_canvas.html',
+                        base_name + '_WebGPUCopyExternalImageWebGPUCanvas',
+                        test_rect=[0, 0, 400, 200],
+                        browser_args=webgpu_args),
+      ]
+
+    return (webgpu_pages_helper(base_name, mode=Mode.WEBGPU_DEFAULT) +
+            webgpu_pages_helper(base_name, mode=Mode.WEBGPU_SWIFTSHADER) +
+            webgpu_pages_helper(base_name, mode=Mode.VULKAN_SWIFTSHADER))
+
 
   # Pages that should be run with GPU rasterization enabled.
   @staticmethod
@@ -803,6 +857,9 @@ class PixelTestPages():
         # All bots are connected with a power source, however, we want to to
         # test with the code path that's enabled with battery power.
         cba.DISABLE_DIRECT_COMPOSITION_VP_SCALING,
+        # This feature ensures that addSwapCompletionEventListener in
+        # gpu_benchmarking only sends completion event on a succdessful commit.
+        '--enable-features=ReportFCPOnlyOnSuccessfulCommit',
     ]
     browser_args_NV12 = browser_args + [
         '--direct-composition-video-swap-chain-format=nv12'
@@ -843,7 +900,7 @@ class PixelTestPages():
     )
 
     return [
-        PixelTestPage('pixel_video_mp4.html?width=240&height=135',
+        PixelTestPage('pixel_video_mp4.html?width=240&height=135&swaps=12',
                       base_name + '_DirectComposition_Video_MP4',
                       test_rect=[0, 0, 240, 135],
                       browser_args=browser_args,
@@ -871,9 +928,9 @@ class PixelTestPages():
                       browser_args=browser_args_YUY2,
                       other_args={'pixel_format': 'YUY2'},
                       matching_algorithm=permissive_dc_sobel_algorithm),
-        PixelTestPage('pixel_video_mp4.html?width=240&height=135',
+        PixelTestPage('pixel_video_mp4.html?width=960&height=540',
                       base_name + '_DirectComposition_Video_MP4_BGRA',
-                      test_rect=[0, 0, 240, 135],
+                      test_rect=[0, 0, 960, 540],
                       browser_args=browser_args_BGRA,
                       other_args={'pixel_format': 'BGRA'},
                       matching_algorithm=permissive_dc_sobel_algorithm),
@@ -897,7 +954,8 @@ class PixelTestPages():
             other_args={'video_is_rotated': True},
             matching_algorithm=strict_dc_sobel_algorithm),
         PixelTestPage(
-            'pixel_video_mp4_four_colors_rot_180.html?width=240&height=135',
+            'pixel_video_mp4_four_colors_rot_180.html?'
+            'width=240&height=135&swaps=12',
             base_name + '_DirectComposition_Video_MP4_FourColors_Rot_180',
             test_rect=[0, 0, 240, 135],
             browser_args=browser_args,
@@ -948,9 +1006,9 @@ class PixelTestPages():
                       browser_args=browser_args_YUY2,
                       other_args={'pixel_format': 'YUY2'},
                       matching_algorithm=very_permissive_dc_sobel_algorithm),
-        PixelTestPage('pixel_video_vp9.html?width=240&height=135',
+        PixelTestPage('pixel_video_vp9.html?width=960&height=540&swaps=12',
                       base_name + '_DirectComposition_Video_VP9_BGRA',
-                      test_rect=[0, 0, 240, 135],
+                      test_rect=[0, 0, 960, 540],
                       browser_args=browser_args_BGRA,
                       other_args={'pixel_format': 'BGRA'},
                       matching_algorithm=very_permissive_dc_sobel_algorithm),
@@ -966,25 +1024,22 @@ class PixelTestPages():
                       browser_args=browser_args_vp_scaling,
                       other_args={'zero_copy': False},
                       matching_algorithm=very_permissive_dc_sobel_algorithm),
-        PixelTestPage(
-            'pixel_video_underlay.html?width=240&height=136&delayMs=4000',
-            base_name + '_DirectComposition_Underlay',
-            test_rect=[0, 0, 240, 136],
-            browser_args=browser_args,
-            matching_algorithm=permissive_dc_sobel_algorithm),
-        PixelTestPage(
-            'pixel_video_underlay.html?width=240&height=136&delayMs=2500',
-            base_name + '_DirectComposition_Underlay_DXVA',
-            test_rect=[0, 0, 240, 136],
-            browser_args=browser_args_DXVA,
-            matching_algorithm=permissive_dc_sobel_algorithm),
-        PixelTestPage(
-            'pixel_video_underlay.html?width=960&height=540&delayMs=2500',
-            base_name + '_DirectComposition_Underlay_Fullsize',
-            test_rect=[0, 0, 960, 540],
-            browser_args=browser_args,
-            other_args={'full_size': True},
-            matching_algorithm=strict_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_underlay.html?width=240&height=136&swaps=16',
+                      base_name + '_DirectComposition_Underlay',
+                      test_rect=[0, 0, 240, 136],
+                      browser_args=browser_args,
+                      matching_algorithm=permissive_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_underlay.html?width=240&height=136&swaps=12',
+                      base_name + '_DirectComposition_Underlay_DXVA',
+                      test_rect=[0, 0, 240, 136],
+                      browser_args=browser_args_DXVA,
+                      matching_algorithm=permissive_dc_sobel_algorithm),
+        PixelTestPage('pixel_video_underlay.html?width=960&height=540&swaps=12',
+                      base_name + '_DirectComposition_Underlay_Fullsize',
+                      test_rect=[0, 0, 960, 540],
+                      browser_args=browser_args,
+                      other_args={'full_size': True},
+                      matching_algorithm=strict_dc_sobel_algorithm),
         PixelTestPage(
             'pixel_video_mp4_rounded_corner.html?width=240&height=135',
             base_name + '_DirectComposition_Video_MP4_Rounded_Corner',

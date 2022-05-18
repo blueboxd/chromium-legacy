@@ -64,7 +64,6 @@
 #include "ios/chrome/browser/flags/ios_chrome_flag_descriptions.h"
 #import "ios/chrome/browser/ntp/features.h"
 #include "ios/chrome/browser/policy/cloud/user_policy_switch.h"
-#include "ios/chrome/browser/policy/policy_features.h"
 #include "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/screen_time/screen_time_buildflags.h"
 #import "ios/chrome/browser/sessions/session_features.h"
@@ -230,6 +229,18 @@ const FeatureEntry::FeatureVariation
         {"Preload Templates", kDiscoverFeedSRSPreloadTemplates,
          std::size(kDiscoverFeedSRSPreloadTemplates), nullptr},
 };
+
+const FeatureEntry::FeatureParam kDiscoverFeedTopSyncPromoFullWithTitle[] = {
+    {kDiscoverFeedTopSyncPromoStyleParam,
+     kDiscoverFeedTopSyncPromoStyleFullWithTitle}};
+const FeatureEntry::FeatureParam kDiscoverFeedTopSyncPromoCompact[] = {
+    {kDiscoverFeedTopSyncPromoStyleParam,
+     kDiscoverFeedTopSyncPromoStyleCompact}};
+const FeatureEntry::FeatureVariation kDiscoverFeedTopSyncPromoVariations[] = {
+    {"Full with title", kDiscoverFeedTopSyncPromoFullWithTitle,
+     std::size(kDiscoverFeedTopSyncPromoFullWithTitle), nullptr},
+    {"Compact", kDiscoverFeedTopSyncPromoCompact,
+     std::size(kDiscoverFeedTopSyncPromoCompact), nullptr}};
 
 const FeatureEntry::FeatureParam kiOSOmniboxUpdatedPopupUIVersion1[] = {
     {kIOSOmniboxUpdatedPopupUIVariationName,
@@ -568,7 +579,7 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kIOSOmniboxUpdatedPopupUIDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kIOSOmniboxUpdatedPopupUI,
                                     kiOSOmniboxUpdatedPopupUIVariations,
-                                    "kIOSOmniboxUpdatedPopupUI")},
+                                    "IOSOmniboxUpdatedPopupUI")},
     {"start-surface", flag_descriptions::kStartSurfaceName,
      flag_descriptions::kStartSurfaceDescription, flags_ui::kOsIos,
      FEATURE_WITH_PARAMS_VALUE_TYPE(kStartSurface,
@@ -668,8 +679,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      FEATURE_VALUE_TYPE(kNewOverflowMenu)},
     {"new-overflow-menu-settings-action",
      flag_descriptions::kNewOverflowMenuSettingsActionName,
-     flag_descriptions::kNewOverflowMenuSettingsActionName, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kNewOverflowMenuSettingsAction)},
+     flag_descriptions::kNewOverflowMenuSettingsActionDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kNewOverflowMenuSettingsAction)},
+    {"new-overflow-menu-simple-destination-icons",
+     flag_descriptions::kNewOverflowMenuSimpleDestinationIconsName,
+     flag_descriptions::kNewOverflowMenuSimpleDestinationIconsDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(kNewOverflowMenuSimpleDestinationIcons)},
     {"new-overflow-menu-cbd-action",
      flag_descriptions::kNewOverflowMenuCBDActionName,
      flag_descriptions::kNewOverflowMenuCBDActionDescription, flags_ui::kOsIos,
@@ -699,6 +715,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableDiscoverFeedDiscoFeedEndpointDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kEnableDiscoverFeedDiscoFeedEndpoint)},
+    {"enable-discover-feed-top-sync-promo",
+     flag_descriptions::kEnableDiscoverFeedTopSyncPromoName,
+     flag_descriptions::kEnableDiscoverFeedTopSyncPromoDescription,
+     flags_ui::kOsIos,
+     FEATURE_WITH_PARAMS_VALUE_TYPE(kEnableDiscoverFeedTopSyncPromo,
+                                    kDiscoverFeedTopSyncPromoVariations,
+                                    "EnableDiscoverFeedTopSyncPromo")},
     {"enable-fre-default-browser-screen-testing",
      flag_descriptions::kEnableFREDefaultBrowserScreenTestingName,
      flag_descriptions::kEnableFREDefaultBrowserScreenTestingDescription,
@@ -914,6 +937,13 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAutofillEnableRankingFormulaDescription,
      flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(autofill::features::kAutofillEnableRankingFormula)},
+    {"autofill-remove-card-expiry-from-downstream-suggestion",
+     flag_descriptions::kAutofillRemoveCardExpiryFromDownstreamSuggestionName,
+     flag_descriptions::
+         kAutofillRemoveCardExpiryFromDownstreamSuggestionDescription,
+     flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(autofill::features::
+                            kAutofillRemoveCardExpiryFromDownstreamSuggestion)},
 };
 
 bool SkipConditionalFeatureEntry(const flags_ui::FeatureEntry& entry) {

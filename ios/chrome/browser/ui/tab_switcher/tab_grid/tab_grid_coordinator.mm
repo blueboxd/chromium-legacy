@@ -19,7 +19,6 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/commerce/price_alert_util.h"
 #include "ios/chrome/browser/main/browser.h"
-#import "ios/chrome/browser/policy/policy_features.h"
 #import "ios/chrome/browser/policy/policy_util.h"
 #include "ios/chrome/browser/pref_names.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
@@ -1120,6 +1119,11 @@
                      trigger:ViewRevealTrigger::AppBackgrounding];
     [self dismissPopovers];
   }
+  if (ShowThumbStripInTraitCollection(
+          self.baseViewController.traitCollection) !=
+      [self isThumbStripEnabled]) {
+    [self updateThumbstripIfNeededOnViewController:self.baseViewController];
+  }
 }
 
 #pragma mark - ViewControllerTraitCollectionObserver
@@ -1131,6 +1135,11 @@
   if (sceneState.activationLevel < SceneActivationLevelForegroundInactive) {
     return;
   }
+  [self updateThumbstripIfNeededOnViewController:viewController];
+}
+
+- (void)updateThumbstripIfNeededOnViewController:
+    (UIViewController*)viewController {
   BOOL canShowThumbStrip =
       ShowThumbStripInTraitCollection(viewController.traitCollection);
   if (canShowThumbStrip != [self isThumbStripEnabled]) {

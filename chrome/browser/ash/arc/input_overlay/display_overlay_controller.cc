@@ -86,6 +86,9 @@ void DisplayOverlayController::AddOverlay(DisplayMode display_mode) {
 }
 
 void DisplayOverlayController::RemoveOverlayIfAny() {
+  // Call |RemoveInputMenuView| explicitly to make sure UMA stats is updated.
+  RemoveInputMenuView();
+
   auto* shell_surface_base =
       exo::GetShellSurfaceBaseForWindow(touch_injector_->target_window());
   if (shell_surface_base && shell_surface_base->HasOverlay())
@@ -198,8 +201,7 @@ void DisplayOverlayController::AddEducationalView() {
   if (educational_view_)
     return;
 
-  educational_view_ = parent_view->AddChildView(
-      EducationalView::BuildMenu(this, GetParentView()));
+  educational_view_ = EducationalView::Show(this, GetParentView());
 }
 
 void DisplayOverlayController::RemoveEducationalView() {

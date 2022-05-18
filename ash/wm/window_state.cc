@@ -277,10 +277,12 @@ WindowState::~WindowState() {
   // properties. As a result, window_->RemoveObserver() doesn't need to (and
   // shouldn't) be called here.
 
-  // Records the number of mis-triggers of drag to maximize behavior for
-  // `window_` during its lifetime.
-  base::UmaHistogramCounts100(kDragToMaximizeMisTriggersHistogramName,
-                              num_of_drag_to_maximize_mis_triggers_);
+  // Records the number of mis-triggers of drag to maximize behavior if
+  // `window_` has been dragged to maximized during its lifetime.
+  if (has_ever_been_dragged_to_maximized_) {
+    base::UmaHistogramCounts100(kDragToMaximizeMisTriggersHistogramName,
+                                num_of_drag_to_maximize_mis_triggers_);
+  }
 }
 
 bool WindowState::HasDelegate() const {
@@ -704,6 +706,9 @@ WindowStateType WindowState::GetRestoreWindowState() const {
 }
 
 void WindowState::TrackDragToMaximizeBehavior() {
+  if (!has_ever_been_dragged_to_maximized_)
+    has_ever_been_dragged_to_maximized_ = true;
+
   // If drag to maximize is triggered again before we check for the previous
   // one, then the previous one must be a mis-trigger. Record the mis-trigger
   // and reset `drag_to_maximize_mis_trigger_timer_`.
@@ -809,12 +814,6 @@ void WindowState::AdjustSnappedBounds(gfx::Rect* bounds) {
 void WindowState::UpdateWindowPropertiesFromStateType() {
   ui::WindowShowState new_window_state =
       ToWindowShowState(current_state_->GetType());
-  // Clear |kPreMinimizedShowStateKey| property only when the window is actually
-  // Unminimized and not in tablet mode.
-  if (new_window_state != ui::SHOW_STATE_MINIMIZED && IsMinimized() &&
-      !IsTabletModeEnabled()) {
-    window()->ClearProperty(aura::client::kPreMinimizedShowStateKey);
-  }
   if (new_window_state != GetShowState()) {
     base::AutoReset<bool> resetter(&ignore_property_change_, true);
     window_->SetProperty(aura::client::kShowStateKey, new_window_state);
@@ -1040,6 +1039,7 @@ void WindowState::UpdateWindowStateRestoreHistoryStack(
       kWindowStateRestoreHistoryLayerMap.end();
   if (!is_state_type_supported) {
     window_state_restore_history_.clear();
+    window_->ClearProperty(aura::client::kRestoreShowStateKey);
     return;
   }
 
@@ -1063,6 +1063,16 @@ void WindowState::UpdateWindowStateRestoreHistoryStack(
       (kWindowStateRestoreHistoryLayerMap.at(current_state_type) >
        kWindowStateRestoreHistoryLayerMap.at(previous_state_type))) {
     window_state_restore_history_.push_back(previous_state_type);
+  }
+
+  // TODO(xdai): For now we don't save the restore history in tablet mode in the
+  // window property, so that when exiting tablet mode, the window can still
+  // restore back to its old window state (see the test case
+  // TabletModeWindowManagerTest.UnminimizeInTabletMode). We should revisit this
+  // logic.
+  if (!IsTabletModeEnabled()) {
+    window_->SetProperty(aura::client::kRestoreShowStateKey,
+                         chromeos::ToWindowShowState(GetRestoreWindowState()));
   }
 }
 

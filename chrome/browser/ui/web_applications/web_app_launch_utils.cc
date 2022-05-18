@@ -215,7 +215,7 @@ std::unique_ptr<AppBrowserController> MaybeCreateAppBrowserController(
   auto* const provider =
       WebAppProvider::GetForLocalAppsUnchecked(browser->profile());
   if (provider && provider->registrar().IsInstalled(app_id)) {
-    const SystemWebAppDelegate* system_app = nullptr;
+    const ash::SystemWebAppDelegate* system_app = nullptr;
     auto system_app_type =
         GetSystemWebAppTypeForAppId(browser->profile(), app_id);
     if (system_app_type) {
@@ -286,7 +286,7 @@ content::WebContents* NavigateWebApplicationWindow(
 content::WebContents* NavigateWebAppUsingParams(const std::string& app_id,
                                                 NavigateParams& nav_params) {
   Browser* browser = nav_params.browser;
-  const absl::optional<SystemAppType> capturing_system_app_type =
+  const absl::optional<ash::SystemWebAppType> capturing_system_app_type =
       GetCapturingSystemAppForURL(browser->profile(), nav_params.url);
   // TODO(crbug.com/1201820): This block creates conditions where Navigate()
   // returns early and causes a crash. Fail gracefully instead. Further

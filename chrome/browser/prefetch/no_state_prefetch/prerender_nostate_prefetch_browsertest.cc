@@ -282,7 +282,7 @@ class NoStatePrefetchBrowserTest
     command_line->AppendSwitchASCII(embedder_support::kOriginTrialPublicKey,
                                     kOriginTrialPublicKeyForTesting);
     command_line->AppendSwitchASCII(switches::kEnableBlinkFeatures,
-                                    "SpeculationRulesPrefetchProxy");
+                                    "SpeculationRulesPrefetchWithSubresources");
   }
 
   void SetUpOnMainThread() override {
@@ -438,8 +438,9 @@ class NoStatePrefetchBrowserTestHttpCache
   void SetUp() override {
     bool split_cache_by_network_isolation_key = GetParam();
     if (split_cache_by_network_isolation_key) {
-      feature_list_.InitAndEnableFeature(
-          net::features::kSplitCacheByNetworkIsolationKey);
+      feature_list_.InitWithFeatures(
+          {net::features::kSplitCacheByNetworkIsolationKey},
+          {net::features::kForceIsolationInfoFrameOriginToTopLevelFrame});
     } else {
       feature_list_.InitAndDisableFeature(
           net::features::kSplitCacheByNetworkIsolationKey);

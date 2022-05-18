@@ -315,15 +315,6 @@ chromium-metrics-reviews@google.com.
   </summary>
 </histogram>
 
-<histogram name="Storage.Blob.GetBlobFromUUIDTime" units="ms"
-    expires_after="M85">
-  <owner>mek@chromium.org</owner>
-  <summary>
-    The amount of time taken to complete the synchronous
-    BlobRegistry.GetBlobFromUUID mojo call.
-  </summary>
-</histogram>
-
 <histogram name="Storage.Blob.IDBRequestLoader.ReadError" enum="NetErrorCodes"
     expires_after="M95">
   <owner>mek@chromium.org</owner>
@@ -449,13 +440,6 @@ chromium-metrics-reviews@google.com.
     True if we reuse an item for a blob created from using Blob.slice, recorded
     in BlobStorageContext on blob creation.
   </summary>
-</histogram>
-
-<histogram base="true" name="Storage.Blob.SizeEvictedToDiskInKB" units="KB"
-    expires_after="2020-07-06">
-  <owner>ssid@chromium.org</owner>
-  <owner>mek@chromium.org</owner>
-  <summary>Records the total size of in-memory blobs evicted to disk.</summary>
 </histogram>
 
 <histogram name="Storage.Blob.TotalSize" units="KB" expires_after="M95">
@@ -633,7 +617,7 @@ chromium-metrics-reviews@google.com.
 </histogram>
 
 <histogram name="Storage.InterestGroup.DBErrors" units="count"
-    expires_after="M105">
+    expires_after="2022-11-13">
   <owner>behamilton@google.com</owner>
   <owner>pauljensen@chromium.org</owner>
   <summary>

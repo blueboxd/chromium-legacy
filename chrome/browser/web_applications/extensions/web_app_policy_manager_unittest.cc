@@ -381,10 +381,11 @@ class WebAppPolicyManagerTest : public ChromeRenderViewHostTestHarness,
               return true;
             }));
 
-    policy_manager().SetSubsystems(
-        &externally_managed_app_manager(), &app_registrar(),
-        &controller().sync_bridge(), &system_app_manager(),
-        &controller().os_integration_manager());
+    policy_manager().SetSubsystems(&externally_managed_app_manager(),
+                                   &app_registrar(),
+                                   &controller().sync_bridge(),
+                                   &system_app_manager().system_app_delegates(),
+                                   &controller().os_integration_manager());
 
     controller().Init();
   }
@@ -1128,8 +1129,8 @@ TEST_P(WebAppPolicyManagerTest, DisableWebApps) {
       std::move(disabled_apps_list));
   base::RunLoop().RunUntilIdle();
 
-  std::set<SystemAppType> expected_disabled_apps;
-  expected_disabled_apps.insert(SystemAppType::CAMERA);
+  std::set<ash::SystemWebAppType> expected_disabled_apps;
+  expected_disabled_apps.insert(ash::SystemWebAppType::CAMERA);
 
   disabled_apps = policy_manager().GetDisabledSystemWebApps();
   EXPECT_EQ(disabled_apps, expected_disabled_apps);

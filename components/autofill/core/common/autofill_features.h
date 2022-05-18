@@ -47,6 +47,8 @@ extern const base::Feature kAutofillAllowNonHttpActivation;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillComplementCountryCodeOnImport;
 COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillConsiderPlaceholderForParsing;
+COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillConsiderVariationCountryCodeForPhoneNumbers;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillEnableWithinFencedFrame;
@@ -150,6 +152,8 @@ extern const base::Feature kAutofillProbableFormSubmissionInBrowser;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillProfileImportFromUnfocusableFields;
 COMPONENT_EXPORT(AUTOFILL)
+extern const base::Feature kAutofillRationalizeStreetAddressAndAddressLine;
+COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillRemoveInvalidPhoneNumberOnImport;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillRemoveInaccessibleProfileValues;
@@ -181,8 +185,6 @@ COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillUseNewSectioningMethod;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillUseConsistentPopupSettingsIcons;
-COMPONENT_EXPORT(AUTOFILL)
-extern const base::Feature kAutofillUseUnassociatedListedElements;
 COMPONENT_EXPORT(AUTOFILL)
 extern const base::Feature kAutofillVisualImprovementsForSuggestionUi;
 

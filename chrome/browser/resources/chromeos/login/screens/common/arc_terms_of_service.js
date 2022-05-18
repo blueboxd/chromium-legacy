@@ -34,12 +34,12 @@ const ArcTosState = {
  *   arcBackupRestorePopup: OobeModalDialogElement,
  *   arcLocationServicePopup: OobeModalDialogElement,
  *   arcMetricsPopup: OobeModalDialogElement,
- *   arcTosAcceptButton: OobeTextButtonElement,
+ *   arcTosAcceptButton: OobeTextButton,
  *   arcTosDialog: OobeAdaptiveDialogElement,
- *   arcTosNextButton: OobeTextButtonElement,
+ *   arcTosNextButton: OobeTextButton,
  *   arcTosOverlayPrivacyPolicy: OobeModalDialogElement,
  *   arcTosOverlayWebview: WebView,
- *   arcTosRetryButton: OobeTextButtonElement,
+ *   arcTosRetryButton: OobeTextButton,
  *   arcTosView: WebView,
  *   arcPaiPopup: OobeModalDialogElement,
  * }}
@@ -682,6 +682,11 @@ class ArcTermsOfService extends ArcTermsOfserviceBase {
       var webView = this.$.arcTosView;
       WebViewHelper.loadUrlContentToWebView(
           webView, TERMS_URL, WebViewHelper.ContentType.HTML);
+      return;
+    } else if (details && details.error == 'net::ERR_ABORTED') {
+      // Retry triggers net::ERR_ABORTED, so ignore it.
+      // TODO(b/232592745): Replace with a state machine to handle aborts
+      // gracefully and avoid duplicate reloads.
       return;
     }
     this.showError_();

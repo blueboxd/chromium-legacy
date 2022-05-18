@@ -39,6 +39,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/file_system_access_dialogs.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
@@ -51,6 +52,8 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/blink/public/mojom/file_system_access/file_system_access_manager.mojom.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/origin.h"
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -1328,6 +1331,22 @@ ChromeFileSystemAccessPermissionContext::GetWellKnownDirectoryPath(
   base::FilePath directory_path;
   base::PathService::Get(key, &directory_path);
   return directory_path;
+}
+
+std::u16string ChromeFileSystemAccessPermissionContext::GetPickerTitle(
+    const blink::mojom::FilePickerOptionsPtr& options) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // TODO(asully): Add more per-picker-type strings. Returning the empty string
+  // will fall back to the platform default for the given picker type.
+  std::u16string title;
+  if (options->is_directory_picker_options() &&
+      options->get_directory_picker_options()->request_writable) {
+    title = l10n_util::GetStringUTF16(
+        IDS_FILE_SYSTEM_ACCESS_CHOOSER_OPEN_WRITABLE_DIRECTORY_TITLE);
+  }
+
+  return title;
 }
 
 ChromeFileSystemAccessPermissionContext::Grants

@@ -22,6 +22,8 @@ export type ProfileState = {
   userAcceptedAccountManagement: boolean,
   keepAlives: Array<KeepAlive>,
   signedAccounts: Array<string>,
+  isLoaded: boolean,
+  hasOffTheRecord: boolean,
 };
 
 export type ProfileStateElement = {

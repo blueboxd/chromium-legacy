@@ -36,11 +36,11 @@
 #include "components/infobars/content/content_infobar_manager.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_manager.h"
+#include "components/language/core/browser/accept_languages_service.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/translate/content/browser/content_translate_driver.h"
 #include "components/translate/content/common/translate.mojom.h"
-#include "components/translate/core/browser/translate_accept_languages.h"
 #include "components/translate/core/browser/translate_download_manager.h"
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/translate/core/browser/translate_language_list.h"
@@ -1193,8 +1193,8 @@ TEST_F(TranslateManagerRenderViewHostTest, NeverTranslateLanguagePref) {
   std::unique_ptr<translate::TranslatePrefs> translate_prefs(
       ChromeTranslateClient::CreateTranslatePrefs(prefs));
   EXPECT_FALSE(translate_prefs->IsBlockedLanguage("fr"));
-  translate::TranslateAcceptLanguages* accept_languages =
-      ChromeTranslateClient::GetTranslateAcceptLanguages(profile);
+  language::AcceptLanguagesService* accept_languages =
+      ChromeTranslateClient::GetAcceptLanguagesService(profile);
   EXPECT_TRUE(translate_prefs->CanTranslateLanguage(accept_languages, "fr"));
   SetPrefObserverExpectation(
       translate::TranslatePrefs::kPrefTranslateBlockedLanguages);
@@ -1250,8 +1250,8 @@ TEST_F(TranslateManagerRenderViewHostTest, NeverTranslateSitePref) {
   std::unique_ptr<translate::TranslatePrefs> translate_prefs(
       ChromeTranslateClient::CreateTranslatePrefs(prefs));
   EXPECT_FALSE(translate_prefs->IsSiteOnNeverPromptList(host));
-  translate::TranslateAcceptLanguages* accept_languages =
-      ChromeTranslateClient::GetTranslateAcceptLanguages(profile);
+  language::AcceptLanguagesService* accept_languages =
+      ChromeTranslateClient::GetAcceptLanguagesService(profile);
   EXPECT_TRUE(translate_prefs->CanTranslateLanguage(accept_languages, "fr"));
   SetPrefObserverExpectation(
       translate::TranslatePrefs::kPrefNeverPromptSitesDeprecated);

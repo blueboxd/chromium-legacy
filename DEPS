@@ -1735,7 +1735,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/linux-amd64',
-          'version': '6MeTXTSbQfRUxRGLnxIsfm_P_4evNm3jL3P9PRfn64wC',
+          'version': 'AbtuND1Sd9XnD2OrFlxEmcVYMHhtzMC7l6XexiREGFcC',
         },
       ],
       'dep_type': 'cipd',
@@ -1745,7 +1745,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/windows-amd64',
-          'version': '1U6r3V6uSCIxjIQB8GwhpmGmE1LjJaAueOs3HhD4WJIC',
+          'version': 'cp_nCdrA3VNZpY0dNCbaiZ5ZxU1_Y9BkGi8NoC6n0NUC',
         },
       ],
       'dep_type': 'cipd',
@@ -1767,7 +1767,7 @@ deps = {
       'packages': [
         {
           'package': 'skia/tools/goldctl/mac-arm64',
-          'version': 'P1Kb0UYKaHszJ8iB4lfGiT3a7VEZrzJSZWnr55aK6isC',
+          'version': '_3_6moiopPO-jR-8hfUhuhd3vivPOG4dIjbTtkdZag0C',
         },
       ],
       'dep_type': 'cipd',

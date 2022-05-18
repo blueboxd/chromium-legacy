@@ -79,7 +79,8 @@ NSImage* GetCreditCardTouchBarImage(int iconId) {
 }
 
 - (NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
-      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier {
+      makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier
+    API_AVAILABLE(macos(10.12.2)) {
   if (![identifier hasSuffix:kCreditCardItemsTouchId])
     return nil;
 

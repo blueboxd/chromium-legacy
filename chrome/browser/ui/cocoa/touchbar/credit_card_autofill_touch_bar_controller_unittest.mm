@@ -117,50 +117,57 @@ class CreditCardAutofillTouchBarControllerUnitTest : public CocoaTest {
 
 // Tests to check if the touch bar shows up properly.
 TEST_F(CreditCardAutofillTouchBarControllerUnitTest, TouchBar) {
-  // Touch bar shouldn't appear if the popup is not for credit cards.
-  [touch_bar_controller_ setIsCreditCardPopup:false];
-  EXPECT_FALSE([touch_bar_controller_ makeTouchBar]);
+  if (@available(macOS 10.12.2, *)) {
+    // Touch bar shouldn't appear if the popup is not for credit cards.
+    [touch_bar_controller_ setIsCreditCardPopup:false];
+    EXPECT_FALSE([touch_bar_controller_ makeTouchBar]);
 
-  // Touch bar shouldn't appear if the popup is empty.
-  [touch_bar_controller_ setIsCreditCardPopup:true];
-  SetLineCount(0);
-  EXPECT_FALSE([touch_bar_controller_ makeTouchBar]);
+    // Touch bar shouldn't appear if the popup is empty.
+    [touch_bar_controller_ setIsCreditCardPopup:true];
+    SetLineCount(0);
+    EXPECT_FALSE([touch_bar_controller_ makeTouchBar]);
 
-  [touch_bar_controller_ setIsCreditCardPopup:true];
-  SetLineCount(2);
-  NSTouchBar* touch_bar = [touch_bar_controller_ makeTouchBar];
-  EXPECT_TRUE(touch_bar);
-  EXPECT_TRUE([[touch_bar customizationIdentifier]
-      isEqual:ui::GetTouchBarId(kCreditCardAutofillTouchBarId)]);
-  EXPECT_EQ(1UL, [[touch_bar itemIdentifiers] count]);
+    [touch_bar_controller_ setIsCreditCardPopup:true];
+    SetLineCount(2);
+    NSTouchBar* touch_bar = [touch_bar_controller_ makeTouchBar];
+    EXPECT_TRUE(touch_bar);
+    EXPECT_TRUE([[touch_bar customizationIdentifier]
+        isEqual:ui::GetTouchBarId(kCreditCardAutofillTouchBarId)]);
+    EXPECT_EQ(1UL, [[touch_bar itemIdentifiers] count]);
+  }
 }
 
 // Tests to check that the touch bar doesn't show more than 3 items
 TEST_F(CreditCardAutofillTouchBarControllerUnitTest, TouchBarCardLimit) {
-  [touch_bar_controller_ setIsCreditCardPopup:true];
-  SetLineCount(4);
-  NSTouchBar* touch_bar = [touch_bar_controller_ makeTouchBar];
-  EXPECT_TRUE(touch_bar);
-  EXPECT_TRUE([[touch_bar customizationIdentifier]
-      isEqual:ui::GetTouchBarId(kCreditCardAutofillTouchBarId)]);
+  if (@available(macOS 10.12.2, *)) {
+    [touch_bar_controller_ setIsCreditCardPopup:true];
+    SetLineCount(4);
+    NSTouchBar* touch_bar = [touch_bar_controller_ makeTouchBar];
+    EXPECT_TRUE(touch_bar);
+    EXPECT_TRUE([[touch_bar customizationIdentifier]
+        isEqual:ui::GetTouchBarId(kCreditCardAutofillTouchBarId)]);
 
-  NSTouchBarItem* item = [touch_bar_controller_
-                   touchBar:touch_bar
-      makeItemForIdentifier:ui::GetTouchBarItemId(kCreditCardAutofillTouchBarId,
-                                                  kCreditCardItemsTouchId)];
-  NSGroupTouchBarItem* groupItem = static_cast<NSGroupTouchBarItem*>(item);
+    NSTouchBarItem* item =
+        [touch_bar_controller_ touchBar:touch_bar
+                  makeItemForIdentifier:ui::GetTouchBarItemId(
+                                            kCreditCardAutofillTouchBarId,
+                                            kCreditCardItemsTouchId)];
+    NSGroupTouchBarItem* groupItem = static_cast<NSGroupTouchBarItem*>(item);
 
-  EXPECT_EQ(3UL, [[[groupItem groupTouchBar] itemIdentifiers] count]);
+    EXPECT_EQ(3UL, [[[groupItem groupTouchBar] itemIdentifiers] count]);
+  }
 }
 
 // Tests for for the credit card button.
 TEST_F(CreditCardAutofillTouchBarControllerUnitTest, CreditCardButtonCheck) {
-  [touch_bar_controller_ setIsCreditCardPopup:true];
-  SetLineCount(1);
-  NSButton* button = [touch_bar_controller_ createCreditCardButtonAtRow:0];
-  EXPECT_TRUE(button);
-  EXPECT_EQ(0, [button tag]);
-  EXPECT_EQ("bufflehead canvasback", base::SysNSStringToUTF8([button title]));
+  if (@available(macOS 10.12.2, *)) {
+    [touch_bar_controller_ setIsCreditCardPopup:true];
+    SetLineCount(1);
+    NSButton* button = [touch_bar_controller_ createCreditCardButtonAtRow:0];
+    EXPECT_TRUE(button);
+    EXPECT_EQ(0, [button tag]);
+    EXPECT_EQ("bufflehead canvasback", base::SysNSStringToUTF8([button title]));
+  }
 }
 
 // Tests that the touch bar histogram is logged correctly.

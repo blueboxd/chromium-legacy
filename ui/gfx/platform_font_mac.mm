@@ -58,7 +58,7 @@ Weight GetFontWeightFromNSFont(NSFont* font) {
     CGFloat weight_upper;
     Weight gfx_weight;
   } weight_map[] = {
-      // NSFontWeight constants:
+      // NSFontWeight constants introduced in 10.11:
       //   NSFontWeightUltraLight: -0.80
       //   NSFontWeightThin: -0.60
       //   NSFontWeightLight: -0.40
@@ -76,7 +76,8 @@ Weight GetFontWeightFromNSFont(NSFont* font) {
       //   .AppleSystemUIFont: 0.0
       //   .AppleSystemUIFontMedium: 0.23
       //   .AppleSystemUIFontDemi: 0.30
-      //   .AppleSystemUIFontEmphasized: 0.40
+      //   .AppleSystemUIFontBold (10.11): 0.40
+      //   .AppleSystemUIFontEmphasized (10.12-): 0.40
       //   .AppleSystemUIFontHeavy: 0.56
       //   .AppleSystemUIFontBlack: 0.62
       {-1.0, -0.70, Weight::THIN},          // NSFontWeightUltraLight

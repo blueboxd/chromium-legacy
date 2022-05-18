@@ -629,7 +629,9 @@ static base::mac::ScopedObjCClassSwizzler* g_swizzle_imk_input_session;
   MacStartupProfiler::GetInstance()->Profile(
       MacStartupProfiler::WILL_FINISH_LAUNCHING);
 
-  NSWindow.allowsAutomaticWindowTabbing = NO;
+  if (@available(macOS 10.12, *)) {
+    NSWindow.allowsAutomaticWindowTabbing = NO;
+  }
 
   // If the OSX version supports this method, the system will automatically
   // hide the item if there's no touch bar. However, for unsupported versions,

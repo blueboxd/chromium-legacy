@@ -175,7 +175,9 @@ bool SystemSupportsOCSPStapling() {
 #elif BUILDFLAG(IS_MAC)
   // The SecTrustSetOCSPResponse function exists since macOS 10.9+, but does
   // not actually do anything until 10.12.
-  return true;
+  if (base::mac::IsAtLeastOS10_12())
+    return true;
+  return false;
 #else
   return true;
 #endif

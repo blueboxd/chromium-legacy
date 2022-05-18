@@ -36,7 +36,7 @@ CtapGetAssertionRequest MakeTestRequest() {
   return CtapGetAssertionRequest(kRpId, test_data::kClientDataJson);
 }
 
-bool MakeCredential() {
+bool MakeCredential() API_AVAILABLE(macos(10.12.2)) {
   TestCallbackReceiver<CtapDeviceResponseCode,
                        absl::optional<AuthenticatorMakeCredentialResponse>>
       callback_receiver;
@@ -62,7 +62,8 @@ bool MakeCredential() {
 // For demo purposes only. This test does a Touch ID user prompt. It will fail
 // on incompatible hardware and crash if not code signed or lacking the
 // keychain-access-group entitlement.
-TEST(GetAssertionOperationTest, DISABLED_TestRun) {
+TEST(GetAssertionOperationTest, DISABLED_TestRun)
+API_AVAILABLE(macos(10.12.2)) {
   base::test::TaskEnvironment task_environment;
   ASSERT_TRUE(MakeCredential());
 

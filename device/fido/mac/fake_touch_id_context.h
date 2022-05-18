@@ -12,7 +12,8 @@ namespace device {
 namespace fido {
 namespace mac {
 
-class FakeTouchIdContext : public TouchIdContext {
+class API_AVAILABLE(macosx(10.12.2)) FakeTouchIdContext
+    : public TouchIdContext {
  public:
   FakeTouchIdContext(const FakeTouchIdContext&) = delete;
   FakeTouchIdContext& operator=(const FakeTouchIdContext&) = delete;

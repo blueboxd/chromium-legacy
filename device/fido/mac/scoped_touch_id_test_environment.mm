@@ -18,7 +18,8 @@ namespace device {
 namespace fido {
 namespace mac {
 
-static ScopedTouchIdTestEnvironment* g_current_environment = nullptr;
+static API_AVAILABLE(macosx(10.12.2))
+    ScopedTouchIdTestEnvironment* g_current_environment = nullptr;
 
 ScopedTouchIdTestEnvironment::ScopedTouchIdTestEnvironment()
     : keychain_(std::make_unique<FakeKeychain>()) {

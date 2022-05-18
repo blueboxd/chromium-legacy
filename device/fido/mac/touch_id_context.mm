@@ -29,6 +29,7 @@ namespace mac {
 
 namespace {
 
+API_AVAILABLE(macosx(10.12.2))
 base::ScopedCFTypeRef<SecAccessControlRef> DefaultAccessControl() {
   // The default access control policy used for WebAuthn credentials stored by
   // the Touch ID platform authenticator.
@@ -69,6 +70,7 @@ bool ExecutableHasKeychainAccessGroupEntitlement(
 
 // Returns whether creating a key pair in the secure enclave succeeds. Keys are
 // not persisted to the keychain.
+API_AVAILABLE(macosx(10.12.2))
 bool CanCreateSecureEnclaveKeyPairBlocking() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);

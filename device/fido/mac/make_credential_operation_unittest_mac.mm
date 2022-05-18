@@ -43,7 +43,8 @@ CtapMakeCredentialRequest MakeTestRequest() {
 // For demo purposes only. This test does a Touch ID user prompt. It will fail
 // on incompatible hardware and crash if not code signed or lacking the
 // keychain-access-group entitlement.
-TEST(MakeCredentialOperationTest, DISABLED_TestRun) {
+TEST(MakeCredentialOperationTest, DISABLED_TestRun)
+API_AVAILABLE(macosx(10.12.2)) {
   base::test::TaskEnvironment task_environment;
   TestCallbackReceiver<CtapDeviceResponseCode,
                        absl::optional<AuthenticatorMakeCredentialResponse>>

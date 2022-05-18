@@ -27,7 +27,8 @@ class TouchIdContext;
 //  - allows faking TouchIdContext instances returned by TouchIdContext to stub
 //    out Touch ID fingerprint prompts.
 //  Overrides are reset when the instance is destroyed.
-class COMPONENT_EXPORT(DEVICE_FIDO) ScopedTouchIdTestEnvironment {
+class COMPONENT_EXPORT(DEVICE_FIDO)
+    API_AVAILABLE(macosx(10.12.2)) ScopedTouchIdTestEnvironment {
  public:
   ScopedTouchIdTestEnvironment();
 

@@ -71,18 +71,22 @@ base::ScopedCFTypeRef<CFMutableDictionaryRef> BaseQuery() {
 // profile they are associated with. May return a null reference if an error
 // occurred.
 base::ScopedCFTypeRef<CFArrayRef> QueryAllCredentials() {
-  base::ScopedCFTypeRef<CFArrayRef> items;
-  OSStatus status = Keychain::GetInstance().ItemCopyMatching(
-      BaseQuery(), reinterpret_cast<CFTypeRef*>(items.InitializeInto()));
-  if (status == errSecItemNotFound) {
-    // The API returns null, but we should return an empty array instead to
-    // distinguish from real errors.
-    items = base::ScopedCFTypeRef<CFArrayRef>(
-        CFArrayCreate(nullptr, nullptr, 0, nullptr));
-  } else if (status != errSecSuccess) {
-    OSSTATUS_DLOG(ERROR, status);
+  if (__builtin_available(macOS 10.12.2, *)) {
+    base::ScopedCFTypeRef<CFArrayRef> items;
+    OSStatus status = Keychain::GetInstance().ItemCopyMatching(
+        BaseQuery(), reinterpret_cast<CFTypeRef*>(items.InitializeInto()));
+    if (status == errSecItemNotFound) {
+      // The API returns null, but we should return an empty array instead to
+      // distinguish from real errors.
+      items = base::ScopedCFTypeRef<CFArrayRef>(
+          CFArrayCreate(nullptr, nullptr, 0, nullptr));
+    } else if (status != errSecSuccess) {
+      OSSTATUS_DLOG(ERROR, status);
+    }
+    return items;
   }
-  return items;
+  NOTREACHED();
+  return base::ScopedCFTypeRef<CFArrayRef>(nullptr);
 }
 
 // Returns the number of WebAuthn credentials in the keychain (for all
@@ -93,12 +97,16 @@ ssize_t KeychainItemCount() {
 }
 
 bool ResetKeychain() {
-  OSStatus status = Keychain::GetInstance().ItemDelete(BaseQuery());
-  if (status != errSecSuccess && status != errSecItemNotFound) {
-    OSSTATUS_DLOG(ERROR, status);
-    return false;
+  if (__builtin_available(macOS 10.12.2, *)) {
+    OSStatus status = Keychain::GetInstance().ItemDelete(BaseQuery());
+    if (status != errSecSuccess && status != errSecItemNotFound) {
+      OSSTATUS_DLOG(ERROR, status);
+      return false;
+    }
+    return true;
   }
-  return true;
+  NOTREACHED();
+  return false;
 }
 
 class BrowsingDataDeletionTest : public testing::Test {

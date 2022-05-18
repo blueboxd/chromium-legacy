@@ -14,7 +14,8 @@
 
 namespace shape_detection {
 
-class TextDetectionImplMac : public mojom::TextDetection {
+class API_AVAILABLE(macosx(10.11)) TextDetectionImplMac
+    : public mojom::TextDetection {
  public:
   TextDetectionImplMac();
 

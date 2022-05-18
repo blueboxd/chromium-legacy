@@ -17,7 +17,11 @@ class VisionAPI : public VisionAPIInterface {
   ~VisionAPI() override = default;
 
   NSArray<VNBarcodeSymbology>* GetSupportedSymbologies() const override {
-    return [VNDetectBarcodesRequest supportedSymbologies];
+    if (@available(macOS 10.13, *)) {
+      return [VNDetectBarcodesRequest supportedSymbologies];
+    }
+
+    return @[];
   }
 };
 

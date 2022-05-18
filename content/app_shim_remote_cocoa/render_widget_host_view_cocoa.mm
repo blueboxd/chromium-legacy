@@ -220,7 +220,7 @@ void ExtractUnderlines(NSAttributedString* string,
               withHostHelper:(RenderWidgetHostNSViewHostHelper*)hostHelper {
   self = [super initWithFrame:NSZeroRect];
   if (self) {
-    self.allowedTouchTypes |= NSTouchTypeMaskDirect;
+    self.acceptsTouchEvents = YES;
     _editCommandHelper =
         std::make_unique<RenderWidgetHostViewMacEditCommandHelper>();
 
@@ -560,8 +560,10 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (void)resetCursorRects {
-  if (_currentCursor)
+  if (_currentCursor) {
     [self addCursorRect:[self visibleRect] cursor:_currentCursor];
+    [_currentCursor setOnMouseEntered:YES];
+  }
 }
 
 - (void)processedWheelEvent:(const blink::WebMouseWheelEvent&)event

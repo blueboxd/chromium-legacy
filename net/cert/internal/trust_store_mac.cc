@@ -1044,7 +1044,12 @@ base::ScopedCFTypeRef<CFDataRef> TrustStoreMac::GetMacNormalizedIssuer(
     LOG(ERROR) << "CreateCertBufferFromBytes";
     return name_data;
   }
-  name_data.reset(SecCertificateCopyNormalizedIssuerSequence(cert_handle));
+  if (__builtin_available(macOS 10.12.4, *)) {
+    name_data.reset(SecCertificateCopyNormalizedIssuerSequence(cert_handle));
+  } else {
+    name_data.reset(
+        SecCertificateCopyNormalizedIssuerContent(cert_handle, nullptr));
+  }
   if (!name_data)
     LOG(ERROR) << "SecCertificateCopyNormalizedIssuerContent";
   return name_data;

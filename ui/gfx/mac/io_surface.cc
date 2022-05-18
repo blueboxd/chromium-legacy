@@ -323,7 +323,7 @@ IOSurfaceRef CreateIOSurface(const gfx::Size& size,
   } else {
     CGColorSpaceRef color_space = base::mac::GetSRGBColorSpace();
     base::ScopedCFTypeRef<CFDataRef> color_space_icc(
-        CGColorSpaceCopyICCData(color_space));
+        CGColorSpaceCopyICCProfile(color_space));
     IOSurfaceSetValue(surface, CFSTR("IOSurfaceColorSpace"), color_space_icc);
   }
 

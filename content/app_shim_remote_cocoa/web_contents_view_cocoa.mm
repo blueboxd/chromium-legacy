@@ -222,8 +222,7 @@ STATIC_ASSERT_ENUM(NSDragOperationMove, ui::DragDropTypes::DRAG_MOVE);
   if (!_host)
     return;
 
-  NSPasteboard* pasteboard =
-      [NSPasteboard pasteboardWithName:NSPasteboardNameDrag];
+  NSPasteboard* pasteboard = [NSPasteboard pasteboardWithName:NSDragPboard];
   [pasteboard clearContents];
 
   _dragSource.reset([[WebDragSource alloc] initWithHost:_host

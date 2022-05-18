@@ -42,7 +42,7 @@ NSString* kFindPasteboardChangedNotification =
 }
 
 - (NSPasteboard*)findPboard {
-  return [NSPasteboard pasteboardWithName:NSPasteboardNameFind];
+  return [NSPasteboard pasteboardWithName:NSFindPboard];
 }
 
 - (void)loadTextFromPasteboard:(NSNotification*)notification {

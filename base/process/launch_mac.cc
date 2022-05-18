@@ -9,6 +9,7 @@
 #include <os/availability.h>
 #include <spawn.h>
 #include <string.h>
+#include <sys/syscall.h>
 #include <sys/wait.h>
 
 #include "base/command_line.h"
@@ -95,13 +96,21 @@ class PosixSpawnFileActions {
 };
 
 int ChangeCurrentThreadDirectory(const char* path) {
-  return pthread_chdir_np(path);
+  if (__builtin_available(macOS 10.12, *)) {
+    return pthread_chdir_np(path);
+  } else {
+    return syscall(SYS___pthread_chdir, path);
+  }
 }
 
 // The recommended way to unset a per-thread cwd is to set a new value to an
 // invalid file descriptor, per libpthread-218.1.3/private/private.h.
 int ResetCurrentThreadDirectory() {
-  return pthread_fchdir_np(-1);
+  if (__builtin_available(macOS 10.12, *)) {
+    return pthread_fchdir_np(-1);
+  } else {
+    return syscall(SYS___pthread_fchdir, -1);
+  }
 }
 
 struct GetAppOutputOptions {
